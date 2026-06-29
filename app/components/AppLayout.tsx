@@ -35,7 +35,7 @@ const navigationGroups = [
   {
     label: "System",
     items: [
-      { label: "Importe", to: "/importe" },
+      { label: "Auftragseingang", to: "/auftragseingang" },
       { label: "Auswertungen", to: "/auswertungen" },
       { label: "Einstellungen", to: "/einstellungen" },
     ],
@@ -81,3 +81,4 @@ export default function AppLayout({ children }: AppLayoutProps) {
     </main>
   );
 }
+
