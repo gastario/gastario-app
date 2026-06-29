@@ -1,0 +1,399 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  OFFICE
+  KITCHEN
+  DRIVER
+  VIEWER
+}
+
+enum PlatformRole {
+  USER
+  SUPER_ADMIN
+}
+
+enum PlanCode {
+  STARTER
+  PROFESSIONAL
+  PREMIUM
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  SUSPENDED
+}
+
+enum FeatureCode {
+  DASHBOARD
+  ORDERS
+  CUSTOMERS
+  PRODUCTS
+  QUOTES
+  PRODUCTION
+  PACKING_LISTS
+  DELIVERY_NOTES
+  DELIVERIES
+  INCOMING_ORDERS
+  PDF_EXTRACTION
+  EMAIL_AUTOMATION
+  PURCHASING
+  INVENTORY
+  SUPPLIERS
+  RECIPES
+  REPORTS
+  MULTI_USER
+  DRIVER_VIEW
+  PRODUCT_MAPPING
+  INTEGRATIONS
+}
+
+enum OrderSource {
+  DIRECT
+  EMAIL
+  HEYCATER
+  EGORA
+  WEBSITE
+  LEXWARE
+  OTHER
+}
+
+enum OrderStatus {
+  AUTO_CREATED
+  REVIEW_NEEDED
+  INCOMPLETE
+  POSSIBLE_DUPLICATE
+  CONFIRMED
+  IN_PRODUCTION
+  PACKING_OPEN
+  DELIVERED
+  CANCELLED
+}
+
+enum IncomingEmailStatus {
+  RECEIVED
+  PDF_FOUND
+  EXTRACTED
+  ORDER_CREATED
+  REVIEW_NEEDED
+  FAILED
+  DUPLICATE
+}
+
+enum ExtractionConfidence {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  name         String?
+  passwordHash String?
+  platformRole PlatformRole @default(USER)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  tenants TenantUser[]
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  planCode           PlanCode           @default(STARTER)
+  subscriptionStatus SubscriptionStatus @default(TRIAL)
+
+  maxBrands        Int @default(1)
+  maxEmailAccounts Int @default(1)
+  maxUsers         Int @default(1)
+
+  trialEndsAt DateTime?
+  lockedAt    DateTime?
+  lockReason  String?
+
+  users           TenantUser[]
+  brands          Brand[]
+  emailAccounts   EmailAccount[]
+  enabledFeatures TenantFeature[]
+  customers       Customer[]
+  products        Product[]
+  orders          Order[]
+  incomingEmails  IncomingEmail[]
+  productMappings ProductMapping[]
+}
+
+model TenantUser {
+  id        String   @id @default(cuid())
+  tenantId  String
+  userId    String
+  role      UserRole @default(OWNER)
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, userId])
+  @@index([tenantId])
+  @@index([userId])
+}
+
+model TenantFeature {
+  id        String      @id @default(cuid())
+  tenantId  String
+  feature   FeatureCode
+  enabled   Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, feature])
+  @@index([tenantId])
+}
+
+model Brand {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  email     String?
+  logoUrl   String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  emailAccounts EmailAccount[]
+  orders        Order[]
+
+  @@index([tenantId])
+}
+
+model EmailAccount {
+  id       String  @id @default(cuid())
+  tenantId String
+  brandId  String?
+  email    String
+  label    String?
+  active   Boolean @default(true)
+
+  provider String?
+  mode     String  @default("FORWARDING")
+  notes    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  brand  Brand? @relation(fields: [brandId], references: [id])
+
+  rules          EmailRule[]
+  incomingEmails IncomingEmail[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([brandId])
+}
+
+model EmailRule {
+  id              String      @id @default(cuid())
+  tenantId        String
+  emailAccountId  String
+  name            String
+  source          OrderSource
+  subjectContains String?
+  senderContains  String?
+  autoCreateOrder Boolean     @default(true)
+  active          Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  emailAccount EmailAccount @relation(fields: [emailAccountId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([emailAccountId])
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@index([tenantId])
+  @@index([name])
+}
+
+model Product {
+  id         String   @id @default(cuid())
+  tenantId   String
+  name       String
+  category   String?
+  unit       String   @default("Portion")
+  priceCents Int      @default(0)
+  taxRate    Int      @default(7)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orderItems      OrderItem[]
+  productMappings ProductMapping[]
+
+  @@index([tenantId])
+  @@index([name])
+}
+
+model ProductMapping {
+  id           String      @id @default(cuid())
+  tenantId     String
+  externalName String
+  source       OrderSource
+  productId    String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([externalName])
+}
+
+model IncomingEmail {
+  id             String              @id @default(cuid())
+  tenantId       String
+  emailAccountId String?
+  brandId        String?
+  mailbox        String
+  sender         String?
+  subject        String
+  bodyText       String?
+  source         OrderSource         @default(EMAIL)
+  status         IncomingEmailStatus @default(RECEIVED)
+
+  messageId   String?
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+
+  extractedJson Json?
+  errorMessage  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant       Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  emailAccount EmailAccount?     @relation(fields: [emailAccountId], references: [id])
+  attachments  EmailAttachment[]
+  orders       Order[]
+
+  @@index([tenantId])
+  @@index([emailAccountId])
+  @@index([mailbox])
+  @@index([status])
+  @@index([receivedAt])
+}
+
+model EmailAttachment {
+  id              String   @id @default(cuid())
+  incomingEmailId String
+  filename        String
+  mimeType        String?
+  fileUrl         String?
+  textContent     String?
+  extractedJson   Json?
+  createdAt       DateTime @default(now())
+
+  incomingEmail IncomingEmail @relation(fields: [incomingEmailId], references: [id], onDelete: Cascade)
+
+  @@index([incomingEmailId])
+}
+
+model Order {
+  id              String  @id @default(cuid())
+  tenantId        String
+  brandId         String?
+  customerId      String?
+  incomingEmailId String?
+
+  orderNumber         String
+  externalOrderNumber String?
+  source              OrderSource
+  status              OrderStatus @default(AUTO_CREATED)
+
+  customerName     String
+  eventName        String?
+  deliveryDate     DateTime?
+  deliveryTimeText String?
+  deliveryAddress  String?
+  contactName      String?
+  contactPhone     String?
+  notes            String?
+  allergens        String?
+
+  totalCents      Int                  @default(0)
+  confidenceScore Int                  @default(0)
+  confidenceLabel ExtractionConfidence @default(LOW)
+  reviewReason    String?
+
+  originalPdfName String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  brand         Brand?         @relation(fields: [brandId], references: [id])
+  customer      Customer?      @relation(fields: [customerId], references: [id])
+  incomingEmail IncomingEmail? @relation(fields: [incomingEmailId], references: [id])
+  items         OrderItem[]
+
+  @@unique([tenantId, orderNumber])
+  @@index([tenantId])
+  @@index([source])
+  @@index([status])
+  @@index([deliveryDate])
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  orderId    String
+  productId  String?
+  name       String
+  quantity   Int      @default(1)
+  unit       String   @default("StÃ¼ck")
+  unitCents  Int      @default(0)
+  totalCents Int      @default(0)
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
