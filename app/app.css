@@ -593,3 +593,59 @@ h2 {
 .brandMark {
   display: none;
 }
+
+.brand {
+  padding: 8px 8px 18px;
+  margin-bottom: 2px;
+}
+
+.brandLogo {
+  display: block;
+  width: 154px;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+}
+
+.navGroups {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+
+.navGroups::-webkit-scrollbar {
+  width: 6px;
+}
+
+.navGroups::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.navGroups::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+}
+
+.commandCenter {
+  padding: 20px;
+}
+
+.commandCopy h2 {
+  font-size: clamp(24px, 2.7vw, 31px);
+}
+
+.workflowRail span {
+  min-height: 42px;
+  padding: 10px 13px;
+}
+
+.metricCard {
+  padding: 16px;
+}
+
+.metricCard strong {
+  font-size: 31px;
+}
