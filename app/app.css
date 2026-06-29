@@ -1072,3 +1072,130 @@ h2 {
     width: 100%;
   }
 }
+
+/* Finaler Badge-/Tag-Feinschliff */
+.metricCard small,
+.orderStatus,
+.tableRow em,
+.productsRow em,
+.quotesRow em,
+.purchaseDemandRow em,
+.inventoryRow em,
+.importsRow em,
+.recipesRow em,
+.productionItem em,
+.packingHeader em,
+.deliveryNoteHeader em,
+.routeHeader em,
+.settingsCardTop em {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  box-shadow: none;
+}
+
+.metricCard small {
+  font-size: 10.5px;
+  text-transform: none;
+}
+
+.metricCard small[data-trend="aktiv"],
+.metricCard small[data-trend="bereit"],
+.metricCard small[data-trend="stabil"],
+.metricCard small[data-trend="wachsend"],
+.orderStatus.success,
+.productsRow em,
+.quotesRow em.success,
+.inventoryRow em.success,
+.importsRow em.success,
+.recipesRow em.success,
+.productionItem em.success,
+.packingHeader em.success,
+.deliveryNoteHeader em.success,
+.routeHeader em.success {
+  background: #eefdf5;
+  color: #146c43;
+  border-color: #bce7cf;
+}
+
+.orderStatus.info,
+.quotesRow em.info,
+.inventoryRow em.info,
+.importsRow em.info,
+.recipesRow em.info,
+.productionItem em.info,
+.packingHeader em.info,
+.deliveryNoteHeader em.info,
+.routeHeader em.info,
+.settingsCardTop em {
+  background: #eef6ff;
+  color: #1d5f99;
+  border-color: #c7ddf3;
+}
+
+.metricCard small[data-trend="prüfen"],
+.metricCard small[data-trend="ausbauen"],
+.orderStatus.warning,
+.quotesRow em.warning,
+.purchaseDemandRow em,
+.inventoryRow em.warning,
+.importsRow em.warning,
+.recipesRow em.warning,
+.productionItem em.warning,
+.packingHeader em.warning,
+.deliveryNoteHeader em.warning,
+.routeHeader em.warning {
+  background: #fff8e8;
+  color: #9a6100;
+  border-color: #f1d99c;
+}
+
+.metricCard small[data-trend="kritisch"],
+.inventoryRow em.danger,
+.importsRow em.danger,
+.recipesRow em.danger {
+  background: #fff1f1;
+  color: #a73535;
+  border-color: #efc0c0;
+}
+
+.deliveryNoteHeader em,
+.routeHeader em,
+.packingHeader em {
+  margin-top: 2px;
+}
+
+.taskList label {
+  background: #f8fafc;
+  border-color: #dbe3ec;
+}
+
+.taskList input {
+  width: 15px;
+  height: 15px;
+}
+
+.ghostButton {
+  border-color: #d3dde8;
+  background: #f8fafc;
+  color: #26364c;
+  box-shadow: none;
+}
+
+.ghostButton:hover,
+.secondaryButton:hover {
+  background: #ffffff;
+  border-color: #b8c6d6;
+}
+
+.primaryButton:hover {
+  background: #115e59;
+}
