@@ -710,3 +710,78 @@ h2 {
 .navGroups::-webkit-scrollbar-track {
   background: transparent;
 }
+
+.appShell {
+  grid-template-columns: 252px minmax(0, 1fr);
+}
+
+.sidebar {
+  background: linear-gradient(180deg, #edf2f6 0%, #e4ebf2 100%);
+  border-right: 1px solid #cfd8e3;
+  padding: 24px 14px;
+}
+
+.brand {
+  padding: 6px 8px 20px;
+  margin-bottom: 4px;
+}
+
+.brandLogo {
+  width: 142px;
+}
+
+.navGroup p {
+  padding-left: 8px;
+  color: #7a8796;
+  font-size: 10px;
+}
+
+.navGroup a {
+  min-height: 35px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  color: #1f2937;
+}
+
+.navGroup a.active {
+  background: #d9e9ea;
+  color: #0f172a;
+  box-shadow: inset 3px 0 0 #f59e0b;
+}
+
+.navGroup a:hover {
+  background: #e0ecee;
+}
+
+.workspace {
+  padding: 24px;
+}
+
+.commandCenter,
+.metricCard,
+.panel {
+  border-radius: 15px;
+}
+
+.commandCenter {
+  padding: 19px;
+}
+
+.metricCard {
+  padding: 15px;
+}
+
+.table {
+  border-radius: 12px;
+}
+
+.compactItem,
+.moduleCard {
+  border-radius: 11px;
+}
+
+.primaryButton,
+.secondaryButton,
+.ghostButton {
+  border-radius: 9px;
+}
