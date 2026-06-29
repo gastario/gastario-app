@@ -1,4 +1,4 @@
-﻿import bcrypt from "bcryptjs";
+import bcrypt from "bcryptjs";
 import { createCookieSessionStorage, redirect } from "react-router";
 import { prisma } from "./db.server";
 

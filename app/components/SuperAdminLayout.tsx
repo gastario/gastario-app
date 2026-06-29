@@ -1,4 +1,4 @@
-﻿import { Link, useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 
 const controlNav = [
   { label: "Übersicht", to: "/gastario-control" },

@@ -1,4 +1,4 @@
-﻿import SuperAdminLayout from "../components/SuperAdminLayout";
+import SuperAdminLayout from "../components/SuperAdminLayout";
 
 const plans = [
   {

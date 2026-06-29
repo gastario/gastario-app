@@ -1,4 +1,4 @@
-﻿import { Form, Link, redirect, useActionData } from "react-router";
+import { Form, Link, redirect, useActionData } from "react-router";
 import { prisma } from "../lib/db.server";
 import { createUserSession, hashPassword } from "../lib/auth.server";
 

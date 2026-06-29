@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
 }
 
 datasource db {
@@ -384,7 +383,7 @@ model OrderItem {
   productId   String?
   name        String
   quantity    Int      @default(1)
-  unit        String   @default("StÃ¼ck")
+  unit        String   @default("StÃƒÂ¼ck")
   unitCents   Int      @default(0)
   totalCents  Int      @default(0)
   notes       String?

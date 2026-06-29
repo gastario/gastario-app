@@ -1,4 +1,4 @@
-﻿import AppLayout from "../components/AppLayout";
+import AppLayout from "../components/AppLayout";
 
 const revenueBySource = [
   { source: "Direkt", revenue: "12.840 €", orders: "18 Aufträge", share: "46 %" },

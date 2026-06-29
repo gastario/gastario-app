@@ -1,4 +1,6 @@
-.react-router
+﻿node_modules
 build
-node_modules
-README.md
+.react-router
+.git
+.env
+package.backup.json

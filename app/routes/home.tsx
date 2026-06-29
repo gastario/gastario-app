@@ -1,4 +1,4 @@
-﻿import AppLayout from "../components/AppLayout";
+import AppLayout from "../components/AppLayout";
 
 const metrics = [
   { label: "Aufträge heute", value: "3", detail: "180 Portionen geplant", trend: "bereit" },

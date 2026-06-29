@@ -1,4 +1,4 @@
-﻿import { logout } from "../lib/auth.server";
+import { logout } from "../lib/auth.server";
 
 export async function action({ request }: { request: Request }) {
   return logout(request);

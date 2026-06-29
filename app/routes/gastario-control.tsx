@@ -1,4 +1,4 @@
-﻿import SuperAdminLayout from "../components/SuperAdminLayout";
+import SuperAdminLayout from "../components/SuperAdminLayout";
 
 const tenants = [
   { name: "Let Me Bowl / Mixie", plan: "Professional", status: "Aktiv", brands: "3", emails: "3" },
