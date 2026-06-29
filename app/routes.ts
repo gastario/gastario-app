@@ -15,4 +15,6 @@ export default [
   route("lieferanten", "routes/lieferanten.tsx"),
   route("rezepte", "routes/rezepte.tsx"),
   route("importe", "routes/importe.tsx"),
+  route("auswertungen", "routes/auswertungen.tsx"),
+  route("einstellungen", "routes/einstellungen.tsx"),
 ] satisfies RouteConfig;
