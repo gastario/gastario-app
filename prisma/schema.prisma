@@ -1,0 +1,239 @@
+﻿generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderSource {
+  DIRECT
+  EMAIL
+  HEYCATER
+  EGORA
+  WEBSITE
+  LEXWARE
+  OTHER
+}
+
+enum OrderStatus {
+  AUTO_CREATED
+  REVIEW_NEEDED
+  INCOMPLETE
+  POSSIBLE_DUPLICATE
+  CONFIRMED
+  IN_PRODUCTION
+  PACKING_OPEN
+  DELIVERED
+  CANCELLED
+}
+
+enum IncomingEmailStatus {
+  RECEIVED
+  PDF_FOUND
+  EXTRACTED
+  ORDER_CREATED
+  REVIEW_NEEDED
+  FAILED
+  DUPLICATE
+}
+
+enum ExtractionConfidence {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  brands          Brand[]
+  customers       Customer[]
+  products        Product[]
+  orders          Order[]
+  incomingEmails  IncomingEmail[]
+  productMappings ProductMapping[]
+}
+
+model Brand {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  email     String?
+  logoUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@index([tenantId])
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@index([tenantId])
+  @@index([name])
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  tenantId    String
+  name        String
+  category    String?
+  unit        String   @default("Portion")
+  priceCents  Int      @default(0)
+  taxRate     Int      @default(7)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orderItems      OrderItem[]
+  productMappings ProductMapping[]
+
+  @@index([tenantId])
+  @@index([name])
+}
+
+model ProductMapping {
+  id           String   @id @default(cuid())
+  tenantId     String
+  externalName String
+  source       OrderSource
+  productId    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([externalName])
+}
+
+model Order {
+  id                 String      @id @default(cuid())
+  tenantId           String
+  brandId            String?
+  customerId         String?
+  orderNumber        String      @unique
+  externalOrderNumber String?
+  source             OrderSource
+  status             OrderStatus @default(AUTO_CREATED)
+
+  customerName       String
+  eventName          String?
+  deliveryDate       DateTime?
+  deliveryTimeText   String?
+  deliveryAddress    String?
+  contactName        String?
+  contactPhone       String?
+  notes              String?
+  allergens          String?
+
+  totalCents         Int         @default(0)
+  confidenceScore    Int         @default(0)
+  confidenceLabel    ExtractionConfidence @default(LOW)
+  reviewReason       String?
+
+  originalEmailId    String?
+  originalPdfName    String?
+
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  brand        Brand?          @relation(fields: [brandId], references: [id])
+  customer     Customer?       @relation(fields: [customerId], references: [id])
+  items        OrderItem[]
+  incomingMail IncomingEmail?  @relation(fields: [originalEmailId], references: [id])
+
+  @@index([tenantId])
+  @@index([source])
+  @@index([status])
+  @@index([deliveryDate])
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  productId   String?
+  name        String
+  quantity    Int      @default(1)
+  unit        String   @default("Stück")
+  unitCents   Int      @default(0)
+  totalCents  Int      @default(0)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model IncomingEmail {
+  id             String              @id @default(cuid())
+  tenantId       String
+  brandId        String?
+  mailbox        String
+  sender         String?
+  subject        String
+  bodyText       String?
+  source         OrderSource         @default(EMAIL)
+  status         IncomingEmailStatus @default(RECEIVED)
+
+  messageId      String?
+  receivedAt     DateTime            @default(now())
+  processedAt    DateTime?
+
+  extractedJson  Json?
+  errorMessage   String?
+
+  createdOrderId String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  tenant      Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  attachments EmailAttachment[]
+  orders      Order[]
+
+  @@index([tenantId])
+  @@index([mailbox])
+  @@index([status])
+  @@index([receivedAt])
+}
+
+model EmailAttachment {
+  id              String   @id @default(cuid())
+  incomingEmailId String
+  filename        String
+  mimeType        String?
+  fileUrl         String?
+  textContent     String?
+  extractedJson   Json?
+  createdAt       DateTime @default(now())
+
+  incomingEmail IncomingEmail @relation(fields: [incomingEmailId], references: [id], onDelete: Cascade)
+
+  @@index([incomingEmailId])
+}
