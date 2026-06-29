@@ -75,27 +75,16 @@ function slugify(value: string) {
   return value
     .toLowerCase()
     .trim()
-    .replace(/Ã¤/g, "ae")
-    .replace(/Ã¶/g, "oe")
-    .replace(/Ã¼/g, "ue")
-    .replace(/ÃŸ/g, "ss")
+    .replace(/ä/g, "ae")
+    .replace(/ö/g, "oe")
+    .replace(/ü/g, "ue")
+    .replace(/ß/g, "ss")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)+/g, "");
 }
 
 export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
-
-  const registrationCode = String(formData.get("registrationCode") || "").trim();
-  const expectedRegistrationCode = process.env.REGISTRATION_CODE;
-
-  if (!expectedRegistrationCode || registrationCode !== expectedRegistrationCode) {
-    return {
-      error: "Der Zugangscode ist falsch oder fehlt.",
-    }
-  const planCode = "STARTER";
-;
-  }
 
   const name = String(formData.get("name") || "").trim();
   const email = String(formData.get("email") || "").trim().toLowerCase();
@@ -106,7 +95,7 @@ export async function action({ request }: { request: Request }) {
   const planCode = String(formData.get("planCode") || "STARTER") as keyof typeof planConfig;
 
   if (!name || !email || !password || !companyName || !brandName || !importEmail) {
-    return { error: "Bitte alle Pflichtfelder ausfÃ¼llen." };
+    return { error: "Bitte alle Pflichtfelder ausfüllen." };
   }
 
   if (password.length < 8) {
@@ -180,23 +169,23 @@ export async function action({ request }: { request: Request }) {
           emailAccountId: emailAccount.id,
           name: "Heycater Fast Track",
           source: "HEYCATER",
-          subjectContains: "Fast Track Order bestÃ¤tigt",
+          subjectContains: "Fast Track Order bestätigt",
           autoCreateOrder: true,
         },
         {
           tenantId: tenant.id,
           emailAccountId: emailAccount.id,
-          name: "Heycater Auftrag bestÃ¤tigen",
+          name: "Heycater Auftrag bestätigen",
           source: "HEYCATER",
-          subjectContains: "Bitte bestÃ¤tige den Auftrag",
+          subjectContains: "Bitte bestätige den Auftrag",
           autoCreateOrder: true,
         },
         {
           tenantId: tenant.id,
           emailAccountId: emailAccount.id,
-          name: "Egora AuftragsbestÃ¤tigung",
+          name: "Egora Auftragsbestätigung",
           source: "EGORA",
-          subjectContains: "AuftragsbestÃ¤tigung",
+          subjectContains: "Auftragsbestätigung",
           autoCreateOrder: true,
         },
       ],
@@ -217,7 +206,7 @@ export async function action({ request }: { request: Request }) {
 }
 
 export function meta() {
-  return [{ title: "Registrieren Â· Gastario" }];
+  return [{ title: "Registrieren · Gastario" }];
 }
 
 export default function RegisterPage() {
@@ -230,7 +219,7 @@ export default function RegisterPage() {
           <strong>Gastario</strong>
           <h1>Account erstellen</h1>
           <p>
-            Lege deinen Caterer-Account an, wÃ¤hle ein Paket und verbinde die erste Marke mit einer E-Mail-Adresse.
+            Lege deinen Caterer-Account an, wähle ein Paket und verbinde die erste Marke mit einer E-Mail-Adresse.
           </p>
         </div>
 
@@ -263,30 +252,20 @@ export default function RegisterPage() {
           </label>
 
           <label>
-            E-Mail fÃ¼r Auftragseingang
+            E-Mail für Auftragseingang
             <input name="importEmail" type="email" placeholder="bestellung@firma.de" required />
           </label>
 
           <label>
             Paket
-            
+            <select name="planCode" defaultValue="STARTER">
+              <option value="STARTER">Starter · 1 Marke / 1 E-Mail</option>
+              <option value="PROFESSIONAL">Professional · bis 3 Marken / 3 E-Mails</option>
+              <option value="PREMIUM">Premium · unbegrenzt</option>
+            </select>
           </label>
 
-          
-            <label>
-              Zugangscode
-              <input
-                name="registrationCode"
-                type="text"
-                placeholder="Einladungscode"
-                required
-              />
-            </label>
-
-            <div className="infoBox">
-              Registrierung nur mit Einladungscode. Das Paket wird später im Gastario-Control-Bereich freigeschaltet.
-            </div>
-<button className="primaryButton" type="submit">Account erstellen</button>
+          <button className="primaryButton" type="submit">Account erstellen</button>
         </Form>
 
         <p className="authSwitch">

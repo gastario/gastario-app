@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router";
 
 const controlNav = [
-  { label: "Ãœbersicht", to: "/gastario-control" },
+  { label: "Übersicht", to: "/gastario-control" },
   { label: "Mandanten", to: "/gastario-control/mandanten" },
   { label: "Pakete", to: "/gastario-control/pakete" },
   { label: "Features", to: "/gastario-control/features" },
@@ -39,7 +39,7 @@ export default function SuperAdminLayout({ children }: SuperAdminLayoutProps) {
 
         <div className="controlSecurityBox">
           <strong>Super Admin</strong>
-          <span>SpÃ¤ter nur mit platformRole SUPER_ADMIN erreichbar.</span>
+          <span>Später nur mit platformRole SUPER_ADMIN erreichbar.</span>
         </div>
       </aside>
 
