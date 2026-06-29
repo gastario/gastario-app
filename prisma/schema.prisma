@@ -383,7 +383,7 @@ model OrderItem {
   productId   String?
   name        String
   quantity    Int      @default(1)
-  unit        String   @default("StÃƒÂ¼ck")
+  unit        String   @default("StÃƒÆ’Ã‚Â¼ck")
   unitCents   Int      @default(0)
   totalCents  Int      @default(0)
   notes       String?
@@ -395,4 +395,16 @@ model OrderItem {
 
   @@index([orderId])
   @@index([productId])
+}
+
+
+model RegistrationInvite {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  note      String?
+  email     String?
+  usedAt    DateTime?
+  usedBy    String?
+  createdAt DateTime  @default(now())
+  expiresAt DateTime?
 }

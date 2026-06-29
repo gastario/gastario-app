@@ -75,10 +75,10 @@ function slugify(value: string) {
   return value
     .toLowerCase()
     .trim()
-    .replace(/Ã¤/g, "ae")
-    .replace(/Ã¶/g, "oe")
-    .replace(/Ã¼/g, "ue")
-    .replace(/ÃŸ/g, "ss")
+    .replace(/ÃƒÂ¤/g, "ae")
+    .replace(/ÃƒÂ¶/g, "oe")
+    .replace(/ÃƒÂ¼/g, "ue")
+    .replace(/ÃƒÅ¸/g, "ss")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)+/g, "");
 }
@@ -87,12 +87,17 @@ export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
 
   const registrationCode = String(formData.get("registrationCode") || "").trim();
-  const expectedRegistrationCode = process.env.REGISTRATION_CODE;
 
-  if (!expectedRegistrationCode || registrationCode !== expectedRegistrationCode) {
+  const invite = await prisma.registrationInvite.findUnique({
+    where: { code: registrationCode },
+  });
+
+  if (!invite || invite.usedAt) {
     return {
-      error: "Der Zugangscode ist falsch oder fehlt.",
-    }
+      error: "Der Zugangscode ist ungültig oder wurde bereits benutzt.",
+    };
+  }
+
   const planCode = "STARTER";
 ;
   }
@@ -106,7 +111,7 @@ export async function action({ request }: { request: Request }) {
   const planCode = String(formData.get("planCode") || "STARTER") as keyof typeof planConfig;
 
   if (!name || !email || !password || !companyName || !brandName || !importEmail) {
-    return { error: "Bitte alle Pflichtfelder ausfÃ¼llen." };
+    return { error: "Bitte alle Pflichtfelder ausfÃƒÂ¼llen." };
   }
 
   if (password.length < 8) {
@@ -180,23 +185,23 @@ export async function action({ request }: { request: Request }) {
           emailAccountId: emailAccount.id,
           name: "Heycater Fast Track",
           source: "HEYCATER",
-          subjectContains: "Fast Track Order bestÃ¤tigt",
+          subjectContains: "Fast Track Order bestÃƒÂ¤tigt",
           autoCreateOrder: true,
         },
         {
           tenantId: tenant.id,
           emailAccountId: emailAccount.id,
-          name: "Heycater Auftrag bestÃ¤tigen",
+          name: "Heycater Auftrag bestÃƒÂ¤tigen",
           source: "HEYCATER",
-          subjectContains: "Bitte bestÃ¤tige den Auftrag",
+          subjectContains: "Bitte bestÃƒÂ¤tige den Auftrag",
           autoCreateOrder: true,
         },
         {
           tenantId: tenant.id,
           emailAccountId: emailAccount.id,
-          name: "Egora AuftragsbestÃ¤tigung",
+          name: "Egora AuftragsbestÃƒÂ¤tigung",
           source: "EGORA",
-          subjectContains: "AuftragsbestÃ¤tigung",
+          subjectContains: "AuftragsbestÃƒÂ¤tigung",
           autoCreateOrder: true,
         },
       ],
@@ -217,7 +222,7 @@ export async function action({ request }: { request: Request }) {
 }
 
 export function meta() {
-  return [{ title: "Registrieren Â· Gastario" }];
+  return [{ title: "Registrieren Ã‚Â· Gastario" }];
 }
 
 export default function RegisterPage() {
@@ -230,7 +235,7 @@ export default function RegisterPage() {
           <strong>Gastario</strong>
           <h1>Account erstellen</h1>
           <p>
-            Lege deinen Caterer-Account an, wÃ¤hle ein Paket und verbinde die erste Marke mit einer E-Mail-Adresse.
+            Lege deinen Caterer-Account an, wÃƒÂ¤hle ein Paket und verbinde die erste Marke mit einer E-Mail-Adresse.
           </p>
         </div>
 
@@ -263,14 +268,11 @@ export default function RegisterPage() {
           </label>
 
           <label>
-            E-Mail fÃ¼r Auftragseingang
+            E-Mail fÃƒÂ¼r Auftragseingang
             <input name="importEmail" type="email" placeholder="bestellung@firma.de" required />
           </label>
 
-          <label>
-            Paket
-            
-          </label>
+          
 
           
             <label>
@@ -284,7 +286,7 @@ export default function RegisterPage() {
             </label>
 
             <div className="infoBox">
-              Registrierung nur mit Einladungscode. Das Paket wird später im Gastario-Control-Bereich freigeschaltet.
+              Registrierung nur mit Einladungscode. Das Paket wird spÃ¤ter im Gastario-Control-Bereich freigeschaltet.
             </div>
 <button className="primaryButton" type="submit">Account erstellen</button>
         </Form>
