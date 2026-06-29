@@ -558,3 +558,18 @@ h2 {
     grid-template-columns: 1fr;
   }
 }
+
+.brandLogo {
+  display: block;
+  width: 172px;
+  height: auto;
+  object-fit: contain;
+}
+
+.brandMark {
+  display: none;
+}
+
+.brand {
+  align-items: flex-start;
+}

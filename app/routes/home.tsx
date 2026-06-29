@@ -69,11 +69,7 @@ export default function Home() {
     <main className="appShell">
       <aside className="sidebar">
         <div className="brand">
-          <div className="brandMark">G</div>
-          <div>
-            <strong>Gastario</strong>
-            <span>Betriebssoftware für Caterer</span>
-          </div>
+          <img className="brandLogo" src="/brand/gastario-logo.png" alt="Gastario" />
         </div>
 
         <nav className="navGroups" aria-label="Hauptnavigation">
@@ -261,3 +257,4 @@ export default function Home() {
     </main>
   );
 }
+

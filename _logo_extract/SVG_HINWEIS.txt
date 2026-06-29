@@ -1,0 +1,7 @@
+Echte SVG-Vektordatei noch nicht enthalten.
+
+Grund:
+Das aktuelle Logo liegt als generiertes Rasterbild vor. Eine automatische Umwandlung in SVG wäre technisch möglich, aber qualitativ nicht sauber genug für eine professionelle Marke.
+
+Empfehlung:
+Logo später durch Designer in SVG/AI/EPS exakt nachzeichnen lassen.
