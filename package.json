@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "prisma generate && react-router build",
+    "build": "prisma generate --schema=./prisma/schema.prisma && react-router build",
     "dev": "react-router dev",
-    "start": "prisma generate && react-router-serve ./build/server/index.js",
+    "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
@@ -29,5 +29,8 @@
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
     "vite": "^8.0.3"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
   }
 }
