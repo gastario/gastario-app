@@ -2,6 +2,11 @@
 
 export default [
   index("routes/home.tsx"),
+
+  route("registrieren", "routes/registrieren.tsx"),
+  route("login", "routes/login.tsx"),
+  route("logout", "routes/logout.tsx"),
+
   route("auftraege", "routes/auftraege.tsx"),
   route("angebote", "routes/angebote.tsx"),
   route("kunden", "routes/kunden.tsx"),
