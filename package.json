@@ -6,7 +6,7 @@
                     "dev":  "react-router dev",
                     "typecheck":  "react-router typegen \u0026\u0026 tsc",
                     "build":  "prisma generate --schema=./prisma/schema.prisma \u0026\u0026 react-router build",
-                    "start":  "prisma generate --schema=./prisma/schema.prisma \u0026\u0026 react-router-serve ./build/server/index.js"
+                    "start":  "react-router-serve ./build/server/index.js"
                 },
     "dependencies":  {
                          "@prisma/client":  "^6.19.3",
@@ -29,8 +29,5 @@
                             "tailwindcss":  "^4.2.2",
                             "typescript":  "^5.9.3",
                             "vite":  "^8.0.3"
-                        },
-    "prisma":  {
-                   "schema":  "prisma/schema.prisma"
-               }
+                        }
 }
