@@ -649,3 +649,64 @@ h2 {
 .metricCard strong {
   font-size: 31px;
 }
+
+.sidebar {
+  background: linear-gradient(180deg, #eef3f7 0%, #e7edf3 100%);
+  color: #14202b;
+  border-right: 1px solid #d6dee8;
+}
+
+.brand {
+  padding: 10px 8px 18px;
+  align-items: flex-start;
+  border-bottom: 1px solid #d9e2ec;
+}
+
+.brandLogo {
+  display: block;
+  width: 158px;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.navGroup p {
+  color: #6b7280;
+}
+
+.navGroup a {
+  color: #243242;
+}
+
+.navGroup a:hover {
+  background: rgba(15, 118, 110, 0.08);
+  color: #0f172a;
+}
+
+.navGroup a.active {
+  background: linear-gradient(90deg, rgba(15, 118, 110, 0.14), rgba(15, 118, 110, 0.06));
+  color: #0f172a;
+  box-shadow: inset 3px 0 0 #f59e0b;
+}
+
+.navGroups {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
+}
+
+.navGroups::-webkit-scrollbar {
+  width: 6px;
+}
+
+.navGroups::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.28);
+  border-radius: 999px;
+}
+
+.navGroups::-webkit-scrollbar-track {
+  background: transparent;
+}
