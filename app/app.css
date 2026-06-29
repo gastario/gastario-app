@@ -785,3 +785,182 @@ h2 {
 .ghostButton {
   border-radius: 9px;
 }
+
+.orderSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.filterActions {
+  display: flex;
+  gap: 10px;
+}
+
+.ordersTable {
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.ordersHead,
+.ordersRow {
+  display: grid;
+  grid-template-columns: 110px minmax(170px, 1.1fr) 130px minmax(160px, 1fr) 170px minmax(190px, 1.1fr) 110px;
+  gap: 12px;
+  align-items: center;
+}
+
+.ordersHead {
+  padding: 12px 14px;
+  background: #f7f9fb;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.ordersRow {
+  padding: 15px 14px;
+  background: white;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.ordersRow:last-child {
+  border-bottom: 0;
+}
+
+.ordersRow strong {
+  display: block;
+  color: var(--text);
+}
+
+.ordersRow small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.ordersRow > span:not(.orderStatus) {
+  color: var(--muted-strong);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.orderStatus {
+  width: fit-content;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.orderStatus.success {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.orderStatus.info {
+  background: #e6f4ff;
+  color: #075985;
+}
+
+.orderStatus.warning {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+@media (max-width: 1250px) {
+  .ordersHead,
+  .ordersRow {
+    grid-template-columns: 110px minmax(160px, 1fr) 130px minmax(160px, 1fr);
+  }
+
+  .ordersHead span:nth-child(n+5),
+  .ordersRow .orderStatus,
+  .ordersRow > span:not(.orderStatus),
+  .ordersRow > strong:last-child {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .orderSummaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersHead {
+    display: none;
+  }
+
+  .ordersRow {
+    grid-template-columns: 1fr;
+  }
+
+  .filterActions {
+    flex-direction: column;
+  }
+}
+
+.sidebar {
+  background:
+    linear-gradient(180deg, #f2f6f9 0%, #e7eef5 100%);
+  border-right: 1px solid #cbd5e1;
+}
+
+.brand {
+  padding: 8px 8px 22px;
+  margin-bottom: 2px;
+}
+
+.brandLogo {
+  width: 148px;
+  margin-left: 2px;
+}
+
+.navGroups {
+  gap: 17px;
+}
+
+.navGroup p {
+  margin-bottom: 8px;
+  padding-left: 9px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.085em;
+}
+
+.navGroup a {
+  min-height: 36px;
+  padding: 8px 11px;
+  border-radius: 10px;
+  color: #172033;
+  font-weight: 720;
+}
+
+.navGroup a:hover {
+  background: rgba(15, 118, 110, 0.08);
+  color: #0f172a;
+}
+
+.navGroup a.active {
+  background: linear-gradient(90deg, rgba(15, 118, 110, 0.16), rgba(15, 118, 110, 0.07));
+  color: #0f172a;
+  box-shadow:
+    inset 3px 0 0 #f59e0b,
+    0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
+.navGroup + .navGroup {
+  padding-top: 2px;
+}
+
+.workspace {
+  border-left: 1px solid rgba(255, 255, 255, 0.55);
+}

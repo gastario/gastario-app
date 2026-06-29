@@ -80,7 +80,7 @@ export default function Home() {
 
           <div className="navGroup">
             <p>Verkauf</p>
-            <a href="/">Aufträge</a>
+            <a href="/auftraege">Aufträge</a>
             <a href="/">Angebote</a>
             <a href="/">Kunden</a>
             <a href="/">Produkte</a>
@@ -257,4 +257,5 @@ export default function Home() {
     </main>
   );
 }
+
 
