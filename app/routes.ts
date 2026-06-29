@@ -15,7 +15,10 @@ export default [
   route("lieferanten", "routes/lieferanten.tsx"),
   route("rezepte", "routes/rezepte.tsx"),
   route("auftragseingang", "routes/auftragseingang.tsx"),
-  route("importe", "routes/auftragseingang.tsx"),
   route("auswertungen", "routes/auswertungen.tsx"),
   route("einstellungen", "routes/einstellungen.tsx"),
+
+  route("gastario-control", "routes/gastario-control.tsx"),
+  route("gastario-control/mandanten", "routes/gastario-control.mandanten.tsx"),
+  route("gastario-control/pakete", "routes/gastario-control.pakete.tsx"),
 ] satisfies RouteConfig;

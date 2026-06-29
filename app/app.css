@@ -1410,3 +1410,317 @@ h2 {
     grid-template-columns: 1fr;
   }
 }
+
+.controlShell {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  min-height: 100vh;
+  background: #edf2f7;
+}
+
+.controlSidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 24px 18px;
+  background: #111827;
+  color: white;
+}
+
+.controlBrand {
+  display: grid;
+  gap: 4px;
+  padding: 8px 8px 26px;
+}
+
+.controlBrand strong {
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.controlBrand span {
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.controlNav {
+  display: grid;
+  gap: 7px;
+}
+
+.controlNav a {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  color: #d1d5db;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.controlNav a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.controlNav a.active {
+  background: #0f766e;
+  color: white;
+}
+
+.controlSecurityBox {
+  margin-top: 24px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.controlSecurityBox strong {
+  display: block;
+  margin-bottom: 6px;
+  color: white;
+}
+
+.controlSecurityBox span {
+  color: #cbd5e1;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.controlWorkspace {
+  min-width: 0;
+  padding: 28px;
+}
+
+.controlTopbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.controlMetrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.controlTenantTable {
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.controlTenantHead,
+.controlTenantRow {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) 130px 120px 90px 90px 120px;
+  gap: 12px;
+  align-items: center;
+}
+
+.controlTenantHead {
+  padding: 12px 14px;
+  background: #f7f9fb;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.controlTenantRow {
+  padding: 15px 14px;
+  background: white;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.controlTenantRow:last-child {
+  border-bottom: 0;
+}
+
+.controlTenantRow strong {
+  color: var(--text);
+}
+
+.controlTenantRow span {
+  color: var(--muted-strong);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.controlTenantRow em,
+.controlTenantCardTop em {
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eefdf5;
+  color: #146c43;
+  border: 1px solid #bce7cf;
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.controlTenantCards {
+  display: grid;
+  gap: 14px;
+}
+
+.controlTenantCard,
+.planCard {
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid var(--line-soft);
+  background: white;
+  box-shadow: var(--shadow);
+}
+
+.controlTenantCardTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.controlTenantCardTop strong {
+  display: block;
+  color: var(--text);
+  font-size: 18px;
+}
+
+.controlTenantCardTop span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.controlLimitGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.controlLimitGrid p,
+.controlFeatureLine {
+  margin: 0;
+  padding: 12px;
+  border-radius: 13px;
+  border: 1px solid var(--line-soft);
+  background: var(--surface-soft);
+}
+
+.controlLimitGrid b,
+.controlFeatureLine b {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.controlLimitGrid span,
+.controlFeatureLine span {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.planTop {
+  margin-bottom: 14px;
+}
+
+.planTop p {
+  margin-bottom: 5px;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.planTop strong {
+  color: var(--text);
+  font-size: 28px;
+  letter-spacing: -0.05em;
+}
+
+.planLimits {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.planLimits span {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line-soft);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.planFeatures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.planFeatures em {
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #eef6ff;
+  color: #1d5f99;
+  border: 1px solid #c7ddf3;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+@media (max-width: 1100px) {
+  .controlShell {
+    grid-template-columns: 1fr;
+  }
+
+  .controlSidebar {
+    position: static;
+    height: auto;
+  }
+
+  .controlMetrics,
+  .plansGrid,
+  .controlLimitGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .controlTenantHead {
+    display: none;
+  }
+
+  .controlTenantRow {
+    grid-template-columns: 1fr;
+  }
+
+  .controlTopbar {
+    flex-direction: column;
+  }
+}
