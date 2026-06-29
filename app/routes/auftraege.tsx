@@ -1,4 +1,6 @@
-﻿const orders = [
+﻿import { Link } from "react-router";
+
+const orders = [
   {
     number: "GA-1001",
     customer: "Muster GmbH",
@@ -71,38 +73,38 @@ export default function OrdersPage() {
         <nav className="navGroups" aria-label="Hauptnavigation">
           <div className="navGroup">
             <p>Übersicht</p>
-            <a href="/">Dashboard</a>
+            <Link to="/">Dashboard</Link>
           </div>
 
           <div className="navGroup">
             <p>Verkauf</p>
-            <a className="active" href="/auftraege">Aufträge</a>
-            <a href="/">Angebote</a>
-            <a href="/">Kunden</a>
-            <a href="/">Produkte</a>
+            <Link className="active" to="/auftraege">Aufträge</Link>
+            <Link to="/">Angebote</Link>
+            <Link to="/">Kunden</Link>
+            <Link to="/">Produkte</Link>
           </div>
 
           <div className="navGroup">
             <p>Betrieb</p>
-            <a href="/">Produktion</a>
-            <a href="/">Packlisten</a>
-            <a href="/">Lieferscheine</a>
-            <a href="/">Lieferungen</a>
+            <Link to="/">Produktion</Link>
+            <Link to="/">Packlisten</Link>
+            <Link to="/">Lieferscheine</Link>
+            <Link to="/">Lieferungen</Link>
           </div>
 
           <div className="navGroup">
             <p>Einkauf & Lager</p>
-            <a href="/">Einkauf</a>
-            <a href="/">Lager</a>
-            <a href="/">Lieferanten</a>
-            <a href="/">Rezepte</a>
+            <Link to="/">Einkauf</Link>
+            <Link to="/">Lager</Link>
+            <Link to="/">Lieferanten</Link>
+            <Link to="/">Rezepte</Link>
           </div>
 
           <div className="navGroup">
             <p>System</p>
-            <a href="/">Importe</a>
-            <a href="/">Auswertungen</a>
-            <a href="/">Einstellungen</a>
+            <Link to="/">Importe</Link>
+            <Link to="/">Auswertungen</Link>
+            <Link to="/">Einstellungen</Link>
           </div>
         </nav>
       </aside>
@@ -207,3 +209,4 @@ export default function OrdersPage() {
     </main>
   );
 }
+
