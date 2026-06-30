@@ -1,7 +1,5 @@
-import { requireSuperAdmin } from "../lib/session.server";
 import { Form, useActionData, useLoaderData } from "react-router";
 import SuperAdminLayout from "../components/SuperAdminLayout";
-import { prisma } from "../lib/prisma.server";
 
 function generateInviteCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -62,7 +60,7 @@ export default function RegistrationCodesPage() {
           <div className="kicker">Super Admin</div>
           <h1 className="pageTitle">Registrierungscodes</h1>
           <p className="pageSubtitle">
-            Erstelle einmalige Einladungscodes fÃƒÂ¼r neue Caterer. Nach erfolgreicher Registrierung wird der Code automatisch verbraucht.
+            Erstelle einmalige Einladungscodes fÃƒÆ’Ã‚Â¼r neue Caterer. Nach erfolgreicher Registrierung wird der Code automatisch verbraucht.
           </p>
         </div>
       </header>
@@ -99,7 +97,7 @@ export default function RegistrationCodesPage() {
             Notiz
             <input
               name="note"
-              placeholder="z. B. MÃƒÂ¼ller Catering"
+              placeholder="z. B. MÃƒÆ’Ã‚Â¼ller Catering"
               style={{
                 border: "1px solid #cbd5e1",
                 borderRadius: 12,

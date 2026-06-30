@@ -1,4 +1,3 @@
-import { requireSuperAdmin } from "../lib/session.server";
 import SuperAdminLayout from "../components/SuperAdminLayout";
 
 const tenants = [
@@ -9,8 +8,8 @@ const tenants = [
 
 const platformStats = [
   { label: "Mandanten", value: "3", detail: "aktive Caterer" },
-  { label: "Monatsumsatz SaaS", value: "537 Ã¢â€šÂ¬", detail: "wiederkehrend geplant" },
-  { label: "Testphasen", value: "1", detail: "lÃƒÂ¤uft aktuell" },
+  { label: "Monatsumsatz SaaS", value: "537 ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬", detail: "wiederkehrend geplant" },
+  { label: "Testphasen", value: "1", detail: "lÃƒÆ’Ã‚Â¤uft aktuell" },
   { label: "Gesperrt", value: "0", detail: "keine Sperren" },
 ];
 
@@ -31,7 +30,7 @@ export default function ControlCenterPage() {
         </div>
 
         <div className="topActions">
-          <button className="secondaryButton">System prÃƒÂ¼fen</button>
+          <button className="secondaryButton">System prÃƒÆ’Ã‚Â¼fen</button>
           <button className="primaryButton">Neuer Mandant</button>
         </div>
       </header>
@@ -54,7 +53,7 @@ export default function ControlCenterPage() {
             <p className="eyebrow">Mandanten</p>
             <h2>Aktuelle SaaS-Kunden</h2>
           </div>
-          <button className="ghostButton">Alle Mandanten ÃƒÂ¶ffnen</button>
+          <button className="ghostButton">Alle Mandanten ÃƒÆ’Ã‚Â¶ffnen</button>
         </div>
 
         <div className="controlTenantTable">

@@ -1,11 +1,9 @@
-import { requireSuperAdmin } from "../lib/session.server";
 import { Form, useActionData, useLoaderData } from "react-router";
 import SuperAdminLayout from "../components/SuperAdminLayout";
-import { prisma } from "../lib/prisma.server";
 
 const FEATURES = [
   { code: "DASHBOARD", label: "Dashboard", group: "Basis" },
-  { code: "ORDERS", label: "AuftrÃƒÆ’Ã‚Â¤ge", group: "Basis" },
+  { code: "ORDERS", label: "AuftrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤ge", group: "Basis" },
   { code: "CUSTOMERS", label: "Kunden", group: "Basis" },
   { code: "PRODUCTS", label: "Produkte", group: "Basis" },
   { code: "QUOTES", label: "Angebote", group: "Basis" },
@@ -192,7 +190,7 @@ function statusLabel(status: string, lockedAt?: string | Date | null) {
   if (status === "TRIAL") return "Testphase";
   if (status === "ACTIVE") return "Aktiv";
   if (status === "PAST_DUE") return "Zahlung offen";
-  if (status === "CANCELED") return "GekÃƒÆ’Ã‚Â¼ndigt";
+  if (status === "CANCELED") return "GekÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼ndigt";
   return status;
 }
 
@@ -299,10 +297,10 @@ export default function MandantenPage() {
                       flexWrap: "wrap"
                     }}>
                       <span>Paket: {planLabel(tenant.planCode)}</span>
-                      <span>ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢</span>
+                      <span>ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢</span>
                       <span>Status: {statusLabel(tenant.subscriptionStatus, tenant.lockedAt)}</span>
-                      <span>ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢</span>
-                      <span>AuftrÃƒÆ’Ã‚Â¤ge: {tenant.orders.length}</span>
+                      <span>ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢</span>
+                      <span>AuftrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤ge: {tenant.orders.length}</span>
                     </div>
                   </div>
 
@@ -415,7 +413,7 @@ export default function MandantenPage() {
                                   display: "block",
                                   fontSize: 13
                                 }}>
-                                  {enabled ? "ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ " : "+ "}
+                                  {enabled ? "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ " : "+ "}
                                   {feature.label}
                                 </span>
                                 <span style={{
@@ -473,7 +471,7 @@ export default function MandantenPage() {
                           <option value="TRIAL">Testphase</option>
                           <option value="ACTIVE">Aktiv</option>
                           <option value="PAST_DUE">Zahlung offen</option>
-                          <option value="CANCELED">GekÃƒÆ’Ã‚Â¼ndigt</option>
+                          <option value="CANCELED">GekÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼ndigt</option>
                         </select>
                       </label>
 
@@ -511,7 +509,7 @@ export default function MandantenPage() {
                       </div>
 
                       <button className="btn btnPrimary" type="submit">
-                        ÃƒÆ’Ã¢â‚¬Å¾nderungen speichern
+                        ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾nderungen speichern
                       </button>
                     </Form>
 

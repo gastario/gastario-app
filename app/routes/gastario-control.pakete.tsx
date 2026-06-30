@@ -1,4 +1,3 @@
-import { requireSuperAdmin } from "../lib/session.server";
 import { Link } from "react-router";
 import SuperAdminLayout from "../components/SuperAdminLayout";
 
@@ -6,15 +5,15 @@ const packages = [
   {
     name: "Starter",
     code: "STARTER",
-    price: "59 Ã¢â€šÂ¬",
-    target: "FÃƒÂ¼r kleine Caterer, die AuftrÃƒÂ¤ge und Kunden sauber verwalten wollen.",
+    price: "59 ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬",
+    target: "FÃƒÆ’Ã‚Â¼r kleine Caterer, die AuftrÃƒÆ’Ã‚Â¤ge und Kunden sauber verwalten wollen.",
     limits: {
       brands: "1 Marke",
       emails: "1 Import-E-Mail",
       users: "1 Benutzer",
     },
     modules: [
-      "AuftrÃƒÂ¤ge",
+      "AuftrÃƒÆ’Ã‚Â¤ge",
       "Kunden",
       "Produkte",
       "Packlisten",
@@ -24,8 +23,8 @@ const packages = [
   {
     name: "Professional",
     code: "PROFESSIONAL",
-    price: "179 Ã¢â€šÂ¬",
-    target: "FÃƒÂ¼r wachsende Caterer mit mehreren Marken, E-Mail-Eingang und operativer Planung.",
+    price: "179 ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬",
+    target: "FÃƒÆ’Ã‚Â¼r wachsende Caterer mit mehreren Marken, E-Mail-Eingang und operativer Planung.",
     limits: {
       brands: "bis 3 Marken",
       emails: "bis 3 Import-E-Mails",
@@ -46,8 +45,8 @@ const packages = [
   {
     name: "Premium",
     code: "PREMIUM",
-    price: "299 Ã¢â€šÂ¬",
-    target: "FÃƒÂ¼r grÃƒÂ¶ÃƒÅ¸ere Caterer mit mehreren Marken, Integrationen und erweiterten Workflows.",
+    price: "299 ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬",
+    target: "FÃƒÆ’Ã‚Â¼r grÃƒÆ’Ã‚Â¶ÃƒÆ’Ã…Â¸ere Caterer mit mehreren Marken, Integrationen und erweiterten Workflows.",
     limits: {
       brands: "unbegrenzt",
       emails: "unbegrenzt",
@@ -57,7 +56,7 @@ const packages = [
       "alle Module",
       "Fahreransicht",
       "Integrationen",
-      "Lexware / DATEV / API spÃƒÂ¤ter",
+      "Lexware / DATEV / API spÃƒÆ’Ã‚Â¤ter",
       "erweitertes Produkt-Mapping",
       "priorisierter Support",
     ],
@@ -72,7 +71,7 @@ export default function PaketePage() {
           <div className="kicker">Super Admin</div>
           <h1 className="pageTitle">Pakete</h1>
           <p className="pageSubtitle">
-            Verwalte die Paketlogik fÃƒÂ¼r Gastario. Die Paketzuweisung erfolgt pro Mandant in der Mandantenverwaltung.
+            Verwalte die Paketlogik fÃƒÆ’Ã‚Â¼r Gastario. Die Paketzuweisung erfolgt pro Mandant in der Mandantenverwaltung.
           </p>
         </div>
 
@@ -171,7 +170,7 @@ export default function PaketePage() {
         <div className="panelHeader">
           <div>
             <div className="panelKicker">Hinweis</div>
-            <h2 className="panelTitle">Pakete werden nicht ÃƒÂ¶ffentlich ausgewÃƒÂ¤hlt</h2>
+            <h2 className="panelTitle">Pakete werden nicht ÃƒÆ’Ã‚Â¶ffentlich ausgewÃƒÆ’Ã‚Â¤hlt</h2>
           </div>
         </div>
 
@@ -182,7 +181,7 @@ export default function PaketePage() {
           margin: 0
         }}>
           Neue Caterer registrieren sich nur mit Einladungscode. Das Paket wird danach durch den Super Admin
-          beim Mandanten gesetzt. So kann niemand ÃƒÂ¶ffentlich einen Mandanten mit falschem Paket erstellen.
+          beim Mandanten gesetzt. So kann niemand ÃƒÆ’Ã‚Â¶ffentlich einen Mandanten mit falschem Paket erstellen.
         </p>
       </section>
     </SuperAdminLayout>

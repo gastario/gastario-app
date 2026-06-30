@@ -1,19 +1,18 @@
-import { requireSuperAdmin } from "../lib/session.server";
 import { Link } from "react-router";
 import SuperAdminLayout from "../components/SuperAdminLayout";
 
 const featureGroups = [
   {
     title: "Basis",
-    description: "Grundfunktionen fÃƒÂ¼r jeden Caterer.",
+    description: "Grundfunktionen fÃƒÆ’Ã‚Â¼r jeden Caterer.",
     features: [
       {
-        name: "AuftrÃƒÂ¤ge",
+        name: "AuftrÃƒÆ’Ã‚Â¤ge",
         code: "ORDERS",
         starter: true,
         professional: true,
         premium: true,
-        description: "AuftrÃƒÂ¤ge erfassen, anzeigen und bearbeiten.",
+        description: "AuftrÃƒÆ’Ã‚Â¤ge erfassen, anzeigen und bearbeiten.",
       },
       {
         name: "Kunden",
@@ -37,7 +36,7 @@ const featureGroups = [
         starter: true,
         professional: true,
         premium: true,
-        description: "Packlisten fÃƒÂ¼r AuftrÃƒÂ¤ge vorbereiten.",
+        description: "Packlisten fÃƒÆ’Ã‚Â¼r AuftrÃƒÆ’Ã‚Â¤ge vorbereiten.",
       },
       {
         name: "Lieferscheine",
@@ -51,7 +50,7 @@ const featureGroups = [
   },
   {
     title: "Automatisierung",
-    description: "Module fÃƒÂ¼r Auftragseingang, E-Mail und PDF-Erkennung.",
+    description: "Module fÃƒÆ’Ã‚Â¼r Auftragseingang, E-Mail und PDF-Erkennung.",
     features: [
       {
         name: "Auftragseingang",
@@ -59,7 +58,7 @@ const featureGroups = [
         starter: false,
         professional: true,
         premium: true,
-        description: "Zentrale fÃƒÂ¼r eingehende AuftrÃƒÂ¤ge aus verschiedenen Quellen.",
+        description: "Zentrale fÃƒÆ’Ã‚Â¼r eingehende AuftrÃƒÆ’Ã‚Â¤ge aus verschiedenen Quellen.",
       },
       {
         name: "PDF-Erkennung",
@@ -67,7 +66,7 @@ const featureGroups = [
         starter: false,
         professional: true,
         premium: true,
-        description: "AuftragsbestÃƒÂ¤tigungen aus PDFs auslesen.",
+        description: "AuftragsbestÃƒÆ’Ã‚Â¤tigungen aus PDFs auslesen.",
       },
       {
         name: "E-Mail-Automatik",
@@ -75,7 +74,7 @@ const featureGroups = [
         starter: false,
         professional: true,
         premium: true,
-        description: "E-Mails erkennen und automatisch AuftrÃƒÂ¤ge vorbereiten.",
+        description: "E-Mails erkennen und automatisch AuftrÃƒÆ’Ã‚Â¤ge vorbereiten.",
       },
       {
         name: "Produkt-Mapping",
@@ -89,7 +88,7 @@ const featureGroups = [
   },
   {
     title: "Betrieb",
-    description: "Module fÃƒÂ¼r KÃƒÂ¼che, Einkauf, Lager und operative Planung.",
+    description: "Module fÃƒÆ’Ã‚Â¼r KÃƒÆ’Ã‚Â¼che, Einkauf, Lager und operative Planung.",
     features: [
       {
         name: "Produktion",
@@ -97,7 +96,7 @@ const featureGroups = [
         starter: false,
         professional: true,
         premium: true,
-        description: "Produktionslisten fÃƒÂ¼r KÃƒÂ¼che und Vorbereitung.",
+        description: "Produktionslisten fÃƒÆ’Ã‚Â¼r KÃƒÆ’Ã‚Â¼che und Vorbereitung.",
       },
       {
         name: "Einkauf",
@@ -105,7 +104,7 @@ const featureGroups = [
         starter: false,
         professional: true,
         premium: true,
-        description: "Einkaufslisten aus AuftrÃƒÂ¤gen und Rezepturen vorbereiten.",
+        description: "Einkaufslisten aus AuftrÃƒÆ’Ã‚Â¤gen und Rezepturen vorbereiten.",
       },
       {
         name: "Lager",
@@ -113,7 +112,7 @@ const featureGroups = [
         starter: false,
         professional: true,
         premium: true,
-        description: "BestÃƒÂ¤nde und Verbrauch kontrollieren.",
+        description: "BestÃƒÆ’Ã‚Â¤nde und Verbrauch kontrollieren.",
       },
       {
         name: "Lieferanten",
@@ -135,7 +134,7 @@ const featureGroups = [
   },
   {
     title: "Premium",
-    description: "Erweiterungen fÃƒÂ¼r grÃƒÂ¶ÃƒÅ¸ere Caterer und Integrationen.",
+    description: "Erweiterungen fÃƒÆ’Ã‚Â¼r grÃƒÆ’Ã‚Â¶ÃƒÆ’Ã…Â¸ere Caterer und Integrationen.",
     features: [
       {
         name: "Fahreransicht",
@@ -143,7 +142,7 @@ const featureGroups = [
         starter: false,
         professional: false,
         premium: true,
-        description: "Mobile Ansicht fÃƒÂ¼r Fahrer, Lieferungen und Routen.",
+        description: "Mobile Ansicht fÃƒÆ’Ã‚Â¼r Fahrer, Lieferungen und Routen.",
       },
       {
         name: "Integrationen",
@@ -159,7 +158,7 @@ const featureGroups = [
         starter: false,
         professional: false,
         premium: true,
-        description: "SpÃƒÂ¤tere Schnittstellen fÃƒÂ¼r Buchhaltung und Export.",
+        description: "SpÃƒÆ’Ã‚Â¤tere Schnittstellen fÃƒÆ’Ã‚Â¼r Buchhaltung und Export.",
       },
       {
         name: "Priorisierter Support",
@@ -167,7 +166,7 @@ const featureGroups = [
         starter: false,
         professional: false,
         premium: true,
-        description: "Schnellerer Support fÃƒÂ¼r Premium-Kunden.",
+        description: "Schnellerer Support fÃƒÆ’Ã‚Â¼r Premium-Kunden.",
       },
     ],
   },
@@ -189,7 +188,7 @@ function FeatureCheck({ enabled }: { enabled: boolean }) {
         border: enabled ? "1px solid #a7f3d0" : "1px solid #e2e8f0",
       }}
     >
-      {enabled ? "Ã¢Å“â€œ" : "Ã¢â‚¬â€œ"}
+      {enabled ? "ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“" : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“"}
     </span>
   );
 }
@@ -204,7 +203,7 @@ export default function FeaturesPage() {
           <div className="kicker">Super Admin</div>
           <h1 className="pageTitle">Features</h1>
           <p className="pageSubtitle">
-            ÃƒÅ“bersicht aller Gastario-Module. SpÃƒÂ¤ter kannst du Module pro Mandant einzeln freischalten.
+            ÃƒÆ’Ã…â€œbersicht aller Gastario-Module. SpÃƒÆ’Ã‚Â¤ter kannst du Module pro Mandant einzeln freischalten.
           </p>
         </div>
 
@@ -318,7 +317,7 @@ export default function FeaturesPage() {
       <section className="panel" style={{ marginTop: 18 }}>
         <div className="panelHeader">
           <div>
-            <div className="panelKicker">NÃƒÂ¤chster Ausbauschritt</div>
+            <div className="panelKicker">NÃƒÆ’Ã‚Â¤chster Ausbauschritt</div>
             <h2 className="panelTitle">Einzelfreischaltung pro Mandant</h2>
           </div>
         </div>
@@ -329,8 +328,8 @@ export default function FeaturesPage() {
           lineHeight: 1.55,
           margin: 0
         }}>
-          Als NÃƒÂ¤chstes verbinden wir diese Feature-Matrix mit den echten TenantFeature-Daten.
-          Dann kannst du unabhÃƒÂ¤ngig vom Paket einzelne Module aktivieren oder deaktivieren.
+          Als NÃƒÆ’Ã‚Â¤chstes verbinden wir diese Feature-Matrix mit den echten TenantFeature-Daten.
+          Dann kannst du unabhÃƒÆ’Ã‚Â¤ngig vom Paket einzelne Module aktivieren oder deaktivieren.
         </p>
       </section>
     </SuperAdminLayout>
