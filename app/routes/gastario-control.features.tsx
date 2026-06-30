@@ -2,7 +2,7 @@
 
 const features = [
   ["DASHBOARD", "Dashboard", "Basis"],
-  ["ORDERS", "Aufträge", "Basis"],
+  ["ORDERS", "Auftraege", "Basis"],
   ["CUSTOMERS", "Kunden", "Basis"],
   ["PRODUCTS", "Produkte", "Basis"],
   ["QUOTES", "Angebote", "Basis"],
@@ -31,7 +31,7 @@ export default function FeaturesPage() {
         <div>
           <div className="kicker">Super Admin</div>
           <h1 className="pageTitle">Features</h1>
-          <p className="pageSubtitle">Übersicht aller Module, die später pro Mandant freigeschaltet werden können.</p>
+          <p className="pageSubtitle">Uebersicht aller Module, die spaeter pro Mandant freigeschaltet werden koennen.</p>
         </div>
       </header>
 

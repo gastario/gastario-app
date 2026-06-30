@@ -1,7 +1,7 @@
 ﻿import { Link, NavLink } from "react-router";
 
 const navItems = [
-  { label: "Übersicht", to: "/gastario-control" },
+  { label: "\u00dcbersicht", to: "/gastario-control" },
   { label: "Mandanten", to: "/gastario-control/mandanten" },
   { label: "Pakete", to: "/gastario-control/pakete" },
   { label: "Features", to: "/gastario-control/features" },
@@ -38,6 +38,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
           margin-bottom: 28px;
           padding-bottom: 18px;
           border-bottom: 1px solid rgba(255,255,255,.12);
+          text-decoration: none;
         }
 
         .logo {
@@ -141,6 +142,9 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
           font-weight: 900;
           text-decoration: none;
           cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .btnPrimary {
@@ -301,14 +305,14 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
           {navItems.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.to === "/gastario-control"}>
               <span>{item.label}</span>
-              <span>›</span>
+              <span>{">"}</span>
             </NavLink>
           ))}
         </nav>
 
         <div className="sideCard">
           <strong>Super Admin</strong>
-          <p>Nur für Plattform-Betreiber. Hier verwaltest du Mandanten, Pakete, Limits und Registrierungscodes.</p>
+          <p>Nur fuer Plattform-Betreiber. Hier verwaltest du Mandanten, Pakete, Limits und Registrierungscodes.</p>
         </div>
       </aside>
 
