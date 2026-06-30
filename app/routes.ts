@@ -1,4 +1,4 @@
-import { type RouteConfig, index, route } from "@react-router/dev/routes";
+﻿import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
   index("routes/home.tsx"),
@@ -14,6 +14,7 @@ export default [
   route("produktion", "routes/produktion.tsx"),
   route("packlisten", "routes/packlisten.tsx"),
   route("lieferscheine", "routes/lieferscheine.tsx"),
+  route("fahrerzettel", "routes/fahrerzettel.tsx"),
   route("lieferungen", "routes/lieferungen.tsx"),
   route("einkauf", "routes/einkauf.tsx"),
   route("lager", "routes/lager.tsx"),
@@ -30,3 +31,5 @@ export default [
   route("gastario-control/features", "routes/gastario-control.features.tsx"),
   route("gastario-control/codes", "routes/gastario-control.codes.tsx"),
 ] satisfies RouteConfig;
+
+
