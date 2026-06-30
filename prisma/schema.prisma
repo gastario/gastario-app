@@ -137,6 +137,8 @@ model Tenant {
   orders          Order[]
   incomingEmails  IncomingEmail[]
   productMappings ProductMapping[]
+  deliveryTours   DeliveryTour[]
+  deliveryStops   DeliveryStop[]
   recipeItems     ProductRecipeItem[]
   suppliers       Supplier[]
   inventoryItems  InventoryItem[]
@@ -265,6 +267,8 @@ model Product {
   tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   orderItems      OrderItem[]
   productMappings ProductMapping[]
+  deliveryTours   DeliveryTour[]
+  deliveryStops   DeliveryStop[]
   recipeItems     ProductRecipeItem[]
   suppliers       Supplier[]
   inventoryItems  InventoryItem[]
@@ -389,7 +393,7 @@ model OrderItem {
   productId  String?
   name       String
   quantity   Int      @default(1)
-  unit       String   @default("StÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¼ck")
+  unit       String   @default("StÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¼ck")
   unitCents  Int      @default(0)
   totalCents Int      @default(0)
   notes      String?
@@ -477,4 +481,50 @@ model ProductRecipeItem {
 
   @@index([tenantId])
   @@index([productId])
+}
+
+model DeliveryTour {
+  id           String    @id @default(cuid())
+  tenantId     String
+  name         String
+  driverName   String?
+  driverEmail  String?
+  driverPhone  String?
+  deliveryDate DateTime?
+  status       String    @default("OPEN")
+  notes        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  stops     DeliveryStop[]
+  product   Product?       @relation(fields: [productId], references: [id])
+  productId String?
+
+  @@index([tenantId])
+  @@index([deliveryDate])
+  @@index([status])
+}
+
+model DeliveryStop {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tourId      String
+  orderId     String
+  sortOrder   Int      @default(0)
+  plannedTime String?
+  status      String   @default("OPEN")
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant    Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tour      DeliveryTour @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  product   Product?     @relation(fields: [productId], references: [id])
+  productId String?
+
+  @@unique([tourId, orderId])
+  @@index([tenantId])
+  @@index([tourId])
+  @@index([orderId])
 }

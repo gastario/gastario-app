@@ -1,4 +1,4 @@
-﻿import { Form, useLoaderData } from "react-router";
+﻿import { Form, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 function todayInput() {
@@ -101,6 +101,24 @@ export async function loader({ request }: { request: Request }) {
   const range = url.searchParams.get("range") || "today";
   const selectedDate = url.searchParams.get("date") || todayInput();
 
+  const tours = await prisma.deliveryTour.findMany({
+    where: {
+      tenantId: access.tenantId,
+    },
+    include: {
+      stops: {
+        orderBy: {
+          sortOrder: "asc",
+        },
+      },
+    },
+    orderBy: [
+      { deliveryDate: "desc" },
+      { createdAt: "desc" },
+    ],
+    take: 50,
+  }).catch(() => []);
+
   const orders = await prisma.order.findMany({
     where: {
       tenantId: access.tenantId,
@@ -165,7 +183,141 @@ export async function loader({ request }: { request: Request }) {
     },
     tourMapUrl: routeUrl(filteredOrders.map((order: any) => order.deliveryAddress).filter(Boolean)),
     tourMailBody: tourMailBody(filteredOrders),
+    tours,
   };
+}
+
+export async function action({ request }: { request: Request }) {
+  const { prisma } = await import("../lib/prisma.server");
+  const { requireTenantFeature } = await import("../lib/features.server");
+
+  const access = await requireTenantFeature(request, "DELIVERIES");
+  const formData = await request.formData();
+  const intent = String(formData.get("intent") || "");
+
+  if (intent === "createTour") {
+    const name = String(formData.get("name") || "").trim();
+    const driverName = String(formData.get("driverName") || "").trim();
+    const driverEmail = String(formData.get("driverEmail") || "").trim().toLowerCase();
+    const driverPhone = String(formData.get("driverPhone") || "").trim();
+    const deliveryDateRaw = String(formData.get("deliveryDate") || "").trim();
+
+    if (!name) {
+      return { error: "Tourname fehlt." };
+    }
+
+    const deliveryDate = deliveryDateRaw ? new Date(deliveryDateRaw + "T00:00:00") : null;
+
+    await prisma.deliveryTour.create({
+      data: {
+        tenantId: access.tenantId,
+        name,
+        driverName: driverName || null,
+        driverEmail: driverEmail || null,
+        driverPhone: driverPhone || null,
+        deliveryDate,
+        status: "OPEN",
+      },
+    });
+
+    return { success: "Tour wurde angelegt." };
+  }
+
+  if (intent === "addStop") {
+    const tourId = String(formData.get("tourId") || "");
+    const orderId = String(formData.get("orderId") || "");
+    const sortOrder = Number(formData.get("sortOrder") || 0);
+    const plannedTime = String(formData.get("plannedTime") || "").trim();
+
+    if (!tourId || !orderId) {
+      return { error: "Tour oder Auftrag fehlt." };
+    }
+
+    const tour = await prisma.deliveryTour.findFirst({
+      where: {
+        id: tourId,
+        tenantId: access.tenantId,
+      },
+    });
+
+    if (!tour) {
+      return { error: "Tour nicht gefunden." };
+    }
+
+    const order = await prisma.order.findFirst({
+      where: {
+        id: orderId,
+        tenantId: access.tenantId,
+      },
+    });
+
+    if (!order) {
+      return { error: "Auftrag nicht gefunden." };
+    }
+
+    await prisma.deliveryStop.upsert({
+      where: {
+        tourId_orderId: {
+          tourId,
+          orderId,
+        },
+      },
+      update: {
+        sortOrder,
+        plannedTime: plannedTime || order.deliveryTime || null,
+      },
+      create: {
+        tenantId: access.tenantId,
+        tourId,
+        orderId,
+        sortOrder,
+        plannedTime: plannedTime || order.deliveryTime || null,
+        status: "OPEN",
+      },
+    });
+
+    return { success: "Stopp wurde zur Tour hinzugefuegt." };
+  }
+
+  if (intent === "updateStopStatus") {
+    const stopId = String(formData.get("stopId") || "");
+    const status = String(formData.get("status") || "OPEN");
+
+    if (!stopId) {
+      return { error: "Stopp fehlt." };
+    }
+
+    await prisma.deliveryStop.updateMany({
+      where: {
+        id: stopId,
+        tenantId: access.tenantId,
+      },
+      data: {
+        status,
+      },
+    });
+
+    return { success: "Stopp-Status wurde gespeichert." };
+  }
+
+  if (intent === "deleteTour") {
+    const tourId = String(formData.get("tourId") || "");
+
+    if (!tourId) {
+      return { error: "Tour fehlt." };
+    }
+
+    await prisma.deliveryTour.deleteMany({
+      where: {
+        id: tourId,
+        tenantId: access.tenantId,
+      },
+    });
+
+    return { success: "Tour wurde geloescht." };
+  }
+
+  return { error: "Unbekannte Aktion." };
 }
 
 const pillButton = {
@@ -192,6 +344,7 @@ const primaryPill = {
 
 export default function DeliveriesPage() {
   const data = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
 
   return (
     <AppLayout>
@@ -222,6 +375,34 @@ export default function DeliveriesPage() {
           </a>
         </div>
       </header>
+
+      {actionData?.success ? (
+        <div style={{
+          background: "#ecfdf5",
+          border: "1px solid #a7f3d0",
+          color: "#065f46",
+          padding: 16,
+          borderRadius: 16,
+          fontWeight: 900,
+          marginBottom: 16
+        }}>
+          {actionData.success}
+        </div>
+      ) : null}
+
+      {actionData?.error ? (
+        <div style={{
+          background: "#fef2f2",
+          border: "1px solid #fecaca",
+          color: "#991b1b",
+          padding: 16,
+          borderRadius: 16,
+          fontWeight: 900,
+          marginBottom: 16
+        }}>
+          {actionData.error}
+        </div>
+      ) : null}
 
       <section className="orderSummaryGrid">
         <article className="metricCard">
@@ -305,6 +486,96 @@ export default function DeliveriesPage() {
             Datum anzeigen
           </button>
         </Form>
+      </section>
+
+      <section className="panel">
+        <div className="panelHeader">
+          <div>
+            <p className="eyebrow">Tourenplanung</p>
+            <h2>Neue Fahrertour anlegen</h2>
+          </div>
+        </div>
+
+        <Form method="post" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 170px auto", gap: 12, alignItems: "end" }}>
+          <input type="hidden" name="intent" value="createTour" />
+
+          <label>
+            Tourname
+            <input name="name" placeholder="Tour Vormittag" style={inputStyle} required />
+          </label>
+
+          <label>
+            Fahrer
+            <input name="driverName" placeholder="Mehmet" style={inputStyle} />
+          </label>
+
+          <label>
+            Fahrer E-Mail
+            <input name="driverEmail" type="email" placeholder="fahrer@..." style={inputStyle} />
+          </label>
+
+          <label>
+            Fahrer Telefon
+            <input name="driverPhone" placeholder="0176..." style={inputStyle} />
+          </label>
+
+          <label>
+            Datum
+            <input name="deliveryDate" type="date" defaultValue={data.selectedDate} style={inputStyle} />
+          </label>
+
+          <button className="primaryButton" type="submit">
+            Tour anlegen
+          </button>
+        </Form>
+      </section>
+
+      <section className="panel">
+        <div className="panelHeader">
+          <div>
+            <p className="eyebrow">Gespeicherte Touren</p>
+            <h2>Fahrertouren</h2>
+          </div>
+        </div>
+
+        {data.tours.length === 0 ? (
+          <div className="noteBox">
+            <strong>Noch keine Tour angelegt.</strong>
+            <p>Lege oben eine Tour an und fuege dann Lieferungen als Stopps hinzu.</p>
+          </div>
+        ) : (
+          <div className="compactList">
+            {data.tours.map((tour: any) => (
+              <div className="compactItem" key={tour.id}>
+                <div>
+                  <strong>{tour.name}</strong>
+                  <span>
+                    Fahrer: {tour.driverName || "-"} · Stopps: {tour.stops.length}
+                  </span>
+                </div>
+
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {tour.driverEmail ? (
+                    <a
+                      className="ghostButton"
+                      href={`mailto:${tour.driverEmail}?subject=${encodeURIComponent("Gastario Tour " + tour.name)}&body=${encodeURIComponent("Hallo, deine Tour ist in Gastario vorbereitet. Bitte im System die Stopps prüfen.")}`}
+                    >
+                      Mail
+                    </a>
+                  ) : null}
+
+                  <Form method="post">
+                    <input type="hidden" name="intent" value="deleteTour" />
+                    <input type="hidden" name="tourId" value={tour.id} />
+                    <button className="ghostButton" type="submit" style={{ color: "#b91c1c" }}>
+                      Loeschen
+                    </button>
+                  </Form>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="mainGrid">
@@ -529,3 +800,11 @@ export default function DeliveriesPage() {
     </AppLayout>
   );
 }
+
+const inputStyle = {
+  border: "1px solid #cbd5e1",
+  borderRadius: 12,
+  padding: "11px 12px",
+  fontWeight: 750,
+  width: "100%",
+};
