@@ -1,4 +1,4 @@
-﻿import { Form, useLoaderData } from "react-router";
+﻿import { Form, Link, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 function todayInput() {
@@ -10,9 +10,9 @@ function normalizeDate(value: string | Date | null | undefined) {
   return new Date(value).toISOString().slice(0, 10);
 }
 
-function formatDate(value: string | Date | null | undefined) {
-  if (!value) return "-";
-  return new Date(value).toLocaleDateString("de-DE");
+function formatQty(value: number) {
+  if (Number.isInteger(value)) return String(value);
+  return value.toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
 }
 
 export function meta() {
@@ -62,35 +62,109 @@ export async function loader({ request }: { request: Request }) {
     availableDates.unshift(selectedDate);
   }
 
-  const grouped = new Map<string, any>();
+  const products = await prisma.product.findMany({
+    where: {
+      tenantId: access.tenantId,
+      active: true,
+    },
+    include: {
+      recipeItems: true,
+    },
+  }).catch(() => []);
 
-  for (const order of filteredOrders) {
-    for (const item of order.items) {
-      const unit = item.unit || "Stueck";
-      const key = `${item.name}__${unit}`;
+  const productMap = new Map<string, any>();
 
-      if (!grouped.has(key)) {
-        grouped.set(key, {
-          name: item.name,
-          unit,
-          quantity: 0,
-          orders: [],
+  for (const product of products as any[]) {
+    productMap.set(product.name.trim().toLowerCase(), product);
+  }
+
+  const demandMap = new Map<string, any>();
+  const missingRecipes = new Map<string, any>();
+
+  for (const order of filteredOrders as any[]) {
+    for (const orderItem of order.items) {
+      const orderItemName = String(orderItem.name || "").trim();
+      const product = productMap.get(orderItemName.toLowerCase());
+      const orderQty = Number(orderItem.quantity || 0);
+
+      if (!product || !product.recipeItems || product.recipeItems.length === 0) {
+        const key = orderItemName || "Unbekannte Position";
+
+        if (!missingRecipes.has(key)) {
+          missingRecipes.set(key, {
+            name: key,
+            quantity: 0,
+            unit: orderItem.unit || "Stueck",
+            orders: [],
+          });
+        }
+
+        const row = missingRecipes.get(key);
+        row.quantity += orderQty;
+        row.orders.push({
+          id: order.id,
+          orderNumber: order.orderNumber,
+          customerName: order.customerName,
         });
+
+        continue;
       }
 
-      const row = grouped.get(key);
-      row.quantity += Number(item.quantity || 0);
-      row.orders.push({
-        id: order.id,
-        orderNumber: order.orderNumber,
-        customerName: order.customerName,
-      });
+      for (const recipeItem of product.recipeItems) {
+        const ingredientName = String(recipeItem.ingredientName || "").trim();
+        const unit = recipeItem.unit || "g";
+        const supplierName = recipeItem.supplierName || "Ohne Lieferant";
+        const requiredQty = Number(recipeItem.quantityPerUnit || 0) * orderQty;
+
+        const key = `${supplierName}__${ingredientName}__${unit}`;
+
+        if (!demandMap.has(key)) {
+          demandMap.set(key, {
+            supplierName,
+            ingredientName,
+            unit,
+            quantity: 0,
+            sources: [],
+          });
+        }
+
+        const row = demandMap.get(key);
+        row.quantity += requiredQty;
+        row.sources.push({
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          customerName: order.customerName,
+          productName: product.name,
+          productQuantity: orderQty,
+        });
+      }
     }
   }
 
-  const demandItems = Array.from(grouped.values()).sort((a, b) =>
+  const demandItems = Array.from(demandMap.values()).sort((a, b) => {
+    const supplierCompare = a.supplierName.localeCompare(b.supplierName, "de");
+    if (supplierCompare !== 0) return supplierCompare;
+    return a.ingredientName.localeCompare(b.ingredientName, "de");
+  });
+
+  const missingRecipeItems = Array.from(missingRecipes.values()).sort((a, b) =>
     a.name.localeCompare(b.name, "de")
   );
+
+  const supplierGroups = demandItems.reduce((groups: any[], item: any) => {
+    let group = groups.find((entry) => entry.supplierName === item.supplierName);
+
+    if (!group) {
+      group = {
+        supplierName: item.supplierName,
+        items: [],
+      };
+      groups.push(group);
+    }
+
+    group.items.push(item);
+    return groups;
+  }, []);
 
   return {
     tenant: access.tenant,
@@ -98,6 +172,8 @@ export async function loader({ request }: { request: Request }) {
     availableDates,
     orders: filteredOrders,
     demandItems,
+    supplierGroups,
+    missingRecipeItems,
   };
 }
 
@@ -111,7 +187,7 @@ export default function PurchasingPage() {
           <p className="eyebrow">Einkauf & Lager</p>
           <h1>Einkauf</h1>
           <span className="pageSubline">
-            Einkaufsvorschlaege aus uebernommenen Auftraegen fuer {data.tenant.name}.
+            Einkaufsvorschlaege aus bestaetigten Auftraegen und Produkt-Rezepturen fuer {data.tenant.name}.
           </span>
         </div>
 
@@ -153,53 +229,87 @@ export default function PurchasingPage() {
           <div>
             <p>Auftraege</p>
             <strong>{data.orders.length}</strong>
-            <span>fuer dieses Datum</span>
+            <span>bestaetigt fuer dieses Datum</span>
           </div>
-          <small data-trend="aktiv">bestaetigt</small>
+          <small data-trend="aktiv">echt</small>
         </article>
 
         <article className="metricCard">
           <div>
             <p>Einkaufspositionen</p>
             <strong>{data.demandItems.length}</strong>
-            <span>aus Auftragspositionen</span>
+            <span>aus Rezepturen berechnet</span>
           </div>
-          <small data-trend="pruefen">MVP</small>
+          <small data-trend="bereit">Rezeptur</small>
         </article>
 
         <article className="metricCard">
           <div>
-            <p>Datum</p>
-            <strong style={{ fontSize: 26 }}>
-              {data.selectedDate === "ohne-datum"
-                ? "Ohne Datum"
-                : new Date(data.selectedDate + "T00:00:00").toLocaleDateString("de-DE")}
-            </strong>
-            <span>ausgewaehlter Liefertag</span>
+            <p>Lieferanten</p>
+            <strong>{data.supplierGroups.length}</strong>
+            <span>automatisch gruppiert</span>
           </div>
-          <small data-trend="info">Filter</small>
+          <small data-trend="bereit">Gruppe</small>
+        </article>
+
+        <article className="metricCard">
+          <div>
+            <p>Ohne Rezeptur</p>
+            <strong>{data.missingRecipeItems.length}</strong>
+            <span>Produkte bitte pflegen</span>
+          </div>
+          <small data-trend="kritisch">Pruefen</small>
         </article>
       </section>
+
+      {data.missingRecipeItems.length > 0 ? (
+        <section className="panel">
+          <div className="panelHeader">
+            <div>
+              <p className="eyebrow">Pruefung</p>
+              <h2>Positionen ohne Rezeptur</h2>
+            </div>
+
+            <Link className="ghostButton" to="/produkte">
+              Rezepturen pflegen
+            </Link>
+          </div>
+
+          <div className="compactList">
+            {data.missingRecipeItems.map((item: any) => (
+              <div className="compactItem" key={item.name}>
+                <div>
+                  <strong>{item.name}</strong>
+                  <span>
+                    {formatQty(item.quantity)} {item.unit} in Auftraegen vorhanden, aber kein passendes Produkt mit Rezeptur gefunden.
+                  </span>
+                </div>
+                <small>Fehlt</small>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="mainGrid">
         <article className="panel schedulePanel">
           <div className="panelHeader">
             <div>
               <p className="eyebrow">Bedarf</p>
-              <h2>Automatische Einkaufsvorschlaege</h2>
+              <h2>Automatische Einkaufsliste</h2>
             </div>
-            <button className="ghostButton" type="button" onClick={() => window.print()}>
-              Druckansicht
-            </button>
+            <Link className="ghostButton" to="/produkte">
+              Produkte / Rezepturen
+            </Link>
           </div>
 
           <div className="purchaseDemandTable">
             <div className="purchaseDemandHead">
-              <span>Artikel / Produkt</span>
-              <span>Benoetigt</span>
+              <span>Zutat / Material</span>
+              <span>Menge</span>
               <span>Einheit</span>
+              <span>Lieferant</span>
               <span>Quelle</span>
-              <span>Auftraege</span>
             </div>
 
             {data.demandItems.length === 0 ? (
@@ -212,17 +322,20 @@ export default function PurchasingPage() {
               </div>
             ) : (
               data.demandItems.map((item: any) => (
-                <div className="purchaseDemandRow" key={`${item.name}-${item.unit}`}>
-                  <strong>{item.name}</strong>
-                  <span>{item.quantity}</span>
+                <div className="purchaseDemandRow" key={`${item.supplierName}-${item.ingredientName}-${item.unit}`}>
+                  <strong>{item.ingredientName}</strong>
+                  <span>{formatQty(item.quantity)}</span>
                   <span>{item.unit}</span>
-                  <em>Auftrag</em>
+                  <em>{item.supplierName}</em>
                   <span>
-                    {item.orders.map((order: any) => (
-                      <span key={order.id} style={{ display: "block" }}>
-                        {order.orderNumber} · {order.customerName}
+                    {item.sources.slice(0, 3).map((source: any) => (
+                      <span key={`${source.orderId}-${source.productName}`} style={{ display: "block" }}>
+                        {source.productQuantity} x {source.productName} · {source.orderNumber}
                       </span>
                     ))}
+                    {item.sources.length > 3 ? (
+                      <span style={{ display: "block" }}>+ {item.sources.length - 3} weitere</span>
+                    ) : null}
                   </span>
                 </div>
               ))
@@ -234,33 +347,47 @@ export default function PurchasingPage() {
           <article className="panel">
             <div className="panelHeader compact">
               <div>
-                <p className="eyebrow">MVP</p>
-                <h2>Aktueller Stand</h2>
+                <p className="eyebrow">Gruppiert</p>
+                <h2>Nach Lieferant</h2>
               </div>
             </div>
 
-            <div className="noteBox">
-              <strong>Einfache Einkaufsliste</strong>
-              <p>
-                Aktuell werden Auftragspositionen zusammengefasst. Im naechsten Schritt
-                verknuepfen wir Produkte mit Rezepten, Zutaten, Einheiten und Lieferanten.
-              </p>
+            <div className="compactList">
+              {data.supplierGroups.length === 0 ? (
+                <div className="compactItem">
+                  <div>
+                    <strong>Keine Lieferanten</strong>
+                    <span>Noch keine Rezeptur-Lieferanten gefunden.</span>
+                  </div>
+                  <small>-</small>
+                </div>
+              ) : (
+                data.supplierGroups.map((group: any) => (
+                  <div className="compactItem" key={group.supplierName}>
+                    <div>
+                      <strong>{group.supplierName}</strong>
+                      <span>{group.items.length} Positionen</span>
+                    </div>
+                    <small>Einkauf</small>
+                  </div>
+                ))
+              )}
             </div>
           </article>
 
           <article className="panel">
             <div className="panelHeader compact">
               <div>
-                <p className="eyebrow">Naechster Schritt</p>
-                <h2>Rezepturen</h2>
+                <p className="eyebrow">Ablauf</p>
+                <h2>So rechnet Gastario</h2>
               </div>
             </div>
 
             <div className="noteBox">
-              <strong>Produkt → Zutaten</strong>
+              <strong>Auftragsmenge x Rezepturmenge</strong>
               <p>
-                Sobald Rezepte gepflegt sind, berechnet Gastario automatisch den echten
-                Zutatenbedarf und gruppiert die Einkaufsliste nach Lieferanten.
+                Beispiel: 80 Chicken Bowls x 100 g Huhn = 8.000 g Huhn.
+                Die Rezeptur pflegst du direkt beim Produkt.
               </p>
             </div>
           </article>
