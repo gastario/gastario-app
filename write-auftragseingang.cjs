@@ -1,4 +1,9 @@
+﻿const fs = require("fs");
+const path = require("path");
 
+const file = path.join(process.cwd(), "app", "routes", "auftragseingang.tsx");
+
+const content = String.raw`
 import { Form, useActionData, useLoaderData } from "react-router";
 
 const SOURCES = [
@@ -629,3 +634,7 @@ const smallButtonStyle = {
   fontWeight: 900,
   cursor: "pointer",
 };
+`;
+
+fs.writeFileSync(file, content, "utf8");
+console.log("Auftragseingang geschrieben:", file);
