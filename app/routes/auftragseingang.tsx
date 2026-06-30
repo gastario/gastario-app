@@ -43,7 +43,13 @@ export async function loader({ request }: { request: Request }) {
   const userId = await getUserId(request);
 
   if (!userId) {
-    throw new Response("Nicht angemeldet", { status: 401 });
+    return {
+      tenant: null,
+      orders: [],
+      activeStatus: "",
+      counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
+      setupError: "Nicht angemeldet. Bitte neu einloggen.",
+    };
   }
 
   const tenantUser = await prisma.tenantUser.findFirst({
@@ -56,12 +62,7 @@ export async function loader({ request }: { request: Request }) {
       tenant: null,
       orders: [],
       activeStatus: "",
-      counts: {
-        all: 0,
-        review: 0,
-        confirmed: 0,
-        rejected: 0,
-      },
+      counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
       setupError: "Kein Mandant gefunden. Bitte diesen Benutzer im Super Admin einem Mandanten zuordnen.",
     };
   }
@@ -69,40 +70,52 @@ export async function loader({ request }: { request: Request }) {
   const url = new URL(request.url);
   const status = url.searchParams.get("status") || "";
 
-  const orders = await prisma.order.findMany({
-    where: {
-      tenantId: tenantUser.tenantId,
-      ...(status ? { status: status as any } : {}),
-    },
-    include: {
-      items: true,
-      customer: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 100,
-  });
+  try {
+    const orders = await prisma.order.findMany({
+      where: {
+        tenantId: tenantUser.tenantId,
+        ...(status ? { status: status as any } : {}),
+      },
+      include: {
+        items: true,
+        customer: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 100,
+    });
 
-  const counts = await Promise.all([
-    prisma.order.count({ where: { tenantId: tenantUser.tenantId } }),
-    prisma.order.count({ where: { tenantId: tenantUser.tenantId, status: "AUTO_CREATED" as any } }),
-    prisma.order.count({ where: { tenantId: tenantUser.tenantId, status: "CONFIRMED" as any } }),
-    prisma.order.count({ where: { tenantId: tenantUser.tenantId, status: "REJECTED" as any } }),
-  ]);
+    const counts = await Promise.all([
+      prisma.order.count({ where: { tenantId: tenantUser.tenantId } }),
+      prisma.order.count({ where: { tenantId: tenantUser.tenantId, status: "AUTO_CREATED" as any } }),
+      prisma.order.count({ where: { tenantId: tenantUser.tenantId, status: "CONFIRMED" as any } }),
+      prisma.order.count({ where: { tenantId: tenantUser.tenantId, status: "REJECTED" as any } }),
+    ]);
 
-  return {
-    tenant: tenantUser.tenant,
-    orders,
-    activeStatus: status,
-    counts: {
-      all: counts[0],
-      review: counts[1],
-      confirmed: counts[2],
-      rejected: counts[3],
-    },
-    setupError: null,
-  };
+    return {
+      tenant: tenantUser.tenant,
+      orders,
+      activeStatus: status,
+      counts: {
+        all: counts[0],
+        review: counts[1],
+        confirmed: counts[2],
+        rejected: counts[3],
+      },
+      setupError: null,
+    };
+  } catch (error: any) {
+    console.error("Auftragseingang loader failed:", error);
+
+    return {
+      tenant: tenantUser.tenant,
+      orders: [],
+      activeStatus: status,
+      counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
+      setupError: "Auftragseingang konnte die Auftragsdaten nicht laden. Wahrscheinlich ist die Railway-Datenbank noch nicht synchron oder es fehlen Tabellen/Spalten.",
+    };
+  }
 }
 
 export async function action({ request }: { request: Request }) {
@@ -415,6 +428,20 @@ export default function AuftragseingangPage() {
           {data.tenant?.name}
         </div>
       </header>
+
+      {data.setupError ? (
+        <div style={{
+          background: "#fff7ed",
+          border: "1px solid #fed7aa",
+          color: "#9a3412",
+          padding: 16,
+          borderRadius: 16,
+          fontWeight: 900,
+          marginBottom: 16
+        }}>
+          {data.setupError}
+        </div>
+      ) : null}
 
       {actionData?.success ? (
         <div style={{
@@ -813,3 +840,4 @@ export function ErrorBoundary({ error }: { error: any }) {
     </div>
   );
 }
+

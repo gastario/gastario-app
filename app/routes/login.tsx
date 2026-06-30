@@ -31,7 +31,7 @@ export async function action({ request }: { request: Request }) {
     return createUserSession(user.id, "/gastario-control");
   }
 
-  return createUserSession(user.id, "/auftragseingang");
+  return createUserSession(user.id, "/");
 }
 
 export default function Login() {
@@ -174,5 +174,6 @@ export default function Login() {
     </main>
   );
 }
+
 
 
