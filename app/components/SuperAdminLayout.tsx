@@ -504,7 +504,24 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             grid-template-columns: 1fr;
           }
         }
-      `}</style>
+      `}  .superAdminLogout {
+    display: block;
+    margin: 18px 16px 0;
+    padding: 13px 16px;
+    border-radius: 16px;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.22);
+    color: #fecaca;
+    font-weight: 950;
+    text-decoration: none;
+    text-align: center;
+  }
+
+  .superAdminLogout:hover {
+    background: rgba(239, 68, 68, 0.20);
+    color: white;
+  }
+</style>
 
       <aside className="superAdminSidebar">
         <Link to="/gastario-control" className="superAdminBrand">
@@ -551,3 +568,4 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
     </div>
   );
 }
+
