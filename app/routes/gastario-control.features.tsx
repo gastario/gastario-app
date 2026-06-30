@@ -1,4 +1,5 @@
-﻿import SuperAdminLayout from "../components/SuperAdminLayout";
+
+import SuperAdminLayout from "../components/SuperAdminLayout";
 
 const features = [
   ["DASHBOARD", "Dashboard", "Basis"],
@@ -6,14 +7,13 @@ const features = [
   ["CUSTOMERS", "Kunden", "Basis"],
   ["PRODUCTS", "Produkte", "Basis"],
   ["QUOTES", "Angebote", "Basis"],
-  ["INCOMING_ORDERS", "Auftragseingang", "Automatisierung"],
-  ["PDF_EXTRACTION", "PDF-Erkennung", "Automatisierung"],
-  ["EMAIL_AUTOMATION", "E-Mail-Automatik", "Automatisierung"],
-  ["PRODUCT_MAPPING", "Produkt-Mapping", "Automatisierung"],
   ["PRODUCTION", "Produktion", "Betrieb"],
   ["PACKING_LISTS", "Packlisten", "Betrieb"],
   ["DELIVERY_NOTES", "Lieferscheine", "Betrieb"],
   ["DELIVERIES", "Lieferungen", "Betrieb"],
+  ["INCOMING_ORDERS", "Auftragseingang", "Automatisierung"],
+  ["PDF_EXTRACTION", "PDF-Erkennung", "Automatisierung"],
+  ["EMAIL_AUTOMATION", "E-Mail-Automatik", "Automatisierung"],
   ["PURCHASING", "Einkauf", "Warenwirtschaft"],
   ["INVENTORY", "Lager", "Warenwirtschaft"],
   ["SUPPLIERS", "Lieferanten", "Warenwirtschaft"],
@@ -21,6 +21,7 @@ const features = [
   ["REPORTS", "Auswertungen", "Auswertung"],
   ["MULTI_USER", "Mehrere Benutzer", "Premium"],
   ["DRIVER_VIEW", "Fahreransicht", "Premium"],
+  ["PRODUCT_MAPPING", "Produkt-Mapping", "Premium"],
   ["INTEGRATIONS", "Integrationen", "Premium"],
 ];
 
@@ -31,7 +32,9 @@ export default function FeaturesPage() {
         <div>
           <div className="kicker">Super Admin</div>
           <h1 className="pageTitle">Features</h1>
-          <p className="pageSubtitle">Übersicht aller Module, die später pro Mandant freigeschaltet werden können.</p>
+          <p className="pageSubtitle">
+            Übersicht aller Module, die pro Mandant freigeschaltet werden können.
+          </p>
         </div>
       </header>
 
