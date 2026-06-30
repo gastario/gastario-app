@@ -355,3 +355,98 @@ export default function PacklistenPage() {
     </div>
   );
 }
+
+export function ErrorBoundary({ error }: { error: any }) {
+  const message =
+    error?.data ||
+    error?.message ||
+    "Unbekannter Fehler.";
+
+  const status = error?.status || 500;
+
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: "#edf2f6",
+      padding: 32,
+      fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+      color: "#07111f"
+    }}>
+      <section style={{
+        maxWidth: 760,
+        background: "white",
+        border: "1px solid #dbe5ee",
+        borderRadius: 28,
+        padding: 28,
+        boxShadow: "0 24px 70px rgba(15, 23, 42, 0.10)"
+      }}>
+        <div style={{
+          color: "#b91c1c",
+          textTransform: "uppercase",
+          letterSpacing: ".11em",
+          fontSize: 11,
+          fontWeight: 950,
+          marginBottom: 8
+        }}>
+          Fehler {status}
+        </div>
+
+        <h1 style={{
+          margin: 0,
+          fontSize: 38,
+          lineHeight: 1,
+          letterSpacing: "-0.055em"
+        }}>
+          Seite konnte nicht geladen werden
+        </h1>
+
+        <p style={{
+          margin: "14px 0 0",
+          color: "#475569",
+          fontWeight: 750,
+          lineHeight: 1.55
+        }}>
+          {String(message)}
+        </p>
+
+        <div style={{ display: "flex", gap: 10, marginTop: 22, flexWrap: "wrap" }}>
+          <a href="/" style={{
+            border: "none",
+            background: "linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)",
+            color: "white",
+            borderRadius: 999,
+            padding: "12px 16px",
+            fontWeight: 950,
+            textDecoration: "none"
+          }}>
+            Zum Dashboard
+          </a>
+
+          <a href="/auftragseingang" style={{
+            border: "1px solid #dbe5ee",
+            background: "white",
+            color: "#07111f",
+            borderRadius: 999,
+            padding: "12px 16px",
+            fontWeight: 950,
+            textDecoration: "none"
+          }}>
+            Auftragseingang
+          </a>
+
+          <a href="/logout" style={{
+            border: "1px solid #dbe5ee",
+            background: "white",
+            color: "#07111f",
+            borderRadius: 999,
+            padding: "12px 16px",
+            fontWeight: 950,
+            textDecoration: "none"
+          }}>
+            Ausloggen
+          </a>
+        </div>
+      </section>
+    </div>
+  );
+}
