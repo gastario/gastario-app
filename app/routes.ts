@@ -30,6 +30,8 @@ export default [
   route("gastario-control/pakete", "routes/gastario-control.pakete.tsx"),
   route("gastario-control/features", "routes/gastario-control.features.tsx"),
   route("gastario-control/codes", "routes/gastario-control.codes.tsx"),
+  route("gastario-control/testzugang/:tenantId", "routes/gastario-control.testzugang.$tenantId.tsx"),
 ] satisfies RouteConfig;
+
 
 
