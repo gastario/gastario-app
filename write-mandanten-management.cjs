@@ -1,4 +1,9 @@
+﻿const fs = require("fs");
+const path = require("path");
 
+const file = path.join(process.cwd(), "app", "routes", "gastario-control.mandanten.tsx");
+
+const content = String.raw`
 import { Form, Link, useActionData, useLoaderData } from "react-router";
 import SuperAdminLayout from "../components/SuperAdminLayout";
 
@@ -502,3 +507,7 @@ export default function MandantenPage() {
     </SuperAdminLayout>
   );
 }
+`;
+
+fs.writeFileSync(file, content, "utf8");
+console.log("Mandantenverwaltung geschrieben:", file);

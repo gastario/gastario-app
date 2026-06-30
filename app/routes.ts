@@ -25,5 +25,8 @@ export default [
 
   route("gastario-control", "routes/gastario-control.tsx"),
   route("gastario-control/mandanten", "routes/gastario-control.mandanten.tsx"),
+  route("gastario-control/mandanten/:tenantId", "routes/gastario-control.mandanten.$tenantId.tsx"),
   route("gastario-control/pakete", "routes/gastario-control.pakete.tsx"),
+  route("gastario-control/features", "routes/gastario-control.features.tsx"),
+  route("gastario-control/codes", "routes/gastario-control.codes.tsx"),
 ] satisfies RouteConfig;
