@@ -1,4 +1,5 @@
-﻿import { createCookieSessionStorage, redirect } from "react-router";
+import { createCookieSessionStorage, redirect } from "react-router";
+import { prisma } from "./prisma.server";
 
 const sessionSecret = process.env.SESSION_SECRET || "gastario-dev-secret-change-me";
 
@@ -54,4 +55,28 @@ export async function logout(request: Request) {
       "Set-Cookie": await storage.destroySession(session),
     },
   });
+}
+
+export async function requireSuperAdmin(request: Request) {
+  const userId = await getUserId(request);
+
+  if (!userId) {
+    throw redirect("/login");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      platformRole: true,
+    },
+  });
+
+  if (!user || user.platformRole !== "SUPER_ADMIN") {
+    throw redirect("/login");
+  }
+
+  return user;
 }

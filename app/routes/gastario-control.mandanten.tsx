@@ -1,10 +1,11 @@
+import { requireSuperAdmin } from "../lib/session.server";
 import { Form, useActionData, useLoaderData } from "react-router";
 import SuperAdminLayout from "../components/SuperAdminLayout";
 import { prisma } from "../lib/prisma.server";
 
 const FEATURES = [
   { code: "DASHBOARD", label: "Dashboard", group: "Basis" },
-  { code: "ORDERS", label: "Aufträge", group: "Basis" },
+  { code: "ORDERS", label: "AuftrÃƒÂ¤ge", group: "Basis" },
   { code: "CUSTOMERS", label: "Kunden", group: "Basis" },
   { code: "PRODUCTS", label: "Produkte", group: "Basis" },
   { code: "QUOTES", label: "Angebote", group: "Basis" },
@@ -26,7 +27,9 @@ const FEATURES = [
   { code: "INTEGRATIONS", label: "Integrationen", group: "Premium" },
 ];
 
-export async function loader() {
+export async function loader({ request }: { request: Request }) {
+  await requireSuperAdmin(request);
+  await requireSuperAdmin(request);
   const tenants = await prisma.tenant.findMany({
     include: {
       brands: {
@@ -56,6 +59,7 @@ export async function loader() {
 }
 
 export async function action({ request }: { request: Request }) {
+  await requireSuperAdmin(request);
   const formData = await request.formData();
 
   const intent = String(formData.get("intent") || "");
@@ -188,7 +192,7 @@ function statusLabel(status: string, lockedAt?: string | Date | null) {
   if (status === "TRIAL") return "Testphase";
   if (status === "ACTIVE") return "Aktiv";
   if (status === "PAST_DUE") return "Zahlung offen";
-  if (status === "CANCELED") return "Gekündigt";
+  if (status === "CANCELED") return "GekÃƒÂ¼ndigt";
   return status;
 }
 
@@ -295,10 +299,10 @@ export default function MandantenPage() {
                       flexWrap: "wrap"
                     }}>
                       <span>Paket: {planLabel(tenant.planCode)}</span>
-                      <span>•</span>
+                      <span>Ã¢â‚¬Â¢</span>
                       <span>Status: {statusLabel(tenant.subscriptionStatus, tenant.lockedAt)}</span>
-                      <span>•</span>
-                      <span>Aufträge: {tenant.orders.length}</span>
+                      <span>Ã¢â‚¬Â¢</span>
+                      <span>AuftrÃƒÂ¤ge: {tenant.orders.length}</span>
                     </div>
                   </div>
 
@@ -411,7 +415,7 @@ export default function MandantenPage() {
                                   display: "block",
                                   fontSize: 13
                                 }}>
-                                  {enabled ? "✓ " : "+ "}
+                                  {enabled ? "Ã¢Å“â€œ " : "+ "}
                                   {feature.label}
                                 </span>
                                 <span style={{
@@ -469,7 +473,7 @@ export default function MandantenPage() {
                           <option value="TRIAL">Testphase</option>
                           <option value="ACTIVE">Aktiv</option>
                           <option value="PAST_DUE">Zahlung offen</option>
-                          <option value="CANCELED">Gekündigt</option>
+                          <option value="CANCELED">GekÃƒÂ¼ndigt</option>
                         </select>
                       </label>
 
@@ -507,7 +511,7 @@ export default function MandantenPage() {
                       </div>
 
                       <button className="btn btnPrimary" type="submit">
-                        Änderungen speichern
+                        Ãƒâ€žnderungen speichern
                       </button>
                     </Form>
 
