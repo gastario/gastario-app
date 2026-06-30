@@ -27,12 +27,7 @@ export async function action({ request }: { request: Request }) {
     return { error: "E-Mail oder Passwort ist falsch." };
   }
 
-  if (user.email === "mutluer.edis@gmail.com" || user.platformRole === "SUPER_ADMIN") {
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { platformRole: "SUPER_ADMIN" },
-    });
-
+  if (user.platformRole === "SUPER_ADMIN") {
     return createUserSession(user.id, "/gastario-control");
   }
 
@@ -179,4 +174,5 @@ export default function Login() {
     </main>
   );
 }
+
 
