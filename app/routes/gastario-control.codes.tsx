@@ -10,6 +10,22 @@ function generateInviteCode() {
   return `GASTARIO-${part()}-${part()}-${part()}`;
 }
 
+function parseDate(value: FormDataEntryValue | null) {
+  const raw = String(value || "").trim();
+
+  if (!raw) {
+    return null;
+  }
+
+  const date = new Date(`${raw}T23:59:59`);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date;
+}
+
 export async function loader() {
   const { prisma } = await import("../lib/prisma.server");
 
@@ -17,8 +33,12 @@ export async function loader() {
     select: {
       id: true,
       code: true,
+      note: true,
+      email: true,
       usedAt: true,
+      usedBy: true,
       createdAt: true,
+      expiresAt: true,
     },
     orderBy: {
       createdAt: "desc",
@@ -30,8 +50,12 @@ export async function loader() {
     codes: codes.map((code) => ({
       id: code.id,
       code: code.code,
+      note: code.note,
+      email: code.email,
       usedAt: code.usedAt ? code.usedAt.toISOString() : null,
+      usedBy: code.usedBy,
       createdAt: code.createdAt.toISOString(),
+      expiresAt: code.expiresAt ? code.expiresAt.toISOString() : null,
     })),
   };
 }
@@ -43,6 +67,16 @@ export async function action({ request }: { request: Request }) {
   const intent = String(formData.get("intent") || "");
 
   if (intent === "create") {
+    const email = String(formData.get("email") || "").trim().toLowerCase();
+    const note = String(formData.get("note") || "").trim();
+    const expiresAt = parseDate(formData.get("expiresAt"));
+
+    if (email && !email.includes("@")) {
+      return {
+        error: "E-Mail ist ungueltig.",
+      };
+    }
+
     let code = generateInviteCode();
 
     for (let i = 0; i < 10; i++) {
@@ -61,6 +95,9 @@ export async function action({ request }: { request: Request }) {
     const invite = await prisma.registrationInvite.create({
       data: {
         code,
+        email: email || null,
+        note: note || null,
+        expiresAt,
       },
       select: {
         code: true,
@@ -88,6 +125,7 @@ export async function action({ request }: { request: Request }) {
       },
       data: {
         usedAt: new Date(),
+        usedBy: "deaktiviert durch Super Admin",
       },
     });
 
@@ -103,11 +141,12 @@ export async function action({ request }: { request: Request }) {
       },
       data: {
         usedAt: null,
+        usedBy: null,
       },
     });
 
     return {
-      success: "Code wurde wieder geöffnet.",
+      success: "Code wurde wieder geoeffnet.",
     };
   }
 
@@ -119,7 +158,7 @@ export async function action({ request }: { request: Request }) {
     });
 
     return {
-      success: "Code wurde gelöscht.",
+      success: "Code wurde geloescht.",
     };
   }
 
@@ -128,11 +167,39 @@ export async function action({ request }: { request: Request }) {
   };
 }
 
+function formatDate(value: string | null | undefined) {
+  if (!value) return "-";
+  return new Date(value).toLocaleDateString("de-DE");
+}
+
+function formatDateTime(value: string | null | undefined) {
+  if (!value) return "-";
+  return new Date(value).toLocaleString("de-DE");
+}
+
+function isExpired(expiresAt: string | null) {
+  if (!expiresAt) return false;
+  return new Date(expiresAt).getTime() < Date.now();
+}
+
+function statusLabel(item: any) {
+  if (item.usedAt) return "Geschlossen";
+  if (isExpired(item.expiresAt)) return "Abgelaufen";
+  return "Offen";
+}
+
+function statusClass(item: any) {
+  if (item.usedAt) return "codesBadge codesBadgeClosed";
+  if (isExpired(item.expiresAt)) return "codesBadge codesBadgeExpired";
+  return "codesBadge";
+}
+
 export default function CodesPage() {
   const { codes } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
-  const openCodes = codes.filter((code) => !code.usedAt);
+  const openCodes = codes.filter((code) => !code.usedAt && !isExpired(code.expiresAt));
+  const expiredCodes = codes.filter((code) => !code.usedAt && isExpired(code.expiresAt));
   const closedCodes = codes.filter((code) => code.usedAt);
 
   return (
@@ -277,6 +344,7 @@ export default function CodesPage() {
           border-radius: 28px;
           padding: 22px;
           box-shadow: 0 24px 70px rgba(15, 23, 42, .10);
+          margin-top: 18px;
         }
 
         .codesPanelHeader {
@@ -293,6 +361,28 @@ export default function CodesPage() {
           font-weight: 950;
           letter-spacing: -0.04em;
           color: #07111f;
+        }
+
+        .codesCreateForm {
+          display: grid;
+          grid-template-columns: 1fr 1fr 180px auto;
+          gap: 12px;
+          align-items: end;
+        }
+
+        .codesField {
+          display: grid;
+          gap: 6px;
+          font-weight: 900;
+          color: #0f172a;
+        }
+
+        .codesInput {
+          border: 1px solid #cbd5e1;
+          border-radius: 14px;
+          padding: 12px 13px;
+          font-weight: 750;
+          width: 100%;
         }
 
         .codesTableWrap {
@@ -356,6 +446,11 @@ export default function CodesPage() {
           color: #b91c1c;
         }
 
+        .codesBadgeExpired {
+          background: #fef3c7;
+          color: #92400e;
+        }
+
         .codesActions {
           display: flex;
           gap: 8px;
@@ -377,6 +472,10 @@ export default function CodesPage() {
           .codesTopbar {
             flex-direction: column;
           }
+
+          .codesCreateForm {
+            grid-template-columns: 1fr;
+          }
         }
 
         @media (max-width: 700px) {
@@ -395,16 +494,9 @@ export default function CodesPage() {
           <div className="codesKicker">Super Admin</div>
           <h1 className="codesTitle">Registrierungscodes</h1>
           <p className="codesSubtitle">
-            Erstelle Einladungscodes fuer neue Caterer. Ohne Code kann sich kein neuer Mandant registrieren.
+            Erstelle Einladungscodes fuer neue Caterer. Optional kannst du E-Mail, Notiz und Ablaufdatum hinterlegen.
           </p>
         </div>
-
-        <Form method="post">
-          <input type="hidden" name="intent" value="create" />
-          <button className="codesButton codesButtonPrimary" type="submit">
-            Neuen Code erstellen
-          </button>
-        </Form>
       </header>
 
       {actionData?.success ? (
@@ -434,16 +526,48 @@ export default function CodesPage() {
         </article>
 
         <article className="codesStatCard">
+          <div className="codesStatLabel">Abgelaufen</div>
+          <div className="codesStatValue">{expiredCodes.length}</div>
+          <div className="codesStatHint">Datum ueberschritten</div>
+        </article>
+
+        <article className="codesStatCard">
           <div className="codesStatLabel">Geschlossen</div>
           <div className="codesStatValue">{closedCodes.length}</div>
           <div className="codesStatHint">benutzt oder deaktiviert</div>
         </article>
+      </section>
 
-        <article className="codesStatCard">
-          <div className="codesStatLabel">Sicherheit</div>
-          <div className="codesStatValue" style={{ fontSize: 28 }}>Pflicht</div>
-          <div className="codesStatHint">Registrierung nur mit Code</div>
-        </article>
+      <section className="codesPanel">
+        <div className="codesPanelHeader">
+          <div>
+            <div className="codesKicker">Neuer Code</div>
+            <h2 className="codesPanelTitle">Einladungscode erstellen</h2>
+          </div>
+        </div>
+
+        <Form method="post" className="codesCreateForm">
+          <input type="hidden" name="intent" value="create" />
+
+          <label className="codesField">
+            E-Mail optional
+            <input className="codesInput" name="email" type="email" placeholder="kunde@catering.de" />
+          </label>
+
+          <label className="codesField">
+            Notiz optional
+            <input className="codesInput" name="note" placeholder="z.B. Messekontakt / Testkunde" />
+          </label>
+
+          <label className="codesField">
+            Ablaufdatum
+            <input className="codesInput" name="expiresAt" type="date" />
+          </label>
+
+          <button className="codesButton codesButtonPrimary" type="submit">
+            Code erstellen
+          </button>
+        </Form>
       </section>
 
       <section className="codesPanel">
@@ -452,13 +576,6 @@ export default function CodesPage() {
             <div className="codesKicker">Einladungen</div>
             <h2 className="codesPanelTitle">Alle Registrierungscodes</h2>
           </div>
-
-          <Form method="post">
-            <input type="hidden" name="intent" value="create" />
-            <button className="codesButton codesButtonPrimary" type="submit">
-              Code erstellen
-            </button>
-          </Form>
         </div>
 
         <div className="codesTableWrap">
@@ -472,6 +589,10 @@ export default function CodesPage() {
                 <tr>
                   <th>Code</th>
                   <th>Status</th>
+                  <th>E-Mail</th>
+                  <th>Notiz</th>
+                  <th>Ablauf</th>
+                  <th>Benutzt / geschlossen</th>
                   <th>Erstellt</th>
                   <th>Aktionen</th>
                 </tr>
@@ -485,12 +606,24 @@ export default function CodesPage() {
                     </td>
 
                     <td>
-                      <span className={item.usedAt ? "codesBadge codesBadgeClosed" : "codesBadge"}>
-                        {item.usedAt ? "Geschlossen" : "Offen"}
+                      <span className={statusClass(item)}>
+                        {statusLabel(item)}
                       </span>
                     </td>
 
-                    <td>{new Date(item.createdAt).toLocaleString("de-DE")}</td>
+                    <td>{item.email || "-"}</td>
+                    <td>{item.note || "-"}</td>
+                    <td>{formatDate(item.expiresAt)}</td>
+                    <td>
+                      {item.usedAt ? (
+                        <>
+                          {formatDateTime(item.usedAt)}
+                          <br />
+                          <span style={{ color: "#64748b", fontSize: 12 }}>{item.usedBy || "-"}</span>
+                        </>
+                      ) : "-"}
+                    </td>
+                    <td>{formatDateTime(item.createdAt)}</td>
 
                     <td>
                       <div className="codesActions">
