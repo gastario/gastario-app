@@ -27,7 +27,6 @@ async function main() {
 
   console.log("Super Admin erstellt/aktualisiert:");
   console.log("E-Mail:", email);
-  console.log("Passwort:", password);
   console.log("Platform Role:", user.platformRole);
 }
 
