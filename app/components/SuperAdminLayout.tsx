@@ -12,118 +12,199 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
   return (
     <div className="superAdminShell">
       <style>{`
+        :root {
+          --bg: #edf2f6;
+          --sidebar: #08111f;
+          --sidebar-2: #101b2d;
+          --card: rgba(255, 255, 255, 0.92);
+          --border: rgba(148, 163, 184, 0.28);
+          --text: #07111f;
+          --muted: #64748b;
+          --primary: #0f766e;
+          --primary-2: #14b8a6;
+          --soft: #eefaf8;
+          --shadow: 0 24px 70px rgba(15, 23, 42, 0.10);
+          --shadow-soft: 0 12px 32px rgba(15, 23, 42, 0.07);
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+
+        html {
+          background: var(--bg);
+        }
+
         body {
           margin: 0;
-          background: #eef3f7;
-          color: #0f172a;
-          font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          background: var(--bg);
+          color: var(--text);
+          font-family:
+            Inter,
+            ui-sans-serif,
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
+          -webkit-font-smoothing: antialiased;
+          text-rendering: geometricPrecision;
         }
 
         .superAdminShell {
           min-height: 100vh;
           display: grid;
-          grid-template-columns: 280px 1fr;
-          background: linear-gradient(180deg, #f8fbfd 0%, #eef3f7 100%);
+          grid-template-columns: 292px minmax(0, 1fr);
+          background:
+            radial-gradient(circle at 78% 0%, rgba(20, 184, 166, 0.16), transparent 34%),
+            radial-gradient(circle at 12% 16%, rgba(15, 118, 110, 0.08), transparent 26%),
+            linear-gradient(180deg, #f8fbfd 0%, #edf2f6 100%);
         }
 
         .sidebar {
-          background: #0f172a;
-          color: white;
-          padding: 24px 20px;
+          position: sticky;
+          top: 0;
+          align-self: start;
           min-height: 100vh;
+          padding: 24px 18px;
+          color: white;
+          background:
+            radial-gradient(circle at 30% 0%, rgba(20, 184, 166, 0.28), transparent 28%),
+            linear-gradient(180deg, #08111f 0%, #0c1422 48%, #070d18 100%);
+          border-right: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 18px 0 50px rgba(15, 23, 42, 0.12);
         }
 
         .logoWrap {
-          display: block;
-          margin-bottom: 28px;
-          padding-bottom: 18px;
-          border-bottom: 1px solid rgba(255,255,255,.12);
+          display: flex;
+          align-items: center;
+          min-height: 58px;
+          padding: 4px 6px 22px;
+          margin-bottom: 18px;
           text-decoration: none;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.10);
         }
 
         .logo {
-          width: 170px;
-          height: auto;
+          width: 176px;
+          max-height: 54px;
+          object-fit: contain;
           display: block;
+          filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.18));
         }
 
         .nav {
           display: grid;
-          gap: 8px;
+          gap: 7px;
+          margin-top: 8px;
         }
 
         .nav a {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          min-height: 48px;
+          padding: 13px 14px;
           color: #cbd5e1;
           text-decoration: none;
-          padding: 13px 14px;
-          border-radius: 14px;
-          font-weight: 850;
-          display: flex;
-          justify-content: space-between;
+          border-radius: 16px;
+          font-size: 14px;
+          font-weight: 820;
+          letter-spacing: -0.01em;
+          transition: 160ms ease;
         }
 
         .nav a:hover {
-          background: rgba(255,255,255,.08);
           color: white;
+          background: rgba(255, 255, 255, 0.075);
+          transform: translateX(2px);
         }
 
         .nav a.active {
-          background: #0f766e;
           color: white;
+          background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+          box-shadow: 0 16px 32px rgba(20, 184, 166, 0.22);
+        }
+
+        .nav a.active::before {
+          content: "";
+          position: absolute;
+          left: -18px;
+          top: 12px;
+          bottom: 12px;
+          width: 4px;
+          border-radius: 999px;
+          background: #5eead4;
+        }
+
+        .navArrow {
+          opacity: 0.55;
+          font-weight: 900;
         }
 
         .sideCard {
-          margin-top: 28px;
-          border-radius: 18px;
-          padding: 16px;
-          background: rgba(255,255,255,.08);
-          border: 1px solid rgba(255,255,255,.10);
+          margin-top: 26px;
+          border-radius: 22px;
+          padding: 17px;
+          background: linear-gradient(180deg, rgba(255,255,255,0.105), rgba(255,255,255,0.065));
+          border: 1px solid rgba(255,255,255,0.11);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
         }
 
         .sideCard strong {
           display: block;
+          font-size: 15px;
           margin-bottom: 8px;
+          letter-spacing: -0.02em;
         }
 
         .sideCard p {
           margin: 0;
           color: #cbd5e1;
-          font-size: 13px;
-          line-height: 1.45;
+          font-size: 12.5px;
+          line-height: 1.55;
+          font-weight: 600;
         }
 
         .main {
-          padding: 32px;
           min-width: 0;
+          padding: 34px 34px 48px;
         }
 
         .topbar {
           display: flex;
           justify-content: space-between;
-          gap: 18px;
           align-items: flex-start;
-          margin-bottom: 22px;
+          gap: 20px;
+          margin-bottom: 24px;
         }
 
         .kicker {
-          color: #0f766e;
+          margin-bottom: 8px;
+          color: var(--primary);
           text-transform: uppercase;
-          letter-spacing: .08em;
-          font-size: 12px;
+          letter-spacing: .11em;
+          font-size: 11px;
           font-weight: 950;
-          margin-bottom: 6px;
         }
 
         .pageTitle {
           margin: 0;
-          font-size: 38px;
-          letter-spacing: -0.055em;
-          line-height: 1;
+          color: #07111f;
+          font-size: clamp(34px, 3.2vw, 48px);
+          line-height: .95;
+          letter-spacing: -0.065em;
+          font-weight: 920;
         }
 
         .pageSubtitle {
-          color: #64748b;
-          margin: 9px 0 0;
+          max-width: 820px;
+          margin: 12px 0 0;
+          color: var(--muted);
+          font-size: 15px;
+          line-height: 1.5;
           font-weight: 650;
         }
 
@@ -131,142 +212,174 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
           display: flex;
           gap: 10px;
           flex-wrap: wrap;
+          align-items: center;
+          justify-content: flex-end;
         }
 
         .btn {
-          border: 1px solid #dbe5ee;
-          background: white;
-          color: #0f172a;
-          border-radius: 999px;
-          padding: 12px 16px;
-          font-weight: 900;
-          text-decoration: none;
-          cursor: pointer;
+          min-height: 42px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
+          border: 1px solid rgba(148, 163, 184, 0.32);
+          background: rgba(255, 255, 255, 0.78);
+          color: #07111f;
+          border-radius: 999px;
+          padding: 11px 16px;
+          font-size: 13.5px;
+          font-weight: 900;
+          letter-spacing: -0.01em;
+          text-decoration: none;
+          cursor: pointer;
+          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+          transition: 160ms ease;
+          backdrop-filter: blur(14px);
+        }
+
+        .btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 16px 32px rgba(15, 23, 42, 0.09);
         }
 
         .btnPrimary {
-          background: #0f766e;
-          border-color: #0f766e;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
+          border-color: transparent;
           color: white;
+          box-shadow: 0 16px 34px rgba(15, 118, 110, 0.24);
         }
 
         .statGrid {
           display: grid;
           grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 16px;
-          margin-bottom: 18px;
+          margin-bottom: 20px;
         }
 
         .statCard,
         .panel {
-          background: white;
-          border: 1px solid #dbe5ee;
-          border-radius: 24px;
-          box-shadow: 0 20px 55px rgba(15, 23, 42, 0.08);
+          background: var(--card);
+          border: 1px solid var(--border);
+          box-shadow: var(--shadow);
+          backdrop-filter: blur(18px);
         }
 
         .statCard {
-          padding: 20px;
+          min-height: 132px;
+          border-radius: 26px;
+          padding: 22px;
         }
 
         .statLabel {
-          color: #64748b;
-          font-size: 13px;
+          margin-bottom: 10px;
+          color: var(--muted);
+          font-size: 12.5px;
           font-weight: 900;
-          margin-bottom: 8px;
+          letter-spacing: -0.01em;
         }
 
         .statValue {
-          font-size: 34px;
-          font-weight: 950;
-          letter-spacing: -0.04em;
+          color: #07111f;
+          font-size: 38px;
           line-height: 1;
+          letter-spacing: -0.055em;
+          font-weight: 950;
         }
 
         .statHint {
-          margin-top: 8px;
-          color: #334155;
+          margin-top: 10px;
+          color: #475569;
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 720;
         }
 
         .panel {
-          padding: 20px;
+          border-radius: 28px;
+          padding: 22px;
         }
 
         .panelHeader {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          gap: 16px;
-          margin-bottom: 16px;
+          gap: 18px;
+          margin-bottom: 18px;
         }
 
         .panelKicker {
-          color: #0f766e;
-          font-size: 12px;
+          color: var(--primary);
+          font-size: 11.5px;
           font-weight: 950;
           text-transform: uppercase;
-          letter-spacing: .08em;
+          letter-spacing: .10em;
         }
 
         .panelTitle {
-          margin: 4px 0 0;
-          font-size: 22px;
-          letter-spacing: -0.03em;
+          margin: 5px 0 0;
+          color: #07111f;
+          font-size: 24px;
+          line-height: 1.1;
+          letter-spacing: -0.04em;
+          font-weight: 920;
         }
 
         .tableWrap {
           overflow: auto;
-          border: 1px solid #dbe5ee;
-          border-radius: 18px;
+          border: 1px solid rgba(148, 163, 184, 0.28);
+          border-radius: 20px;
+          background: white;
         }
 
         table {
           width: 100%;
           border-collapse: collapse;
-          background: white;
         }
 
         th {
           text-align: left;
           background: #f8fafc;
           color: #64748b;
-          font-size: 12px;
+          font-size: 11.5px;
           text-transform: uppercase;
-          letter-spacing: .06em;
-          padding: 13px 14px;
-          border-bottom: 1px solid #dbe5ee;
+          letter-spacing: .075em;
+          padding: 14px 15px;
+          border-bottom: 1px solid rgba(148, 163, 184, 0.24);
+          font-weight: 950;
         }
 
         td {
-          padding: 15px 14px;
-          border-bottom: 1px solid #edf2f7;
+          padding: 16px 15px;
+          border-bottom: 1px solid #eef2f7;
+          color: #162033;
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 720;
+          vertical-align: top;
         }
 
         tr:last-child td {
           border-bottom: none;
         }
 
+        tr:hover td {
+          background: #fbfdff;
+        }
+
         .tenantName {
+          color: #07111f;
           font-weight: 950;
-          color: #0f172a;
+          letter-spacing: -0.015em;
         }
 
         .badge {
           display: inline-flex;
+          align-items: center;
           border-radius: 999px;
           padding: 5px 10px;
-          font-size: 12px;
+          font-size: 11.5px;
           font-weight: 950;
           border: 1px solid #bbf7d0;
           background: #f0fdf4;
           color: #047857;
+          white-space: nowrap;
         }
 
         .badgeTrial {
@@ -281,17 +394,38 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
           color: #b91c1c;
         }
 
-        @media (max-width: 1100px) {
+        input,
+        select,
+        textarea {
+          font: inherit;
+        }
+
+        @media (max-width: 1180px) {
           .superAdminShell {
             grid-template-columns: 1fr;
           }
 
           .sidebar {
+            position: relative;
             min-height: auto;
           }
 
           .statGrid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 720px) {
+          .main {
+            padding: 22px;
+          }
+
+          .topbar {
+            flex-direction: column;
+          }
+
+          .statGrid {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>
@@ -305,7 +439,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
           {navItems.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.to === "/gastario-control"}>
               <span>{item.label}</span>
-              <span>{">"}</span>
+              <span className="navArrow">{">"}</span>
             </NavLink>
           ))}
         </nav>
