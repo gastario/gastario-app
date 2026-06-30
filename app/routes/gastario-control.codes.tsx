@@ -105,7 +105,7 @@ export default function CodesPage() {
           <div className="kicker">Super Admin</div>
           <h1 className="pageTitle">Registrierungscodes</h1>
           <p className="pageSubtitle">
-            Erstelle und verwalte Einladungscodes für neue Caterer. Ohne Code kann sich kein Mandant registrieren.
+            Erstelle und verwalte Einladungscodes für neue Caterer.
           </p>
         </div>
 
@@ -171,7 +171,7 @@ export default function CodesPage() {
         </article>
 
         <article className="statCard">
-          <div className="statLabel">Benutzt / deaktiviert</div>
+          <div className="statLabel">Benutzt</div>
           <div className="statValue">{usedCodes.length}</div>
           <div className="statHint">nicht mehr nutzbar</div>
         </article>
@@ -232,7 +232,6 @@ export default function CodesPage() {
                     </td>
 
                     <td>{item.usedBy || "-"}</td>
-
                     <td>{new Date(item.createdAt).toLocaleString("de-DE")}</td>
 
                     <td>
