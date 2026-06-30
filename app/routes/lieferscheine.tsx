@@ -15,30 +15,17 @@ function formatDate(value: string | Date | null | undefined) {
 }
 
 export async function loader({ request }: { request: Request }) {
-  const { getUserId } = await import("../lib/session.server");
   const { prisma } = await import("../lib/prisma.server");
+  const { requireTenantFeature } = await import("../lib/features.server");
 
-  const userId = await getUserId(request);
-
-  if (!userId) {
-    throw new Response("Nicht angemeldet", { status: 401 });
-  }
-
-  const tenantUser = await prisma.tenantUser.findFirst({
-    where: { userId },
-    include: { tenant: true },
-  });
-
-  if (!tenantUser) {
-    throw new Response("Kein Mandant gefunden", { status: 403 });
-  }
+  const access = await requireTenantFeature(request, "DELIVERY_NOTES");
 
   const url = new URL(request.url);
   const selectedDate = url.searchParams.get("date") || todayInput();
 
   const orders = await prisma.order.findMany({
     where: {
-      tenantId: tenantUser.tenantId,
+      tenantId: access.tenantId,
       status: "CONFIRMED" as any,
     },
     include: {
@@ -71,7 +58,7 @@ export async function loader({ request }: { request: Request }) {
   }
 
   return {
-    tenant: tenantUser.tenant,
+    tenant: access.tenant,
     selectedDate,
     availableDates,
     orders: filteredOrders,
@@ -185,7 +172,7 @@ export default function LieferscheinePage() {
             color: "#64748b",
             fontWeight: 700,
           }}>
-            Lieferunterlagen aus übernommenen Aufträgen für {data.tenant.name}.
+            Lieferunterlagen aus uebernommenen Auftraegen für {data.tenant.name}.
           </p>
         </div>
 
@@ -253,13 +240,13 @@ export default function LieferscheinePage() {
 
         <article style={panelStyle}>
           <div style={{ color: "#64748b", fontWeight: 900, marginBottom: 8 }}>Status</div>
-          <div style={{ fontSize: 24, fontWeight: 950 }}>Übernommen</div>
+          <div style={{ fontSize: 24, fontWeight: 950 }}>Uebernommen</div>
         </article>
       </section>
 
       {data.orders.length === 0 ? (
         <section style={panelStyle}>
-          Keine übernommenen Aufträge für dieses Datum vorhanden.
+          Keine Uebernommenen Aufträge für dieses Datum vorhanden.
         </section>
       ) : (
         data.orders.map((order: any) => (
@@ -366,7 +353,7 @@ export default function LieferscheinePage() {
                     <tr key={item.id}>
                       <td style={{ ...tdStyle, fontWeight: 950 }}>{item.name}</td>
                       <td style={tdStyle}>{item.quantity}</td>
-                      <td style={tdStyle}>{item.unit || "Stück"}</td>
+                      <td style={tdStyle}>{item.unit || "Stueck"}</td>
                       <td style={tdStyle}>{item.notes || "-"}</td>
                     </tr>
                   ))}
@@ -399,7 +386,7 @@ export default function LieferscheinePage() {
                 paddingTop: 8,
                 fontWeight: 850,
               }}>
-                Fahrer / Übergabe
+                Fahrer / Uebergabe
               </div>
 
               <div style={{
@@ -416,3 +403,4 @@ export default function LieferscheinePage() {
     </div>
   );
 }
+
