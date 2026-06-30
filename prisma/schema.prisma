@@ -137,6 +137,7 @@ model Tenant {
   orders          Order[]
   incomingEmails  IncomingEmail[]
   productMappings ProductMapping[]
+  recipeItems     ProductRecipeItem[]
   suppliers       Supplier[]
   inventoryItems  InventoryItem[]
 }
@@ -261,9 +262,10 @@ model Product {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   orderItems      OrderItem[]
   productMappings ProductMapping[]
+  recipeItems     ProductRecipeItem[]
   suppliers       Supplier[]
   inventoryItems  InventoryItem[]
 
@@ -387,7 +389,7 @@ model OrderItem {
   productId  String?
   name       String
   quantity   Int      @default(1)
-  unit       String   @default("StÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¼ck")
+  unit       String   @default("StÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¼ck")
   unitCents  Int      @default(0)
   totalCents Int      @default(0)
   notes      String?
@@ -456,4 +458,23 @@ model Supplier {
 
   @@index([tenantId])
   @@index([active])
+}
+
+model ProductRecipeItem {
+  id              String   @id @default(cuid())
+  tenantId        String
+  productId       String
+  ingredientName  String
+  quantityPerUnit Float
+  unit            String   @default("g")
+  supplierName    String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([productId])
 }
