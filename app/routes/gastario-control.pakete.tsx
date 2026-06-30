@@ -1,92 +1,188 @@
+import { Link } from "react-router";
 import SuperAdminLayout from "../components/SuperAdminLayout";
 
-const plans = [
+const packages = [
   {
     name: "Starter",
-    price: "49 € / Monat",
-    brands: "1 Marke",
-    emails: "1 Import-E-Mail",
-    users: "1 Benutzer",
-    features: ["Aufträge", "Kunden", "Produkte", "Packlisten", "Lieferscheine"],
+    code: "STARTER",
+    price: "59 €",
+    target: "Für kleine Caterer, die Aufträge und Kunden sauber verwalten wollen.",
+    limits: {
+      brands: "1 Marke",
+      emails: "1 Import-E-Mail",
+      users: "1 Benutzer",
+    },
+    modules: [
+      "Aufträge",
+      "Kunden",
+      "Produkte",
+      "Packlisten",
+      "Lieferscheine",
+    ],
   },
   {
     name: "Professional",
-    price: "129 € / Monat",
-    brands: "2–3 Marken",
-    emails: "3 Import-E-Mails",
-    users: "5 Benutzer",
-    features: [
+    code: "PROFESSIONAL",
+    price: "179 €",
+    target: "Für wachsende Caterer mit mehreren Marken, E-Mail-Eingang und operativer Planung.",
+    limits: {
+      brands: "bis 3 Marken",
+      emails: "bis 3 Import-E-Mails",
+      users: "bis 5 Benutzer",
+    },
+    modules: [
       "Auftragseingang",
       "PDF-Erkennung",
       "E-Mail-Automatik",
       "Einkauf",
       "Lager",
+      "Lieferanten",
       "Rezepte",
       "Auswertungen",
+      "Produkt-Mapping",
     ],
   },
   {
     name: "Premium",
-    price: "249 € / Monat",
-    brands: "unbegrenzt",
-    emails: "unbegrenzt",
-    users: "unbegrenzt",
-    features: [
-      "Alle Module",
+    code: "PREMIUM",
+    price: "299 €",
+    target: "Für größere Caterer mit mehreren Marken, Integrationen und erweiterten Workflows.",
+    limits: {
+      brands: "unbegrenzt",
+      emails: "unbegrenzt",
+      users: "unbegrenzt",
+    },
+    modules: [
+      "alle Module",
       "Fahreransicht",
-      "Produkt-Mapping",
       "Integrationen",
-      "Mehrere Standorte später",
-      "Priorisierter Support",
+      "Lexware / DATEV / API später",
+      "erweitertes Produkt-Mapping",
+      "priorisierter Support",
     ],
   },
 ];
 
-export function meta() {
-  return [{ title: "Pakete · Gastario Control" }];
-}
-
-export default function ControlPlansPage() {
+export default function PaketePage() {
   return (
     <SuperAdminLayout>
-      <header className="controlTopbar">
+      <header className="topbar">
         <div>
-          <p className="eyebrow">Super Admin</p>
-          <h1>Pakete</h1>
-          <span className="pageSubline">
-            Preisstufen, Marken-Limits, E-Mail-Limits und freigeschaltete Module definieren.
-          </span>
+          <div className="kicker">Super Admin</div>
+          <h1 className="pageTitle">Pakete</h1>
+          <p className="pageSubtitle">
+            Verwalte die Paketlogik für Gastario. Die Paketzuweisung erfolgt pro Mandant in der Mandantenverwaltung.
+          </p>
         </div>
 
         <div className="topActions">
-          <button className="secondaryButton">Preise prüfen</button>
-          <button className="primaryButton">Paket anlegen</button>
+          <Link className="btn btnPrimary" to="/gastario-control/mandanten">
+            Mandanten verwalten
+          </Link>
         </div>
       </header>
 
-      <section className="plansGrid">
-        {plans.map((plan) => (
-          <article className="planCard" key={plan.name}>
-            <div className="planTop">
-              <p>{plan.name}</p>
-              <strong>{plan.price}</strong>
+      <section style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+        gap: 18,
+        alignItems: "stretch"
+      }}>
+        {packages.map((pkg) => (
+          <article key={pkg.code} className="panel" style={{
+            display: "grid",
+            alignContent: "start",
+            gap: 18
+          }}>
+            <div>
+              <div className="panelKicker">{pkg.code}</div>
+              <h2 className="panelTitle" style={{ fontSize: 26 }}>{pkg.name}</h2>
+              <div style={{
+                marginTop: 10,
+                fontSize: 38,
+                fontWeight: 950,
+                letterSpacing: "-0.05em"
+              }}>
+                {pkg.price}
+                <span style={{
+                  fontSize: 14,
+                  color: "#64748b",
+                  fontWeight: 800,
+                  letterSpacing: 0,
+                  marginLeft: 6
+                }}>
+                  / Monat
+                </span>
+              </div>
+              <p style={{
+                color: "#64748b",
+                fontWeight: 700,
+                lineHeight: 1.45,
+                marginTop: 12
+              }}>
+                {pkg.target}
+              </p>
             </div>
 
-            <div className="planLimits">
-              <span>{plan.brands}</span>
-              <span>{plan.emails}</span>
-              <span>{plan.users}</span>
+            <div style={{
+              border: "1px solid #dbe5ee",
+              borderRadius: 18,
+              padding: 16,
+              background: "#f8fafc"
+            }}>
+              <div style={{
+                fontWeight: 950,
+                marginBottom: 10,
+                color: "#0f172a"
+              }}>
+                Limits
+              </div>
+
+              <div style={{ display: "grid", gap: 8, color: "#334155", fontWeight: 800 }}>
+                <div>{pkg.limits.brands}</div>
+                <div>{pkg.limits.emails}</div>
+                <div>{pkg.limits.users}</div>
+              </div>
             </div>
 
-            <div className="planFeatures">
-              {plan.features.map((feature) => (
-                <em key={feature}>{feature}</em>
-              ))}
-            </div>
+            <div>
+              <div style={{
+                fontWeight: 950,
+                marginBottom: 10,
+                color: "#0f172a"
+              }}>
+                Enthaltene Module
+              </div>
 
-            <button className="ghostButton">Paket bearbeiten</button>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {pkg.modules.map((module) => (
+                  <span key={module} className="badge">
+                    {module}
+                  </span>
+                ))}
+              </div>
+            </div>
           </article>
         ))}
+      </section>
+
+      <section className="panel" style={{ marginTop: 18 }}>
+        <div className="panelHeader">
+          <div>
+            <div className="panelKicker">Hinweis</div>
+            <h2 className="panelTitle">Pakete werden nicht öffentlich ausgewählt</h2>
+          </div>
+        </div>
+
+        <p style={{
+          color: "#334155",
+          fontWeight: 750,
+          lineHeight: 1.55,
+          margin: 0
+        }}>
+          Neue Caterer registrieren sich nur mit Einladungscode. Das Paket wird danach durch den Super Admin
+          beim Mandanten gesetzt. So kann niemand öffentlich einen Mandanten mit falschem Paket erstellen.
+        </p>
       </section>
     </SuperAdminLayout>
   );
