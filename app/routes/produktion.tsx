@@ -15,30 +15,17 @@ function todayInput() {
 }
 
 export async function loader({ request }: { request: Request }) {
-  const { getUserId } = await import("../lib/session.server");
   const { prisma } = await import("../lib/prisma.server");
+  const { requireTenantFeature } = await import("../lib/features.server");
 
-  const userId = await getUserId(request);
-
-  if (!userId) {
-    throw new Response("Nicht angemeldet", { status: 401 });
-  }
-
-  const tenantUser = await prisma.tenantUser.findFirst({
-    where: { userId },
-    include: { tenant: true },
-  });
-
-  if (!tenantUser) {
-    throw new Response("Kein Mandant gefunden", { status: 403 });
-  }
+  const access = await requireTenantFeature(request, "PRODUCTION");
 
   const url = new URL(request.url);
   const selectedDate = url.searchParams.get("date") || todayInput();
 
   const orders = await prisma.order.findMany({
     where: {
-      tenantId: tenantUser.tenantId,
+      tenantId: access.tenantId,
       status: "CONFIRMED" as any,
     },
     include: {
@@ -62,12 +49,12 @@ export async function loader({ request }: { request: Request }) {
 
   for (const order of filteredOrders) {
     for (const item of order.items) {
-      const key = `${item.name}__${item.unit || "Stück"}`;
+      const key = `${item.name}__${item.unit || "Stueck"}`;
 
       if (!grouped.has(key)) {
         grouped.set(key, {
           name: item.name,
-          unit: item.unit || "Stück",
+          unit: item.unit || "Stueck",
           quantity: 0,
           orders: [],
         });
@@ -96,7 +83,7 @@ export async function loader({ request }: { request: Request }) {
   }
 
   return {
-    tenant: tenantUser.tenant,
+    tenant: access.tenant,
     selectedDate,
     availableDates,
     orders: filteredOrders,
@@ -203,7 +190,7 @@ export default function ProduktionPage() {
             color: "#64748b",
             fontWeight: 700,
           }}>
-            Produktionsliste aus übernommenen Aufträgen für {data.tenant.name}.
+            Produktionsliste aus uebernommenen Auftraegen fuer {data.tenant.name}.
           </p>
         </div>
 
@@ -251,7 +238,7 @@ export default function ProduktionPage() {
 
       <section style={statGridStyle}>
         <article style={statCardStyle}>
-          <div style={{ color: "#64748b", fontWeight: 900, marginBottom: 8 }}>Aufträge</div>
+          <div style={{ color: "#64748b", fontWeight: 900, marginBottom: 8 }}>Auftraege</div>
           <div style={{ fontSize: 36, fontWeight: 950 }}>{data.orders.length}</div>
         </article>
 
@@ -271,7 +258,7 @@ export default function ProduktionPage() {
 
         <article style={statCardStyle}>
           <div style={{ color: "#64748b", fontWeight: 900, marginBottom: 8 }}>Status</div>
-          <div style={{ fontSize: 24, fontWeight: 950 }}>Übernommen</div>
+          <div style={{ fontSize: 24, fontWeight: 950 }}>Uebernommen</div>
         </article>
       </section>
 
@@ -299,7 +286,7 @@ export default function ProduktionPage() {
                 <th style={thStyle}>Produkt / Gericht</th>
                 <th style={thStyle}>Menge gesamt</th>
                 <th style={thStyle}>Einheit</th>
-                <th style={thStyle}>Aufträge</th>
+                <th style={thStyle}>Auftraege</th>
               </tr>
             </thead>
 
@@ -307,7 +294,7 @@ export default function ProduktionPage() {
               {data.productionItems.length === 0 ? (
                 <tr>
                   <td style={tdStyle} colSpan={4}>
-                    Keine übernommenen Aufträge für dieses Datum vorhanden.
+                    Keine uebernommenen Auftraege fuer dieses Datum vorhanden.
                   </td>
                 </tr>
               ) : (
@@ -344,7 +331,7 @@ export default function ProduktionPage() {
           </div>
 
           <h2 style={{ margin: "5px 0 0", fontSize: 24, letterSpacing: "-0.04em" }}>
-            Aufträge für die Produktion
+            Auftraege fuer die Produktion
           </h2>
         </div>
 
@@ -365,7 +352,7 @@ export default function ProduktionPage() {
               {data.orders.length === 0 ? (
                 <tr>
                   <td style={tdStyle} colSpan={6}>
-                    Keine Aufträge vorhanden.
+                    Keine Auftraege vorhanden.
                   </td>
                 </tr>
               ) : (
