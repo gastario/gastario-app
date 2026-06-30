@@ -137,6 +137,8 @@ model Tenant {
   orders          Order[]
   incomingEmails  IncomingEmail[]
   productMappings ProductMapping[]
+  suppliers       Supplier[]
+  inventoryItems  InventoryItem[]
 }
 
 model TenantUser {
@@ -186,16 +188,16 @@ model Brand {
 }
 
 model EmailAccount {
-  id        String   @id @default(cuid())
-  tenantId  String
-  brandId   String?
-  email     String
-  label     String?
-  active    Boolean  @default(true)
+  id       String  @id @default(cuid())
+  tenantId String
+  brandId  String?
+  email    String
+  label    String?
+  active   Boolean @default(true)
 
-  provider  String?
-  mode      String   @default("FORWARDING")
-  notes     String?
+  provider String?
+  mode     String  @default("FORWARDING")
+  notes    String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -248,20 +250,22 @@ model Customer {
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  tenantId    String
-  name        String
-  category    String?
-  unit        String   @default("Portion")
-  priceCents  Int      @default(0)
-  taxRate     Int      @default(7)
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  tenantId   String
+  name       String
+  category   String?
+  unit       String   @default("Portion")
+  priceCents Int      @default(0)
+  taxRate    Int      @default(7)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   orderItems      OrderItem[]
   productMappings ProductMapping[]
+  suppliers       Supplier[]
+  inventoryItems  InventoryItem[]
 
   @@index([tenantId])
   @@index([name])
@@ -295,18 +299,18 @@ model IncomingEmail {
   source         OrderSource         @default(EMAIL)
   status         IncomingEmailStatus @default(RECEIVED)
 
-  messageId      String?
-  receivedAt     DateTime            @default(now())
-  processedAt    DateTime?
+  messageId   String?
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
 
-  extractedJson  Json?
-  errorMessage   String?
+  extractedJson Json?
+  errorMessage  String?
 
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  emailAccount EmailAccount? @relation(fields: [emailAccountId], references: [id])
+  tenant       Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  emailAccount EmailAccount?     @relation(fields: [emailAccountId], references: [id])
   attachments  EmailAttachment[]
   orders       Order[]
 
@@ -333,36 +337,36 @@ model EmailAttachment {
 }
 
 model Order {
-  id                  String               @id @default(cuid())
-  tenantId            String
-  brandId             String?
-  customerId          String?
-  incomingEmailId     String?
+  id              String  @id @default(cuid())
+  tenantId        String
+  brandId         String?
+  customerId      String?
+  incomingEmailId String?
 
   orderNumber         String
   externalOrderNumber String?
   source              OrderSource
-  status              OrderStatus          @default(AUTO_CREATED)
+  status              OrderStatus @default(AUTO_CREATED)
 
-  customerName        String
-  eventName           String?
-  deliveryDate        DateTime?
-  deliveryTimeText    String?
-  deliveryAddress     String?
-  contactName         String?
-  contactPhone        String?
-  notes               String?
-  allergens           String?
+  customerName     String
+  eventName        String?
+  deliveryDate     DateTime?
+  deliveryTimeText String?
+  deliveryAddress  String?
+  contactName      String?
+  contactPhone     String?
+  notes            String?
+  allergens        String?
 
-  totalCents          Int                  @default(0)
-  confidenceScore     Int                  @default(0)
-  confidenceLabel     ExtractionConfidence @default(LOW)
-  reviewReason        String?
+  totalCents      Int                  @default(0)
+  confidenceScore Int                  @default(0)
+  confidenceLabel ExtractionConfidence @default(LOW)
+  reviewReason    String?
 
-  originalPdfName     String?
+  originalPdfName String?
 
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   brand         Brand?         @relation(fields: [brandId], references: [id])
@@ -378,17 +382,17 @@ model Order {
 }
 
 model OrderItem {
-  id          String   @id @default(cuid())
-  orderId     String
-  productId   String?
-  name        String
-  quantity    Int      @default(1)
-  unit        String   @default("StÃƒÆ’Ã‚Â¼ck")
-  unitCents   Int      @default(0)
-  totalCents  Int      @default(0)
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  orderId    String
+  productId  String?
+  name       String
+  quantity   Int      @default(1)
+  unit       String   @default("StÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¼ck")
+  unitCents  Int      @default(0)
+  totalCents Int      @default(0)
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product? @relation(fields: [productId], references: [id])
@@ -396,7 +400,6 @@ model OrderItem {
   @@index([orderId])
   @@index([productId])
 }
-
 
 model RegistrationInvite {
   id        String    @id @default(cuid())
@@ -407,4 +410,50 @@ model RegistrationInvite {
   usedBy    String?
   createdAt DateTime  @default(now())
   expiresAt DateTime?
+}
+
+model InventoryItem {
+  id           String   @id @default(cuid())
+  tenantId     String
+  name         String
+  category     String?
+  unit         String   @default("Stueck")
+  currentStock Float    @default(0)
+  minStock     Float    @default(0)
+  supplierName String?
+  location     String?
+  notes        String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product   Product? @relation(fields: [productId], references: [id])
+  productId String?
+
+  @@index([tenantId])
+  @@index([active])
+}
+
+model Supplier {
+  id          String   @id @default(cuid())
+  tenantId    String
+  name        String
+  category    String?
+  contactName String?
+  email       String?
+  phone       String?
+  items       String?
+  orderDays   String?
+  notes       String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product   Product? @relation(fields: [productId], references: [id])
+  productId String?
+
+  @@index([tenantId])
+  @@index([active])
 }
