@@ -2,5 +2,5 @@
   <rect width="210" height="54" rx="14" fill="#0F172A"/>
   <circle cx="29" cy="27" r="14" fill="#0F766E"/>
   <path d="M22 28.2C22 23.9 25.2 20.8 29.4 20.8C32.1 20.8 34.1 22 35.2 23.8L31.9 25.7C31.4 24.9 30.5 24.3 29.4 24.3C27.2 24.3 25.8 25.9 25.8 28.2C25.8 30.5 27.3 32.1 29.6 32.1C31.1 32.1 32.2 31.5 32.8 30.5H29.1V27.6H36.5C36.6 28.1 36.6 28.5 36.6 29C36.6 32.9 33.7 35.7 29.5 35.7C25.1 35.7 22 32.5 22 28.2Z" fill="white"/>
-  <text x="54" y="34" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800" fill="white">Gastario</text>
+  <text x="54" y="34" font-family="Arial, sans-serif" font-size="24" font-weight="800" fill="white">Gastario</text>
 </svg>
