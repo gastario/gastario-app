@@ -1,5 +1,4 @@
-
-import { Form, Link, useActionData, useLoaderData } from "react-router";
+﻿import { Form, Link, useActionData, useLoaderData } from "react-router";
 import SuperAdminLayout from "../components/SuperAdminLayout";
 
 export async function loader({ params }: { params: { tenantId?: string } }) {
@@ -19,33 +18,39 @@ export async function loader({ params }: { params: { tenantId?: string } }) {
     throw new Response("Mandant nicht gefunden", { status: 404 });
   }
 
-  const [brands, emailAccounts, users, orders, enabledFeatures] = await Promise.all([
+  const [brands, emailAccounts, users, orders, enabledFeatures, counts] = await Promise.all([
     prisma.brand.findMany({
       where: { tenantId },
       orderBy: { createdAt: "asc" },
-    }).catch(() => []),
+    }),
 
     prisma.emailAccount.findMany({
       where: { tenantId },
       orderBy: { createdAt: "asc" },
-    }).catch(() => []),
+    }),
 
     prisma.tenantUser.findMany({
       where: { tenantId },
       include: { user: true },
       orderBy: { createdAt: "asc" },
-    }).catch(() => []),
+    }),
 
     prisma.order.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
-      take: 30,
+      take: 20,
     }).catch(() => []),
 
     prisma.tenantFeature.findMany({
       where: { tenantId },
       orderBy: { feature: "asc" },
-    }).catch(() => []),
+    }),
+
+    Promise.all([
+      prisma.customer.count({ where: { tenantId } }).catch(() => 0),
+      prisma.product.count({ where: { tenantId } }).catch(() => 0),
+      prisma.order.count({ where: { tenantId } }).catch(() => 0),
+    ]),
   ]);
 
   return {
@@ -55,6 +60,11 @@ export async function loader({ params }: { params: { tenantId?: string } }) {
     users,
     orders,
     enabledFeatures,
+    counts: {
+      customers: counts[0],
+      products: counts[1],
+      orders: counts[2],
+    },
   };
 }
 
@@ -82,7 +92,7 @@ export async function action({ request, params }: { request: Request; params: { 
     const currentCount = await prisma.brand.count({ where: { tenantId } });
 
     if (tenant && currentCount >= tenant.maxBrands) {
-      return { error: "Limit erreicht: Für diesen Mandanten sind keine weiteren Marken erlaubt." };
+      return { error: "Limit erreicht: Fuer diesen Mandanten sind keine weiteren Marken erlaubt." };
     }
 
     await prisma.brand.create({
@@ -125,17 +135,17 @@ export async function action({ request, params }: { request: Request; params: { 
         tenantId,
         brandId,
       },
-    }).catch(() => 0);
+    });
 
     if (emailCount > 0) {
-      return { error: "Diese Marke hat noch E-Mail-Konten. Bitte zuerst E-Mail-Konten deaktivieren oder löschen." };
+      return { error: "Diese Marke hat noch Import-E-Mails. Bitte zuerst die Import-E-Mails loeschen." };
     }
 
     await prisma.brand.delete({
       where: { id: brandId },
     });
 
-    return { success: "Marke wurde gelöscht." };
+    return { success: "Marke wurde geloescht." };
   }
 
   if (intent === "createTenantUser") {
@@ -143,31 +153,28 @@ export async function action({ request, params }: { request: Request; params: { 
     const name = String(formData.get("name") || "").trim();
     const role = String(formData.get("role") || "STAFF");
 
-    if (!email) {
-      return { error: "E-Mail-Adresse fehlt." };
+    if (!email || !email.includes("@")) {
+      return { error: "E-Mail-Adresse fehlt oder ist ungueltig." };
     }
 
     const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
     const currentUserCount = await prisma.tenantUser.count({ where: { tenantId } });
 
     if (tenant && currentUserCount >= tenant.maxUsers) {
-      return { error: "Limit erreicht: Für diesen Mandanten sind keine weiteren Benutzer erlaubt." };
+      return { error: "Limit erreicht: Fuer diesen Mandanten sind keine weiteren Benutzer erlaubt." };
     }
 
-    let user = await prisma.user.findUnique({
+    const user = await prisma.user.upsert({
       where: { email },
+      update: {
+        name: name || undefined,
+      },
+      create: {
+        email,
+        name: name || email,
+        platformRole: "USER",
+      },
     });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email,
-          name: name || null,
-          passwordHash: "",
-          platformRole: "USER",
-        },
-      });
-    }
 
     const existingTenantUser = await prisma.tenantUser.findFirst({
       where: {
@@ -188,7 +195,7 @@ export async function action({ request, params }: { request: Request; params: { 
       },
     });
 
-    return { success: "Benutzer wurde dem Mandanten hinzugefügt." };
+    return { success: "Benutzer wurde dem Mandanten hinzugefuegt." };
   }
 
   if (intent === "updateTenantUserRole") {
@@ -216,6 +223,12 @@ export async function action({ request, params }: { request: Request; params: { 
       return { error: "Benutzer fehlt." };
     }
 
+    const userCount = await prisma.tenantUser.count({ where: { tenantId } });
+
+    if (userCount <= 1) {
+      return { error: "Der letzte Benutzer eines Mandanten kann nicht entfernt werden." };
+    }
+
     await prisma.tenantUser.delete({
       where: { id: tenantUserId },
     });
@@ -228,15 +241,15 @@ export async function action({ request, params }: { request: Request; params: { 
     const label = String(formData.get("label") || "").trim();
     const brandId = String(formData.get("brandId") || "").trim();
 
-    if (!email) {
-      return { error: "E-Mail-Adresse fehlt." };
+    if (!email || !email.includes("@")) {
+      return { error: "E-Mail-Adresse fehlt oder ist ungueltig." };
     }
 
     const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
     const currentCount = await prisma.emailAccount.count({ where: { tenantId } });
 
     if (tenant && currentCount >= tenant.maxEmailAccounts) {
-      return { error: "Limit erreicht: Für diesen Mandanten sind keine weiteren Import-E-Mails erlaubt." };
+      return { error: "Limit erreicht: Fuer diesen Mandanten sind keine weiteren Import-E-Mails erlaubt." };
     }
 
     const existing = await prisma.emailAccount.findFirst({
@@ -291,7 +304,7 @@ export async function action({ request, params }: { request: Request; params: { 
       where: { id: emailAccountId },
     });
 
-    return { success: "Import-E-Mail wurde gelöscht." };
+    return { success: "Import-E-Mail wurde geloescht." };
   }
 
   return { error: "Unbekannte Aktion." };
@@ -308,7 +321,7 @@ function statusLabel(status: string, lockedAt?: string | Date | null) {
   if (status === "TRIAL") return "Testphase";
   if (status === "ACTIVE") return "Aktiv";
   if (status === "PAST_DUE") return "Zahlung offen";
-  if (status === "CANCELED") return "Gekündigt";
+  if (status === "CANCELED") return "Gekuendigt";
   return status;
 }
 
@@ -316,6 +329,14 @@ function formatDate(value: string | Date | null | undefined) {
   if (!value) return "-";
   return new Date(value).toLocaleString("de-DE");
 }
+
+const inputStyle = {
+  border: "1px solid #cbd5e1",
+  borderRadius: 12,
+  padding: "11px 12px",
+  fontWeight: 750,
+  width: "100%",
+};
 
 export default function TenantDetailPage() {
   const data = useLoaderData<typeof loader>();
@@ -327,21 +348,78 @@ export default function TenantDetailPage() {
   const users = data.users;
   const orders = data.orders;
   const enabledFeatures = data.enabledFeatures;
+  const counts = data.counts;
 
   return (
     <SuperAdminLayout>
+      <style>{`
+        .detailGridTwo {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          align-items: start;
+        }
+
+        .detailActions {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+
+        .detailFormRow {
+          display: grid;
+          gap: 10px;
+          margin-bottom: 14px;
+        }
+
+        .detailFormBrand {
+          grid-template-columns: 1fr 1fr auto;
+        }
+
+        .detailFormEmail {
+          grid-template-columns: 1fr 1fr 1fr auto;
+        }
+
+        .detailFormUser {
+          grid-template-columns: 1fr 1fr 150px auto;
+        }
+
+        .tenantName {
+          font-weight: 950;
+          color: #07111f;
+        }
+
+        .moduleCloud {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+
+        @media (max-width: 1100px) {
+          .detailGridTwo {
+            grid-template-columns: 1fr;
+          }
+
+          .detailFormBrand,
+          .detailFormEmail,
+          .detailFormUser {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+
       <header className="topbar">
         <div>
           <div className="kicker">Mandant</div>
           <h1 className="pageTitle">{tenant.name}</h1>
           <p className="pageSubtitle">
-            Detailverwaltung für Marken, Import-E-Mails, Benutzer, Aufträge und aktive Module.
+            Detailverwaltung fuer Marken, Import-E-Mails, Benutzer, Auftraege und aktive Module.
           </p>
         </div>
 
         <div className="topActions">
           <Link className="btn" to="/gastario-control/mandanten">
-            Zurück zu Mandanten
+            Zurueck zu Mandanten
           </Link>
         </div>
       </header>
@@ -372,19 +450,19 @@ export default function TenantDetailPage() {
         </article>
 
         <article className="statCard">
-          <div className="statLabel">Marken</div>
-          <div className="statValue">{brands.length}</div>
-          <div className="statHint">Limit: {tenant.maxBrands}</div>
+          <div className="statLabel">Daten</div>
+          <div className="statValue" style={{ fontSize: 30 }}>{counts.orders}</div>
+          <div className="statHint">{counts.customers} Kunden / {counts.products} Produkte</div>
         </article>
 
         <article className="statCard">
-          <div className="statLabel">Import-E-Mails</div>
+          <div className="statLabel">Import</div>
           <div className="statValue">{emailAccounts.length}</div>
           <div className="statHint">Limit: {tenant.maxEmailAccounts}</div>
         </article>
       </section>
 
-      <section style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, alignItems: "start" }}>
+      <section className="detailGridTwo">
         <section className="panel">
           <div className="panelHeader">
             <div>
@@ -433,24 +511,24 @@ export default function TenantDetailPage() {
           <div className="panelHeader">
             <div>
               <div className="panelKicker">Benutzer</div>
-              <h2 className="panelTitle">Zugänge verwalten</h2>
+              <h2 className="panelTitle">Zugaenge verwalten</h2>
             </div>
           </div>
 
-          <Form method="post" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 150px auto", gap: 10, marginBottom: 14 }}>
+          <Form method="post" className="detailFormRow detailFormUser">
             <input type="hidden" name="intent" value="createTenantUser" />
 
-            <input name="name" placeholder="Name optional" style={{ border: "1px solid #cbd5e1", borderRadius: 12, padding: "11px 12px" }} />
+            <input name="name" placeholder="Name optional" style={inputStyle} />
 
-            <input name="email" type="email" placeholder="benutzer@firma.de" style={{ border: "1px solid #cbd5e1", borderRadius: 12, padding: "11px 12px" }} />
+            <input name="email" type="email" placeholder="benutzer@firma.de" style={inputStyle} />
 
-            <select name="role" defaultValue="STAFF" style={{ border: "1px solid #cbd5e1", borderRadius: 12, padding: "11px 12px" }}>
+            <select name="role" defaultValue="STAFF" style={inputStyle}>
               <option value="OWNER">Owner</option>
               <option value="ADMIN">Admin</option>
               <option value="STAFF">Mitarbeiter</option>
             </select>
 
-            <button className="btn btnPrimary" type="submit">Hinzufügen</button>
+            <button className="btn btnPrimary" type="submit">Hinzufuegen</button>
           </Form>
 
           <div className="tableWrap">
@@ -477,7 +555,7 @@ export default function TenantDetailPage() {
                         <Form method="post" style={{ display: "flex", gap: 8 }}>
                           <input type="hidden" name="intent" value="updateTenantUserRole" />
                           <input type="hidden" name="tenantUserId" value={entry.id} />
-                          <select name="role" defaultValue={entry.role} style={{ border: "1px solid #cbd5e1", borderRadius: 12, padding: "8px 10px" }}>
+                          <select name="role" defaultValue={entry.role} style={inputStyle}>
                             <option value="OWNER">Owner</option>
                             <option value="ADMIN">Admin</option>
                             <option value="STAFF">Mitarbeiter</option>
@@ -503,7 +581,7 @@ export default function TenantDetailPage() {
         </section>
       </section>
 
-      <section style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, alignItems: "start", marginTop: 20 }}>
+      <section className="detailGridTwo" style={{ marginTop: 20 }}>
         <section className="panel">
           <div className="panelHeader">
             <div>
@@ -512,10 +590,10 @@ export default function TenantDetailPage() {
             </div>
           </div>
 
-          <Form method="post" style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10, marginBottom: 14 }}>
+          <Form method="post" className="detailFormRow detailFormBrand">
             <input type="hidden" name="intent" value="createBrand" />
-            <input name="name" placeholder="Markenname" style={{ border: "1px solid #cbd5e1", borderRadius: 12, padding: "11px 12px" }} />
-            <input name="email" type="email" placeholder="E-Mail optional" style={{ border: "1px solid #cbd5e1", borderRadius: 12, padding: "11px 12px" }} />
+            <input name="name" placeholder="Markenname" style={inputStyle} />
+            <input name="email" type="email" placeholder="E-Mail optional" style={inputStyle} />
             <button className="btn btnPrimary" type="submit">Anlegen</button>
           </Form>
 
@@ -545,7 +623,7 @@ export default function TenantDetailPage() {
                         </span>
                       </td>
                       <td>
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <div className="detailActions">
                           <Form method="post">
                             <input type="hidden" name="intent" value="toggleBrand" />
                             <input type="hidden" name="brandId" value={brand.id} />
@@ -559,7 +637,7 @@ export default function TenantDetailPage() {
                             <input type="hidden" name="intent" value="deleteBrand" />
                             <input type="hidden" name="brandId" value={brand.id} />
                             <button className="btn" type="submit" style={{ color: "#b91c1c" }}>
-                              Löschen
+                              Loeschen
                             </button>
                           </Form>
                         </div>
@@ -580,14 +658,14 @@ export default function TenantDetailPage() {
             </div>
           </div>
 
-          <Form method="post" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 10, marginBottom: 14 }}>
+          <Form method="post" className="detailFormRow detailFormEmail">
             <input type="hidden" name="intent" value="createEmailAccount" />
 
-            <input name="email" type="email" placeholder="import@firma.de" style={{ border: "1px solid #cbd5e1", borderRadius: 12, padding: "11px 12px" }} />
+            <input name="email" type="email" placeholder="import@firma.de" style={inputStyle} />
 
-            <input name="label" placeholder="Label optional" style={{ border: "1px solid #cbd5e1", borderRadius: 12, padding: "11px 12px" }} />
+            <input name="label" placeholder="Label optional" style={inputStyle} />
 
-            <select name="brandId" defaultValue="" style={{ border: "1px solid #cbd5e1", borderRadius: 12, padding: "11px 12px" }}>
+            <select name="brandId" defaultValue="" style={inputStyle}>
               <option value="">Keine Marke</option>
               {brands.map((brand) => (
                 <option key={brand.id} value={brand.id}>{brand.name}</option>
@@ -628,7 +706,7 @@ export default function TenantDetailPage() {
                           </span>
                         </td>
                         <td>
-                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          <div className="detailActions">
                             <Form method="post">
                               <input type="hidden" name="intent" value="toggleEmailAccount" />
                               <input type="hidden" name="emailAccountId" value={account.id} />
@@ -642,7 +720,7 @@ export default function TenantDetailPage() {
                               <input type="hidden" name="intent" value="deleteEmailAccount" />
                               <input type="hidden" name="emailAccountId" value={account.id} />
                               <button className="btn" type="submit" style={{ color: "#b91c1c" }}>
-                                Löschen
+                                Loeschen
                               </button>
                             </Form>
                           </div>
@@ -665,7 +743,7 @@ export default function TenantDetailPage() {
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div className="moduleCloud">
           {enabledFeatures.filter((item) => item.enabled).length === 0 ? (
             <span style={{ color: "#64748b", fontWeight: 800 }}>Noch keine Module aktiviert.</span>
           ) : (
@@ -679,8 +757,8 @@ export default function TenantDetailPage() {
       <section className="panel" style={{ marginTop: 20 }}>
         <div className="panelHeader">
           <div>
-            <div className="panelKicker">Aufträge</div>
-            <h2 className="panelTitle">Neueste Aufträge</h2>
+            <div className="panelKicker">Auftraege</div>
+            <h2 className="panelTitle">Neueste Auftraege</h2>
           </div>
         </div>
 
@@ -700,7 +778,7 @@ export default function TenantDetailPage() {
             <tbody>
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan={7}>Noch keine Aufträge vorhanden.</td>
+                  <td colSpan={7}>Noch keine Auftraege vorhanden.</td>
                 </tr>
               ) : (
                 orders.map((order) => (
