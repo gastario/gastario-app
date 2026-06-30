@@ -446,7 +446,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
 
         <div className="sideCard">
           <strong>Super Admin</strong>
-          <p>Nur fuer Plattform-Betreiber. Hier verwaltest du Mandanten, Pakete, Limits und Registrierungscodes.</p>
+          <p>Nur für Plattform-Betreiber. Hier verwaltest du Mandanten, Pakete, Limits und Registrierungscodes.</p>
         </div>
       </aside>
 

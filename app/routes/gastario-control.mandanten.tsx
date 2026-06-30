@@ -3,7 +3,7 @@ import SuperAdminLayout from "../components/SuperAdminLayout";
 
 const FEATURES = [
   { code: "DASHBOARD", label: "Dashboard", group: "Basis" },
-  { code: "ORDERS", label: "Auftraege", group: "Basis" },
+  { code: "ORDERS", label: "Aufträge", group: "Basis" },
   { code: "CUSTOMERS", label: "Kunden", group: "Basis" },
   { code: "PRODUCTS", label: "Produkte", group: "Basis" },
   { code: "QUOTES", label: "Angebote", group: "Basis" },
@@ -210,7 +210,7 @@ function statusLabel(status: string, lockedAt?: string | Date | null) {
   if (status === "TRIAL") return "Testphase";
   if (status === "ACTIVE") return "Aktiv";
   if (status === "PAST_DUE") return "Zahlung offen";
-  if (status === "CANCELED") return "Gekuendigt";
+  if (status === "CANCELED") return "Gekündigt";
   return status;
 }
 
@@ -358,7 +358,7 @@ export default function MandantenPage() {
                       <span>-</span>
                       <span>Status: {statusLabel(tenant.subscriptionStatus, tenant.lockedAt)}</span>
                       <span>-</span>
-                      <span>Auftraege: {tenant.orders.length}</span>
+                      <span>Aufträge: {tenant.orders.length}</span>
                       <span>-</span>
                       <span>Module: {tenant.enabledFeatures.filter((item) => item.enabled).length}</span>
                     </div>
@@ -521,7 +521,7 @@ export default function MandantenPage() {
                           <option value="TRIAL">Testphase</option>
                           <option value="ACTIVE">Aktiv</option>
                           <option value="PAST_DUE">Zahlung offen</option>
-                          <option value="CANCELED">Gekuendigt</option>
+                          <option value="CANCELED">Gekündigt</option>
                         </select>
                       </label>
 

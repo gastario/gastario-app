@@ -90,7 +90,7 @@ export async function action({ request }: { request: Request }) {
       },
     });
 
-    return { success: "Code wurde wieder geoeffnet." };
+    return { success: "Code wurde wieder geöffnet." };
   }
 
   if (intent === "delete") {
@@ -98,7 +98,7 @@ export async function action({ request }: { request: Request }) {
       where: { id: inviteId },
     });
 
-    return { success: "Code wurde geloescht." };
+    return { success: "Code wurde gelöscht." };
   }
 
   return { error: "Unbekannte Aktion." };
@@ -131,7 +131,7 @@ export default function RegistrationCodesPage() {
           <div className="kicker">Super Admin</div>
           <h1 className="pageTitle">Registrierungscodes</h1>
           <p className="pageSubtitle">
-            Erstelle einmalige Einladungscodes fuer neue Caterer. Nach erfolgreicher Registrierung wird der Code automatisch verbraucht.
+            Erstelle einmalige Einladungscodes für neue Caterer. Nach erfolgreicher Registrierung wird der Code automatisch verbraucht.
           </p>
         </div>
       </header>
@@ -195,7 +195,7 @@ export default function RegistrationCodesPage() {
         <article className="statCard">
           <div className="statLabel">Abgelaufen</div>
           <div className="statValue">{expiredCount}</div>
-          <div className="statHint">nicht mehr gueltig</div>
+          <div className="statHint">nicht mehr gültig</div>
         </article>
       </section>
 
@@ -219,7 +219,7 @@ export default function RegistrationCodesPage() {
             Notiz
             <input
               name="note"
-              placeholder="z. B. Mueller Catering"
+              placeholder="z. B. Müller Catering"
               style={{
                 border: "1px solid #cbd5e1",
                 borderRadius: 12,
@@ -243,7 +243,7 @@ export default function RegistrationCodesPage() {
           </label>
 
           <label style={{ display: "grid", gap: 6, fontWeight: 850 }}>
-            Gueltig Tage
+            Gültig Tage
             <input
               name="expiresInDays"
               type="number"
@@ -323,7 +323,7 @@ export default function RegistrationCodesPage() {
                             <Form method="post">
                               <input type="hidden" name="intent" value="reopen" />
                               <input type="hidden" name="inviteId" value={item.id} />
-                              <button className="btn" type="submit">Oeffnen</button>
+                              <button className="btn" type="submit">Öffnen</button>
                             </Form>
                           ) : (
                             <Form method="post">
@@ -337,7 +337,7 @@ export default function RegistrationCodesPage() {
                             <input type="hidden" name="intent" value="delete" />
                             <input type="hidden" name="inviteId" value={item.id} />
                             <button className="btn" type="submit" style={{ color: "#b91c1c" }}>
-                              Loeschen
+                              Löschen
                             </button>
                           </Form>
                         </div>
