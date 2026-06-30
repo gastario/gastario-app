@@ -1,4 +1,4 @@
-
+﻿
 import { Form, useActionData, useLoaderData } from "react-router";
 
 const SOURCES = [
@@ -10,8 +10,8 @@ const SOURCES = [
 ];
 
 const STATUSES = [
-  { value: "AUTO_CREATED", label: "Prüfen" },
-  { value: "CONFIRMED", label: "Übernommen" },
+  { value: "AUTO_CREATED", label: "PrÃ¼fen" },
+  { value: "CONFIRMED", label: "Ãœbernommen" },
   { value: "REJECTED", label: "Abgelehnt" },
 ];
 
@@ -52,7 +52,18 @@ export async function loader({ request }: { request: Request }) {
   });
 
   if (!tenantUser) {
-    throw new Response("Kein Mandant gefunden", { status: 403 });
+    return {
+      tenant: null,
+      orders: [],
+      activeStatus: "",
+      counts: {
+        all: 0,
+        review: 0,
+        confirmed: 0,
+        rejected: 0,
+      },
+      setupError: "Kein Mandant gefunden. Bitte diesen Benutzer im Super Admin einem Mandanten zuordnen.",
+    };
   }
 
   const url = new URL(request.url);
@@ -90,6 +101,7 @@ export async function loader({ request }: { request: Request }) {
       confirmed: counts[2],
       rejected: counts[3],
     },
+    setupError: null,
   };
 }
 
@@ -132,7 +144,7 @@ export async function action({ request }: { request: Request }) {
 
     const itemName = String(formData.get("itemName") || "").trim();
     const quantity = Number(formData.get("quantity") || 1);
-    const unit = String(formData.get("unit") || "Stück").trim();
+    const unit = String(formData.get("unit") || "StÃ¼ck").trim();
     const unitPriceCents = euroToCents(formData.get("unitPriceEuro"));
     const notes = String(formData.get("notes") || "").trim();
 
@@ -247,15 +259,15 @@ export async function action({ request }: { request: Request }) {
       },
     });
 
-    return { success: "Auftrag wurde gelöscht." };
+    return { success: "Auftrag wurde gelÃ¶scht." };
   }
 
   return { error: "Unbekannte Aktion." };
 }
 
 function statusLabel(status: string) {
-  if (status === "AUTO_CREATED") return "Prüfen";
-  if (status === "CONFIRMED") return "Übernommen";
+  if (status === "AUTO_CREATED") return "PrÃ¼fen";
+  if (status === "CONFIRMED") return "Ãœbernommen";
   if (status === "REJECTED") return "Abgelehnt";
   return status;
 }
@@ -273,6 +285,82 @@ function formatDate(value: string | Date | null | undefined) {
 export default function AuftragseingangPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+
+  if (data.setupError) {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        background: "#edf2f6",
+        padding: 32,
+        fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+        color: "#07111f"
+      }}>
+        <section style={{
+          maxWidth: 760,
+          background: "white",
+          border: "1px solid #dbe5ee",
+          borderRadius: 28,
+          padding: 28,
+          boxShadow: "0 24px 70px rgba(15, 23, 42, 0.10)"
+        }}>
+          <div style={{
+            color: "#0f766e",
+            textTransform: "uppercase",
+            letterSpacing: ".11em",
+            fontSize: 11,
+            fontWeight: 950,
+            marginBottom: 8
+          }}>
+            Gastario
+          </div>
+
+          <h1 style={{
+            margin: 0,
+            fontSize: 38,
+            lineHeight: 1,
+            letterSpacing: "-0.055em"
+          }}>
+            Kein Mandant zugeordnet
+          </h1>
+
+          <p style={{
+            margin: "14px 0 0",
+            color: "#475569",
+            fontWeight: 750,
+            lineHeight: 1.55
+          }}>
+            {data.setupError}
+          </p>
+
+          <div style={{ display: "flex", gap: 10, marginTop: 22, flexWrap: "wrap" }}>
+            <a href="/logout" style={{
+              border: "1px solid #dbe5ee",
+              background: "white",
+              color: "#07111f",
+              borderRadius: 999,
+              padding: "12px 16px",
+              fontWeight: 950,
+              textDecoration: "none"
+            }}>
+              Ausloggen
+            </a>
+
+            <a href="/login" style={{
+              border: "none",
+              background: "linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)",
+              color: "white",
+              borderRadius: 999,
+              padding: "12px 16px",
+              fontWeight: 950,
+              textDecoration: "none"
+            }}>
+              Neu einloggen
+            </a>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -313,7 +401,7 @@ export default function AuftragseingangPage() {
             color: "#64748b",
             fontWeight: 700
           }}>
-            Neue Aufträge erfassen, prüfen und übernehmen.
+            Neue AuftrÃ¤ge erfassen, prÃ¼fen und Ã¼bernehmen.
           </p>
         </div>
 
@@ -324,7 +412,7 @@ export default function AuftragseingangPage() {
           padding: 14,
           fontWeight: 900
         }}>
-          {data.tenant.name}
+          {data.tenant?.name}
         </div>
       </header>
 
@@ -364,8 +452,8 @@ export default function AuftragseingangPage() {
       }}>
         {[
           ["Alle", data.counts.all, ""],
-          ["Prüfen", data.counts.review, "AUTO_CREATED"],
-          ["Übernommen", data.counts.confirmed, "CONFIRMED"],
+          ["PrÃ¼fen", data.counts.review, "AUTO_CREATED"],
+          ["Ãœbernommen", data.counts.confirmed, "CONFIRMED"],
           ["Abgelehnt", data.counts.rejected, "REJECTED"],
         ].map(([label, count, status]) => (
           <a
@@ -456,10 +544,10 @@ export default function AuftragseingangPage() {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 120px 160px", gap: 12 }}>
-            <input name="itemName" placeholder="Position, z. B. Bowl Menü" style={inputStyle} />
+            <input name="itemName" placeholder="Position, z. B. Bowl MenÃ¼" style={inputStyle} />
             <input name="quantity" type="number" min="1" defaultValue="1" style={inputStyle} />
-            <input name="unit" defaultValue="Stück" style={inputStyle} />
-            <input name="unitPriceEuro" placeholder="Einzelpreis €" style={inputStyle} />
+            <input name="unit" defaultValue="StÃ¼ck" style={inputStyle} />
+            <input name="unitPriceEuro" placeholder="Einzelpreis â‚¬" style={inputStyle} />
           </div>
 
           <textarea name="notes" placeholder="Notizen / Besonderheiten" rows={3} style={inputStyle} />
@@ -497,7 +585,7 @@ export default function AuftragseingangPage() {
             Eingang
           </div>
           <h2 style={{ margin: "5px 0 0", fontSize: 24, letterSpacing: "-0.04em" }}>
-            Aufträge
+            AuftrÃ¤ge
           </h2>
         </div>
 
@@ -518,7 +606,7 @@ export default function AuftragseingangPage() {
             <tbody>
               {data.orders.length === 0 ? (
                 <tr>
-                  <td style={tdStyle} colSpan={8}>Noch keine Aufträge vorhanden.</td>
+                  <td style={tdStyle} colSpan={8}>Noch keine AuftrÃ¤ge vorhanden.</td>
                 </tr>
               ) : (
                 data.orders.map((order) => {
@@ -544,7 +632,7 @@ export default function AuftragseingangPage() {
                       <td style={tdStyle}>
                         {order.items.map((item) => (
                           <div key={item.id}>
-                            {item.quantity} × {item.name}
+                            {item.quantity} Ã— {item.name}
                           </div>
                         ))}
                       </td>
@@ -578,7 +666,7 @@ export default function AuftragseingangPage() {
                           <Form method="post">
                             <input type="hidden" name="intent" value="deleteOrder" />
                             <input type="hidden" name="orderId" value={order.id} />
-                            <button type="submit" style={{ ...smallButtonStyle, color: "#b91c1c" }}>Löschen</button>
+                            <button type="submit" style={{ ...smallButtonStyle, color: "#b91c1c" }}>LÃ¶schen</button>
                           </Form>
                         </div>
                       </td>
@@ -629,3 +717,99 @@ const smallButtonStyle = {
   fontWeight: 900,
   cursor: "pointer",
 };
+
+
+export function ErrorBoundary({ error }: { error: any }) {
+  const message =
+    error?.data ||
+    error?.message ||
+    "Unbekannter Fehler im Auftragseingang.";
+
+  const status = error?.status || 500;
+
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: "#edf2f6",
+      padding: 32,
+      fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+      color: "#07111f"
+    }}>
+      <section style={{
+        maxWidth: 760,
+        background: "white",
+        border: "1px solid #dbe5ee",
+        borderRadius: 28,
+        padding: 28,
+        boxShadow: "0 24px 70px rgba(15, 23, 42, 0.10)"
+      }}>
+        <div style={{
+          color: "#b91c1c",
+          textTransform: "uppercase",
+          letterSpacing: ".11em",
+          fontSize: 11,
+          fontWeight: 950,
+          marginBottom: 8
+        }}>
+          Fehler {status}
+        </div>
+
+        <h1 style={{
+          margin: 0,
+          fontSize: 38,
+          lineHeight: 1,
+          letterSpacing: "-0.055em"
+        }}>
+          Auftragseingang konnte nicht geladen werden
+        </h1>
+
+        <p style={{
+          margin: "14px 0 0",
+          color: "#475569",
+          fontWeight: 750,
+          lineHeight: 1.55
+        }}>
+          {String(message)}
+        </p>
+
+        <div style={{ display: "flex", gap: 10, marginTop: 22, flexWrap: "wrap" }}>
+          <a href="/logout" style={{
+            border: "1px solid #dbe5ee",
+            background: "white",
+            color: "#07111f",
+            borderRadius: 999,
+            padding: "12px 16px",
+            fontWeight: 950,
+            textDecoration: "none"
+          }}>
+            Ausloggen
+          </a>
+
+          <a href="/login" style={{
+            border: "none",
+            background: "linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)",
+            color: "white",
+            borderRadius: 999,
+            padding: "12px 16px",
+            fontWeight: 950,
+            textDecoration: "none"
+          }}>
+            Neu einloggen
+          </a>
+
+          <a href="/gastario-control" style={{
+            border: "1px solid #dbe5ee",
+            background: "white",
+            color: "#07111f",
+            borderRadius: 999,
+            padding: "12px 16px",
+            fontWeight: 950,
+            textDecoration: "none"
+          }}>
+            Super Admin
+          </a>
+        </div>
+      </section>
+    </div>
+  );
+}
