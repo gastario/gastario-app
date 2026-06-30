@@ -211,7 +211,7 @@ export default function GastarioControl() {
                 ) : (
                   data.tenants.map((tenant) => (
                     <tr key={tenant.id}>
-                      <td className="tenantName">{tenant.name}</td>
+                      <td className="tenantName"><Link to={`/gastario-control/mandanten/${tenant.id}`} style={{ color: "inherit", textDecoration: "none" }}>{tenant.name}</Link></td>
                       <td>{planLabel(tenant.planCode)}</td>
                       <td>
                         <span className={
@@ -334,3 +334,4 @@ export default function GastarioControl() {
     </SuperAdminLayout>
   );
 }
+
