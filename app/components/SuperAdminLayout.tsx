@@ -1,44 +1,69 @@
-﻿import { Link, NavLink } from "react-router";
+﻿import { Link, useLocation } from "react-router";
 
 const navItems = [
-  { label: "\u00dcbersicht", to: "/gastario-control" },
-  { label: "Mandanten", to: "/gastario-control/mandanten" },
-  { label: "Pakete", to: "/gastario-control/pakete" },
-  { label: "Features", to: "/gastario-control/features" },
-  { label: "Registrierungscodes", to: "/gastario-control/codes" },
+  {
+    label: "Übersicht",
+    to: "/gastario-control",
+    hint: "Dashboard",
+  },
+  {
+    label: "Mandanten",
+    to: "/gastario-control/mandanten",
+    hint: "Kunden & Firmen",
+  },
+  {
+    label: "Pakete",
+    to: "/gastario-control/pakete",
+    hint: "Starter bis Premium",
+  },
+  {
+    label: "Features",
+    to: "/gastario-control/features",
+    hint: "Module & Rechte",
+  },
+  {
+    label: "Registrierungscodes",
+    to: "/gastario-control/codes",
+    hint: "Einladungen",
+  },
 ];
 
+function isActivePath(pathname: string, to: string) {
+  if (to === "/gastario-control") {
+    return pathname === to;
+  }
+
+  return pathname === to || pathname.startsWith(`${to}/`);
+}
+
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+
   return (
     <div className="superAdminShell">
       <style>{`
         :root {
-          --bg: #edf2f6;
-          --sidebar: #08111f;
-          --sidebar-2: #101b2d;
-          --card: rgba(255, 255, 255, 0.92);
-          --border: rgba(148, 163, 184, 0.28);
-          --text: #07111f;
-          --muted: #64748b;
-          --primary: #0f766e;
-          --primary-2: #14b8a6;
-          --soft: #eefaf8;
-          --shadow: 0 24px 70px rgba(15, 23, 42, 0.10);
-          --shadow-soft: 0 12px 32px rgba(15, 23, 42, 0.07);
+          --gastario-dark: #07111f;
+          --gastario-darker: #030712;
+          --gastario-green: #009b83;
+          --gastario-green-2: #17c3a6;
+          --gastario-text: #0f172a;
+          --gastario-muted: #64748b;
+          --gastario-line: rgba(148, 163, 184, .24);
+          --gastario-card: rgba(255, 255, 255, .88);
         }
 
         * {
           box-sizing: border-box;
         }
 
-        html {
-          background: var(--bg);
-        }
-
         body {
           margin: 0;
-          background: var(--bg);
-          color: var(--text);
+          background:
+            radial-gradient(circle at top right, rgba(23, 195, 166, .22), transparent 34%),
+            radial-gradient(circle at 30% 10%, rgba(14, 165, 233, .12), transparent 32%),
+            linear-gradient(135deg, #f8fafc 0%, #eef5f5 55%, #e8eef3 100%);
+          color: var(--gastario-text);
           font-family:
             Inter,
             ui-sans-serif,
@@ -47,367 +72,395 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             BlinkMacSystemFont,
             "Segoe UI",
             sans-serif;
-          -webkit-font-smoothing: antialiased;
-          text-rendering: geometricPrecision;
         }
 
         .superAdminShell {
           min-height: 100vh;
           display: grid;
           grid-template-columns: 292px minmax(0, 1fr);
-          background:
-            radial-gradient(circle at 78% 0%, rgba(20, 184, 166, 0.16), transparent 34%),
-            radial-gradient(circle at 12% 16%, rgba(15, 118, 110, 0.08), transparent 26%),
-            linear-gradient(180deg, #f8fbfd 0%, #edf2f6 100%);
         }
 
-        .sidebar {
+        .superAdminSidebar {
           position: sticky;
           top: 0;
-          align-self: start;
-          min-height: 100vh;
-          padding: 24px 18px;
-          color: white;
+          height: 100vh;
+          padding: 28px 18px;
           background:
-            radial-gradient(circle at 30% 0%, rgba(20, 184, 166, 0.28), transparent 28%),
-            linear-gradient(180deg, #08111f 0%, #0c1422 48%, #070d18 100%);
-          border-right: 1px solid rgba(255, 255, 255, 0.08);
-          box-shadow: 18px 0 50px rgba(15, 23, 42, 0.12);
+            radial-gradient(circle at 20% 0%, rgba(23, 195, 166, .24), transparent 28%),
+            linear-gradient(180deg, #06202a 0%, #07111f 44%, #030712 100%);
+          color: white;
+          border-right: 1px solid rgba(255, 255, 255, .08);
+          overflow-y: auto;
         }
 
-        .logoWrap {
+        .superAdminBrand {
           display: flex;
           align-items: center;
-          min-height: 58px;
-          padding: 4px 6px 22px;
-          margin-bottom: 18px;
+          gap: 12px;
+          padding: 14px 14px;
+          border-radius: 18px;
+          background: rgba(15, 23, 42, .62);
+          border: 1px solid rgba(255, 255, 255, .08);
+          box-shadow: 0 18px 50px rgba(0, 0, 0, .22);
           text-decoration: none;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+          color: white;
         }
 
-        .logo {
-          width: 176px;
-          max-height: 54px;
-          object-fit: contain;
-          display: block;
-          filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.18));
-        }
-
-        .nav {
+        .superAdminLogo {
+          width: 34px;
+          height: 34px;
+          border-radius: 999px;
           display: grid;
-          gap: 7px;
-          margin-top: 8px;
+          place-items: center;
+          background: linear-gradient(135deg, var(--gastario-green), var(--gastario-green-2));
+          color: white;
+          font-weight: 950;
+          box-shadow: 0 12px 26px rgba(23, 195, 166, .26);
         }
 
-        .nav a {
+        .superAdminBrandText {
+          display: flex;
+          flex-direction: column;
+          gap: 1px;
+        }
+
+        .superAdminBrandName {
+          font-size: 20px;
+          font-weight: 950;
+          letter-spacing: -0.04em;
+          line-height: 1;
+        }
+
+        .superAdminBrandSub {
+          font-size: 11px;
+          font-weight: 850;
+          color: rgba(226, 232, 240, .64);
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+
+        .superAdminDivider {
+          height: 1px;
+          background: rgba(255, 255, 255, .1);
+          margin: 24px 4px;
+        }
+
+        .superAdminNav {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .superAdminNavItem {
           position: relative;
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 12px;
-          min-height: 48px;
-          padding: 13px 14px;
-          color: #cbd5e1;
+          min-height: 58px;
+          padding: 12px 13px;
+          border-radius: 17px;
+          color: rgba(241, 245, 249, .82);
           text-decoration: none;
-          border-radius: 16px;
-          font-size: 14px;
-          font-weight: 820;
-          letter-spacing: -0.01em;
-          transition: 160ms ease;
+          border: 1px solid transparent;
+          transition:
+            background .16s ease,
+            color .16s ease,
+            border-color .16s ease,
+            transform .16s ease,
+            box-shadow .16s ease;
         }
 
-        .nav a:hover {
+        .superAdminNavItem:hover {
+          background: rgba(255, 255, 255, .07);
+          border-color: rgba(255, 255, 255, .08);
           color: white;
-          background: rgba(255, 255, 255, 0.075);
           transform: translateX(2px);
         }
 
-        .nav a.active {
+        .superAdminNavItemActive {
+          background: linear-gradient(135deg, rgba(0, 155, 131, .94), rgba(23, 195, 166, .86));
           color: white;
-          background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
-          box-shadow: 0 16px 32px rgba(20, 184, 166, 0.22);
+          box-shadow: 0 18px 45px rgba(0, 155, 131, .24);
         }
 
-        .nav a.active::before {
+        .superAdminNavItemActive::before {
           content: "";
           position: absolute;
           left: -18px;
-          top: 12px;
-          bottom: 12px;
+          top: 14px;
+          bottom: 14px;
           width: 4px;
           border-radius: 999px;
-          background: #5eead4;
+          background: var(--gastario-green-2);
+          box-shadow: 0 0 18px rgba(23, 195, 166, .8);
         }
 
-        .navArrow {
-          opacity: 0.55;
-          font-weight: 900;
-        }
-
-        .sideCard {
-          margin-top: 26px;
-          border-radius: 22px;
-          padding: 17px;
-          background: linear-gradient(180deg, rgba(255,255,255,0.105), rgba(255,255,255,0.065));
-          border: 1px solid rgba(255,255,255,0.11);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-        }
-
-        .sideCard strong {
-          display: block;
-          font-size: 15px;
-          margin-bottom: 8px;
-          letter-spacing: -0.02em;
-        }
-
-        .sideCard p {
-          margin: 0;
-          color: #cbd5e1;
-          font-size: 12.5px;
-          line-height: 1.55;
-          font-weight: 600;
-        }
-
-        .main {
+        .superAdminNavText {
           min-width: 0;
-          padding: 34px 34px 48px;
         }
 
-        .topbar {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 20px;
-          margin-bottom: 24px;
+        .superAdminNavLabel {
+          display: block;
+          font-size: 14px;
+          font-weight: 950;
+          line-height: 1.15;
         }
 
-        .kicker {
-          margin-bottom: 8px;
-          color: var(--primary);
-          text-transform: uppercase;
-          letter-spacing: .11em;
+        .superAdminNavHint {
+          display: block;
+          margin-top: 5px;
           font-size: 11px;
+          font-weight: 800;
+          color: rgba(226, 232, 240, .58);
+          line-height: 1.15;
+        }
+
+        .superAdminNavItemActive .superAdminNavHint {
+          color: rgba(255, 255, 255, .78);
+        }
+
+        .superAdminNavArrow {
+          flex: 0 0 auto;
+          width: 24px;
+          height: 24px;
+          border-radius: 999px;
+          display: grid;
+          place-items: center;
+          background: rgba(255, 255, 255, .08);
+          color: rgba(255, 255, 255, .76);
+          font-size: 16px;
           font-weight: 950;
         }
 
-        .pageTitle {
+        .superAdminSidebarCard {
+          margin-top: 24px;
+          padding: 18px;
+          border-radius: 22px;
+          background:
+            linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .055));
+          border: 1px solid rgba(255, 255, 255, .12);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+        }
+
+        .superAdminSidebarCardTitle {
+          margin: 0 0 8px;
+          font-size: 15px;
+          font-weight: 950;
+          color: white;
+        }
+
+        .superAdminSidebarCardText {
           margin: 0;
+          color: rgba(226, 232, 240, .78);
+          font-size: 12px;
+          line-height: 1.55;
+          font-weight: 750;
+        }
+
+        .superAdminMain {
+          min-width: 0;
+          padding: 36px 34px 64px;
+        }
+
+        .superAdminContent {
+          width: 100%;
+          max-width: 1540px;
+          margin: 0 auto;
+        }
+
+        .topbar,
+        .panelHeader {
+          display: flex;
+          justify-content: space-between;
+          gap: 22px;
+          align-items: flex-start;
+        }
+
+        .topbar {
+          margin-bottom: 26px;
+        }
+
+        .kicker,
+        .panelKicker {
+          color: #007f6d;
+          font-size: 12px;
+          font-weight: 950;
+          text-transform: uppercase;
+          letter-spacing: .14em;
+          margin-bottom: 8px;
+        }
+
+        .pageTitle {
+          margin: 0 0 10px;
+          font-size: 46px;
+          line-height: 1;
+          font-weight: 950;
+          letter-spacing: -0.06em;
           color: #07111f;
-          font-size: clamp(34px, 3.2vw, 48px);
-          line-height: .95;
-          letter-spacing: -0.065em;
-          font-weight: 920;
         }
 
         .pageSubtitle {
-          max-width: 820px;
-          margin: 12px 0 0;
-          color: var(--muted);
-          font-size: 15px;
-          line-height: 1.5;
-          font-weight: 650;
+          margin: 0;
+          color: #64748b;
+          font-size: 16px;
+          line-height: 1.55;
+          font-weight: 750;
+          max-width: 860px;
         }
 
         .topActions {
           display: flex;
+          align-items: center;
           gap: 10px;
           flex-wrap: wrap;
-          align-items: center;
-          justify-content: flex-end;
         }
 
         .btn {
-          min-height: 42px;
+          border: 0;
+          border-radius: 999px;
+          padding: 12px 16px;
+          background: white;
+          color: #0f172a;
+          font-weight: 950;
+          text-decoration: none;
+          cursor: pointer;
+          box-shadow: inset 0 0 0 1px rgba(15, 23, 42, .12);
+          transition: transform .15s ease, box-shadow .15s ease;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          border: 1px solid rgba(148, 163, 184, 0.32);
-          background: rgba(255, 255, 255, 0.78);
-          color: #07111f;
-          border-radius: 999px;
-          padding: 11px 16px;
-          font-size: 13.5px;
-          font-weight: 900;
-          letter-spacing: -0.01em;
-          text-decoration: none;
-          cursor: pointer;
-          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-          transition: 160ms ease;
-          backdrop-filter: blur(14px);
+          gap: 8px;
+          min-height: 42px;
         }
 
         .btn:hover {
           transform: translateY(-1px);
-          box-shadow: 0 16px 32px rgba(15, 23, 42, 0.09);
+          box-shadow:
+            0 16px 34px rgba(15, 23, 42, .12),
+            inset 0 0 0 1px rgba(15, 23, 42, .12);
         }
 
         .btnPrimary {
-          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
-          border-color: transparent;
+          background: linear-gradient(135deg, #008f7a, #17b79f);
           color: white;
-          box-shadow: 0 16px 34px rgba(15, 118, 110, 0.24);
+          box-shadow: 0 18px 40px rgba(0, 143, 122, .25);
         }
 
         .statGrid {
           display: grid;
           grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 16px;
-          margin-bottom: 20px;
-        }
-
-        .statCard,
-        .panel {
-          background: var(--card);
-          border: 1px solid var(--border);
-          box-shadow: var(--shadow);
-          backdrop-filter: blur(18px);
-        }
-
-        .statCard {
-          min-height: 132px;
-          border-radius: 26px;
-          padding: 22px;
-        }
-
-        .statLabel {
-          margin-bottom: 10px;
-          color: var(--muted);
-          font-size: 12.5px;
-          font-weight: 900;
-          letter-spacing: -0.01em;
-        }
-
-        .statValue {
-          color: #07111f;
-          font-size: 38px;
-          line-height: 1;
-          letter-spacing: -0.055em;
-          font-weight: 950;
-        }
-
-        .statHint {
-          margin-top: 10px;
-          color: #475569;
-          font-size: 13px;
-          font-weight: 720;
-        }
-
-        .panel {
-          border-radius: 28px;
-          padding: 22px;
-        }
-
-        .panelHeader {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 18px;
           margin-bottom: 18px;
         }
 
-        .panelKicker {
-          color: var(--primary);
-          font-size: 11.5px;
+        .statCard,
+        .panel,
+        .packageCard {
+          background: rgba(255, 255, 255, .9);
+          border: 1px solid rgba(148, 163, 184, .24);
+          border-radius: 28px;
+          box-shadow: 0 24px 70px rgba(15, 23, 42, .10);
+        }
+
+        .statCard {
+          padding: 20px;
+        }
+
+        .statLabel {
+          color: #007f6d;
+          font-size: 12px;
           font-weight: 950;
           text-transform: uppercase;
-          letter-spacing: .10em;
+          letter-spacing: .1em;
+        }
+
+        .statValue {
+          font-size: 34px;
+          font-weight: 950;
+          letter-spacing: -0.05em;
+          color: #07111f;
+          margin-top: 8px;
+        }
+
+        .statHint {
+          color: #64748b;
+          font-size: 13px;
+          font-weight: 800;
+          margin-top: 4px;
+        }
+
+        .panel {
+          padding: 22px;
+          margin-top: 18px;
         }
 
         .panelTitle {
-          margin: 5px 0 0;
-          color: #07111f;
+          margin: 4px 0 0;
           font-size: 24px;
-          line-height: 1.1;
+          font-weight: 950;
           letter-spacing: -0.04em;
-          font-weight: 920;
+          color: #07111f;
         }
 
         .tableWrap {
-          overflow: auto;
-          border: 1px solid rgba(148, 163, 184, 0.28);
+          margin-top: 18px;
+          overflow-x: auto;
           border-radius: 20px;
-          background: white;
+          border: 1px solid rgba(148, 163, 184, .24);
         }
 
         table {
           width: 100%;
           border-collapse: collapse;
+          background: white;
         }
 
         th {
           text-align: left;
+          padding: 15px 16px;
           background: #f8fafc;
-          color: #64748b;
-          font-size: 11.5px;
-          text-transform: uppercase;
-          letter-spacing: .075em;
-          padding: 14px 15px;
-          border-bottom: 1px solid rgba(148, 163, 184, 0.24);
+          color: #475569;
+          font-size: 12px;
           font-weight: 950;
+          text-transform: uppercase;
+          letter-spacing: .08em;
+          border-bottom: 1px solid rgba(148, 163, 184, .22);
         }
 
         td {
-          padding: 16px 15px;
-          border-bottom: 1px solid #eef2f7;
-          color: #162033;
+          padding: 16px;
+          color: #0f172a;
           font-size: 14px;
-          font-weight: 720;
-          vertical-align: top;
+          font-weight: 750;
+          border-bottom: 1px solid rgba(148, 163, 184, .16);
+          vertical-align: middle;
         }
 
         tr:last-child td {
-          border-bottom: none;
-        }
-
-        tr:hover td {
-          background: #fbfdff;
-        }
-
-        .tenantName {
-          color: #07111f;
-          font-weight: 950;
-          letter-spacing: -0.015em;
+          border-bottom: 0;
         }
 
         .badge {
           display: inline-flex;
           align-items: center;
           border-radius: 999px;
-          padding: 5px 10px;
-          font-size: 11.5px;
-          font-weight: 950;
-          border: 1px solid #bbf7d0;
-          background: #f0fdf4;
+          padding: 7px 10px;
+          background: #dcfce7;
           color: #047857;
+          font-size: 12px;
+          font-weight: 950;
           white-space: nowrap;
         }
 
-        .badgeTrial {
-          border-color: #fed7aa;
-          background: #fff7ed;
-          color: #c2410c;
-        }
-
         .badgeLocked {
-          border-color: #fecaca;
-          background: #fef2f2;
+          background: #fee2e2;
           color: #b91c1c;
-        }
-
-        input,
-        select,
-        textarea {
-          font: inherit;
         }
 
         @media (max-width: 1180px) {
           .superAdminShell {
-            grid-template-columns: 1fr;
-          }
-
-          .sidebar {
-            position: relative;
-            min-height: auto;
+            grid-template-columns: 250px minmax(0, 1fr);
           }
 
           .statGrid {
@@ -415,42 +468,86 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
           }
         }
 
-        @media (max-width: 720px) {
-          .main {
-            padding: 22px;
+        @media (max-width: 820px) {
+          .superAdminShell {
+            grid-template-columns: 1fr;
           }
 
-          .topbar {
+          .superAdminSidebar {
+            position: relative;
+            height: auto;
+            padding: 16px;
+          }
+
+          .superAdminNav {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .superAdminMain {
+            padding: 24px 16px 48px;
+          }
+
+          .topbar,
+          .panelHeader {
             flex-direction: column;
           }
 
+          .pageTitle {
+            font-size: 36px;
+          }
+        }
+
+        @media (max-width: 560px) {
+          .superAdminNav,
           .statGrid {
             grid-template-columns: 1fr;
           }
         }
       `}</style>
 
-      <aside className="sidebar">
-        <Link to="/gastario-control" className="logoWrap">
-          <img className="logo" src="/gastario-logo.svg" alt="Gastario" />
+      <aside className="superAdminSidebar">
+        <Link to="/gastario-control" className="superAdminBrand">
+          <div className="superAdminLogo">G</div>
+          <div className="superAdminBrandText">
+            <div className="superAdminBrandName">Gastario</div>
+            <div className="superAdminBrandSub">Control Center</div>
+          </div>
         </Link>
 
-        <nav className="nav">
-          {navItems.map((item) => (
-            <NavLink key={item.to} to={item.to} end={item.to === "/gastario-control"}>
-              <span>{item.label}</span>
-              <span className="navArrow">{">"}</span>
-            </NavLink>
-          ))}
+        <div className="superAdminDivider" />
+
+        <nav className="superAdminNav">
+          {navItems.map((item) => {
+            const active = isActivePath(location.pathname, item.to);
+
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={active ? "superAdminNavItem superAdminNavItemActive" : "superAdminNavItem"}
+              >
+                <span className="superAdminNavText">
+                  <span className="superAdminNavLabel">{item.label}</span>
+                  <span className="superAdminNavHint">{item.hint}</span>
+                </span>
+                <span className="superAdminNavArrow">›</span>
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className="sideCard">
-          <strong>Super Admin</strong>
-          <p>Nur für Plattform-Betreiber. Hier verwaltest du Mandanten, Pakete, Limits und Registrierungscodes.</p>
+        <div className="superAdminSidebarCard">
+          <h3 className="superAdminSidebarCardTitle">Super Admin</h3>
+          <p className="superAdminSidebarCardText">
+            Mandanten, Pakete, Limits, Features und Registrierungscodes zentral verwalten.
+          </p>
         </div>
       </aside>
 
-      <main className="main">{children}</main>
+      <main className="superAdminMain">
+        <div className="superAdminContent">{children}</div>
+      </main>
     </div>
   );
 }
