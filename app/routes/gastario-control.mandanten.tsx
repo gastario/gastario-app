@@ -1,40 +1,49 @@
 ﻿import { Form, Link, useActionData, useLoaderData } from "react-router";
 import SuperAdminLayout from "../components/SuperAdminLayout";
 
+const FEATURES = [
+  { code: "DASHBOARD", label: "Dashboard", group: "Basis" },
+  { code: "ORDERS", label: "Auftraege", group: "Basis" },
+  { code: "CUSTOMERS", label: "Kunden", group: "Basis" },
+  { code: "PRODUCTS", label: "Produkte", group: "Basis" },
+  { code: "QUOTES", label: "Angebote", group: "Basis" },
+  { code: "PRODUCTION", label: "Produktion", group: "Betrieb" },
+  { code: "PACKING_LISTS", label: "Packlisten", group: "Betrieb" },
+  { code: "DELIVERY_NOTES", label: "Lieferscheine", group: "Betrieb" },
+  { code: "DELIVERIES", label: "Lieferungen", group: "Betrieb" },
+  { code: "INCOMING_ORDERS", label: "Auftragseingang", group: "Automatisierung" },
+  { code: "PDF_EXTRACTION", label: "PDF-Erkennung", group: "Automatisierung" },
+  { code: "EMAIL_AUTOMATION", label: "E-Mail-Automatik", group: "Automatisierung" },
+  { code: "PRODUCT_MAPPING", label: "Produkt-Mapping", group: "Automatisierung" },
+  { code: "PURCHASING", label: "Einkauf", group: "Warenwirtschaft" },
+  { code: "INVENTORY", label: "Lager", group: "Warenwirtschaft" },
+  { code: "SUPPLIERS", label: "Lieferanten", group: "Warenwirtschaft" },
+  { code: "RECIPES", label: "Rezepte", group: "Warenwirtschaft" },
+  { code: "REPORTS", label: "Auswertungen", group: "Auswertung" },
+  { code: "MULTI_USER", label: "Mehrere Benutzer", group: "Premium" },
+  { code: "DRIVER_VIEW", label: "Fahreransicht", group: "Premium" },
+  { code: "INTEGRATIONS", label: "Integrationen", group: "Premium" },
+];
+
 export async function loader() {
   const { prisma } = await import("../lib/prisma.server");
 
   const tenants = await prisma.tenant.findMany({
     include: {
-      brands: {
-        orderBy: { createdAt: "asc" },
-      },
-      emailAccounts: {
-        orderBy: { createdAt: "asc" },
-      },
-      users: {
-        include: {
-          user: true,
-        },
-      },
-      orders: {
-        select: {
-          id: true,
-        },
-      },
+      brands: { orderBy: { createdAt: "asc" } },
+      emailAccounts: { orderBy: { createdAt: "asc" } },
+      users: { include: { user: true } },
+      orders: { select: { id: true } },
       enabledFeatures: true,
     },
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: { createdAt: "desc" },
   });
 
-  return { tenants };
+  return { tenants, features: FEATURES };
 }
 
 export async function action({ request }: { request: Request }) {
   const { prisma } = await import("../lib/prisma.server");
-
   const formData = await request.formData();
 
   const intent = String(formData.get("intent") || "");
@@ -104,6 +113,89 @@ export async function action({ request }: { request: Request }) {
     return { success: "Mandant wurde entsperrt." };
   }
 
+  if (intent === "toggleFeature") {
+    const feature = String(formData.get("feature") || "");
+    const enabled = String(formData.get("enabled") || "") === "true";
+
+    if (!FEATURES.some((item) => item.code === feature)) {
+      return { error: "Unbekanntes Modul." };
+    }
+
+    await prisma.tenantFeature.upsert({
+      where: {
+        tenantId_feature: {
+          tenantId,
+          feature: feature as any,
+        },
+      },
+      update: {
+        enabled,
+      },
+      create: {
+        tenantId,
+        feature: feature as any,
+        enabled,
+      },
+    });
+
+    return {
+      success: enabled ? "Modul wurde aktiviert." : "Modul wurde deaktiviert.",
+    };
+  }
+
+  if (intent === "activatePlanFeatures") {
+    const planCode = String(formData.get("planCode") || "STARTER");
+
+    const starter = ["DASHBOARD", "ORDERS", "CUSTOMERS", "PRODUCTS", "PACKING_LISTS", "DELIVERY_NOTES"];
+    const professional = [
+      ...starter,
+      "QUOTES",
+      "PRODUCTION",
+      "DELIVERIES",
+      "INCOMING_ORDERS",
+      "PDF_EXTRACTION",
+      "EMAIL_AUTOMATION",
+      "PRODUCT_MAPPING",
+      "PURCHASING",
+      "INVENTORY",
+      "SUPPLIERS",
+      "RECIPES",
+      "REPORTS",
+      "MULTI_USER",
+    ];
+    const premium = [...professional, "DRIVER_VIEW", "INTEGRATIONS"];
+
+    const selected =
+      planCode === "PREMIUM"
+        ? premium
+        : planCode === "PROFESSIONAL"
+          ? professional
+          : starter;
+
+    await prisma.$transaction(
+      FEATURES.map((feature) =>
+        prisma.tenantFeature.upsert({
+          where: {
+            tenantId_feature: {
+              tenantId,
+              feature: feature.code as any,
+            },
+          },
+          update: {
+            enabled: selected.includes(feature.code),
+          },
+          create: {
+            tenantId,
+            feature: feature.code as any,
+            enabled: selected.includes(feature.code),
+          },
+        })
+      )
+    );
+
+    return { success: "Module wurden passend zum Paket gesetzt." };
+  }
+
   return { error: "Unbekannte Aktion." };
 }
 
@@ -122,8 +214,13 @@ function statusLabel(status: string, lockedAt?: string | Date | null) {
   return status;
 }
 
+function isFeatureEnabled(tenant: any, featureCode: string) {
+  const item = tenant.enabledFeatures.find((entry: any) => entry.feature === featureCode);
+  return Boolean(item?.enabled);
+}
+
 export default function MandantenPage() {
-  const { tenants } = useLoaderData<typeof loader>();
+  const { tenants, features } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
   return (
@@ -133,7 +230,7 @@ export default function MandantenPage() {
           <div className="kicker">Super Admin</div>
           <h1 className="pageTitle">Mandanten</h1>
           <p className="pageSubtitle">
-            Verwalte Caterer, Pakete, Status, Limits und Sperren.
+            Verwalte Caterer, Pakete, Status, Limits, Sperren und Modul-Freischaltungen.
           </p>
         </div>
 
@@ -262,6 +359,8 @@ export default function MandantenPage() {
                       <span>Status: {statusLabel(tenant.subscriptionStatus, tenant.lockedAt)}</span>
                       <span>-</span>
                       <span>Auftraege: {tenant.orders.length}</span>
+                      <span>-</span>
+                      <span>Module: {tenant.enabledFeatures.filter((item) => item.enabled).length}</span>
                     </div>
                   </div>
 
@@ -280,64 +379,114 @@ export default function MandantenPage() {
 
                 <div style={{
                   display: "grid",
-                  gridTemplateColumns: "1.2fr 1fr",
+                  gridTemplateColumns: "minmax(0, 1.15fr) minmax(360px, .85fr)",
                   gap: 18,
                   alignItems: "start"
                 }}>
-                  <div className="tableWrap">
-                    <table>
-                      <tbody>
-                        <tr>
-                          <th>Marken</th>
-                          <td>
-                            {tenant.brands.length === 0
-                              ? "-"
-                              : tenant.brands.map((brand) => brand.name).join(", ")}
-                          </td>
-                        </tr>
-                        <tr>
-                          <th>E-Mails</th>
-                          <td>
-                            {tenant.emailAccounts.length === 0
-                              ? "-"
-                              : tenant.emailAccounts.map((account) => account.email).join(", ")}
-                          </td>
-                        </tr>
-                        <tr>
-                          <th>Benutzer</th>
-                          <td>
-                            {tenant.users.length === 0
-                              ? "-"
-                              : tenant.users.map((item) => item.user.email).join(", ")}
-                          </td>
-                        </tr>
-                        <tr>
-                          <th>Limits</th>
-                          <td>
-                            {tenant.maxBrands} Marken / {tenant.maxEmailAccounts} E-Mails / {tenant.maxUsers} Benutzer
-                          </td>
-                        </tr>
-                        <tr>
-                          <th>Aktive Module</th>
-                          <td>
-                            {tenant.enabledFeatures.filter((item) => item.enabled).length}
-                          </td>
-                        </tr>
-                        {tenant.lockedAt ? (
+                  <div style={{ display: "grid", gap: 14 }}>
+                    <div className="tableWrap">
+                      <table>
+                        <tbody>
                           <tr>
-                            <th>Sperrgrund</th>
-                            <td>{tenant.lockReason || "-"}</td>
+                            <th>Marken</th>
+                            <td>
+                              {tenant.brands.length === 0
+                                ? "-"
+                                : tenant.brands.map((brand) => brand.name).join(", ")}
+                            </td>
                           </tr>
-                        ) : null}
-                      </tbody>
-                    </table>
+                          <tr>
+                            <th>E-Mails</th>
+                            <td>
+                              {tenant.emailAccounts.length === 0
+                                ? "-"
+                                : tenant.emailAccounts.map((account) => account.email).join(", ")}
+                            </td>
+                          </tr>
+                          <tr>
+                            <th>Benutzer</th>
+                            <td>
+                              {tenant.users.length === 0
+                                ? "-"
+                                : tenant.users.map((item) => item.user.email).join(", ")}
+                            </td>
+                          </tr>
+                          <tr>
+                            <th>Limits</th>
+                            <td>
+                              {tenant.maxBrands} Marken / {tenant.maxEmailAccounts} E-Mails / {tenant.maxUsers} Benutzer
+                            </td>
+                          </tr>
+                          {tenant.lockedAt ? (
+                            <tr>
+                              <th>Sperrgrund</th>
+                              <td>{tenant.lockReason || "-"}</td>
+                            </tr>
+                          ) : null}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div style={{
+                      border: "1px solid #dbe5ee",
+                      borderRadius: 18,
+                      padding: 16,
+                      background: "#f8fafc"
+                    }}>
+                      <div style={{ fontWeight: 950, marginBottom: 12 }}>
+                        Module freischalten
+                      </div>
+
+                      <div style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
+                        gap: 10
+                      }}>
+                        {features.map((feature) => {
+                          const enabled = isFeatureEnabled(tenant, feature.code);
+
+                          return (
+                            <Form method="post" key={feature.code}>
+                              <input type="hidden" name="intent" value="toggleFeature" />
+                              <input type="hidden" name="tenantId" value={tenant.id} />
+                              <input type="hidden" name="feature" value={feature.code} />
+                              <input type="hidden" name="enabled" value={enabled ? "false" : "true"} />
+
+                              <button
+                                type="submit"
+                                style={{
+                                  width: "100%",
+                                  textAlign: "left",
+                                  border: enabled ? "1px solid #99f6e4" : "1px solid #dbe5ee",
+                                  background: enabled ? "#ecfdf5" : "#ffffff",
+                                  color: enabled ? "#065f46" : "#334155",
+                                  borderRadius: 14,
+                                  padding: "11px 12px",
+                                  fontWeight: 900,
+                                  cursor: "pointer"
+                                }}
+                              >
+                                <span style={{ display: "block", fontSize: 13 }}>
+                                  {enabled ? "✓ " : "+ "}
+                                  {feature.label}
+                                </span>
+                                <span style={{
+                                  display: "block",
+                                  fontSize: 11,
+                                  color: enabled ? "#047857" : "#64748b",
+                                  marginTop: 3
+                                }}>
+                                  {feature.group}
+                                </span>
+                              </button>
+                            </Form>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
 
-                  <div style={{
-                    display: "grid",
-                    gap: 12,
-                    alignContent: "start"
-                  }}>
+                  <div style={{ display: "grid", gap: 12 }}>
                     <Form method="post" style={{
                       display: "grid",
                       gap: 10,
@@ -411,6 +560,15 @@ export default function MandantenPage() {
 
                       <button className="btn btnPrimary" type="submit">
                         Speichern
+                      </button>
+                    </Form>
+
+                    <Form method="post">
+                      <input type="hidden" name="intent" value="activatePlanFeatures" />
+                      <input type="hidden" name="tenantId" value={tenant.id} />
+                      <input type="hidden" name="planCode" value={tenant.planCode} />
+                      <button className="btn" type="submit" style={{ width: "100%" }}>
+                        Module passend zum Paket setzen
                       </button>
                     </Form>
 
