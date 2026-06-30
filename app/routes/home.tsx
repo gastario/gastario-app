@@ -1,63 +1,236 @@
+﻿import { Link, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
-const metrics = [
-  { label: "Aufträge heute", value: "3", detail: "180 Portionen geplant", trend: "bereit" },
-  { label: "Offene Angebote", value: "7", detail: "2 warten auf Rückmeldung", trend: "prüfen" },
-  { label: "Lieferungen", value: "4", detail: "nächste Tour 11:30 Uhr", trend: "aktiv" },
-  { label: "Einkauf offen", value: "9", detail: "Positionen unter Bedarf", trend: "kritisch" },
-];
+function todayRange() {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
 
-const schedule = [
-  {
-    time: "11:30",
-    customer: "Muster GmbH",
-    order: "Lunch Catering",
-    products: "80 Bowls",
-    status: "Bestätigt",
-    owner: "Küche",
-  },
-  {
-    time: "12:15",
-    customer: "ABC Consulting",
-    order: "Frühstück",
-    products: "45 Personen",
-    status: "In Produktion",
-    owner: "Produktion",
-  },
-  {
-    time: "16:00",
-    customer: "Eventagentur Berlin",
-    order: "Fingerfood",
-    products: "120 Portionen",
-    status: "Packliste offen",
-    owner: "Büro",
-  },
-];
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
 
-const purchaseItems = [
-  { supplier: "Metro", item: "Hähnchenbrust", amount: "12 kg" },
-  { supplier: "Verpackung24", item: "Bowlschalen 1100 ml", amount: "1 Karton" },
-  { supplier: "Bäckerei", item: "Mini-Brötchen", amount: "80 Stück" },
-];
+  return { start, end };
+}
 
-const importItems = [
-  { source: "Heycater", customer: "Tech Office GmbH", status: "Prüfung erforderlich" },
-  { source: "Direkt", customer: "Müller & Partner", status: "Bereit zur Übernahme" },
-  { source: "Egora", customer: "Event Service Berlin", status: "Duplikat prüfen" },
-];
+function formatDate(value: string | Date | null | undefined) {
+  if (!value) return "-";
+  return new Date(value).toLocaleDateString("de-DE");
+}
+
+function formatTime(value: string | null | undefined) {
+  return value || "-";
+}
 
 export function meta() {
   return [
-    { title: "Gastario" },
+    { title: "Dashboard · Gastario" },
     {
       name: "description",
       content:
-        "Gastario ist die Betriebssoftware für Caterer: Aufträge, Produktion, Einkauf, Lager und Lieferung an einem Ort.",
+        "Gastario ist die Betriebssoftware fuer Caterer: Auftraege, Produktion, Einkauf, Lager und Lieferung an einem Ort.",
     },
   ];
 }
 
+export async function loader({ request }: { request: Request }) {
+  const { prisma } = await import("../lib/prisma.server");
+  const { getTenantAccess } = await import("../lib/features.server");
+
+  const access = await getTenantAccess(request);
+
+  if (!access.tenantId || !access.tenant) {
+    return {
+      tenant: null,
+      setupError: access.setupError || "Kein Mandant gefunden.",
+      counts: {
+        ordersToday: 0,
+        openOrders: 0,
+        confirmedOrders: 0,
+        customers: 0,
+        products: 0,
+        suppliers: 0,
+        inventoryItems: 0,
+        lowInventory: 0,
+      },
+      todayOrders: [],
+      openOrders: [],
+      lowInventoryItems: [],
+      features: [],
+    };
+  }
+
+  const { start, end } = todayRange();
+
+  const [
+    ordersToday,
+    openOrdersCount,
+    confirmedOrders,
+    customers,
+    products,
+    suppliers,
+    inventoryItems,
+    lowInventoryItems,
+    todayOrders,
+    openOrders,
+  ] = await Promise.all([
+    prisma.order.count({
+      where: {
+        tenantId: access.tenantId,
+        deliveryDate: {
+          gte: start,
+          lt: end,
+        },
+      },
+    }).catch(() => 0),
+
+    prisma.order.count({
+      where: {
+        tenantId: access.tenantId,
+        status: "AUTO_CREATED" as any,
+      },
+    }).catch(() => 0),
+
+    prisma.order.count({
+      where: {
+        tenantId: access.tenantId,
+        status: "CONFIRMED" as any,
+      },
+    }).catch(() => 0),
+
+    prisma.customer.count({
+      where: {
+        tenantId: access.tenantId,
+      },
+    }).catch(() => 0),
+
+    prisma.product.count({
+      where: {
+        tenantId: access.tenantId,
+      },
+    }).catch(() => 0),
+
+    prisma.supplier.count({
+      where: {
+        tenantId: access.tenantId,
+        active: true,
+      },
+    }).catch(() => 0),
+
+    prisma.inventoryItem.count({
+      where: {
+        tenantId: access.tenantId,
+        active: true,
+      },
+    }).catch(() => 0),
+
+    prisma.inventoryItem.findMany({
+      where: {
+        tenantId: access.tenantId,
+        active: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+      take: 50,
+    }).catch(() => []),
+
+    prisma.order.findMany({
+      where: {
+        tenantId: access.tenantId,
+        deliveryDate: {
+          gte: start,
+          lt: end,
+        },
+      },
+      include: {
+        items: true,
+        customer: true,
+      },
+      orderBy: [
+        { deliveryTime: "asc" },
+        { createdAt: "desc" },
+      ],
+      take: 8,
+    }).catch(() => []),
+
+    prisma.order.findMany({
+      where: {
+        tenantId: access.tenantId,
+        status: "AUTO_CREATED" as any,
+      },
+      include: {
+        items: true,
+        customer: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 6,
+    }).catch(() => []),
+  ]);
+
+  const lowItems = lowInventoryItems.filter((item: any) => {
+    return item.minStock > 0 && item.currentStock <= item.minStock;
+  });
+
+  return {
+    tenant: access.tenant,
+    setupError: null,
+    counts: {
+      ordersToday,
+      openOrders: openOrdersCount,
+      confirmedOrders,
+      customers,
+      products,
+      suppliers,
+      inventoryItems,
+      lowInventory: lowItems.length,
+    },
+    todayOrders,
+    openOrders,
+    lowInventoryItems: lowItems.slice(0, 6),
+    features: access.features,
+  };
+}
+
 export default function Home() {
+  const data = useLoaderData<typeof loader>();
+
+  if (data.setupError) {
+    return (
+      <AppLayout>
+        <header className="topbar">
+          <div>
+            <p className="eyebrow">Dashboard</p>
+            <h1>Einrichtung fehlt</h1>
+            <span className="pageSubline">{data.setupError}</span>
+          </div>
+
+          <div className="topActions">
+            <a className="secondaryButton" href="/logout">Ausloggen</a>
+            <a className="primaryButton" href="/login">Neu einloggen</a>
+          </div>
+        </header>
+
+        <section className="panel">
+          <div className="panelHeader">
+            <div>
+              <p className="eyebrow">Hinweis</p>
+              <h2>Benutzer ist noch keinem Mandanten zugeordnet</h2>
+            </div>
+          </div>
+
+          <div className="noteBox">
+            <strong>Was jetzt?</strong>
+            <p>
+              Lege im Super Admin einen Mandanten an oder fuege diesen Benutzer
+              einem bestehenden Mandanten als OWNER hinzu.
+            </p>
+          </div>
+        </section>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <header className="topbar">
@@ -65,23 +238,25 @@ export default function Home() {
           <p className="eyebrow">Dashboard</p>
           <h1>Betriebszentrale</h1>
           <span className="pageSubline">
-            Heute · Aufträge, Produktion, Einkauf und Lieferungen im Überblick
+            {data.tenant?.name} · echte Kennzahlen aus Mandant, Auftraegen, Kunden, Produkten und Lager.
           </span>
         </div>
 
         <div className="topActions">
-          <button className="secondaryButton">Import prüfen</button>
-          <button className="primaryButton">Neuer Auftrag</button>
+          <Link className="secondaryButton" to="/auftragseingang">Import pruefen</Link>
+          <Link className="primaryButton" to="/auftragseingang">Neuer Auftrag</Link>
         </div>
       </header>
 
       <section className="commandCenter">
         <div className="commandCopy">
           <p className="eyebrow">Tagessteuerung</p>
-          <h2>3 Aufträge, 180 Portionen, 4 Lieferungen</h2>
+          <h2>
+            {data.counts.ordersToday} Auftraege heute · {data.counts.confirmedOrders} bestaetigte Auftraege
+          </h2>
           <p>
-            Gastario bereitet aus bestätigten Aufträgen automatisch Produktion, Einkauf,
-            Packlisten, Lieferscheine und Fahrerunterlagen vor.
+            Gastario nutzt echte Mandanten-Daten und bereitet daraus Produktion,
+            Einkauf, Packlisten, Lieferscheine und Fahrerunterlagen vor.
           </p>
         </div>
 
@@ -96,16 +271,41 @@ export default function Home() {
       </section>
 
       <section className="metricsGrid" aria-label="Kennzahlen">
-        {metrics.map((metric) => (
-          <article className="metricCard" key={metric.label}>
-            <div>
-              <p>{metric.label}</p>
-              <strong>{metric.value}</strong>
-              <span>{metric.detail}</span>
-            </div>
-            <small data-trend={metric.trend}>{metric.trend}</small>
-          </article>
-        ))}
+        <article className="metricCard">
+          <div>
+            <p>Auftraege heute</p>
+            <strong>{data.counts.ordersToday}</strong>
+            <span>nach Lieferdatum</span>
+          </div>
+          <small data-trend="bereit">heute</small>
+        </article>
+
+        <article className="metricCard">
+          <div>
+            <p>Pruefen</p>
+            <strong>{data.counts.openOrders}</strong>
+            <span>im Auftragseingang</span>
+          </div>
+          <small data-trend="pruefen">offen</small>
+        </article>
+
+        <article className="metricCard">
+          <div>
+            <p>Kunden / Produkte</p>
+            <strong>{data.counts.customers}/{data.counts.products}</strong>
+            <span>Kunden und Produkte</span>
+          </div>
+          <small data-trend="aktiv">echt</small>
+        </article>
+
+        <article className="metricCard">
+          <div>
+            <p>Lager Warnungen</p>
+            <strong>{data.counts.lowInventory}</strong>
+            <span>unter Mindestbestand</span>
+          </div>
+          <small data-trend="kritisch">Lager</small>
+        </article>
       </section>
 
       <section className="mainGrid">
@@ -113,9 +313,9 @@ export default function Home() {
           <div className="panelHeader">
             <div>
               <p className="eyebrow">Tagesplan</p>
-              <h2>Nächste Aufträge</h2>
+              <h2>Naechste Auftraege heute</h2>
             </div>
-            <button className="ghostButton">Alle Aufträge</button>
+            <Link className="ghostButton" to="/auftraege">Alle Auftraege</Link>
           </div>
 
           <div className="table">
@@ -124,18 +324,30 @@ export default function Home() {
               <span>Kunde</span>
               <span>Auftrag</span>
               <span>Status</span>
-              <span>Bereich</span>
+              <span>Datum</span>
             </div>
 
-            {schedule.map((item) => (
-              <div className="tableRow" key={`${item.time}-${item.customer}`}>
-                <span className="timeCell">{item.time}</span>
-                <strong>{item.customer}</strong>
-                <span>{item.order} · {item.products}</span>
-                <em>{item.status}</em>
-                <span>{item.owner}</span>
+            {data.todayOrders.length === 0 ? (
+              <div className="tableRow">
+                <span className="timeCell">-</span>
+                <strong>Keine Auftraege heute</strong>
+                <span>-</span>
+                <em>leer</em>
+                <span>-</span>
               </div>
-            ))}
+            ) : (
+              data.todayOrders.map((order: any) => (
+                <div className="tableRow" key={order.id}>
+                  <span className="timeCell">{formatTime(order.deliveryTime)}</span>
+                  <strong>{order.customerName}</strong>
+                  <span>
+                    {order.eventName || order.orderNumber} · {order.items.length} Positionen
+                  </span>
+                  <em>{order.status}</em>
+                  <span>{formatDate(order.deliveryDate)}</span>
+                </div>
+              ))
+            )}
           </div>
         </article>
 
@@ -143,42 +355,62 @@ export default function Home() {
           <article className="panel">
             <div className="panelHeader compact">
               <div>
-                <p className="eyebrow">Importe</p>
-                <h2>Prüfen</h2>
+                <p className="eyebrow">Auftragseingang</p>
+                <h2>Zu pruefen</h2>
               </div>
             </div>
 
             <div className="compactList">
-              {importItems.map((item) => (
-                <div className="compactItem" key={`${item.source}-${item.customer}`}>
+              {data.openOrders.length === 0 ? (
+                <div className="compactItem">
                   <div>
-                    <strong>{item.customer}</strong>
-                    <span>{item.source}</span>
+                    <strong>Nichts offen</strong>
+                    <span>Keine Auftraege in Pruefung.</span>
                   </div>
-                  <small>{item.status}</small>
+                  <small>OK</small>
                 </div>
-              ))}
+              ) : (
+                data.openOrders.map((order: any) => (
+                  <div className="compactItem" key={order.id}>
+                    <div>
+                      <strong>{order.customerName}</strong>
+                      <span>{order.source} · {order.orderNumber}</span>
+                    </div>
+                    <small>Pruefen</small>
+                  </div>
+                ))
+              )}
             </div>
           </article>
 
           <article className="panel">
             <div className="panelHeader compact">
               <div>
-                <p className="eyebrow">Einkauf</p>
-                <h2>Nach Lieferant</h2>
+                <p className="eyebrow">Lager</p>
+                <h2>Mindestbestand</h2>
               </div>
             </div>
 
             <div className="compactList">
-              {purchaseItems.map((item) => (
-                <div className="compactItem" key={`${item.supplier}-${item.item}`}>
+              {data.lowInventoryItems.length === 0 ? (
+                <div className="compactItem">
                   <div>
-                    <strong>{item.item}</strong>
-                    <span>{item.supplier}</span>
+                    <strong>Keine Warnung</strong>
+                    <span>Keine Lagerartikel unter Mindestbestand.</span>
                   </div>
-                  <small>{item.amount}</small>
+                  <small>OK</small>
                 </div>
-              ))}
+              ) : (
+                data.lowInventoryItems.map((item: any) => (
+                  <div className="compactItem" key={item.id}>
+                    <div>
+                      <strong>{item.name}</strong>
+                      <span>{item.currentStock} / Mindest {item.minStock} {item.unit}</span>
+                    </div>
+                    <small>Kaufen</small>
+                  </div>
+                ))
+              )}
             </div>
           </article>
         </aside>
