@@ -333,6 +333,25 @@ export default function AuftragseingangPage() {
   const [positionRows, setPositionRows] = useState<Array<{ id: number; type: "item" | "text" }>>([
     { id: Date.now(), type: "item" },
   ]);
+  const [draggingRowId, setDraggingRowId] = useState<number | null>(null);
+
+  function movePositionRow(fromId: number, toId: number) {
+    if (fromId === toId) return;
+
+    setPositionRows((rows) => {
+      const fromIndex = rows.findIndex((row) => row.id === fromId);
+      const toIndex = rows.findIndex((row) => row.id === toId);
+
+      if (fromIndex === -1 || toIndex === -1) return rows;
+
+      const nextRows = [...rows];
+      const [movedRow] = nextRows.splice(fromIndex, 1);
+      nextRows.splice(toIndex, 0, movedRow);
+
+      return nextRows;
+    });
+  }
+
   const [liveNetTotalCents, setLiveNetTotalCents] = useState(0);
   const [liveTaxTotalCents, setLiveTaxTotalCents] = useState(0);
   const [liveGrossTotalCents, setLiveGrossTotalCents] = useState(0);
@@ -667,32 +686,70 @@ export default function AuftragseingangPage() {
                   <div
                     key={row.id}
                     data-position-row={row.type}
+                    draggable
+                    onDragStart={(event) => {
+                      setDraggingRowId(row.id);
+                      event.dataTransfer.effectAllowed = "move";
+                      event.dataTransfer.setData("text/plain", String(row.id));
+                    }}
+                    onDragOver={(event) => {
+                      event.preventDefault();
+                      event.dataTransfer.dropEffect = "move";
+                    }}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      const fromId = Number(event.dataTransfer.getData("text/plain"));
+                      movePositionRow(fromId, row.id);
+                      setDraggingRowId(null);
+                    }}
+                    onDragEnd={() => setDraggingRowId(null)}
                     style={{
                       display: "grid",
                       gridTemplateColumns: row.type === "text"
-                        ? "42px minmax(0, 1fr) 40px"
-                        : "42px minmax(320px, 1fr) 86px 118px 138px 92px 150px 38px",
+                        ? "58px minmax(0, 1fr) 40px"
+                        : "58px minmax(320px, 1fr) 86px 118px 138px 92px 150px 38px",
                       gap: 10,
                       alignItems: "start",
                       padding: row.type === "text" ? "18px 18px 20px" : "15px 18px",
                       borderTop: rowIndex === 0 ? "none" : "1px solid #e5e5e5",
-                      background: "#ffffff"
+                      background: draggingRowId === row.id ? "#f1f5f9" : "#ffffff",
+                      opacity: draggingRowId === row.id ? 0.65 : 1,
+                      cursor: "grab"
                     }}
                   >
                     <div style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 999,
-                      background: "#eeeeee",
-                      color: "#555",
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 13,
-                      fontWeight: 850,
-                      marginTop: row.type === "text" ? 24 : 26
+                      gap: 7,
+                      marginTop: row.type === "text" ? 24 : 26,
+                      color: "#777"
                     }}>
-                      {rowIndex + 1}
+                      <span
+                        title="Position verschieben"
+                        style={{
+                          fontSize: 18,
+                          lineHeight: 1,
+                          cursor: "grab",
+                          userSelect: "none"
+                        }}
+                      >
+                        ↕
+                      </span>
+
+                      <span style={{
+                        width: 26,
+                        height: 26,
+                        borderRadius: 999,
+                        background: "#eeeeee",
+                        color: "#555",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 13,
+                        fontWeight: 850
+                      }}>
+                        {rowIndex + 1}
+                      </span>
                     </div>
 
                     {row.type === "text" ? (
@@ -892,8 +949,8 @@ export default function AuftragseingangPage() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: 22,
-                  padding: "16px 18px 20px",
+                  gap: 24,
+                  padding: "18px 18px 22px",
                   borderTop: "1px solid #d2d2d2",
                   background: "#ffffff"
                 }}>
@@ -913,7 +970,14 @@ export default function AuftragseingangPage() {
                     + ARTIKEL
                   </button>
 
-
+                  <span style={{
+                    color: "#666",
+                    padding: "8px 6px",
+                    fontWeight: 850,
+                    fontSize: 14
+                  }}>
+                    ≡ Freitext direkt unter Artikel
+                  </span>
 
                   <button type="button" style={{ border: "none", background: "#ffffff", color: "#333", padding: "8px 6px", fontWeight: 850, cursor: "pointer" }}>
                     ◉ OPTIONAL
@@ -927,7 +991,7 @@ export default function AuftragseingangPage() {
                 <div style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 180px 180px",
-                  minHeight: 68,
+                  minHeight: 74,
                   background: "#5a5a5a",
                   color: "#ffffff"
                 }}>
@@ -940,7 +1004,7 @@ export default function AuftragseingangPage() {
                     borderLeft: "1px solid rgba(255,255,255,0.12)"
                   }}>
                     <div style={{ fontSize: 12, fontWeight: 750 }}>Summe Netto</div>
-                    <div style={{ fontSize: 24, fontWeight: 500 }}>
+                    <div style={{ fontSize: 26, fontWeight: 500 }}>
                       {formatEuroCents(liveNetTotalCents)}
                     </div>
                   </div>
@@ -952,7 +1016,7 @@ export default function AuftragseingangPage() {
                     background: "#444"
                   }}>
                     <div style={{ fontSize: 12, fontWeight: 750 }}>Gesamtbetrag</div>
-                    <div style={{ fontSize: 24, fontWeight: 800 }}>
+                    <div style={{ fontSize: 26, fontWeight: 800 }}>
                       {formatEuroCents(liveGrossTotalCents)}
                     </div>
                   </div>
