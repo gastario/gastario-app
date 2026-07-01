@@ -154,25 +154,41 @@ export async function action({ request }: { request: Request }) {
     const contactName = String(formData.get("contactName") || "").trim();
     const contactPhone = String(formData.get("contactPhone") || "").trim();
 
+    const itemKinds = formData.getAll("itemKind").map((value) => String(value || "item"));
     const itemNames = formData.getAll("itemName").map((value) => String(value || "").trim());
     const quantities = formData.getAll("quantity").map((value) => Number(value || 1));
     const units = formData.getAll("unit").map((value) => String(value || "Stück").trim());
     const unitCentsList = formData.getAll("unitPriceEuro").map((value) => euroToCents(value));
+    const discountPercents = formData.getAll("discountPercent").map((value) => Number(String(value || "0").replace(",", ".")));
+    const taxRates = formData.getAll("taxRate").map((value) => Number(value || 19));
     const itemNotes = formData.getAll("itemNotes").map((value) => String(value || "").trim());
     const notes = String(formData.get("notes") || "").trim();
 
     const items = itemNames
       .map((name, index) => {
-        const quantity = Number.isFinite(quantities[index]) && quantities[index] > 0 ? quantities[index] : 1;
-        const unitCents = unitCentsList[index] || 0;
+        const kind = itemKinds[index] === "text" ? "text" : "item";
+        const quantity = kind === "text" ? 1 : Number.isFinite(quantities[index]) && quantities[index] > 0 ? quantities[index] : 1;
+        const unitCents = kind === "text" ? 0 : unitCentsList[index] || 0;
+        const discountPercent = Number.isFinite(discountPercents[index]) ? Math.max(0, discountPercents[index]) : 0;
+        const taxRate = Number.isFinite(taxRates[index]) ? taxRates[index] : 19;
+        const netBeforeDiscount = unitCents * quantity;
+        const discountCents = Math.round(netBeforeDiscount * (discountPercent / 100));
+        const totalCents = Math.max(0, netBeforeDiscount - discountCents);
+
+        const metaNotes = [
+          itemNotes[index] || "",
+          kind === "text" ? "Freitext" : "",
+          kind === "item" ? "MwSt " + taxRate + "%" : "",
+          kind === "item" && discountPercent > 0 ? "Rabatt " + discountPercent + "%" : "",
+        ].filter(Boolean).join(" | ");
 
         return {
           name,
           quantity,
-          unit: units[index] || "Stück",
+          unit: kind === "text" ? "Text" : units[index] || "Stück",
           unitCents,
-          totalCents: unitCents * quantity,
-          notes: itemNotes[index] || null,
+          totalCents,
+          notes: metaNotes || null,
         };
       })
       .filter((item) => item.name);
@@ -299,7 +315,9 @@ function formatDate(value: string | Date | null | undefined) {
 export default function AuftragseingangPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const [positionRows, setPositionRows] = useState<number[]>([Date.now()]);
+  const [positionRows, setPositionRows] = useState<Array<{ id: number; type: "item" | "text" }>>([
+    { id: Date.now(), type: "item" },
+  ]);
 
   if (data.setupError) {
     return (
@@ -572,102 +590,190 @@ export default function AuftragseingangPage() {
             <input name="contactPhone" placeholder="Telefon vor Ort" style={inputStyle} />
           </div>
 
-          <div style={{ display: "grid", gap: 10 }}>
+          <div style={{ display: "grid", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
               <div>
                 <div style={{ color: "#0f766e", textTransform: "uppercase", letterSpacing: ".08em", fontSize: 11, fontWeight: 950 }}>
                   Positionen
                 </div>
                 <h3 style={{ margin: "4px 0 0", fontSize: 18, letterSpacing: "-0.03em" }}>
-                  Speisen / Leistungen als Tabelle
+                  Artikel, Freitext, Rabatt und MwSt
                 </h3>
               </div>
               <div style={{ color: "#64748b", fontSize: 13, fontWeight: 750 }}>
-                Positionen flexibel erfassen
+                {positionRows.length} / 50 Positionen
               </div>
             </div>
 
             <div style={{
               border: "1px solid #dbe3ec",
-              borderRadius: 16,
-              overflow: "hidden",
-              background: "#ffffff"
+              borderRadius: 18,
+              background: "#ffffff",
+              overflow: "hidden"
             }}>
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "52px 1fr 110px 120px 150px",
-                gap: 10,
-                padding: "11px 12px",
-                background: "#f8fafc",
-                color: "#64748b",
-                textTransform: "uppercase",
-                letterSpacing: ".04em",
-                fontSize: 11,
-                fontWeight: 950
-              }}>
-                <div>Pos.</div>
-                <div>Speise / Leistung</div>
-                <div>Menge</div>
-                <div>Einheit</div>
-                <div>Einzelpreis</div>
-              </div>
-
-              {positionRows.map((rowId, rowIndex) => (
-                <div key={rowId} style={{
+              {positionRows.map((row, rowIndex) => (
+                <div key={row.id} style={{
                   display: "grid",
-                  gridTemplateColumns: "52px 1fr 110px 120px 150px",
-                  gap: 10,
-                  padding: "12px",
-                  borderTop: "1px solid #e5edf5",
-                  alignItems: "start"
+                  gridTemplateColumns: row.type === "text"
+                    ? "46px 1fr 42px"
+                    : "46px minmax(220px, 1fr) 90px 110px 135px 95px 105px 110px 42px",
+                  gap: 8,
+                  alignItems: "start",
+                  padding: "14px 12px",
+                  borderTop: rowIndex === 0 ? "none" : "1px solid #e5edf5",
+                  background: row.type === "text" ? "#fbfdff" : "#ffffff"
                 }}>
                   <div style={{
-                    width: 30,
-                    height: 30,
+                    width: 28,
+                    height: 28,
                     borderRadius: 999,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    background: rowIndex === 0 ? "#0f766e" : "#eef3f7",
-                    color: rowIndex === 0 ? "white" : "#64748b",
+                    background: "#eef3f7",
+                    color: "#64748b",
                     fontWeight: 950
                   }}>
                     {rowIndex + 1}
                   </div>
 
-                  <div style={{ display: "grid", gap: 8 }}>
-                    <input
-                      name="itemName"
-                      placeholder={rowIndex === 0 ? "z. B. Chicken Bowl" : "Weitere Position optional"}
-                      style={inputStyle}
-                    />
+                  {row.type === "text" ? (
+                    <>
+                      <input type="hidden" name="itemKind" value="text" />
+                      <input type="hidden" name="quantity" value="1" />
+                      <input type="hidden" name="unit" value="Text" />
+                      <input type="hidden" name="unitPriceEuro" value="0" />
+                      <input type="hidden" name="discountPercent" value="0" />
+                      <input type="hidden" name="taxRate" value="0" />
+                      <input type="hidden" name="itemNotes" value="" />
 
-                    <details style={{
-                      border: "1px dashed #cbd5e1",
-                      borderRadius: 12,
-                      padding: "9px 11px",
-                      background: "#f8fafc"
-                    }}>
-                      <summary style={{
-                        cursor: "pointer",
-                        color: "#0f766e",
-                        fontWeight: 900,
-                        fontSize: 13
-                      }}>
-                        + Freitext zu dieser Position
-                      </summary>
                       <textarea
-                        name="itemNotes"
-                        placeholder="z. B. ohne Koriander, extra Sauce, separat verpacken"
+                        name="itemName"
+                        placeholder="Freitext, z. B. Aufbauhinweis, Sonderwunsch, interne Info"
                         rows={4}
-                        style={{ ...inputStyle, marginTop: 9, width: "100%", minHeight: 96, resize: "vertical" }}
+                        style={{ ...inputStyle, minHeight: 110, resize: "vertical" }}
                       />
-                    </details>
-                  </div>
 
-                  <input name="quantity" type="number" min="1" defaultValue={rowIndex === 0 ? "1" : ""} style={inputStyle} />
-                  <input name="unit" defaultValue="Stück" style={inputStyle} />
-                  <input name="unitPriceEuro" placeholder="0,00 €" style={inputStyle} />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPositionRows((rows) => rows.filter((item) => item.id !== row.id))
+                        }
+                        style={{
+                          border: "none",
+                          background: "#fff1f2",
+                          color: "#991b1b",
+                          borderRadius: 10,
+                          minHeight: 40,
+                          cursor: "pointer",
+                          fontWeight: 950
+                        }}
+                        title="Position löschen"
+                      >
+                        ×
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <input type="hidden" name="itemKind" value="item" />
+
+                      <div style={{ display: "grid", gap: 8 }}>
+                        <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                          Artikel / Leistung
+                          <input name="itemName" placeholder="Bezeichnung des Artikels" style={inputStyle} />
+                        </label>
+
+                        <details style={{
+                          border: "1px dashed #cbd5e1",
+                          borderRadius: 12,
+                          padding: "9px 11px",
+                          background: "#f8fafc"
+                        }}>
+                          <summary style={{
+                            cursor: "pointer",
+                            color: "#0f766e",
+                            fontWeight: 900,
+                            fontSize: 13
+                          }}>
+                            + Freitext zu dieser Position
+                          </summary>
+                          <textarea
+                            name="itemNotes"
+                            placeholder="z. B. ohne Koriander, extra Sauce, separat verpacken"
+                            rows={4}
+                            style={{ ...inputStyle, marginTop: 9, width: "100%", minHeight: 110, resize: "vertical" }}
+                          />
+                        </details>
+                      </div>
+
+                      <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                        Menge
+                        <input name="quantity" type="number" min="1" defaultValue="1" style={inputStyle} />
+                      </label>
+
+                      <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                        Einheit
+                        <input name="unit" defaultValue="Stück" style={inputStyle} />
+                      </label>
+
+                      <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                        VK Netto
+                        <input name="unitPriceEuro" placeholder="0,00 €" style={inputStyle} />
+                      </label>
+
+                      <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                        Rabatt
+                        <input name="discountPercent" type="number" min="0" defaultValue="0" style={inputStyle} />
+                      </label>
+
+                      <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                        MwSt
+                        <select name="taxRate" defaultValue="19" style={inputStyle}>
+                          <option value="19">19 %</option>
+                          <option value="7">7 %</option>
+                          <option value="0">0 %</option>
+                        </select>
+                      </label>
+
+                      <div style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                        Gesamt
+                        <div style={{
+                          minHeight: 42,
+                          borderRadius: 12,
+                          background: "#f8fafc",
+                          border: "1px solid #dbe3ec",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "flex-end",
+                          padding: "0 12px",
+                          color: "#07111f",
+                          fontWeight: 950
+                        }}>
+                          wird berechnet
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPositionRows((rows) => rows.length > 1 ? rows.filter((item) => item.id !== row.id) : rows)
+                        }
+                        style={{
+                          border: "none",
+                          background: "#fff1f2",
+                          color: "#991b1b",
+                          borderRadius: 10,
+                          minHeight: 40,
+                          marginTop: 22,
+                          cursor: "pointer",
+                          fontWeight: 950
+                        }}
+                        title="Position löschen"
+                      >
+                        ×
+                      </button>
+                    </>
+                  )}
                 </div>
               ))}
 
@@ -685,7 +791,7 @@ export default function AuftragseingangPage() {
                     type="button"
                     onClick={() =>
                       setPositionRows((rows) =>
-                        rows.length >= 50 ? rows : [...rows, Date.now() + Math.random()]
+                        rows.length >= 50 ? rows : [...rows, { id: Date.now() + Math.random(), type: "item" }]
                       )
                     }
                     style={{
@@ -698,32 +804,72 @@ export default function AuftragseingangPage() {
                       cursor: "pointer"
                     }}
                   >
-                    + Position hinzufügen
+                    + Artikel
                   </button>
 
-                  {positionRows.length > 1 ? (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setPositionRows((rows) => rows.length > 1 ? rows.slice(0, -1) : rows)
-                      }
-                      style={{
-                        border: "1px solid #fecaca",
-                        background: "#fff1f2",
-                        color: "#991b1b",
-                        borderRadius: 999,
-                        padding: "10px 14px",
-                        fontWeight: 950,
-                        cursor: "pointer"
-                      }}
-                    >
-                      Letzte Position entfernen
-                    </button>
-                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPositionRows((rows) =>
+                        rows.length >= 50 ? rows : [...rows, { id: Date.now() + Math.random(), type: "text" }]
+                      )
+                    }
+                    style={{
+                      border: "1px solid #cbd5e1",
+                      background: "#ffffff",
+                      color: "#334155",
+                      borderRadius: 999,
+                      padding: "10px 14px",
+                      fontWeight: 950,
+                      cursor: "pointer"
+                    }}
+                  >
+                    + Freitext
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled
+                    style={{
+                      border: "1px solid #e5e7eb",
+                      background: "#f3f4f6",
+                      color: "#9ca3af",
+                      borderRadius: 999,
+                      padding: "10px 14px",
+                      fontWeight: 950,
+                      cursor: "not-allowed"
+                    }}
+                  >
+                    Optional später
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled
+                    style={{
+                      border: "1px solid #e5e7eb",
+                      background: "#f3f4f6",
+                      color: "#9ca3af",
+                      borderRadius: 999,
+                      padding: "10px 14px",
+                      fontWeight: 950,
+                      cursor: "not-allowed"
+                    }}
+                  >
+                    % Gesamtrabatt später
+                  </button>
                 </div>
 
-                <div style={{ color: "#64748b", fontSize: 13, fontWeight: 800 }}>
-                  {positionRows.length} / 50 Positionen
+                <div style={{
+                  minWidth: 210,
+                  borderRadius: 12,
+                  background: "#07111f",
+                  color: "white",
+                  padding: "10px 14px",
+                  fontWeight: 950,
+                  textAlign: "right"
+                }}>
+                  Summe wird nach Speichern berechnet
                 </div>
               </div>
             </div>
