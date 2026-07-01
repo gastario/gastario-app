@@ -221,7 +221,26 @@ export default function RechnungsdatenPage() {
               </Field>
 
               <Field label="Bankname *">
-                <input name="invoiceBankName" defaultValue={tenant?.invoiceBankName || ""} required placeholder="Bankname" />
+                <input name="invoiceBankName" defaultValue={tenant?.invoiceBankName || ""} required placeholder="Bankname" list="bankNameOptions" />
+                <datalist id="bankNameOptions">
+                  <option value="Deutsche Bank" />
+                  <option value="Commerzbank" />
+                  <option value="Sparkasse" />
+                  <option value="Berliner Sparkasse" />
+                  <option value="Postbank" />
+                  <option value="Volksbank" />
+                  <option value="Raiffeisenbank" />
+                  <option value="DKB" />
+                  <option value="N26" />
+                  <option value="ING" />
+                  <option value="Comdirect" />
+                  <option value="Targobank" />
+                  <option value="Santander" />
+                  <option value="HypoVereinsbank" />
+                  <option value="GLS Bank" />
+                  <option value="Revolut" />
+                  <option value="Wise" />
+                </datalist>
               </Field>
             </div>
           </div>
@@ -483,4 +502,5 @@ const successStyle: React.CSSProperties = {
   fontWeight: 700,
   marginBottom: 16,
 };
+
 

@@ -560,7 +560,7 @@ export default function NeueRechnungPage() {
           <p style={sectionLabelStyle}>Eigene Rechnungsdaten</p>
           <div style={sellerInfoStyle}>
             <div>
-              <strong>{tenant?.invoiceSellerName || data.tenantName}</strong>
+              <strong style={sellerBlockStyleStrong}>{tenant?.invoiceSellerName || data.tenantName}</strong>
               <span>{tenant?.invoiceSellerAddress || "Keine Adresse hinterlegt"}</span>
             </div>
             <div>
@@ -740,7 +740,13 @@ const topSwitchStyle: React.CSSProperties = { display: "flex", justifyContent: "
 const switchButtonStyle: React.CSSProperties = { minHeight: 40, border: "1px solid #cbd5e1", padding: "0 16px", background: "#ffffff", fontWeight: 700, cursor: "pointer" };
 const activeSwitchButtonStyle: React.CSSProperties = { ...switchButtonStyle, background: "#e6f4ef", color: "#047857", borderColor: "#059669" };
 const sellerInfoStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 18, alignItems: "center", color: "#475569" };
-const positionRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "42px minmax(240px, 1fr) 90px 130px 140px 100px 120px 30px", gap: 10, alignItems: "end", padding: "28px 22px 14px" };
+const positionRowStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "38px minmax(260px, 1fr) 90px 120px 130px 96px 126px 28px",
+  gap: 10,
+  alignItems: "end",
+  padding: "26px 22px 18px",
+};
 const textRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "42px minmax(0, 1fr) 30px", gap: 10, alignItems: "end", padding: "18px 22px 8px" };
 const discountRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "42px minmax(260px, 1fr) 180px 180px 30px", gap: 10, alignItems: "end", padding: "18px 22px", borderTop: "1px solid #eef2f7" };
 const numberCircleStyle: React.CSSProperties = { width: 32, height: 32, borderRadius: 999, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, marginBottom: 9 };
@@ -803,6 +809,7 @@ const blockedTextStyle: React.CSSProperties = {
 };
 const errorStyle: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", borderRadius: 14, padding: 14, fontWeight: 700 };
 const successStyle: React.CSSProperties = { background: "#ecfdf5", border: "1px solid #bbf7d0", color: "#047857", borderRadius: 14, padding: 14, fontWeight: 700 };
+
 
 
 
