@@ -759,6 +759,11 @@ export default function AuftragseingangPage() {
                                 + {item.notes}
                               </div>
                             ) : null}
+                            {item.notes ? (
+                              <div style={{ color: "#64748b", fontSize: 12, marginTop: 3 }}>
+                                + {item.notes}
+                              </div>
+                            ) : null}
                           </div>
                         ))}
                       </td>

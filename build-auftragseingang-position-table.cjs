@@ -7,10 +7,14 @@ let text = fs.readFileSync(file, "utf8");
 text = text.replace(/\s*confidence:\s*"HIGH"\s+as\s+any,\r?\n/g, "");
 text = text.replace(/\s*manualReviewReason:\s*"Manuell im Auftragseingang angelegt",\r?\n/g, "");
 
-// Alte Einzelpositions-Variablen ersetzen durch mehrere Positionen
-const oldItemVars = /    const itemName = String\(formData\.get\("itemName"\) \|\| ""\)\.trim\(\);\r?\n    const quantity = Number\(formData\.get\("quantity"\) \|\| 1\);\r?\n    const unit = String\(formData\.get\("unit"\) \|\| "[^"]*"\)\.trim\(\);\r?\n    const unit(?:Price)?Cents = euroToCents\(formData\.get\("unitPriceEuro"\)\);\r?\n    const notes = String\(formData\.get\("notes"\) \|\| ""\)\.trim\(\);/;
-
-const newItemVars = `    const itemNames = formData.getAll("itemName").map((value) => String(value || "").trim());
+// Einzelposition-Variablen durch mehrere Positionen ersetzen
+text = text.replace(
+`    const itemName = String(formData.get("itemName") || "").trim();
+    const quantity = Number(formData.get("quantity") || 1);
+    const unit = String(formData.get("unit") || "Stück").trim();
+    const unitCents = euroToCents(formData.get("unitPriceEuro"));
+    const notes = String(formData.get("notes") || "").trim();`,
+`    const itemNames = formData.getAll("itemName").map((value) => String(value || "").trim());
     const quantities = formData.getAll("quantity").map((value) => Number(value || 1));
     const units = formData.getAll("unit").map((value) => String(value || "Stück").trim());
     const unitCentsList = formData.getAll("unitPriceEuro").map((value) => euroToCents(value));
@@ -31,27 +35,27 @@ const newItemVars = `    const itemNames = formData.getAll("itemName").map((valu
           notes: itemNotes[index] || null,
         };
       })
-      .filter((item) => item.name);`;
-
-if (!oldItemVars.test(text)) {
-  throw new Error("Konnte den alten Einzelpositions-Block nicht finden.");
-}
-
-text = text.replace(oldItemVars, newItemVars);
-
-// Validierung: mindestens eine Position
-text = text.replace(
-  /    if \(!itemName\) \{\r?\n      return \{ error: "Position fehlt\." \};\r?\n    \}\r?\n/,
-  `    if (items.length === 0) {
-      return { error: "Mindestens eine Position fehlt." };
-    }
-`
+      .filter((item) => item.name);`
 );
 
-// Alte einzelne orderItem.create ersetzen durch createMany
-const oldCreateItem = /    await prisma\.orderItem\.create\(\{\r?\n      data: \{[\s\S]*?\r?\n      \} as any,\r?\n    \}\);\r?\n/;
+// Falls die Datei noch unitPriceCents heißt
+text = text.replaceAll("unitPriceCents", "unitCents");
+text = text.replaceAll("totalPriceCents", "totalCents");
 
-const newCreateItem = `    await prisma.orderItem.createMany({
+// Validierung ersetzen
+text = text.replace(
+`    if (!itemName) {
+      return { error: "Position fehlt." };
+    }`,
+`    if (items.length === 0) {
+      return { error: "Mindestens eine Position fehlt." };
+    }`
+);
+
+// Einzelnes orderItem.create durch createMany ersetzen
+text = text.replace(
+/    await prisma\.orderItem\.create\(\{\r?\n      data: \{[\s\S]*?\r?\n      \} as any,\r?\n    \}\);\r?\n/,
+`    await prisma.orderItem.createMany({
       data: items.map((item) => ({
         orderId: order.id,
         name: item.name,
@@ -62,18 +66,18 @@ const newCreateItem = `    await prisma.orderItem.createMany({
         notes: item.notes,
       })),
     });
-`;
+`
+);
 
-if (!oldCreateItem.test(text)) {
-  throw new Error("Konnte prisma.orderItem.create Block nicht finden.");
-}
-
-text = text.replace(oldCreateItem, newCreateItem);
-
-// Alte Einzelpositions-Eingabe ersetzen durch Positionstabelle
-const oldFormBlock = /          <div style=\{\{ display: "grid", gridTemplateColumns: "1fr 120px 120px 160px", gap: 12 \}\}>\r?\n            <input name="itemName" placeholder="Position, z\. B\. Bowl Menü" style=\{inputStyle\} \/>\r?\n            <input name="quantity" type="number" min="1" defaultValue="1" style=\{inputStyle\} \/>\r?\n            <input name="unit" defaultValue="Stück" style=\{inputStyle\} \/>\r?\n            <input name="unitPriceEuro" placeholder="Einzelpreis €" style=\{inputStyle\} \/>\r?\n          <\/div>/;
-
-const newFormBlock = `          <div style={{ display: "grid", gap: 10 }}>
+// Formularblock ersetzen: alte Einzelpositions-Zeile raus, neue Tabelle rein
+text = text.replace(
+`          <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 120px 160px", gap: 12 }}>
+            <input name="itemName" placeholder="Position, z. B. Bowl Menü" style={inputStyle} />
+            <input name="quantity" type="number" min="1" defaultValue="1" style={inputStyle} />
+            <input name="unit" defaultValue="Stück" style={inputStyle} />
+            <input name="unitPriceEuro" placeholder="Einzelpreis €" style={inputStyle} />
+          </div>`,
+`          <div style={{ display: "grid", gap: 10 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
               <div>
                 <div style={{ color: "#0f766e", textTransform: "uppercase", letterSpacing: ".08em", fontSize: 11, fontWeight: 950 }}>
@@ -88,12 +92,7 @@ const newFormBlock = `          <div style={{ display: "grid", gap: 10 }}>
               </div>
             </div>
 
-            <div style={{
-              border: "1px solid #dbe3ec",
-              borderRadius: 16,
-              overflow: "hidden",
-              background: "#ffffff"
-            }}>
+            <div style={{ border: "1px solid #dbe3ec", borderRadius: 16, overflow: "hidden", background: "#ffffff" }}>
               <div style={{
                 display: "grid",
                 gridTemplateColumns: "52px 1fr 110px 120px 150px",
@@ -172,22 +171,17 @@ const newFormBlock = `          <div style={{ display: "grid", gap: 10 }}>
                 </div>
               ))}
             </div>
-          </div>`;
+          </div>`
+);
 
-if (!oldFormBlock.test(text)) {
-  throw new Error("Konnte alten Positions-Formblock nicht finden.");
-}
-
-text = text.replace(oldFormBlock, newFormBlock);
-
-// Summe und Positionsanzeige an neue Feldnamen anpassen
+// Übersicht: Summe und Freitext anzeigen
 text = text.replaceAll("item.totalPriceCents", "item.totalCents");
 text = text.replaceAll(" Ã— ", " × ");
 
-// Notiz je Position in der Übersicht anzeigen
 text = text.replace(
-  /                            \{item\.quantity\} × \{item\.name\}\r?\n/,
-  `                            {item.quantity} × {item.name}
+`                            {item.quantity} × {item.name}
+`,
+`                            {item.quantity} × {item.name}
                             {item.notes ? (
                               <div style={{ color: "#64748b", fontSize: 12, marginTop: 3 }}>
                                 + {item.notes}
