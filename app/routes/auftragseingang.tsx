@@ -920,18 +920,15 @@ export default function AuftragseingangPage() {
                 </div>
 
                 <div style={{
-                  position: "absolute",
-                  right: 0,
-                  bottom: -44,
                   minWidth: 260,
-                  borderRadius: "4px 4px 0 0",
+                  borderRadius: 0,
                   background: "#555555",
                   color: "white",
                   padding: "12px 18px",
                   fontWeight: 800,
                   textAlign: "center"
                 }}>
-                  Summe Netto: {formatEuroCents(liveNetTotalCents)}
+                  Summe Netto&nbsp;&nbsp; {formatEuroCents(liveNetTotalCents)}
                 </div>
               </div>
             </div>
