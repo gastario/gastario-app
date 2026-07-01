@@ -8,7 +8,7 @@ const navigationGroups = [
   {
     label: "Verkauf",
     items: [
-      { label: "Aufträge", to: "/auftraege" },
+      { label: "AuftrÃ¤ge", to: "/auftraege" },
       { label: "Angebote", to: "/angebote" },
       { label: "Kunden", to: "/kunden" },
       { label: "Produkte", to: "/produkte" },
@@ -87,7 +87,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
     </main>
   );
 }
-
 
 
 
