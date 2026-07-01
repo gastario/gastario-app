@@ -79,6 +79,7 @@ export async function action({ request, params }: { request: Request; params: { 
 
   const access = await prisma.tenantUser.findFirst({
     where: { userId },
+    include: { tenant: true },
   });
 
   if (!access) {
@@ -93,6 +94,11 @@ export async function action({ request, params }: { request: Request; params: { 
       id: params.invoiceId,
       tenantId: access.tenantId,
     },
+    include: {
+      items: {
+        orderBy: { position: "asc" },
+      },
+    },
   });
 
   if (!invoice) {
@@ -104,8 +110,31 @@ export async function action({ request, params }: { request: Request; params: { 
       return { error: "Nur Entwürfe können finalisiert werden." };
     }
 
-    if (!invoice.externalInvoiceNumber) {
-      return { error: "Rechnungsnummer fehlt." };
+    const tenant = access.tenant as any;
+    const missing: string[] = [];
+
+    if (!invoice.externalInvoiceNumber) missing.push("Rechnungsnummer");
+    if (!invoice.customerName) missing.push("Kunde");
+    if (!invoice.customerAddress) missing.push("vollständige Kundenadresse");
+    if (!invoice.invoiceDate) missing.push("Rechnungsdatum");
+    if (!invoice.serviceDate) missing.push("Leistungsdatum");
+
+    const realItems = invoice.items.filter((item) => item.type !== "TEXT");
+    const hasPricedItem = realItems.some((item) => item.name && item.quantity > 0 && item.unitCents > 0);
+
+    if (realItems.length === 0) missing.push("mindestens eine Artikelposition");
+    if (!hasPricedItem) missing.push("Preis größer 0");
+
+    if (!tenant?.invoiceSellerName) missing.push("eigener Firmenname");
+    if (!tenant?.invoiceSellerAddress) missing.push("eigene Firmenadresse");
+    if (!tenant?.invoiceTaxNumber && !tenant?.invoiceVatId) missing.push("Steuernummer oder USt-ID");
+    if (!tenant?.invoiceIban) missing.push("IBAN");
+    if (!tenant?.invoiceBankName) missing.push("Bankname");
+
+    if (missing.length > 0) {
+      return {
+        error: `Finalisieren nicht möglich. Es fehlt: ${missing.join(", ")}.`,
+      };
     }
 
     await prisma.invoice.update({
@@ -113,6 +142,12 @@ export async function action({ request, params }: { request: Request; params: { 
       data: {
         status: "ISSUED" as any,
         issuedAt: new Date(),
+        sellerName: invoice.sellerName || tenant.invoiceSellerName,
+        sellerAddress: invoice.sellerAddress || tenant.invoiceSellerAddress,
+        sellerTaxNumber: invoice.sellerTaxNumber || tenant.invoiceTaxNumber,
+        sellerVatId: invoice.sellerVatId || tenant.invoiceVatId,
+        paymentTermsDe: invoice.paymentTermsDe || tenant.invoicePaymentTermsDe || "Zahlbar sofort ohne Abzug.",
+        paymentTermsEn: invoice.paymentTermsEn || tenant.invoicePaymentTermsEn || "Payable immediately without deduction.",
       } as any,
     });
 
@@ -712,4 +747,5 @@ const premiumMuted: React.CSSProperties = {
   fontWeight: 650,
   lineHeight: 1.55,
 };
+
 

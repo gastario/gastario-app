@@ -53,6 +53,7 @@ export async function loader({ request, params }: { request: Request; params: { 
 
   return {
     tenantName: access.tenant?.name || "Gastario",
+    tenant: access.tenant,
     invoice,
   };
 }
@@ -60,6 +61,7 @@ export async function loader({ request, params }: { request: Request; params: { 
 export default function InvoicePrintPage() {
   const data = useLoaderData<typeof loader>();
   const invoice = data.invoice;
+  const tenant = data.tenant as any;
   const isEnglish = invoice.language === "EN";
 
   return (
@@ -180,6 +182,15 @@ export default function InvoicePrintPage() {
           <div>
             <strong>{isEnglish ? "Payment terms" : "Zahlungsbedingung"}</strong>
             <p>{isEnglish ? invoice.paymentTermsEn || "Payable immediately without deduction." : invoice.paymentTermsDe || "Zahlbar sofort ohne Abzug."}</p>
+          </div>
+
+          <div>
+            <strong>{isEnglish ? "Bank details" : "Bankverbindung"}</strong>
+            <p style={bankTextStyle}>
+              {tenant?.invoiceBankName ? <span>{tenant.invoiceBankName}</span> : null}
+              {tenant?.invoiceIban ? <span>IBAN: {tenant.invoiceIban}</span> : null}
+              {tenant?.invoiceBic ? <span>BIC: {tenant.invoiceBic}</span> : null}
+            </p>
           </div>
 
           {invoice.reverseChargeNoteDe || invoice.reverseChargeNoteEn ? (
@@ -390,3 +401,12 @@ const footerStyle: React.CSSProperties = {
   display: "grid",
   gap: 18,
 };
+
+const bankTextStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 3,
+  color: "#475569",
+  fontSize: 13,
+  lineHeight: 1.45,
+};
+
