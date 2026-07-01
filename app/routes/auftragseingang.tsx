@@ -477,8 +477,8 @@ export default function AuftragseingangPage() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "#f3f3f3",
-      padding: "28px 0 48px",
+      background: "#edf2f6",
+      padding: 32,
       fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
       color: "#07111f"
     }}>
@@ -509,9 +509,9 @@ export default function AuftragseingangPage() {
             Auftragseingang
           </h1>
           <p style={{
-            margin: "8px 0 0",
-            color: "#6b7280",
-            fontWeight: 500
+            margin: "12px 0 0",
+            color: "#64748b",
+            fontWeight: 700
           }}>
             Neue Aufträge erfassen, prüfen und übernehmen.
           </p>
@@ -520,7 +520,7 @@ export default function AuftragseingangPage() {
         <div style={{
           background: "white",
           border: "1px solid #dbe5ee",
-          borderRadius: 3,
+          borderRadius: 14,
           padding: 14,
           fontWeight: 800
         }}>
@@ -570,16 +570,51 @@ export default function AuftragseingangPage() {
         </div>
       ) : null}
 
-
+      <section style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+        gap: 16,
+        marginBottom: 20,
+        maxWidth: 1060,
+        marginLeft: "auto",
+        marginRight: "auto"
+      }}>
+        {[
+          ["Alle", data.counts.all, ""],
+          ["Prüfen", data.counts.review, "AUTO_CREATED"],
+          ["Übernommen", data.counts.confirmed, "CONFIRMED"],
+          ["Abgelehnt", data.counts.rejected, "REJECTED"],
+        ].map(([label, count, status]) => (
+          <a
+            key={String(label)}
+            href={status ? "/auftragseingang?status=" + status : "/auftragseingang"}
+            style={{
+              background: data.activeStatus === status ? "#0f766e" : "white",
+              color: data.activeStatus === status ? "white" : "#07111f",
+              border: "1px solid #dbe5ee",
+              borderRadius: 24,
+              padding: 20,
+              textDecoration: "none",
+              boxShadow: "0 12px 32px rgba(15, 23, 42, 0.07)"
+            }}
+          >
+            <div style={{ color: data.activeStatus === status ? "#ccfbf1" : "#64748b", fontWeight: 800, fontSize: 13 }}>
+              {label}
+            </div>
+            <div style={{ fontWeight: 950, fontSize: 36, letterSpacing: "-0.05em" }}>
+              {count}
+            </div>
+          </a>
+        ))}
+      </section>
 
       <section style={{
-        background: "#ffffff",
-        border: "1px solid #d0d0d0",
-        borderRadius: 3,
+        background: "white",
+        border: "1px solid #dbe5ee",
+        borderRadius: 28,
         padding: 18,
-        boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
-        margin: "0 auto 18px",
-        maxWidth: 1240
+        boxShadow: "0 24px 70px rgba(15, 23, 42, 0.10)",
+        marginBottom: 20
       }}>
         <div style={{ marginBottom: 16 }}>
           <div style={{
@@ -634,7 +669,9 @@ export default function AuftragseingangPage() {
           <div style={{ display: "grid", gridTemplateColumns: "180px 160px 1fr", gap: 12 }}>
             <input
               name="deliveryDate"
-              type="date"
+              type="text"
+              inputMode="numeric"
+              placeholder="Datum, z. B. 01.07.2026"
               style={{ ...inputStyle, borderRadius: 3 }}
             />
             <input
@@ -654,14 +691,14 @@ export default function AuftragseingangPage() {
             <input name="contactPhone" placeholder="Telefon vor Ort" style={inputStyle} />
           </div>
 
-          <div style={{ display: "grid", gap: 10, width: "100%", marginTop: 10 }}>
+          <div style={{ display: "grid", gap: 10, width: "100%" }}>
             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
               <div>
                 <div style={{ color: "#0f766e", textTransform: "uppercase", letterSpacing: ".08em", fontSize: 11, fontWeight: 950 }}>
                   Positionen
                 </div>
                 <h3 style={{ margin: "3px 0 0", fontSize: 18, letterSpacing: "-0.03em" }}>
-                  Positionen
+                  Artikel
                 </h3>
               </div>
               <div style={{ color: "#64748b", fontSize: 12, fontWeight: 750 }}>
@@ -670,11 +707,11 @@ export default function AuftragseingangPage() {
             </div>
 
             <div style={{
-              border: "1px solid #cccccc",
-              borderRadius: 3,
+              border: "1px solid #d6d6d6",
+              borderRadius: 4,
               background: "#ffffff",
               overflow: "hidden",
-              boxShadow: "none"
+              boxShadow: "0 1px 2px rgba(0,0,0,0.08)"
             }}>
               {positionRows.map((row, rowIndex) => (
                 <div
@@ -684,10 +721,10 @@ export default function AuftragseingangPage() {
                     display: "grid",
                     gridTemplateColumns: row.type === "text"
                       ? "36px minmax(0, 1fr) 32px"
-                      : "34px minmax(360px, 1fr) 76px 96px 118px 74px 82px 92px 26px",
+                      : "36px minmax(420px, 1fr) 82px 105px 125px 82px 88px 105px 32px",
                     gap: 8,
                     alignItems: "center",
-                    padding: "12px 14px",
+                    padding: "15px 16px",
                     borderTop: rowIndex === 0 ? "none" : "1px solid #e5e5e5",
                     background: "#ffffff"
                   }}
@@ -717,7 +754,7 @@ export default function AuftragseingangPage() {
                       <input type="hidden" name="taxRate" value="0" />
                       <input type="hidden" name="itemNotes" value="" />
 
-                      <label style={{ display: "grid", gap: 3, color: "#777", fontSize: 10, fontWeight: 650 }}>
+                      <label style={{ display: "grid", gap: 4, color: "#777", fontSize: 11, fontWeight: 650 }}>
                         Freitext
                         <textarea
                           name="itemName"
@@ -757,12 +794,12 @@ export default function AuftragseingangPage() {
                       <input type="hidden" name="itemKind" value="item" />
 
                       <div style={{ display: "grid", gap: 6 }}>
-                        <label style={{ display: "grid", gap: 3, color: "#777", fontSize: 10, fontWeight: 650 }}>
+                        <label style={{ display: "grid", gap: 4, color: "#777", fontSize: 11, fontWeight: 650 }}>
                           Artikel
                           <input
                             name="itemName"
                             placeholder="Bezeichnung des Artikels"
-                            style={{ ...inputStyle, borderRadius: 3, fontWeight: 500, minHeight: 40 }}
+                            style={{ ...inputStyle, borderRadius: 3, fontWeight: 500, minHeight: 42 }}
                           />
                         </label>
 
@@ -792,61 +829,51 @@ export default function AuftragseingangPage() {
                         </details>
                       </div>
 
-                      <label style={{ display: "grid", gap: 3, color: "#777", fontSize: 10, fontWeight: 650 }}>
+                      <label style={{ display: "grid", gap: 4, color: "#777", fontSize: 11, fontWeight: 650 }}>
                         Menge
-                        <input name="quantity" type="number" min="1" defaultValue="1" style={{ ...inputStyle, borderRadius: 3, minHeight: 38 }} />
+                        <input name="quantity" type="number" min="1" defaultValue="1" style={{ ...inputStyle, borderRadius: 3, minHeight: 42 }} />
                       </label>
 
-                      <label style={{ display: "grid", gap: 3, color: "#777", fontSize: 10, fontWeight: 650 }}>
+                      <label style={{ display: "grid", gap: 4, color: "#777", fontSize: 11, fontWeight: 650 }}>
                         Einheit
-                        <input name="unit" defaultValue="Stück" style={{ ...inputStyle, borderRadius: 3, minHeight: 38 }} />
+                        <input name="unit" defaultValue="Stück" style={{ ...inputStyle, borderRadius: 3, minHeight: 42 }} />
                       </label>
 
-                      <label style={{ display: "grid", gap: 3, color: "#777", fontSize: 10, fontWeight: 650 }}>
+                      <label style={{ display: "grid", gap: 4, color: "#777", fontSize: 11, fontWeight: 650 }}>
                         VK Netto
-                        <input name="unitPriceEuro" placeholder="0,00 €" style={{ ...inputStyle, borderRadius: 3, minHeight: 38, textAlign: "right" }} />
+                        <input name="unitPriceEuro" placeholder="0,00 €" style={{ ...inputStyle, borderRadius: 3, minHeight: 42, textAlign: "right" }} />
                       </label>
 
-                      <label style={{ display: "grid", gap: 3, color: "#777", fontSize: 10, fontWeight: 650 }}>
+                      <label style={{ display: "grid", gap: 4, color: "#777", fontSize: 11, fontWeight: 650 }}>
                         Rabatt
-                        <input name="discountPercent" type="number" min="0" defaultValue="0" style={{ ...inputStyle, borderRadius: 3, minHeight: 38, textAlign: "right" }} />
+                        <input name="discountPercent" type="number" min="0" defaultValue="0" style={{ ...inputStyle, borderRadius: 3, minHeight: 42, textAlign: "right" }} />
                       </label>
 
-                      <div style={{ display: "grid", gap: 4, color: "#777", fontSize: 10, fontWeight: 650 }}>
+                      <label style={{ display: "grid", gap: 4, color: "#777", fontSize: 11, fontWeight: 650 }}>
+                        MwSt
+                        <select name="taxRate" defaultValue="19" style={{ ...inputStyle, borderRadius: 3, minHeight: 42 }}>
+                          <option value="19">19 %</option>
+                          <option value="7">7 %</option>
+                          <option value="0">0 %</option>
+                        </select>
+                      </label>
+
+                      <div style={{ display: "grid", gap: 4, color: "#777", fontSize: 11, fontWeight: 650 }}>
                         Netto
                         <div
                           data-line-total
                           style={{
-                            minHeight: 22,
+                            minHeight: 38,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "flex-end",
                             color: "#111",
-                            fontWeight: 900,
-                            fontSize: 14
+                            fontWeight: 800,
+                            fontSize: 13
                           }}
                         >
                           0,00 €
                         </div>
-                        <select
-                          name="taxRate"
-                          defaultValue="19"
-                          style={{
-                            minHeight: 24,
-                            border: "none",
-                            borderRadius: 999,
-                            background: "#3f3f3f",
-                            color: "white",
-                            fontSize: 11,
-                            fontWeight: 800,
-                            padding: "2px 8px",
-                            cursor: "pointer"
-                          }}
-                        >
-                          <option value="19">USt 19 %</option>
-                          <option value="7">USt 7 %</option>
-                          <option value="0">USt 0 %</option>
-                        </select>
                       </div>
 
                       <button
@@ -882,7 +909,7 @@ export default function AuftragseingangPage() {
                 borderTop: "1px solid #d6d6d6",
                 background: "#ffffff"
               }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
                   <button
                     type="button"
                     onClick={() =>
@@ -955,7 +982,6 @@ export default function AuftragseingangPage() {
                 </div>
 
                 <div style={{
-                  marginLeft: "auto",
                   minWidth: 390,
                   background: "#555",
                   color: "white",
@@ -970,7 +996,7 @@ export default function AuftragseingangPage() {
             </div>
           </div>
 
-          <textarea name="notes" placeholder="Notizen / Besonderheiten" rows={3} style={{ ...inputStyle, borderRadius: 3, minHeight: 38 }} />
+          <textarea name="notes" placeholder="Notizen / Besonderheiten" rows={3} style={{ ...inputStyle, borderRadius: 3, minHeight: 42 }} />
 
           <button type="submit" style={{
             border: "none",
@@ -989,12 +1015,10 @@ export default function AuftragseingangPage() {
 
       <section style={{
         background: "white",
-        border: "1px solid #d0d0d0",
-        borderRadius: 3,
+        border: "1px solid #dbe5ee",
+        borderRadius: 28,
         padding: 18,
-        boxShadow: "0 1px 3px rgba(0,0,0,0.10)",
-        margin: "0 auto",
-        maxWidth: 1240
+        boxShadow: "0 24px 70px rgba(15, 23, 42, 0.10)"
       }}>
         <div style={{ marginBottom: 16 }}>
           <div style={{
@@ -1116,7 +1140,7 @@ export default function AuftragseingangPage() {
 
 const inputStyle = {
   border: "1px solid #cbd5e1",
-  borderRadius: 3,
+  borderRadius: 12,
   padding: "11px 12px",
   font: "inherit",
   background: "white",
