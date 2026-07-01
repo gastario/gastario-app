@@ -574,16 +574,34 @@ export default function NeueRechnungPage() {
           </div>
         </section>
 
-        <section style={cardStyle}>
-          <FloatingInput name="title" label="Belegtitel" defaultValue="Rechnung" />
-          <FloatingInput
-            name="introText"
-            label="Einleitungstext"
-            defaultValue="Unsere Lieferungen/Leistungen stellen wir Ihnen wie folgt in Rechnung."
-          />
+        <section style={simpleTextCardStyle}>
+          <div style={sectionHeaderStyle}>
+            <p style={sectionLabelStyle}>Text</p>
+            <h2 style={sectionTitleStyle}>Belegtext</h2>
+          </div>
+
+          <div style={gridStyle}>
+            <FloatingInput name="title" label="Belegtitel" defaultValue="Rechnung" />
+            <FloatingInput
+              name="introText"
+              label="Einleitungstext"
+              defaultValue="Unsere Lieferungen/Leistungen stellen wir Ihnen wie folgt in Rechnung."
+            />
+          </div>
         </section>
 
         <section style={positionCardStyle}>
+          <div style={positionHeaderStyle}>
+            <span></span>
+            <span>Artikel</span>
+            <span>Menge</span>
+            <span>Einheit</span>
+            <span>{priceMode === "GROSS" ? "VK Brutto" : "VK Netto"}</span>
+            <span>Rabatt</span>
+            <span style={{ textAlign: "right" }}>Betrag / USt</span>
+            <span></span>
+          </div>
+
           <div style={{ display: "grid" }}>
             {rows.map((row, index) =>
               row.type === "text" ? (
@@ -605,11 +623,11 @@ export default function NeueRechnungPage() {
 
                   <div style={numberCircleStyle}>{index + 1}</div>
 
-                  <FloatingControlledInput name="itemName" label="Artikel" placeholder="Bezeichnung des Artikels" value={row.name} onChange={(value) => updateItem(row.id, "name", value)} required />
-                  <FloatingControlledInput name="quantity" label="Menge" value={row.quantity} onChange={(value) => updateItem(row.id, "quantity", value)} />
-                  <FloatingControlledInput name="unit" label="Einheit" value={row.unit} onChange={(value) => updateItem(row.id, "unit", value)} />
-                  <FloatingControlledInput name="unitPriceEuro" label={priceMode === "GROSS" ? "VK Brutto" : "VK Netto"} placeholder="0,00 €" value={row.price} onChange={(value) => updateItem(row.id, "price", value)} required />
-                  <FloatingControlledInput name="discountPercent" label="Rabatt %" value={row.discount} onChange={(value) => updateItem(row.id, "discount", value)} />
+                  <CleanInput name="itemName" placeholder="Bezeichnung des Artikels" value={row.name} onChange={(value) => updateItem(row.id, "name", value)} required />
+                  <CleanInput name="quantity" value={row.quantity} onChange={(value) => updateItem(row.id, "quantity", value)} />
+                  <CleanInput name="unit" value={row.unit} onChange={(value) => updateItem(row.id, "unit", value)} />
+                  <CleanInput name="unitPriceEuro" placeholder="0,00 €" value={row.price} onChange={(value) => updateItem(row.id, "price", value)} required />
+                  <CleanInput name="discountPercent" value={row.discount} onChange={(value) => updateItem(row.id, "discount", value)} />
 
                   <div style={amountBoxStyle}>
                     <strong>{centsToEuro(calculateTotals([row], priceMode, "PERCENT", "0").netTotalCents)}</strong>
@@ -730,9 +748,88 @@ function FloatingControlledInput({
   );
 }
 
+function CleanInput({
+  name,
+  placeholder,
+  value,
+  onChange,
+  required = false,
+}: {
+  name: string;
+  placeholder?: string;
+  value: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+}) {
+  return (
+    <input
+      name={name}
+      placeholder={placeholder}
+      value={value}
+      onChange={(event) => onChange(event.currentTarget.value)}
+      required={required}
+      style={cleanInputStyle}
+    />
+  );
+}
+
 const pageStyle: React.CSSProperties = { maxWidth: 1480, margin: "0 auto", display: "grid", gap: 20 };
-const cardStyle: React.CSSProperties = { background: "#ffffff", border: "1px solid #dbe5eb", borderRadius: 22, padding: 24, boxShadow: "0 18px 45px rgba(15, 23, 42, 0.07)" };
-const positionCardStyle: React.CSSProperties = { ...cardStyle, padding: 0, overflow: "hidden" };
+const cardStyle: React.CSSProperties = {
+  background: "#ffffff",
+  border: "1px solid #dbe5eb",
+  borderRadius: 22,
+  padding: 24,
+  boxShadow: "0 16px 36px rgba(15, 23, 42, 0.055)",
+};
+const positionCardStyle: React.CSSProperties = {
+  ...cardStyle,
+  padding: 0,
+  overflow: "hidden",
+};
+
+const simpleTextCardStyle: React.CSSProperties = {
+  ...cardStyle,
+  display: "grid",
+  gap: 16,
+};
+
+const sectionHeaderStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 2,
+};
+
+const sectionTitleStyle: React.CSSProperties = {
+  margin: 0,
+  fontSize: 20,
+  letterSpacing: "-0.025em",
+  fontWeight: 650,
+  color: "#0f172a",
+};
+
+const positionHeaderStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "34px minmax(280px, 1fr) 84px 110px 120px 88px 130px 28px",
+  gap: 10,
+  padding: "16px 20px 10px",
+  color: "#64748b",
+  fontSize: 11,
+  fontWeight: 650,
+  textTransform: "uppercase",
+  letterSpacing: "0.05em",
+  background: "#ffffff",
+};
+
+const cleanInputStyle: React.CSSProperties = {
+  width: "100%",
+  minHeight: 42,
+  border: "1px solid #ccd7df",
+  borderRadius: 10,
+  padding: "9px 11px",
+  fontSize: 14,
+  fontWeight: 500,
+  background: "#ffffff",
+  color: "#0f172a",
+};
 const twoColStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28 };
 const twoColSmallStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "0.7fr 1.3fr", gap: 12 };
 const gridStyle: React.CSSProperties = { display: "grid", gap: 14 };
@@ -779,10 +876,11 @@ const sellerBlockStrongStyle: React.CSSProperties = {
 };
 const positionRowStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "38px minmax(260px, 1fr) 90px 120px 130px 96px 126px 28px",
+  gridTemplateColumns: "34px minmax(280px, 1fr) 84px 110px 120px 88px 130px 28px",
   gap: 10,
-  alignItems: "end",
-  padding: "26px 22px 18px",
+  alignItems: "center",
+  padding: "14px 20px",
+  borderTop: "1px solid #eef2f7",
 };
 const textRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "42px minmax(0, 1fr) 30px", gap: 10, alignItems: "end", padding: "18px 22px 8px" };
 const discountRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "42px minmax(260px, 1fr) 180px 180px 30px", gap: 10, alignItems: "end", padding: "18px 22px", borderTop: "1px solid #eef2f7" };
@@ -799,7 +897,12 @@ const numberCircleStyle: React.CSSProperties = {
   marginBottom: 8,
 };
 const numberCircleDarkStyle: React.CSSProperties = { ...numberCircleStyle, background: "#334155", color: "#ffffff" };
-const amountBoxStyle: React.CSSProperties = { display: "grid", justifyItems: "end", gap: 8, paddingBottom: 4 };
+const amountBoxStyle: React.CSSProperties = {
+  display: "grid",
+  justifyItems: "end",
+  gap: 6,
+  color: "#334155",
+};
 const taxPillStyle: React.CSSProperties = {
   border: "1px solid #ccd7df",
   borderRadius: 10,
@@ -821,7 +924,13 @@ const deleteButtonStyle: React.CSSProperties = {
   cursor: "pointer",
   marginBottom: 6,
 };
-const positionActionsStyle: React.CSSProperties = { display: "flex", justifyContent: "center", gap: 18, padding: "12px 22px 26px" };
+const positionActionsStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 12,
+  padding: "16px 20px 22px",
+  borderTop: "1px solid #f1f5f9",
+};
 const outlineButtonStyle: React.CSSProperties = {
   minHeight: 38,
   border: "1px solid #0f8a73",
@@ -865,8 +974,38 @@ const grossBoxStyle: React.CSSProperties = {
   fontWeight: 650,
 };
 const footerActionsStyle: React.CSSProperties = { position: "sticky", bottom: 18, zIndex: 3, background: "rgba(255, 255, 255, 0.94)", backdropFilter: "blur(10px)", border: "1px solid #dbe5eb", borderRadius: 20, padding: 16, display: "flex", justifyContent: "flex-end", gap: 12, boxShadow: "0 18px 45px rgba(15, 23, 42, 0.12)" };
-const primaryButtonStyle: React.CSSProperties = { minHeight: 44, borderRadius: 13, padding: "0 18px", fontSize: 14, fontWeight: 700, border: "1px solid #036b5a", background: "linear-gradient(135deg, #058872 0%, #04705f 100%)", color: "#ffffff", cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 14px 28px rgba(5, 122, 103, 0.24)" };
-const secondaryButtonStyle: React.CSSProperties = { minHeight: 44, borderRadius: 13, padding: "0 18px", fontSize: 14, fontWeight: 700, border: "1px solid #c8d4dd", background: "#ffffff", color: "#0f172a", cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 20px rgba(15, 23, 42, 0.06)" };
+const primaryButtonStyle: React.CSSProperties = {
+  minHeight: 42,
+  borderRadius: 12,
+  padding: "0 17px",
+  fontSize: 14,
+  fontWeight: 650,
+  border: "1px solid #036b5a",
+  background: "#057a67",
+  color: "#ffffff",
+  cursor: "pointer",
+  textDecoration: "none",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxShadow: "0 10px 20px rgba(5, 122, 103, 0.16)",
+};
+const secondaryButtonStyle: React.CSSProperties = {
+  minHeight: 42,
+  borderRadius: 12,
+  padding: "0 17px",
+  fontSize: 14,
+  fontWeight: 650,
+  border: "1px solid #c8d4dd",
+  background: "#ffffff",
+  color: "#0f172a",
+  cursor: "pointer",
+  textDecoration: "none",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxShadow: "0 8px 16px rgba(15, 23, 42, 0.045)",
+};
 const disabledButtonStyle: React.CSSProperties = { ...primaryButtonStyle, opacity: 0.45, cursor: "not-allowed" };
 const blockingNoticeStyle: React.CSSProperties = { background: "#fff7ed", border: "1px solid #fed7aa", color: "#9a3412", borderRadius: 18, padding: 18, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18 };
 
@@ -913,6 +1052,7 @@ const blockedTextStyle: React.CSSProperties = {
 };
 const errorStyle: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", borderRadius: 14, padding: 14, fontWeight: 700 };
 const successStyle: React.CSSProperties = { background: "#ecfdf5", border: "1px solid #bbf7d0", color: "#047857", borderRadius: 14, padding: 14, fontWeight: 700 };
+
 
 
 
