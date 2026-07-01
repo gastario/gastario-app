@@ -708,17 +708,17 @@ export default function AuftragseingangPage() {
 
                         <div style={{ display: "grid", gap: 10 }}>
                           <label style={labelStyle}>
-                            Freitext
+                            Titel optional
                             <input
                               name="itemName"
-                              placeholder="Freitext zur Position"
+                              placeholder="z. B. Zusatzhinweis"
                               style={{ ...inputStyle, minHeight: 46 }}
                             />
                           </label>
 
                           <textarea
                             name="itemNotes"
-                            placeholder="Details / Hinweise"
+                            placeholder="Text optional"
                             rows={3}
                             style={{
                               ...inputStyle,
@@ -750,41 +750,14 @@ export default function AuftragseingangPage() {
                       <>
                         <input type="hidden" name="itemKind" value="item" />
 
-                        <div style={{ display: "grid", gap: 8 }}>
-                          <label style={labelStyle}>
-                            Artikel
-                            <input
-                              name="itemName"
-                              placeholder="Bezeichnung des Artikels"
-                              style={{ ...inputStyle, minHeight: 46 }}
-                            />
-                          </label>
-
-                          <details>
-                            <summary style={{
-                              cursor: "pointer",
-                              color: "#333",
-                              fontSize: 12,
-                              fontWeight: 800,
-                              listStyle: "none"
-                            }}>
-                              ≡ Freitext zu dieser Position
-                            </summary>
-                            <textarea
-                              name="itemNotes"
-                              placeholder="z. B. ohne Koriander, extra Sauce, separat verpacken"
-                              rows={3}
-                              style={{
-                                ...inputStyle,
-                                marginTop: 8,
-                                minHeight: 76,
-                                resize: "vertical",
-                                paddingTop: 10,
-                                fontWeight: 500
-                              }}
-                            />
-                          </details>
-                        </div>
+                        <label style={labelStyle}>
+                          Artikel
+                          <input
+                            name="itemName"
+                            placeholder="Bezeichnung des Artikels"
+                            style={{ ...inputStyle, minHeight: 46 }}
+                          />
+                        </label>
 
                         <label style={labelStyle}>
                           Menge
@@ -914,14 +887,13 @@ export default function AuftragseingangPage() {
                     + ARTIKEL
                   </button>
 
-                  <span style={{
-                    color: "#666",
-                    padding: "8px 6px",
-                    fontWeight: 850,
-                    fontSize: 14
-                  }}>
-                    ≡ Freitext direkt unter Artikel
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPositionRows((rows) => rows.length >= 50 ? rows : [...rows, { id: Date.now() + Math.random(), type: "text" }])}
+                    style={{ border: "none", background: "#ffffff", color: "#333", padding: "8px 6px", fontWeight: 850, cursor: "pointer" }}
+                  >
+                    ≡ FREITEXT
+                  </button>
 
                   <button type="button" style={{ border: "none", background: "#ffffff", color: "#333", padding: "8px 6px", fontWeight: 850, cursor: "pointer" }}>
                     ◉ OPTIONAL
