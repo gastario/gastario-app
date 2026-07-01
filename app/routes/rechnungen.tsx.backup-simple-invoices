@@ -24,10 +24,10 @@ export async function loader({ request }: { request: Request }) {
     return {
       tenantName: "Gastario",
       invoiceStats: {
-        drafts: 0,
-        open: 0,
-        paid: 0,
+        direct: 0,
+        external: 0,
         platform: 0,
+        drafts: 0,
       },
     };
   }
@@ -35,10 +35,10 @@ export async function loader({ request }: { request: Request }) {
   return {
     tenantName: access.tenant?.name || "Gastario",
     invoiceStats: {
-      drafts: 0,
-      open: 0,
-      paid: 0,
+      direct: 0,
+      external: 0,
       platform: 0,
+      drafts: 0,
     },
   };
 }
@@ -53,7 +53,7 @@ export default function RechnungenPage() {
           <p className="eyebrow">Verkauf</p>
           <h1>Rechnungen</h1>
           <p className="muted">
-            Rechnungen aus Aufträgen erstellen, Rechnungsnummer selbst festlegen und Plattform-Aufträge getrennt markieren.
+            Rechnungen, externe Kassen-Rechnungen und Plattform-Gutschriften sauber getrennt verwalten.
           </p>
         </div>
 
@@ -64,91 +64,92 @@ export default function RechnungenPage() {
 
       <section className="contentGrid">
         <div className="card">
-          <p className="eyebrow">Prinzip</p>
-          <h2>Auftrag bleibt Auftrag. Rechnung nur bei Bedarf.</h2>
+          <p className="eyebrow">Grundprinzip</p>
+          <h2>Keine doppelte Abrechnung</h2>
           <p className="muted">
-            In Gastario wird nicht automatisch aus jedem Auftrag eine Rechnung. Du entscheidest beim Auftrag,
-            ob daraus eine Rechnung erstellt wird oder ob eine Plattform wie Heycater/Egora selbst abrechnet.
+            Ein Auftrag wird nicht automatisch zur Rechnung. Pro Auftrag wird später festgelegt,
+            ob eine direkte Rechnung erstellt wird, ob eine externe Kassen-Rechnung verknüpft wird
+            oder ob eine Plattform wie Heycater/Egora per Gutschrift abrechnet.
           </p>
 
           <div style={noticeStyle}>
-            <strong>Wichtig:</strong> Beim finalen Erstellen einer Rechnung trägst du die Rechnungsnummer ein.
-            Danach soll sie nicht einfach überschrieben werden, sondern nur über Korrektur oder Storno geändert werden.
+            <strong>Wichtig:</strong> Fertige Rechnungen dürfen später nicht einfach überschrieben
+            werden. Änderungen laufen über Storno, Korrektur oder neue Rechnung.
           </div>
         </div>
 
         <div className="statsGrid">
           <div className="statCard">
-            <span>Entwürfe</span>
-            <strong>{data.invoiceStats.drafts}</strong>
-            <small>Noch nicht final</small>
+            <span>Direkte Rechnungen</span>
+            <strong>{data.invoiceStats.direct}</strong>
+            <small>Für direkte Kundenaufträge</small>
           </div>
 
           <div className="statCard">
-            <span>Offene Rechnungen</span>
-            <strong>{data.invoiceStats.open}</strong>
-            <small>Noch nicht bezahlt</small>
+            <span>Externe Rechnungen</span>
+            <strong>{data.invoiceStats.external}</strong>
+            <small>Kasse / Lexware / extern</small>
           </div>
 
           <div className="statCard">
-            <span>Bezahlt</span>
-            <strong>{data.invoiceStats.paid}</strong>
-            <small>Erledigte Rechnungen</small>
-          </div>
-
-          <div className="statCard">
-            <span>Plattform</span>
+            <span>Plattform-Gutschriften</span>
             <strong>{data.invoiceStats.platform}</strong>
             <small>Heycater / Egora / Feedr</small>
           </div>
+
+          <div className="statCard">
+            <span>Entwürfe</span>
+            <strong>{data.invoiceStats.drafts}</strong>
+            <small>Noch nicht finalisiert</small>
+          </div>
         </div>
 
         <div className="card">
-          <p className="eyebrow">Ablauf</p>
-          <h2>So soll es funktionieren</h2>
+          <p className="eyebrow">Abrechnungsarten</p>
+          <h2>So wird Gastario rechnen</h2>
 
           <div style={billingGridStyle}>
             <div style={billingBoxStyle}>
-              <strong>1. Auftrag anlegen</strong>
+              <strong>Direkte Rechnung</strong>
               <p>
-                Du erfasst den Auftrag wie bisher mit Kunde, Lieferung, Positionen, Netto, MwSt und Gesamtbetrag.
+                Für Kunden, die direkt bei dir bestellen. Aus Auftrag wird auf Wunsch eine Rechnung.
               </p>
             </div>
 
             <div style={billingBoxStyle}>
-              <strong>2. Rechnung erstellen</strong>
+              <strong>Externe Kassen-Rechnung</strong>
               <p>
-                Nur wenn du willst, erstellst du aus dem Auftrag eine Rechnung.
+                Die offizielle Rechnungsnummer kommt aus deiner Kasse. Gastario speichert und verknüpft sie.
               </p>
             </div>
 
             <div style={billingBoxStyle}>
-              <strong>3. Rechnungsnummer eintragen</strong>
+              <strong>Plattform-Gutschrift</strong>
               <p>
-                Die Rechnungsnummer kannst du selbst festlegen, zum Beispiel die Nummer aus deinem bisherigen System.
+                Für Heycater, Egora, Feedr usw. Gastario erstellt keine doppelte Rechnung.
               </p>
             </div>
 
             <div style={billingBoxStyle}>
-              <strong>4. Plattform-Auftrag markieren</strong>
+              <strong>Keine Rechnung</strong>
               <p>
-                Wenn Heycater, Egora oder eine andere Plattform selbst abrechnet, wird keine doppelte Rechnung erstellt.
+                Für interne Vorgänge, Testaufträge oder Fälle ohne Abrechnung.
               </p>
             </div>
           </div>
         </div>
 
         <div className="card">
-          <p className="eyebrow">Nächste Schritte</p>
-          <h2>Was wir jetzt bauen</h2>
+          <p className="eyebrow">Rechtssichere Vorbereitung</p>
+          <h2>Was wir als Nächstes bauen</h2>
 
           <ul style={listStyle}>
-            <li>Beim Auftrag ein Feld „Abrechnung“ einbauen.</li>
-            <li>Optionen: Rechnung erstellen, Plattform rechnet ab, keine Rechnung.</li>
-            <li>Rechnungsnummer beim finalen Erstellen frei eintragbar machen.</li>
-            <li>Rechnung nach finalem Erstellen sperren.</li>
-            <li>Pflichtangaben für Rechnung sauber speichern.</li>
-            <li>Später PDF-Rechnung und Storno/Korrektur bauen.</li>
+            <li>Eigene Tabellen für Invoice und InvoiceItem.</li>
+            <li>Abrechnungsart am Auftrag: direkt, extern, Plattform oder keine Rechnung.</li>
+            <li>Pflichtfelder: Rechnungsdatum, Leistungsdatum, Kunde, Steuersatz, Netto, Steuer, Brutto.</li>
+            <li>Externe Rechnungsnummer aus Kasse eindeutig speichern und danach sperren.</li>
+            <li>Storno-/Korrektur-Logik statt fertige Rechnungen zu überschreiben.</li>
+            <li>Später PDF und E-Rechnung/ZUGFeRD/XRechnung vorbereiten.</li>
           </ul>
         </div>
       </section>
