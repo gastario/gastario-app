@@ -441,7 +441,7 @@ export default function AuftragseingangPage() {
         <div style={{
           background: "white",
           border: "1px solid #dbe5ee",
-          borderRadius: 18,
+          borderRadius: 14,
           padding: 14,
           fontWeight: 900
         }}>
@@ -597,7 +597,7 @@ export default function AuftragseingangPage() {
                   Positionen
                 </div>
                 <h3 style={{ margin: "4px 0 0", fontSize: 18, letterSpacing: "-0.03em" }}>
-                  Artikel, Freitext, Rabatt und MwSt
+                  Positionen
                 </h3>
               </div>
               <div style={{ color: "#64748b", fontSize: 13, fontWeight: 750 }}>
@@ -607,7 +607,7 @@ export default function AuftragseingangPage() {
 
             <div style={{
               border: "1px solid #dbe3ec",
-              borderRadius: 18,
+              borderRadius: 14,
               background: "#ffffff",
               overflow: "hidden"
             }}>
@@ -615,17 +615,17 @@ export default function AuftragseingangPage() {
                 <div key={row.id} style={{
                   display: "grid",
                   gridTemplateColumns: row.type === "text"
-                    ? "46px 1fr 42px"
-                    : "46px minmax(220px, 1fr) 90px 110px 135px 95px 105px 110px 42px",
+                    ? "42px minmax(0, 1fr) 42px"
+                    : "42px minmax(360px, 1.6fr) 88px 116px 138px 88px 92px 105px 40px",
                   gap: 8,
                   alignItems: "start",
-                  padding: "14px 12px",
+                  padding: "16px 18px",
                   borderTop: rowIndex === 0 ? "none" : "1px solid #e5edf5",
                   background: row.type === "text" ? "#fbfdff" : "#ffffff"
                 }}>
                   <div style={{
-                    width: 28,
-                    height: 28,
+                    width: 26,
+                    height: 26,
                     borderRadius: 999,
                     display: "flex",
                     alignItems: "center",
@@ -695,7 +695,7 @@ export default function AuftragseingangPage() {
                             fontWeight: 900,
                             fontSize: 13
                           }}>
-                            + Freitext zu dieser Position
+                            ≡ FREITEXT zu dieser Position
                           </summary>
                           <textarea
                             name="itemNotes"
@@ -740,7 +740,7 @@ export default function AuftragseingangPage() {
                         <div style={{
                           minHeight: 42,
                           borderRadius: 12,
-                          background: "#f8fafc",
+                          background: "#ffffff",
                           border: "1px solid #dbe3ec",
                           display: "flex",
                           alignItems: "center",
@@ -749,7 +749,7 @@ export default function AuftragseingangPage() {
                           color: "#07111f",
                           fontWeight: 950
                         }}>
-                          wird berechnet
+                          0,00 €
                         </div>
                       </div>
 
@@ -782,7 +782,7 @@ export default function AuftragseingangPage() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 gap: 12,
-                padding: "14px 12px",
+                padding: "16px 18px",
                 borderTop: "1px solid #e5edf5",
                 background: "#f8fafc"
               }}>
@@ -804,7 +804,7 @@ export default function AuftragseingangPage() {
                       cursor: "pointer"
                     }}
                   >
-                    + Artikel
+                    + ARTIKEL
                   </button>
 
                   <button
@@ -824,7 +824,7 @@ export default function AuftragseingangPage() {
                       cursor: "pointer"
                     }}
                   >
-                    + Freitext
+                    ≡ FREITEXT
                   </button>
 
                   <button
@@ -840,7 +840,7 @@ export default function AuftragseingangPage() {
                       cursor: "not-allowed"
                     }}
                   >
-                    Optional später
+                    ◉ OPTIONAL
                   </button>
 
                   <button
@@ -856,7 +856,7 @@ export default function AuftragseingangPage() {
                       cursor: "not-allowed"
                     }}
                   >
-                    % Gesamtrabatt später
+                    % GESAMTRABATT
                   </button>
                 </div>
 
@@ -869,7 +869,7 @@ export default function AuftragseingangPage() {
                   fontWeight: 950,
                   textAlign: "right"
                 }}>
-                  Summe wird nach Speichern berechnet
+                  Summe Netto: 0,00 €
                 </div>
               </div>
             </div>
