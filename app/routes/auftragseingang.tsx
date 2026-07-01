@@ -316,6 +316,8 @@ export default function AuftragseingangPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [liveNetTotalCents, setLiveNetTotalCents] = useState(0);
+  const [liveTaxTotalCents, setLiveTaxTotalCents] = useState(0);
+  const [liveGrossTotalCents, setLiveGrossTotalCents] = useState(0);
   const [positionRows, setPositionRows] = useState<Array<{ id: number; type: "item" | "text" }>>([
     { id: Date.now(), type: "item" },
   ]);
@@ -342,6 +344,8 @@ export default function AuftragseingangPage() {
 
   function recalculatePositionTotals(form: HTMLFormElement) {
     let netTotalCents = 0;
+    let taxTotalCents = 0;
+    let grossTotalCents = 0;
 
     const rows = Array.from(form.querySelectorAll('[data-position-row="item"]'));
 
@@ -349,27 +353,36 @@ export default function AuftragseingangPage() {
       const quantityInput = row.querySelector('input[name="quantity"]') as HTMLInputElement | null;
       const priceInput = row.querySelector('input[name="unitPriceEuro"]') as HTMLInputElement | null;
       const discountInput = row.querySelector('input[name="discountPercent"]') as HTMLInputElement | null;
+      const taxInput = row.querySelector('select[name="taxRate"]') as HTMLSelectElement | null;
       const totalElement = row.querySelector('[data-line-total]') as HTMLElement | null;
 
       const quantity = Number(String(quantityInput?.value || "1").replace(",", "."));
       const unitCents = parseEuroInput(priceInput?.value || "0");
       const discountPercent = Number(String(discountInput?.value || "0").replace(",", "."));
+      const taxRate = Number(String(taxInput?.value || "19").replace(",", "."));
 
       const safeQuantity = Number.isFinite(quantity) && quantity > 0 ? quantity : 0;
       const safeDiscount = Number.isFinite(discountPercent) && discountPercent > 0 ? discountPercent : 0;
+      const safeTaxRate = Number.isFinite(taxRate) && taxRate > 0 ? taxRate : 0;
 
       const beforeDiscount = Math.round(unitCents * safeQuantity);
       const discountCents = Math.round(beforeDiscount * (safeDiscount / 100));
-      const lineTotal = Math.max(0, beforeDiscount - discountCents);
+      const netLineCents = Math.max(0, beforeDiscount - discountCents);
+      const taxLineCents = Math.round(netLineCents * (safeTaxRate / 100));
+      const grossLineCents = netLineCents + taxLineCents;
 
-      netTotalCents += lineTotal;
+      netTotalCents += netLineCents;
+      taxTotalCents += taxLineCents;
+      grossTotalCents += grossLineCents;
 
       if (totalElement) {
-        totalElement.textContent = formatEuroCents(lineTotal);
+        totalElement.textContent = formatEuroCents(netLineCents);
       }
     }
 
     setLiveNetTotalCents(netTotalCents);
+    setLiveTaxTotalCents(taxTotalCents);
+    setLiveGrossTotalCents(grossTotalCents);
   }
 
   if (data.setupError) {
@@ -548,7 +561,10 @@ export default function AuftragseingangPage() {
         display: "grid",
         gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
         gap: 16,
-        marginBottom: 20
+        marginBottom: 20,
+        maxWidth: 1180,
+        marginLeft: "auto",
+        marginRight: "auto"
       }}>
         {[
           ["Alle", data.counts.all, ""],
@@ -665,28 +681,28 @@ export default function AuftragseingangPage() {
 
             <div style={{
               border: "1px solid #d6d6d6",
-              borderRadius: 4,
+              borderRadius: 3,
               background: "#ffffff",
               overflow: "hidden",
-              boxShadow: "0 1px 2px rgba(0,0,0,0.08)"
+              boxShadow: "none"
             }}>
               {positionRows.map((row, rowIndex) => (
                 <div key={row.id} style={{
                   display: "grid",
                   gridTemplateColumns: row.type === "text"
                     ? "42px minmax(0, 1fr) 42px"
-                    : "42px minmax(300px, 1fr) 86px 110px 130px 86px 88px 98px 34px",
+                    : "38px minmax(300px, 1fr) 78px 104px 124px 78px 84px 92px 30px",
                   gap: 8,
                   alignItems: "center",
-                  padding: "14px 16px",
+                  padding: "12px 14px",
                   borderTop: rowIndex === 0 ? "none" : "1px solid #e5edf5",
                   background: row.type === "text" ? "#fbfdff" : "#ffffff"
                 }}
                 data-position-row={row.type}
                 >
                   <div style={{
-                    width: 26,
-                    height: 26,
+                    width: 24,
+                    height: 24,
                     borderRadius: 999,
                     display: "flex",
                     alignItems: "center",
@@ -797,7 +813,7 @@ export default function AuftragseingangPage() {
                       </label>
 
                       <div style={{ display: "grid", gap: 5, color: "#777777", fontSize: 11, fontWeight: 700 }}>
-                        Gesamt
+                        Netto
                         <div data-line-total style={{
                           minHeight: 36,
                           borderRadius: 0,
@@ -920,21 +936,21 @@ export default function AuftragseingangPage() {
                 </div>
 
                 <div style={{
-                  minWidth: 260,
+                  minWidth: 245,
                   borderRadius: 0,
-                  background: "#555555",
+                  background: "#575757",
                   color: "white",
-                  padding: "12px 18px",
+                  padding: "10px 16px",
                   fontWeight: 800,
                   textAlign: "center"
                 }}>
-                  Summe Netto&nbsp;&nbsp; {formatEuroCents(liveNetTotalCents)}
+                  Netto {formatEuroCents(liveNetTotalCents)} · MwSt {formatEuroCents(liveTaxTotalCents)} · Gesamt {formatEuroCents(liveGrossTotalCents)}
                 </div>
               </div>
             </div>
           </div>
 
-          <textarea name="notes" placeholder="Notizen / Besonderheiten" rows={3} style={inputStyle} />
+          <textarea name="notes" placeholder="Notizen / Besonderheiten" rows={3} style={{ ...inputStyle, borderRadius: 3 }} />
 
           <button type="submit" style={{
             border: "none",
