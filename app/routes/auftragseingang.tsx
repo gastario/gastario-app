@@ -579,7 +579,7 @@ export default function AuftragseingangPage() {
         padding: 18,
         boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
         margin: "0 auto 18px",
-        maxWidth: 1180
+        maxWidth: 1240
       }}>
         <div style={{ marginBottom: 16 }}>
           <div style={{
@@ -634,9 +634,7 @@ export default function AuftragseingangPage() {
           <div style={{ display: "grid", gridTemplateColumns: "180px 160px 1fr", gap: 12 }}>
             <input
               name="deliveryDate"
-              type="text"
-              inputMode="numeric"
-              placeholder="Datum, z. B. 01.07.2026"
+              type="date"
               style={{ ...inputStyle, borderRadius: 3 }}
             />
             <input
@@ -764,7 +762,7 @@ export default function AuftragseingangPage() {
                           <input
                             name="itemName"
                             placeholder="Bezeichnung des Artikels"
-                            style={{ ...inputStyle, borderRadius: 3, fontWeight: 500, minHeight: 38 }}
+                            style={{ ...inputStyle, borderRadius: 3, fontWeight: 500, minHeight: 40 }}
                           />
                         </label>
 
@@ -814,31 +812,41 @@ export default function AuftragseingangPage() {
                         <input name="discountPercent" type="number" min="0" defaultValue="0" style={{ ...inputStyle, borderRadius: 3, minHeight: 38, textAlign: "right" }} />
                       </label>
 
-                      <label style={{ display: "grid", gap: 3, color: "#777", fontSize: 10, fontWeight: 650 }}>
-                        MwSt
-                        <select name="taxRate" defaultValue="19" style={{ ...inputStyle, borderRadius: 3, minHeight: 38 }}>
-                          <option value="19">19 %</option>
-                          <option value="7">7 %</option>
-                          <option value="0">0 %</option>
-                        </select>
-                      </label>
-
-                      <div style={{ display: "grid", gap: 3, color: "#777", fontSize: 10, fontWeight: 650 }}>
+                      <div style={{ display: "grid", gap: 4, color: "#777", fontSize: 10, fontWeight: 650 }}>
                         Netto
                         <div
                           data-line-total
                           style={{
-                            minHeight: 38,
+                            minHeight: 22,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "flex-end",
                             color: "#111",
-                            fontWeight: 800,
-                            fontSize: 13
+                            fontWeight: 900,
+                            fontSize: 14
                           }}
                         >
                           0,00 €
                         </div>
+                        <select
+                          name="taxRate"
+                          defaultValue="19"
+                          style={{
+                            minHeight: 24,
+                            border: "none",
+                            borderRadius: 999,
+                            background: "#3f3f3f",
+                            color: "white",
+                            fontSize: 11,
+                            fontWeight: 800,
+                            padding: "2px 8px",
+                            cursor: "pointer"
+                          }}
+                        >
+                          <option value="19">USt 19 %</option>
+                          <option value="7">USt 7 %</option>
+                          <option value="0">USt 0 %</option>
+                        </select>
                       </div>
 
                       <button
@@ -874,7 +882,7 @@ export default function AuftragseingangPage() {
                 borderTop: "1px solid #d6d6d6",
                 background: "#ffffff"
               }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
                   <button
                     type="button"
                     onClick={() =>
@@ -948,7 +956,7 @@ export default function AuftragseingangPage() {
 
                 <div style={{
                   marginLeft: "auto",
-                  minWidth: 420,
+                  minWidth: 390,
                   background: "#555",
                   color: "white",
                   padding: "12px 18px",
@@ -986,7 +994,7 @@ export default function AuftragseingangPage() {
         padding: 18,
         boxShadow: "0 1px 3px rgba(0,0,0,0.10)",
         margin: "0 auto",
-        maxWidth: 1180
+        maxWidth: 1240
       }}>
         <div style={{ marginBottom: 16 }}>
           <div style={{
