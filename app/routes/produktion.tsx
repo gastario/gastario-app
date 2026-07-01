@@ -1,487 +1,278 @@
-﻿import { useLoaderData } from "react-router";
-
-function formatDate(value: string | Date | null | undefined) {
-  if (!value) return "-";
-  return new Date(value).toLocaleDateString("de-DE");
-}
-
-function normalizeDate(value: string | Date | null | undefined) {
-  if (!value) return "";
-  return new Date(value).toISOString().slice(0, 10);
-}
+﻿import { Link, useLoaderData } from "react-router";
+import AppLayout from "../components/AppLayout";
 
 function todayInput() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export async function loader({ request }: { request: Request }) {
-  const { prisma } = await import("../lib/prisma.server");
-  const { requireTenantFeature } = await import("../lib/features.server");
-
-  const access = await requireTenantFeature(request, "PRODUCTION");
-
-  const url = new URL(request.url);
-  const selectedDate = url.searchParams.get("date") || todayInput();
-
-  const orders = await prisma.order.findMany({
-    where: {
-      tenantId: access.tenantId,
-      status: "CONFIRMED" as any,
-    },
-    include: {
-      items: true,
-      customer: true,
-    },
-    orderBy: [
-      { deliveryDate: "asc" },
-      { deliveryTime: "asc" },
-      { createdAt: "desc" },
-    ],
-    take: 300,
-  });
-
-  const filteredOrders = orders.filter((order) => {
-    if (!order.deliveryDate) return selectedDate === "ohne-datum";
-    return normalizeDate(order.deliveryDate) === selectedDate;
-  });
-
-  const grouped = new Map<string, any>();
-
-  for (const order of filteredOrders) {
-    for (const item of order.items) {
-      const key = `${item.name}__${item.unit || "Stueck"}`;
-
-      if (!grouped.has(key)) {
-        grouped.set(key, {
-          name: item.name,
-          unit: item.unit || "Stueck",
-          quantity: 0,
-          orders: [],
-        });
-      }
-
-      const row = grouped.get(key);
-      row.quantity += Number(item.quantity || 0);
-      row.orders.push(order);
-    }
+function normalizeDate(value: string | Date | null | undefined) {
+  if (!value) return "";
+  try {
+    return new Date(value).toISOString().slice(0, 10);
+  } catch {
+    return "";
   }
+}
 
-  const productionItems = Array.from(grouped.values()).sort((a, b) =>
-    a.name.localeCompare(b.name, "de")
-  );
-
-  const availableDates = Array.from(
-    new Set(
-      orders.map((order) =>
-        order.deliveryDate ? normalizeDate(order.deliveryDate) : "ohne-datum"
-      )
-    )
-  ).sort();
-
-  if (!availableDates.includes(selectedDate)) {
-    availableDates.unshift(selectedDate);
+function formatDate(value: string | Date | null | undefined) {
+  if (!value) return "-";
+  try {
+    return new Date(value).toLocaleDateString("de-DE");
+  } catch {
+    return "-";
   }
+}
 
+function emptyData(error: string | null = null) {
   return {
-    tenant: access.tenant,
-    selectedDate,
-    availableDates,
-    orders: filteredOrders,
-    productionItems,
+    tenantName: "Gastario",
+    orders: [],
+    productionItems: [],
+    stats: {
+      orders: 0,
+      positions: 0,
+      portions: 0,
+    },
+    error,
   };
 }
 
-const pageStyle = {
-  minHeight: "100vh",
-  background: "#edf2f6",
-  padding: 32,
-  fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
-  color: "#07111f",
-};
+function orderSummary(order: any) {
+  if (!order.items || order.items.length === 0) return "Keine Positionen";
 
-const panelStyle = {
-  background: "white",
-  border: "1px solid #dbe5ee",
-  borderRadius: 28,
-  padding: 22,
-  boxShadow: "0 24px 70px rgba(15, 23, 42, 0.10)",
-  marginBottom: 20,
-};
+  return order.items
+    .map((item: any) => `${item.quantity || 0} x ${item.name || "Position"}`)
+    .join(", ");
+}
 
-const statGridStyle = {
-  display: "grid",
-  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-  gap: 16,
-  marginBottom: 20,
-};
+export function meta() {
+  return [{ title: "Produktion · Gastario" }];
+}
 
-const statCardStyle = {
-  background: "white",
-  border: "1px solid #dbe5ee",
-  borderRadius: 24,
-  padding: 20,
-  boxShadow: "0 12px 32px rgba(15, 23, 42, 0.07)",
-};
+export async function loader({ request }: { request: Request }) {
+  try {
+    const { prisma } = await import("../lib/prisma.server");
+    const { getTenantAccess } = await import("../lib/features.server");
 
-const thStyle = {
-  textAlign: "left" as const,
-  background: "#f8fafc",
-  color: "#64748b",
-  fontSize: 11.5,
-  textTransform: "uppercase" as const,
-  letterSpacing: ".075em",
-  padding: "14px 15px",
-  borderBottom: "1px solid #dbe5ee",
-  fontWeight: 950,
-};
+    const access = await getTenantAccess(request);
 
-const tdStyle = {
-  padding: 15,
-  borderBottom: "1px solid #eef2f7",
-  verticalAlign: "top" as const,
-  fontWeight: 720,
-};
+    if (!access?.tenantId) {
+      return emptyData("Kein Mandant gefunden.");
+    }
 
-const buttonStyle = {
-  border: "1px solid #dbe5ee",
-  background: "white",
-  color: "#07111f",
-  borderRadius: 999,
-  padding: "11px 16px",
-  fontWeight: 900,
-  cursor: "pointer",
-};
+    const url = new URL(request.url);
+    const selectedDate = url.searchParams.get("date") || todayInput();
 
-export default function ProduktionPage() {
-  const data = useLoaderData() as any;
+    const orders = await prisma.order.findMany({
+      where: {
+        tenantId: access.tenantId,
+      },
+      include: {
+        items: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 300,
+    });
+
+    const relevantOrders = orders.filter((order: any) => {
+      const status = String(order.status || "").toUpperCase();
+      const date = normalizeDate(order.deliveryDate);
+
+      return (
+        date === selectedDate &&
+        (
+          status === "CONFIRMED" ||
+          status === "PAID" ||
+          status === "INVOICE_APPROVED" ||
+          status === "MANUAL"
+        )
+      );
+    });
+
+    const grouped = new Map<string, any>();
+
+    for (const order of relevantOrders as any[]) {
+      for (const item of order.items || []) {
+        const name = String(item.name || "Position");
+        const unit = String(item.unit || "Stueck");
+        const key = `${name}__${unit}`;
+
+        if (!grouped.has(key)) {
+          grouped.set(key, {
+            name,
+            unit,
+            quantity: 0,
+            orders: [],
+          });
+        }
+
+        const row = grouped.get(key);
+        row.quantity += Number(item.quantity || 0);
+        row.orders.push(order.orderNumber || order.id);
+      }
+    }
+
+    const productionItems = Array.from(grouped.values()).sort((a, b) =>
+      a.name.localeCompare(b.name, "de")
+    );
+
+    const portions = productionItems.reduce((sum: number, item: any) => sum + Number(item.quantity || 0), 0);
+
+    return {
+      tenantName: access.tenant?.name || "Gastario",
+      selectedDate,
+      orders: relevantOrders,
+      productionItems,
+      stats: {
+        orders: relevantOrders.length,
+        positions: productionItems.length,
+        portions,
+      },
+      error: null,
+    };
+  } catch (error: any) {
+    console.error("Produktion loader error:", error);
+    return emptyData(error?.message || "Produktion konnte nicht geladen werden.");
+  }
+}
+
+export default function ProductionPage() {
+  const data = useLoaderData<typeof loader>();
 
   return (
-    <div style={pageStyle}>
-      <header style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        gap: 20,
-        marginBottom: 24,
-      }}>
+    <AppLayout>
+      <header className="topbar">
         <div>
-          <div style={{
-            color: "#0f766e",
-            textTransform: "uppercase",
-            letterSpacing: ".11em",
-            fontSize: 11,
-            fontWeight: 950,
-            marginBottom: 8,
-          }}>
-            Gastario
-          </div>
-
-          <h1 style={{
-            margin: 0,
-            fontSize: 44,
-            lineHeight: .95,
-            letterSpacing: "-0.065em",
-          }}>
-            Produktion
-          </h1>
-
-          <p style={{
-            margin: "12px 0 0",
-            color: "#64748b",
-            fontWeight: 700,
-          }}>
-            Produktionsliste aus uebernommenen Auftraegen fuer {data.tenant.name}.
-          </p>
+          <p className="eyebrow">Betrieb</p>
+          <h1>Produktion</h1>
+          <span className="pageSubline">
+            {data.tenantName} · Produktionsliste aus Auftraegen fuer den gewaehlten Tag.
+          </span>
         </div>
 
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-          <form method="get" style={{ display: "flex", gap: 10 }}>
-            <select
-              name="date"
-              defaultValue={data.selectedDate}
-              style={{
-                border: "1px solid #cbd5e1",
-                borderRadius: 12,
-                padding: "11px 12px",
-                font: "inherit",
-                background: "white",
-              }}
-            >
-              {data.availableDates.map((date: string) => (
-                <option key={date} value={date}>
-                  {date === "ohne-datum"
-                    ? "Ohne Datum"
-                    : new Date(date + "T00:00:00").toLocaleDateString("de-DE")}
-                </option>
-              ))}
-            </select>
-
-            <button style={buttonStyle} type="submit">
-              Anzeigen
-            </button>
-          </form>
-
-          <button
-            style={{
-              ...buttonStyle,
-              background: "linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)",
-              color: "white",
-              borderColor: "transparent",
-            }}
-            type="button"
-            onClick={() => window.print()}
-          >
+        <div className="topActions">
+          <button className="secondaryButton" type="button" onClick={() => window.print()}>
             Drucken
           </button>
+          <Link className="primaryButton" to="/auftragseingang">
+            Auftrag anlegen
+          </Link>
         </div>
       </header>
 
-      <section style={statGridStyle}>
-        <article style={statCardStyle}>
-          <div style={{ color: "#64748b", fontWeight: 900, marginBottom: 8 }}>Auftraege</div>
-          <div style={{ fontSize: 36, fontWeight: 950 }}>{data.orders.length}</div>
-        </article>
-
-        <article style={statCardStyle}>
-          <div style={{ color: "#64748b", fontWeight: 900, marginBottom: 8 }}>Produktionspositionen</div>
-          <div style={{ fontSize: 36, fontWeight: 950 }}>{data.productionItems.length}</div>
-        </article>
-
-        <article style={statCardStyle}>
-          <div style={{ color: "#64748b", fontWeight: 900, marginBottom: 8 }}>Datum</div>
-          <div style={{ fontSize: 24, fontWeight: 950 }}>
-            {data.selectedDate === "ohne-datum"
-              ? "Ohne Datum"
-              : new Date(data.selectedDate + "T00:00:00").toLocaleDateString("de-DE")}
+      {data.error ? (
+        <section className="panel">
+          <div className="noteBox">
+            <strong>Hinweis</strong>
+            <p>{data.error}</p>
           </div>
+        </section>
+      ) : null}
+
+      <section className="orderSummaryGrid">
+        <article className="metricCard">
+          <div>
+            <p>Auftraege</p>
+            <strong>{data.stats.orders}</strong>
+            <span>fuer Produktion</span>
+          </div>
+          <small data-trend="aktiv">heute</small>
         </article>
 
-        <article style={statCardStyle}>
-          <div style={{ color: "#64748b", fontWeight: 900, marginBottom: 8 }}>Status</div>
-          <div style={{ fontSize: 24, fontWeight: 950 }}>Uebernommen</div>
+        <article className="metricCard">
+          <div>
+            <p>Positionen</p>
+            <strong>{data.stats.positions}</strong>
+            <span>gruppiert</span>
+          </div>
+          <small data-trend="bereit">Liste</small>
+        </article>
+
+        <article className="metricCard">
+          <div>
+            <p>Mengen</p>
+            <strong>{data.stats.portions}</strong>
+            <span>gesamt</span>
+          </div>
+          <small data-trend="pruefen">Produktion</small>
         </article>
       </section>
 
-      <section style={panelStyle}>
-        <div style={{ marginBottom: 16 }}>
-          <div style={{
-            color: "#0f766e",
-            textTransform: "uppercase",
-            letterSpacing: ".10em",
-            fontSize: 11,
-            fontWeight: 950,
-          }}>
-            Zusammenfassung
+      <section className="mainGrid">
+        <article className="panel schedulePanel">
+          <div className="panelHeader">
+            <div>
+              <p className="eyebrow">Produktionsliste</p>
+              <h2>Zu produzieren</h2>
+            </div>
           </div>
 
-          <h2 style={{ margin: "5px 0 0", fontSize: 24, letterSpacing: "-0.04em" }}>
-            Produktionsmengen
-          </h2>
-        </div>
+          <div className="purchaseDemandTable">
+            <div className="purchaseDemandHead">
+              <span>Produkt</span>
+              <span>Menge</span>
+              <span>Einheit</span>
+              <span>Auftraege</span>
+              <span>Status</span>
+            </div>
 
-        <div style={{ overflow: "auto", border: "1px solid #dbe5ee", borderRadius: 20 }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", background: "white" }}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Produkt / Gericht</th>
-                <th style={thStyle}>Menge gesamt</th>
-                <th style={thStyle}>Einheit</th>
-                <th style={thStyle}>Auftraege</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {data.productionItems.length === 0 ? (
-                <tr>
-                  <td style={tdStyle} colSpan={4}>
-                    Keine uebernommenen Auftraege fuer dieses Datum vorhanden.
-                  </td>
-                </tr>
-              ) : (
-                data.productionItems.map((item: any) => (
-                  <tr key={item.name + item.unit}>
-                    <td style={{ ...tdStyle, fontWeight: 950 }}>{item.name}</td>
-                    <td style={tdStyle}>{item.quantity}</td>
-                    <td style={tdStyle}>{item.unit}</td>
-                    <td style={tdStyle}>
-                      {item.orders.map((order: any) => (
-                        <div key={order.id}>
-                          {order.orderNumber} · {order.customerName}
-                        </div>
-                      ))}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section style={panelStyle}>
-        <div style={{ marginBottom: 16 }}>
-          <div style={{
-            color: "#0f766e",
-            textTransform: "uppercase",
-            letterSpacing: ".10em",
-            fontSize: 11,
-            fontWeight: 950,
-          }}>
-            Details
+            {data.productionItems.length === 0 ? (
+              <div className="purchaseDemandRow">
+                <strong>Keine Produktionspositionen gefunden</strong>
+                <span>-</span>
+                <span>-</span>
+                <span>-</span>
+                <span>-</span>
+              </div>
+            ) : (
+              data.productionItems.map((item: any) => (
+                <div className="purchaseDemandRow" key={`${item.name}-${item.unit}`}>
+                  <strong>{item.name}</strong>
+                  <span>{item.quantity}</span>
+                  <span>{item.unit}</span>
+                  <span>{item.orders.slice(0, 3).join(", ")}</span>
+                  <em className="warning">Offen</em>
+                </div>
+              ))
+            )}
           </div>
+        </article>
 
-          <h2 style={{ margin: "5px 0 0", fontSize: 24, letterSpacing: "-0.04em" }}>
-            Auftraege fuer die Produktion
-          </h2>
-        </div>
+        <aside className="sideStack">
+          <article className="panel">
+            <div className="panelHeader compact">
+              <div>
+                <p className="eyebrow">Auftraege</p>
+                <h2>Basis</h2>
+              </div>
+            </div>
 
-        <div style={{ overflow: "auto", border: "1px solid #dbe5ee", borderRadius: 20 }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", background: "white" }}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Auftrag</th>
-                <th style={thStyle}>Kunde</th>
-                <th style={thStyle}>Lieferung</th>
-                <th style={thStyle}>Adresse</th>
-                <th style={thStyle}>Positionen</th>
-                <th style={thStyle}>Notizen</th>
-              </tr>
-            </thead>
-
-            <tbody>
+            <div className="compactList">
               {data.orders.length === 0 ? (
-                <tr>
-                  <td style={tdStyle} colSpan={6}>
-                    Keine Auftraege vorhanden.
-                  </td>
-                </tr>
+                <div className="compactItem">
+                  <div>
+                    <strong>Keine Auftraege</strong>
+                    <span>Keine passenden Auftraege gefunden.</span>
+                  </div>
+                  <small>-</small>
+                </div>
               ) : (
                 data.orders.map((order: any) => (
-                  <tr key={order.id}>
-                    <td style={{ ...tdStyle, fontWeight: 950 }}>{order.orderNumber}</td>
-                    <td style={tdStyle}>
-                      {order.customerName}
-                      <div style={{ color: "#64748b", fontSize: 12 }}>
-                        {order.customerEmail || "-"}
-                      </div>
-                    </td>
-                    <td style={tdStyle}>
-                      {formatDate(order.deliveryDate)}
-                      <div style={{ color: "#64748b", fontSize: 12 }}>
-                        {order.deliveryTime || "-"}
-                      </div>
-                    </td>
-                    <td style={tdStyle}>{order.deliveryAddress || "-"}</td>
-                    <td style={tdStyle}>
-                      {order.items.map((item: any) => (
-                        <div key={item.id}>
-                          {item.quantity} × {item.name}
-                        </div>
-                      ))}
-                    </td>
-                    <td style={tdStyle}>{order.notes || "-"}</td>
-                  </tr>
+                  <div className="compactItem" key={order.id}>
+                    <div>
+                      <strong>{order.customerName || "Ohne Kunde"}</strong>
+                      <span>{formatDate(order.deliveryDate)} · {orderSummary(order)}</span>
+                    </div>
+                    <small>{order.deliveryTime || "-"}</small>
+                  </div>
                 ))
               )}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          </article>
+        </aside>
       </section>
-    </div>
-  );
-}
-
-export function ErrorBoundary({ error }: { error: any }) {
-  const message =
-    error?.data ||
-    error?.message ||
-    "Unbekannter Fehler.";
-
-  const status = error?.status || 500;
-
-  return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#edf2f6",
-      padding: 32,
-      fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
-      color: "#07111f"
-    }}>
-      <section style={{
-        maxWidth: 760,
-        background: "white",
-        border: "1px solid #dbe5ee",
-        borderRadius: 28,
-        padding: 28,
-        boxShadow: "0 24px 70px rgba(15, 23, 42, 0.10)"
-      }}>
-        <div style={{
-          color: "#b91c1c",
-          textTransform: "uppercase",
-          letterSpacing: ".11em",
-          fontSize: 11,
-          fontWeight: 950,
-          marginBottom: 8
-        }}>
-          Fehler {status}
-        </div>
-
-        <h1 style={{
-          margin: 0,
-          fontSize: 38,
-          lineHeight: 1,
-          letterSpacing: "-0.055em"
-        }}>
-          Seite konnte nicht geladen werden
-        </h1>
-
-        <p style={{
-          margin: "14px 0 0",
-          color: "#475569",
-          fontWeight: 750,
-          lineHeight: 1.55
-        }}>
-          {String(message)}
-        </p>
-
-        <div style={{ display: "flex", gap: 10, marginTop: 22, flexWrap: "wrap" }}>
-          <a href="/" style={{
-            border: "none",
-            background: "linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)",
-            color: "white",
-            borderRadius: 999,
-            padding: "12px 16px",
-            fontWeight: 950,
-            textDecoration: "none"
-          }}>
-            Zum Dashboard
-          </a>
-
-          <a href="/auftragseingang" style={{
-            border: "1px solid #dbe5ee",
-            background: "white",
-            color: "#07111f",
-            borderRadius: 999,
-            padding: "12px 16px",
-            fontWeight: 950,
-            textDecoration: "none"
-          }}>
-            Auftragseingang
-          </a>
-
-          <a href="/logout" style={{
-            border: "1px solid #dbe5ee",
-            background: "white",
-            color: "#07111f",
-            borderRadius: 999,
-            padding: "12px 16px",
-            fontWeight: 950,
-            textDecoration: "none"
-          }}>
-            Ausloggen
-          </a>
-        </div>
-      </section>
-    </div>
+    </AppLayout>
   );
 }

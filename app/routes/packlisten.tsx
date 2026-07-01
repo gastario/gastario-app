@@ -1,4 +1,5 @@
-﻿import { useLoaderData } from "react-router";
+﻿import { Link, useLoaderData } from "react-router";
+import AppLayout from "../components/AppLayout";
 
 function todayInput() {
   return new Date().toISOString().slice(0, 10);
@@ -6,447 +7,234 @@ function todayInput() {
 
 function normalizeDate(value: string | Date | null | undefined) {
   if (!value) return "";
-  return new Date(value).toISOString().slice(0, 10);
+  try {
+    return new Date(value).toISOString().slice(0, 10);
+  } catch {
+    return "";
+  }
 }
 
 function formatDate(value: string | Date | null | undefined) {
   if (!value) return "-";
-  return new Date(value).toLocaleDateString("de-DE");
+  try {
+    return new Date(value).toLocaleDateString("de-DE");
+  } catch {
+    return "-";
+  }
 }
 
-export async function loader({ request }: { request: Request }) {
-  const { prisma } = await import("../lib/prisma.server");
-  const { requireTenantFeature } = await import("../lib/features.server");
-
-  const access = await requireTenantFeature(request, "PACKING_LISTS");
-
-  const url = new URL(request.url);
-  const selectedDate = url.searchParams.get("date") || todayInput();
-
-  const orders = await prisma.order.findMany({
-    where: {
-      tenantId: access.tenantId,
-      status: "CONFIRMED" as any,
-    },
-    include: {
-      items: true,
-      customer: true,
-    },
-    orderBy: [
-      { deliveryDate: "asc" },
-      { deliveryTime: "asc" },
-      { createdAt: "desc" },
-    ],
-    take: 300,
-  });
-
-  const filteredOrders = orders.filter((order) => {
-    if (!order.deliveryDate) return selectedDate === "ohne-datum";
-    return normalizeDate(order.deliveryDate) === selectedDate;
-  });
-
-  const availableDates = Array.from(
-    new Set(
-      orders.map((order) =>
-        order.deliveryDate ? normalizeDate(order.deliveryDate) : "ohne-datum"
-      )
-    )
-  ).sort();
-
-  if (!availableDates.includes(selectedDate)) {
-    availableDates.unshift(selectedDate);
-  }
-
+function emptyData(error: string | null = null) {
   return {
-    tenant: access.tenant,
-    selectedDate,
-    availableDates,
-    orders: filteredOrders,
+    tenantName: "Gastario",
+    orders: [],
+    packingItems: [],
+    stats: {
+      orders: 0,
+      positions: 0,
+      pieces: 0,
+    },
+    error,
   };
 }
 
-const pageStyle = {
-  minHeight: "100vh",
-  background: "#edf2f6",
-  padding: 32,
-  fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
-  color: "#07111f",
-};
+export function meta() {
+  return [{ title: "Packlisten · Gastario" }];
+}
 
-const panelStyle = {
-  background: "white",
-  border: "1px solid #dbe5ee",
-  borderRadius: 28,
-  padding: 22,
-  boxShadow: "0 24px 70px rgba(15, 23, 42, 0.10)",
-  marginBottom: 20,
-};
+export async function loader({ request }: { request: Request }) {
+  try {
+    const { prisma } = await import("../lib/prisma.server");
+    const { getTenantAccess } = await import("../lib/features.server");
 
-const buttonStyle = {
-  border: "1px solid #dbe5ee",
-  background: "white",
-  color: "#07111f",
-  borderRadius: 999,
-  padding: "11px 16px",
-  fontWeight: 900,
-  cursor: "pointer",
-};
+    const access = await getTenantAccess(request);
 
-const thStyle = {
-  textAlign: "left" as const,
-  background: "#f8fafc",
-  color: "#64748b",
-  fontSize: 11.5,
-  textTransform: "uppercase" as const,
-  letterSpacing: ".075em",
-  padding: "14px 15px",
-  borderBottom: "1px solid #dbe5ee",
-  fontWeight: 950,
-};
+    if (!access?.tenantId) {
+      return emptyData("Kein Mandant gefunden.");
+    }
 
-const tdStyle = {
-  padding: 15,
-  borderBottom: "1px solid #eef2f7",
-  verticalAlign: "top" as const,
-  fontWeight: 720,
-};
+    const url = new URL(request.url);
+    const selectedDate = url.searchParams.get("date") || todayInput();
 
-export default function PacklistenPage() {
-  const data = useLoaderData() as any;
+    const orders = await prisma.order.findMany({
+      where: {
+        tenantId: access.tenantId,
+      },
+      include: {
+        items: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 300,
+    });
+
+    const relevantOrders = orders.filter((order: any) => {
+      const status = String(order.status || "").toUpperCase();
+      const date = normalizeDate(order.deliveryDate);
+
+      return (
+        date === selectedDate &&
+        (
+          status === "CONFIRMED" ||
+          status === "PAID" ||
+          status === "INVOICE_APPROVED" ||
+          status === "MANUAL"
+        )
+      );
+    });
+
+    const packingItems = relevantOrders.map((order: any) => ({
+      id: order.id,
+      orderNumber: order.orderNumber || order.id,
+      customerName: order.customerName || "Ohne Kunde",
+      deliveryDate: order.deliveryDate,
+      deliveryTime: order.deliveryTime,
+      deliveryAddress: order.deliveryAddress,
+      items: order.items || [],
+      totalQuantity: (order.items || []).reduce((sum: number, item: any) => sum + Number(item.quantity || 0), 0),
+    }));
+
+    const pieces = packingItems.reduce((sum: number, item: any) => sum + Number(item.totalQuantity || 0), 0);
+
+    return {
+      tenantName: access.tenant?.name || "Gastario",
+      selectedDate,
+      orders: relevantOrders,
+      packingItems,
+      stats: {
+        orders: relevantOrders.length,
+        positions: packingItems.reduce((sum: number, order: any) => sum + Number(order.items.length || 0), 0),
+        pieces,
+      },
+      error: null,
+    };
+  } catch (error: any) {
+    console.error("Packlisten loader error:", error);
+    return emptyData(error?.message || "Packlisten konnten nicht geladen werden.");
+  }
+}
+
+export default function PackingListsPage() {
+  const data = useLoaderData<typeof loader>();
 
   return (
-    <div style={pageStyle}>
-      <header style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        gap: 20,
-        marginBottom: 24,
-      }}>
+    <AppLayout>
+      <header className="topbar">
         <div>
-          <div style={{
-            color: "#0f766e",
-            textTransform: "uppercase",
-            letterSpacing: ".11em",
-            fontSize: 11,
-            fontWeight: 950,
-            marginBottom: 8,
-          }}>
-            Gastario
-          </div>
-
-          <h1 style={{
-            margin: 0,
-            fontSize: 44,
-            lineHeight: .95,
-            letterSpacing: "-0.065em",
-          }}>
-            Packlisten
-          </h1>
-
-          <p style={{
-            margin: "12px 0 0",
-            color: "#64748b",
-            fontWeight: 700,
-          }}>
-            Packlisten aus uebernommenen Auftraegen fuer {data.tenant.name}.
-          </p>
+          <p className="eyebrow">Betrieb</p>
+          <h1>Packlisten</h1>
+          <span className="pageSubline">
+            {data.tenantName} · Packlisten je Auftrag.
+          </span>
         </div>
 
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-          <form method="get" style={{ display: "flex", gap: 10 }}>
-            <select
-              name="date"
-              defaultValue={data.selectedDate}
-              style={{
-                border: "1px solid #cbd5e1",
-                borderRadius: 12,
-                padding: "11px 12px",
-                font: "inherit",
-                background: "white",
-              }}
-            >
-              {data.availableDates.map((date: string) => (
-                <option key={date} value={date}>
-                  {date === "ohne-datum"
-                    ? "Ohne Datum"
-                    : new Date(date + "T00:00:00").toLocaleDateString("de-DE")}
-                </option>
-              ))}
-            </select>
-
-            <button style={buttonStyle} type="submit">
-              Anzeigen
-            </button>
-          </form>
-
-          <button
-            style={{
-              ...buttonStyle,
-              background: "linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)",
-              color: "white",
-              borderColor: "transparent",
-            }}
-            type="button"
-            onClick={() => window.print()}
-          >
+        <div className="topActions">
+          <button className="secondaryButton" type="button" onClick={() => window.print()}>
             Drucken
           </button>
+          <Link className="primaryButton" to="/lieferungen">
+            Zu Lieferungen
+          </Link>
         </div>
       </header>
 
-      <section style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-        gap: 16,
-        marginBottom: 20,
-      }}>
-        <article style={panelStyle}>
-          <div style={{ color: "#64748b", fontWeight: 900, marginBottom: 8 }}>Auftraege</div>
-          <div style={{ fontSize: 36, fontWeight: 950 }}>{data.orders.length}</div>
-        </article>
-
-        <article style={panelStyle}>
-          <div style={{ color: "#64748b", fontWeight: 900, marginBottom: 8 }}>Datum</div>
-          <div style={{ fontSize: 24, fontWeight: 950 }}>
-            {data.selectedDate === "ohne-datum"
-              ? "Ohne Datum"
-              : new Date(data.selectedDate + "T00:00:00").toLocaleDateString("de-DE")}
+      {data.error ? (
+        <section className="panel">
+          <div className="noteBox">
+            <strong>Hinweis</strong>
+            <p>{data.error}</p>
           </div>
-        </article>
-
-        <article style={panelStyle}>
-          <div style={{ color: "#64748b", fontWeight: 900, marginBottom: 8 }}>Status</div>
-          <div style={{ fontSize: 24, fontWeight: 950 }}>Uebernommen</div>
-        </article>
-      </section>
-
-      {data.orders.length === 0 ? (
-        <section style={panelStyle}>
-          Keine uebernommenen Auftraege fuer dieses Datum vorhanden.
         </section>
-      ) : (
-        data.orders.map((order: any) => (
-          <section key={order.id} style={panelStyle}>
-            <div style={{
-              display: "flex",
-              justifyContent: "space-between",
-              gap: 16,
-              alignItems: "flex-start",
-              marginBottom: 18,
-            }}>
-              <div>
-                <div style={{
-                  color: "#0f766e",
-                  textTransform: "uppercase",
-                  letterSpacing: ".10em",
-                  fontSize: 11,
-                  fontWeight: 950,
-                }}>
-                  Packliste
-                </div>
+      ) : null}
 
-                <h2 style={{
-                  margin: "5px 0 0",
-                  fontSize: 26,
-                  letterSpacing: "-0.04em",
-                }}>
-                  {order.orderNumber}
-                </h2>
+      <section className="orderSummaryGrid">
+        <article className="metricCard">
+          <div>
+            <p>Auftraege</p>
+            <strong>{data.stats.orders}</strong>
+            <span>zu packen</span>
+          </div>
+          <small data-trend="aktiv">Packen</small>
+        </article>
 
-                <p style={{
-                  margin: "8px 0 0",
-                  color: "#64748b",
-                  fontWeight: 750,
-                }}>
-                  {order.customerName} · {order.eventName || "Kein Eventname"}
-                </p>
-              </div>
+        <article className="metricCard">
+          <div>
+            <p>Positionen</p>
+            <strong>{data.stats.positions}</strong>
+            <span>in Packlisten</span>
+          </div>
+          <small data-trend="bereit">Liste</small>
+        </article>
 
-              <div style={{
-                border: "1px solid #dbe5ee",
-                borderRadius: 18,
-                padding: 14,
-                background: "#f8fafc",
-                fontWeight: 850,
-              }}>
-                <div>Lieferung: {formatDate(order.deliveryDate)}</div>
-                <div>Uhrzeit: {order.deliveryTime || "-"}</div>
-              </div>
-            </div>
+        <article className="metricCard">
+          <div>
+            <p>Menge</p>
+            <strong>{data.stats.pieces}</strong>
+            <span>gesamt</span>
+          </div>
+          <small data-trend="pruefen">Check</small>
+        </article>
+      </section>
 
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 16,
-              marginBottom: 18,
-            }}>
-              <div style={{
-                border: "1px solid #dbe5ee",
-                borderRadius: 18,
-                padding: 16,
-                background: "#f8fafc",
-              }}>
-                <strong>Lieferadresse</strong>
-                <div style={{ marginTop: 8, color: "#334155", fontWeight: 750 }}>
-                  {order.deliveryAddress || "-"}
-                </div>
-              </div>
-
-              <div style={{
-                border: "1px solid #dbe5ee",
-                borderRadius: 18,
-                padding: 16,
-                background: "#f8fafc",
-              }}>
-                <strong>Ansprechpartner</strong>
-                <div style={{ marginTop: 8, color: "#334155", fontWeight: 750 }}>
-                  {order.contactName || "-"}
-                  <br />
-                  {order.contactPhone || "-"}
-                </div>
-              </div>
-            </div>
-
-            <div style={{ overflow: "auto", border: "1px solid #dbe5ee", borderRadius: 20 }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", background: "white" }}>
-                <thead>
-                  <tr>
-                    <th style={thStyle}>Erledigt</th>
-                    <th style={thStyle}>Position</th>
-                    <th style={thStyle}>Menge</th>
-                    <th style={thStyle}>Einheit</th>
-                    <th style={thStyle}>Notiz</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {order.items.map((item: any) => (
-                    <tr key={item.id}>
-                      <td style={tdStyle}>
-                        <input type="checkbox" style={{ width: 18, height: 18 }} />
-                      </td>
-                      <td style={{ ...tdStyle, fontWeight: 950 }}>{item.name}</td>
-                      <td style={tdStyle}>{item.quantity}</td>
-                      <td style={tdStyle}>{item.unit || "Stueck"}</td>
-                      <td style={tdStyle}>{item.notes || "-"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {order.notes ? (
-              <div style={{
-                marginTop: 16,
-                border: "1px solid #fed7aa",
-                borderRadius: 18,
-                padding: 16,
-                background: "#fff7ed",
-                color: "#9a3412",
-                fontWeight: 850,
-              }}>
-                <strong>Auftragsnotiz:</strong> {order.notes}
-              </div>
-            ) : null}
-          </section>
-        ))
-      )}
-    </div>
-  );
-}
-
-export function ErrorBoundary({ error }: { error: any }) {
-  const message =
-    error?.data ||
-    error?.message ||
-    "Unbekannter Fehler.";
-
-  const status = error?.status || 500;
-
-  return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#edf2f6",
-      padding: 32,
-      fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
-      color: "#07111f"
-    }}>
-      <section style={{
-        maxWidth: 760,
-        background: "white",
-        border: "1px solid #dbe5ee",
-        borderRadius: 28,
-        padding: 28,
-        boxShadow: "0 24px 70px rgba(15, 23, 42, 0.10)"
-      }}>
-        <div style={{
-          color: "#b91c1c",
-          textTransform: "uppercase",
-          letterSpacing: ".11em",
-          fontSize: 11,
-          fontWeight: 950,
-          marginBottom: 8
-        }}>
-          Fehler {status}
+      <section className="panel">
+        <div className="panelHeader">
+          <div>
+            <p className="eyebrow">Packlisten</p>
+            <h2>Nach Auftrag</h2>
+          </div>
         </div>
 
-        <h1 style={{
-          margin: 0,
-          fontSize: 38,
-          lineHeight: 1,
-          letterSpacing: "-0.055em"
-        }}>
-          Seite konnte nicht geladen werden
-        </h1>
+        <div className="deliveryRouteList">
+          {data.packingItems.length === 0 ? (
+            <article className="deliveryRouteCard">
+              <div className="routeTime">
+                <strong>-</strong>
+                <span>Uhr</span>
+              </div>
+              <div className="routeContent">
+                <div className="routeHeader">
+                  <div>
+                    <strong>Keine Packlisten gefunden</strong>
+                    <span>Keine passenden Auftraege fuer diesen Tag.</span>
+                  </div>
+                  <em className="warning">Leer</em>
+                </div>
+              </div>
+            </article>
+          ) : (
+            data.packingItems.map((order: any) => (
+              <article className="deliveryRouteCard" key={order.id}>
+                <div className="routeTime">
+                  <strong>{order.deliveryTime || "-"}</strong>
+                  <span>Uhr</span>
+                </div>
 
-        <p style={{
-          margin: "14px 0 0",
-          color: "#475569",
-          fontWeight: 750,
-          lineHeight: 1.55
-        }}>
-          {String(message)}
-        </p>
+                <div className="routeContent">
+                  <div className="routeHeader">
+                    <div>
+                      <strong>{order.customerName}</strong>
+                      <span>{formatDate(order.deliveryDate)} · {order.deliveryAddress || "Keine Adresse"}</span>
+                    </div>
+                    <em className="warning">Offen</em>
+                  </div>
 
-        <div style={{ display: "flex", gap: 10, marginTop: 22, flexWrap: "wrap" }}>
-          <a href="/" style={{
-            border: "none",
-            background: "linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)",
-            color: "white",
-            borderRadius: 999,
-            padding: "12px 16px",
-            fontWeight: 950,
-            textDecoration: "none"
-          }}>
-            Zum Dashboard
-          </a>
-
-          <a href="/auftragseingang" style={{
-            border: "1px solid #dbe5ee",
-            background: "white",
-            color: "#07111f",
-            borderRadius: 999,
-            padding: "12px 16px",
-            fontWeight: 950,
-            textDecoration: "none"
-          }}>
-            Auftragseingang
-          </a>
-
-          <a href="/logout" style={{
-            border: "1px solid #dbe5ee",
-            background: "white",
-            color: "#07111f",
-            borderRadius: 999,
-            padding: "12px 16px",
-            fontWeight: 950,
-            textDecoration: "none"
-          }}>
-            Ausloggen
-          </a>
+                  <div className="compactList" style={{ marginTop: 12 }}>
+                    {order.items.map((item: any) => (
+                      <div className="compactItem" key={`${order.id}-${item.id || item.name}`}>
+                        <div>
+                          <strong>{item.name || "Position"}</strong>
+                          <span>{item.unit || "Stueck"}</span>
+                        </div>
+                        <small>{item.quantity || 0} x</small>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </article>
+            ))
+          )}
         </div>
       </section>
-    </div>
+    </AppLayout>
   );
 }
