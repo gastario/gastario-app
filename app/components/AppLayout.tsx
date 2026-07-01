@@ -2,7 +2,7 @@
 
 const navigationGroups = [
   {
-    label: "Ãœbersicht",
+    label: "Übersicht",
     items: [{ label: "Dashboard", to: "/" }],
   },
   {
@@ -54,6 +54,270 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <main className="appShell">
+      <style>
+        {`
+          :root {
+            --g-bg: #edf3f7;
+            --g-sidebar: #f8fbfc;
+            --g-card: #ffffff;
+            --g-border: #dbe5eb;
+            --g-border-strong: #c8d4dd;
+            --g-text: #0f172a;
+            --g-muted: #64748b;
+            --g-green: #057a67;
+            --g-green-dark: #045f50;
+            --g-warn: #f59e0b;
+          }
+
+          * {
+            box-sizing: border-box;
+          }
+
+          html,
+          body {
+            margin: 0;
+            background: var(--g-bg);
+            color: var(--g-text);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          }
+
+          body {
+            min-width: 1180px;
+          }
+
+          .appShell {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 252px minmax(0, 1fr);
+            background:
+              radial-gradient(circle at top left, rgba(5, 122, 103, 0.08), transparent 34%),
+              var(--g-bg);
+          }
+
+          .sidebar {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            background: rgba(248, 251, 252, 0.96);
+            border-right: 1px solid var(--g-border);
+            padding: 28px 18px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+          }
+
+          .brand {
+            display: flex;
+            align-items: center;
+            padding: 4px 8px 18px;
+          }
+
+          .brandLogo {
+            width: 148px;
+            height: auto;
+            display: block;
+          }
+
+          .navGroups {
+            display: grid;
+            gap: 22px;
+            flex: 1;
+          }
+
+          .navGroup {
+            display: grid;
+            gap: 5px;
+          }
+
+          .navGroup p {
+            margin: 0 0 6px;
+            padding: 0 8px;
+            color: #718096;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+          }
+
+          .navGroup a {
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+            padding: 0 11px;
+            border-radius: 12px;
+            color: #172033;
+            font-size: 14px;
+            font-weight: 780;
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+          }
+
+          .navGroup a:hover {
+            background: #eef7f6;
+            border-color: #d2e7e3;
+          }
+
+          .navGroup a.active {
+            background: linear-gradient(135deg, #e6f5f2, #f4faf9);
+            border-color: #c9e4df;
+            color: #064e42;
+            box-shadow: inset 3px 0 0 var(--g-warn), 0 10px 24px rgba(15, 23, 42, 0.06);
+          }
+
+          .sidebarFooter {
+            border-top: 1px solid var(--g-border);
+            padding-top: 14px;
+          }
+
+          .sidebarLogoutButton {
+            min-height: 40px;
+            width: 100%;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            border: 1px solid var(--g-border-strong);
+            color: #0f172a;
+            text-decoration: none;
+            font-weight: 850;
+          }
+
+          .workspace {
+            min-width: 0;
+            padding: 34px 42px 70px;
+          }
+
+          .workspace > * {
+            max-width: 1480px;
+            margin-left: auto;
+            margin-right: auto;
+          }
+
+          .topbar {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 24px;
+          }
+
+          .topbar h1 {
+            margin: 4px 0 0;
+            color: var(--g-text);
+            font-size: 36px;
+            line-height: 1.05;
+            letter-spacing: -0.055em;
+            font-weight: 950;
+          }
+
+          .eyebrow {
+            margin: 0;
+            color: var(--g-green);
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            font-size: 12px;
+            font-weight: 950;
+          }
+
+          .muted {
+            margin: 8px 0 0;
+            color: #42526b;
+            font-size: 15px;
+            line-height: 1.5;
+            font-weight: 600;
+          }
+
+          .button,
+          button,
+          input,
+          textarea,
+          select {
+            font: inherit;
+          }
+
+          input,
+          textarea,
+          select {
+            min-height: 46px;
+            width: 100%;
+            border: 1px solid var(--g-border-strong);
+            border-radius: 12px;
+            background: #ffffff;
+            color: var(--g-text);
+            padding: 10px 12px;
+            font-size: 14px;
+            font-weight: 650;
+            outline: none;
+            box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+          }
+
+          textarea {
+            line-height: 1.5;
+          }
+
+          input:focus,
+          textarea:focus,
+          select:focus {
+            border-color: var(--g-green);
+            box-shadow: 0 0 0 4px rgba(5, 122, 103, 0.12);
+          }
+
+          .button {
+            min-height: 42px;
+            border-radius: 12px;
+            padding: 0 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 850;
+            white-space: nowrap;
+          }
+
+          .button.secondary {
+            border: 1px solid var(--g-border-strong);
+            background: #ffffff;
+            color: #0f172a;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.045);
+          }
+
+          .button.primary {
+            border: 1px solid var(--g-green);
+            background: var(--g-green);
+            color: #ffffff;
+            box-shadow: 0 10px 22px rgba(5, 122, 103, 0.18);
+          }
+
+          @media (max-width: 980px) {
+            body {
+              min-width: 0;
+            }
+
+            .appShell {
+              grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+              position: relative;
+              height: auto;
+            }
+
+            .workspace {
+              padding: 24px 18px 48px;
+            }
+
+            .topbar {
+              flex-direction: column;
+            }
+          }
+        `}
+      </style>
+
       <aside className="sidebar">
         <div className="brand">
           <img className="brandLogo" src="/brand/gastario-logo.png" alt="Gastario" />
@@ -92,11 +356,3 @@ export default function AppLayout({ children }: AppLayoutProps) {
     </main>
   );
 }
-
-
-
-
-
-
-
-
