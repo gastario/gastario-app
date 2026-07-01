@@ -1,12 +1,27 @@
-﻿import { Link } from "react-router";
+﻿import { Link, redirect, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 export function meta() {
   return [{ title: "Rechnungen · Gastario" }];
 }
 
-export async function loader() {
+export async function loader({ request }: { request: Request }) {
+  const { getUserId } = await import("../lib/session.server");
+  const { prisma } = await import("../lib/prisma.server");
+
+  const userId = await getUserId(request);
+
+  if (!userId) {
+    throw redirect("/login");
+  }
+
+  const access = await prisma.tenantUser.findFirst({
+    where: { userId },
+    include: { tenant: true },
+  });
+
   return {
+    tenantName: access?.tenant?.name || "Gastario",
     stats: {
       drafts: 0,
       open: 0,
@@ -17,12 +32,7 @@ export async function loader() {
 }
 
 export default function RechnungenPage() {
-  const stats = {
-    drafts: 0,
-    open: 0,
-    paid: 0,
-    platform: 0,
-  };
+  const data = useLoaderData<typeof loader>();
 
   return (
     <AppLayout>
@@ -42,12 +52,14 @@ export default function RechnungenPage() {
 
       <section style={pageGridStyle}>
         <div style={heroStyle}>
-          <p style={smallLabelStyle}>Grundlage</p>
-          <h2 style={heroTitleStyle}>Rechnung nur aus einem Auftrag erstellen</h2>
-          <p style={heroTextStyle}>
-            Der Auftragseingang bleibt sauber für neue Aufträge. Rechnungen werden später aus einem bestehenden Auftrag erstellt.
-            Dabei kannst du die Rechnungsnummer selbst eintragen und die Rechnungssprache auswählen.
-          </p>
+          <div>
+            <p style={smallLabelStyle}>Grundlage</p>
+            <h2 style={heroTitleStyle}>Rechnung nur aus einem Auftrag erstellen</h2>
+            <p style={heroTextStyle}>
+              Der Auftragseingang bleibt sauber für neue Aufträge. Rechnungen werden später aus einem bestehenden Auftrag erstellt.
+              Dabei kannst du die Rechnungsnummer selbst eintragen und die Rechnungssprache auswählen.
+            </p>
+          </div>
 
           <div style={noticeStyle}>
             <strong>Wichtig:</strong> Eine finale Rechnung soll später gesperrt werden. Änderungen laufen dann über Korrektur oder Storno.
@@ -57,25 +69,25 @@ export default function RechnungenPage() {
         <div style={statsGridStyle}>
           <div style={statCardStyle}>
             <span style={statLabelStyle}>Entwürfe</span>
-            <strong style={statNumberStyle}>{stats.drafts}</strong>
+            <strong style={statNumberStyle}>{data.stats.drafts}</strong>
             <small style={statHintStyle}>Noch nicht final</small>
           </div>
 
           <div style={statCardStyle}>
             <span style={statLabelStyle}>Offen</span>
-            <strong style={statNumberStyle}>{stats.open}</strong>
+            <strong style={statNumberStyle}>{data.stats.open}</strong>
             <small style={statHintStyle}>Noch nicht bezahlt</small>
           </div>
 
           <div style={statCardStyle}>
             <span style={statLabelStyle}>Bezahlt</span>
-            <strong style={statNumberStyle}>{stats.paid}</strong>
+            <strong style={statNumberStyle}>{data.stats.paid}</strong>
             <small style={statHintStyle}>Erledigte Rechnungen</small>
           </div>
 
           <div style={statCardStyle}>
             <span style={statLabelStyle}>Plattform</span>
-            <strong style={statNumberStyle}>{stats.platform}</strong>
+            <strong style={statNumberStyle}>{data.stats.platform}</strong>
             <small style={statHintStyle}>Heycater / Egora / Feedr</small>
           </div>
         </div>
@@ -102,7 +114,7 @@ export default function RechnungenPage() {
 
             <div style={flowBoxStyle}>
               <strong>4. Finalisieren & sperren</strong>
-              <p>Nach dem finalen Erstellen wird die Rechnung nicht einfach überschrieben, sondern korrigiert oder storniert.</p>
+              <p>Nach dem finalen Erstellen wird die Rechnung nicht einfach überschrieben, sondern sauber korrigiert oder storniert.</p>
             </div>
           </div>
         </div>
@@ -132,6 +144,22 @@ export default function RechnungenPage() {
               <p>Bei Heycater/Egora wird keine doppelte Rechnung erzeugt.</p>
             </div>
           </div>
+        </div>
+
+        <div style={cardStyle}>
+          <p style={smallLabelStyle}>Nächster Schritt</p>
+          <h2 style={sectionTitleStyle}>Als Nächstes bauen wir den Button im Auftrag</h2>
+
+          <p style={heroTextStyle}>
+            In der Auftragsübersicht soll später pro Auftrag sichtbar sein:
+          </p>
+
+          <ul style={listStyle}>
+            <li>„Rechnung erstellen“ für direkte Kundenaufträge.</li>
+            <li>„Plattform rechnet ab“ für Heycater, Egora oder ähnliche Quellen.</li>
+            <li>„Keine Rechnung“ für interne oder nicht abrechenbare Vorgänge.</li>
+            <li>Rechnungsnummer erst beim Erstellen der Rechnung eintragen.</li>
+          </ul>
         </div>
       </section>
     </AppLayout>
@@ -255,4 +283,12 @@ const featureBoxStyle: React.CSSProperties = {
   borderRadius: 16,
   padding: 16,
   background: "#eff6ff",
+};
+
+const listStyle: React.CSSProperties = {
+  margin: "14px 0 0",
+  paddingLeft: 20,
+  color: "#475569",
+  fontWeight: 650,
+  lineHeight: 1.8,
 };
