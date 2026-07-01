@@ -180,7 +180,7 @@ export async function action({ request }: { request: Request }) {
   );
 
   if (!invoiceSettingsComplete) {
-    return { error: "Rechnungsdaten sind unvollständig. Bitte zuerst unter Einstellungen > Rechnungsdaten vervollständigen." };
+    return { error: "Rechnungsdaten sind unvollständig. Bitte zuerst unter Verkauf > Rechnungsdaten vervollständigen." };
   }
 
   const formData = await request.formData();
@@ -373,7 +373,7 @@ export async function action({ request }: { request: Request }) {
     })),
   });
 
-  return { success: "Rechnungsentwurf wurde gespeichert. Kundennummer: " + customerNumber };
+  throw redirect(`/rechnungen/${invoice.id}`);
 }
 
 export default function NeueRechnungPage() {
@@ -722,10 +722,10 @@ function FloatingControlledInput({
   );
 }
 
-const pageStyle: React.CSSProperties = { maxWidth: 1180, margin: "0 auto", display: "grid", gap: 18 };
-const cardStyle: React.CSSProperties = { background: "#ffffff", border: "1px solid #dbe3ec", borderRadius: 18, padding: 22, boxShadow: "0 12px 32px rgba(15, 23, 42, 0.055)" };
+const pageStyle: React.CSSProperties = { maxWidth: 1480, margin: "0 auto", display: "grid", gap: 20 };
+const cardStyle: React.CSSProperties = { background: "#ffffff", border: "1px solid #dbe5eb", borderRadius: 22, padding: 24, boxShadow: "0 18px 45px rgba(15, 23, 42, 0.07)" };
 const positionCardStyle: React.CSSProperties = { ...cardStyle, padding: 0, overflow: "hidden" };
-const twoColStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72 };
+const twoColStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28 };
 const twoColSmallStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "0.7fr 1.3fr", gap: 12 };
 const gridStyle: React.CSSProperties = { display: "grid", gap: 14 };
 const labelStyle: React.CSSProperties = { display: "grid", gap: 7, color: "#334155", fontSize: 12, fontWeight: 850 };
@@ -749,10 +749,13 @@ const textActionStyle: React.CSSProperties = { minHeight: 40, border: "1px solid
 const totalBarStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 170px 170px", background: "#555", color: "#ffffff" };
 const sumBoxStyle: React.CSSProperties = { padding: 16, display: "grid", justifyItems: "center", borderLeft: "1px solid rgba(255,255,255,0.15)" };
 const grossBoxStyle: React.CSSProperties = { ...sumBoxStyle, background: "#444" };
-const footerActionsStyle: React.CSSProperties = { display: "flex", justifyContent: "flex-end", gap: 12, padding: "0 0 40px" };
-const primaryButtonStyle: React.CSSProperties = { minHeight: 42, borderRadius: 12, padding: "0 16px", fontSize: 14, fontWeight: 850, border: "1px solid #059669", background: "#059669", color: "#ffffff", cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center" };
-const secondaryButtonStyle: React.CSSProperties = { minHeight: 42, borderRadius: 12, padding: "0 16px", fontSize: 14, fontWeight: 850, border: "1px solid #cbd5e1", background: "#ffffff", color: "#0f172a", cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center" };
+const footerActionsStyle: React.CSSProperties = { position: "sticky", bottom: 18, zIndex: 3, background: "rgba(255, 255, 255, 0.94)", backdropFilter: "blur(10px)", border: "1px solid #dbe5eb", borderRadius: 20, padding: 16, display: "flex", justifyContent: "flex-end", gap: 12, boxShadow: "0 18px 45px rgba(15, 23, 42, 0.12)" };
+const primaryButtonStyle: React.CSSProperties = { minHeight: 44, borderRadius: 13, padding: "0 18px", fontSize: 14, fontWeight: 900, border: "1px solid #036b5a", background: "linear-gradient(135deg, #058872 0%, #04705f 100%)", color: "#ffffff", cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 14px 28px rgba(5, 122, 103, 0.24)" };
+const secondaryButtonStyle: React.CSSProperties = { minHeight: 44, borderRadius: 13, padding: "0 18px", fontSize: 14, fontWeight: 900, border: "1px solid #c8d4dd", background: "#ffffff", color: "#0f172a", cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 20px rgba(15, 23, 42, 0.06)" };
 const disabledButtonStyle: React.CSSProperties = { ...primaryButtonStyle, opacity: 0.45, cursor: "not-allowed" };
 const blockingNoticeStyle: React.CSSProperties = { background: "#fff7ed", border: "1px solid #fed7aa", color: "#9a3412", borderRadius: 18, padding: 18, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18 };
 const errorStyle: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", borderRadius: 14, padding: 14, fontWeight: 750 };
 const successStyle: React.CSSProperties = { background: "#ecfdf5", border: "1px solid #bbf7d0", color: "#047857", borderRadius: 14, padding: 14, fontWeight: 750 };
+
+
+
