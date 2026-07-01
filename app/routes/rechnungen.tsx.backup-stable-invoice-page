@@ -66,42 +66,29 @@ export async function loader({ request }: { request: Request }) {
       invoices: [],
       today: todayInput(),
       dueDate: addDaysInput(14),
-      dbError: "Kein Mandant gefunden.",
       stats: { drafts: 0, issued: 0, paid: 0, cancelled: 0 },
     };
   }
 
-  try {
-    const invoices = await prisma.invoice.findMany({
-      where: { tenantId: access.tenantId },
-      include: { items: true },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-    });
+  const invoices = await prisma.invoice.findMany({
+    where: { tenantId: access.tenantId },
+    include: { items: true },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
 
-    return {
-      tenantName: access.tenant?.name || "Gastario",
-      invoices,
-      today: todayInput(),
-      dueDate: addDaysInput(14),
-      dbError: null,
-      stats: {
-        drafts: invoices.filter((invoice) => invoice.status === "DRAFT").length,
-        issued: invoices.filter((invoice) => invoice.status === "ISSUED").length,
-        paid: invoices.filter((invoice) => invoice.status === "PAID").length,
-        cancelled: invoices.filter((invoice) => invoice.status === "CANCELLED").length,
-      },
-    };
-  } catch (error: any) {
-    return {
-      tenantName: access.tenant?.name || "Gastario",
-      invoices: [],
-      today: todayInput(),
-      dueDate: addDaysInput(14),
-      dbError: error?.message || "Rechnungstabellen konnten nicht geladen werden.",
-      stats: { drafts: 0, issued: 0, paid: 0, cancelled: 0 },
-    };
-  }
+  return {
+    tenantName: access.tenant?.name || "Gastario",
+    invoices,
+    today: todayInput(),
+    dueDate: addDaysInput(14),
+    stats: {
+      drafts: invoices.filter((invoice) => invoice.status === "DRAFT").length,
+      issued: invoices.filter((invoice) => invoice.status === "ISSUED").length,
+      paid: invoices.filter((invoice) => invoice.status === "PAID").length,
+      cancelled: invoices.filter((invoice) => invoice.status === "CANCELLED").length,
+    },
+  };
 }
 
 export async function action({ request }: { request: Request }) {
@@ -362,13 +349,6 @@ export default function RechnungenPage() {
 
       {actionData && "error" in actionData ? <div style={errorStyle}>{actionData.error}</div> : null}
       {actionData && "success" in actionData ? <div style={successStyle}>{actionData.success}</div> : null}
-
-      {data.dbError ? (
-        <div style={errorStyle}>
-          <strong>Rechnungsdatenbank ist noch nicht sauber bereit.</strong>
-          <div style={{ marginTop: 8 }}>{data.dbError}</div>
-        </div>
-      ) : null}
 
       <section style={pageGridStyle}>
         <div style={statsGridStyle}>
@@ -643,9 +623,7 @@ export function ErrorBoundary({ error }: { error: any }) {
     <AppLayout>
       <div style={errorStyle}>
         <strong>Rechnungen konnten nicht geladen werden.</strong>
-        <div style={{ marginTop: 8, whiteSpace: "pre-wrap" }}>
-          {error?.message || String(error) || "Unbekannter Fehler"}
-        </div>
+        <div style={{ marginTop: 8 }}>{error?.message || "Unbekannter Fehler"}</div>
       </div>
     </AppLayout>
   );
