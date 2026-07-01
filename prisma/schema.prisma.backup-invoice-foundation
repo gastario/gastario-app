@@ -117,7 +117,6 @@ model Tenant {
   slug      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  invoices  Invoice[]
 
   planCode           PlanCode           @default(STARTER)
   subscriptionStatus SubscriptionStatus @default(TRIAL)
@@ -362,12 +361,6 @@ model Order {
   contactName      String?
   contactPhone     String?
   notes            String?
-
-  billingMode           BillingMode   @default(UNDECIDED)
-  billingStatus         BillingStatus @default(NOT_BILLED)
-  platformName          String?
-  platformReference     String?
-  externalInvoiceNumber String?
   allergens        String?
 
   totalCents      Int                  @default(0)
@@ -385,7 +378,6 @@ model Order {
   customer      Customer?      @relation(fields: [customerId], references: [id])
   incomingEmail IncomingEmail? @relation(fields: [incomingEmailId], references: [id])
   items         OrderItem[]
-  invoices      Invoice[]
 
   @@unique([tenantId, orderNumber])
   @@index([tenantId])
@@ -529,130 +521,3 @@ model DeliveryStop {
   @@index([tourId])
   @@index([orderId])
 }
-
-
-enum BillingMode {
-  UNDECIDED
-  DIRECT_INVOICE
-  EXTERNAL_INVOICE
-  PLATFORM_CREDIT
-  NO_INVOICE
-}
-
-enum BillingStatus {
-  NOT_BILLED
-  READY_TO_INVOICE
-  INVOICED
-  INVOICED_EXTERNALLY
-  WAITING_FOR_CREDIT
-  CREDIT_RECEIVED
-  NOT_RELEVANT
-}
-
-enum InvoiceType {
-  DIRECT
-  EXTERNAL
-  PLATFORM_CREDIT
-}
-
-enum InvoiceStatus {
-  DRAFT
-  ISSUED
-  PAID
-  CANCELLED
-  CORRECTED
-}
-
-enum InvoiceNumberSource {
-  GASTARIO
-  CASH_REGISTER
-  LEXWARE
-  PLATFORM
-  MANUAL
-}
-
-
-
-model Invoice {
-  id        String @id @default(cuid())
-  tenantId  String
-  orderId   String?
-
-  type         InvoiceType         @default(DIRECT)
-  status       InvoiceStatus       @default(DRAFT)
-  numberSource InvoiceNumberSource @default(MANUAL)
-
-  internalNumber        String?
-  externalInvoiceNumber String?
-  sourceSystem          String?
-
-  invoiceDate DateTime?
-  serviceDate DateTime?
-  dueDate     DateTime?
-
-  customerName    String
-  customerEmail   String?
-  customerAddress String?
-
-  sellerName      String?
-  sellerAddress   String?
-  sellerTaxNumber String?
-  sellerVatId     String?
-
-  currency        String @default("EUR")
-  netTotalCents   Int    @default(0)
-  taxTotalCents   Int    @default(0)
-  grossTotalCents Int    @default(0)
-
-  notes       String?
-  issuedAt    DateTime?
-  paidAt      DateTime?
-  cancelledAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  order  Order? @relation(fields: [orderId], references: [id])
-
-  items InvoiceItem[]
-
-  @@unique([tenantId, externalInvoiceNumber])
-  @@index([tenantId])
-  @@index([orderId])
-  @@index([status])
-  @@index([invoiceDate])
-}
-
-model InvoiceItem {
-  id        String @id @default(cuid())
-  invoiceId String
-
-  position Int    @default(1)
-  type     String @default("ITEM")
-
-  name        String
-  description String?
-
-  quantity Float  @default(1)
-  unit     String @default("Stück")
-
-  unitCents          Int @default(0)
-  discountPercent    Int @default(0)
-  discountCents      Int @default(0)
-  netTotalCents      Int @default(0)
-  taxRate            Int @default(19)
-  taxTotalCents      Int @default(0)
-  grossTotalCents    Int @default(0)
-
-  notes String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-
-  @@index([invoiceId])
-  @@index([position])
-}
-
