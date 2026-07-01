@@ -303,7 +303,6 @@ export default function RechnungenPage() {
 
                       <td style={tdStyle}>
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                          <Link to={`/rechnungen/${invoice.id}`} style={miniButtonStyle}>Öffnen</Link>
                           {invoice.status === "DRAFT" ? (
                             <Form method="post">
                               <input type="hidden" name="intent" value="finalizeInvoice" />

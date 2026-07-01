@@ -11,7 +11,6 @@ export default [
   route("angebote", "routes/angebote.tsx"),
   route("rechnungen", "routes/rechnungen.tsx"),
   route("rechnungen/neu", "routes/rechnungen.neu.tsx"),
-  route("rechnungen/:invoiceId", "routes/rechnungen.$invoiceId.tsx"),
   route("kunden", "routes/kunden.tsx"),
   route("produkte", "routes/produkte.tsx"),
   route("produktion", "routes/produktion.tsx"),
