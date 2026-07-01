@@ -680,37 +680,3 @@ const tdStyle: React.CSSProperties = { padding: "13px 14px", borderBottom: "1px 
 const statusPillStyle: React.CSSProperties = { display: "inline-flex", borderRadius: 999, padding: "5px 9px", background: "#f1f5f9", color: "#334155", fontSize: 12, fontWeight: 900 };
 const errorStyle: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", borderRadius: 14, padding: 14, fontWeight: 750 };
 const successStyle: React.CSSProperties = { background: "#ecfdf5", border: "1px solid #bbf7d0", color: "#047857", borderRadius: 14, padding: 14, fontWeight: 750 };
-
-
-const miniPrimaryButtonStyle: React.CSSProperties = {
-  border: "none",
-  background: "#059669",
-  color: "#ffffff",
-  borderRadius: 999,
-  padding: "7px 11px",
-  fontSize: 12,
-  fontWeight: 900,
-  cursor: "pointer",
-};
-
-const miniButtonStyle: React.CSSProperties = {
-  border: "1px solid #cbd5e1",
-  background: "#ffffff",
-  color: "#0f172a",
-  borderRadius: 999,
-  padding: "7px 11px",
-  fontSize: 12,
-  fontWeight: 900,
-  cursor: "pointer",
-};
-
-const miniDangerButtonStyle: React.CSSProperties = {
-  border: "1px solid #fecaca",
-  background: "#fff1f2",
-  color: "#991b1b",
-  borderRadius: 999,
-  padding: "7px 11px",
-  fontSize: 12,
-  fontWeight: 900,
-  cursor: "pointer",
-};
