@@ -199,10 +199,7 @@ export async function action({ request }: { request: Request }) {
         orderNumber: createOrderNumber(),
         externalOrderNumber: externalOrderNumber || null,
         source: source as any,
-        status: "AUTO_CREATED" as any,
-        confidence: "HIGH" as any,
-        manualReviewReason: "Manuell im Auftragseingang angelegt",
-        customerName,
+        status: "AUTO_CREATED" as any,        customerName,
         customerEmail: customerEmail || null,
         customerPhone: customerPhone || null,
         eventName: eventName || null,
@@ -659,7 +656,7 @@ export default function AuftragseingangPage() {
                       <td style={tdStyle}>
                         {order.items.map((item) => (
                           <div key={item.id}>
-                            {item.quantity} Ã— {item.name}
+                            {item.quantity} × {item.name}
                           </div>
                         ))}
                       </td>
