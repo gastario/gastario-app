@@ -11,7 +11,6 @@ const navigationGroups = [
       { label: "Aufträge", to: "/auftraege" },
       { label: "Angebote", to: "/angebote" },
       { label: "Rechnungen", to: "/rechnungen" },
-      { label: "Neue Rechnung", to: "/rechnungen/neu" },
       { label: "Kunden", to: "/kunden" },
       { label: "Produkte", to: "/produkte" },
     ],
@@ -66,9 +65,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 const isActive =
                   item.to === "/"
                     ? location.pathname === "/"
-                    : item.to === "/rechnungen"
-                      ? location.pathname === "/rechnungen"
-                      : location.pathname === item.to || location.pathname.startsWith(item.to + "/");
+                    : location.pathname.startsWith(item.to);
 
                 return (
                   <Link className={isActive ? "active" : undefined} to={item.to} key={item.to}>
