@@ -355,8 +355,8 @@ export default function RechnungenPage() {
           </p>
         </div>
 
-        <Link className="button secondary" to="/auftraege">
-          Zu den Aufträgen
+        <Link className="button secondary" to="/rechnungen/neu">
+          Neue Rechnung
         </Link>
       </header>
 
