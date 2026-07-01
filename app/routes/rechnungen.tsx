@@ -17,6 +17,11 @@ function statusLabel(status: string) {
   return status;
 }
 
+function formatDate(value: Date | string | null | undefined) {
+  if (!value) return "-";
+  return new Date(value).toLocaleDateString("de-DE");
+}
+
 export function meta() {
   return [{ title: "Rechnungen · Gastario" }];
 }
@@ -86,6 +91,7 @@ export async function action({ request }: { request: Request }) {
 
   const access = await prisma.tenantUser.findFirst({
     where: { userId },
+    include: { tenant: true },
   });
 
   if (!access) {
@@ -101,6 +107,11 @@ export async function action({ request }: { request: Request }) {
       id: invoiceId,
       tenantId: access.tenantId,
     },
+    include: {
+      items: {
+        orderBy: { position: "asc" },
+      },
+    },
   });
 
   if (!invoice) {
@@ -112,8 +123,29 @@ export async function action({ request }: { request: Request }) {
       return { error: "Nur Entwürfe können finalisiert werden." };
     }
 
-    if (!invoice.externalInvoiceNumber) {
-      return { error: "Rechnungsnummer fehlt. Entwurf kann nicht finalisiert werden." };
+    const tenant = access.tenant as any;
+    const missing: string[] = [];
+
+    if (!invoice.externalInvoiceNumber) missing.push("Rechnungsnummer");
+    if (!invoice.customerName) missing.push("Kunde");
+    if (!invoice.customerAddress) missing.push("vollständige Kundenadresse");
+    if (!invoice.invoiceDate) missing.push("Rechnungsdatum");
+    if (!invoice.serviceDate) missing.push("Leistungsdatum");
+
+    const realItems = invoice.items.filter((item) => item.type !== "TEXT");
+    const hasPricedItem = realItems.some((item) => item.name && item.quantity > 0 && item.unitCents > 0);
+
+    if (realItems.length === 0) missing.push("mindestens eine Artikelposition");
+    if (!hasPricedItem) missing.push("Preis größer 0");
+
+    if (!tenant?.invoiceSellerName) missing.push("eigener Firmenname");
+    if (!tenant?.invoiceSellerAddress) missing.push("eigene Firmenadresse");
+    if (!tenant?.invoiceTaxNumber && !tenant?.invoiceVatId) missing.push("Steuernummer oder USt-ID");
+    if (!tenant?.invoiceIban) missing.push("IBAN");
+    if (!tenant?.invoiceBankName) missing.push("Bankname");
+
+    if (missing.length > 0) {
+      return { error: `Finalisieren nicht möglich. Es fehlt: ${missing.join(", ")}.` };
     }
 
     await prisma.invoice.update({
@@ -121,6 +153,12 @@ export async function action({ request }: { request: Request }) {
       data: {
         status: "ISSUED" as any,
         issuedAt: new Date(),
+        sellerName: invoice.sellerName || tenant.invoiceSellerName,
+        sellerAddress: invoice.sellerAddress || tenant.invoiceSellerAddress,
+        sellerTaxNumber: invoice.sellerTaxNumber || tenant.invoiceTaxNumber,
+        sellerVatId: invoice.sellerVatId || tenant.invoiceVatId,
+        paymentTermsDe: invoice.paymentTermsDe || tenant.invoicePaymentTermsDe || "Zahlbar sofort ohne Abzug.",
+        paymentTermsEn: invoice.paymentTermsEn || tenant.invoicePaymentTermsEn || "Payable immediately without deduction.",
       } as any,
     });
 
@@ -177,8 +215,8 @@ export default function RechnungenPage() {
           </p>
         </div>
 
-        <Link className="button secondary" to="/rechnungen/neu">
-          Neue Rechnung
+        <Link className="button primary" to="/rechnungen/neu">
+          + Neue Rechnung
         </Link>
       </header>
 
@@ -194,44 +232,30 @@ export default function RechnungenPage() {
 
       <section style={pageGridStyle}>
         <div style={heroStyle}>
-          <div>
+          <div style={heroCopyStyle}>
             <p style={smallLabelStyle}>Übersicht</p>
-            <h2 style={heroTitleStyle}>Rechnungen und Entwürfe</h2>
+            <h2 style={heroTitleStyle}>Rechnungen & Entwürfe</h2>
             <p style={heroTextStyle}>
-              Neue Rechnungen erstellst du über den Lexoffice-ähnlichen Editor. Hier siehst du alle Entwürfe,
-              finalisierte Rechnungen, bezahlte Rechnungen und Stornos.
+              Erstelle Rechnungen im Gastario-Editor, prüfe Entwürfe und behalte offene,
+              bezahlte und stornierte Rechnungen sauber im Blick.
             </p>
           </div>
 
-          <Link to="/rechnungen/neu" style={heroButtonStyle}>
-            + Neue Rechnung erstellen
-          </Link>
+          <div style={heroActionsStyle}>
+            <Link to="/einstellungen/rechnungen" style={secondaryButtonStyle}>
+              Rechnungsdaten prüfen
+            </Link>
+            <Link to="/rechnungen/neu" style={primaryButtonStyle}>
+              + Neue Rechnung
+            </Link>
+          </div>
         </div>
 
         <div style={statsGridStyle}>
-          <div style={statCardStyle}>
-            <span style={statLabelStyle}>Entwürfe</span>
-            <strong style={statNumberStyle}>{data.stats.drafts}</strong>
-            <small style={statHintStyle}>Noch nicht final</small>
-          </div>
-
-          <div style={statCardStyle}>
-            <span style={statLabelStyle}>Erstellt</span>
-            <strong style={statNumberStyle}>{data.stats.issued}</strong>
-            <small style={statHintStyle}>Finalisierte Rechnungen</small>
-          </div>
-
-          <div style={statCardStyle}>
-            <span style={statLabelStyle}>Bezahlt</span>
-            <strong style={statNumberStyle}>{data.stats.paid}</strong>
-            <small style={statHintStyle}>Erledigt</small>
-          </div>
-
-          <div style={statCardStyle}>
-            <span style={statLabelStyle}>Storniert</span>
-            <strong style={statNumberStyle}>{data.stats.cancelled}</strong>
-            <small style={statHintStyle}>Korrektur / Storno</small>
-          </div>
+          <StatCard label="Entwürfe" value={data.stats.drafts} hint="Noch nicht final" tone="draft" />
+          <StatCard label="Erstellt" value={data.stats.issued} hint="Finalisierte Rechnungen" tone="issued" />
+          <StatCard label="Bezahlt" value={data.stats.paid} hint="Erledigt" tone="paid" />
+          <StatCard label="Storniert" value={data.stats.cancelled} hint="Korrektur / Storno" tone="cancelled" />
         </div>
 
         <div style={cardStyle}>
@@ -239,10 +263,13 @@ export default function RechnungenPage() {
             <div>
               <p style={smallLabelStyle}>Liste</p>
               <h2 style={sectionTitleStyle}>Alle Rechnungen</h2>
+              <p style={sectionHintStyle}>
+                Öffne eine Rechnung für Vorschau, PDF, Finalisierung, Zahlung oder Storno.
+              </p>
             </div>
 
-            <Link to="/rechnungen/neu" style={secondaryButtonStyle}>
-              Neue Rechnung
+            <Link to="/rechnungen/neu" style={primaryButtonStyle}>
+              + Neue Rechnung
             </Link>
           </div>
 
@@ -254,9 +281,9 @@ export default function RechnungenPage() {
                   <th style={thStyle}>Kunde</th>
                   <th style={thStyle}>Datum</th>
                   <th style={thStyle}>Sprache</th>
-                  <th style={thStyle}>Summe</th>
+                  <th style={thRightStyle}>Summe</th>
                   <th style={thStyle}>Status</th>
-                  <th style={thStyle}>Aktion</th>
+                  <th style={thRightStyle}>Aktion</th>
                 </tr>
               </thead>
 
@@ -264,9 +291,11 @@ export default function RechnungenPage() {
                 {data.invoices.length === 0 ? (
                   <tr>
                     <td style={emptyStateStyle} colSpan={7}>
-                      <strong>Noch keine Rechnungen vorhanden.</strong>
-                      <span>Erstelle deine erste Rechnung über „Neue Rechnung“.</span>
-                      <Link to="/rechnungen/neu" style={emptyButtonStyle}>Neue Rechnung erstellen</Link>
+                      <div style={emptyInnerStyle}>
+                        <strong>Noch keine Rechnungen vorhanden.</strong>
+                        <span>Erstelle deine erste Rechnung über den Gastario-Rechnungseditor.</span>
+                        <Link to="/rechnungen/neu" style={primaryButtonStyle}>Neue Rechnung erstellen</Link>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -277,15 +306,15 @@ export default function RechnungenPage() {
                         <small style={subTextStyle}>{invoice.items?.length || 0} Position(en)</small>
                       </td>
 
-                      <td style={tdStyle}>{invoice.customerName}</td>
-
                       <td style={tdStyle}>
-                        {invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleDateString("de-DE") : "-"}
+                        <strong style={customerNameStyle}>{invoice.customerName}</strong>
                       </td>
+
+                      <td style={tdStyle}>{formatDate(invoice.invoiceDate)}</td>
 
                       <td style={tdStyle}>{invoice.language || "DE"}</td>
 
-                      <td style={tdStyle}>
+                      <td style={tdRightStyle}>
                         <strong>{centsToEuro(invoice.grossTotalCents)}</strong>
                       </td>
 
@@ -301,9 +330,10 @@ export default function RechnungenPage() {
                         </span>
                       </td>
 
-                      <td style={tdStyle}>
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <td style={tdRightStyle}>
+                        <div style={rowActionsStyle}>
                           <Link to={`/rechnungen/${invoice.id}`} style={miniButtonStyle}>Öffnen</Link>
+
                           {invoice.status === "DRAFT" ? (
                             <Form method="post">
                               <input type="hidden" name="intent" value="finalizeInvoice" />
@@ -341,6 +371,36 @@ export default function RechnungenPage() {
   );
 }
 
+function StatCard({
+  label,
+  value,
+  hint,
+  tone,
+}: {
+  label: string;
+  value: number;
+  hint: string;
+  tone: "draft" | "issued" | "paid" | "cancelled";
+}) {
+  return (
+    <div style={statCardStyle}>
+      <div style={{
+        ...statIconStyle,
+        ...(tone === "draft" ? statDraftStyle : {}),
+        ...(tone === "issued" ? statIssuedStyle : {}),
+        ...(tone === "paid" ? statPaidStyle : {}),
+        ...(tone === "cancelled" ? statCancelledStyle : {}),
+      }}>
+        {value}
+      </div>
+      <div>
+        <span style={statLabelStyle}>{label}</span>
+        <small style={statHintStyle}>{hint}</small>
+      </div>
+    </div>
+  );
+}
+
 export function ErrorBoundary({ error }: { error: any }) {
   return (
     <AppLayout>
@@ -360,21 +420,50 @@ const pageGridStyle: React.CSSProperties = {
 };
 
 const heroStyle: React.CSSProperties = {
-  ...premiumCardBase,
+  background: "linear-gradient(135deg, #ffffff 0%, #f7fbfa 100%)",
+  border: "1px solid #dbe5eb",
+  borderRadius: 22,
   padding: 24,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   gap: 18,
+  boxShadow: "0 18px 45px rgba(15, 23, 42, 0.07)",
 };
 
-const smallLabelStyle: React.CSSProperties = premiumSectionLabel;
+const heroCopyStyle: React.CSSProperties = {
+  maxWidth: 760,
+};
 
-const heroTitleStyle: React.CSSProperties = premiumTitle;
+const smallLabelStyle: React.CSSProperties = {
+  margin: 0,
+  color: "#057a67",
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+  fontSize: 11,
+  fontWeight: 950,
+};
 
-const heroTextStyle: React.CSSProperties = premiumMuted;
+const heroTitleStyle: React.CSSProperties = {
+  margin: "6px 0 0",
+  fontSize: 26,
+  letterSpacing: "-0.045em",
+  color: "#0f172a",
+};
 
-const heroButtonStyle: React.CSSProperties = premiumPrimaryButton;
+const heroTextStyle: React.CSSProperties = {
+  margin: "7px 0 0",
+  color: "#475569",
+  fontWeight: 650,
+  lineHeight: 1.55,
+};
+
+const heroActionsStyle: React.CSSProperties = {
+  display: "flex",
+  gap: 10,
+  flexWrap: "wrap",
+  justifyContent: "flex-end",
+};
 
 const statsGridStyle: React.CSSProperties = {
   display: "grid",
@@ -383,55 +472,153 @@ const statsGridStyle: React.CSSProperties = {
 };
 
 const statCardStyle: React.CSSProperties = {
-  ...premiumCardBase,
+  background: "#ffffff",
+  border: "1px solid #dbe5eb",
+  borderRadius: 18,
   padding: 18,
-  display: "grid",
-  gap: 7,
+  display: "flex",
+  alignItems: "center",
+  gap: 14,
+  boxShadow: "0 12px 32px rgba(15, 23, 42, 0.055)",
 };
 
-const statLabelStyle: React.CSSProperties = { color: "#64748b", fontSize: 13, fontWeight: 850 };
-const statNumberStyle: React.CSSProperties = { fontSize: 30, lineHeight: 1 };
-const statHintStyle: React.CSSProperties = { color: "#64748b", fontWeight: 700 };
+const statIconStyle: React.CSSProperties = {
+  width: 52,
+  height: 52,
+  borderRadius: 16,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: 24,
+  fontWeight: 950,
+  background: "#f1f5f9",
+  color: "#0f172a",
+};
+
+const statDraftStyle: React.CSSProperties = { background: "#fff7ed", color: "#9a3412" };
+const statIssuedStyle: React.CSSProperties = { background: "#eff6ff", color: "#1d4ed8" };
+const statPaidStyle: React.CSSProperties = { background: "#ecfdf5", color: "#047857" };
+const statCancelledStyle: React.CSSProperties = { background: "#fff1f2", color: "#be123c" };
+
+const statLabelStyle: React.CSSProperties = {
+  display: "block",
+  color: "#0f172a",
+  fontSize: 14,
+  fontWeight: 900,
+};
+
+const statHintStyle: React.CSSProperties = {
+  display: "block",
+  marginTop: 3,
+  color: "#64748b",
+  fontWeight: 700,
+};
 
 const cardStyle: React.CSSProperties = {
-  ...premiumCardBase,
+  background: "#ffffff",
+  border: "1px solid #dbe5eb",
+  borderRadius: 22,
   padding: 22,
+  boxShadow: "0 18px 45px rgba(15, 23, 42, 0.07)",
 };
 
 const cardHeaderStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
-  alignItems: "center",
+  alignItems: "flex-start",
   gap: 16,
+  marginBottom: 18,
 };
 
-const sectionTitleStyle: React.CSSProperties = premiumTitle;
+const sectionTitleStyle: React.CSSProperties = {
+  margin: "6px 0 0",
+  fontSize: 24,
+  letterSpacing: "-0.04em",
+};
 
-const secondaryButtonStyle: React.CSSProperties = premiumSecondaryButton;
+const sectionHintStyle: React.CSSProperties = {
+  margin: "7px 0 0",
+  color: "#64748b",
+  fontWeight: 650,
+};
+
+const primaryButtonStyle: React.CSSProperties = {
+  minHeight: 42,
+  borderRadius: 12,
+  padding: "0 16px",
+  border: "1px solid #057a67",
+  background: "#057a67",
+  color: "#ffffff",
+  fontSize: 14,
+  fontWeight: 850,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 8,
+  textDecoration: "none",
+  cursor: "pointer",
+  boxShadow: "0 10px 22px rgba(5, 122, 103, 0.18)",
+};
+
+const secondaryButtonStyle: React.CSSProperties = {
+  minHeight: 42,
+  borderRadius: 12,
+  padding: "0 16px",
+  border: "1px solid #c8d4dd",
+  background: "#ffffff",
+  color: "#0f172a",
+  fontSize: 14,
+  fontWeight: 850,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 8,
+  textDecoration: "none",
+  cursor: "pointer",
+};
 
 const tableWrapStyle: React.CSSProperties = {
   overflowX: "auto",
-  marginTop: 16,
   border: "1px solid #e2e8f0",
-  borderRadius: 14,
+  borderRadius: 16,
 };
 
-const tableStyle: React.CSSProperties = { width: "100%", borderCollapse: "collapse", background: "#ffffff" };
+const tableStyle: React.CSSProperties = {
+  width: "100%",
+  borderCollapse: "separate",
+  borderSpacing: 0,
+  background: "#ffffff",
+};
 
 const thStyle: React.CSSProperties = {
   textAlign: "left",
-  padding: "12px 14px",
+  padding: "14px 16px",
   fontSize: 12,
   color: "#64748b",
   textTransform: "uppercase",
   letterSpacing: "0.06em",
   borderBottom: "1px solid #e2e8f0",
+  background: "#f8fafc",
+};
+
+const thRightStyle: React.CSSProperties = {
+  ...thStyle,
+  textAlign: "right",
 };
 
 const tdStyle: React.CSSProperties = {
-  padding: "13px 14px",
+  padding: "16px",
   borderBottom: "1px solid #f1f5f9",
-  verticalAlign: "top",
+  verticalAlign: "middle",
+};
+
+const tdRightStyle: React.CSSProperties = {
+  ...tdStyle,
+  textAlign: "right",
+};
+
+const customerNameStyle: React.CSSProperties = {
+  fontWeight: 760,
 };
 
 const subTextStyle: React.CSSProperties = {
@@ -442,60 +629,72 @@ const subTextStyle: React.CSSProperties = {
 };
 
 const emptyStateStyle: React.CSSProperties = {
-  padding: 32,
+  padding: 34,
   textAlign: "center",
   color: "#64748b",
 };
 
-const emptyButtonStyle: React.CSSProperties = {
-  display: "inline-flex",
-  marginTop: 14,
-  border: "none",
-  background: "#059669",
-  color: "#ffffff",
-  borderRadius: 999,
-  padding: "10px 14px",
-  fontWeight: 900,
-  textDecoration: "none",
+const emptyInnerStyle: React.CSSProperties = {
+  display: "grid",
+  justifyItems: "center",
+  gap: 9,
 };
 
 const statusPillStyle: React.CSSProperties = {
   display: "inline-flex",
   borderRadius: 999,
-  padding: "5px 9px",
+  padding: "6px 10px",
   background: "#f1f5f9",
   color: "#334155",
   fontSize: 12,
   fontWeight: 900,
 };
 
-const draftPillStyle: React.CSSProperties = { background: "#fef3c7", color: "#92400e" };
-const issuedPillStyle: React.CSSProperties = { background: "#dbeafe", color: "#1d4ed8" };
-const paidPillStyle: React.CSSProperties = { background: "#dcfce7", color: "#166534" };
-const cancelledPillStyle: React.CSSProperties = { background: "#fee2e2", color: "#991b1b" };
+const draftPillStyle: React.CSSProperties = { background: "#fff7ed", color: "#9a3412" };
+const issuedPillStyle: React.CSSProperties = { background: "#eff6ff", color: "#1d4ed8" };
+const paidPillStyle: React.CSSProperties = { background: "#ecfdf5", color: "#047857" };
+const cancelledPillStyle: React.CSSProperties = { background: "#fff1f2", color: "#be123c" };
 
-const miniPrimaryButtonStyle: React.CSSProperties = {
-  ...premiumPrimaryButton,
+const rowActionsStyle: React.CSSProperties = {
+  display: "flex",
+  gap: 8,
+  flexWrap: "wrap",
+  justifyContent: "flex-end",
+};
+
+const miniBaseButtonStyle: React.CSSProperties = {
   minHeight: 34,
   borderRadius: 10,
   padding: "0 12px",
   fontSize: 12,
+  fontWeight: 850,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  textDecoration: "none",
+  cursor: "pointer",
+  whiteSpace: "nowrap",
+};
+
+const miniPrimaryButtonStyle: React.CSSProperties = {
+  ...miniBaseButtonStyle,
+  border: "1px solid #057a67",
+  background: "#057a67",
+  color: "#ffffff",
 };
 
 const miniButtonStyle: React.CSSProperties = {
-  ...premiumSecondaryButton,
-  minHeight: 34,
-  borderRadius: 10,
-  padding: "0 12px",
-  fontSize: 12,
+  ...miniBaseButtonStyle,
+  border: "1px solid #c8d4dd",
+  background: "#ffffff",
+  color: "#0f172a",
 };
 
 const miniDangerButtonStyle: React.CSSProperties = {
-  ...premiumDangerButton,
-  minHeight: 34,
-  borderRadius: 10,
-  padding: "0 12px",
-  fontSize: 12,
+  ...miniBaseButtonStyle,
+  border: "1px solid #fecaca",
+  background: "#fff1f2",
+  color: "#be123c",
 };
 
 const errorStyle: React.CSSProperties = {
@@ -505,6 +704,7 @@ const errorStyle: React.CSSProperties = {
   borderRadius: 14,
   padding: 14,
   fontWeight: 750,
+  marginBottom: 16,
 };
 
 const successStyle: React.CSSProperties = {
@@ -514,105 +714,5 @@ const successStyle: React.CSSProperties = {
   borderRadius: 14,
   padding: 14,
   fontWeight: 750,
+  marginBottom: 16,
 };
-
-
-const premiumUiStyle: React.CSSProperties = {
-  "--g-card-bg": "#ffffff",
-  "--g-border": "#dbe3ec",
-  "--g-border-strong": "#cbd5e1",
-  "--g-page-bg": "#eef3f7",
-  "--g-text": "#0f172a",
-  "--g-muted": "#64748b",
-  "--g-green": "#059669",
-  "--g-green-dark": "#047857",
-} as React.CSSProperties;
-
-const premiumCardBase: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #dbe3ec",
-  borderRadius: 18,
-  boxShadow: "0 12px 32px rgba(15, 23, 42, 0.055)",
-};
-
-const premiumButtonBase: React.CSSProperties = {
-  minHeight: 42,
-  borderRadius: 12,
-  padding: "0 16px",
-  fontSize: 14,
-  fontWeight: 850,
-  letterSpacing: "-0.01em",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 8,
-  textDecoration: "none",
-  cursor: "pointer",
-  whiteSpace: "nowrap",
-};
-
-const premiumPrimaryButton: React.CSSProperties = {
-  ...premiumButtonBase,
-  border: "1px solid #059669",
-  background: "#059669",
-  color: "#ffffff",
-  boxShadow: "0 8px 18px rgba(5, 150, 105, 0.18)",
-};
-
-const premiumSecondaryButton: React.CSSProperties = {
-  ...premiumButtonBase,
-  border: "1px solid #cbd5e1",
-  background: "#ffffff",
-  color: "#0f172a",
-};
-
-const premiumDangerButton: React.CSSProperties = {
-  ...premiumButtonBase,
-  border: "1px solid #fecaca",
-  background: "#fff1f2",
-  color: "#991b1b",
-};
-
-const premiumInput: React.CSSProperties = {
-  width: "100%",
-  minHeight: 46,
-  border: "1px solid #cbd5e1",
-  borderRadius: 12,
-  padding: "10px 12px",
-  fontSize: 14,
-  fontWeight: 650,
-  background: "#ffffff",
-  outline: "none",
-};
-
-const premiumLabel: React.CSSProperties = {
-  display: "grid",
-  gap: 7,
-  color: "#334155",
-  fontSize: 12,
-  fontWeight: 850,
-};
-
-const premiumSectionLabel: React.CSSProperties = {
-  margin: 0,
-  color: "#00796b",
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
-  fontSize: 11,
-  fontWeight: 950,
-};
-
-const premiumTitle: React.CSSProperties = {
-  margin: "5px 0 0",
-  fontSize: 24,
-  letterSpacing: "-0.04em",
-  color: "#0f172a",
-};
-
-const premiumMuted: React.CSSProperties = {
-  margin: "7px 0 0",
-  color: "#64748b",
-  fontWeight: 650,
-  lineHeight: 1.55,
-};
-
