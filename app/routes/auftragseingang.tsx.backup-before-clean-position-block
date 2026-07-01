@@ -669,7 +669,9 @@ export default function AuftragseingangPage() {
           <div style={{ display: "grid", gridTemplateColumns: "180px 160px 1fr", gap: 12 }}>
             <input
               name="deliveryDate"
-              type="date"
+              type="text"
+              inputMode="numeric"
+              placeholder="Datum, z. B. 01.07.2026"
               style={{ ...inputStyle, borderRadius: 3 }}
             />
             <input
@@ -689,8 +691,8 @@ export default function AuftragseingangPage() {
             <input name="contactPhone" placeholder="Telefon vor Ort" style={inputStyle} />
           </div>
 
-          <div style={{ display: "grid", gap: 10, width: "100%", marginTop: 12 }}>
-            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+          <div style={{ display: "grid", gap: 10, width: "100%" }}>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
               <div>
                 <div style={{ color: "#0f766e", textTransform: "uppercase", letterSpacing: ".08em", fontSize: 11, fontWeight: 950 }}>
                   Positionen
@@ -705,10 +707,11 @@ export default function AuftragseingangPage() {
             </div>
 
             <div style={{
-              border: "1px solid #cfcfcf",
+              border: "1px solid #d6d6d6",
               borderRadius: 4,
-              background: "#fff",
-              overflow: "hidden"
+              background: "#ffffff",
+              overflow: "hidden",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.08)"
             }}>
               {positionRows.map((row, rowIndex) => (
                 <div
@@ -717,13 +720,13 @@ export default function AuftragseingangPage() {
                   style={{
                     display: "grid",
                     gridTemplateColumns: row.type === "text"
-                      ? "34px minmax(0, 1fr) 32px"
-                      : "34px minmax(360px, 1fr) 78px 108px 126px 82px 150px 30px",
+                      ? "36px minmax(0, 1fr) 32px"
+                      : "36px minmax(420px, 1fr) 82px 105px 125px 82px 88px 105px 32px",
                     gap: 8,
-                    alignItems: "start",
-                    padding: "14px 14px",
+                    alignItems: "center",
+                    padding: "15px 16px",
                     borderTop: rowIndex === 0 ? "none" : "1px solid #e5e5e5",
-                    background: "#fff"
+                    background: "#ffffff"
                   }}
                 >
                   <div style={{
@@ -734,10 +737,9 @@ export default function AuftragseingangPage() {
                     alignItems: "center",
                     justifyContent: "center",
                     background: "#eeeeee",
-                    color: "#555",
+                    color: "#555555",
                     fontSize: 12,
-                    fontWeight: 800,
-                    marginTop: 23
+                    fontWeight: 800
                   }}>
                     {rowIndex + 1}
                   </div>
@@ -758,22 +760,31 @@ export default function AuftragseingangPage() {
                           name="itemName"
                           placeholder="Freitext eingeben"
                           rows={3}
-                          style={{ ...inputStyle, borderRadius: 3, minHeight: 82, resize: "vertical", fontWeight: 500 }}
+                          style={{
+                            ...inputStyle,
+                            minHeight: 74,
+                            borderRadius: 3,
+                            resize: "vertical",
+                            fontWeight: 500
+                          }}
                         />
                       </label>
 
                       <button
                         type="button"
-                        onClick={() => setPositionRows((rows) => rows.filter((item) => item.id !== row.id))}
+                        onClick={() =>
+                          setPositionRows((rows) => rows.filter((item) => item.id !== row.id))
+                        }
                         style={{
                           border: "none",
                           background: "transparent",
                           color: "#777",
+                          minHeight: 38,
                           cursor: "pointer",
                           fontWeight: 900,
-                          fontSize: 16,
-                          marginTop: 26
+                          fontSize: 16
                         }}
+                        title="Position löschen"
                       >
                         ×
                       </button>
@@ -788,7 +799,7 @@ export default function AuftragseingangPage() {
                           <input
                             name="itemName"
                             placeholder="Bezeichnung des Artikels"
-                            style={{ ...inputStyle, borderRadius: 3, minHeight: 42, fontWeight: 500 }}
+                            style={{ ...inputStyle, borderRadius: 3, fontWeight: 500, minHeight: 42 }}
                           />
                         </label>
 
@@ -806,7 +817,14 @@ export default function AuftragseingangPage() {
                             name="itemNotes"
                             placeholder="z. B. ohne Koriander, extra Sauce, separat verpacken"
                             rows={3}
-                            style={{ ...inputStyle, marginTop: 7, minHeight: 76, resize: "vertical", borderRadius: 3 }}
+                            style={{
+                              ...inputStyle,
+                              marginTop: 7,
+                              minHeight: 72,
+                              resize: "vertical",
+                              borderRadius: 3,
+                              fontWeight: 500
+                            }}
                           />
                         </details>
                       </div>
@@ -831,55 +849,49 @@ export default function AuftragseingangPage() {
                         <input name="discountPercent" type="number" min="0" defaultValue="0" style={{ ...inputStyle, borderRadius: 3, minHeight: 42, textAlign: "right" }} />
                       </label>
 
+                      <label style={{ display: "grid", gap: 4, color: "#777", fontSize: 11, fontWeight: 650 }}>
+                        MwSt
+                        <select name="taxRate" defaultValue="19" style={{ ...inputStyle, borderRadius: 3, minHeight: 42 }}>
+                          <option value="19">19 %</option>
+                          <option value="7">7 %</option>
+                          <option value="0">0 %</option>
+                        </select>
+                      </label>
+
                       <div style={{ display: "grid", gap: 4, color: "#777", fontSize: 11, fontWeight: 650 }}>
-                        Gesamt
+                        Netto
                         <div
                           data-line-total
                           style={{
-                            minHeight: 22,
+                            minHeight: 38,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "flex-end",
                             color: "#111",
-                            fontWeight: 900,
-                            fontSize: 14
+                            fontWeight: 800,
+                            fontSize: 13
                           }}
                         >
                           0,00 €
                         </div>
-                        <select
-                          name="taxRate"
-                          defaultValue="19"
-                          style={{
-                            minHeight: 26,
-                            border: "none",
-                            borderRadius: 999,
-                            background: "#444",
-                            color: "white",
-                            fontSize: 11,
-                            fontWeight: 800,
-                            padding: "2px 8px",
-                            cursor: "pointer"
-                          }}
-                        >
-                          <option value="19">USt 19 %</option>
-                          <option value="7">USt 7 %</option>
-                          <option value="0">USt 0 %</option>
-                        </select>
                       </div>
 
                       <button
                         type="button"
-                        onClick={() => setPositionRows((rows) => rows.length > 1 ? rows.filter((item) => item.id !== row.id) : rows)}
+                        onClick={() =>
+                          setPositionRows((rows) => rows.length > 1 ? rows.filter((item) => item.id !== row.id) : rows)
+                        }
                         style={{
                           border: "none",
                           background: "transparent",
                           color: "#777",
+                          minHeight: 38,
                           cursor: "pointer",
                           fontWeight: 900,
                           fontSize: 16,
-                          marginTop: 25
+                          marginTop: 17
                         }}
+                        title="Position löschen"
                       >
                         ×
                       </button>
@@ -892,12 +904,12 @@ export default function AuftragseingangPage() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: 14,
-                padding: "14px 14px",
+                gap: 12,
+                padding: "16px 16px",
                 borderTop: "1px solid #d6d6d6",
-                background: "#fff"
+                background: "#ffffff"
               }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
                   <button
                     type="button"
                     onClick={() =>
@@ -907,7 +919,7 @@ export default function AuftragseingangPage() {
                     }
                     style={{
                       border: "1px solid #10a66a",
-                      background: "#fff",
+                      background: "#ffffff",
                       color: "#10a66a",
                       borderRadius: 3,
                       padding: "8px 13px",
@@ -927,8 +939,9 @@ export default function AuftragseingangPage() {
                     }
                     style={{
                       border: "none",
-                      background: "#fff",
+                      background: "#ffffff",
                       color: "#333",
+                      borderRadius: 3,
                       padding: "8px 6px",
                       fontWeight: 800,
                       cursor: "pointer"
@@ -937,11 +950,33 @@ export default function AuftragseingangPage() {
                     ≡ FREITEXT
                   </button>
 
-                  <button type="button" style={{ border: "none", background: "#fff", color: "#333", padding: "8px 6px", fontWeight: 800, cursor: "pointer" }}>
+                  <button
+                    type="button"
+                    style={{
+                      border: "none",
+                      background: "#ffffff",
+                      color: "#333",
+                      borderRadius: 3,
+                      padding: "8px 6px",
+                      fontWeight: 800,
+                      cursor: "pointer"
+                    }}
+                  >
                     ◉ OPTIONAL
                   </button>
 
-                  <button type="button" style={{ border: "none", background: "#fff", color: "#333", padding: "8px 6px", fontWeight: 800, cursor: "pointer" }}>
+                  <button
+                    type="button"
+                    style={{
+                      border: "none",
+                      background: "#ffffff",
+                      color: "#333",
+                      borderRadius: 3,
+                      padding: "8px 6px",
+                      fontWeight: 800,
+                      cursor: "pointer"
+                    }}
+                  >
                     % GESAMTRABATT
                   </button>
                 </div>
@@ -950,7 +985,7 @@ export default function AuftragseingangPage() {
                   minWidth: 390,
                   background: "#555",
                   color: "white",
-                  padding: "11px 16px",
+                  padding: "12px 18px",
                   fontWeight: 750,
                   textAlign: "center",
                   fontSize: 13
