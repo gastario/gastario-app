@@ -664,7 +664,7 @@ export default function AuftragseingangPage() {
             <input name="contactPhone" placeholder="Telefon vor Ort" style={inputStyle} />
           </div>
 
-          <div style={{ display: "grid", gap: 10, maxWidth: 980, margin: "0 auto", width: "100%" }}>
+          <div style={{ display: "grid", gap: 10, width: "100%" }}>
             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
               <div>
                 <div style={{ color: "#0f766e", textTransform: "uppercase", letterSpacing: ".08em", fontSize: 11, fontWeight: 950 }}>
@@ -693,11 +693,11 @@ export default function AuftragseingangPage() {
                   style={{
                     display: "grid",
                     gridTemplateColumns: row.type === "text"
-                      ? "32px minmax(0, 1fr) 28px"
-                      : "32px minmax(280px, 1fr) 78px 96px 118px 76px 78px 94px 28px",
+                      ? "36px minmax(0, 1fr) 32px"
+                      : "36px minmax(420px, 1fr) 82px 105px 125px 82px 88px 105px 32px",
                     gap: 8,
                     alignItems: "center",
-                    padding: "13px 14px",
+                    padding: "15px 16px",
                     borderTop: rowIndex === 0 ? "none" : "1px solid #e5e5e5",
                     background: "#ffffff"
                   }}
@@ -752,7 +752,7 @@ export default function AuftragseingangPage() {
                           border: "none",
                           background: "transparent",
                           color: "#777",
-                          minHeight: 34,
+                          minHeight: 38,
                           cursor: "pointer",
                           fontWeight: 900,
                           fontSize: 16
@@ -772,7 +772,7 @@ export default function AuftragseingangPage() {
                           <input
                             name="itemName"
                             placeholder="Bezeichnung des Artikels"
-                            style={{ ...inputStyle, borderRadius: 3, fontWeight: 500 }}
+                            style={{ ...inputStyle, borderRadius: 3, fontWeight: 500, minHeight: 42 }}
                           />
                         </label>
 
@@ -804,27 +804,27 @@ export default function AuftragseingangPage() {
 
                       <label style={{ display: "grid", gap: 4, color: "#777", fontSize: 11, fontWeight: 650 }}>
                         Menge
-                        <input name="quantity" type="number" min="1" defaultValue="1" style={{ ...inputStyle, borderRadius: 3 }} />
+                        <input name="quantity" type="number" min="1" defaultValue="1" style={{ ...inputStyle, borderRadius: 3, minHeight: 42 }} />
                       </label>
 
                       <label style={{ display: "grid", gap: 4, color: "#777", fontSize: 11, fontWeight: 650 }}>
                         Einheit
-                        <input name="unit" defaultValue="Stück" style={{ ...inputStyle, borderRadius: 3 }} />
+                        <input name="unit" defaultValue="Stück" style={{ ...inputStyle, borderRadius: 3, minHeight: 42 }} />
                       </label>
 
                       <label style={{ display: "grid", gap: 4, color: "#777", fontSize: 11, fontWeight: 650 }}>
                         VK Netto
-                        <input name="unitPriceEuro" placeholder="0,00 €" style={{ ...inputStyle, borderRadius: 3, textAlign: "right" }} />
+                        <input name="unitPriceEuro" placeholder="0,00 €" style={{ ...inputStyle, borderRadius: 3, minHeight: 42, textAlign: "right" }} />
                       </label>
 
                       <label style={{ display: "grid", gap: 4, color: "#777", fontSize: 11, fontWeight: 650 }}>
                         Rabatt
-                        <input name="discountPercent" type="number" min="0" defaultValue="0" style={{ ...inputStyle, borderRadius: 3, textAlign: "right" }} />
+                        <input name="discountPercent" type="number" min="0" defaultValue="0" style={{ ...inputStyle, borderRadius: 3, minHeight: 42, textAlign: "right" }} />
                       </label>
 
                       <label style={{ display: "grid", gap: 4, color: "#777", fontSize: 11, fontWeight: 650 }}>
                         MwSt
-                        <select name="taxRate" defaultValue="19" style={{ ...inputStyle, borderRadius: 3 }}>
+                        <select name="taxRate" defaultValue="19" style={{ ...inputStyle, borderRadius: 3, minHeight: 42 }}>
                           <option value="19">19 %</option>
                           <option value="7">7 %</option>
                           <option value="0">0 %</option>
@@ -836,7 +836,7 @@ export default function AuftragseingangPage() {
                         <div
                           data-line-total
                           style={{
-                            minHeight: 34,
+                            minHeight: 38,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "flex-end",
@@ -858,7 +858,7 @@ export default function AuftragseingangPage() {
                           border: "none",
                           background: "transparent",
                           color: "#777",
-                          minHeight: 34,
+                          minHeight: 38,
                           cursor: "pointer",
                           fontWeight: 900,
                           fontSize: 16,
@@ -878,7 +878,7 @@ export default function AuftragseingangPage() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 gap: 12,
-                padding: "14px 14px",
+                padding: "16px 16px",
                 borderTop: "1px solid #d6d6d6",
                 background: "#ffffff"
               }}>
@@ -955,10 +955,10 @@ export default function AuftragseingangPage() {
                 </div>
 
                 <div style={{
-                  minWidth: 330,
+                  minWidth: 390,
                   background: "#555",
                   color: "white",
-                  padding: "10px 16px",
+                  padding: "12px 18px",
                   fontWeight: 750,
                   textAlign: "center",
                   fontSize: 13
@@ -969,7 +969,7 @@ export default function AuftragseingangPage() {
             </div>
           </div>
 
-          <textarea name="notes" placeholder="Notizen / Besonderheiten" rows={3} style={{ ...inputStyle, borderRadius: 3 }} />
+          <textarea name="notes" placeholder="Notizen / Besonderheiten" rows={3} style={{ ...inputStyle, borderRadius: 3, minHeight: 42 }} />
 
           <button type="submit" style={{
             border: "none",
