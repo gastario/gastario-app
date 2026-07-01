@@ -180,7 +180,6 @@ export async function action({ request }: { request: Request }) {
           itemNotes[index] || "",
           kind === "text" ? "Freitext" : "",
           kind === "optional" ? "Optional" : "",
-          kind === "optional" ? "Optional" : "",
           kind === "item" ? "MwSt " + taxRate + "%" : "",
           kind === "item" && discountPercent > 0 ? "Rabatt " + discountPercent + "%" : "",
         ].filter(Boolean).join(" | ");
