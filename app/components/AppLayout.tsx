@@ -74,8 +74,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
               })}
             </div>
           ))}
-          <div className="sidebarLogout">
-    <a href="/logout">Ausloggen</a>
+  <div className="sidebarFooter">
+    <a className="sidebarLogoutButton" href="/logout">
+      <span>⎋</span>
+      Ausloggen
+    </a>
   </div>
 </nav>
       </aside>
@@ -84,5 +87,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
     </main>
   );
 }
+
 
 
