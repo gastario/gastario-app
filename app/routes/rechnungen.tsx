@@ -245,9 +245,6 @@ export default function RechnungenPage() {
             <Link to="/einstellungen/rechnungen" style={secondaryButtonStyle}>
               Rechnungsdaten prüfen
             </Link>
-            <Link to="/rechnungen/neu" style={primaryButtonStyle}>
-              + Neue Rechnung
-            </Link>
           </div>
         </div>
 
@@ -268,9 +265,7 @@ export default function RechnungenPage() {
               </p>
             </div>
 
-            <Link to="/rechnungen/neu" style={primaryButtonStyle}>
-              + Neue Rechnung
-            </Link>
+
           </div>
 
           <div style={tableWrapStyle}>
@@ -543,38 +538,39 @@ const sectionHintStyle: React.CSSProperties = {
 };
 
 const primaryButtonStyle: React.CSSProperties = {
-  minHeight: 42,
-  borderRadius: 12,
-  padding: "0 16px",
-  border: "1px solid #057a67",
-  background: "#057a67",
+  minHeight: 44,
+  borderRadius: 13,
+  padding: "0 18px",
+  border: "1px solid #036b5a",
+  background: "linear-gradient(135deg, #058872 0%, #04705f 100%)",
   color: "#ffffff",
   fontSize: 14,
-  fontWeight: 850,
+  fontWeight: 900,
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
   gap: 8,
   textDecoration: "none",
   cursor: "pointer",
-  boxShadow: "0 10px 22px rgba(5, 122, 103, 0.18)",
+  boxShadow: "0 14px 28px rgba(5, 122, 103, 0.24)",
 };
 
 const secondaryButtonStyle: React.CSSProperties = {
-  minHeight: 42,
-  borderRadius: 12,
-  padding: "0 16px",
+  minHeight: 44,
+  borderRadius: 13,
+  padding: "0 18px",
   border: "1px solid #c8d4dd",
   background: "#ffffff",
   color: "#0f172a",
   fontSize: 14,
-  fontWeight: 850,
+  fontWeight: 900,
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
   gap: 8,
   textDecoration: "none",
   cursor: "pointer",
+  boxShadow: "0 10px 20px rgba(15, 23, 42, 0.06)",
 };
 
 const tableWrapStyle: React.CSSProperties = {
@@ -716,3 +712,4 @@ const successStyle: React.CSSProperties = {
   fontWeight: 750,
   marginBottom: 16,
 };
+

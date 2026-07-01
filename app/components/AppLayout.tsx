@@ -12,6 +12,7 @@ const navigationGroups = [
       { label: "Angebote", to: "/angebote" },
       { label: "Rechnungen", to: "/rechnungen" },
       { label: "Neue Rechnung", to: "/rechnungen/neu" },
+      { label: "Rechnungsdaten", to: "/einstellungen/rechnungen" },
       { label: "Kunden", to: "/kunden" },
       { label: "Produkte", to: "/produkte" },
     ],
@@ -40,7 +41,6 @@ const navigationGroups = [
       { label: "Auftragseingang", to: "/auftragseingang" },
       { label: "Auswertungen", to: "/auswertungen" },
       { label: "Einstellungen", to: "/einstellungen" },
-      { label: "Rechnungsdaten", to: "/einstellungen/rechnungen" },
     ],
   },
 ];
@@ -287,10 +287,20 @@ export default function AppLayout({ children }: AppLayoutProps) {
           }
 
           .button.primary {
-            border: 1px solid var(--g-green);
-            background: var(--g-green);
+            border: 1px solid #036b5a;
+            background: linear-gradient(135deg, #058872 0%, #04705f 100%);
             color: #ffffff;
-            box-shadow: 0 10px 22px rgba(5, 122, 103, 0.18);
+            box-shadow: 0 12px 24px rgba(5, 122, 103, 0.22);
+          }
+
+          .button.primary:hover {
+            background: linear-gradient(135deg, #047a67 0%, #035f51 100%);
+            box-shadow: 0 14px 28px rgba(5, 122, 103, 0.27);
+          }
+
+          .button.secondary:hover {
+            border-color: #a9bac6;
+            background: #f8fafc;
           }
 
           @media (max-width: 980px) {
@@ -333,7 +343,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
                     ? location.pathname === "/"
                     : item.to === "/rechnungen"
                       ? location.pathname === "/rechnungen"
-                      : location.pathname === item.to || location.pathname.startsWith(item.to + "/");
+                      : item.to === "/einstellungen"
+                        ? location.pathname === "/einstellungen"
+                        : location.pathname === item.to || location.pathname.startsWith(item.to + "/");
 
                 return (
                   <Link className={isActive ? "active" : undefined} to={item.to} key={item.to}>
@@ -356,3 +368,4 @@ export default function AppLayout({ children }: AppLayoutProps) {
     </main>
   );
 }
+
