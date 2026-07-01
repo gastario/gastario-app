@@ -293,16 +293,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
             box-shadow: 0 12px 24px rgba(5, 122, 103, 0.22);
           }
 
-          .button.primary:hover {
-            background: linear-gradient(135deg, #047a67 0%, #035f51 100%);
-            box-shadow: 0 14px 28px rgba(5, 122, 103, 0.27);
-          }
-
-          .button.secondary:hover {
-            border-color: #a9bac6;
-            background: #f8fafc;
-          }
-
           @media (max-width: 980px) {
             body {
               min-width: 0;
@@ -368,4 +358,3 @@ export default function AppLayout({ children }: AppLayoutProps) {
     </main>
   );
 }
-
