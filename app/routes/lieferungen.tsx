@@ -1,4 +1,4 @@
-﻿import { Form, Link, redirect, useLoaderData } from "react-router";
+﻿import { Form, Link, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 function todayInput() {
@@ -7,12 +7,20 @@ function todayInput() {
 
 function normalizeDate(value: string | Date | null | undefined) {
   if (!value) return "";
-  return new Date(value).toISOString().slice(0, 10);
+  try {
+    return new Date(value).toISOString().slice(0, 10);
+  } catch {
+    return "";
+  }
 }
 
 function formatDate(value: string | Date | null | undefined) {
   if (!value) return "-";
-  return new Date(value).toLocaleDateString("de-DE");
+  try {
+    return new Date(value).toLocaleDateString("de-DE");
+  } catch {
+    return "-";
+  }
 }
 
 function cleanPhone(value: string | null | undefined) {
@@ -46,8 +54,28 @@ function orderSummary(order: any) {
 
   return order.items
     .slice(0, 4)
-    .map((item: any) => `${item.quantity} x ${item.name}`)
+    .map((item: any) => `${item.quantity || 0} x ${item.name || "Position"}`)
     .join(", ");
+}
+
+function emptyData(error: string | null = null) {
+  return {
+    tenantName: "Gastario",
+    range: "today",
+    selectedDate: todayInput(),
+    availableDates: [],
+    orders: [],
+    stats: {
+      today: 0,
+      future: 0,
+      past: 0,
+      all: 0,
+      withoutAddress: 0,
+      withoutPhone: 0,
+    },
+    tourMapUrl: "#",
+    error,
+  };
 }
 
 export function meta() {
@@ -55,110 +83,99 @@ export function meta() {
 }
 
 export async function loader({ request }: { request: Request }) {
-  const { prisma } = await import("../lib/prisma.server");
-  const { getUserId } = await import("../lib/auth.server");
+  try {
+    const { prisma } = await import("../lib/prisma.server");
+    const { getTenantAccess } = await import("../lib/features.server");
 
-  const userId = await getUserId(request);
+    const access = await getTenantAccess(request);
 
-  if (!userId) {
-    throw redirect("/login");
-  }
+    if (!access?.tenantId) {
+      return emptyData("Kein Mandant gefunden. Bitte pruefen, ob dein Benutzer einem Mandanten zugeordnet ist.");
+    }
 
-  const tenantUser = await prisma.tenantUser.findFirst({
-    where: {
-      userId,
-    },
-    include: {
-      tenant: true,
-    },
-  });
+    const url = new URL(request.url);
+    const range = url.searchParams.get("range") || "today";
+    const selectedDate = url.searchParams.get("date") || todayInput();
+    const today = todayInput();
 
-  if (!tenantUser) {
-    return {
-      tenantName: "Kein Mandant",
-      range: "today",
-      selectedDate: todayInput(),
-      orders: [],
-      stats: {
-        today: 0,
-        future: 0,
-        past: 0,
-        all: 0,
-        withoutAddress: 0,
-        withoutPhone: 0,
+    const orders = await prisma.order.findMany({
+      where: {
+        tenantId: access.tenantId,
       },
-      tourMapUrl: "#",
-      error: "Dein Benutzer ist noch keinem Mandanten zugeordnet.",
+      include: {
+        items: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 500,
+    });
+
+    const deliveryOrders = orders.filter((order: any) => {
+      const status = String(order.status || "").toUpperCase();
+
+      return (
+        status === "CONFIRMED" ||
+        status === "PAID" ||
+        status === "INVOICE_APPROVED" ||
+        status === "MANUAL"
+      );
+    });
+
+    const filteredOrders = deliveryOrders.filter((order: any) => {
+      const date = normalizeDate(order.deliveryDate);
+
+      if (range === "all") return true;
+      if (range === "past") return date && date < today;
+      if (range === "future") return date && date > today;
+      if (range === "date") return date === selectedDate;
+
+      return date === today;
+    });
+
+    const todayOrders = deliveryOrders.filter((order: any) => normalizeDate(order.deliveryDate) === today);
+    const futureOrders = deliveryOrders.filter((order: any) => {
+      const date = normalizeDate(order.deliveryDate);
+      return date && date > today;
+    });
+    const pastOrders = deliveryOrders.filter((order: any) => {
+      const date = normalizeDate(order.deliveryDate);
+      return date && date < today;
+    });
+
+    const availableDates = Array.from(
+      new Set(
+        deliveryOrders
+          .map((order: any) => normalizeDate(order.deliveryDate))
+          .filter(Boolean)
+      )
+    ).sort();
+
+    return {
+      tenantName: access.tenant?.name || "Gastario",
+      range,
+      selectedDate,
+      availableDates,
+      orders: filteredOrders,
+      stats: {
+        today: todayOrders.length,
+        future: futureOrders.length,
+        past: pastOrders.length,
+        all: deliveryOrders.length,
+        withoutAddress: filteredOrders.filter((order: any) => !order.deliveryAddress).length,
+        withoutPhone: filteredOrders.filter((order: any) => !(order.contactPhone || order.customerPhone)).length,
+      },
+      tourMapUrl: routeUrl(filteredOrders.map((order: any) => order.deliveryAddress).filter(Boolean)),
+      error: null,
     };
+  } catch (error: any) {
+    console.error("Lieferungen loader error:", error);
+
+    return emptyData(
+      error?.message ||
+      "Lieferungen konnten wegen eines Serverfehlers nicht geladen werden."
+    );
   }
-
-  const url = new URL(request.url);
-  const range = url.searchParams.get("range") || "today";
-  const selectedDate = url.searchParams.get("date") || todayInput();
-  const today = todayInput();
-
-  const orders = await prisma.order.findMany({
-    where: {
-      tenantId: tenantUser.tenantId,
-      status: "CONFIRMED" as any,
-    },
-    include: {
-      items: true,
-    },
-    orderBy: [
-      { deliveryDate: "asc" },
-      { deliveryTime: "asc" },
-      { createdAt: "desc" },
-    ],
-    take: 500,
-  });
-
-  const filteredOrders = orders.filter((order: any) => {
-    const date = normalizeDate(order.deliveryDate);
-
-    if (range === "all") return true;
-    if (range === "past") return date && date < today;
-    if (range === "future") return date && date > today;
-    if (range === "date") return date === selectedDate;
-
-    return date === today;
-  });
-
-  const todayOrders = orders.filter((order: any) => normalizeDate(order.deliveryDate) === today);
-  const futureOrders = orders.filter((order: any) => {
-    const date = normalizeDate(order.deliveryDate);
-    return date && date > today;
-  });
-  const pastOrders = orders.filter((order: any) => {
-    const date = normalizeDate(order.deliveryDate);
-    return date && date < today;
-  });
-
-  const availableDates = Array.from(
-    new Set(
-      orders
-        .map((order: any) => normalizeDate(order.deliveryDate))
-        .filter(Boolean)
-    )
-  ).sort();
-
-  return {
-    tenantName: tenantUser.tenant.name,
-    range,
-    selectedDate,
-    availableDates,
-    orders: filteredOrders,
-    stats: {
-      today: todayOrders.length,
-      future: futureOrders.length,
-      past: pastOrders.length,
-      all: orders.length,
-      withoutAddress: filteredOrders.filter((order: any) => !order.deliveryAddress).length,
-      withoutPhone: filteredOrders.filter((order: any) => !(order.contactPhone || order.customerPhone)).length,
-    },
-    tourMapUrl: routeUrl(filteredOrders.map((order: any) => order.deliveryAddress).filter(Boolean)),
-    error: null,
-  };
 }
 
 const inputStyle = {
@@ -202,7 +219,7 @@ export default function DeliveriesPage() {
           <p className="eyebrow">Betrieb</p>
           <h1>Lieferungen</h1>
           <span className="pageSubline">
-            {data.tenantName} · Lieferungen aus bestaetigten Auftraegen mit Route, Anruf, WhatsApp und Fahrermail.
+            {data.tenantName} · Lieferungen aus Auftraegen mit Route, Anruf, WhatsApp und Fahrermail.
           </span>
         </div>
 
@@ -220,8 +237,8 @@ export default function DeliveriesPage() {
       {data.error ? (
         <section className="panel">
           <div className="noteBox">
-            <strong>Hinweis</strong>
-            <p>{data.error}</p>
+            <strong>Lieferungen konnten nicht geladen werden</strong>
+            <p style={{ whiteSpace: "pre-wrap" }}>{data.error}</p>
           </div>
         </section>
       ) : null}
@@ -333,7 +350,7 @@ export default function DeliveriesPage() {
                   <div className="routeHeader">
                     <div>
                       <strong>Keine Lieferungen gefunden</strong>
-                      <span>Keine bestaetigten Auftraege fuer diesen Filter.</span>
+                      <span>Keine Auftraege fuer diesen Filter.</span>
                     </div>
                     <em className="warning">Leer</em>
                   </div>
@@ -349,8 +366,8 @@ export default function DeliveriesPage() {
                   : "#";
 
                 const mailBody = [
-                  `Lieferung: ${order.orderNumber}`,
-                  `Kunde: ${order.customerName}`,
+                  `Lieferung: ${order.orderNumber || order.id}`,
+                  `Kunde: ${order.customerName || "-"}`,
                   `Datum: ${formatDate(order.deliveryDate)}`,
                   `Uhrzeit: ${order.deliveryTime || "-"}`,
                   `Adresse: ${address || "-"}`,
@@ -358,7 +375,7 @@ export default function DeliveriesPage() {
                   `Telefon: ${order.contactPhone || order.customerPhone || "-"}`,
                   "",
                   "Positionen:",
-                  ...(order.items || []).map((item: any) => `- ${item.quantity} ${item.unit || "Stueck"} ${item.name}`),
+                  ...(order.items || []).map((item: any) => `- ${item.quantity || 0} ${item.unit || "Stueck"} ${item.name || "Position"}`),
                   "",
                   "Route:",
                   map,
@@ -374,7 +391,7 @@ export default function DeliveriesPage() {
                     <div className="routeContent">
                       <div className="routeHeader">
                         <div>
-                          <strong>{index + 1}. {order.customerName}</strong>
+                          <strong>{index + 1}. {order.customerName || "Ohne Kunde"}</strong>
                           <span>{orderSummary(order)} · {formatDate(order.deliveryDate)}</span>
                         </div>
                         <em className={address && phone ? "success" : "warning"}>
@@ -395,7 +412,7 @@ export default function DeliveriesPage() {
                         </p>
                         <p>
                           <b>Auftrag</b>
-                          <span>{order.orderNumber} · {order.eventName || "Kein Eventname"}</span>
+                          <span>{order.orderNumber || order.id} · {order.eventName || "Kein Eventname"}</span>
                         </p>
                       </div>
 
@@ -422,7 +439,7 @@ export default function DeliveriesPage() {
 
                         <a
                           style={pillButton}
-                          href={`mailto:?subject=${encodeURIComponent(`Lieferung ${order.orderNumber}`)}&body=${encodeURIComponent(mailBody)}`}
+                          href={`mailto:?subject=${encodeURIComponent(`Lieferung ${order.orderNumber || order.id}`)}&body=${encodeURIComponent(mailBody)}`}
                         >
                           Fahrer-Mail
                         </a>
