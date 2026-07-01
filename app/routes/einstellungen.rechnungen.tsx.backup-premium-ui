@@ -272,27 +272,46 @@ export default function RechnungsdatenPage() {
   );
 }
 
-const pageGridStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 20,
-};
+const pageGridStyle: React.CSSProperties = { display: "grid", gap: 18 };
 
 const heroStyle: React.CSSProperties = {
-  ...premiumCardBase,
-  padding: 24,
+  background: "#ffffff",
+  border: "1px solid #e2e8f0",
+  borderRadius: 20,
+  padding: 22,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   gap: 18,
 };
 
-const smallLabelStyle: React.CSSProperties = premiumSectionLabel;
+const smallLabelStyle: React.CSSProperties = {
+  margin: 0,
+  color: "#00796b",
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+  fontSize: 12,
+  fontWeight: 900,
+};
 
-const heroTitleStyle: React.CSSProperties = premiumTitle;
+const heroTitleStyle: React.CSSProperties = {
+  margin: "6px 0 0",
+  fontSize: 26,
+  letterSpacing: "-0.04em",
+};
 
-const sectionTitleStyle: React.CSSProperties = premiumTitle;
+const sectionTitleStyle: React.CSSProperties = {
+  margin: "6px 0 16px",
+  fontSize: 22,
+  letterSpacing: "-0.035em",
+};
 
-const mutedTextStyle: React.CSSProperties = premiumMuted;
+const mutedTextStyle: React.CSSProperties = {
+  margin: "8px 0 0",
+  color: "#475569",
+  fontWeight: 650,
+  lineHeight: 1.55,
+};
 
 const completeBadgeStyle: React.CSSProperties = {
   background: "#dcfce7",
@@ -316,7 +335,9 @@ const formStyle: React.CSSProperties = {
 };
 
 const cardStyle: React.CSSProperties = {
-  ...premiumCardBase,
+  background: "#ffffff",
+  border: "1px solid #e2e8f0",
+  borderRadius: 20,
   padding: 22,
 };
 
@@ -332,9 +353,23 @@ const threeColStyle: React.CSSProperties = {
   gap: 14,
 };
 
-const labelStyle: React.CSSProperties = premiumLabel;
+const labelStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 6,
+  color: "#334155",
+  fontSize: 12,
+  fontWeight: 850,
+};
 
-const inputStyle: React.CSSProperties = premiumInput;
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  minHeight: 44,
+  border: "1px solid #cbd5e1",
+  borderRadius: 10,
+  padding: "9px 11px",
+  fontWeight: 750,
+  background: "#ffffff",
+};
 
 const textareaStyle: React.CSSProperties = {
   ...inputStyle,
@@ -358,7 +393,15 @@ const footerStyle: React.CSSProperties = {
   justifyContent: "flex-end",
 };
 
-const primaryButtonStyle: React.CSSProperties = premiumPrimaryButton;
+const primaryButtonStyle: React.CSSProperties = {
+  border: "none",
+  background: "#059669",
+  color: "#ffffff",
+  borderRadius: 999,
+  padding: "13px 18px",
+  fontWeight: 950,
+  cursor: "pointer",
+};
 
 const errorStyle: React.CSSProperties = {
   background: "#fef2f2",
@@ -377,104 +420,3 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 750,
 };
-
-
-const premiumUiStyle: React.CSSProperties = {
-  "--g-card-bg": "#ffffff",
-  "--g-border": "#dbe3ec",
-  "--g-border-strong": "#cbd5e1",
-  "--g-page-bg": "#eef3f7",
-  "--g-text": "#0f172a",
-  "--g-muted": "#64748b",
-  "--g-green": "#059669",
-  "--g-green-dark": "#047857",
-} as React.CSSProperties;
-
-const premiumCardBase: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #dbe3ec",
-  borderRadius: 18,
-  boxShadow: "0 12px 32px rgba(15, 23, 42, 0.055)",
-};
-
-const premiumButtonBase: React.CSSProperties = {
-  minHeight: 42,
-  borderRadius: 12,
-  padding: "0 16px",
-  fontSize: 14,
-  fontWeight: 850,
-  letterSpacing: "-0.01em",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 8,
-  textDecoration: "none",
-  cursor: "pointer",
-  whiteSpace: "nowrap",
-};
-
-const premiumPrimaryButton: React.CSSProperties = {
-  ...premiumButtonBase,
-  border: "1px solid #059669",
-  background: "#059669",
-  color: "#ffffff",
-  boxShadow: "0 8px 18px rgba(5, 150, 105, 0.18)",
-};
-
-const premiumSecondaryButton: React.CSSProperties = {
-  ...premiumButtonBase,
-  border: "1px solid #cbd5e1",
-  background: "#ffffff",
-  color: "#0f172a",
-};
-
-const premiumDangerButton: React.CSSProperties = {
-  ...premiumButtonBase,
-  border: "1px solid #fecaca",
-  background: "#fff1f2",
-  color: "#991b1b",
-};
-
-const premiumInput: React.CSSProperties = {
-  width: "100%",
-  minHeight: 46,
-  border: "1px solid #cbd5e1",
-  borderRadius: 12,
-  padding: "10px 12px",
-  fontSize: 14,
-  fontWeight: 650,
-  background: "#ffffff",
-  outline: "none",
-};
-
-const premiumLabel: React.CSSProperties = {
-  display: "grid",
-  gap: 7,
-  color: "#334155",
-  fontSize: 12,
-  fontWeight: 850,
-};
-
-const premiumSectionLabel: React.CSSProperties = {
-  margin: 0,
-  color: "#00796b",
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
-  fontSize: 11,
-  fontWeight: 950,
-};
-
-const premiumTitle: React.CSSProperties = {
-  margin: "5px 0 0",
-  fontSize: 24,
-  letterSpacing: "-0.04em",
-  color: "#0f172a",
-};
-
-const premiumMuted: React.CSSProperties = {
-  margin: "7px 0 0",
-  color: "#64748b",
-  fontWeight: 650,
-  lineHeight: 1.55,
-};
-

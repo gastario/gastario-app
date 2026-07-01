@@ -1,4 +1,4 @@
-﻿import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
+﻿import { Form, Link, redirect, useActionData } from "react-router";
 import { useMemo, useState } from "react";
 import AppLayout from "../components/AppLayout";
 
@@ -108,48 +108,6 @@ export function meta() {
   return [{ title: "Neue Rechnung · Gastario" }];
 }
 
-export async function loader({ request }: { request: Request }) {
-  const { getUserId } = await import("../lib/session.server");
-  const { prisma } = await import("../lib/prisma.server");
-
-  const userId = await getUserId(request);
-
-  if (!userId) {
-    throw redirect("/login");
-  }
-
-  const access = await prisma.tenantUser.findFirst({
-    where: { userId },
-    include: { tenant: true },
-  });
-
-  if (!access?.tenant) {
-    return {
-      tenantName: "Gastario",
-      tenant: null,
-      invoiceSettingsComplete: false,
-      today: todayInput(),
-    };
-  }
-
-  const tenant = access.tenant as any;
-
-  const invoiceSettingsComplete = Boolean(
-    tenant.invoiceSellerName &&
-    tenant.invoiceSellerAddress &&
-    (tenant.invoiceTaxNumber || tenant.invoiceVatId) &&
-    tenant.invoiceIban &&
-    tenant.invoiceBankName
-  );
-
-  return {
-    tenantName: access.tenant.name || "Gastario",
-    tenant,
-    invoiceSettingsComplete,
-    today: todayInput(),
-  };
-}
-
 export async function action({ request }: { request: Request }) {
   const { getUserId } = await import("../lib/session.server");
   const { prisma } = await import("../lib/prisma.server");
@@ -165,22 +123,8 @@ export async function action({ request }: { request: Request }) {
     include: { tenant: true },
   });
 
-  if (!access?.tenant) {
+  if (!access) {
     return { error: "Kein Mandant gefunden." };
-  }
-
-  const tenant = access.tenant as any;
-
-  const invoiceSettingsComplete = Boolean(
-    tenant.invoiceSellerName &&
-    tenant.invoiceSellerAddress &&
-    (tenant.invoiceTaxNumber || tenant.invoiceVatId) &&
-    tenant.invoiceIban &&
-    tenant.invoiceBankName
-  );
-
-  if (!invoiceSettingsComplete) {
-    return { error: "Rechnungsdaten sind unvollständig. Bitte zuerst unter Einstellungen > Rechnungsdaten vervollständigen." };
   }
 
   const formData = await request.formData();
@@ -199,21 +143,15 @@ export async function action({ request }: { request: Request }) {
   const priceMode = String(formData.get("priceMode") || "NET");
 
   const customerName = String(formData.get("customerName") || "").trim();
-  const street = String(formData.get("street") || "").trim();
-  const zip = String(formData.get("zip") || "").trim();
-  const city = String(formData.get("city") || "").trim();
-  const country = String(formData.get("country") || "Deutschland").trim();
-  const addressExtra = String(formData.get("addressExtra") || "").trim();
-
   const customerAddress = [
-    addressExtra,
-    street,
-    [zip, city].filter(Boolean).join(" "),
-    country,
+    String(formData.get("addressExtra") || "").trim(),
+    String(formData.get("street") || "").trim(),
+    [String(formData.get("zip") || "").trim(), String(formData.get("city") || "").trim()].filter(Boolean).join(" "),
+    String(formData.get("country") || "Deutschland").trim(),
   ].filter(Boolean).join("\n");
 
-  const invoiceDate = parseDateInput(formData.get("invoiceDate"));
-  const serviceDate = parseDateInput(formData.get("serviceDate"));
+  const invoiceDate = parseDateInput(formData.get("invoiceDate")) || new Date();
+  const serviceDate = parseDateInput(formData.get("serviceDate")) || invoiceDate;
 
   const title = String(formData.get("title") || "Rechnung").trim();
   const introText = String(formData.get("introText") || "").trim();
@@ -231,11 +169,8 @@ export async function action({ request }: { request: Request }) {
   const globalDiscountMode = String(formData.get("globalDiscountMode") || "PERCENT");
   const globalDiscountValue = String(formData.get("globalDiscountValue") || "0").trim();
 
-  if (!invoiceNumber) return { error: "Rechnungsnummer fehlt." };
   if (!customerName) return { error: "Kunde fehlt." };
-  if (!street || !zip || !city || !country) return { error: "Vollständige Rechnungsadresse des Kunden fehlt." };
-  if (!invoiceDate) return { error: "Rechnungsdatum fehlt." };
-  if (!serviceDate) return { error: "Leistungsdatum fehlt." };
+  if (!invoiceNumber) return { error: "Rechnungsnummer fehlt." };
 
   const existing = await prisma.invoice.findFirst({
     where: {
@@ -276,8 +211,6 @@ export async function action({ request }: { request: Request }) {
       const discountPercent = discounts[index] ?? 0;
       const inputCents = euroToCents(unitPrices[index]);
 
-      if (inputCents <= 0) return null;
-
       let netUnitCents = inputCents;
 
       if (priceMode === "GROSS" && taxRate > 0) {
@@ -308,7 +241,7 @@ export async function action({ request }: { request: Request }) {
     .filter(Boolean) as Array<any>;
 
   if (invoiceItems.filter((item) => item.type === "ITEM").length === 0) {
-    return { error: "Mindestens eine vollständige Artikelposition mit Preis fehlt." };
+    return { error: "Mindestens eine Artikelposition fehlt." };
   }
 
   let netTotalCents = invoiceItems.reduce((sum, item) => sum + (item.netTotalCents || 0), 0);
@@ -340,28 +273,22 @@ export async function action({ request }: { request: Request }) {
       invoiceDate,
       serviceDate,
       customerName,
-      customerAddress,
-      customerCountry: country === "Deutschland" ? "DE" : country,
-      sellerName: tenant.invoiceSellerName,
-      sellerAddress: tenant.invoiceSellerAddress,
-      sellerTaxNumber: tenant.invoiceTaxNumber || null,
-      sellerVatId: tenant.invoiceVatId || null,
+      customerAddress: customerAddress || null,
+      customerCountry: "DE",
+      sellerName: access.tenant?.name || "Gastario",
       currency: "EUR",
       netTotalCents,
       taxTotalCents,
       grossTotalCents,
-      paymentTermsDe: paymentTerms || tenant.invoicePaymentTermsDe || "Zahlbar sofort, rein netto.",
-      paymentTermsEn: tenant.invoicePaymentTermsEn || "Payable immediately without deduction.",
+      paymentTermsDe: paymentTerms || "Zahlbar sofort, rein netto.",
+      paymentTermsEn: "Payable immediately without deduction.",
       notes: [
         "Kundennummer: " + customerNumber,
         "Preisangabe: " + (priceMode === "GROSS" ? "Brutto" : "Netto"),
         title,
         introText,
         globalDiscountCents > 0 ? "Gesamtrabatt: " + (globalDiscountMode === "PERCENT" ? globalDiscountValue + "%" : globalDiscountValue + " €") : "",
-        closingText || tenant.invoiceClosingTextDe || "",
-        tenant.invoiceIban ? "IBAN: " + tenant.invoiceIban : "",
-        tenant.invoiceBic ? "BIC: " + tenant.invoiceBic : "",
-        tenant.invoiceBankName ? "Bank: " + tenant.invoiceBankName : "",
+        closingText,
       ].filter(Boolean).join("\n\n"),
     } as any,
   });
@@ -377,10 +304,8 @@ export async function action({ request }: { request: Request }) {
 }
 
 export default function NeueRechnungPage() {
-  const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const today = data.today;
-  const tenant = data.tenant as any;
+  const today = todayInput();
 
   const [priceMode, setPriceMode] = useState<"NET" | "GROSS">("NET");
   const [discountVisible, setDiscountVisible] = useState(false);
@@ -460,7 +385,7 @@ export default function NeueRechnungPage() {
         <div>
           <p className="eyebrow">Verkauf</p>
           <h1>Rechnung erstellen</h1>
-          <p className="muted">Professioneller Editor mit Pflichtangaben-Prüfung und Live-Berechnung.</p>
+          <p className="muted">Lexoffice-ähnlicher Editor mit Live-Berechnung.</p>
         </div>
 
         <Link className="button secondary" to="/rechnungen">
@@ -470,18 +395,6 @@ export default function NeueRechnungPage() {
 
       {actionData && "error" in actionData ? <div style={errorStyle}>{actionData.error}</div> : null}
       {actionData && "success" in actionData ? <div style={successStyle}>{actionData.success}</div> : null}
-
-      {!data.invoiceSettingsComplete ? (
-        <div style={blockingNoticeStyle}>
-          <div>
-            <strong>Rechnungsdaten unvollständig</strong>
-            <p>Bevor du Rechnungen erstellst, müssen Firmenadresse, Steuernummer oder USt-ID, IBAN und Bankname hinterlegt sein.</p>
-          </div>
-          <Link to="/einstellungen/rechnungen" style={primaryButtonStyle}>
-            Rechnungsdaten vervollständigen
-          </Link>
-        </div>
-      ) : null}
 
       <Form method="post" style={pageStyle}>
         <input type="hidden" name="intent" value="createInvoiceDraft" />
@@ -494,7 +407,7 @@ export default function NeueRechnungPage() {
             Brutto
           </button>
           <button type="button" onClick={() => setPriceMode("NET")} style={priceMode === "NET" ? activeSwitchButtonStyle : switchButtonStyle}>
-            Netto
+            ✓ Netto
           </button>
         </div>
 
@@ -503,16 +416,16 @@ export default function NeueRechnungPage() {
             <div style={gridStyle}>
               <FloatingInput name="customerName" label="Kunde" placeholder="Name des Kunden" required />
               <FloatingInput name="addressExtra" label="Adresszusatz" placeholder="Adresszusatz" />
-              <FloatingInput name="street" label="Straße" placeholder="Straße" required />
+              <FloatingInput name="street" label="Straße" placeholder="Straße" />
 
               <div style={twoColSmallStyle}>
-                <FloatingInput name="zip" label="PLZ" placeholder="PLZ" required />
-                <FloatingInput name="city" label="Ort" placeholder="Ort" required />
+                <FloatingInput name="zip" label="PLZ" placeholder="PLZ" />
+                <FloatingInput name="city" label="Ort" placeholder="Ort" />
               </div>
 
-              <label style={labelStyle}>
-                <span>Land *</span>
-                <select name="country" defaultValue="Deutschland" required style={inputStyle}>
+              <label style={floatingLabelStyle}>
+                <span>Land</span>
+                <select name="country" defaultValue="Deutschland" style={inputStyle}>
                   <option>Deutschland</option>
                   <option>Österreich</option>
                   <option>Schweiz</option>
@@ -525,45 +438,31 @@ export default function NeueRechnungPage() {
               <FloatingInput name="invoiceNumber" label="Rechnungsnummer" placeholder="z. B. RE-2026-001" required />
               <FloatingInput name="customerNumber" label="Kundennummer" placeholder="wird automatisch vergeben" />
 
-              <FloatingInput name="invoiceDate" label="Rechnungsdatum" type="date" defaultValue={today} required />
+              <FloatingInput name="invoiceDate" label="Datum" type="date" defaultValue={today} required />
 
               <div style={twoColSmallStyle}>
-                <label style={labelStyle}>
+                <label style={floatingLabelStyle}>
                   <span>Lieferung oder Leistung</span>
-                  <select name="serviceDateType" defaultValue="Leistungsdatum" style={inputStyle}>
+                  <select name="serviceDateType" defaultValue="Lieferdatum" style={inputStyle}>
                     <option>Lieferdatum</option>
                     <option>Leistungsdatum</option>
                     <option>Lieferzeitraum</option>
                     <option>Leistungszeitraum</option>
+                    <option>Kein Lieferdatum</option>
                   </select>
                 </label>
 
                 <FloatingInput name="serviceDate" label="Datum" type="date" defaultValue={today} required />
               </div>
 
-              <label style={labelStyle}>
-                <span>Belegsprache</span>
+              <label style={floatingLabelStyle}>
+                <span>Beleg übersetzen</span>
                 <select name="language" defaultValue="DE" style={inputStyle}>
                   <option value="DE">Deutsch</option>
                   <option value="EN">Englisch</option>
                 </select>
               </label>
             </div>
-          </div>
-        </section>
-
-        <section style={cardStyle}>
-          <p style={sectionLabelStyle}>Eigene Rechnungsdaten</p>
-          <div style={sellerInfoStyle}>
-            <div>
-              <strong>{tenant?.invoiceSellerName || data.tenantName}</strong>
-              <span>{tenant?.invoiceSellerAddress || "Keine Adresse hinterlegt"}</span>
-            </div>
-            <div>
-              <span>{tenant?.invoiceTaxNumber ? "Steuernummer: " + tenant.invoiceTaxNumber : ""}</span>
-              <span>{tenant?.invoiceVatId ? "USt-ID: " + tenant.invoiceVatId : ""}</span>
-            </div>
-            <Link to="/einstellungen/rechnungen" style={secondaryButtonStyle}>Bearbeiten</Link>
           </div>
         </section>
 
@@ -589,7 +488,13 @@ export default function NeueRechnungPage() {
                   <input type="hidden" name="taxRate" value="0" />
 
                   <div style={numberCircleStyle}>≡</div>
-                  <FloatingControlledInput name="itemName" label="Freitext" placeholder="Text zur Rechnung" value={row.text} onChange={(value) => updateText(row.id, value)} />
+                  <FloatingControlledInput
+                    name="itemName"
+                    label="Freitext"
+                    placeholder="Text zur Rechnung"
+                    value={row.text}
+                    onChange={(value) => updateText(row.id, value)}
+                  />
                   <button type="button" onClick={() => removeRow(row.id)} style={deleteButtonStyle}>×</button>
                 </div>
               ) : (
@@ -601,8 +506,8 @@ export default function NeueRechnungPage() {
                   <FloatingControlledInput name="itemName" label="Artikel" placeholder="Bezeichnung des Artikels" value={row.name} onChange={(value) => updateItem(row.id, "name", value)} required />
                   <FloatingControlledInput name="quantity" label="Menge" value={row.quantity} onChange={(value) => updateItem(row.id, "quantity", value)} />
                   <FloatingControlledInput name="unit" label="Einheit" value={row.unit} onChange={(value) => updateItem(row.id, "unit", value)} />
-                  <FloatingControlledInput name="unitPriceEuro" label={priceMode === "GROSS" ? "VK Brutto" : "VK Netto"} placeholder="0,00 €" value={row.price} onChange={(value) => updateItem(row.id, "price", value)} required />
-                  <FloatingControlledInput name="discountPercent" label="Rabatt %" value={row.discount} onChange={(value) => updateItem(row.id, "discount", value)} />
+                  <FloatingControlledInput name="unitPriceEuro" label={priceMode === "GROSS" ? "VK (Brutto)" : "VK (Netto)"} placeholder="0,00 €" value={row.price} onChange={(value) => updateItem(row.id, "price", value)} required />
+                  <FloatingControlledInput name="discountPercent" label="Rabatt" value={row.discount} onChange={(value) => updateItem(row.id, "discount", value)} />
 
                   <div style={amountBoxStyle}>
                     <strong>{centsToEuro(calculateTotals([row], priceMode, "PERCENT", "0").netTotalCents)}</strong>
@@ -623,7 +528,7 @@ export default function NeueRechnungPage() {
             <div style={discountRowStyle}>
               <div style={numberCircleDarkStyle}>%</div>
               <FloatingInput name="discountTitle" label="Gesamtrabatt" defaultValue="Gesamtrabatt" />
-              <label style={labelStyle}>
+              <label style={floatingLabelStyle}>
                 <span>Rabatt in</span>
                 <select value={discountMode} onChange={(event) => setDiscountMode(event.currentTarget.value as "PERCENT" | "AMOUNT")} style={inputStyle}>
                   <option value="PERCENT">Prozent</option>
@@ -642,15 +547,15 @@ export default function NeueRechnungPage() {
           ) : null}
 
           <div style={positionActionsStyle}>
-            <button type="button" onClick={addItem} style={outlineButtonStyle}>+ Artikel</button>
-            <button type="button" onClick={addText} style={textActionStyle}>Freitext</button>
-            <button type="button" onClick={() => setDiscountVisible(true)} style={textActionStyle}>Gesamtrabatt</button>
+            <button type="button" onClick={addItem} style={greenOutlineButtonStyle}>+ ARTIKEL</button>
+            <button type="button" onClick={addText} style={textActionStyle}>≡ FREITEXT</button>
+            <button type="button" onClick={() => setDiscountVisible(true)} style={textActionStyle}>% GESAMTRABATT</button>
           </div>
 
           <div style={totalBarStyle}>
             <div />
             <div style={sumBoxStyle}>
-              <span>Summe Netto</span>
+              <span>Summe (Netto)</span>
               <strong>{centsToEuro(totals.netTotalCents)}</strong>
             </div>
             <div style={grossBoxStyle}>
@@ -661,15 +566,25 @@ export default function NeueRechnungPage() {
         </section>
 
         <section style={cardStyle}>
-          <FloatingInput name="paymentTerms" label="Zahlungsbedingung" defaultValue={tenant?.invoicePaymentTermsDe || "Zahlbar sofort, rein netto."} />
-          <FloatingInput name="closingText" label="Nachbemerkung" defaultValue={tenant?.invoiceClosingTextDe || "Vielen Dank für die gute Zusammenarbeit."} />
+          <FloatingInput name="paymentTerms" label="Zahlungsbedingung" defaultValue="Zahlbar sofort, rein netto" />
+          <FloatingInput name="closingText" label="Nachbemerkung" defaultValue="Vielen Dank für die gute Zusammenarbeit." />
+        </section>
+
+        <section style={paymentGridStyle}>
+          <div style={paymentCardStyle}>
+            <strong>Überweisung</strong>
+            <span>Aktiv</span>
+          </div>
+
+          <div style={paymentCardStyle}>
+            <strong>Beleg übersetzen</strong>
+            <span>Deutsch / Englisch</span>
+          </div>
         </section>
 
         <div style={footerActionsStyle}>
           <Link to="/rechnungen" style={secondaryButtonStyle}>Abbrechen</Link>
-          <button type="submit" disabled={!data.invoiceSettingsComplete} style={data.invoiceSettingsComplete ? primaryButtonStyle : disabledButtonStyle}>
-            Rechnungsentwurf speichern
-          </button>
+          <button type="submit" style={primaryButtonStyle}>Zwischenspeichern</button>
         </div>
       </Form>
     </AppLayout>
@@ -692,7 +607,7 @@ function FloatingInput({
   required?: boolean;
 }) {
   return (
-    <label style={labelStyle}>
+    <label style={floatingLabelStyle}>
       <span>{label}{required ? " *" : ""}</span>
       <input name={name} type={type} placeholder={placeholder} defaultValue={defaultValue} required={required} style={inputStyle} />
     </label>
@@ -715,26 +630,27 @@ function FloatingControlledInput({
   required?: boolean;
 }) {
   return (
-    <label style={labelStyle}>
+    <label style={floatingLabelStyle}>
       <span>{label}{required ? " *" : ""}</span>
       <input name={name} placeholder={placeholder} value={value} onChange={(event) => onChange(event.currentTarget.value)} required={required} style={inputStyle} />
     </label>
   );
 }
 
-const pageStyle: React.CSSProperties = { maxWidth: 1180, margin: "0 auto", display: "grid", gap: 18 };
-const cardStyle: React.CSSProperties = { background: "#ffffff", border: "1px solid #dbe3ec", borderRadius: 18, padding: 22, boxShadow: "0 12px 32px rgba(15, 23, 42, 0.055)" };
+const pageStyle: React.CSSProperties = { maxWidth: 1180, margin: "0 auto", display: "grid", gap: 16 };
+const topSwitchStyle: React.CSSProperties = { display: "flex", justifyContent: "flex-end", gap: 0 };
+const switchButtonStyle: React.CSSProperties = { border: "1px solid #cbd5e1", padding: "10px 18px", background: "#ffffff", fontWeight: 800, cursor: "pointer" };
+const activeSwitchButtonStyle: React.CSSProperties = { ...switchButtonStyle, background: "#e6f4ef", color: "#047857", boxShadow: "inset 0 0 0 1px #059669" };
+const cardStyle: React.CSSProperties = {
+  ...premiumCardBase,
+  padding: 22,
+};
 const positionCardStyle: React.CSSProperties = { ...cardStyle, padding: 0, overflow: "hidden" };
-const twoColStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72 };
+const twoColStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 78 };
 const twoColSmallStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "0.7fr 1.3fr", gap: 12 };
 const gridStyle: React.CSSProperties = { display: "grid", gap: 14 };
-const labelStyle: React.CSSProperties = { display: "grid", gap: 7, color: "#334155", fontSize: 12, fontWeight: 850 };
-const inputStyle: React.CSSProperties = { width: "100%", minHeight: 46, border: "1px solid #cbd5e1", borderRadius: 12, padding: "10px 12px", fontSize: 14, fontWeight: 650, background: "#ffffff" };
-const sectionLabelStyle: React.CSSProperties = { margin: "0 0 12px", color: "#00796b", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: 11, fontWeight: 950 };
-const topSwitchStyle: React.CSSProperties = { display: "flex", justifyContent: "flex-end" };
-const switchButtonStyle: React.CSSProperties = { minHeight: 40, border: "1px solid #cbd5e1", padding: "0 16px", background: "#ffffff", fontWeight: 850, cursor: "pointer" };
-const activeSwitchButtonStyle: React.CSSProperties = { ...switchButtonStyle, background: "#e6f4ef", color: "#047857", borderColor: "#059669" };
-const sellerInfoStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 18, alignItems: "center", color: "#475569" };
+const floatingLabelStyle: React.CSSProperties = premiumLabel;
+const inputStyle: React.CSSProperties = premiumInput;
 const positionRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "42px minmax(240px, 1fr) 90px 130px 140px 100px 120px 30px", gap: 10, alignItems: "end", padding: "28px 22px 14px" };
 const textRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "42px minmax(0, 1fr) 30px", gap: 10, alignItems: "end", padding: "18px 22px 8px" };
 const discountRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "42px minmax(260px, 1fr) 180px 180px 30px", gap: 10, alignItems: "end", padding: "18px 22px", borderTop: "1px solid #eef2f7" };
@@ -743,16 +659,117 @@ const numberCircleDarkStyle: React.CSSProperties = { ...numberCircleStyle, backg
 const amountBoxStyle: React.CSSProperties = { display: "grid", justifyItems: "end", gap: 8, paddingBottom: 4 };
 const taxPillStyle: React.CSSProperties = { border: "none", borderRadius: 999, background: "#3f3f3f", color: "#ffffff", height: 28, padding: "0 9px", fontWeight: 800 };
 const deleteButtonStyle: React.CSSProperties = { border: "none", background: "transparent", color: "#64748b", fontSize: 20, fontWeight: 900, cursor: "pointer", marginBottom: 12 };
-const positionActionsStyle: React.CSSProperties = { display: "flex", justifyContent: "center", gap: 18, padding: "12px 22px 26px" };
-const outlineButtonStyle: React.CSSProperties = { minHeight: 40, border: "1px solid #059669", background: "#ffffff", color: "#059669", borderRadius: 12, padding: "0 16px", fontWeight: 850, cursor: "pointer" };
-const textActionStyle: React.CSSProperties = { minHeight: 40, border: "1px solid transparent", background: "transparent", color: "#334155", borderRadius: 12, padding: "0 12px", fontWeight: 850, cursor: "pointer" };
+const positionActionsStyle: React.CSSProperties = { display: "flex", justifyContent: "center", gap: 26, padding: "10px 22px 26px" };
+const greenOutlineButtonStyle: React.CSSProperties = { border: "1px solid #10a66a", background: "#ffffff", color: "#059669", borderRadius: 4, padding: "8px 18px", fontWeight: 900, cursor: "pointer" };
+const textActionStyle: React.CSSProperties = { border: "none", background: "transparent", color: "#334155", fontWeight: 900, cursor: "pointer" };
 const totalBarStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 170px 170px", background: "#555", color: "#ffffff" };
 const sumBoxStyle: React.CSSProperties = { padding: 16, display: "grid", justifyItems: "center", borderLeft: "1px solid rgba(255,255,255,0.15)" };
 const grossBoxStyle: React.CSSProperties = { ...sumBoxStyle, background: "#444" };
+const paymentGridStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 };
+const paymentCardStyle: React.CSSProperties = { background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: 14, padding: 20, display: "flex", justifyContent: "space-between" };
 const footerActionsStyle: React.CSSProperties = { display: "flex", justifyContent: "flex-end", gap: 12, padding: "0 0 40px" };
-const primaryButtonStyle: React.CSSProperties = { minHeight: 42, borderRadius: 12, padding: "0 16px", fontSize: 14, fontWeight: 850, border: "1px solid #059669", background: "#059669", color: "#ffffff", cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center" };
-const secondaryButtonStyle: React.CSSProperties = { minHeight: 42, borderRadius: 12, padding: "0 16px", fontSize: 14, fontWeight: 850, border: "1px solid #cbd5e1", background: "#ffffff", color: "#0f172a", cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center" };
-const disabledButtonStyle: React.CSSProperties = { ...primaryButtonStyle, opacity: 0.45, cursor: "not-allowed" };
-const blockingNoticeStyle: React.CSSProperties = { background: "#fff7ed", border: "1px solid #fed7aa", color: "#9a3412", borderRadius: 18, padding: 18, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18 };
+const primaryButtonStyle: React.CSSProperties = premiumPrimaryButton;
+const secondaryButtonStyle: React.CSSProperties = premiumSecondaryButton;
 const errorStyle: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", borderRadius: 14, padding: 14, fontWeight: 750 };
 const successStyle: React.CSSProperties = { background: "#ecfdf5", border: "1px solid #bbf7d0", color: "#047857", borderRadius: 14, padding: 14, fontWeight: 750 };
+
+
+const premiumUiStyle: React.CSSProperties = {
+  "--g-card-bg": "#ffffff",
+  "--g-border": "#dbe3ec",
+  "--g-border-strong": "#cbd5e1",
+  "--g-page-bg": "#eef3f7",
+  "--g-text": "#0f172a",
+  "--g-muted": "#64748b",
+  "--g-green": "#059669",
+  "--g-green-dark": "#047857",
+} as React.CSSProperties;
+
+const premiumCardBase: React.CSSProperties = {
+  background: "#ffffff",
+  border: "1px solid #dbe3ec",
+  borderRadius: 18,
+  boxShadow: "0 12px 32px rgba(15, 23, 42, 0.055)",
+};
+
+const premiumButtonBase: React.CSSProperties = {
+  minHeight: 42,
+  borderRadius: 12,
+  padding: "0 16px",
+  fontSize: 14,
+  fontWeight: 850,
+  letterSpacing: "-0.01em",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 8,
+  textDecoration: "none",
+  cursor: "pointer",
+  whiteSpace: "nowrap",
+};
+
+const premiumPrimaryButton: React.CSSProperties = {
+  ...premiumButtonBase,
+  border: "1px solid #059669",
+  background: "#059669",
+  color: "#ffffff",
+  boxShadow: "0 8px 18px rgba(5, 150, 105, 0.18)",
+};
+
+const premiumSecondaryButton: React.CSSProperties = {
+  ...premiumButtonBase,
+  border: "1px solid #cbd5e1",
+  background: "#ffffff",
+  color: "#0f172a",
+};
+
+const premiumDangerButton: React.CSSProperties = {
+  ...premiumButtonBase,
+  border: "1px solid #fecaca",
+  background: "#fff1f2",
+  color: "#991b1b",
+};
+
+const premiumInput: React.CSSProperties = {
+  width: "100%",
+  minHeight: 46,
+  border: "1px solid #cbd5e1",
+  borderRadius: 12,
+  padding: "10px 12px",
+  fontSize: 14,
+  fontWeight: 650,
+  background: "#ffffff",
+  outline: "none",
+};
+
+const premiumLabel: React.CSSProperties = {
+  display: "grid",
+  gap: 7,
+  color: "#334155",
+  fontSize: 12,
+  fontWeight: 850,
+};
+
+const premiumSectionLabel: React.CSSProperties = {
+  margin: 0,
+  color: "#00796b",
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+  fontSize: 11,
+  fontWeight: 950,
+};
+
+const premiumTitle: React.CSSProperties = {
+  margin: "5px 0 0",
+  fontSize: 24,
+  letterSpacing: "-0.04em",
+  color: "#0f172a",
+};
+
+const premiumMuted: React.CSSProperties = {
+  margin: "7px 0 0",
+  color: "#64748b",
+  fontWeight: 650,
+  lineHeight: 1.55,
+};
+
