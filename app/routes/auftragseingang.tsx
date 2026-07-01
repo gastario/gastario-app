@@ -1,3 +1,4 @@
+import { useState } from "react";
 ﻿
 import { Form, useActionData, useLoaderData } from "react-router";
 
@@ -298,6 +299,7 @@ function formatDate(value: string | Date | null | undefined) {
 export default function AuftragseingangPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const [positionRows, setPositionRows] = useState<number[]>([Date.now()]);
 
   if (data.setupError) {
     return (
@@ -581,7 +583,7 @@ export default function AuftragseingangPage() {
                 </h3>
               </div>
               <div style={{ color: "#64748b", fontSize: 13, fontWeight: 750 }}>
-                Bis zu 5 Positionen erfassen
+                Positionen flexibel erfassen
               </div>
             </div>
 
@@ -610,8 +612,8 @@ export default function AuftragseingangPage() {
                 <div>Einzelpreis</div>
               </div>
 
-              {Array.from({ length: 5 }).map((_, rowIndex) => (
-                <div key={rowIndex} style={{
+              {positionRows.map((rowId, rowIndex) => (
+                <div key={rowId} style={{
                   display: "grid",
                   gridTemplateColumns: "52px 1fr 110px 120px 150px",
                   gap: 10,
@@ -657,8 +659,8 @@ export default function AuftragseingangPage() {
                       <textarea
                         name="itemNotes"
                         placeholder="z. B. ohne Koriander, extra Sauce, separat verpacken"
-                        rows={2}
-                        style={{ ...inputStyle, marginTop: 9 }}
+                        rows={4}
+                        style={{ ...inputStyle, marginTop: 9, width: "100%", minHeight: 96, resize: "vertical" }}
                       />
                     </details>
                   </div>
@@ -668,6 +670,62 @@ export default function AuftragseingangPage() {
                   <input name="unitPriceEuro" placeholder="0,00 €" style={inputStyle} />
                 </div>
               ))}
+
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+                padding: "14px 12px",
+                borderTop: "1px solid #e5edf5",
+                background: "#f8fafc"
+              }}>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPositionRows((rows) =>
+                        rows.length >= 50 ? rows : [...rows, Date.now() + Math.random()]
+                      )
+                    }
+                    style={{
+                      border: "1px solid #0f766e",
+                      background: "#ecfdf5",
+                      color: "#0f766e",
+                      borderRadius: 999,
+                      padding: "10px 14px",
+                      fontWeight: 950,
+                      cursor: "pointer"
+                    }}
+                  >
+                    + Position hinzufügen
+                  </button>
+
+                  {positionRows.length > 1 ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPositionRows((rows) => rows.length > 1 ? rows.slice(0, -1) : rows)
+                      }
+                      style={{
+                        border: "1px solid #fecaca",
+                        background: "#fff1f2",
+                        color: "#991b1b",
+                        borderRadius: 999,
+                        padding: "10px 14px",
+                        fontWeight: 950,
+                        cursor: "pointer"
+                      }}
+                    >
+                      Letzte Position entfernen
+                    </button>
+                  ) : null}
+                </div>
+
+                <div style={{ color: "#64748b", fontSize: 13, fontWeight: 800 }}>
+                  {positionRows.length} / 50 Positionen
+                </div>
+              </div>
             </div>
           </div>
 
