@@ -667,10 +667,10 @@ export default function AuftragseingangPage() {
                       display: "grid",
                       gridTemplateColumns: row.type === "text"
                         ? "34px minmax(0, 1fr) 32px"
-                        : "34px minmax(0, 1fr) 78px 104px 124px 82px 160px 28px",
+                        : "34px minmax(520px, 1fr) 82px 110px 130px 90px 170px 30px",
                       gap: 8,
                       alignItems: "start",
-                      padding: "15px 16px",
+                      padding: "16px 18px",
                       borderTop: rowIndex === 0 ? "none" : "1px solid #e5e7eb",
                     }}
                   >
@@ -713,7 +713,7 @@ export default function AuftragseingangPage() {
                         <button
                           type="button"
                           onClick={() => setPositionRows((rows) => rows.filter((item) => item.id !== row.id))}
-                          style={{ border: "none", background: "transparent", color: "#777", cursor: "pointer", fontWeight: 950, fontSize: 16, marginTop: 28 }}
+                          style={{ border: "none", background: "transparent", color: "#777", cursor: "pointer", fontWeight: 950, fontSize: 16, marginTop: 26 }}
                         >
                           ×
                         </button>
@@ -730,7 +730,7 @@ export default function AuftragseingangPage() {
 
                           <details>
                             <summary style={{ cursor: "pointer", color: "#333", fontSize: 12, fontWeight: 800, listStyle: "none" }}>
-                              ≡ Freitext zu dieser Position
+                              ≡ FREITEXT zu dieser Position
                             </summary>
                             <textarea
                               name="itemNotes"
@@ -759,69 +759,50 @@ export default function AuftragseingangPage() {
                         <label style={labelStyle}>
                           Rabatt
                           <input name="discountPercent" type="number" min="0" defaultValue="0" style={{ ...inputStyle, textAlign: "right" }} />
-                        </label>                        <div style={{
-                          display: "grid",
-                          gap: 6,
-                          alignSelf: "stretch"
-                        }}>
-                          <div style={{
-                            color: "#555",
-                            fontSize: 11,
-                            fontWeight: 750,
-                            textAlign: "right"
-                          }}>
-                            Gesamt
-                          </div>
+                        </label>
 
-                          <div style={{
-                            display: "grid",
-                            gap: 6,
-                            justifyItems: "end",
-                            alignContent: "start"
-                          }}>
-                            <div
-                              data-line-total
-                              style={{
-                                minHeight: 24,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "flex-end",
-                                color: "#111",
-                                fontWeight: 950,
-                                fontSize: 15,
-                                lineHeight: 1
-                              }}
-                            >
-                              0,00 €
-                            </div>
-
-                            <select
-                              name="taxRate"
-                              defaultValue="19"
-                              style={{
-                                height: 28,
-                                width: 104,
-                                border: "none",
-                                borderRadius: 999,
-                                background: "#444",
-                                color: "white",
-                                fontSize: 11,
-                                fontWeight: 850,
-                                padding: "2px 8px",
-                                cursor: "pointer"
-                              }}
-                            >
-                              <option value="19">USt 19 %</option>
-                              <option value="7">USt 7 %</option>
-                              <option value="0">USt 0 %</option>
-                            </select>
+                        <div style={{ display: "grid", gap: 4, color: "#555", fontSize: 12, fontWeight: 700 }}>
+                          Gesamt
+                          <div
+                            data-line-total
+                            style={{
+                              minHeight: 24,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "flex-end",
+                              color: "#111",
+                              fontWeight: 950,
+                              fontSize: 15,
+                            }}
+                          >
+                            0,00 €
                           </div>
+                          <select
+                            name="taxRate"
+                            defaultValue="19"
+                            style={{
+                              height: 28,
+                              border: "none",
+                              borderRadius: 999,
+                              background: "#444",
+                              color: "white",
+                              fontSize: 11,
+                              fontWeight: 850,
+                              padding: "2px 10px",
+                              cursor: "pointer",
+                              width: "100%",
+                            }}
+                          >
+                            <option value="19">USt 19 %</option>
+                            <option value="7">USt 7 %</option>
+                            <option value="0">USt 0 %</option>
+                          </select>
                         </div>
 
                         <button
                           type="button"
                           onClick={() => setPositionRows((rows) => rows.length > 1 ? rows.filter((item) => item.id !== row.id) : rows)}
-                          style={{ border: "none", background: "transparent", color: "#777", cursor: "pointer", fontWeight: 950, fontSize: 16, marginTop: 28 }}
+                          style={{ border: "none", background: "transparent", color: "#777", cursor: "pointer", fontWeight: 950, fontSize: 16, marginTop: 26 }}
                         >
                           ×
                         </button>
