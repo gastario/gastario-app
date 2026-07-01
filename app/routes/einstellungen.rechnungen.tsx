@@ -1,4 +1,4 @@
-﻿import { Form, redirect, useActionData, useLoaderData } from "react-router";
+﻿import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 export function meta() {
@@ -24,22 +24,23 @@ export async function loader({ request }: { request: Request }) {
     return {
       tenant: null,
       requiredComplete: false,
+      missingFields: ["Mandant"],
     };
   }
 
   const tenant = access.tenant as any;
+  const missingFields: string[] = [];
 
-  const requiredComplete = Boolean(
-    tenant.invoiceSellerName &&
-    tenant.invoiceSellerAddress &&
-    (tenant.invoiceTaxNumber || tenant.invoiceVatId) &&
-    tenant.invoiceIban &&
-    tenant.invoiceBankName
-  );
+  if (!tenant.invoiceSellerName) missingFields.push("Firmenname");
+  if (!tenant.invoiceSellerAddress) missingFields.push("Firmenadresse");
+  if (!tenant.invoiceTaxNumber && !tenant.invoiceVatId) missingFields.push("Steuernummer oder USt-ID");
+  if (!tenant.invoiceIban) missingFields.push("IBAN");
+  if (!tenant.invoiceBankName) missingFields.push("Bankname");
 
   return {
     tenant,
-    requiredComplete,
+    requiredComplete: missingFields.length === 0,
+    missingFields,
   };
 }
 
@@ -115,12 +116,16 @@ export default function RechnungsdatenPage() {
     <AppLayout>
       <header className="topbar">
         <div>
-          <p className="eyebrow">Einstellungen</p>
+          <p className="eyebrow">Verkauf</p>
           <h1>Rechnungsdaten</h1>
           <p className="muted">
-            Pflichtangaben für Rechnungen einmal sauber hinterlegen.
+            Firmendaten, Steuerdaten, Bankverbindung und Standardtexte für Rechnungen.
           </p>
         </div>
+
+        <Link to="/rechnungen" className="button secondary">
+          Zurück zu Rechnungen
+        </Link>
       </header>
 
       {actionData && "error" in actionData ? <div style={errorStyle}>{actionData.error}</div> : null}
@@ -129,64 +134,69 @@ export default function RechnungsdatenPage() {
       <section style={pageGridStyle}>
         <div style={heroStyle}>
           <div>
-            <p style={smallLabelStyle}>Pflichtangaben</p>
+            <p style={smallLabelStyle}>Pflichtstatus</p>
             <h2 style={heroTitleStyle}>
               {data.requiredComplete ? "Rechnungsdaten vollständig" : "Rechnungsdaten unvollständig"}
             </h2>
             <p style={mutedTextStyle}>
-              Diese Daten werden später automatisch in jede Rechnung übernommen. Ohne vollständige Rechnungsdaten soll keine finale Rechnung möglich sein.
+              Diese Angaben werden in neue Rechnungen übernommen und sind Voraussetzung für saubere finale Rechnungen.
             </p>
+
+            {!data.requiredComplete ? (
+              <div style={missingWrapStyle}>
+                {data.missingFields.map((field) => (
+                  <span key={field} style={missingPillStyle}>{field}</span>
+                ))}
+              </div>
+            ) : null}
           </div>
 
-          <span style={data.requiredComplete ? completeBadgeStyle : warningBadgeStyle}>
-            {data.requiredComplete ? "Bereit" : "Unvollständig"}
-          </span>
+          <div style={data.requiredComplete ? completeBadgeStyle : warningBadgeStyle}>
+            <strong>{data.requiredComplete ? "Bereit" : "Fehlt noch"}</strong>
+            <span>{data.requiredComplete ? "Finalisierung möglich" : "Pflichtdaten ergänzen"}</span>
+          </div>
         </div>
 
         <Form method="post" style={formStyle}>
           <div style={cardStyle}>
-            <p style={smallLabelStyle}>Unternehmen</p>
-            <h2 style={sectionTitleStyle}>Deine Firmendaten</h2>
-
-            <div style={twoColStyle}>
-              <label style={labelStyle}>
-                Firmenname *
-                <input name="invoiceSellerName" defaultValue={tenant?.invoiceSellerName || tenant?.name || ""} required style={inputStyle} />
-              </label>
-
-              <label style={labelStyle}>
-                E-Mail
-                <input name="invoiceEmail" type="email" defaultValue={tenant?.invoiceEmail || ""} placeholder="rechnung@example.de" style={inputStyle} />
-              </label>
+            <div>
+              <p style={smallLabelStyle}>Unternehmen</p>
+              <h2 style={sectionTitleStyle}>Firmendaten</h2>
+              <p style={sectionHintStyle}>Diese Daten erscheinen als Rechnungsaussteller.</p>
             </div>
 
-            <label style={labelStyle}>
-              Firmenadresse *
+            <div style={twoColStyle}>
+              <Field label="Firmenname *">
+                <input name="invoiceSellerName" defaultValue={tenant?.invoiceSellerName || tenant?.name || ""} required />
+              </Field>
+
+              <Field label="E-Mail">
+                <input name="invoiceEmail" type="email" defaultValue={tenant?.invoiceEmail || ""} placeholder="rechnung@example.de" />
+              </Field>
+            </div>
+
+            <Field label="Firmenadresse *">
               <textarea
                 name="invoiceSellerAddress"
                 defaultValue={tenant?.invoiceSellerAddress || ""}
                 required
                 rows={4}
                 placeholder={"Straße Hausnummer\nPLZ Ort\nDeutschland"}
-                style={textareaStyle}
               />
-            </label>
+            </Field>
 
             <div style={threeColStyle}>
-              <label style={labelStyle}>
-                Steuernummer
-                <input name="invoiceTaxNumber" defaultValue={tenant?.invoiceTaxNumber || ""} placeholder="Steuernummer" style={inputStyle} />
-              </label>
+              <Field label="Steuernummer">
+                <input name="invoiceTaxNumber" defaultValue={tenant?.invoiceTaxNumber || ""} placeholder="Steuernummer" />
+              </Field>
 
-              <label style={labelStyle}>
-                USt-ID
-                <input name="invoiceVatId" defaultValue={tenant?.invoiceVatId || ""} placeholder="DE..." style={inputStyle} />
-              </label>
+              <Field label="USt-ID">
+                <input name="invoiceVatId" defaultValue={tenant?.invoiceVatId || ""} placeholder="DE..." />
+              </Field>
 
-              <label style={labelStyle}>
-                Telefon
-                <input name="invoicePhone" defaultValue={tenant?.invoicePhone || ""} placeholder="+49 ..." style={inputStyle} />
-              </label>
+              <Field label="Telefon">
+                <input name="invoicePhone" defaultValue={tenant?.invoicePhone || ""} placeholder="+49 ..." />
+              </Field>
             </div>
 
             <div style={noticeStyle}>
@@ -195,73 +205,73 @@ export default function RechnungsdatenPage() {
           </div>
 
           <div style={cardStyle}>
-            <p style={smallLabelStyle}>Zahlung</p>
-            <h2 style={sectionTitleStyle}>Bankdaten</h2>
+            <div>
+              <p style={smallLabelStyle}>Zahlung</p>
+              <h2 style={sectionTitleStyle}>Bankverbindung</h2>
+              <p style={sectionHintStyle}>Diese Bankdaten erscheinen später auf Rechnung und PDF.</p>
+            </div>
 
             <div style={threeColStyle}>
-              <label style={labelStyle}>
-                IBAN *
-                <input name="invoiceIban" defaultValue={tenant?.invoiceIban || ""} required placeholder="DE..." style={inputStyle} />
-              </label>
+              <Field label="IBAN *">
+                <input name="invoiceIban" defaultValue={tenant?.invoiceIban || ""} required placeholder="DE..." />
+              </Field>
 
-              <label style={labelStyle}>
-                BIC
-                <input name="invoiceBic" defaultValue={tenant?.invoiceBic || ""} placeholder="optional" style={inputStyle} />
-              </label>
+              <Field label="BIC">
+                <input name="invoiceBic" defaultValue={tenant?.invoiceBic || ""} placeholder="optional" />
+              </Field>
 
-              <label style={labelStyle}>
-                Bankname *
-                <input name="invoiceBankName" defaultValue={tenant?.invoiceBankName || ""} required placeholder="Bankname" style={inputStyle} />
-              </label>
+              <Field label="Bankname *">
+                <input name="invoiceBankName" defaultValue={tenant?.invoiceBankName || ""} required placeholder="Bankname" />
+              </Field>
             </div>
           </div>
 
           <div style={cardStyle}>
-            <p style={smallLabelStyle}>Standardtexte</p>
-            <h2 style={sectionTitleStyle}>Zahlungsbedingungen & Nachbemerkung</h2>
+            <div>
+              <p style={smallLabelStyle}>Standardtexte</p>
+              <h2 style={sectionTitleStyle}>Zahlungsbedingungen & Nachbemerkung</h2>
+              <p style={sectionHintStyle}>Diese Texte werden automatisch für neue Rechnungen vorgeschlagen.</p>
+            </div>
 
             <div style={twoColStyle}>
-              <label style={labelStyle}>
-                Zahlungsbedingung Deutsch
+              <Field label="Zahlungsbedingung Deutsch">
                 <input
                   name="invoicePaymentTermsDe"
                   defaultValue={tenant?.invoicePaymentTermsDe || "Zahlbar sofort, rein netto."}
-                  style={inputStyle}
                 />
-              </label>
+              </Field>
 
-              <label style={labelStyle}>
-                Zahlungsbedingung Englisch
+              <Field label="Zahlungsbedingung Englisch">
                 <input
                   name="invoicePaymentTermsEn"
                   defaultValue={tenant?.invoicePaymentTermsEn || "Payable immediately without deduction."}
-                  style={inputStyle}
                 />
-              </label>
+              </Field>
             </div>
 
             <div style={twoColStyle}>
-              <label style={labelStyle}>
-                Nachbemerkung Deutsch
+              <Field label="Nachbemerkung Deutsch">
                 <input
                   name="invoiceClosingTextDe"
                   defaultValue={tenant?.invoiceClosingTextDe || "Vielen Dank für die gute Zusammenarbeit."}
-                  style={inputStyle}
                 />
-              </label>
+              </Field>
 
-              <label style={labelStyle}>
-                Nachbemerkung Englisch
+              <Field label="Nachbemerkung Englisch">
                 <input
                   name="invoiceClosingTextEn"
                   defaultValue={tenant?.invoiceClosingTextEn || "Thank you for your business."}
-                  style={inputStyle}
                 />
-              </label>
+              </Field>
             </div>
           </div>
 
-          <div style={footerStyle}>
+          <div style={footerBarStyle}>
+            <div>
+              <strong>Rechnungsdaten speichern</strong>
+              <span>Änderungen gelten für neue Rechnungen und spätere PDF-Ausgaben.</span>
+            </div>
+
             <button type="submit" style={primaryButtonStyle}>
               Rechnungsdaten speichern
             </button>
@@ -272,93 +282,187 @@ export default function RechnungsdatenPage() {
   );
 }
 
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label style={fieldStyle}>
+      <span>{label}</span>
+      {children}
+    </label>
+  );
+}
+
 const pageGridStyle: React.CSSProperties = {
   display: "grid",
   gap: 20,
 };
 
 const heroStyle: React.CSSProperties = {
-  ...premiumCardBase,
+  background: "linear-gradient(135deg, #ffffff 0%, #f7fbfa 100%)",
+  border: "1px solid #dbe5eb",
+  borderRadius: 22,
   padding: 24,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   gap: 18,
+  boxShadow: "0 18px 45px rgba(15, 23, 42, 0.07)",
 };
 
-const smallLabelStyle: React.CSSProperties = premiumSectionLabel;
+const smallLabelStyle: React.CSSProperties = {
+  margin: 0,
+  color: "#057a67",
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+  fontSize: 11,
+  fontWeight: 950,
+};
 
-const heroTitleStyle: React.CSSProperties = premiumTitle;
+const heroTitleStyle: React.CSSProperties = {
+  margin: "6px 0 0",
+  fontSize: 26,
+  letterSpacing: "-0.045em",
+  color: "#0f172a",
+};
 
-const sectionTitleStyle: React.CSSProperties = premiumTitle;
+const sectionTitleStyle: React.CSSProperties = {
+  margin: "6px 0 0",
+  fontSize: 24,
+  letterSpacing: "-0.04em",
+  color: "#0f172a",
+};
 
-const mutedTextStyle: React.CSSProperties = premiumMuted;
+const mutedTextStyle: React.CSSProperties = {
+  margin: "7px 0 0",
+  color: "#475569",
+  fontWeight: 650,
+  lineHeight: 1.55,
+};
+
+const sectionHintStyle: React.CSSProperties = {
+  margin: "7px 0 0",
+  color: "#64748b",
+  fontWeight: 650,
+};
+
+const missingWrapStyle: React.CSSProperties = {
+  display: "flex",
+  gap: 8,
+  flexWrap: "wrap",
+  marginTop: 14,
+};
+
+const missingPillStyle: React.CSSProperties = {
+  display: "inline-flex",
+  borderRadius: 999,
+  padding: "7px 10px",
+  background: "#fff7ed",
+  border: "1px solid #fed7aa",
+  color: "#9a3412",
+  fontSize: 12,
+  fontWeight: 900,
+};
 
 const completeBadgeStyle: React.CSSProperties = {
-  background: "#dcfce7",
-  color: "#166534",
-  borderRadius: 999,
-  padding: "8px 12px",
-  fontWeight: 900,
+  minWidth: 190,
+  borderRadius: 18,
+  padding: 16,
+  background: "#ecfdf5",
+  border: "1px solid #bbf7d0",
+  color: "#047857",
+  display: "grid",
+  gap: 4,
+  textAlign: "right",
 };
 
 const warningBadgeStyle: React.CSSProperties = {
-  background: "#fef3c7",
-  color: "#92400e",
-  borderRadius: 999,
-  padding: "8px 12px",
-  fontWeight: 900,
+  minWidth: 190,
+  borderRadius: 18,
+  padding: 16,
+  background: "#fff7ed",
+  border: "1px solid #fed7aa",
+  color: "#9a3412",
+  display: "grid",
+  gap: 4,
+  textAlign: "right",
 };
 
 const formStyle: React.CSSProperties = {
   display: "grid",
-  gap: 18,
+  gap: 20,
 };
 
 const cardStyle: React.CSSProperties = {
-  ...premiumCardBase,
-  padding: 22,
+  background: "#ffffff",
+  border: "1px solid #dbe5eb",
+  borderRadius: 22,
+  padding: 24,
+  boxShadow: "0 18px 45px rgba(15, 23, 42, 0.07)",
+  display: "grid",
+  gap: 18,
 };
 
 const twoColStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-  gap: 14,
+  gap: 16,
 };
 
 const threeColStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-  gap: 14,
+  gap: 16,
 };
 
-const labelStyle: React.CSSProperties = premiumLabel;
-
-const inputStyle: React.CSSProperties = premiumInput;
-
-const textareaStyle: React.CSSProperties = {
-  ...inputStyle,
-  minHeight: 110,
-  resize: "vertical",
-  lineHeight: 1.5,
+const fieldStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 7,
+  color: "#334155",
+  fontSize: 13,
+  fontWeight: 850,
 };
 
 const noticeStyle: React.CSSProperties = {
-  marginTop: 14,
-  padding: 13,
+  padding: 14,
   borderRadius: 14,
   background: "#fff7ed",
   border: "1px solid #fed7aa",
   color: "#9a3412",
-  fontWeight: 750,
+  fontWeight: 800,
 };
 
-const footerStyle: React.CSSProperties = {
+const footerBarStyle: React.CSSProperties = {
+  position: "sticky",
+  bottom: 18,
+  zIndex: 2,
+  background: "rgba(255, 255, 255, 0.94)",
+  backdropFilter: "blur(10px)",
+  border: "1px solid #dbe5eb",
+  borderRadius: 20,
+  padding: 16,
   display: "flex",
-  justifyContent: "flex-end",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 18,
+  boxShadow: "0 18px 45px rgba(15, 23, 42, 0.12)",
 };
 
-const primaryButtonStyle: React.CSSProperties = premiumPrimaryButton;
+const primaryButtonStyle: React.CSSProperties = {
+  minHeight: 46,
+  borderRadius: 13,
+  padding: "0 18px",
+  border: "1px solid #036b5a",
+  background: "linear-gradient(135deg, #058872 0%, #04705f 100%)",
+  color: "#ffffff",
+  fontSize: 14,
+  fontWeight: 900,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 8,
+  textDecoration: "none",
+  cursor: "pointer",
+  boxShadow: "0 14px 28px rgba(5, 122, 103, 0.24)",
+};
 
 const errorStyle: React.CSSProperties = {
   background: "#fef2f2",
@@ -367,6 +471,7 @@ const errorStyle: React.CSSProperties = {
   borderRadius: 14,
   padding: 14,
   fontWeight: 750,
+  marginBottom: 16,
 };
 
 const successStyle: React.CSSProperties = {
@@ -376,105 +481,5 @@ const successStyle: React.CSSProperties = {
   borderRadius: 14,
   padding: 14,
   fontWeight: 750,
+  marginBottom: 16,
 };
-
-
-const premiumUiStyle: React.CSSProperties = {
-  "--g-card-bg": "#ffffff",
-  "--g-border": "#dbe3ec",
-  "--g-border-strong": "#cbd5e1",
-  "--g-page-bg": "#eef3f7",
-  "--g-text": "#0f172a",
-  "--g-muted": "#64748b",
-  "--g-green": "#059669",
-  "--g-green-dark": "#047857",
-} as React.CSSProperties;
-
-const premiumCardBase: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #dbe3ec",
-  borderRadius: 18,
-  boxShadow: "0 12px 32px rgba(15, 23, 42, 0.055)",
-};
-
-const premiumButtonBase: React.CSSProperties = {
-  minHeight: 42,
-  borderRadius: 12,
-  padding: "0 16px",
-  fontSize: 14,
-  fontWeight: 850,
-  letterSpacing: "-0.01em",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 8,
-  textDecoration: "none",
-  cursor: "pointer",
-  whiteSpace: "nowrap",
-};
-
-const premiumPrimaryButton: React.CSSProperties = {
-  ...premiumButtonBase,
-  border: "1px solid #059669",
-  background: "#059669",
-  color: "#ffffff",
-  boxShadow: "0 8px 18px rgba(5, 150, 105, 0.18)",
-};
-
-const premiumSecondaryButton: React.CSSProperties = {
-  ...premiumButtonBase,
-  border: "1px solid #cbd5e1",
-  background: "#ffffff",
-  color: "#0f172a",
-};
-
-const premiumDangerButton: React.CSSProperties = {
-  ...premiumButtonBase,
-  border: "1px solid #fecaca",
-  background: "#fff1f2",
-  color: "#991b1b",
-};
-
-const premiumInput: React.CSSProperties = {
-  width: "100%",
-  minHeight: 46,
-  border: "1px solid #cbd5e1",
-  borderRadius: 12,
-  padding: "10px 12px",
-  fontSize: 14,
-  fontWeight: 650,
-  background: "#ffffff",
-  outline: "none",
-};
-
-const premiumLabel: React.CSSProperties = {
-  display: "grid",
-  gap: 7,
-  color: "#334155",
-  fontSize: 12,
-  fontWeight: 850,
-};
-
-const premiumSectionLabel: React.CSSProperties = {
-  margin: 0,
-  color: "#00796b",
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
-  fontSize: 11,
-  fontWeight: 950,
-};
-
-const premiumTitle: React.CSSProperties = {
-  margin: "5px 0 0",
-  fontSize: 24,
-  letterSpacing: "-0.04em",
-  color: "#0f172a",
-};
-
-const premiumMuted: React.CSSProperties = {
-  margin: "7px 0 0",
-  color: "#64748b",
-  fontWeight: 650,
-  lineHeight: 1.55,
-};
-
