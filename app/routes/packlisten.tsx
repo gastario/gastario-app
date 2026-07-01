@@ -1,5 +1,6 @@
 ﻿import { Link, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
+import { useEffect, useState } from "react";
 
 function todayInput() {
   return new Date().toISOString().slice(0, 10);
@@ -90,6 +91,8 @@ export async function loader({ request }: { request: Request }) {
       deliveryDate: order.deliveryDate,
       deliveryTime: order.deliveryTime,
       deliveryAddress: order.deliveryAddress,
+      contactName: order.contactName,
+      contactPhone: order.contactPhone || order.customerPhone,
       items: order.items || [],
       totalQuantity: (order.items || []).reduce((sum: number, item: any) => sum + Number(item.quantity || 0), 0),
     }));
@@ -114,6 +117,34 @@ export async function loader({ request }: { request: Request }) {
   }
 }
 
+function PackingCheckbox({ id }: { id: string }) {
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    const value = window.localStorage.getItem(id);
+    setChecked(value === "1");
+  }, [id]);
+
+  function toggle() {
+    const next = !checked;
+    setChecked(next);
+    window.localStorage.setItem(id, next ? "1" : "0");
+  }
+
+  return (
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={toggle}
+      style={{
+        width: 20,
+        height: 20,
+        accentColor: "#0f766e",
+      }}
+    />
+  );
+}
+
 export default function PackingListsPage() {
   const data = useLoaderData<typeof loader>();
 
@@ -124,7 +155,7 @@ export default function PackingListsPage() {
           <p className="eyebrow">Betrieb</p>
           <h1>Packlisten</h1>
           <span className="pageSubline">
-            {data.tenantName} · Packlisten je Auftrag.
+            {data.tenantName} · Packlisten je Auftrag mit abhakbarer Fahrer- und Pack-Checkliste.
           </span>
         </div>
 
@@ -215,18 +246,74 @@ export default function PackingListsPage() {
                       <strong>{order.customerName}</strong>
                       <span>{formatDate(order.deliveryDate)} · {order.deliveryAddress || "Keine Adresse"}</span>
                     </div>
-                    <em className="warning">Offen</em>
+                    <em className="warning">Packen</em>
+                  </div>
+
+                  <div className="routeDetails">
+                    <p>
+                      <b>Auftrag</b>
+                      <span>{order.orderNumber}</span>
+                    </p>
+                    <p>
+                      <b>Kontakt</b>
+                      <span>{order.contactName || "-"} · {order.contactPhone || "-"}</span>
+                    </p>
+                    <p>
+                      <b>Adresse</b>
+                      <span>{order.deliveryAddress || "Keine Adresse eingetragen"}</span>
+                    </p>
                   </div>
 
                   <div className="compactList" style={{ marginTop: 12 }}>
-                    {order.items.map((item: any) => (
-                      <div className="compactItem" key={`${order.id}-${item.id || item.name}`}>
+                    {order.items.length === 0 ? (
+                      <div className="compactItem">
                         <div>
-                          <strong>{item.name || "Position"}</strong>
-                          <span>{item.unit || "Stueck"}</span>
+                          <strong>Keine Positionen</strong>
+                          <span>Dieser Auftrag hat keine Positionen.</span>
                         </div>
-                        <small>{item.quantity || 0} x</small>
+                        <small>-</small>
                       </div>
+                    ) : (
+                      order.items.map((item: any) => (
+                        <div className="compactItem" key={`${order.id}-${item.id || item.name}`}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                            <PackingCheckbox id={`pack-${order.id}-${item.id || item.name}`} />
+                            <div>
+                              <strong>{item.name || "Position"}</strong>
+                              <span>{item.unit || "Stueck"}</span>
+                            </div>
+                          </div>
+                          <small>{item.quantity || 0} x</small>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <div style={{
+                    marginTop: 14,
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 12
+                  }}>
+                    {[
+                      "Ware vollstaendig gepackt",
+                      "Lieferschein beigelegt",
+                      "Besteck / Servietten geprueft",
+                      "Equipment gezaehlt",
+                    ].map((task) => (
+                      <label key={task} style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        background: "#f8fafc",
+                        border: "1px solid #dbe5ee",
+                        borderRadius: 14,
+                        padding: 12,
+                        fontWeight: 850
+                      }}>
+                        <PackingCheckbox id={`task-${order.id}-${task}`} />
+                        <span>{task}</span>
+                      </label>
                     ))}
                   </div>
                 </div>
