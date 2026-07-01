@@ -393,11 +393,9 @@ platformName          String?
   @@index([source])
   @@index([status])
   @@index([deliveryDate])
-  customerCountry   String @default("DE")
-  customerVatId     String?
+  customerCountry   String @default("DE")  customerVatId     String?
 
-  customerType      CustomerType @default(BUSINESS)
-  taxTreatment      TaxTreatment @default(DOMESTIC_19)
+  customerType      CustomerType @default(BUSINESS)  taxTreatment      TaxTreatment @default(DOMESTIC_19)
 
 }
 
@@ -632,12 +630,11 @@ notes       String?
   @@index([orderId])
   @@index([status])
   @@index([invoiceDate])
-  customerType CustomerType    @default(BUSINESS)
-  taxTreatment TaxTreatment    @default(DOMESTIC_19)
+  customerType CustomerType    @default(BUSINESS)  taxTreatment TaxTreatment    @default(DOMESTIC_19)
 
   customerVatId   String?
-  reverseChargeNoteEn String?
-  paymentTermsDe      String?
+  reverseChargeNoteEn String?  paymentTermsDe      String?
+
   paymentTermsEn      String?
 }
 

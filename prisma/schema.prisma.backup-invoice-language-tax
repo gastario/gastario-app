@@ -365,8 +365,7 @@ model Order {
 
   billingMode           BillingMode   @default(UNDECIDED)
   billingStatus         BillingStatus @default(NOT_BILLED)
-    invoiceLanguage   InvoiceLanguage @default(DE)
-platformName          String?
+  platformName          String?
   platformReference     String?
   externalInvoiceNumber String?
   allergens        String?
@@ -393,12 +392,6 @@ platformName          String?
   @@index([source])
   @@index([status])
   @@index([deliveryDate])
-  customerCountry   String @default("DE")
-  customerVatId     String?
-
-  customerType      CustomerType @default(BUSINESS)
-  taxTreatment      TaxTreatment @default(DOMESTIC_19)
-
 }
 
 model OrderItem {
@@ -589,8 +582,7 @@ model Invoice {
   status       InvoiceStatus       @default(DRAFT)
   numberSource InvoiceNumberSource @default(MANUAL)
 
-    language     InvoiceLanguage @default(DE)
-internalNumber        String?
+  internalNumber        String?
   externalInvoiceNumber String?
   sourceSystem          String?
 
@@ -602,8 +594,7 @@ internalNumber        String?
   customerEmail   String?
   customerAddress String?
 
-    customerCountry String @default("DE")
-sellerName      String?
+  sellerName      String?
   sellerAddress   String?
   sellerTaxNumber String?
   sellerVatId     String?
@@ -613,8 +604,7 @@ sellerName      String?
   taxTotalCents   Int    @default(0)
   grossTotalCents Int    @default(0)
 
-    reverseChargeNoteDe String?
-notes       String?
+  notes       String?
   issuedAt    DateTime?
   paidAt      DateTime?
   cancelledAt DateTime?
@@ -632,13 +622,6 @@ notes       String?
   @@index([orderId])
   @@index([status])
   @@index([invoiceDate])
-  customerType CustomerType    @default(BUSINESS)
-  taxTreatment TaxTreatment    @default(DOMESTIC_19)
-
-  customerVatId   String?
-  reverseChargeNoteEn String?
-  paymentTermsDe      String?
-  paymentTermsEn      String?
 }
 
 model InvoiceItem {
@@ -673,25 +656,3 @@ model InvoiceItem {
   @@index([position])
 }
 
-
-
-enum InvoiceLanguage {
-  DE
-  EN
-}
-
-
-enum CustomerType {
-  PRIVATE
-  BUSINESS
-}
-
-
-enum TaxTreatment {
-  DOMESTIC_19
-  DOMESTIC_7
-  TAX_FREE
-  REVERSE_CHARGE
-  EXPORT
-  OTHER
-}

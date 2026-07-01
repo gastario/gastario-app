@@ -41,7 +41,7 @@ export default function RechnungenPage() {
           <p className="eyebrow">Verkauf</p>
           <h1>Rechnungen</h1>
           <p className="muted">
-            Rechnungen aus Aufträgen erstellen, Rechnungsnummer selbst festlegen und Deutsch/Englisch vorbereiten.
+            Rechnungen aus Aufträgen erstellen, Rechnungsnummer selbst festlegen und Plattform-Aufträge getrennt markieren.
           </p>
         </div>
 
@@ -55,12 +55,13 @@ export default function RechnungenPage() {
           <p className="eyebrow">Prinzip</p>
           <h2>Auftrag bleibt Auftrag. Rechnung nur bei Bedarf.</h2>
           <p className="muted">
-            Du entscheidest beim Auftrag, ob daraus eine Rechnung erstellt wird oder ob eine Plattform wie Heycater/Egora selbst abrechnet.
-            Beim Erstellen der Rechnung kannst du die Rechnungsnummer selbst eintragen.
+            In Gastario wird nicht automatisch aus jedem Auftrag eine Rechnung. Du entscheidest beim Auftrag,
+            ob daraus eine Rechnung erstellt wird oder ob eine Plattform wie Heycater/Egora selbst abrechnet.
           </p>
 
           <div style={noticeStyle}>
-            <strong>Wichtig:</strong> Eine finale Rechnung wird später gesperrt. Änderungen laufen dann sauber über Korrektur oder Storno.
+            <strong>Wichtig:</strong> Beim finalen Erstellen einer Rechnung trägst du die Rechnungsnummer ein.
+            Danach soll sie nicht einfach überschrieben werden, sondern nur über Korrektur oder Storno geändert werden.
           </div>
         </div>
 
@@ -72,7 +73,7 @@ export default function RechnungenPage() {
           </div>
 
           <div className="statCard">
-            <span>Offen</span>
+            <span>Offene Rechnungen</span>
             <strong>{data.invoiceStats.open}</strong>
             <small>Noch nicht bezahlt</small>
           </div>
@@ -91,70 +92,43 @@ export default function RechnungenPage() {
         </div>
 
         <div className="card">
-          <p className="eyebrow">Funktionen</p>
-          <h2>Was Rechnungen können sollen</h2>
+          <p className="eyebrow">Ablauf</p>
+          <h2>So soll es funktionieren</h2>
 
           <div style={billingGridStyle}>
             <div style={billingBoxStyle}>
-              <strong>Rechnungsnummer frei festlegen</strong>
-              <p>Beim finalen Erstellen trägst du die gewünschte Rechnungsnummer selbst ein.</p>
+              <strong>1. Auftrag anlegen</strong>
+              <p>Du erfasst den Auftrag wie bisher mit Kunde, Lieferung, Positionen, Netto, MwSt und Gesamtbetrag.</p>
             </div>
 
             <div style={billingBoxStyle}>
-              <strong>Deutsch oder Englisch</strong>
-              <p>Rechnungssprache für deutsche Kunden und internationale Kunden vorbereiten.</p>
+              <strong>2. Rechnung erstellen</strong>
+              <p>Nur wenn du willst, erstellst du aus dem Auftrag eine Rechnung.</p>
             </div>
 
             <div style={billingBoxStyle}>
-              <strong>Inland und Ausland</strong>
-              <p>Kundentyp, Land, USt-ID und Steuerbehandlung werden pro Rechnung gespeichert.</p>
+              <strong>3. Rechnungsnummer eintragen</strong>
+              <p>Die Rechnungsnummer kannst du selbst festlegen, zum Beispiel die Nummer aus deinem bisherigen System.</p>
             </div>
 
             <div style={billingBoxStyle}>
-              <strong>Plattform rechnet ab</strong>
-              <p>Bei Heycater/Egora wird keine doppelte Rechnung erstellt, sondern der Auftrag entsprechend markiert.</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <p className="eyebrow">Steuerlogik</p>
-          <h2>Vorbereitete Fälle</h2>
-
-          <div style={billingGridStyle}>
-            <div style={billingBoxStyle}>
-              <strong>Deutschland</strong>
-              <p>Normale deutsche Rechnung mit 19 %, 7 % oder 0 % Umsatzsteuer.</p>
-            </div>
-
-            <div style={billingBoxStyle}>
-              <strong>EU-Firma</strong>
-              <p>USt-ID und Reverse-Charge-Hinweise können gespeichert werden.</p>
-            </div>
-
-            <div style={billingBoxStyle}>
-              <strong>Ausland außerhalb EU</strong>
-              <p>Export-/Auslandsfall wird getrennt gespeichert und später im PDF richtig ausgegeben.</p>
-            </div>
-
-            <div style={billingBoxStyle}>
-              <strong>Sonderfall</strong>
-              <p>Manuelle Steuerbehandlung, falls der Steuerberater einen besonderen Fall vorgibt.</p>
+              <strong>4. Plattform-Auftrag markieren</strong>
+              <p>Wenn Heycater, Egora oder eine andere Plattform selbst abrechnet, wird keine doppelte Rechnung erstellt.</p>
             </div>
           </div>
         </div>
 
         <div className="card">
           <p className="eyebrow">Nächste Schritte</p>
-          <h2>Was wir als Nächstes bauen</h2>
+          <h2>Was wir jetzt bauen</h2>
 
           <ul style={listStyle}>
             <li>Beim Auftrag ein Feld „Abrechnung“ einbauen.</li>
-            <li>Rechnungssprache Deutsch/Englisch auswählbar machen.</li>
-            <li>Land, Kundentyp und USt-ID speichern.</li>
-            <li>Rechnungsnummer beim finalen Erstellen frei eintragen.</li>
+            <li>Optionen: Rechnung erstellen, Plattform rechnet ab, keine Rechnung.</li>
+            <li>Rechnungsnummer beim finalen Erstellen frei eintragbar machen.</li>
             <li>Rechnung nach finalem Erstellen sperren.</li>
-            <li>Später PDF-Rechnung mit deutschen und englischen Texten bauen.</li>
+            <li>Pflichtangaben für Rechnung sauber speichern.</li>
+            <li>Später PDF-Rechnung und Storno/Korrektur bauen.</li>
           </ul>
         </div>
       </section>
