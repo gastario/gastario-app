@@ -22,7 +22,7 @@ export async function loader({ request }: { request: Request }) {
 
   return {
     tenantName: access?.tenant?.name || "Gastario",
-    invoiceStats: {
+    stats: {
       drafts: 0,
       open: 0,
       paid: 0,
@@ -41,120 +41,124 @@ export default function RechnungenPage() {
           <p className="eyebrow">Verkauf</p>
           <h1>Rechnungen</h1>
           <p className="muted">
-            Rechnungen aus Aufträgen erstellen, Rechnungsnummer selbst festlegen und Deutsch/Englisch vorbereiten.
+            Rechnungen aus Aufträgen erstellen, Rechnungsnummer selbst festlegen und Plattform-Aufträge sauber trennen.
           </p>
         </div>
 
-        <Link className="button secondary" to="/auftragseingang">
-          Auftrag erfassen
+        <Link className="button secondary" to="/auftraege">
+          Zu den Aufträgen
         </Link>
       </header>
 
-      <section className="contentGrid">
-        <div className="card">
-          <p className="eyebrow">Prinzip</p>
-          <h2>Auftrag bleibt Auftrag. Rechnung nur bei Bedarf.</h2>
-          <p className="muted">
-            Du entscheidest beim Auftrag, ob daraus eine Rechnung erstellt wird oder ob eine Plattform wie Heycater/Egora selbst abrechnet.
-            Beim Erstellen der Rechnung kannst du die Rechnungsnummer selbst eintragen.
-          </p>
+      <section style={pageGridStyle}>
+        <div style={heroStyle}>
+          <div>
+            <p style={smallLabelStyle}>Grundlage</p>
+            <h2 style={heroTitleStyle}>Rechnung nur aus einem Auftrag erstellen</h2>
+            <p style={heroTextStyle}>
+              Der Auftragseingang bleibt sauber für neue Aufträge. Rechnungen werden später aus einem bestehenden Auftrag erstellt.
+              Dabei kannst du die Rechnungsnummer selbst eintragen und die Rechnungssprache auswählen.
+            </p>
+          </div>
 
           <div style={noticeStyle}>
-            <strong>Wichtig:</strong> Eine finale Rechnung wird später gesperrt. Änderungen laufen dann sauber über Korrektur oder Storno.
+            <strong>Wichtig:</strong> Eine finale Rechnung soll später gesperrt werden. Änderungen laufen dann über Korrektur oder Storno.
           </div>
         </div>
 
-        <div className="statsGrid">
-          <div className="statCard">
-            <span>Entwürfe</span>
-            <strong>{data.invoiceStats.drafts}</strong>
-            <small>Noch nicht final</small>
+        <div style={statsGridStyle}>
+          <div style={statCardStyle}>
+            <span style={statLabelStyle}>Entwürfe</span>
+            <strong style={statNumberStyle}>{data.stats.drafts}</strong>
+            <small style={statHintStyle}>Noch nicht final</small>
           </div>
 
-          <div className="statCard">
-            <span>Offen</span>
-            <strong>{data.invoiceStats.open}</strong>
-            <small>Noch nicht bezahlt</small>
+          <div style={statCardStyle}>
+            <span style={statLabelStyle}>Offen</span>
+            <strong style={statNumberStyle}>{data.stats.open}</strong>
+            <small style={statHintStyle}>Noch nicht bezahlt</small>
           </div>
 
-          <div className="statCard">
-            <span>Bezahlt</span>
-            <strong>{data.invoiceStats.paid}</strong>
-            <small>Erledigte Rechnungen</small>
+          <div style={statCardStyle}>
+            <span style={statLabelStyle}>Bezahlt</span>
+            <strong style={statNumberStyle}>{data.stats.paid}</strong>
+            <small style={statHintStyle}>Erledigte Rechnungen</small>
           </div>
 
-          <div className="statCard">
-            <span>Plattform</span>
-            <strong>{data.invoiceStats.platform}</strong>
-            <small>Heycater / Egora / Feedr</small>
+          <div style={statCardStyle}>
+            <span style={statLabelStyle}>Plattform</span>
+            <strong style={statNumberStyle}>{data.stats.platform}</strong>
+            <small style={statHintStyle}>Heycater / Egora / Feedr</small>
           </div>
         </div>
 
-        <div className="card">
-          <p className="eyebrow">Funktionen</p>
-          <h2>Was Rechnungen können sollen</h2>
+        <div style={cardStyle}>
+          <p style={smallLabelStyle}>Ablauf</p>
+          <h2 style={sectionTitleStyle}>So soll es funktionieren</h2>
 
-          <div style={billingGridStyle}>
-            <div style={billingBoxStyle}>
-              <strong>Rechnungsnummer frei festlegen</strong>
-              <p>Beim finalen Erstellen trägst du die gewünschte Rechnungsnummer selbst ein.</p>
+          <div style={flowGridStyle}>
+            <div style={flowBoxStyle}>
+              <strong>1. Auftrag öffnen</strong>
+              <p>Du gehst in einen bestehenden Auftrag und entscheidest dort, ob eine Rechnung erstellt werden soll.</p>
             </div>
 
-            <div style={billingBoxStyle}>
-              <strong>Deutsch oder Englisch</strong>
-              <p>Rechnungssprache für deutsche Kunden und internationale Kunden vorbereiten.</p>
+            <div style={flowBoxStyle}>
+              <strong>2. Rechnung erstellen</strong>
+              <p>Gastario übernimmt Kunde, Positionen, Leistungsdatum, Netto, Steuer und Gesamtbetrag aus dem Auftrag.</p>
             </div>
 
-            <div style={billingBoxStyle}>
-              <strong>Inland und Ausland</strong>
-              <p>Kundentyp, Land, USt-ID und Steuerbehandlung werden pro Rechnung gespeichert.</p>
+            <div style={flowBoxStyle}>
+              <strong>3. Rechnungsnummer eintragen</strong>
+              <p>Die Rechnungsnummer kannst du selbst festlegen und vor dem Finalisieren prüfen.</p>
             </div>
 
-            <div style={billingBoxStyle}>
+            <div style={flowBoxStyle}>
+              <strong>4. Finalisieren & sperren</strong>
+              <p>Nach dem finalen Erstellen wird die Rechnung nicht einfach überschrieben, sondern sauber korrigiert oder storniert.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style={cardStyle}>
+          <p style={smallLabelStyle}>Funktionen</p>
+          <h2 style={sectionTitleStyle}>Vorbereitet für Deutsch, Englisch und Ausland</h2>
+
+          <div style={featureGridStyle}>
+            <div style={featureBoxStyle}>
+              <strong>Deutsch / Englisch</strong>
+              <p>Rechnungssprache wird pro Rechnung auswählbar.</p>
+            </div>
+
+            <div style={featureBoxStyle}>
+              <strong>Rechnungsnummer</strong>
+              <p>Nummer kann manuell eingetragen und später eindeutig geprüft werden.</p>
+            </div>
+
+            <div style={featureBoxStyle}>
+              <strong>Ausland</strong>
+              <p>Land, Kundentyp, USt-ID und Steuerbehandlung werden an der Rechnung gespeichert.</p>
+            </div>
+
+            <div style={featureBoxStyle}>
               <strong>Plattform rechnet ab</strong>
-              <p>Bei Heycater/Egora wird keine doppelte Rechnung erstellt, sondern der Auftrag entsprechend markiert.</p>
+              <p>Bei Heycater/Egora wird keine doppelte Rechnung erzeugt.</p>
             </div>
           </div>
         </div>
 
-        <div className="card">
-          <p className="eyebrow">Steuerlogik</p>
-          <h2>Vorbereitete Fälle</h2>
+        <div style={cardStyle}>
+          <p style={smallLabelStyle}>Nächster Schritt</p>
+          <h2 style={sectionTitleStyle}>Als Nächstes bauen wir den Button im Auftrag</h2>
 
-          <div style={billingGridStyle}>
-            <div style={billingBoxStyle}>
-              <strong>Deutschland</strong>
-              <p>Normale deutsche Rechnung mit 19 %, 7 % oder 0 % Umsatzsteuer.</p>
-            </div>
-
-            <div style={billingBoxStyle}>
-              <strong>EU-Firma</strong>
-              <p>USt-ID und Reverse-Charge-Hinweise können gespeichert werden.</p>
-            </div>
-
-            <div style={billingBoxStyle}>
-              <strong>Ausland außerhalb EU</strong>
-              <p>Export-/Auslandsfall wird getrennt gespeichert und später im PDF richtig ausgegeben.</p>
-            </div>
-
-            <div style={billingBoxStyle}>
-              <strong>Sonderfall</strong>
-              <p>Manuelle Steuerbehandlung, falls der Steuerberater einen besonderen Fall vorgibt.</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <p className="eyebrow">Nächste Schritte</p>
-          <h2>Was wir als Nächstes bauen</h2>
+          <p style={heroTextStyle}>
+            In der Auftragsübersicht soll später pro Auftrag sichtbar sein:
+          </p>
 
           <ul style={listStyle}>
-            <li>Beim Auftrag ein Feld „Abrechnung“ einbauen.</li>
-            <li>Rechnungssprache Deutsch/Englisch auswählbar machen.</li>
-            <li>Land, Kundentyp und USt-ID speichern.</li>
-            <li>Rechnungsnummer beim finalen Erstellen frei eintragen.</li>
-            <li>Rechnung nach finalem Erstellen sperren.</li>
-            <li>Später PDF-Rechnung mit deutschen und englischen Texten bauen.</li>
+            <li>„Rechnung erstellen“ für direkte Kundenaufträge.</li>
+            <li>„Plattform rechnet ab“ für Heycater, Egora oder ähnliche Quellen.</li>
+            <li>„Keine Rechnung“ für interne oder nicht abrechenbare Vorgänge.</li>
+            <li>Rechnungsnummer erst beim Erstellen der Rechnung eintragen.</li>
           </ul>
         </div>
       </section>
@@ -162,28 +166,123 @@ export default function RechnungenPage() {
   );
 }
 
+const pageGridStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 18,
+};
+
+const heroStyle: React.CSSProperties = {
+  background: "#ffffff",
+  border: "1px solid #e2e8f0",
+  borderRadius: 20,
+  padding: 22,
+  boxShadow: "0 14px 35px rgba(15, 23, 42, 0.06)",
+};
+
+const smallLabelStyle: React.CSSProperties = {
+  margin: 0,
+  color: "#00796b",
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+  fontSize: 12,
+  fontWeight: 900,
+};
+
+const heroTitleStyle: React.CSSProperties = {
+  margin: "6px 0 0",
+  fontSize: 26,
+  letterSpacing: "-0.04em",
+};
+
+const heroTextStyle: React.CSSProperties = {
+  margin: "8px 0 0",
+  color: "#475569",
+  fontWeight: 650,
+  lineHeight: 1.55,
+};
+
 const noticeStyle: React.CSSProperties = {
-  marginTop: 18,
+  marginTop: 16,
   padding: 14,
   borderRadius: 14,
   background: "#fff7ed",
   border: "1px solid #fed7aa",
   color: "#9a3412",
+  fontWeight: 750,
+};
+
+const statsGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+  gap: 14,
+};
+
+const statCardStyle: React.CSSProperties = {
+  background: "#ffffff",
+  border: "1px solid #e2e8f0",
+  borderRadius: 18,
+  padding: 18,
+  display: "grid",
+  gap: 6,
+  boxShadow: "0 12px 28px rgba(15, 23, 42, 0.05)",
+};
+
+const statLabelStyle: React.CSSProperties = {
+  color: "#64748b",
+  fontSize: 13,
+  fontWeight: 850,
+};
+
+const statNumberStyle: React.CSSProperties = {
+  fontSize: 30,
+  lineHeight: 1,
+};
+
+const statHintStyle: React.CSSProperties = {
+  color: "#64748b",
   fontWeight: 700,
 };
 
-const billingGridStyle: React.CSSProperties = {
+const cardStyle: React.CSSProperties = {
+  background: "#ffffff",
+  border: "1px solid #e2e8f0",
+  borderRadius: 20,
+  padding: 22,
+  boxShadow: "0 14px 35px rgba(15, 23, 42, 0.06)",
+};
+
+const sectionTitleStyle: React.CSSProperties = {
+  margin: "6px 0 0",
+  fontSize: 22,
+  letterSpacing: "-0.035em",
+};
+
+const flowGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+  gap: 14,
+  marginTop: 16,
+};
+
+const flowBoxStyle: React.CSSProperties = {
+  border: "1px solid #e2e8f0",
+  borderRadius: 16,
+  padding: 16,
+  background: "#f8fafc",
+};
+
+const featureGridStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
   gap: 14,
-  marginTop: 18,
+  marginTop: 16,
 };
 
-const billingBoxStyle: React.CSSProperties = {
-  border: "1px solid #e5e7eb",
+const featureBoxStyle: React.CSSProperties = {
+  border: "1px solid #dbeafe",
   borderRadius: 16,
   padding: 16,
-  background: "#ffffff",
+  background: "#eff6ff",
 };
 
 const listStyle: React.CSSProperties = {
