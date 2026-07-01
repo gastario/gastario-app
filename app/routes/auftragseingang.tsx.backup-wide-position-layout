@@ -411,7 +411,7 @@ export default function AuftragseingangPage() {
 
   const shellStyle: any = {
     width: "100%",
-    maxWidth: 1360,
+    maxWidth: 1080,
     margin: "0 auto",
     padding: "0 24px",
   };
@@ -603,9 +603,9 @@ export default function AuftragseingangPage() {
               </h2>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
               <div style={{ display: "grid", gap: 12 }}>
-                <div style={{ display: "grid", gridTemplateColumns: "170px 1fr", gap: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 12 }}>
                   <label style={labelStyle}>
                     Quelle
                     <select name="source" defaultValue="DIRECT" style={inputStyle}>
@@ -634,7 +634,7 @@ export default function AuftragseingangPage() {
 
                 <input name="eventName" placeholder="Event / Anlass" style={inputStyle} />
 
-                <div style={{ display: "grid", gridTemplateColumns: "170px 140px 1fr", gap: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "160px 140px 1fr", gap: 12 }}>
                   <input name="deliveryDate" type="date" style={inputStyle} />
                   <input name="deliveryTime" placeholder="Uhrzeit" style={inputStyle} />
                   <input name="deliveryAddress" placeholder="Lieferadresse" style={inputStyle} />
@@ -667,10 +667,10 @@ export default function AuftragseingangPage() {
                       display: "grid",
                       gridTemplateColumns: row.type === "text"
                         ? "34px minmax(0, 1fr) 32px"
-                        : "34px minmax(520px, 1fr) 82px 110px 130px 90px 170px 30px",
+                        : "34px minmax(330px, 1fr) 78px 100px 120px 82px 142px 30px",
                       gap: 8,
                       alignItems: "start",
-                      padding: "16px 18px",
+                      padding: "14px",
                       borderTop: rowIndex === 0 ? "none" : "1px solid #e5e7eb",
                     }}
                   >
@@ -725,7 +725,7 @@ export default function AuftragseingangPage() {
                         <div style={{ display: "grid", gap: 6 }}>
                           <label style={labelStyle}>
                             Artikel
-                            <input name="itemName" placeholder="Bezeichnung des Artikels" style={{ ...inputStyle, minHeight: 44 }} />
+                            <input name="itemName" placeholder="Bezeichnung des Artikels" style={inputStyle} />
                           </label>
 
                           <details>
@@ -772,7 +772,7 @@ export default function AuftragseingangPage() {
                               justifyContent: "flex-end",
                               color: "#111",
                               fontWeight: 950,
-                              fontSize: 15,
+                              fontSize: 14,
                             }}
                           >
                             0,00 €
@@ -781,16 +781,15 @@ export default function AuftragseingangPage() {
                             name="taxRate"
                             defaultValue="19"
                             style={{
-                              height: 28,
+                              height: 27,
                               border: "none",
                               borderRadius: 999,
                               background: "#444",
                               color: "white",
                               fontSize: 11,
                               fontWeight: 850,
-                              padding: "2px 10px",
+                              padding: "2px 8px",
                               cursor: "pointer",
-                              width: "100%",
                             }}
                           >
                             <option value="19">USt 19 %</option>
@@ -811,7 +810,7 @@ export default function AuftragseingangPage() {
                   </div>
                 ))}
 
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, padding: "16px 18px", borderTop: "1px solid #d2d2d2" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, padding: "14px", borderTop: "1px solid #d2d2d2" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
                     <button
                       type="button"
@@ -834,13 +833,13 @@ export default function AuftragseingangPage() {
                   </div>
 
                   <div style={{
-                    minWidth: 470,
+                    minWidth: 390,
                     background: "#555",
                     color: "white",
-                    padding: "12px 18px",
-                    fontWeight: 850,
+                    padding: "11px 16px",
+                    fontWeight: 800,
                     textAlign: "center",
-                    fontSize: 14,
+                    fontSize: 13,
                   }}>
                     Netto {formatEuroCents(liveNetTotalCents)} · MwSt {formatEuroCents(liveTaxTotalCents)} · Gesamt {formatEuroCents(liveGrossTotalCents)}
                   </div>
