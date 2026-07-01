@@ -333,24 +333,6 @@ export default function AuftragseingangPage() {
   const [positionRows, setPositionRows] = useState<Array<{ id: number; type: "item" | "text" }>>([
     { id: Date.now(), type: "item" },
   ]);
-  const [draggingRowId, setDraggingRowId] = useState<number | null>(null);
-
-  function movePositionRow(fromId: number, toId: number) {
-    if (fromId === toId) return;
-
-    setPositionRows((rows) => {
-      const fromIndex = rows.findIndex((row) => row.id === fromId);
-      const toIndex = rows.findIndex((row) => row.id === toId);
-
-      if (fromIndex === -1 || toIndex === -1) return rows;
-
-      const nextRows = [...rows];
-      const [movedRow] = nextRows.splice(fromIndex, 1);
-      nextRows.splice(toIndex, 0, movedRow);
-
-      return nextRows;
-    });
-  }
 
   const [liveNetTotalCents, setLiveNetTotalCents] = useState(0);
   const [liveTaxTotalCents, setLiveTaxTotalCents] = useState(0);
@@ -686,70 +668,32 @@ export default function AuftragseingangPage() {
                   <div
                     key={row.id}
                     data-position-row={row.type}
-                    draggable
-                    onDragStart={(event) => {
-                      setDraggingRowId(row.id);
-                      event.dataTransfer.effectAllowed = "move";
-                      event.dataTransfer.setData("text/plain", String(row.id));
-                    }}
-                    onDragOver={(event) => {
-                      event.preventDefault();
-                      event.dataTransfer.dropEffect = "move";
-                    }}
-                    onDrop={(event) => {
-                      event.preventDefault();
-                      const fromId = Number(event.dataTransfer.getData("text/plain"));
-                      movePositionRow(fromId, row.id);
-                      setDraggingRowId(null);
-                    }}
-                    onDragEnd={() => setDraggingRowId(null)}
                     style={{
                       display: "grid",
                       gridTemplateColumns: row.type === "text"
-                        ? "58px minmax(0, 1fr) 40px"
-                        : "58px minmax(320px, 1fr) 86px 118px 138px 92px 150px 38px",
+                        ? "42px minmax(0, 1fr) 40px"
+                        : "42px minmax(320px, 1fr) 86px 118px 138px 92px 150px 38px",
                       gap: 10,
                       alignItems: "start",
                       padding: row.type === "text" ? "18px 18px 20px" : "15px 18px",
                       borderTop: rowIndex === 0 ? "none" : "1px solid #e5e5e5",
-                      background: draggingRowId === row.id ? "#f1f5f9" : "#ffffff",
-                      opacity: draggingRowId === row.id ? 0.65 : 1,
-                      cursor: "grab"
+                      background: "#ffffff"
                     }}
                   >
                     <div style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 999,
+                      background: "#eeeeee",
+                      color: "#555",
                       display: "flex",
                       alignItems: "center",
-                      gap: 7,
-                      marginTop: row.type === "text" ? 24 : 26,
-                      color: "#777"
+                      justifyContent: "center",
+                      fontSize: 13,
+                      fontWeight: 850,
+                      marginTop: row.type === "text" ? 24 : 26
                     }}>
-                      <span
-                        title="Position verschieben"
-                        style={{
-                          fontSize: 18,
-                          lineHeight: 1,
-                          cursor: "grab",
-                          userSelect: "none"
-                        }}
-                      >
-                        ↕
-                      </span>
-
-                      <span style={{
-                        width: 26,
-                        height: 26,
-                        borderRadius: 999,
-                        background: "#eeeeee",
-                        color: "#555",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 13,
-                        fontWeight: 850
-                      }}>
-                        {rowIndex + 1}
-                      </span>
+                      {rowIndex + 1}
                     </div>
 
                     {row.type === "text" ? (
