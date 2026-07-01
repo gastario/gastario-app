@@ -1,28 +1,222 @@
-﻿import { Link } from "react-router";
+﻿import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
+
+function euroToCents(value: FormDataEntryValue | null) {
+  const normalized = String(value || "0")
+    .replace(/€/g, "")
+    .replace(/\s/g, "")
+    .replace(/\./g, "")
+    .replace(",", ".");
+
+  const amount = Number(normalized);
+  if (!Number.isFinite(amount)) return 0;
+
+  return Math.round(amount * 100);
+}
+
+function centsToEuro(value: number | null | undefined) {
+  return ((value || 0) / 100).toLocaleString("de-DE", {
+    style: "currency",
+    currency: "EUR",
+  });
+}
+
+function parseDateInput(value: FormDataEntryValue | null) {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+
+  const date = new Date(raw + "T00:00:00.000Z");
+  if (Number.isNaN(date.getTime())) return null;
+
+  return date;
+}
 
 export function meta() {
   return [{ title: "Rechnungen · Gastario" }];
 }
 
-export async function loader() {
+export async function loader({ request }: { request: Request }) {
+  const { getUserId } = await import("../lib/session.server");
+  const { prisma } = await import("../lib/prisma.server");
+
+  const userId = await getUserId(request);
+
+  if (!userId) {
+    throw redirect("/login");
+  }
+
+  const access = await prisma.tenantUser.findFirst({
+    where: { userId },
+    include: { tenant: true },
+  });
+
+  if (!access) {
+    return {
+      tenantName: "Gastario",
+      invoices: [],
+      stats: { drafts: 0, issued: 0, paid: 0, cancelled: 0 },
+    };
+  }
+
+  const invoices = await prisma.invoice.findMany({
+    where: { tenantId: access.tenantId },
+    include: { items: true },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+
   return {
+    tenantName: access.tenant?.name || "Gastario",
+    invoices,
     stats: {
-      drafts: 0,
-      open: 0,
-      paid: 0,
-      platform: 0,
+      drafts: invoices.filter((invoice) => invoice.status === "DRAFT").length,
+      issued: invoices.filter((invoice) => invoice.status === "ISSUED").length,
+      paid: invoices.filter((invoice) => invoice.status === "PAID").length,
+      cancelled: invoices.filter((invoice) => invoice.status === "CANCELLED").length,
     },
   };
 }
 
+export async function action({ request }: { request: Request }) {
+  const { getUserId } = await import("../lib/session.server");
+  const { prisma } = await import("../lib/prisma.server");
+
+  const userId = await getUserId(request);
+
+  if (!userId) {
+    throw redirect("/login");
+  }
+
+  const access = await prisma.tenantUser.findFirst({
+    where: { userId },
+    include: { tenant: true },
+  });
+
+  if (!access) {
+    return { error: "Kein Mandant gefunden." };
+  }
+
+  const formData = await request.formData();
+  const intent = String(formData.get("intent") || "");
+
+  if (intent !== "createInvoiceDraft") {
+    return { error: "Unbekannte Aktion." };
+  }
+
+  const invoiceNumber = String(formData.get("invoiceNumber") || "").trim();
+  const language = String(formData.get("language") || "DE");
+  const customerName = String(formData.get("customerName") || "").trim();
+  const customerEmail = String(formData.get("customerEmail") || "").trim().toLowerCase();
+  const customerAddress = String(formData.get("customerAddress") || "").trim();
+  const customerCountry = String(formData.get("customerCountry") || "DE").trim().toUpperCase();
+  const customerVatId = String(formData.get("customerVatId") || "").trim();
+  const customerType = String(formData.get("customerType") || "BUSINESS");
+  const taxTreatment = String(formData.get("taxTreatment") || "DOMESTIC_19");
+
+  const invoiceDate = parseDateInput(formData.get("invoiceDate")) || new Date();
+  const serviceDate = parseDateInput(formData.get("serviceDate")) || invoiceDate;
+  const dueDate = parseDateInput(formData.get("dueDate"));
+
+  const itemName = String(formData.get("itemName") || "").trim();
+  const itemDescription = String(formData.get("itemDescription") || "").trim();
+  const quantityRaw = Number(String(formData.get("quantity") || "1").replace(",", "."));
+  const quantity = Number.isFinite(quantityRaw) && quantityRaw > 0 ? quantityRaw : 1;
+  const unit = String(formData.get("unit") || "Stück").trim();
+  const unitCents = euroToCents(formData.get("unitPriceEuro"));
+  const discountRaw = Number(String(formData.get("discountPercent") || "0").replace(",", "."));
+  const discountPercent = Number.isFinite(discountRaw) ? Math.max(0, Math.min(discountRaw, 100)) : 0;
+
+  const selectedTaxRate = Number(String(formData.get("taxRate") || "19").replace(",", "."));
+  const taxRate =
+    taxTreatment === "REVERSE_CHARGE" || taxTreatment === "EXPORT" || taxTreatment === "TAX_FREE"
+      ? 0
+      : Number.isFinite(selectedTaxRate)
+        ? selectedTaxRate
+        : 19;
+
+  if (!customerName) {
+    return { error: "Kundenname fehlt." };
+  }
+
+  if (!itemName) {
+    return { error: "Mindestens eine Rechnungsposition fehlt." };
+  }
+
+  if (invoiceNumber) {
+    const existing = await prisma.invoice.findFirst({
+      where: {
+        tenantId: access.tenantId,
+        externalInvoiceNumber: invoiceNumber,
+      },
+    });
+
+    if (existing) {
+      return { error: "Diese Rechnungsnummer ist bereits vorhanden." };
+    }
+  }
+
+  const lineBeforeDiscountCents = Math.round(unitCents * quantity);
+  const discountCents = Math.round(lineBeforeDiscountCents * (discountPercent / 100));
+  const netTotalCents = Math.max(0, lineBeforeDiscountCents - discountCents);
+  const taxTotalCents = Math.round(netTotalCents * (taxRate / 100));
+  const grossTotalCents = netTotalCents + taxTotalCents;
+
+  const invoice = await prisma.invoice.create({
+    data: {
+      tenantId: access.tenantId,
+      type: "DIRECT" as any,
+      status: "DRAFT" as any,
+      numberSource: "MANUAL" as any,
+      externalInvoiceNumber: invoiceNumber || null,
+      language: language as any,
+      customerType: customerType as any,
+      taxTreatment: taxTreatment as any,
+      invoiceDate,
+      serviceDate,
+      dueDate,
+      customerName,
+      customerEmail: customerEmail || null,
+      customerAddress: customerAddress || null,
+      customerCountry: customerCountry || "DE",
+      customerVatId: customerVatId || null,
+      sellerName: access.tenant?.name || "Gastario",
+      currency: "EUR",
+      netTotalCents,
+      taxTotalCents,
+      grossTotalCents,
+      reverseChargeNoteDe: taxTreatment === "REVERSE_CHARGE" ? "Steuerschuldnerschaft des Leistungsempfängers." : null,
+      reverseChargeNoteEn: taxTreatment === "REVERSE_CHARGE" ? "Reverse charge. VAT liability shifts to the recipient." : null,
+      paymentTermsDe: "Zahlbar sofort ohne Abzug.",
+      paymentTermsEn: "Payable immediately without deduction.",
+      notes: "Rechnungsentwurf in Gastario erstellt.",
+    } as any,
+  });
+
+  await prisma.invoiceItem.create({
+    data: {
+      invoiceId: invoice.id,
+      position: 1,
+      type: "ITEM",
+      name: itemName,
+      description: itemDescription || null,
+      quantity,
+      unit,
+      unitCents,
+      discountPercent: Math.round(discountPercent),
+      discountCents,
+      netTotalCents,
+      taxRate,
+      taxTotalCents,
+      grossTotalCents,
+    } as any,
+  });
+
+  return { success: "Rechnungsentwurf wurde erstellt." };
+}
+
 export default function RechnungenPage() {
-  const stats = {
-    drafts: 0,
-    open: 0,
-    paid: 0,
-    platform: 0,
-  };
+  const data = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
 
   return (
     <AppLayout>
@@ -31,7 +225,7 @@ export default function RechnungenPage() {
           <p className="eyebrow">Verkauf</p>
           <h1>Rechnungen</h1>
           <p className="muted">
-            Rechnungen aus Aufträgen erstellen, Rechnungsnummer selbst festlegen und Plattform-Aufträge sauber trennen.
+            Rechnungen erstellen, Rechnungsnummer selbst festlegen und Entwürfe sauber verwalten.
           </p>
         </div>
 
@@ -40,97 +234,231 @@ export default function RechnungenPage() {
         </Link>
       </header>
 
+      {actionData && "error" in actionData ? (
+        <div style={errorStyle}>{actionData.error}</div>
+      ) : null}
+
+      {actionData && "success" in actionData ? (
+        <div style={successStyle}>{actionData.success}</div>
+      ) : null}
+
       <section style={pageGridStyle}>
-        <div style={heroStyle}>
-          <p style={smallLabelStyle}>Grundlage</p>
-          <h2 style={heroTitleStyle}>Rechnung nur aus einem Auftrag erstellen</h2>
-          <p style={heroTextStyle}>
-            Der Auftragseingang bleibt sauber für neue Aufträge. Rechnungen werden später aus einem bestehenden Auftrag erstellt.
-            Dabei kannst du die Rechnungsnummer selbst eintragen und die Rechnungssprache auswählen.
-          </p>
-
-          <div style={noticeStyle}>
-            <strong>Wichtig:</strong> Eine finale Rechnung soll später gesperrt werden. Änderungen laufen dann über Korrektur oder Storno.
-          </div>
-        </div>
-
         <div style={statsGridStyle}>
           <div style={statCardStyle}>
             <span style={statLabelStyle}>Entwürfe</span>
-            <strong style={statNumberStyle}>{stats.drafts}</strong>
+            <strong style={statNumberStyle}>{data.stats.drafts}</strong>
             <small style={statHintStyle}>Noch nicht final</small>
           </div>
 
           <div style={statCardStyle}>
-            <span style={statLabelStyle}>Offen</span>
-            <strong style={statNumberStyle}>{stats.open}</strong>
-            <small style={statHintStyle}>Noch nicht bezahlt</small>
+            <span style={statLabelStyle}>Erstellt</span>
+            <strong style={statNumberStyle}>{data.stats.issued}</strong>
+            <small style={statHintStyle}>Finalisierte Rechnungen</small>
           </div>
 
           <div style={statCardStyle}>
             <span style={statLabelStyle}>Bezahlt</span>
-            <strong style={statNumberStyle}>{stats.paid}</strong>
-            <small style={statHintStyle}>Erledigte Rechnungen</small>
+            <strong style={statNumberStyle}>{data.stats.paid}</strong>
+            <small style={statHintStyle}>Erledigt</small>
           </div>
 
           <div style={statCardStyle}>
-            <span style={statLabelStyle}>Plattform</span>
-            <strong style={statNumberStyle}>{stats.platform}</strong>
-            <small style={statHintStyle}>Heycater / Egora / Feedr</small>
+            <span style={statLabelStyle}>Storniert</span>
+            <strong style={statNumberStyle}>{data.stats.cancelled}</strong>
+            <small style={statHintStyle}>Korrektur/Storno</small>
           </div>
         </div>
 
         <div style={cardStyle}>
-          <p style={smallLabelStyle}>Ablauf</p>
-          <h2 style={sectionTitleStyle}>So soll es funktionieren</h2>
+          <p style={smallLabelStyle}>Neue Rechnung</p>
+          <h2 style={sectionTitleStyle}>Rechnungsentwurf erstellen</h2>
+          <p style={mutedStyle}>
+            Das erstellt noch keine finale Rechnung, sondern einen Entwurf. Finalisieren, Sperren und PDF bauen wir im nächsten Schritt.
+          </p>
 
-          <div style={flowGridStyle}>
-            <div style={flowBoxStyle}>
-              <strong>1. Auftrag öffnen</strong>
-              <p>Du gehst in einen bestehenden Auftrag und entscheidest dort, ob eine Rechnung erstellt werden soll.</p>
+          <Form method="post" style={formGridStyle}>
+            <input type="hidden" name="intent" value="createInvoiceDraft" />
+
+            <div style={threeColStyle}>
+              <label style={labelStyle}>
+                Rechnungsnummer
+                <input name="invoiceNumber" placeholder="z. B. RE-2026-001" style={inputStyle} />
+              </label>
+
+              <label style={labelStyle}>
+                Sprache
+                <select name="language" defaultValue="DE" style={inputStyle}>
+                  <option value="DE">Deutsch</option>
+                  <option value="EN">Englisch</option>
+                </select>
+              </label>
+
+              <label style={labelStyle}>
+                Kundentyp
+                <select name="customerType" defaultValue="BUSINESS" style={inputStyle}>
+                  <option value="BUSINESS">Firma</option>
+                  <option value="PRIVATE">Privatkunde</option>
+                </select>
+              </label>
             </div>
 
-            <div style={flowBoxStyle}>
-              <strong>2. Rechnung erstellen</strong>
-              <p>Gastario übernimmt Kunde, Positionen, Leistungsdatum, Netto, Steuer und Gesamtbetrag aus dem Auftrag.</p>
+            <div style={twoColStyle}>
+              <label style={labelStyle}>
+                Kunde *
+                <input name="customerName" placeholder="Firma / Kunde" required style={inputStyle} />
+              </label>
+
+              <label style={labelStyle}>
+                Kunden-E-Mail
+                <input name="customerEmail" type="email" placeholder="kunde@example.com" style={inputStyle} />
+              </label>
             </div>
 
-            <div style={flowBoxStyle}>
-              <strong>3. Rechnungsnummer eintragen</strong>
-              <p>Die Rechnungsnummer kannst du selbst festlegen und vor dem Finalisieren prüfen.</p>
+            <label style={labelStyle}>
+              Rechnungsadresse
+              <textarea name="customerAddress" rows={3} placeholder="Straße, PLZ Ort" style={{ ...inputStyle, minHeight: 82, resize: "vertical" }} />
+            </label>
+
+            <div style={threeColStyle}>
+              <label style={labelStyle}>
+                Land
+                <input name="customerCountry" defaultValue="DE" placeholder="DE" style={inputStyle} />
+              </label>
+
+              <label style={labelStyle}>
+                USt-ID Kunde
+                <input name="customerVatId" placeholder="z. B. DE123456789" style={inputStyle} />
+              </label>
+
+              <label style={labelStyle}>
+                Steuerbehandlung
+                <select name="taxTreatment" defaultValue="DOMESTIC_19" style={inputStyle}>
+                  <option value="DOMESTIC_19">Deutschland 19 %</option>
+                  <option value="DOMESTIC_7">Deutschland 7 %</option>
+                  <option value="TAX_FREE">Steuerfrei / 0 %</option>
+                  <option value="REVERSE_CHARGE">Reverse Charge</option>
+                  <option value="EXPORT">Ausland / Export</option>
+                  <option value="OTHER">Sonderfall</option>
+                </select>
+              </label>
             </div>
 
-            <div style={flowBoxStyle}>
-              <strong>4. Finalisieren & sperren</strong>
-              <p>Nach dem finalen Erstellen wird die Rechnung nicht einfach überschrieben, sondern korrigiert oder storniert.</p>
+            <div style={threeColStyle}>
+              <label style={labelStyle}>
+                Rechnungsdatum
+                <input name="invoiceDate" type="date" style={inputStyle} />
+              </label>
+
+              <label style={labelStyle}>
+                Leistungsdatum
+                <input name="serviceDate" type="date" style={inputStyle} />
+              </label>
+
+              <label style={labelStyle}>
+                Fällig am
+                <input name="dueDate" type="date" style={inputStyle} />
+              </label>
             </div>
-          </div>
+
+            <div style={positionBoxStyle}>
+              <p style={smallLabelStyle}>Position</p>
+
+              <div style={twoColStyle}>
+                <label style={labelStyle}>
+                  Bezeichnung *
+                  <input name="itemName" placeholder="z. B. Business Catering" required style={inputStyle} />
+                </label>
+
+                <label style={labelStyle}>
+                  Beschreibung
+                  <input name="itemDescription" placeholder="optional" style={inputStyle} />
+                </label>
+              </div>
+
+              <div style={fiveColStyle}>
+                <label style={labelStyle}>
+                  Menge
+                  <input name="quantity" type="number" step="0.01" defaultValue="1" style={inputStyle} />
+                </label>
+
+                <label style={labelStyle}>
+                  Einheit
+                  <input name="unit" defaultValue="Stück" style={inputStyle} />
+                </label>
+
+                <label style={labelStyle}>
+                  VK Netto
+                  <input name="unitPriceEuro" placeholder="0,00 €" style={inputStyle} />
+                </label>
+
+                <label style={labelStyle}>
+                  Rabatt %
+                  <input name="discountPercent" type="number" min="0" max="100" defaultValue="0" style={inputStyle} />
+                </label>
+
+                <label style={labelStyle}>
+                  MwSt
+                  <select name="taxRate" defaultValue="19" style={inputStyle}>
+                    <option value="19">19 %</option>
+                    <option value="7">7 %</option>
+                    <option value="0">0 %</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button type="submit" style={primaryButtonStyle}>
+                Rechnungsentwurf erstellen
+              </button>
+            </div>
+          </Form>
         </div>
 
         <div style={cardStyle}>
-          <p style={smallLabelStyle}>Funktionen</p>
-          <h2 style={sectionTitleStyle}>Vorbereitet für Deutsch, Englisch und Ausland</h2>
+          <p style={smallLabelStyle}>Übersicht</p>
+          <h2 style={sectionTitleStyle}>Rechnungen</h2>
 
-          <div style={featureGridStyle}>
-            <div style={featureBoxStyle}>
-              <strong>Deutsch / Englisch</strong>
-              <p>Rechnungssprache wird pro Rechnung auswählbar.</p>
-            </div>
+          <div style={tableWrapStyle}>
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>Nummer</th>
+                  <th style={thStyle}>Kunde</th>
+                  <th style={thStyle}>Datum</th>
+                  <th style={thStyle}>Sprache</th>
+                  <th style={thStyle}>Summe</th>
+                  <th style={thStyle}>Status</th>
+                </tr>
+              </thead>
 
-            <div style={featureBoxStyle}>
-              <strong>Rechnungsnummer</strong>
-              <p>Nummer kann manuell eingetragen und später eindeutig geprüft werden.</p>
-            </div>
-
-            <div style={featureBoxStyle}>
-              <strong>Ausland</strong>
-              <p>Land, Kundentyp, USt-ID und Steuerbehandlung werden an der Rechnung gespeichert.</p>
-            </div>
-
-            <div style={featureBoxStyle}>
-              <strong>Plattform rechnet ab</strong>
-              <p>Bei Heycater/Egora wird keine doppelte Rechnung erzeugt.</p>
-            </div>
+              <tbody>
+                {data.invoices.length === 0 ? (
+                  <tr>
+                    <td style={tdStyle} colSpan={6}>
+                      <strong>Noch keine Rechnungen vorhanden.</strong>
+                    </td>
+                  </tr>
+                ) : (
+                  data.invoices.map((invoice) => (
+                    <tr key={invoice.id}>
+                      <td style={tdStyle}>
+                        <strong>{invoice.externalInvoiceNumber || "Entwurf ohne Nummer"}</strong>
+                      </td>
+                      <td style={tdStyle}>{invoice.customerName}</td>
+                      <td style={tdStyle}>
+                        {invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleDateString("de-DE") : "-"}
+                      </td>
+                      <td style={tdStyle}>{invoice.language || "DE"}</td>
+                      <td style={tdStyle}>{centsToEuro(invoice.grossTotalCents)}</td>
+                      <td style={tdStyle}>
+                        <span style={statusPillStyle}>{invoice.status}</span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -138,121 +466,39 @@ export default function RechnungenPage() {
   );
 }
 
-const pageGridStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 18,
-};
+export function ErrorBoundary({ error }: { error: any }) {
+  return (
+    <AppLayout>
+      <div style={errorStyle}>
+        <strong>Rechnungen konnten nicht geladen werden.</strong>
+        <div style={{ marginTop: 8 }}>{error?.message || "Unbekannter Fehler"}</div>
+      </div>
+    </AppLayout>
+  );
+}
 
-const heroStyle: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
-  borderRadius: 20,
-  padding: 22,
-  boxShadow: "0 14px 35px rgba(15, 23, 42, 0.06)",
-};
-
-const smallLabelStyle: React.CSSProperties = {
-  margin: 0,
-  color: "#00796b",
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
-  fontSize: 12,
-  fontWeight: 900,
-};
-
-const heroTitleStyle: React.CSSProperties = {
-  margin: "6px 0 0",
-  fontSize: 26,
-  letterSpacing: "-0.04em",
-};
-
-const heroTextStyle: React.CSSProperties = {
-  margin: "8px 0 0",
-  color: "#475569",
-  fontWeight: 650,
-  lineHeight: 1.55,
-};
-
-const noticeStyle: React.CSSProperties = {
-  marginTop: 16,
-  padding: 14,
-  borderRadius: 14,
-  background: "#fff7ed",
-  border: "1px solid #fed7aa",
-  color: "#9a3412",
-  fontWeight: 750,
-};
-
-const statsGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-  gap: 14,
-};
-
-const statCardStyle: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
-  borderRadius: 18,
-  padding: 18,
-  display: "grid",
-  gap: 6,
-  boxShadow: "0 12px 28px rgba(15, 23, 42, 0.05)",
-};
-
-const statLabelStyle: React.CSSProperties = {
-  color: "#64748b",
-  fontSize: 13,
-  fontWeight: 850,
-};
-
-const statNumberStyle: React.CSSProperties = {
-  fontSize: 30,
-  lineHeight: 1,
-};
-
-const statHintStyle: React.CSSProperties = {
-  color: "#64748b",
-  fontWeight: 700,
-};
-
-const cardStyle: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
-  borderRadius: 20,
-  padding: 22,
-  boxShadow: "0 14px 35px rgba(15, 23, 42, 0.06)",
-};
-
-const sectionTitleStyle: React.CSSProperties = {
-  margin: "6px 0 0",
-  fontSize: 22,
-  letterSpacing: "-0.035em",
-};
-
-const flowGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-  gap: 14,
-  marginTop: 16,
-};
-
-const flowBoxStyle: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
-  borderRadius: 16,
-  padding: 16,
-  background: "#f8fafc",
-};
-
-const featureGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-  gap: 14,
-  marginTop: 16,
-};
-
-const featureBoxStyle: React.CSSProperties = {
-  border: "1px solid #dbeafe",
-  borderRadius: 16,
-  padding: 16,
-  background: "#eff6ff",
-};
+const pageGridStyle: React.CSSProperties = { display: "grid", gap: 18 };
+const statsGridStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 14 };
+const statCardStyle: React.CSSProperties = { background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 18, display: "grid", gap: 6 };
+const statLabelStyle: React.CSSProperties = { color: "#64748b", fontSize: 13, fontWeight: 850 };
+const statNumberStyle: React.CSSProperties = { fontSize: 30, lineHeight: 1 };
+const statHintStyle: React.CSSProperties = { color: "#64748b", fontWeight: 700 };
+const cardStyle: React.CSSProperties = { background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: 20, padding: 22 };
+const smallLabelStyle: React.CSSProperties = { margin: 0, color: "#00796b", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: 12, fontWeight: 900 };
+const sectionTitleStyle: React.CSSProperties = { margin: "6px 0 0", fontSize: 22, letterSpacing: "-0.035em" };
+const mutedStyle: React.CSSProperties = { margin: "8px 0 0", color: "#64748b", fontWeight: 650 };
+const formGridStyle: React.CSSProperties = { display: "grid", gap: 14, marginTop: 18 };
+const twoColStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 };
+const threeColStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12 };
+const fiveColStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr 1.2fr 1fr 1fr", gap: 12 };
+const labelStyle: React.CSSProperties = { display: "grid", gap: 6, color: "#334155", fontSize: 12, fontWeight: 850 };
+const inputStyle: React.CSSProperties = { width: "100%", minHeight: 42, border: "1px solid #cbd5e1", borderRadius: 8, padding: "8px 10px", fontWeight: 750, background: "#ffffff" };
+const positionBoxStyle: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: 16, padding: 16, background: "#f8fafc", display: "grid", gap: 12 };
+const primaryButtonStyle: React.CSSProperties = { border: "none", background: "#059669", color: "#ffffff", borderRadius: 999, padding: "12px 18px", fontWeight: 950, cursor: "pointer" };
+const tableWrapStyle: React.CSSProperties = { overflowX: "auto", marginTop: 16, border: "1px solid #e2e8f0", borderRadius: 14 };
+const tableStyle: React.CSSProperties = { width: "100%", borderCollapse: "collapse", background: "#ffffff" };
+const thStyle: React.CSSProperties = { textAlign: "left", padding: "12px 14px", fontSize: 12, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "1px solid #e2e8f0" };
+const tdStyle: React.CSSProperties = { padding: "13px 14px", borderBottom: "1px solid #f1f5f9", verticalAlign: "top" };
+const statusPillStyle: React.CSSProperties = { display: "inline-flex", borderRadius: 999, padding: "5px 9px", background: "#f1f5f9", color: "#334155", fontSize: 12, fontWeight: 900 };
+const errorStyle: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", borderRadius: 14, padding: 14, fontWeight: 750 };
+const successStyle: React.CSSProperties = { background: "#ecfdf5", border: "1px solid #bbf7d0", color: "#047857", borderRadius: 14, padding: 14, fontWeight: 750 };
