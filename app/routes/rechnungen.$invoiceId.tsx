@@ -17,6 +17,11 @@ function statusLabel(status: string) {
   return status;
 }
 
+function formatDate(value: Date | string | null | undefined) {
+  if (!value) return "-";
+  return new Date(value).toLocaleDateString("de-DE");
+}
+
 export function meta() {
   return [{ title: "Rechnung · Gastario" }];
 }
@@ -156,6 +161,12 @@ export default function RechnungDetailPage() {
 
   return (
     <AppLayout>
+      <div style={backRowStyle}>
+        <Link to="/rechnungen" style={backButtonStyle}>
+          ← Zurück zu Rechnungen
+        </Link>
+      </div>
+
       <header className="topbar">
         <div>
           <p className="eyebrow">Rechnung</p>
@@ -165,21 +176,33 @@ export default function RechnungDetailPage() {
           </p>
         </div>
 
-        <Link className="button secondary" to="/rechnungen">
-          Zur Übersicht
-        </Link>
+        <div style={headerActionsStyle}>
+          <span style={{
+            ...statusPillStyle,
+            ...(invoice.status === "DRAFT" ? draftPillStyle : {}),
+            ...(invoice.status === "ISSUED" ? issuedPillStyle : {}),
+            ...(invoice.status === "PAID" ? paidPillStyle : {}),
+            ...(invoice.status === "CANCELLED" ? cancelledPillStyle : {}),
+          }}>
+            {statusLabel(invoice.status)}
+          </span>
+
+          <Link className="button secondary" to="/rechnungen">
+            Zur Übersicht
+          </Link>
+        </div>
       </header>
 
       {actionData && "error" in actionData ? <div style={errorStyle}>{actionData.error}</div> : null}
       {actionData && "success" in actionData ? <div style={successStyle}>{actionData.success}</div> : null}
 
       <section style={pageGridStyle}>
-        <div style={heroStyle}>
+        <div style={actionCardStyle}>
           <div>
             <p style={smallLabelStyle}>Status</p>
-            <h2 style={heroTitleStyle}>{statusLabel(invoice.status)}</h2>
+            <h2 style={actionTitleStyle}>{statusLabel(invoice.status)}</h2>
             <p style={heroTextStyle}>
-              Entwürfe können noch finalisiert werden. Finalisierte Rechnungen sollten später nicht einfach überschrieben werden.
+              Entwürfe können finalisiert werden. Nach dem Finalisieren soll die Rechnung später nicht mehr direkt überschrieben werden.
             </p>
           </div>
 
@@ -207,96 +230,121 @@ export default function RechnungDetailPage() {
           </div>
         </div>
 
-        <div style={previewCardStyle}>
-          <div style={invoiceHeaderStyle}>
+        <div style={previewWrapStyle}>
+          <div style={previewToolbarStyle}>
             <div>
-              <p style={smallLabelStyle}>Rechnung an</p>
-              <h2 style={{ margin: "6px 0 0" }}>{invoice.customerName}</h2>
-              <p style={addressStyle}>{invoice.customerAddress || "Keine Adresse hinterlegt"}</p>
+              <p style={smallLabelStyle}>Vorschau</p>
+              <h2 style={previewTitleStyle}>Rechnung</h2>
             </div>
 
-            <div style={metaBoxStyle}>
-              <div>
-                <span>Rechnungsnummer</span>
-                <strong>{invoice.externalInvoiceNumber || "-"}</strong>
-              </div>
-              <div>
-                <span>Rechnungsdatum</span>
-                <strong>{invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleDateString("de-DE") : "-"}</strong>
-              </div>
-              <div>
-                <span>Leistungsdatum</span>
-                <strong>{invoice.serviceDate ? new Date(invoice.serviceDate).toLocaleDateString("de-DE") : "-"}</strong>
-              </div>
-              <div>
-                <span>Sprache</span>
-                <strong>{invoice.language || "DE"}</strong>
-              </div>
+            <div style={toolbarRightStyle}>
+              <Link to={`/rechnungen/${invoice.id}/pdf`} target="_blank" style={ghostButtonStyle}>PDF / Drucken</Link>
             </div>
           </div>
 
-          <div style={sellerBoxStyle}>
-            <strong>{invoice.sellerName || data.tenantName}</strong>
-            {invoice.sellerAddress ? <span>{invoice.sellerAddress}</span> : <span>Firmendaten werden später aus Einstellungen übernommen.</span>}
-          </div>
+          <div style={previewCardStyle}>
+            <div style={invoiceTopStyle}>
+              <div>
+                <p style={tinyTextStyle}>Rechnung an</p>
+                <h2 style={customerTitleStyle}>{invoice.customerName}</h2>
+                <p style={addressStyle}>{invoice.customerAddress || "Keine Adresse hinterlegt"}</p>
+              </div>
 
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Pos.</th>
-                <th style={thStyle}>Beschreibung</th>
-                <th style={thRightStyle}>Menge</th>
-                <th style={thRightStyle}>Einzelpreis</th>
-                <th style={thRightStyle}>MwSt</th>
-                <th style={thRightStyle}>Gesamt</th>
-              </tr>
-            </thead>
+              <div style={metaBoxStyle}>
+                <MetaRow label="Rechnungsnummer" value={invoice.externalInvoiceNumber || "-"} />
+                <MetaRow label="Rechnungsdatum" value={formatDate(invoice.invoiceDate)} />
+                <MetaRow label="Leistungsdatum" value={formatDate(invoice.serviceDate)} />
+                <MetaRow label="Sprache" value={invoice.language || "DE"} />
+              </div>
+            </div>
 
-            <tbody>
-              {invoice.items.length === 0 ? (
+            <div style={sellerBoxStyle}>
+              <div>
+                <p style={tinyTextStyle}>Von</p>
+                <strong>{invoice.sellerName || data.tenantName}</strong>
+              </div>
+              <span>{invoice.sellerAddress || "Firmendaten werden später aus Einstellungen übernommen."}</span>
+            </div>
+
+            <table style={tableStyle}>
+              <thead>
                 <tr>
-                  <td style={tdStyle} colSpan={6}>Keine Positionen vorhanden.</td>
+                  <th style={thStyle}>Pos.</th>
+                  <th style={thStyle}>Beschreibung</th>
+                  <th style={thRightStyle}>Menge</th>
+                  <th style={thRightStyle}>Einzelpreis</th>
+                  <th style={thRightStyle}>MwSt</th>
+                  <th style={thRightStyle}>Gesamt</th>
                 </tr>
-              ) : (
-                invoice.items.map((item) => (
-                  <tr key={item.id}>
-                    <td style={tdStyle}>{item.position}</td>
-                    <td style={tdStyle}>
-                      <strong>{item.name}</strong>
-                      {item.description ? <small style={subTextStyle}>{item.description}</small> : null}
-                    </td>
-                    <td style={tdRightStyle}>{item.quantity.toLocaleString("de-DE")} {item.unit}</td>
-                    <td style={tdRightStyle}>{centsToEuro(item.unitCents)}</td>
-                    <td style={tdRightStyle}>{item.taxRate} %</td>
-                    <td style={tdRightStyle}><strong>{centsToEuro(item.grossTotalCents)}</strong></td>
+              </thead>
+
+              <tbody>
+                {invoice.items.length === 0 ? (
+                  <tr>
+                    <td style={tdStyle} colSpan={6}>Keine Positionen vorhanden.</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  invoice.items.map((item) => (
+                    <tr key={item.id}>
+                      <td style={tdStyle}>{item.position}</td>
+                      <td style={tdStyle}>
+                        <strong>{item.name}</strong>
+                        {item.description ? <small style={subTextStyle}>{item.description}</small> : null}
+                      </td>
+                      <td style={tdRightStyle}>{item.quantity.toLocaleString("de-DE")} {item.unit}</td>
+                      <td style={tdRightStyle}>{centsToEuro(item.unitCents)}</td>
+                      <td style={tdRightStyle}>{item.taxRate} %</td>
+                      <td style={tdRightStyle}><strong>{centsToEuro(item.grossTotalCents)}</strong></td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
 
-          <div style={totalsStyle}>
-            <div>
-              <span>Netto</span>
-              <strong>{centsToEuro(invoice.netTotalCents)}</strong>
+            <div style={totalsStyle}>
+              <TotalRow label="Netto" value={centsToEuro(invoice.netTotalCents)} />
+              <TotalRow label="MwSt" value={centsToEuro(invoice.taxTotalCents)} />
+              <div style={grandTotalStyle}>
+                <span>Gesamtbetrag</span>
+                <strong>{centsToEuro(invoice.grossTotalCents)}</strong>
+              </div>
             </div>
-            <div>
-              <span>MwSt</span>
-              <strong>{centsToEuro(invoice.taxTotalCents)}</strong>
-            </div>
-            <div style={grandTotalStyle}>
-              <span>Gesamtbetrag</span>
-              <strong>{centsToEuro(invoice.grossTotalCents)}</strong>
-            </div>
-          </div>
 
-          <div style={footerNoteStyle}>
-            <strong>Zahlungsbedingung</strong>
-            <span>{invoice.paymentTermsDe || "Zahlbar sofort ohne Abzug."}</span>
+            <div style={footerNoteStyle}>
+              <div>
+                <strong>Zahlungsbedingung</strong>
+                <span>{invoice.paymentTermsDe || "Zahlbar sofort ohne Abzug."}</span>
+              </div>
+
+              {invoice.reverseChargeNoteDe ? (
+                <div>
+                  <strong>Steuerhinweis</strong>
+                  <span>{invoice.reverseChargeNoteDe}</span>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </section>
     </AppLayout>
+  );
+}
+
+function MetaRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={metaRowStyle}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function TotalRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={totalRowStyle}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
   );
 }
 
@@ -313,9 +361,31 @@ export function ErrorBoundary({ error }: { error: any }) {
   );
 }
 
-const pageGridStyle: React.CSSProperties = { display: "grid", gap: 18 };
+const backRowStyle: React.CSSProperties = {
+  marginBottom: 12,
+};
 
-const heroStyle: React.CSSProperties = {
+const backButtonStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  color: "#0f766e",
+  fontWeight: 900,
+  textDecoration: "none",
+};
+
+const headerActionsStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 12,
+};
+
+const pageGridStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 18,
+};
+
+const actionCardStyle: React.CSSProperties = {
   background: "#ffffff",
   border: "1px solid #e2e8f0",
   borderRadius: 20,
@@ -335,10 +405,19 @@ const smallLabelStyle: React.CSSProperties = {
   fontWeight: 900,
 };
 
-const heroTitleStyle: React.CSSProperties = {
+const tinyTextStyle: React.CSSProperties = {
+  margin: 0,
+  color: "#64748b",
+  textTransform: "uppercase",
+  letterSpacing: "0.06em",
+  fontSize: 11,
+  fontWeight: 900,
+};
+
+const actionTitleStyle: React.CSSProperties = {
   margin: "6px 0 0",
-  fontSize: 26,
-  letterSpacing: "-0.04em",
+  fontSize: 24,
+  letterSpacing: "-0.035em",
 };
 
 const heroTextStyle: React.CSSProperties = {
@@ -354,19 +433,58 @@ const actionBarStyle: React.CSSProperties = {
   justifyContent: "flex-end",
 };
 
+const previewWrapStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 12,
+};
+
+const previewToolbarStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 14,
+};
+
+const previewTitleStyle: React.CSSProperties = {
+  margin: "4px 0 0",
+  fontSize: 24,
+  letterSpacing: "-0.035em",
+};
+
+const toolbarRightStyle: React.CSSProperties = {
+  display: "flex",
+  gap: 10,
+};
+
+const ghostButtonStyle: React.CSSProperties = {
+  border: "1px solid #cbd5e1",
+  background: "#ffffff",
+  color: "#334155",
+  borderRadius: 999,
+  padding: "9px 13px",
+  fontWeight: 900,
+  cursor: "pointer",
+};
+
 const previewCardStyle: React.CSSProperties = {
   background: "#ffffff",
   border: "1px solid #e2e8f0",
-  borderRadius: 20,
-  padding: 28,
-  boxShadow: "0 16px 40px rgba(15,23,42,0.07)",
+  borderRadius: 22,
+  padding: 34,
+  boxShadow: "0 18px 50px rgba(15,23,42,0.08)",
 };
 
-const invoiceHeaderStyle: React.CSSProperties = {
+const invoiceTopStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "1fr 340px",
-  gap: 30,
+  gridTemplateColumns: "1fr 360px",
+  gap: 34,
   alignItems: "start",
+};
+
+const customerTitleStyle: React.CSSProperties = {
+  margin: "6px 0 0",
+  fontSize: 24,
+  letterSpacing: "-0.035em",
 };
 
 const addressStyle: React.CSSProperties = {
@@ -374,39 +492,50 @@ const addressStyle: React.CSSProperties = {
   color: "#475569",
   fontWeight: 650,
   marginTop: 10,
+  lineHeight: 1.55,
 };
 
 const metaBoxStyle: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
-  borderRadius: 16,
-  padding: 16,
+  border: "1px solid #dbe3ec",
+  borderRadius: 18,
+  padding: 18,
   display: "grid",
-  gap: 10,
+  gap: 12,
   background: "#f8fafc",
 };
 
-const sellerBoxStyle: React.CSSProperties = {
-  marginTop: 24,
-  borderTop: "1px solid #e2e8f0",
-  paddingTop: 18,
-  display: "grid",
-  gap: 4,
+const metaRowStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 18,
   color: "#475569",
+};
+
+const sellerBoxStyle: React.CSSProperties = {
+  marginTop: 28,
+  borderTop: "1px solid #e2e8f0",
+  paddingTop: 20,
+  display: "grid",
+  gap: 6,
+  color: "#475569",
+  lineHeight: 1.55,
 };
 
 const tableStyle: React.CSSProperties = {
   width: "100%",
   borderCollapse: "collapse",
-  marginTop: 26,
+  marginTop: 30,
 };
 
 const thStyle: React.CSSProperties = {
   textAlign: "left",
-  padding: "12px 10px",
+  padding: "13px 10px",
   borderBottom: "2px solid #e2e8f0",
   color: "#64748b",
   fontSize: 12,
   textTransform: "uppercase",
+  letterSpacing: "0.06em",
 };
 
 const thRightStyle: React.CSSProperties = {
@@ -415,7 +544,7 @@ const thRightStyle: React.CSSProperties = {
 };
 
 const tdStyle: React.CSSProperties = {
-  padding: "14px 10px",
+  padding: "16px 10px",
   borderBottom: "1px solid #f1f5f9",
   verticalAlign: "top",
 };
@@ -432,25 +561,37 @@ const subTextStyle: React.CSSProperties = {
 };
 
 const totalsStyle: React.CSSProperties = {
-  marginTop: 20,
+  marginTop: 24,
   marginLeft: "auto",
-  width: 340,
+  width: 360,
   display: "grid",
   gap: 10,
 };
 
+const totalRowStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  gap: 20,
+  color: "#475569",
+  fontWeight: 750,
+};
+
 const grandTotalStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  gap: 20,
   borderTop: "2px solid #0f172a",
-  paddingTop: 10,
-  fontSize: 18,
+  paddingTop: 12,
+  marginTop: 4,
+  fontSize: 20,
 };
 
 const footerNoteStyle: React.CSSProperties = {
-  marginTop: 30,
+  marginTop: 34,
   borderTop: "1px solid #e2e8f0",
-  paddingTop: 18,
+  paddingTop: 20,
   display: "grid",
-  gap: 6,
+  gap: 14,
   color: "#475569",
 };
 
@@ -483,6 +624,21 @@ const dangerButtonStyle: React.CSSProperties = {
   fontWeight: 900,
   cursor: "pointer",
 };
+
+const statusPillStyle: React.CSSProperties = {
+  display: "inline-flex",
+  borderRadius: 999,
+  padding: "7px 11px",
+  background: "#f1f5f9",
+  color: "#334155",
+  fontSize: 12,
+  fontWeight: 900,
+};
+
+const draftPillStyle: React.CSSProperties = { background: "#fef3c7", color: "#92400e" };
+const issuedPillStyle: React.CSSProperties = { background: "#dbeafe", color: "#1d4ed8" };
+const paidPillStyle: React.CSSProperties = { background: "#dcfce7", color: "#166534" };
+const cancelledPillStyle: React.CSSProperties = { background: "#fee2e2", color: "#991b1b" };
 
 const errorStyle: React.CSSProperties = {
   background: "#fef2f2",
