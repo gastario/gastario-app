@@ -193,6 +193,15 @@ export default function InvoicePrintPage() {
             </p>
           </div>
 
+          <div>
+            <strong>{isEnglish ? "Bank details" : "Bankverbindung"}</strong>
+            <p style={bankTextStyle}>
+              {tenant?.invoiceBankName ? <span>{tenant.invoiceBankName}</span> : null}
+              {tenant?.invoiceIban ? <span>IBAN: {tenant.invoiceIban}</span> : null}
+              {tenant?.invoiceBic ? <span>BIC: {tenant.invoiceBic}</span> : null}
+            </p>
+          </div>
+
           {invoice.reverseChargeNoteDe || invoice.reverseChargeNoteEn ? (
             <div>
               <strong>{isEnglish ? "Tax note" : "Steuerhinweis"}</strong>
@@ -409,4 +418,8 @@ const bankTextStyle: React.CSSProperties = {
   fontSize: 13,
   lineHeight: 1.45,
 };
+
+
+
+
 

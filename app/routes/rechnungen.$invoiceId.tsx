@@ -225,6 +225,10 @@ export default function RechnungDetailPage() {
           <Link className="button secondary" to="/rechnungen">
             Zur Übersicht
           </Link>
+
+          <Link className="button primary" to={`/rechnungen/${invoice.id}/pdf`} target="_blank">
+            PDF / Drucken
+          </Link>
         </div>
       </header>
 
@@ -747,5 +751,6 @@ const premiumMuted: React.CSSProperties = {
   fontWeight: 650,
   lineHeight: 1.55,
 };
+
 
 
