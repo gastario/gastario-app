@@ -218,7 +218,20 @@ export async function action({ request }: { request: Request }) {
       });
     }
 
-    const deliveryDate = deliveryDateRaw ? new Date(deliveryDateRaw + "T00:00:00") : null;
+    let deliveryDate: Date | null = null;
+
+    if (deliveryDateRaw) {
+      const germanDateMatch = deliveryDateRaw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+
+      if (germanDateMatch) {
+        const day = germanDateMatch[1].padStart(2, "0");
+        const month = germanDateMatch[2].padStart(2, "0");
+        const year = germanDateMatch[3];
+        deliveryDate = new Date(year + "-" + month + "-" + day + "T00:00:00");
+      } else {
+        deliveryDate = new Date(deliveryDateRaw + "T00:00:00");
+      }
+    }
 
     const order = await prisma.order.create({
       data: {        customerId: customer.id,
@@ -654,9 +667,23 @@ export default function AuftragseingangPage() {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "180px 160px 1fr", gap: 12 }}>
-            <input name="deliveryDate" type="date" style={inputStyle} />
-            <input name="deliveryTime" placeholder="Uhrzeit" style={inputStyle} />
-            <input name="deliveryAddress" placeholder="Lieferadresse" style={inputStyle} />
+            <input
+              name="deliveryDate"
+              type="text"
+              inputMode="numeric"
+              placeholder="Datum, z. B. 01.07.2026"
+              style={{ ...inputStyle, borderRadius: 3 }}
+            />
+            <input
+              name="deliveryTime"
+              placeholder="Uhrzeit"
+              style={{ ...inputStyle, borderRadius: 3 }}
+            />
+            <input
+              name="deliveryAddress"
+              placeholder="Lieferadresse"
+              style={{ ...inputStyle, borderRadius: 3 }}
+            />
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
