@@ -315,9 +315,62 @@ function formatDate(value: string | Date | null | undefined) {
 export default function AuftragseingangPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const [liveNetTotalCents, setLiveNetTotalCents] = useState(0);
   const [positionRows, setPositionRows] = useState<Array<{ id: number; type: "item" | "text" }>>([
     { id: Date.now(), type: "item" },
   ]);
+
+  function parseEuroInput(value: string) {
+    const normalized = String(value || "")
+      .replace(/€/g, "")
+      .replace(/\s/g, "")
+      .replace(/\./g, "")
+      .replace(",", ".");
+
+    const amount = Number(normalized);
+    if (!Number.isFinite(amount)) return 0;
+
+    return Math.round(amount * 100);
+  }
+
+  function formatEuroCents(value: number) {
+    return (value / 100).toLocaleString("de-DE", {
+      style: "currency",
+      currency: "EUR",
+    });
+  }
+
+  function recalculatePositionTotals(form: HTMLFormElement) {
+    let netTotalCents = 0;
+
+    const rows = Array.from(form.querySelectorAll('[data-position-row="item"]'));
+
+    for (const row of rows) {
+      const quantityInput = row.querySelector('input[name="quantity"]') as HTMLInputElement | null;
+      const priceInput = row.querySelector('input[name="unitPriceEuro"]') as HTMLInputElement | null;
+      const discountInput = row.querySelector('input[name="discountPercent"]') as HTMLInputElement | null;
+      const totalElement = row.querySelector('[data-line-total]') as HTMLElement | null;
+
+      const quantity = Number(String(quantityInput?.value || "1").replace(",", "."));
+      const unitCents = parseEuroInput(priceInput?.value || "0");
+      const discountPercent = Number(String(discountInput?.value || "0").replace(",", "."));
+
+      const safeQuantity = Number.isFinite(quantity) && quantity > 0 ? quantity : 0;
+      const safeDiscount = Number.isFinite(discountPercent) && discountPercent > 0 ? discountPercent : 0;
+
+      const beforeDiscount = Math.round(unitCents * safeQuantity);
+      const discountCents = Math.round(beforeDiscount * (safeDiscount / 100));
+      const lineTotal = Math.max(0, beforeDiscount - discountCents);
+
+      netTotalCents += lineTotal;
+
+      if (totalElement) {
+        totalElement.textContent = formatEuroCents(lineTotal);
+      }
+    }
+
+    setLiveNetTotalCents(netTotalCents);
+  }
 
   if (data.setupError) {
     return (
@@ -549,7 +602,12 @@ export default function AuftragseingangPage() {
           </h2>
         </div>
 
-        <Form method="post" style={{ display: "grid", gap: 14 }}>
+        <Form
+          method="post"
+          onInput={(event) => recalculatePositionTotals(event.currentTarget)}
+          onChange={(event) => recalculatePositionTotals(event.currentTarget)}
+          style={{ display: "grid", gap: 14 }}
+        >
           <input type="hidden" name="intent" value="createOrder" />
 
           <div style={{ display: "grid", gridTemplateColumns: "160px 1fr 1fr", gap: 12 }}>
@@ -606,23 +664,26 @@ export default function AuftragseingangPage() {
             </div>
 
             <div style={{
-              border: "1px solid #dbe3ec",
-              borderRadius: 14,
+              border: "1px solid #d6d6d6",
+              borderRadius: 4,
               background: "#ffffff",
-              overflow: "hidden"
+              overflow: "hidden",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.08)"
             }}>
               {positionRows.map((row, rowIndex) => (
                 <div key={row.id} style={{
                   display: "grid",
                   gridTemplateColumns: row.type === "text"
                     ? "42px minmax(0, 1fr) 42px"
-                    : "42px minmax(360px, 1.6fr) 88px 116px 138px 88px 92px 105px 40px",
+                    : "42px minmax(300px, 1fr) 86px 110px 130px 86px 88px 98px 34px",
                   gap: 8,
-                  alignItems: "start",
-                  padding: "16px 18px",
+                  alignItems: "center",
+                  padding: "14px 16px",
                   borderTop: rowIndex === 0 ? "none" : "1px solid #e5edf5",
                   background: row.type === "text" ? "#fbfdff" : "#ffffff"
-                }}>
+                }}
+                data-position-row={row.type}
+                >
                   <div style={{
                     width: 26,
                     height: 26,
@@ -630,8 +691,8 @@ export default function AuftragseingangPage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    background: "#eef3f7",
-                    color: "#64748b",
+                    background: "#eeeeee",
+                    color: "#555555",
                     fontWeight: 950
                   }}>
                     {rowIndex + 1}
@@ -661,10 +722,10 @@ export default function AuftragseingangPage() {
                         }
                         style={{
                           border: "none",
-                          background: "#fff1f2",
-                          color: "#991b1b",
-                          borderRadius: 10,
-                          minHeight: 40,
+                          background: "transparent",
+                          color: "#777777",
+                          borderRadius: 4,
+                          minHeight: 36,
                           cursor: "pointer",
                           fontWeight: 950
                         }}
@@ -678,21 +739,21 @@ export default function AuftragseingangPage() {
                       <input type="hidden" name="itemKind" value="item" />
 
                       <div style={{ display: "grid", gap: 8 }}>
-                        <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                        <label style={{ display: "grid", gap: 5, color: "#777777", fontSize: 11, fontWeight: 700 }}>
                           Artikel / Leistung
                           <input name="itemName" placeholder="Bezeichnung des Artikels" style={inputStyle} />
                         </label>
 
                         <details style={{
-                          border: "1px dashed #cbd5e1",
-                          borderRadius: 12,
-                          padding: "9px 11px",
-                          background: "#f8fafc"
+                          border: "none",
+                          borderRadius: 4,
+                          padding: "4px 0",
+                          background: "transparent"
                         }}>
                           <summary style={{
                             cursor: "pointer",
-                            color: "#0f766e",
-                            fontWeight: 900,
+                            color: "#333333",
+                            fontWeight: 700,
                             fontSize: 13
                           }}>
                             ≡ FREITEXT zu dieser Position
@@ -706,27 +767,27 @@ export default function AuftragseingangPage() {
                         </details>
                       </div>
 
-                      <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                      <label style={{ display: "grid", gap: 5, color: "#777777", fontSize: 11, fontWeight: 700 }}>
                         Menge
                         <input name="quantity" type="number" min="1" defaultValue="1" style={inputStyle} />
                       </label>
 
-                      <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                      <label style={{ display: "grid", gap: 5, color: "#777777", fontSize: 11, fontWeight: 700 }}>
                         Einheit
                         <input name="unit" defaultValue="Stück" style={inputStyle} />
                       </label>
 
-                      <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                      <label style={{ display: "grid", gap: 5, color: "#777777", fontSize: 11, fontWeight: 700 }}>
                         VK Netto
                         <input name="unitPriceEuro" placeholder="0,00 €" style={inputStyle} />
                       </label>
 
-                      <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                      <label style={{ display: "grid", gap: 5, color: "#777777", fontSize: 11, fontWeight: 700 }}>
                         Rabatt
                         <input name="discountPercent" type="number" min="0" defaultValue="0" style={inputStyle} />
                       </label>
 
-                      <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                      <label style={{ display: "grid", gap: 5, color: "#777777", fontSize: 11, fontWeight: 700 }}>
                         MwSt
                         <select name="taxRate" defaultValue="19" style={inputStyle}>
                           <option value="19">19 %</option>
@@ -735,19 +796,19 @@ export default function AuftragseingangPage() {
                         </select>
                       </label>
 
-                      <div style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                      <div style={{ display: "grid", gap: 5, color: "#777777", fontSize: 11, fontWeight: 700 }}>
                         Gesamt
-                        <div style={{
-                          minHeight: 42,
-                          borderRadius: 12,
-                          background: "#ffffff",
-                          border: "1px solid #dbe3ec",
+                        <div data-line-total style={{
+                          minHeight: 36,
+                          borderRadius: 0,
+                          background: "transparent",
+                          border: "none",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "flex-end",
-                          padding: "0 12px",
-                          color: "#07111f",
-                          fontWeight: 950
+                          padding: "0 4px",
+                          color: "#111111",
+                          fontWeight: 900
                         }}>
                           0,00 €
                         </div>
@@ -760,10 +821,10 @@ export default function AuftragseingangPage() {
                         }
                         style={{
                           border: "none",
-                          background: "#fff1f2",
-                          color: "#991b1b",
-                          borderRadius: 10,
-                          minHeight: 40,
+                          background: "transparent",
+                          color: "#777777",
+                          borderRadius: 4,
+                          minHeight: 36,
                           marginTop: 22,
                           cursor: "pointer",
                           fontWeight: 950
@@ -795,11 +856,11 @@ export default function AuftragseingangPage() {
                       )
                     }
                     style={{
-                      border: "1px solid #0f766e",
-                      background: "#ecfdf5",
-                      color: "#0f766e",
-                      borderRadius: 999,
-                      padding: "10px 14px",
+                      border: "1px solid #10a66a",
+                      background: "#ffffff",
+                      color: "#10a66a",
+                      borderRadius: 3,
+                      padding: "8px 14px",
                       fontWeight: 950,
                       cursor: "pointer"
                     }}
@@ -815,11 +876,11 @@ export default function AuftragseingangPage() {
                       )
                     }
                     style={{
-                      border: "1px solid #cbd5e1",
+                      border: "none",
                       background: "#ffffff",
-                      color: "#334155",
-                      borderRadius: 999,
-                      padding: "10px 14px",
+                      color: "#333333",
+                      borderRadius: 3,
+                      padding: "8px 10px",
                       fontWeight: 950,
                       cursor: "pointer"
                     }}
@@ -829,15 +890,14 @@ export default function AuftragseingangPage() {
 
                   <button
                     type="button"
-                    disabled
                     style={{
-                      border: "1px solid #e5e7eb",
-                      background: "#f3f4f6",
-                      color: "#9ca3af",
-                      borderRadius: 999,
-                      padding: "10px 14px",
+                      border: "none",
+                      background: "#ffffff",
+                      color: "#333333",
+                      borderRadius: 3,
+                      padding: "8px 10px",
                       fontWeight: 950,
-                      cursor: "not-allowed"
+                      cursor: "pointer"
                     }}
                   >
                     ◉ OPTIONAL
@@ -845,15 +905,14 @@ export default function AuftragseingangPage() {
 
                   <button
                     type="button"
-                    disabled
                     style={{
-                      border: "1px solid #e5e7eb",
-                      background: "#f3f4f6",
-                      color: "#9ca3af",
-                      borderRadius: 999,
-                      padding: "10px 14px",
+                      border: "none",
+                      background: "#ffffff",
+                      color: "#333333",
+                      borderRadius: 3,
+                      padding: "8px 10px",
                       fontWeight: 950,
-                      cursor: "not-allowed"
+                      cursor: "pointer"
                     }}
                   >
                     % GESAMTRABATT
@@ -861,15 +920,18 @@ export default function AuftragseingangPage() {
                 </div>
 
                 <div style={{
-                  minWidth: 210,
-                  borderRadius: 12,
-                  background: "#07111f",
+                  position: "absolute",
+                  right: 0,
+                  bottom: -44,
+                  minWidth: 260,
+                  borderRadius: "4px 4px 0 0",
+                  background: "#555555",
                   color: "white",
-                  padding: "10px 14px",
-                  fontWeight: 950,
-                  textAlign: "right"
+                  padding: "12px 18px",
+                  fontWeight: 800,
+                  textAlign: "center"
                 }}>
-                  Summe Netto: 0,00 €
+                  Summe Netto: {formatEuroCents(liveNetTotalCents)}
                 </div>
               </div>
             </div>
