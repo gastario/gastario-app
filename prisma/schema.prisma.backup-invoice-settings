@@ -117,19 +117,6 @@ model Tenant {
   slug      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  invoiceClosingTextEn    String?
-  invoiceClosingTextDe    String?
-  invoicePaymentTermsEn   String?
-  invoicePaymentTermsDe   String?
-  invoiceBankName         String?
-  invoiceBic              String?
-  invoiceIban             String?
-  invoicePhone            String?
-  invoiceEmail            String?
-  invoiceVatId            String?
-  invoiceTaxNumber        String?
-  invoiceSellerAddress    String?
-  invoiceSellerName       String?
   invoices  Invoice[]
 
   planCode           PlanCode           @default(STARTER)

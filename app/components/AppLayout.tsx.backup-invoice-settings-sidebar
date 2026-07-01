@@ -40,7 +40,6 @@ const navigationGroups = [
       { label: "Auftragseingang", to: "/auftragseingang" },
       { label: "Auswertungen", to: "/auswertungen" },
       { label: "Einstellungen", to: "/einstellungen" },
-      { label: "Rechnungsdaten", to: "/einstellungen/rechnungen" },
     ],
   },
 ];
