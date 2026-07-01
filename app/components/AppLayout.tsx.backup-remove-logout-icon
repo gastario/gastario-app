@@ -78,6 +78,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
         <div className="sidebarFooter">
           <a className="sidebarLogoutButton" href="/logout">
+            <span>⎋</span>
             Ausloggen
           </a>
         </div>
@@ -87,7 +88,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
     </main>
   );
 }
-
 
 
 
