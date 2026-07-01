@@ -1,16 +1,6 @@
 ﻿import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
-function todayInput() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function addDaysInput(days: number) {
-  const date = new Date();
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
 function euroToCents(value: FormDataEntryValue | null) {
   const normalized = String(value || "0")
     .replace(/€/g, "")
@@ -64,8 +54,6 @@ export async function loader({ request }: { request: Request }) {
     return {
       tenantName: "Gastario",
       invoices: [],
-      today: todayInput(),
-      dueDate: addDaysInput(14),
       stats: { drafts: 0, issued: 0, paid: 0, cancelled: 0 },
     };
   }
@@ -80,8 +68,6 @@ export async function loader({ request }: { request: Request }) {
   return {
     tenantName: access.tenant?.name || "Gastario",
     invoices,
-    today: todayInput(),
-    dueDate: addDaysInput(14),
     stats: {
       drafts: invoices.filter((invoice) => invoice.status === "DRAFT").length,
       issued: invoices.filter((invoice) => invoice.status === "ISSUED").length,
@@ -113,109 +99,12 @@ export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
   const intent = String(formData.get("intent") || "");
 
-  if (intent === "finalizeInvoice") {
-    const invoiceId = String(formData.get("invoiceId") || "");
-
-    const invoice = await prisma.invoice.findFirst({
-      where: {
-        id: invoiceId,
-        tenantId: access.tenantId,
-      },
-    });
-
-    if (!invoice) {
-      return { error: "Rechnung wurde nicht gefunden." };
-    }
-
-    if (invoice.status !== "DRAFT") {
-      return { error: "Nur Entwürfe können finalisiert werden." };
-    }
-
-    if (!invoice.externalInvoiceNumber) {
-      return { error: "Rechnungsnummer fehlt. Entwurf kann nicht finalisiert werden." };
-    }
-
-    await prisma.invoice.update({
-      where: { id: invoice.id },
-      data: {
-        status: "ISSUED" as any,
-        issuedAt: new Date(),
-      } as any,
-    });
-
-    return { success: "Rechnung wurde finalisiert und gesperrt." };
-  }
-
-  if (intent === "markInvoicePaid") {
-    const invoiceId = String(formData.get("invoiceId") || "");
-
-    const invoice = await prisma.invoice.findFirst({
-      where: {
-        id: invoiceId,
-        tenantId: access.tenantId,
-      },
-    });
-
-    if (!invoice) {
-      return { error: "Rechnung wurde nicht gefunden." };
-    }
-
-    if (invoice.status === "CANCELLED") {
-      return { error: "Stornierte Rechnungen können nicht als bezahlt markiert werden." };
-    }
-
-    await prisma.invoice.update({
-      where: { id: invoice.id },
-      data: {
-        status: "PAID" as any,
-        paidAt: new Date(),
-      } as any,
-    });
-
-    return { success: "Rechnung wurde als bezahlt markiert." };
-  }
-
-  if (intent === "cancelInvoice") {
-    const invoiceId = String(formData.get("invoiceId") || "");
-
-    const invoice = await prisma.invoice.findFirst({
-      where: {
-        id: invoiceId,
-        tenantId: access.tenantId,
-      },
-    });
-
-    if (!invoice) {
-      return { error: "Rechnung wurde nicht gefunden." };
-    }
-
-    if (invoice.status === "PAID") {
-      return { error: "Bezahlte Rechnungen bitte nicht einfach stornieren. Dafür bauen wir als Nächstes eine Korrektur/Storno-Rechnung." };
-    }
-
-    await prisma.invoice.update({
-      where: { id: invoice.id },
-      data: {
-        status: "CANCELLED" as any,
-        cancelledAt: new Date(),
-      } as any,
-    });
-
-    return { success: "Rechnung wurde storniert." };
-  }
-
   if (intent !== "createInvoiceDraft") {
     return { error: "Unbekannte Aktion." };
   }
 
   const invoiceNumber = String(formData.get("invoiceNumber") || "").trim();
   const language = String(formData.get("language") || "DE");
-
-  const sellerName = String(formData.get("sellerName") || "").trim();
-  const sellerAddress = String(formData.get("sellerAddress") || "").trim();
-  const sellerTaxNumber = String(formData.get("sellerTaxNumber") || "").trim();
-  const sellerVatId = String(formData.get("sellerVatId") || "").trim();
-
   const customerName = String(formData.get("customerName") || "").trim();
   const customerEmail = String(formData.get("customerEmail") || "").trim().toLowerCase();
   const customerAddress = String(formData.get("customerAddress") || "").trim();
@@ -245,24 +134,25 @@ export async function action({ request }: { request: Request }) {
         ? selectedTaxRate
         : 19;
 
-  if (!invoiceNumber) return { error: "Rechnungsnummer fehlt." };
-  if (!sellerName) return { error: "Dein Firmenname fehlt." };
-  if (!sellerAddress) return { error: "Deine Firmenadresse fehlt." };
-  if (!sellerTaxNumber && !sellerVatId) return { error: "Steuernummer oder USt-ID fehlt." };
-  if (!customerName) return { error: "Kundenname fehlt." };
-  if (!customerAddress) return { error: "Rechnungsadresse des Kunden fehlt." };
-  if (!itemName) return { error: "Mindestens eine Rechnungsposition fehlt." };
-  if (unitCents <= 0) return { error: "VK Netto der Position fehlt." };
+  if (!customerName) {
+    return { error: "Kundenname fehlt." };
+  }
 
-  const existing = await prisma.invoice.findFirst({
-    where: {
-      tenantId: access.tenantId,
-      externalInvoiceNumber: invoiceNumber,
-    },
-  });
+  if (!itemName) {
+    return { error: "Mindestens eine Rechnungsposition fehlt." };
+  }
 
-  if (existing) {
-    return { error: "Diese Rechnungsnummer ist bereits vorhanden." };
+  if (invoiceNumber) {
+    const existing = await prisma.invoice.findFirst({
+      where: {
+        tenantId: access.tenantId,
+        externalInvoiceNumber: invoiceNumber,
+      },
+    });
+
+    if (existing) {
+      return { error: "Diese Rechnungsnummer ist bereits vorhanden." };
+    }
   }
 
   const lineBeforeDiscountCents = Math.round(unitCents * quantity);
@@ -277,7 +167,7 @@ export async function action({ request }: { request: Request }) {
       type: "DIRECT" as any,
       status: "DRAFT" as any,
       numberSource: "MANUAL" as any,
-      externalInvoiceNumber: invoiceNumber,
+      externalInvoiceNumber: invoiceNumber || null,
       language: language as any,
       customerType: customerType as any,
       taxTreatment: taxTreatment as any,
@@ -286,13 +176,10 @@ export async function action({ request }: { request: Request }) {
       dueDate,
       customerName,
       customerEmail: customerEmail || null,
-      customerAddress,
+      customerAddress: customerAddress || null,
       customerCountry: customerCountry || "DE",
       customerVatId: customerVatId || null,
-      sellerName,
-      sellerAddress,
-      sellerTaxNumber: sellerTaxNumber || null,
-      sellerVatId: sellerVatId || null,
+      sellerName: access.tenant?.name || "Gastario",
       currency: "EUR",
       netTotalCents,
       taxTotalCents,
@@ -338,7 +225,7 @@ export default function RechnungenPage() {
           <p className="eyebrow">Verkauf</p>
           <h1>Rechnungen</h1>
           <p className="muted">
-            Rechnungen erstellen, Pflichtangaben prüfen und Entwürfe sauber verwalten.
+            Rechnungen erstellen, Rechnungsnummer selbst festlegen und Entwürfe sauber verwalten.
           </p>
         </div>
 
@@ -347,35 +234,55 @@ export default function RechnungenPage() {
         </Link>
       </header>
 
-      {actionData && "error" in actionData ? <div style={errorStyle}>{actionData.error}</div> : null}
-      {actionData && "success" in actionData ? <div style={successStyle}>{actionData.success}</div> : null}
+      {actionData && "error" in actionData ? (
+        <div style={errorStyle}>{actionData.error}</div>
+      ) : null}
+
+      {actionData && "success" in actionData ? (
+        <div style={successStyle}>{actionData.success}</div>
+      ) : null}
 
       <section style={pageGridStyle}>
         <div style={statsGridStyle}>
-          <div style={statCardStyle}><span style={statLabelStyle}>Entwürfe</span><strong style={statNumberStyle}>{data.stats.drafts}</strong><small style={statHintStyle}>Noch nicht final</small></div>
-          <div style={statCardStyle}><span style={statLabelStyle}>Erstellt</span><strong style={statNumberStyle}>{data.stats.issued}</strong><small style={statHintStyle}>Finalisiert</small></div>
-          <div style={statCardStyle}><span style={statLabelStyle}>Bezahlt</span><strong style={statNumberStyle}>{data.stats.paid}</strong><small style={statHintStyle}>Erledigt</small></div>
-          <div style={statCardStyle}><span style={statLabelStyle}>Storniert</span><strong style={statNumberStyle}>{data.stats.cancelled}</strong><small style={statHintStyle}>Korrektur/Storno</small></div>
+          <div style={statCardStyle}>
+            <span style={statLabelStyle}>Entwürfe</span>
+            <strong style={statNumberStyle}>{data.stats.drafts}</strong>
+            <small style={statHintStyle}>Noch nicht final</small>
+          </div>
+
+          <div style={statCardStyle}>
+            <span style={statLabelStyle}>Erstellt</span>
+            <strong style={statNumberStyle}>{data.stats.issued}</strong>
+            <small style={statHintStyle}>Finalisierte Rechnungen</small>
+          </div>
+
+          <div style={statCardStyle}>
+            <span style={statLabelStyle}>Bezahlt</span>
+            <strong style={statNumberStyle}>{data.stats.paid}</strong>
+            <small style={statHintStyle}>Erledigt</small>
+          </div>
+
+          <div style={statCardStyle}>
+            <span style={statLabelStyle}>Storniert</span>
+            <strong style={statNumberStyle}>{data.stats.cancelled}</strong>
+            <small style={statHintStyle}>Korrektur/Storno</small>
+          </div>
         </div>
 
         <div style={cardStyle}>
           <p style={smallLabelStyle}>Neue Rechnung</p>
           <h2 style={sectionTitleStyle}>Rechnungsentwurf erstellen</h2>
           <p style={mutedStyle}>
-            Dieses Formular erstellt einen Entwurf. Finalisieren, Sperren, PDF und E-Rechnung bauen wir danach.
+            Das erstellt noch keine finale Rechnung, sondern einen Entwurf. Finalisieren, Sperren und PDF bauen wir im nächsten Schritt.
           </p>
-
-          <div style={noticeStyle}>
-            Pflichtfelder sind jetzt strenger: Rechnungsnummer, deine Firmendaten, Kunde, Rechnungsadresse, Leistungsdatum und Position.
-          </div>
 
           <Form method="post" style={formGridStyle}>
             <input type="hidden" name="intent" value="createInvoiceDraft" />
 
             <div style={threeColStyle}>
               <label style={labelStyle}>
-                Rechnungsnummer *
-                <input name="invoiceNumber" placeholder="RE-2026-001" required style={inputStyle} />
+                Rechnungsnummer
+                <input name="invoiceNumber" placeholder="z. B. RE-2026-001" style={inputStyle} />
               </label>
 
               <label style={labelStyle}>
@@ -395,94 +302,61 @@ export default function RechnungenPage() {
               </label>
             </div>
 
-            <div style={sectionBoxStyle}>
-              <p style={smallLabelStyle}>Deine Rechnungsdaten</p>
-
+            <div style={twoColStyle}>
               <label style={labelStyle}>
-                Firmenname *
-                <input name="sellerName" defaultValue={data.tenantName} required style={inputStyle} />
+                Kunde *
+                <input name="customerName" placeholder="Firma / Kunde" required style={inputStyle} />
               </label>
 
               <label style={labelStyle}>
-                Firmenadresse *
-                <textarea name="sellerAddress" rows={3} placeholder={"Straße Hausnummer\nPLZ Ort\nDeutschland"} required style={textareaStyle} />
+                Kunden-E-Mail
+                <input name="customerEmail" type="email" placeholder="kunde@example.com" style={inputStyle} />
               </label>
-
-              <div style={twoColStyle}>
-                <label style={labelStyle}>
-                  Steuernummer
-                  <input name="sellerTaxNumber" placeholder="Steuernummer" style={inputStyle} />
-                </label>
-
-                <label style={labelStyle}>
-                  USt-ID
-                  <input name="sellerVatId" placeholder="DE..." style={inputStyle} />
-                </label>
-              </div>
             </div>
 
-            <div style={sectionBoxStyle}>
-              <p style={smallLabelStyle}>Kunde</p>
+            <label style={labelStyle}>
+              Rechnungsadresse
+              <textarea name="customerAddress" rows={3} placeholder="Straße, PLZ Ort" style={{ ...inputStyle, minHeight: 82, resize: "vertical" }} />
+            </label>
 
-              <div style={twoColStyle}>
-                <label style={labelStyle}>
-                  Kunde *
-                  <input name="customerName" placeholder="Firma / Kunde" required style={inputStyle} />
-                </label>
-
-                <label style={labelStyle}>
-                  Kunden-E-Mail
-                  <input name="customerEmail" type="email" placeholder="kunde@example.com" style={inputStyle} />
-                </label>
-              </div>
-
+            <div style={threeColStyle}>
               <label style={labelStyle}>
-                Rechnungsadresse Kunde *
-                <textarea name="customerAddress" rows={3} placeholder={"Straße Hausnummer\nPLZ Ort\nLand"} required style={textareaStyle} />
+                Land
+                <input name="customerCountry" defaultValue="DE" placeholder="DE" style={inputStyle} />
               </label>
 
-              <div style={threeColStyle}>
-                <label style={labelStyle}>
-                  Land
-                  <input name="customerCountry" defaultValue="DE" placeholder="DE" style={inputStyle} />
-                </label>
+              <label style={labelStyle}>
+                USt-ID Kunde
+                <input name="customerVatId" placeholder="z. B. DE123456789" style={inputStyle} />
+              </label>
 
-                <label style={labelStyle}>
-                  USt-ID Kunde
-                  <input name="customerVatId" placeholder="z. B. DE123456789" style={inputStyle} />
-                </label>
-
-                <label style={labelStyle}>
-                  Steuerbehandlung
-                  <select name="taxTreatment" defaultValue="DOMESTIC_19" style={inputStyle}>
-                    <option value="DOMESTIC_19">Deutschland 19 %</option>
-                    <option value="DOMESTIC_7">Deutschland 7 %</option>
-                    <option value="TAX_FREE">Steuerfrei / 0 %</option>
-                    <option value="REVERSE_CHARGE">Reverse Charge</option>
-                    <option value="EXPORT">Ausland / Export</option>
-                    <option value="OTHER">Sonderfall</option>
-                  </select>
-                </label>
-              </div>
+              <label style={labelStyle}>
+                Steuerbehandlung
+                <select name="taxTreatment" defaultValue="DOMESTIC_19" style={inputStyle}>
+                  <option value="DOMESTIC_19">Deutschland 19 %</option>
+                  <option value="DOMESTIC_7">Deutschland 7 %</option>
+                  <option value="TAX_FREE">Steuerfrei / 0 %</option>
+                  <option value="REVERSE_CHARGE">Reverse Charge</option>
+                  <option value="EXPORT">Ausland / Export</option>
+                  <option value="OTHER">Sonderfall</option>
+                </select>
+              </label>
             </div>
 
             <div style={threeColStyle}>
               <label style={labelStyle}>
-                Rechnungsdatum *
-                <input name="invoiceDate" type="date" defaultValue={data.today} required style={inputStyle} />
-                <small style={helpTextStyle}>Wird automatisch mit heute vorbelegt.</small>
+                Rechnungsdatum
+                <input name="invoiceDate" type="date" style={inputStyle} />
               </label>
 
               <label style={labelStyle}>
-                Leistungsdatum *
-                <input name="serviceDate" type="date" defaultValue={data.today} required style={inputStyle} />
-                <small style={helpTextStyle}>Datum der Lieferung/Leistung.</small>
+                Leistungsdatum
+                <input name="serviceDate" type="date" style={inputStyle} />
               </label>
 
               <label style={labelStyle}>
                 Fällig am
-                <input name="dueDate" type="date" defaultValue={data.dueDate} style={inputStyle} />
-                <small style={helpTextStyle}>Standard: 14 Tage.</small>
+                <input name="dueDate" type="date" style={inputStyle} />
               </label>
             </div>
 
@@ -513,8 +387,8 @@ export default function RechnungenPage() {
                 </label>
 
                 <label style={labelStyle}>
-                  VK Netto *
-                  <input name="unitPriceEuro" placeholder="0,00 €" required style={inputStyle} />
+                  VK Netto
+                  <input name="unitPriceEuro" placeholder="0,00 €" style={inputStyle} />
                 </label>
 
                 <label style={labelStyle}>
@@ -555,56 +429,30 @@ export default function RechnungenPage() {
                   <th style={thStyle}>Sprache</th>
                   <th style={thStyle}>Summe</th>
                   <th style={thStyle}>Status</th>
-                  <th style={thStyle}>Aktion</th>
                 </tr>
               </thead>
 
               <tbody>
                 {data.invoices.length === 0 ? (
                   <tr>
-                    <td style={tdStyle} colSpan={7}><strong>Noch keine Rechnungen vorhanden.</strong></td>
+                    <td style={tdStyle} colSpan={6}>
+                      <strong>Noch keine Rechnungen vorhanden.</strong>
+                    </td>
                   </tr>
                 ) : (
                   data.invoices.map((invoice) => (
                     <tr key={invoice.id}>
-                      <td style={tdStyle}><strong>{invoice.externalInvoiceNumber || "Entwurf ohne Nummer"}</strong></td>
+                      <td style={tdStyle}>
+                        <strong>{invoice.externalInvoiceNumber || "Entwurf ohne Nummer"}</strong>
+                      </td>
                       <td style={tdStyle}>{invoice.customerName}</td>
-                      <td style={tdStyle}>{invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleDateString("de-DE") : "-"}</td>
+                      <td style={tdStyle}>
+                        {invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleDateString("de-DE") : "-"}
+                      </td>
                       <td style={tdStyle}>{invoice.language || "DE"}</td>
                       <td style={tdStyle}>{centsToEuro(invoice.grossTotalCents)}</td>
-                      <td style={tdStyle}><span style={statusPillStyle}>{invoice.status}</span></td>
                       <td style={tdStyle}>
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                          {invoice.status === "DRAFT" ? (
-                            <Form method="post">
-                              <input type="hidden" name="intent" value="finalizeInvoice" />
-                              <input type="hidden" name="invoiceId" value={invoice.id} />
-                              <button type="submit" style={miniPrimaryButtonStyle}>
-                                Finalisieren
-                              </button>
-                            </Form>
-                          ) : null}
-
-                          {invoice.status === "ISSUED" ? (
-                            <Form method="post">
-                              <input type="hidden" name="intent" value="markInvoicePaid" />
-                              <input type="hidden" name="invoiceId" value={invoice.id} />
-                              <button type="submit" style={miniButtonStyle}>
-                                Bezahlt
-                              </button>
-                            </Form>
-                          ) : null}
-
-                          {invoice.status !== "CANCELLED" && invoice.status !== "PAID" ? (
-                            <Form method="post">
-                              <input type="hidden" name="intent" value="cancelInvoice" />
-                              <input type="hidden" name="invoiceId" value={invoice.id} />
-                              <button type="submit" style={miniDangerButtonStyle}>
-                                Stornieren
-                              </button>
-                            </Form>
-                          ) : null}
-                        </div>
+                        <span style={statusPillStyle}>{invoice.status}</span>
                       </td>
                     </tr>
                   ))
@@ -639,17 +487,13 @@ const cardStyle: React.CSSProperties = { background: "#ffffff", border: "1px sol
 const smallLabelStyle: React.CSSProperties = { margin: 0, color: "#00796b", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: 12, fontWeight: 900 };
 const sectionTitleStyle: React.CSSProperties = { margin: "6px 0 0", fontSize: 22, letterSpacing: "-0.035em" };
 const mutedStyle: React.CSSProperties = { margin: "8px 0 0", color: "#64748b", fontWeight: 650 };
-const noticeStyle: React.CSSProperties = { marginTop: 14, padding: 13, borderRadius: 14, background: "#fff7ed", border: "1px solid #fed7aa", color: "#9a3412", fontWeight: 750 };
-const formGridStyle: React.CSSProperties = { display: "grid", gap: 16, marginTop: 18 };
+const formGridStyle: React.CSSProperties = { display: "grid", gap: 14, marginTop: 18 };
 const twoColStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 };
 const threeColStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12 };
 const fiveColStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr 1.2fr 1fr 1fr", gap: 12 };
 const labelStyle: React.CSSProperties = { display: "grid", gap: 6, color: "#334155", fontSize: 12, fontWeight: 850 };
 const inputStyle: React.CSSProperties = { width: "100%", minHeight: 42, border: "1px solid #cbd5e1", borderRadius: 8, padding: "8px 10px", fontWeight: 750, background: "#ffffff" };
-const textareaStyle: React.CSSProperties = { ...inputStyle, minHeight: 82, resize: "vertical", lineHeight: 1.45 };
-const helpTextStyle: React.CSSProperties = { color: "#64748b", fontSize: 11, fontWeight: 650 };
-const sectionBoxStyle: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: 16, padding: 16, background: "#f8fafc", display: "grid", gap: 12 };
-const positionBoxStyle: React.CSSProperties = { border: "1px solid #dbeafe", borderRadius: 16, padding: 16, background: "#eff6ff", display: "grid", gap: 12 };
+const positionBoxStyle: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: 16, padding: 16, background: "#f8fafc", display: "grid", gap: 12 };
 const primaryButtonStyle: React.CSSProperties = { border: "none", background: "#059669", color: "#ffffff", borderRadius: 999, padding: "12px 18px", fontWeight: 950, cursor: "pointer" };
 const tableWrapStyle: React.CSSProperties = { overflowX: "auto", marginTop: 16, border: "1px solid #e2e8f0", borderRadius: 14 };
 const tableStyle: React.CSSProperties = { width: "100%", borderCollapse: "collapse", background: "#ffffff" };

@@ -113,97 +113,6 @@ export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
   const intent = String(formData.get("intent") || "");
 
-  if (intent === "finalizeInvoice") {
-    const invoiceId = String(formData.get("invoiceId") || "");
-
-    const invoice = await prisma.invoice.findFirst({
-      where: {
-        id: invoiceId,
-        tenantId: access.tenantId,
-      },
-    });
-
-    if (!invoice) {
-      return { error: "Rechnung wurde nicht gefunden." };
-    }
-
-    if (invoice.status !== "DRAFT") {
-      return { error: "Nur Entwürfe können finalisiert werden." };
-    }
-
-    if (!invoice.externalInvoiceNumber) {
-      return { error: "Rechnungsnummer fehlt. Entwurf kann nicht finalisiert werden." };
-    }
-
-    await prisma.invoice.update({
-      where: { id: invoice.id },
-      data: {
-        status: "ISSUED" as any,
-        issuedAt: new Date(),
-      } as any,
-    });
-
-    return { success: "Rechnung wurde finalisiert und gesperrt." };
-  }
-
-  if (intent === "markInvoicePaid") {
-    const invoiceId = String(formData.get("invoiceId") || "");
-
-    const invoice = await prisma.invoice.findFirst({
-      where: {
-        id: invoiceId,
-        tenantId: access.tenantId,
-      },
-    });
-
-    if (!invoice) {
-      return { error: "Rechnung wurde nicht gefunden." };
-    }
-
-    if (invoice.status === "CANCELLED") {
-      return { error: "Stornierte Rechnungen können nicht als bezahlt markiert werden." };
-    }
-
-    await prisma.invoice.update({
-      where: { id: invoice.id },
-      data: {
-        status: "PAID" as any,
-        paidAt: new Date(),
-      } as any,
-    });
-
-    return { success: "Rechnung wurde als bezahlt markiert." };
-  }
-
-  if (intent === "cancelInvoice") {
-    const invoiceId = String(formData.get("invoiceId") || "");
-
-    const invoice = await prisma.invoice.findFirst({
-      where: {
-        id: invoiceId,
-        tenantId: access.tenantId,
-      },
-    });
-
-    if (!invoice) {
-      return { error: "Rechnung wurde nicht gefunden." };
-    }
-
-    if (invoice.status === "PAID") {
-      return { error: "Bezahlte Rechnungen bitte nicht einfach stornieren. Dafür bauen wir als Nächstes eine Korrektur/Storno-Rechnung." };
-    }
-
-    await prisma.invoice.update({
-      where: { id: invoice.id },
-      data: {
-        status: "CANCELLED" as any,
-        cancelledAt: new Date(),
-      } as any,
-    });
-
-    return { success: "Rechnung wurde storniert." };
-  }
-
   if (intent !== "createInvoiceDraft") {
     return { error: "Unbekannte Aktion." };
   }
@@ -555,14 +464,13 @@ export default function RechnungenPage() {
                   <th style={thStyle}>Sprache</th>
                   <th style={thStyle}>Summe</th>
                   <th style={thStyle}>Status</th>
-                  <th style={thStyle}>Aktion</th>
                 </tr>
               </thead>
 
               <tbody>
                 {data.invoices.length === 0 ? (
                   <tr>
-                    <td style={tdStyle} colSpan={7}><strong>Noch keine Rechnungen vorhanden.</strong></td>
+                    <td style={tdStyle} colSpan={6}><strong>Noch keine Rechnungen vorhanden.</strong></td>
                   </tr>
                 ) : (
                   data.invoices.map((invoice) => (
@@ -573,39 +481,6 @@ export default function RechnungenPage() {
                       <td style={tdStyle}>{invoice.language || "DE"}</td>
                       <td style={tdStyle}>{centsToEuro(invoice.grossTotalCents)}</td>
                       <td style={tdStyle}><span style={statusPillStyle}>{invoice.status}</span></td>
-                      <td style={tdStyle}>
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                          {invoice.status === "DRAFT" ? (
-                            <Form method="post">
-                              <input type="hidden" name="intent" value="finalizeInvoice" />
-                              <input type="hidden" name="invoiceId" value={invoice.id} />
-                              <button type="submit" style={miniPrimaryButtonStyle}>
-                                Finalisieren
-                              </button>
-                            </Form>
-                          ) : null}
-
-                          {invoice.status === "ISSUED" ? (
-                            <Form method="post">
-                              <input type="hidden" name="intent" value="markInvoicePaid" />
-                              <input type="hidden" name="invoiceId" value={invoice.id} />
-                              <button type="submit" style={miniButtonStyle}>
-                                Bezahlt
-                              </button>
-                            </Form>
-                          ) : null}
-
-                          {invoice.status !== "CANCELLED" && invoice.status !== "PAID" ? (
-                            <Form method="post">
-                              <input type="hidden" name="intent" value="cancelInvoice" />
-                              <input type="hidden" name="invoiceId" value={invoice.id} />
-                              <button type="submit" style={miniDangerButtonStyle}>
-                                Stornieren
-                              </button>
-                            </Form>
-                          ) : null}
-                        </div>
-                      </td>
                     </tr>
                   ))
                 )}
