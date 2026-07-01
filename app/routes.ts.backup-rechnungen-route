@@ -9,7 +9,6 @@ export default [
 
   route("auftraege", "routes/auftraege.tsx"),
   route("angebote", "routes/angebote.tsx"),
-  route("rechnungen", "routes/rechnungen.tsx"),
   route("kunden", "routes/kunden.tsx"),
   route("produkte", "routes/produkte.tsx"),
   route("produktion", "routes/produktion.tsx"),

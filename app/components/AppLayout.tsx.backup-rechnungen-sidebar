@@ -10,7 +10,6 @@ const navigationGroups = [
     items: [
       { label: "Aufträge", to: "/auftraege" },
       { label: "Angebote", to: "/angebote" },
-      { label: "Rechnungen", to: "/rechnungen" },
       { label: "Kunden", to: "/kunden" },
       { label: "Produkte", to: "/produkte" },
     ],
