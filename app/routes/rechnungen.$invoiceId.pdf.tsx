@@ -259,7 +259,7 @@ const printButtonStyle: React.CSSProperties = {
   color: "#ffffff",
   borderRadius: 999,
   padding: "12px 18px",
-  fontWeight: 900,
+  fontWeight: 700,
   cursor: "pointer",
 };
 
@@ -322,7 +322,7 @@ const labelStyle: React.CSSProperties = {
   textTransform: "uppercase",
   letterSpacing: "0.08em",
   fontSize: 12,
-  fontWeight: 900,
+  fontWeight: 700,
 };
 
 const addressStyle: React.CSSProperties = {
@@ -418,6 +418,7 @@ const bankTextStyle: React.CSSProperties = {
   fontSize: 13,
   lineHeight: 1.45,
 };
+
 
 
 

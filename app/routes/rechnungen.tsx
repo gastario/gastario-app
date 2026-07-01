@@ -436,7 +436,7 @@ const smallLabelStyle: React.CSSProperties = {
   textTransform: "uppercase",
   letterSpacing: "0.08em",
   fontSize: 11,
-  fontWeight: 950,
+  fontWeight: 700,
 };
 
 const heroTitleStyle: React.CSSProperties = {
@@ -485,7 +485,7 @@ const statIconStyle: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   fontSize: 24,
-  fontWeight: 950,
+  fontWeight: 700,
   background: "#f1f5f9",
   color: "#0f172a",
 };
@@ -499,7 +499,7 @@ const statLabelStyle: React.CSSProperties = {
   display: "block",
   color: "#0f172a",
   fontSize: 14,
-  fontWeight: 900,
+  fontWeight: 700,
 };
 
 const statHintStyle: React.CSSProperties = {
@@ -545,7 +545,7 @@ const primaryButtonStyle: React.CSSProperties = {
   background: "linear-gradient(135deg, #058872 0%, #04705f 100%)",
   color: "#ffffff",
   fontSize: 14,
-  fontWeight: 900,
+  fontWeight: 700,
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
@@ -563,7 +563,7 @@ const secondaryButtonStyle: React.CSSProperties = {
   background: "#ffffff",
   color: "#0f172a",
   fontSize: 14,
-  fontWeight: 900,
+  fontWeight: 700,
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
@@ -614,7 +614,7 @@ const tdRightStyle: React.CSSProperties = {
 };
 
 const customerNameStyle: React.CSSProperties = {
-  fontWeight: 760,
+  fontWeight: 650,
 };
 
 const subTextStyle: React.CSSProperties = {
@@ -643,7 +643,7 @@ const statusPillStyle: React.CSSProperties = {
   background: "#f1f5f9",
   color: "#334155",
   fontSize: 12,
-  fontWeight: 900,
+  fontWeight: 700,
 };
 
 const draftPillStyle: React.CSSProperties = { background: "#fff7ed", color: "#9a3412" };
@@ -663,7 +663,7 @@ const miniBaseButtonStyle: React.CSSProperties = {
   borderRadius: 10,
   padding: "0 12px",
   fontSize: 12,
-  fontWeight: 850,
+  fontWeight: 700,
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
@@ -699,7 +699,7 @@ const errorStyle: React.CSSProperties = {
   color: "#991b1b",
   borderRadius: 14,
   padding: 14,
-  fontWeight: 750,
+  fontWeight: 700,
   marginBottom: 16,
 };
 
@@ -709,7 +709,8 @@ const successStyle: React.CSSProperties = {
   color: "#047857",
   borderRadius: 14,
   padding: 14,
-  fontWeight: 750,
+  fontWeight: 700,
   marginBottom: 16,
 };
+
 

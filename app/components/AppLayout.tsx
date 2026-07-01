@@ -135,7 +135,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             padding: 0 8px;
             color: #718096;
             font-size: 11px;
-            font-weight: 900;
+            font-weight: 700;
             letter-spacing: 0.09em;
             text-transform: uppercase;
           }
@@ -148,7 +148,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             border-radius: 12px;
             color: #172033;
             font-size: 14px;
-            font-weight: 780;
+            font-weight: 650;
             text-decoration: none;
             border: 1px solid transparent;
             transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
@@ -182,7 +182,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             border: 1px solid var(--g-border-strong);
             color: #0f172a;
             text-decoration: none;
-            font-weight: 850;
+            font-weight: 700;
           }
 
           .workspace {
@@ -210,7 +210,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             font-size: 36px;
             line-height: 1.05;
             letter-spacing: -0.055em;
-            font-weight: 950;
+            font-weight: 700;
           }
 
           .eyebrow {
@@ -219,7 +219,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             text-transform: uppercase;
             letter-spacing: 0.09em;
             font-size: 12px;
-            font-weight: 950;
+            font-weight: 700;
           }
 
           .muted {
@@ -275,7 +275,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             gap: 8px;
             text-decoration: none;
             font-size: 14px;
-            font-weight: 850;
+            font-weight: 700;
             white-space: nowrap;
           }
 
@@ -358,3 +358,4 @@ export default function AppLayout({ children }: AppLayoutProps) {
     </main>
   );
 }
+

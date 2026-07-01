@@ -472,17 +472,21 @@ export default function NeueRechnungPage() {
       {actionData && "success" in actionData ? <div style={successStyle}>{actionData.success}</div> : null}
 
       {!data.invoiceSettingsComplete ? (
-        <div style={blockingNoticeStyle}>
+        <div style={blockedPageStyle}>
+          <div style={blockedIconStyle}>!</div>
           <div>
-            <strong>Rechnungsdaten unvollständig</strong>
-            <p>Bevor du Rechnungen erstellst, müssen Firmenadresse, Steuernummer oder USt-ID, IBAN und Bankname hinterlegt sein.</p>
+            <p style={sectionLabelStyle}>Rechnungserstellung gesperrt</p>
+            <h2 style={blockedTitleStyle}>Rechnungsdaten zuerst vervollständigen</h2>
+            <p style={blockedTextStyle}>
+              Damit Gastario saubere Rechnungen erstellen kann, müssen Firmenadresse, Steuernummer oder USt-ID,
+              IBAN und Bankname hinterlegt sein. Danach wird der Rechnungseditor automatisch freigeschaltet.
+            </p>
           </div>
           <Link to="/einstellungen/rechnungen" style={primaryButtonStyle}>
             Rechnungsdaten vervollständigen
           </Link>
         </div>
-      ) : null}
-
+      ) : (
       <Form method="post" style={pageStyle}>
         <input type="hidden" name="intent" value="createInvoiceDraft" />
         <input type="hidden" name="priceMode" value={priceMode} />
@@ -672,6 +676,7 @@ export default function NeueRechnungPage() {
           </button>
         </div>
       </Form>
+      )}
     </AppLayout>
   );
 }
@@ -728,34 +733,78 @@ const positionCardStyle: React.CSSProperties = { ...cardStyle, padding: 0, overf
 const twoColStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28 };
 const twoColSmallStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "0.7fr 1.3fr", gap: 12 };
 const gridStyle: React.CSSProperties = { display: "grid", gap: 14 };
-const labelStyle: React.CSSProperties = { display: "grid", gap: 7, color: "#334155", fontSize: 12, fontWeight: 850 };
+const labelStyle: React.CSSProperties = { display: "grid", gap: 7, color: "#334155", fontSize: 12, fontWeight: 700 };
 const inputStyle: React.CSSProperties = { width: "100%", minHeight: 46, border: "1px solid #cbd5e1", borderRadius: 12, padding: "10px 12px", fontSize: 14, fontWeight: 650, background: "#ffffff" };
-const sectionLabelStyle: React.CSSProperties = { margin: "0 0 12px", color: "#00796b", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: 11, fontWeight: 950 };
+const sectionLabelStyle: React.CSSProperties = { margin: "0 0 12px", color: "#00796b", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: 11, fontWeight: 700 };
 const topSwitchStyle: React.CSSProperties = { display: "flex", justifyContent: "flex-end" };
-const switchButtonStyle: React.CSSProperties = { minHeight: 40, border: "1px solid #cbd5e1", padding: "0 16px", background: "#ffffff", fontWeight: 850, cursor: "pointer" };
+const switchButtonStyle: React.CSSProperties = { minHeight: 40, border: "1px solid #cbd5e1", padding: "0 16px", background: "#ffffff", fontWeight: 700, cursor: "pointer" };
 const activeSwitchButtonStyle: React.CSSProperties = { ...switchButtonStyle, background: "#e6f4ef", color: "#047857", borderColor: "#059669" };
 const sellerInfoStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 18, alignItems: "center", color: "#475569" };
 const positionRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "42px minmax(240px, 1fr) 90px 130px 140px 100px 120px 30px", gap: 10, alignItems: "end", padding: "28px 22px 14px" };
 const textRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "42px minmax(0, 1fr) 30px", gap: 10, alignItems: "end", padding: "18px 22px 8px" };
 const discountRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "42px minmax(260px, 1fr) 180px 180px 30px", gap: 10, alignItems: "end", padding: "18px 22px", borderTop: "1px solid #eef2f7" };
-const numberCircleStyle: React.CSSProperties = { width: 32, height: 32, borderRadius: 999, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, marginBottom: 9 };
+const numberCircleStyle: React.CSSProperties = { width: 32, height: 32, borderRadius: 999, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, marginBottom: 9 };
 const numberCircleDarkStyle: React.CSSProperties = { ...numberCircleStyle, background: "#334155", color: "#ffffff" };
 const amountBoxStyle: React.CSSProperties = { display: "grid", justifyItems: "end", gap: 8, paddingBottom: 4 };
-const taxPillStyle: React.CSSProperties = { border: "none", borderRadius: 999, background: "#3f3f3f", color: "#ffffff", height: 28, padding: "0 9px", fontWeight: 800 };
-const deleteButtonStyle: React.CSSProperties = { border: "none", background: "transparent", color: "#64748b", fontSize: 20, fontWeight: 900, cursor: "pointer", marginBottom: 12 };
+const taxPillStyle: React.CSSProperties = { border: "none", borderRadius: 999, background: "#3f3f3f", color: "#ffffff", height: 28, padding: "0 9px", fontWeight: 700 };
+const deleteButtonStyle: React.CSSProperties = { border: "none", background: "transparent", color: "#64748b", fontSize: 20, fontWeight: 700, cursor: "pointer", marginBottom: 12 };
 const positionActionsStyle: React.CSSProperties = { display: "flex", justifyContent: "center", gap: 18, padding: "12px 22px 26px" };
-const outlineButtonStyle: React.CSSProperties = { minHeight: 40, border: "1px solid #059669", background: "#ffffff", color: "#059669", borderRadius: 12, padding: "0 16px", fontWeight: 850, cursor: "pointer" };
-const textActionStyle: React.CSSProperties = { minHeight: 40, border: "1px solid transparent", background: "transparent", color: "#334155", borderRadius: 12, padding: "0 12px", fontWeight: 850, cursor: "pointer" };
+const outlineButtonStyle: React.CSSProperties = { minHeight: 40, border: "1px solid #059669", background: "#ffffff", color: "#059669", borderRadius: 12, padding: "0 16px", fontWeight: 700, cursor: "pointer" };
+const textActionStyle: React.CSSProperties = { minHeight: 40, border: "1px solid transparent", background: "transparent", color: "#334155", borderRadius: 12, padding: "0 12px", fontWeight: 700, cursor: "pointer" };
 const totalBarStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 170px 170px", background: "#555", color: "#ffffff" };
 const sumBoxStyle: React.CSSProperties = { padding: 16, display: "grid", justifyItems: "center", borderLeft: "1px solid rgba(255,255,255,0.15)" };
 const grossBoxStyle: React.CSSProperties = { ...sumBoxStyle, background: "#444" };
 const footerActionsStyle: React.CSSProperties = { position: "sticky", bottom: 18, zIndex: 3, background: "rgba(255, 255, 255, 0.94)", backdropFilter: "blur(10px)", border: "1px solid #dbe5eb", borderRadius: 20, padding: 16, display: "flex", justifyContent: "flex-end", gap: 12, boxShadow: "0 18px 45px rgba(15, 23, 42, 0.12)" };
-const primaryButtonStyle: React.CSSProperties = { minHeight: 44, borderRadius: 13, padding: "0 18px", fontSize: 14, fontWeight: 900, border: "1px solid #036b5a", background: "linear-gradient(135deg, #058872 0%, #04705f 100%)", color: "#ffffff", cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 14px 28px rgba(5, 122, 103, 0.24)" };
-const secondaryButtonStyle: React.CSSProperties = { minHeight: 44, borderRadius: 13, padding: "0 18px", fontSize: 14, fontWeight: 900, border: "1px solid #c8d4dd", background: "#ffffff", color: "#0f172a", cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 20px rgba(15, 23, 42, 0.06)" };
+const primaryButtonStyle: React.CSSProperties = { minHeight: 44, borderRadius: 13, padding: "0 18px", fontSize: 14, fontWeight: 700, border: "1px solid #036b5a", background: "linear-gradient(135deg, #058872 0%, #04705f 100%)", color: "#ffffff", cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 14px 28px rgba(5, 122, 103, 0.24)" };
+const secondaryButtonStyle: React.CSSProperties = { minHeight: 44, borderRadius: 13, padding: "0 18px", fontSize: 14, fontWeight: 700, border: "1px solid #c8d4dd", background: "#ffffff", color: "#0f172a", cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 20px rgba(15, 23, 42, 0.06)" };
 const disabledButtonStyle: React.CSSProperties = { ...primaryButtonStyle, opacity: 0.45, cursor: "not-allowed" };
 const blockingNoticeStyle: React.CSSProperties = { background: "#fff7ed", border: "1px solid #fed7aa", color: "#9a3412", borderRadius: 18, padding: 18, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18 };
-const errorStyle: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", borderRadius: 14, padding: 14, fontWeight: 750 };
-const successStyle: React.CSSProperties = { background: "#ecfdf5", border: "1px solid #bbf7d0", color: "#047857", borderRadius: 14, padding: 14, fontWeight: 750 };
+
+const blockedPageStyle: React.CSSProperties = {
+  maxWidth: 980,
+  margin: "34px auto 0",
+  background: "linear-gradient(135deg, #ffffff 0%, #fffaf3 100%)",
+  border: "1px solid #fed7aa",
+  borderRadius: 24,
+  padding: 30,
+  display: "grid",
+  gridTemplateColumns: "56px 1fr auto",
+  alignItems: "center",
+  gap: 22,
+  boxShadow: "0 22px 55px rgba(154, 52, 18, 0.10)",
+};
+
+const blockedIconStyle: React.CSSProperties = {
+  width: 56,
+  height: 56,
+  borderRadius: 18,
+  background: "#fff7ed",
+  border: "1px solid #fed7aa",
+  color: "#9a3412",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: 26,
+  fontWeight: 700,
+};
+
+const blockedTitleStyle: React.CSSProperties = {
+  margin: "6px 0 0",
+  fontSize: 26,
+  letterSpacing: "-0.045em",
+  color: "#0f172a",
+};
+
+const blockedTextStyle: React.CSSProperties = {
+  margin: "8px 0 0",
+  color: "#7c2d12",
+  fontWeight: 650,
+  lineHeight: 1.55,
+};
+const errorStyle: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", borderRadius: 14, padding: 14, fontWeight: 700 };
+const successStyle: React.CSSProperties = { background: "#ecfdf5", border: "1px solid #bbf7d0", color: "#047857", borderRadius: 14, padding: 14, fontWeight: 700 };
+
+
 
 
 

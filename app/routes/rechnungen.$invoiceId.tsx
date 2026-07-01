@@ -409,7 +409,7 @@ const backButtonStyle: React.CSSProperties = {
   alignItems: "center",
   gap: 8,
   color: "#0f766e",
-  fontWeight: 900,
+  fontWeight: 700,
   textDecoration: "none",
 };
 
@@ -443,7 +443,7 @@ const tinyTextStyle: React.CSSProperties = {
   textTransform: "uppercase",
   letterSpacing: "0.06em",
   fontSize: 11,
-  fontWeight: 900,
+  fontWeight: 700,
 };
 
 const actionTitleStyle: React.CSSProperties = {
@@ -591,7 +591,7 @@ const totalRowStyle: React.CSSProperties = {
   justifyContent: "space-between",
   gap: 20,
   color: "#475569",
-  fontWeight: 750,
+  fontWeight: 700,
 };
 
 const grandTotalStyle: React.CSSProperties = {
@@ -626,7 +626,7 @@ const statusPillStyle: React.CSSProperties = {
   background: "#f1f5f9",
   color: "#334155",
   fontSize: 12,
-  fontWeight: 900,
+  fontWeight: 700,
 };
 
 const draftPillStyle: React.CSSProperties = { background: "#fef3c7", color: "#92400e" };
@@ -640,7 +640,7 @@ const errorStyle: React.CSSProperties = {
   color: "#991b1b",
   borderRadius: 14,
   padding: 14,
-  fontWeight: 750,
+  fontWeight: 700,
 };
 
 const successStyle: React.CSSProperties = {
@@ -649,7 +649,7 @@ const successStyle: React.CSSProperties = {
   color: "#047857",
   borderRadius: 14,
   padding: 14,
-  fontWeight: 750,
+  fontWeight: 700,
 };
 
 
@@ -676,7 +676,7 @@ const premiumButtonBase: React.CSSProperties = {
   borderRadius: 12,
   padding: "0 16px",
   fontSize: 14,
-  fontWeight: 850,
+  fontWeight: 700,
   letterSpacing: "-0.01em",
   display: "inline-flex",
   alignItems: "center",
@@ -726,7 +726,7 @@ const premiumLabel: React.CSSProperties = {
   gap: 7,
   color: "#334155",
   fontSize: 12,
-  fontWeight: 850,
+  fontWeight: 700,
 };
 
 const premiumSectionLabel: React.CSSProperties = {
@@ -735,7 +735,7 @@ const premiumSectionLabel: React.CSSProperties = {
   textTransform: "uppercase",
   letterSpacing: "0.08em",
   fontSize: 11,
-  fontWeight: 950,
+  fontWeight: 700,
 };
 
 const premiumTitle: React.CSSProperties = {
@@ -751,6 +751,7 @@ const premiumMuted: React.CSSProperties = {
   fontWeight: 650,
   lineHeight: 1.55,
 };
+
 
 
 

@@ -314,7 +314,7 @@ const smallLabelStyle: React.CSSProperties = {
   textTransform: "uppercase",
   letterSpacing: "0.08em",
   fontSize: 11,
-  fontWeight: 950,
+  fontWeight: 700,
 };
 
 const heroTitleStyle: React.CSSProperties = {
@@ -359,7 +359,7 @@ const missingPillStyle: React.CSSProperties = {
   border: "1px solid #fed7aa",
   color: "#9a3412",
   fontSize: 12,
-  fontWeight: 900,
+  fontWeight: 700,
 };
 
 const completeBadgeStyle: React.CSSProperties = {
@@ -418,7 +418,7 @@ const fieldStyle: React.CSSProperties = {
   gap: 7,
   color: "#334155",
   fontSize: 13,
-  fontWeight: 850,
+  fontWeight: 700,
 };
 
 const noticeStyle: React.CSSProperties = {
@@ -427,7 +427,7 @@ const noticeStyle: React.CSSProperties = {
   background: "#fff7ed",
   border: "1px solid #fed7aa",
   color: "#9a3412",
-  fontWeight: 800,
+  fontWeight: 700,
 };
 
 const footerBarStyle: React.CSSProperties = {
@@ -454,7 +454,7 @@ const primaryButtonStyle: React.CSSProperties = {
   background: "linear-gradient(135deg, #058872 0%, #04705f 100%)",
   color: "#ffffff",
   fontSize: 14,
-  fontWeight: 900,
+  fontWeight: 700,
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
@@ -470,7 +470,7 @@ const errorStyle: React.CSSProperties = {
   color: "#991b1b",
   borderRadius: 14,
   padding: 14,
-  fontWeight: 750,
+  fontWeight: 700,
   marginBottom: 16,
 };
 
@@ -480,6 +480,7 @@ const successStyle: React.CSSProperties = {
   color: "#047857",
   borderRadius: 14,
   padding: 14,
-  fontWeight: 750,
+  fontWeight: 700,
   marginBottom: 16,
 };
+
