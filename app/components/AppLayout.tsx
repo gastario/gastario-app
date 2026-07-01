@@ -1,14 +1,14 @@
-import { Link, useLocation } from "react-router";
+﻿import { Link, useLocation } from "react-router";
 
 const navigationGroups = [
   {
-    label: "Übersicht",
+    label: "Ãœbersicht",
     items: [{ label: "Dashboard", to: "/" }],
   },
   {
     label: "Verkauf",
     items: [
-      { label: "Aufträge", to: "/auftraege" },
+      { label: "AuftrÃ¤ge", to: "/auftraege" },
       { label: "Angebote", to: "/angebote" },
       { label: "Kunden", to: "/kunden" },
       { label: "Produkte", to: "/produkte" },
@@ -74,11 +74,15 @@ export default function AppLayout({ children }: AppLayoutProps) {
               })}
             </div>
           ))}
-        </nav>
+          <div className="sidebarLogout">
+    <a href="/logout">Ausloggen</a>
+  </div>
+</nav>
       </aside>
 
       <section className="workspace">{children}</section>
     </main>
   );
 }
+
 
