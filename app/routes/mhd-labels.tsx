@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
@@ -33,42 +33,14 @@ function formatDate(value: Date | string | null | undefined) {
   return new Date(value).toLocaleDateString("de-DE");
 }
 
-function QRCodeImage({ value }: { value: string }) {
-  const [src, setSrc] = React.useState("");
-
-  React.useEffect(() => {
-    let active = true;
-
-    QRCode.toDataURL(value, {
-      errorCorrectionLevel: "M",
-      margin: 2,
-      width: 220,
-    })
-      .then((dataUrl: string) => {
-        if (active) setSrc(dataUrl);
-      })
-      .catch(() => {
-        if (active) setSrc("");
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [value]);
-
-  if (!src) return null;
-
-  return <img src={src} alt="QR-Code" style={labelQrStyle} />;
-}
-
 function buildQrValue(label: any) {
-  return label.publicUrl || "";
+  return "https://gastario-app-production.up.railway.app/mhd-labels?print=" + label.id;
 }
 
 
 
 export function meta() {
-  return [{ title: "MHD-Labels - Gastario" }];
+  return [{ title: "MHD-Labels · Gastario" }];
 }
 
 export async function loader({ request }: { request: Request }) {
@@ -77,9 +49,7 @@ export async function loader({ request }: { request: Request }) {
   const { ensureFoodLabelTable } = await import("../lib/food-labels.server");
 
   const url = new URL(request.url);
-  const origin = url.origin;
   const printId = url.searchParams.get("print");
-  const searchQuery = (url.searchParams.get("q") || "").trim();
 
   const userId = await getUserId(request);
 
@@ -92,7 +62,7 @@ export async function loader({ request }: { request: Request }) {
     include: { tenant: true },
   });
 
-  if (!access.tenant) {
+  if (!access?.tenant) {
     return {
       tenantName: "Gastario",
       labels: [],
@@ -102,26 +72,10 @@ export async function loader({ request }: { request: Request }) {
 
   await ensureFoodLabelTable(prisma);
 
-  const labelWhere: any = {
-    tenantId: access.tenantId,
-    ...(searchQuery
-      ? {
-          OR: [
-            { productName: { contains: searchQuery, mode: "insensitive" } },
-            { customerName: { contains: searchQuery, mode: "insensitive" } },
-            { batchNumber: { contains: searchQuery, mode: "insensitive" } },
-            { ingredients: { contains: searchQuery, mode: "insensitive" } },
-            { allergens: { contains: searchQuery, mode: "insensitive" } },
-            { storageNote: { contains: searchQuery, mode: "insensitive" } },
-          ],
-        }
-      : {}),
-  };
-
   const labels = await prisma.foodLabel.findMany({
-    where: labelWhere,
+    where: { tenantId: access.tenantId },
     orderBy: { createdAt: "desc" },
-    take: 81,
+    take: 40,
   });
 
   const printLabel = printId
@@ -133,29 +87,10 @@ export async function loader({ request }: { request: Request }) {
       })
     : null;
 
-  const hasMoreLabels = labels.length > 80;
-  const visibleLabels = labels.slice(0, 80);
-
-  const labelsWithUrls = visibleLabels.map((label: any) => ({
-    ...label,
-    publicUrl: label.publicToken ? `${origin}/label/${label.publicToken}` : "",
-    publicPrintUrl: label.publicToken ? `${origin}/label/${label.publicToken}?print=1` : "",
-  }));
-
-  const printLabelWithUrl = printLabel
-    ? {
-        ...printLabel,
-        publicUrl: printLabel.publicToken ? `${origin}/label/${printLabel.publicToken}` : "",
-        publicPrintUrl: printLabel.publicToken ? `${origin}/label/${printLabel.publicToken}?print=1` : "",
-      }
-    : null;
-
   return {
     tenantName: access.tenant.name || "Gastario",
-    labels: labelsWithUrls,
-    hasMoreLabels,
-    searchQuery,
-    printLabel: printLabelWithUrl,
+    labels,
+    printLabel,
     today: todayInput(),
   };
 }
@@ -182,22 +117,6 @@ export async function action({ request }: { request: Request }) {
   await ensureFoodLabelTable(prisma);
 
   const formData = await request.formData();
-  const actionType = String(formData.get("_action") || "");
-
-  if (actionType === "delete") {
-    const labelId = String(formData.get("labelId") || "");
-
-    if (labelId) {
-      await prisma.foodLabel.deleteMany({
-        where: {
-          id: labelId,
-          tenantId: access.tenantId,
-        },
-      });
-    }
-
-    return redirect("/mhd-labels");
-  }
   const intent = String(formData.get("intent") || "");
 
   if (intent === "createLabel") {
@@ -208,7 +127,6 @@ export async function action({ request }: { request: Request }) {
     const batchNumber = String(formData.get("batchNumber") || "").trim();
     const storageNote = String(formData.get("storageNote") || "").trim();
     const allergens = String(formData.get("allergens") || "").trim();
-    const ingredients = String(formData.get("ingredients") || "").trim();
     const quantityText = String(formData.get("quantityText") || "").trim();
     const labelSize = String(formData.get("labelSize") || "76x51").trim();
     const labelCountRaw = Number(String(formData.get("labelCount") || "1"));
@@ -228,7 +146,6 @@ export async function action({ request }: { request: Request }) {
         batchNumber: batchNumber || null,
         storageNote: storageNote || null,
         allergens: allergens || null,
-        ingredients: ingredients || null,
         quantityText: quantityText || null,
         labelCount,
         labelSize,
@@ -317,7 +234,7 @@ export default function MhdLabelsPage() {
       {actionData && "error" in actionData ? <div className="no-print" style={errorStyle}>{actionData.error}</div> : null}
       {actionData && "success" in actionData ? <div className="no-print" style={successStyle}>{actionData.success}</div> : null}
 
-      <section className="no-print" style={contentGridStyle}>
+      <section className="no-print" style={pageGridStyle}>
         <div style={editorCardStyle}>
           <div style={cardHeaderStyle}>
             <div>
@@ -354,21 +271,17 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Lagerhinweis">
-              <input name="storageNote" placeholder="z. B. gekuehlt lagern bei max. +7 Grad C" defaultValue="gekuehlt lagern bei max. +7 Grad C" />
+              <input name="storageNote" defaultValue="Gekühlt lagern bei max. +7 °C" />
             </Field>
 
             <Field label="Allergene">
               <input name="allergens" placeholder="z. B. Soja, Sesam, Gluten" />
             </Field>
 
-            <Field label="Zutaten">
-              <input name="ingredients" placeholder="z. B. Reis, Haehnchen, Gemuese, Sauce" />
-            </Field>
-
-            <Field label="Labelgroesse">
+            <Field label="Labelgröße">
               <select name="labelSize" defaultValue="76x51">
-                <option value="76x51">76 x 51 mm</option>
-                <option value="57x32">57 x 32 mm</option>
+                <option value="76x51">76 × 51 mm</option>
+                <option value="57x32">57 × 32 mm</option>
               </select>
             </Field>
 
@@ -393,86 +306,46 @@ export default function MhdLabelsPage() {
               </div>
             </div>
 
-            <Form method="get" style={labelSearchStyle}>
-              <input
-                name="q"
-                defaultValue={data.searchQuery || ""}
-                placeholder="Suchen nach Produkt, Kunde, Los / Charge, Zutaten oder Allergenen"
-                style={labelSearchInputStyle}
-              />
-              <button type="submit" style={previewButtonStyle}>
-                Suchen
-              </button>
-              {data.searchQuery ? (
-                <Link to="/mhd-labels" style={clearSearchStyle}>
-                  Zuruecksetzen
-                </Link>
-              ) : null}
-            </Form>
-
-            {data.hasMoreLabels ? (
-              <div style={resultLimitStyle}>
-                Es werden nur die neuesten 80 Labels angezeigt. Bitte nutze die Suche, wenn du aeltere Labels brauchst.
-              </div>
-            ) : null}
-
             {data.labels.length === 0 ? (
               <div style={emptyStyle}>Noch keine MHD-Labels gespeichert.</div>
             ) : (
-              <div style={labelListScrollStyle}>
-                <div style={labelListStyle}>
-                  {data.labels.map((label: any) => (
-                    <div key={label.id} style={labelRowStyle}>
-                      <div>
-                        <strong>{label.productName}</strong>
-                        <span>
-                          MHD: {formatDate(label.bestBeforeDate)} - Los / Charge: {label.batchNumber || "-"}
-                          {label.ingredients ? <> - Zutaten: {label.ingredients}</> : null}
-                        </span>
-                      </div>
-
-                      <div style={rowMetaStyle}>
-                        <span>{label.labelCount} x {label.labelSize}</span>
-                        <span>MHD: {formatDate(label.bestBeforeDate)}</span>
-                      </div>
-
-                      <div style={listActionGroupStyle}>
-                        <Link to={`/mhd-labels?print=${label.id}`} style={previewButtonStyle}>
-                          Vorschau
-                        </Link>
-
-                        <a href={label.publicPrintUrl || `/mhd-labels/print/${label.id}`} target="_blank" rel="noreferrer" style={primaryButtonStyle}>
-                          Drucken
-                        </a>
-
-                        <Form
-                          method="post"
-                          onSubmit={(event) => {
-                            if (!window.confirm("Dieses Label wirklich loeschen?")) {
-                              event.preventDefault();
-                            }
-                          }}
-                        >
-                          <input type="hidden" name="_action" value="delete" />
-                          <input type="hidden" name="labelId" value={label.id} />
-                          <button type="submit" style={dangerButtonStyle} title="Label loeschen">
-                            Loeschen
-                          </button>
-                        </Form>
-                      </div>
+              <div style={labelListStyle}>
+                {data.labels.map((label) => (
+                  <div key={label.id} style={labelRowStyle}>
+                    <div>
+                      <strong>{label.productName}</strong>
+                      <span>
+                        MHD: {formatDate(label.bestBeforeDate)} · Charge: {label.batchNumber || "-"}
+                      </span>
                     </div>
-                  ))}
-                </div>
+
+                    <div style={rowMetaStyle}>
+                      <span>{label.labelCount} × {label.labelSize}</span>
+                      <span>MHD: {formatDate(label.bestBeforeDate)}</span>
+                    </div>
+
+                    <div style={listActionGroupStyle}>
+                      <Link to={`/mhd-labels?print=${label.id}`} style={previewButtonStyle}>
+                        Vorschau
+                      </Link>
+                      <Link to={`/mhd-labels/print/${label.id}`} style={primaryButtonStyle}>
+                        Drucken
+                      </Link>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
 
-          <div style={previewCardStickyStyle}>
+          <div style={previewCardStyle}>
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Vorschau</p>
-                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswaehlen"}</h2>
+                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswählen"}</h2>
               </div>
+
+
             </div>
 
             {data.printLabel ? (
@@ -482,13 +355,13 @@ export default function MhdLabelsPage() {
                 </div>
 
                 <div style={previewFooterActionsStyle}>
-                  <a href={data.printLabel.publicPrintUrl || `/mhd-labels/print/${data.printLabel.id}`} target="_blank" rel="noreferrer" style={primaryButtonStyle}>
+                  <Link to={`/mhd-labels/print/${data.printLabel.id}`} style={primaryButtonStyle}>
                     Drucken
-                  </a>
+                  </Link>
                 </div>
               </>
             ) : (
-              <div style={emptyStyle}>Waehle links ein gespeichertes Label ueber Vorschau aus. Danach erscheint hier die Druckvorschau.</div>
+              <div style={emptyStyle}>Wähle links ein gespeichertes Label über „Vorschau“ aus. Danach erscheint hier die Druckvorschau.</div>
             )}
           </div>
         </div>
@@ -546,65 +419,43 @@ function QrCode({ value }: { value: string }) {
 
 function LabelCard({ label, tenantName }: { label: any; tenantName: string }) {
   const isSmall = label.labelSize === "57x32";
-  const qrValue = buildQrValue(label);
 
   return (
     <article className="labelCard" style={isSmall ? smallLabelCardStyle : labelCardStyle}>
       <div style={labelTopStyle}>
-        <strong>{label.quantityText || "1 Portion"}</strong>
+        <strong>{label.quantityText || ""}</strong>
         <span>{tenantName}</span>
       </div>
 
-      <h3 style={labelProductStyle}>{label.productName}</h3>
+      {label.customerName ? <div style={customerStyle}>{label.customerName}</div> : null}
 
-      {label.customerName ? (
-        <div style={customerStyle}>{label.customerName}</div>
-      ) : null}
+      <h3 style={isSmall ? smallProductTitleStyle : productTitleStyle}>{label.productName}</h3>
 
-      <div style={labelDateStyle}>
-        <span>mindestens haltbar bis:</span>
-        <strong>{formatDate(label.bestBeforeDate)}</strong>
+      <div style={dateStackStyle}>
+        <span>mindestens haltbar bis: <strong>{formatDate(label.bestBeforeDate)}</strong></span>
+        <span>hergestellt am: <strong>{formatDate(label.productionDate)}</strong></span>
       </div>
 
-      <div style={labelDateStyle}>
-        <span>hergestellt am:</span>
-        <strong>{formatDate(label.productionDate)}</strong>
-      </div>
+      <div style={batchStyle}>Los/Charge: {label.batchNumber ? label.batchNumber.startsWith("L") ? label.batchNumber : "L-" + label.batchNumber : "-"}</div>
 
-      <div style={labelDateStyle}>
-        <span>Los / Charge:</span>
-        <strong>{label.batchNumber || "-"}</strong>
-      </div>
-
-      <div style={labelDividerStyle} />
+      {label.storageNote ? <div style={storageStyle}>{label.storageNote}</div> : null}
 
       <div style={labelBottomStyle}>
-        <div style={labelInfoStyle}>
-          <div>
-            <span>Lagerung:</span>
-            <strong>{label.storageNote || "-"}</strong>
-          </div>
-
-          {label.ingredients ? (
-            <div>
-              <span>Zutaten:</span>
-              <strong>{label.ingredients}</strong>
-            </div>
-          ) : null}
-
-          <div>
-            <span>Allergene:</span>
-            <strong>{label.allergens || "-"}</strong>
-          </div>
+        <div style={allergenStyle}>
+          <span>Allergene:</span>
+          <strong>{label.allergens || "-"}</strong>
         </div>
 
-        {qrValue ? (
-          <QRCodeImage value={qrValue} />
-        ) : null}
+        <QrCode value={buildQrValue(label)} />
       </div>
     </article>
   );
 }
+
+const pageGridStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 20,
+};
 
 const editorCardStyle: React.CSSProperties = {
   background: "#ffffff",
@@ -771,6 +622,8 @@ const previewFooterActionsStyle: React.CSSProperties = {
   marginTop: 14,
 };
 
+
+
 const secondaryButtonStyle: React.CSSProperties = {
   minHeight: 38,
   borderRadius: 11,
@@ -930,88 +783,3 @@ const successStyle: React.CSSProperties = {
 
 
 
-
-
-
-
-const labelSearchStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr auto auto",
-  gap: 10,
-  alignItems: "center",
-  marginBottom: 14,
-};
-
-const labelSearchInputStyle: React.CSSProperties = {
-  width: "100%",
-  minHeight: 38,
-  border: "1px solid #d7dde5",
-  borderRadius: 12,
-  padding: "0 12px",
-  fontSize: 13,
-  outline: "none",
-  background: "#ffffff",
-};
-
-const clearSearchStyle: React.CSSProperties = {
-  minHeight: 38,
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  border: "1px solid #d7dde5",
-  borderRadius: 12,
-  padding: "0 12px",
-  color: "#475569",
-  textDecoration: "none",
-  fontSize: 13,
-  fontWeight: 700,
-  background: "#ffffff",
-};
-
-const resultLimitStyle: React.CSSProperties = {
-  marginBottom: 12,
-  padding: "10px 12px",
-  borderRadius: 12,
-  border: "1px solid #fde68a",
-  background: "#fffbeb",
-  color: "#92400e",
-  fontSize: 13,
-  lineHeight: 1.4,
-};
-
-const dangerButtonStyle: React.CSSProperties = {
-  ...actionButtonBaseStyle,
-  background: "#ffffff",
-  color: "#b42318",
-  border: "1px solid #f3c6c0",
-};
-const labelListScrollStyle: React.CSSProperties = {
-  maxHeight: "560px",
-  overflowY: "auto",
-  paddingRight: 6,
-  overscrollBehavior: "contain",
-};
-
-const previewCardStickyStyle: React.CSSProperties = {
-  ...previewCardStyle,
-  position: "sticky",
-  top: 24,
-  alignSelf: "start",
-  maxHeight: "calc(100vh - 48px)",
-  overflow: "auto",
-};
-
-
-
-
-
-
-
-
-
-const labelQrStyle: React.CSSProperties = {
-  width: "17mm",
-  height: "17mm",
-  display: "block",
-  flexShrink: 0,
-};
