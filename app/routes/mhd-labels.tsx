@@ -345,19 +345,23 @@ export default function MhdLabelsPage() {
                 <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswählen"}</h2>
               </div>
 
-              {data.printLabel ? (
-                <Link to={`/mhd-labels/print/${data.printLabel.id}`} style={primaryButtonStyle}>
-                  Drucken
-                </Link>
-              ) : null}
+
             </div>
 
             {data.printLabel ? (
-              <div style={previewWrapStyle}>
-                <LabelCard label={data.printLabel} tenantName={data.tenantName} />
-              </div>
+              <>
+                <div style={previewWrapStyle}>
+                  <LabelCard label={data.printLabel} tenantName={data.tenantName} />
+                </div>
+
+                <div style={previewFooterActionsStyle}>
+                  <Link to={`/mhd-labels/print/${data.printLabel.id}`} style={primaryButtonStyle}>
+                    Drucken
+                  </Link>
+                </div>
+              </>
             ) : (
-              <div style={emptyStyle}>Wähle links ein gespeichertes Label über „Vorschau / Drucken“ aus. Danach erscheint hier die Druckvorschau.</div>
+              <div style={emptyStyle}>Wähle links ein gespeichertes Label über „Vorschau“ aus. Danach erscheint hier die Druckvorschau.</div>
             )}
           </div>
         </div>
@@ -548,7 +552,7 @@ const rowActionsStyle: React.CSSProperties = {
   flexWrap: "wrap",
 };
 
-const secondaryLinkStyle: React.CSSProperties = previewButtonStyle;
+
 
 const previewWrapStyle: React.CSSProperties = {
   background: "#f8fafc",
@@ -610,6 +614,18 @@ const previewCardActionStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "flex-end",
   marginBottom: 12,
+};
+
+const previewFooterActionsStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "flex-end",
+  marginTop: 14,
+};
+
+const previewFooterActionsStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "flex-end",
+  marginTop: 14,
 };
 
 const secondaryButtonStyle: React.CSSProperties = {
@@ -755,6 +771,8 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
+
 
 
 
