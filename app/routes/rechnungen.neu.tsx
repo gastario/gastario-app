@@ -615,17 +615,17 @@ export default function NeueRechnungPage() {
         <section style={cardStyle}>
           <div style={twoColStyle}>
             <div style={gridStyle}>
-              <FloatingInput name="customerName" label="Kunde" placeholder="Name des Kunden" required />
-              <FloatingInput name="addressExtra" label="Adresszusatz" placeholder="Adresszusatz" />
-              <FloatingInput name="street" label="Straße" placeholder="Straße" required />
+              <FloatingInput name="customerName" label={isEnglish ? "Customer" : "Kunde"} placeholder={isEnglish ? "Customer name" : "Name des Kunden"} required />
+              <FloatingInput name="addressExtra" label={isEnglish ? "Address line 2" : "Adresszusatz"} placeholder={isEnglish ? "Address line 2" : "Adresszusatz"} />
+              <FloatingInput name="street" label={isEnglish ? "Street" : "Straße"} placeholder={isEnglish ? "Street" : "Straße"} required />
 
               <div style={twoColSmallStyle}>
-                <FloatingInput name="zip" label="PLZ" placeholder="PLZ" required />
-                <FloatingInput name="city" label="Ort" placeholder="Ort" required />
+                <FloatingInput name="zip" label={isEnglish ? "ZIP" : "PLZ"} placeholder={isEnglish ? "ZIP" : "PLZ"} required />
+                <FloatingInput name="city" label={isEnglish ? "City" : "Ort"} placeholder={isEnglish ? "City" : "Ort"} required />
               </div>
 
               <label style={labelStyle}>
-                <span>Land *</span>
+                <span>{isEnglish ? "Country" : "Land"} *</span>
                 <select name="country" defaultValue="Deutschland" required style={inputStyle}>
                   <option>Deutschland</option>
                   <option>Österreich</option>
@@ -636,14 +636,14 @@ export default function NeueRechnungPage() {
             </div>
 
             <div style={gridStyle}>
-              <FloatingInput name="invoiceNumber" label="Rechnungsnummer" placeholder="z. B. RE-2026-001" required />
-              <FloatingInput name="customerNumber" label="Kundennummer" placeholder="wird automatisch vergeben" />
+              <FloatingInput name="invoiceNumber" label={isEnglish ? "Invoice number" : "Rechnungsnummer"} placeholder="z. B. RE-2026-001" required />
+              <FloatingInput name="customerNumber" label={isEnglish ? "Customer number" : "Kundennummer"} placeholder={isEnglish ? "assigned automatically" : "wird automatisch vergeben"} />
 
-              <FloatingInput name="invoiceDate" label="Rechnungsdatum" type="date" defaultValue={today} required />
+              <FloatingInput name="invoiceDate" label={isEnglish ? "Invoice date" : "Rechnungsdatum"} type="date" defaultValue={today} required />
 
               <div style={isPeriod ? threeDateGridStyle : twoColSmallStyle}>
                 <label style={labelStyle}>
-                  <span>Lieferung oder Leistung</span>
+                  <span>{isEnglish ? "Delivery or service" : "Lieferung oder Leistung"}</span>
                   <select
                     name="serviceDateType"
                     value={serviceDateType}
@@ -665,7 +665,7 @@ export default function NeueRechnungPage() {
               </div>
 
               <label style={labelStyle}>
-                <span>Belegsprache</span>
+                <span>{isEnglish ? "Document language" : "Belegsprache"}</span>
                 <select
                   name="language"
                   value={language}
@@ -681,7 +681,7 @@ export default function NeueRechnungPage() {
         </section>
 
         <section style={cardStyle}>
-          <p style={sectionLabelStyle}>Eigene Rechnungsdaten</p>
+          <p style={sectionLabelStyle}>{isEnglish ? "Seller details" : "Eigene Rechnungsdaten"}</p>
           <div style={sellerInfoStyle}>
             <div style={sellerBlockStyle}>
               <strong>{tenant?.invoiceSellerName || data.tenantName}</strong>
@@ -694,14 +694,14 @@ export default function NeueRechnungPage() {
               {tenant?.invoiceBankName ? <span>Bank: {tenant.invoiceBankName}</span> : null}
             </div>
 
-            <Link to="/einstellungen/rechnungen" style={secondaryButtonStyle}>Bearbeiten</Link>
+            <Link to="/einstellungen/rechnungen" style={secondaryButtonStyle}>{isEnglish ? "Edit" : "Bearbeiten"}</Link>
           </div>
         </section>
 
         <section key={`text-${language}`} style={simpleTextCardStyle}>
           <div style={sectionHeaderStyle}>
-            <p style={sectionLabelStyle}>Text</p>
-            <h2 style={sectionTitleStyle}>Belegtext</h2>
+            <p style={sectionLabelStyle}>{isEnglish ? "Text" : "Text"}</p>
+            <h2 style={sectionTitleStyle}>{isEnglish ? "Document text" : "Belegtext"}</h2>
           </div>
 
           <div style={gridStyle}>
@@ -717,12 +717,13 @@ export default function NeueRechnungPage() {
         <section style={positionCardStyle} className="positionCardClean">
           <div style={positionHeaderStyle} className="positionHeaderClean">
             <span></span>
-            <span>Artikel</span>
-            <span>Menge</span>
-            <span>Einheit</span>
-            <span>{priceMode === "GROSS" ? "VK Brutto" : "VK Netto"}</span>
-            <span>Rabatt</span>
-            <span style={{ textAlign: "right" }}>Betrag / USt</span>
+            <span>{isEnglish ? "Item" : "Artikel"}</span>
+            <span>{isEnglish ? "Qty" : "Menge"}</span>
+            <span>{isEnglish ? "Unit" : "Einheit"}</span>
+            <span>{priceMode === "GROSS" ? (isEnglish ? "Gross price" : "VK Brutto") : (isEnglish ? "Net price" : "VK Netto")}</span>
+            <span>{isEnglish ? "Discount" : "Rabatt"}</span>
+            <span>{isEnglish ? "VAT" : "USt"}</span>
+            <span style={{ textAlign: "right" }}>{isEnglish ? "Amount" : "Betrag"}</span>
             <span></span>
           </div>
 
@@ -747,19 +748,20 @@ export default function NeueRechnungPage() {
 
                   <div style={numberCircleStyle}>{index + 1}</div>
 
-                  <CleanInput name="itemName" placeholder="Bezeichnung des Artikels" value={row.name} onChange={(value) => updateItem(row.id, "name", value)} required />
+                  <CleanInput name="itemName" placeholder={isEnglish ? "Item description" : "Bezeichnung des Artikels"} value={row.name} onChange={(value) => updateItem(row.id, "name", value)} required />
                   <CleanInput name="quantity" value={row.quantity} onChange={(value) => updateItem(row.id, "quantity", value)} />
                   <CleanInput name="unit" value={row.unit} onChange={(value) => updateItem(row.id, "unit", value)} />
                   <CleanInput name="unitPriceEuro" placeholder="0,00 €" value={row.price} onChange={(value) => updateItem(row.id, "price", value)} required />
                   <CleanInput name="discountPercent" value={row.discount} onChange={(value) => updateItem(row.id, "discount", value)} />
 
+                  <select name="taxRate" value={row.taxRate} onChange={(event) => updateItem(row.id, "taxRate", event.currentTarget.value)} style={taxPillStyle}>
+                    <option value="19">19 %</option>
+                    <option value="7">7 %</option>
+                    <option value="0">0 %</option>
+                  </select>
+
                   <div style={amountBoxStyle}>
                     <strong style={lineAmountStyle}>{centsToEuro(calculateTotals([row], priceMode, "PERCENT", "0").netTotalCents)}</strong>
-                    <select name="taxRate" value={row.taxRate} onChange={(event) => updateItem(row.id, "taxRate", event.currentTarget.value)} style={taxPillStyle}>
-                      <option value="19">USt 19 %</option>
-                      <option value="7">USt 7 %</option>
-                      <option value="0">USt 0 %</option>
-                    </select>
                   </div>
 
                   <button type="button" onClick={() => removeRow(row.id)} style={deleteButtonStyle}>×</button>
@@ -791,19 +793,19 @@ export default function NeueRechnungPage() {
           ) : null}
 
           <div style={positionActionsStyle}>
-            <button type="button" onClick={addItem} style={outlineButtonStyle}>+ Artikel</button>
-            <button type="button" onClick={addText} style={textActionStyle} className="softAction">Freitext</button>
-            <button type="button" onClick={() => setDiscountVisible(true)} style={textActionStyle} className="softAction">Gesamtrabatt</button>
+            <button type="button" onClick={addItem} style={outlineButtonStyle}>+ {isEnglish ? "Item" : "Artikel"}</button>
+            <button type="button" onClick={addText} style={textActionStyle} className="softAction">{isEnglish ? "Text line" : "Freitext"}</button>
+            <button type="button" onClick={() => setDiscountVisible(true)} style={textActionStyle} className="softAction">{isEnglish ? "Discount" : "Gesamtrabatt"}</button>
           </div>
 
           <div style={totalBarStyle} className="sumClean">
             <div />
             <div style={sumBoxStyle}>
-              <span>Summe Netto</span>
+              <span>{isEnglish ? "Net amount" : "Summe Netto"}</span>
               <strong>{centsToEuro(totals.netTotalCents)}</strong>
             </div>
             <div style={grossBoxStyle} className="grossClean">
-              <span>Gesamtbetrag</span>
+              <span>{isEnglish ? "Total amount" : "Gesamtbetrag"}</span>
               <strong>{centsToEuro(totals.grossTotalCents)}</strong>
             </div>
           </div>
@@ -823,9 +825,9 @@ export default function NeueRechnungPage() {
         </section>
 
         <div style={footerActionsStyle}>
-          <Link to="/rechnungen" style={secondaryButtonStyle}>Abbrechen</Link>
+          <Link to="/rechnungen" style={secondaryButtonStyle}>{isEnglish ? "Cancel" : "Abbrechen"}</Link>
           <button type="submit" disabled={!data.invoiceSettingsComplete} style={data.invoiceSettingsComplete ? primaryButtonStyle : disabledButtonStyle} className="primarySoft">
-            Rechnungsentwurf speichern
+            {isEnglish ? "Save invoice draft" : "Rechnungsentwurf speichern"}
           </button>
         </div>
       </Form>
@@ -940,7 +942,7 @@ const sectionTitleStyle: React.CSSProperties = {
 
 const positionHeaderStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "34px minmax(280px, 1fr) 84px 110px 120px 88px 130px 28px",
+  gridTemplateColumns: "34px minmax(360px, 1fr) 84px 108px 118px 82px 92px 110px 28px",
   gap: 10,
   padding: "14px 20px",
   color: "#738296",
@@ -1014,7 +1016,7 @@ const sellerBlockStrongStyle: React.CSSProperties = {
 };
 const positionRowStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "34px minmax(280px, 1fr) 84px 110px 120px 88px 130px 28px",
+  gridTemplateColumns: "34px minmax(360px, 1fr) 84px 108px 118px 82px 92px 110px 28px",
   gap: 10,
   alignItems: "center",
   padding: "12px 20px",
@@ -1039,9 +1041,10 @@ const amountBoxStyle: React.CSSProperties = {
   display: "grid",
   justifyItems: "end",
   alignContent: "center",
-  gap: 6,
+  gap: 4,
   color: "#334155",
   minHeight: 42,
+  textAlign: "right",
 };
 
 const lineAmountStyle: React.CSSProperties = {
@@ -1212,6 +1215,7 @@ const blockedTextStyle: React.CSSProperties = {
 };
 const errorStyle: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", borderRadius: 14, padding: 14, fontWeight: 700 };
 const successStyle: React.CSSProperties = { background: "#ecfdf5", border: "1px solid #bbf7d0", color: "#047857", borderRadius: 14, padding: 14, fontWeight: 700 };
+
 
 
 
