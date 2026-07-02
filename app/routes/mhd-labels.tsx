@@ -117,22 +117,6 @@ export async function action({ request }: { request: Request }) {
   await ensureFoodLabelTable(prisma);
 
   const formData = await request.formData();
-  const actionType = String(formData.get("_action") || "");
-
-  if (actionType === "delete") {
-    const labelId = String(formData.get("labelId") || "");
-
-    if (labelId) {
-      await prisma.foodLabel.deleteMany({
-        where: {
-          id: labelId,
-          tenantId: access.tenantId,
-        },
-      });
-    }
-
-    return redirect("/mhd-labels");
-  }
   const intent = String(formData.get("intent") || "");
 
   if (intent === "createLabel") {
@@ -353,21 +337,6 @@ export default function MhdLabelsPage() {
                       <Link to={`/mhd-labels/print/${label.id}`} style={primaryButtonStyle}>
                         Drucken
                       </Link>
-
-                      <Form
-                        method="post"
-                        onSubmit={(event) => {
-                          if (!window.confirm("Dieses Label wirklich loeschen?")) {
-                            event.preventDefault();
-                          }
-                        }}
-                      >
-                        <input type="hidden" name="_action" value="delete" />
-                        <input type="hidden" name="labelId" value={label.id} />
-                        <button type="submit" style={dangerButtonStyle}>
-                          Loeschen
-                        </button>
-                      </Form>
                     </div>
                   </div>
                 ))}
@@ -405,13 +374,11 @@ export default function MhdLabelsPage() {
       </section>
 
       <section className="printOnly" style={printOnlyStyle}>
-        {data.printLabel ? (
-          <div style={printSheetStyle}>
-            {Array.from({ length: data.printLabel.labelCount }, (_, index) => (
+        {data.printLabel
+          ? Array.from({ length: data.printLabel.labelCount }, (_, index) => (
               <LabelCard key={index} label={data.printLabel} tenantName={data.tenantName} />
-            ))}
-          </div>
-        ) : null}
+            ))
+          : null}
       </section>
     </AppLayout>
   );
@@ -458,60 +425,43 @@ function QrCode({ value }: { value: string }) {
 
 function LabelCard({ label, tenantName }: { label: any; tenantName: string }) {
   const isSmall = label.labelSize === "57x32";
-  const qrValue = buildQrValue(label);
 
   return (
     <article className="labelCard" style={isSmall ? smallLabelCardStyle : labelCardStyle}>
       <div style={labelTopStyle}>
-        <strong>{label.quantityText || "1 Portion"}</strong>
+        <strong>{label.quantityText || ""}</strong>
         <span>{tenantName}</span>
       </div>
 
-      <div style={labelProductStyle}>{label.productName}</div>
+      {label.customerName ? <div style={customerStyle}>{label.customerName}</div> : null}
 
-      {label.customerName ? (
-        <div style={customerStyle}>{label.customerName}</div>
-      ) : null}
+      <h3 style={isSmall ? smallProductTitleStyle : productTitleStyle}>{label.productName}</h3>
 
-      <div style={labelDateGridStyle}>
-        <div style={labelDateBoxStyle}>
-          <span style={labelDateCaptionStyle}>Produziert am</span>
-          <strong style={labelProducedValueStyle}>{formatDate(label.productionDate)}</strong>
-        </div>
-
-        <div style={labelDateBoxHighlightStyle}>
-          <span style={labelDateCaptionStyle}>MHD / Ablauf am</span>
-          <strong style={labelExpiryValueStyle}>{formatDate(label.bestBeforeDate)}</strong>
-        </div>
+      <div style={dateStackStyle}>
+        <span>mindestens haltbar bis: <strong>{formatDate(label.bestBeforeDate)}</strong></span>
+        <span>hergestellt am: <strong>{formatDate(label.productionDate)}</strong></span>
       </div>
 
-      <div style={labelMetaStyle}>Los / Charge: {label.batchNumber || "-"}</div>
+      <div style={batchStyle}>Los/Charge: {label.batchNumber ? label.batchNumber.startsWith("L") ? label.batchNumber : "L-" + label.batchNumber : "-"}</div>
 
-      <div style={labelBottomRowStyle}>
-        <div style={labelInfoTableStyle}>
-          <div style={labelInfoRowStyle}>
-            <span style={labelInfoKeyStyle}>Lagerung</span>
-            <span style={labelInfoValueStyle}>{label.storageNote || "-"}</span>
-          </div>
+      {label.storageNote ? <div style={storageStyle}>{label.storageNote}</div> : null}
 
-          <div style={labelInfoRowStyle}>
-            <span style={labelInfoKeyStyle}>Allergene</span>
-            <span style={labelInfoValueStyle}>{label.allergens || "-"}</span>
-          </div>
-
-          {label.ingredients ? (
-            <div style={labelInfoRowStyle}>
-              <span style={labelInfoKeyStyle}>Zutaten</span>
-              <span style={labelInfoValueStyle}>{label.ingredients}</span>
-            </div>
-          ) : null}
+      <div style={labelBottomStyle}>
+        <div style={allergenStyle}>
+          <span>Allergene:</span>
+          <strong>{label.allergens || "-"}</strong>
         </div>
 
-        {qrValue ? <QRCodeImage value={qrValue} /> : null}
+        <QrCode value={buildQrValue(label)} />
       </div>
     </article>
   );
 }
+
+const pageGridStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 20,
+};
 
 const editorCardStyle: React.CSSProperties = {
   background: "#ffffff",
@@ -699,39 +649,34 @@ const secondaryButtonStyle: React.CSSProperties = {
 const labelCardStyle: React.CSSProperties = {
   width: "76mm",
   height: "51mm",
-  border: "1.4px solid #0f172a",
+  border: "1px solid #0f172a",
   borderRadius: 8,
-  padding: "3mm",
-  boxSizing: "border-box",
+  padding: "3.2mm",
   background: "#ffffff",
-  color: "#111827",
-  display: "flex",
-  flexDirection: "column",
-  gap: "1.35mm",
+  color: "#0f172a",
+  display: "grid",
+  alignContent: "start",
+  gap: "0.9mm",
+  fontSize: "7.8pt",
+  lineHeight: 1.12,
   overflow: "hidden",
-  breakInside: "avoid",
-  pageBreakInside: "avoid",
-  fontFamily: "Arial, Helvetica, sans-serif"
 };
 
 const smallLabelCardStyle: React.CSSProperties = {
   ...labelCardStyle,
   width: "57mm",
   height: "32mm",
-  padding: "2.2mm",
-  gap: "0.85mm",
-  borderRadius: 6
+  padding: "2.8mm",
+  fontSize: "7.5pt",
+  gap: "1mm",
 };
 
 const labelTopStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
-  alignItems: "center",
-  fontSize: "6pt",
-  color: "#475569",
-  lineHeight: 1.1,
-  paddingBottom: "0.8mm",
-  borderBottom: "1px solid #dbe3ea"
+  gap: 8,
+  fontSize: "8pt",
+  color: "#334155",
 };
 
 const brandStyle: React.CSSProperties = {
@@ -740,12 +685,11 @@ const brandStyle: React.CSSProperties = {
 };
 
 const customerStyle: React.CSSProperties = {
-  fontSize: "6.4pt",
-  color: "#475569",
-  lineHeight: 1.1,
-  fontWeight: 700,
-  maxHeight: "3.8mm",
-  overflow: "hidden"
+  fontSize: "7.5pt",
+  color: "#64748b",
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
 };
 
 const productTitleStyle: React.CSSProperties = {
@@ -785,11 +729,10 @@ const storageStyle: React.CSSProperties = {
 
 const labelBottomStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "1fr 15.5mm",
-  gap: "1.8mm",
+  gridTemplateColumns: "1fr 20mm",
+  gap: "2mm",
   alignItems: "end",
-  minHeight: 0,
-  flex: 1
+  minHeight: "20mm",
 };
 
 const allergenStyle: React.CSSProperties = {
@@ -850,198 +793,3 @@ const successStyle: React.CSSProperties = {
 
 
 
-
-
-const dangerButtonStyle: React.CSSProperties = {
-  ...actionButtonBaseStyle,
-  background: "#ffffff",
-  color: "#b42318",
-  border: "1px solid #f3c6c0",
-};
-
-
-const labelProductStyle: React.CSSProperties = {
-  fontSize: "9.6pt",
-  fontWeight: 800,
-  lineHeight: 1.05,
-  color: "#0f172a",
-  wordBreak: "break-word",
-  maxHeight: "8.8mm",
-  overflow: "hidden"
-};
-
-
-const labelExpiryStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr auto",
-  alignItems: "baseline",
-  gap: "1.2mm",
-  padding: "0.7mm 0",
-  borderTop: "1px solid #e2e8f0",
-  borderBottom: "1px solid #e2e8f0",
-  fontSize: "6.5pt",
-  lineHeight: 1.05,
-  color: "#0f172a"
-};
-
-
-const labelSecondaryDateStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr auto",
-  alignItems: "baseline",
-  gap: "1.1mm",
-  fontSize: "5.45pt",
-  lineHeight: 1.05,
-  color: "#475569"
-};
-
-
-const labelDateStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr auto",
-  alignItems: "baseline",
-  gap: "1.1mm",
-  fontSize: "5.45pt",
-  lineHeight: 1.05,
-  color: "#475569"
-};
-
-
-const labelInfoStyle: React.CSSProperties = {
-  minWidth: 0,
-  overflow: "hidden",
-  display: "flex",
-  flexDirection: "column",
-  gap: "0.45mm",
-  fontSize: "5.15pt",
-  lineHeight: 1.08,
-  color: "#334155"
-};
-
-
-const labelQrStyle: React.CSSProperties = {
-  width: "14.5mm",
-  height: "14.5mm",
-  display: "block",
-  flexShrink: 0,
-  border: "1px solid #cbd5e1",
-  borderRadius: 4,
-  padding: "0.45mm",
-  background: "#ffffff",
-  boxSizing: "border-box"
-};
-
-
-const printSheetStyle: React.CSSProperties = {
-  width: "190mm",
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "flex-start",
-  alignContent: "flex-start",
-  justifyContent: "flex-start",
-  gap: "2.5mm",
-  padding: "4mm",
-  boxSizing: "border-box"
-};
-
-
-const labelDateGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1.25fr",
-  gap: "1.3mm"
-};
-
-
-const labelDateBoxStyle: React.CSSProperties = {
-  border: "1px solid #dbe3ea",
-  borderRadius: 6,
-  padding: "1mm 1.2mm",
-  background: "#f8fafc"
-};
-
-
-const labelDateBoxHighlightStyle: React.CSSProperties = {
-  border: "1.2px solid #0f172a",
-  borderRadius: 6,
-  padding: "1mm 1.2mm",
-  background: "#f1f5f9"
-};
-
-
-const labelDateCaptionStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "5.7pt",
-  color: "#64748b",
-  lineHeight: 1.05,
-  marginBottom: "0.45mm",
-  fontWeight: 700
-};
-
-
-const labelProducedValueStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "6.7pt",
-  fontWeight: 700,
-  color: "#334155",
-  lineHeight: 1.05
-};
-
-
-const labelExpiryValueStyle: React.CSSProperties = {
-  display: "inline-block",
-  fontSize: "8.7pt",
-  fontWeight: 900,
-  color: "#0f172a",
-  lineHeight: 1.05,
-  borderBottom: "1px solid #0f172a",
-  paddingBottom: "0.25mm"
-};
-
-
-const labelMetaStyle: React.CSSProperties = {
-  fontSize: "6.3pt",
-  color: "#334155",
-  lineHeight: 1.1,
-  paddingBottom: "0.7mm",
-  borderBottom: "1px solid #e2e8f0"
-};
-
-
-const labelBottomRowStyle: React.CSSProperties = {
-  marginTop: "auto",
-  display: "grid",
-  gridTemplateColumns: "1fr 15mm",
-  gap: "1.6mm",
-  alignItems: "end",
-  minHeight: 0
-};
-
-
-const labelInfoTableStyle: React.CSSProperties = {
-  display: "grid",
-  gap: "0.55mm",
-  minWidth: 0,
-  overflow: "hidden"
-};
-
-
-const labelInfoRowStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "14mm 1fr",
-  gap: "0.8mm",
-  fontSize: "5.55pt",
-  lineHeight: 1.08
-};
-
-
-const labelInfoKeyStyle: React.CSSProperties = {
-  color: "#64748b",
-  fontWeight: 800
-};
-
-
-const labelInfoValueStyle: React.CSSProperties = {
-  color: "#111827",
-  wordBreak: "break-word",
-  overflow: "hidden"
-};
