@@ -33,6 +33,34 @@ function formatDate(value: Date | string | null | undefined) {
   return new Date(value).toLocaleDateString("de-DE");
 }
 
+function QRCodeImage({ value }: { value: string }) {
+  const [src, setSrc] = React.useState("");
+
+  React.useEffect(() => {
+    let active = true;
+
+    QRCode.toDataURL(value, {
+      errorCorrectionLevel: "M",
+      margin: 2,
+      width: 220,
+    })
+      .then((dataUrl: string) => {
+        if (active) setSrc(dataUrl);
+      })
+      .catch(() => {
+        if (active) setSrc("");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [value]);
+
+  if (!src) return null;
+
+  return <img src={src} alt="QR-Code" style={labelQrStyle} />;
+}
+
 function buildQrValue(label: any) {
   return label.publicUrl || "";
 }
@@ -979,3 +1007,11 @@ const previewCardStickyStyle: React.CSSProperties = {
 
 
 
+
+
+const labelQrStyle: React.CSSProperties = {
+  width: "17mm",
+  height: "17mm",
+  display: "block",
+  flexShrink: 0,
+};
