@@ -472,7 +472,7 @@ function LabelCard({ label, tenantName }: { label: any; tenantName: string }) {
   return (
     <article className="labelCard" style={isSmall ? smallLabelCardStyle : labelCardStyle}>
       <div style={labelTopStyle}>
-        <strong>{label.quantityText || "1 Portion"}</strong>
+        <strong>{label.quantityText || ""}</strong>
         <span>{tenantName}</span>
       </div>
 
@@ -480,38 +480,19 @@ function LabelCard({ label, tenantName }: { label: any; tenantName: string }) {
 
       <h3 style={isSmall ? smallProductTitleStyle : productTitleStyle}>{label.productName}</h3>
 
-      <div style={previewDateGridStyle}>
-        <div style={previewDateBoxStyle}>
-          <span style={previewDateCaptionStyle}>Produziert am</span>
-          <strong style={previewProducedValueStyle}>{formatDate(label.productionDate)}</strong>
-        </div>
-
-        <div style={previewExpiryBoxStyle}>
-          <span style={previewDateCaptionStyle}>MHD / Ablauf am</span>
-          <strong style={previewExpiryValueStyle}>{formatDate(label.bestBeforeDate)}</strong>
-        </div>
+      <div style={dateStackStyle}>
+        <span>mindestens haltbar bis: <strong>{formatDate(label.bestBeforeDate)}</strong></span>
+        <span>hergestellt am: <strong>{formatDate(label.productionDate)}</strong></span>
       </div>
 
-      <div style={batchStyle}>
-        Los / Charge: {label.batchNumber || "-"}
-      </div>
+      <div style={batchStyle}>Los/Charge: {label.batchNumber ? label.batchNumber.startsWith("L") ? label.batchNumber : "L-" + label.batchNumber : "-"}</div>
 
-      <div style={previewIngredientsTopStyle}>
-        <span style={previewIngredientsLabelStyle}>Zutaten</span>
-        <span style={previewIngredientsValueStyle}>{label.ingredients || "-"}</span>
-      </div>
+      {label.storageNote ? <div style={storageStyle}>{label.storageNote}</div> : null}
 
       <div style={labelBottomStyle}>
-        <div style={previewInfoStyle}>
-          <div style={previewInfoRowStyle}>
-            <span style={previewInfoKeyStyle}>Lagerung</span>
-            <strong style={previewInfoValueStyle}>{label.storageNote || "-"}</strong>
-          </div>
-
-          <div style={previewInfoRowStyle}>
-            <span style={previewInfoKeyStyle}>Allergene</span>
-            <strong style={previewInfoValueStyle}>{label.allergens || "-"}</strong>
-          </div>
+        <div style={allergenStyle}>
+          <span>Allergene:</span>
+          <strong>{label.allergens || "-"}</strong>
         </div>
 
         <QrCode value={buildQrValue(label)} />
@@ -863,102 +844,3 @@ const dangerButtonStyle: React.CSSProperties = {
   color: "#b42318",
   border: "1px solid #f3c6c0",
 };
-
-
-const previewDateGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1.25fr",
-  gap: "1.5mm",
-};
-
-const previewDateBoxStyle: React.CSSProperties = {
-  border: "1px solid #cbd5e1",
-  borderRadius: 5,
-  padding: "0.9mm 1.1mm",
-  background: "#f8fafc",
-};
-
-const previewExpiryBoxStyle: React.CSSProperties = {
-  ...previewDateBoxStyle,
-  border: "1.4px solid #0f172a",
-  background: "#f1f5f9",
-};
-
-const previewDateCaptionStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "5.4pt",
-  color: "#64748b",
-  fontWeight: 800,
-  lineHeight: 1,
-  marginBottom: "0.4mm",
-};
-
-const previewProducedValueStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "6.5pt",
-  fontWeight: 700,
-  color: "#334155",
-};
-
-const previewExpiryValueStyle: React.CSSProperties = {
-  display: "inline-block",
-  fontSize: "8.4pt",
-  fontWeight: 900,
-  color: "#0f172a",
-  borderBottom: "1px solid #0f172a",
-  paddingBottom: "0.2mm",
-};
-
-const previewIngredientsTopStyle: React.CSSProperties = {
-  borderBottom: "1px solid #dbe4ea",
-  paddingBottom: "1mm",
-  marginBottom: "0.8mm",
-  minHeight: "7mm",
-  overflow: "hidden",
-};
-
-const previewIngredientsLabelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "5.4pt",
-  fontWeight: 800,
-  color: "#64748b",
-  marginBottom: "0.35mm",
-};
-
-const previewIngredientsValueStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "5.7pt",
-  lineHeight: 1.12,
-  color: "#0f172a",
-  overflow: "hidden",
-  wordBreak: "break-word",
-};
-
-const previewInfoStyle: React.CSSProperties = {
-  display: "grid",
-  gap: "0.45mm",
-  overflow: "hidden",
-  minWidth: 0,
-};
-
-const previewInfoRowStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "14mm 1fr",
-  gap: "0.8mm",
-  fontSize: "5.5pt",
-  lineHeight: 1.08,
-  minWidth: 0,
-};
-
-const previewInfoKeyStyle: React.CSSProperties = {
-  color: "#64748b",
-  fontWeight: 800,
-};
-
-const previewInfoValueStyle: React.CSSProperties = {
-  color: "#111827",
-  overflow: "hidden",
-  wordBreak: "break-word",
-  fontWeight: 600,
-};
-
