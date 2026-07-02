@@ -40,7 +40,7 @@ function buildQrValue(label: any) {
 
 
 export function meta() {
-  return [{ title: "MHD-Labels · Gastario" }];
+  return [{ title: "MHD-Labels ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· Gastario" }];
 }
 
 export async function loader({ request }: { request: Request }) {
@@ -326,7 +326,7 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Lagerhinweis">
-              <input name="storageNote" defaultValue="Gekühlt lagern bei max. +7 °C" />
+              <input name="storageNote" defaultValue="GekÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼hlt lagern bei max. +7 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°C" />
             </Field>
 
             <Field label="Allergene">
@@ -334,13 +334,13 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Zutaten">
-              <input name="ingredients" placeholder="z. B. Reis, Hähnchen, Gemüse, Sauce" />
+              <input name="ingredients" placeholder="z. B. Reis, HÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤hnchen, GemÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼se, Sauce" />
             </Field>
 
-            <Field label="Labelgröße">
+            <Field label="LabelgrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¶ÃƒÆ’Ã†â€™Ãƒâ€¦Ã‚Â¸e">
               <select name="labelSize" defaultValue="76x51">
-                <option value="76x51">76 × 51 mm</option>
-                <option value="57x32">57 × 32 mm</option>
+                <option value="76x51">76 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â 51 mm</option>
+                <option value="57x32">57 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â 32 mm</option>
               </select>
             </Field>
 
@@ -365,59 +365,85 @@ export default function MhdLabelsPage() {
               </div>
             </div>
 
+            <Form method="get" style={labelSearchStyle}>
+              <input
+                name="q"
+                defaultValue={data.searchQuery || ""}
+                placeholder="Suchen nach Produkt, Kunde, Los / Charge, Zutaten oder Allergenen"
+                style={labelSearchInputStyle}
+              />
+              <button type="submit" style={previewButtonStyle}>
+                Suchen
+              </button>
+              {data.searchQuery ? (
+                <Link to="/mhd-labels" style={clearSearchStyle}>
+                  ZurÃƒÆ’Ã‚Â¼cksetzen
+                </Link>
+              ) : null}
+            </Form>
+
+            {data.hasMoreLabels ? (
+              <div style={resultLimitStyle}>
+                Es werden nur die neuesten 80 Labels angezeigt. Bitte nutze die Suche, wenn du ÃƒÆ’Ã‚Â¤ltere Labels brauchst.
+              </div>
+            ) : null}
+
             {data.labels.length === 0 ? (
               <div style={emptyStyle}>Noch keine MHD-Labels gespeichert.</div>
             ) : (
-              <div style={labelListStyle}>
-                {data.labels.map((label) => (
-                  <div key={label.id} style={labelRowStyle}>
-                    <div>
-                      <strong>{label.productName}</strong>
-                      <span>
-                        MHD: {formatDate(label.bestBeforeDate)} · Charge: {label.batchNumber || "-"}
-                        {label.ingredients ? <> · Zutaten: {label.ingredients}</> : null}
-                      </span>
-                    </div>
+              <div style={labelListScrollStyle}>
+                <div style={labelListStyle}>
+                  {data.labels.map((label: any) => (
+                    <div key={label.id} style={labelRowStyle}>
+                      <div>
+                        <strong>{label.productName}</strong>
+                        <span>
+                          MHD: {formatDate(label.bestBeforeDate)} · Los / Charge: {label.batchNumber || "-"}
+                          {label.ingredients ? <> · Zutaten: {label.ingredients}</> : null}
+                        </span>
+                      </div>
 
-                    <div style={rowMetaStyle}>
-                      <span>{label.labelCount} × {label.labelSize}</span>
-                      <span>MHD: {formatDate(label.bestBeforeDate)}</span>
-                    </div>
+                      <div style={rowMetaStyle}>
+                        <span>{label.labelCount} × {label.labelSize}</span>
+                        <span>MHD: {formatDate(label.bestBeforeDate)}</span>
+                      </div>
 
-                    <div style={listActionGroupStyle}>
-                      <Link to={`/mhd-labels?print=${label.id}`} style={previewButtonStyle}>
-                        Vorschau
-                      </Link>
-                      <a href={label.publicPrintUrl || `/mhd-labels/print/${label.id}`} target="_blank" rel="noreferrer" style={primaryButtonStyle}>
-                        Drucken
-                      </a>
+                      <div style={listActionGroupStyle}>
+                        <Link to={`/mhd-labels?print=${label.id}`} style={previewButtonStyle}>
+                          Vorschau
+                        </Link>
 
-                      <Form
-                        method="post"
-                        onSubmit={(event) => {
-                          if (!window.confirm("Dieses Label wirklich löschen?")) {
-                            event.preventDefault();
-                          }
-                        }}
-                      >
-                        <input type="hidden" name="_action" value="delete" />
-                        <input type="hidden" name="labelId" value={label.id} />
-                        <button type="submit" style={dangerButtonStyle} title="Label löschen">
-                          Löschen
-                        </button>
-                      </Form>
+                        <a href={label.publicPrintUrl || `/mhd-labels/print/${label.id}`} target="_blank" rel="noreferrer" style={primaryButtonStyle}>
+                          Drucken
+                        </a>
+
+                        <Form
+                          method="post"
+                          onSubmit={(event) => {
+                            if (!window.confirm("Dieses Label wirklich löschen?")) {
+                              event.preventDefault();
+                            }
+                          }}
+                        >
+                          <input type="hidden" name="_action" value="delete" />
+                          <input type="hidden" name="labelId" value={label.id} />
+                          <button type="submit" style={dangerButtonStyle} title="Label löschen">
+                            Löschen
+                          </button>
+                        </Form>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
-          <div style={previewCardStyle}>
+          <div style={previewCardStickyStyle}>
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Vorschau</p>
-                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswählen"}</h2>
+                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤hlen"}</h2>
               </div>
 
 
@@ -436,7 +462,7 @@ export default function MhdLabelsPage() {
                 </div>
               </>
             ) : (
-              <div style={emptyStyle}>Wähle links ein gespeichertes Label über „Vorschau“ aus. Danach erscheint hier die Druckvorschau.</div>
+              <div style={emptyStyle}>WÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤hle links ein gespeichertes Label ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼ber ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾VorschauÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ aus. Danach erscheint hier die Druckvorschau.</div>
             )}
           </div>
         </div>
@@ -918,3 +944,25 @@ const dangerButtonStyle: React.CSSProperties = {
   color: "#b42318",
   border: "1px solid #f3c6c0",
 };
+const labelListScrollStyle: React.CSSProperties = {
+  maxHeight: "560px",
+  overflowY: "auto",
+  paddingRight: 6,
+  overscrollBehavior: "contain",
+};
+
+const previewCardStickyStyle: React.CSSProperties = {
+  ...cardStyle,
+  position: "sticky",
+  top: 24,
+  alignSelf: "start",
+  maxHeight: "calc(100vh - 48px)",
+  overflow: "auto",
+};
+
+
+
+
+
+
+
