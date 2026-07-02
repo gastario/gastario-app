@@ -114,10 +114,10 @@ export default function PublicFoodLabelPage() {
 
       <section className="screen-only" style={toolbarStyle}>
         <div>
-          <p style={eyebrowStyle}>Öffentliche Lebensmittelinformation</p>
+          <p style={eyebrowStyle}>Ã–ffentliche Lebensmittelinformation</p>
           <h1 style={titleStyle}>{label.productName}</h1>
           <p style={subtitleStyle}>
-            Diese Seite ist über den QR-Code erreichbar und zeigt die gespeicherten MHD- und Produktdaten.
+            Diese Seite ist Ã¼ber den QR-Code erreichbar und zeigt die gespeicherten MHD- und Produktdaten.
           </p>
         </div>
 
@@ -125,9 +125,7 @@ export default function PublicFoodLabelPage() {
           <button type="button" onClick={() => window.print()} style={printButtonStyle}>
             Label drucken
           </button>
-          <button type="button" onClick={() => navigator.clipboard?.writeText(publicUrl)} style={copyButtonStyle}>
-            Link kopieren
-          </button>
+
         </div>
       </section>
 
@@ -137,21 +135,23 @@ export default function PublicFoodLabelPage() {
         </div>
 
         <div className="screen-only" style={infoPanelStyle}>
-          <h2 style={infoTitleStyle}>Strukturierte Daten</h2>
+          <h2 style={infoTitleStyle}>Produktinformationen</h2>
 
-          <InfoRow label="Produkt" value={label.productName} />
-          <InfoRow label="Kunde / Anlass" value={label.customerName || "-"} />
-          <InfoRow label="Menge / Portion" value={label.quantityText || "-"} />
-          <InfoRow label="Hergestellt am" value={formatDate(label.productionDate)} />
-          <InfoRow label="MHD / Verbrauch bis" value={formatDate(label.bestBeforeDate)} />
-          <InfoRow label="Los / Charge" value={label.batchNumber || "-"} />
-          <InfoRow label="Lagerhinweis" value={label.storageNote || "-"} />
-          <InfoRow label="Zutaten" value={label.ingredients || "-"} />
-          <InfoRow label="Allergene" value={label.allergens || "-"} />
+          <div style={dataTableStyle}>
+            <InfoRow label="Produkt" value={label.productName} />
+            <InfoRow label="Kunde / Anlass" value={label.customerName || "-"} />
+            <InfoRow label="Menge / Portion" value={label.quantityText || "-"} />
+            <InfoRow label="Hergestellt am" value={formatDate(label.productionDate)} />
+            <InfoRow label="MHD / Verbrauch bis" value={formatDate(label.bestBeforeDate)} />
+            <InfoRow label="Los / Charge" value={label.batchNumber || "-"} />
+            <InfoRow label="Lagerhinweis" value={label.storageNote || "-"} />
+            <InfoRow label="Zutaten" value={label.ingredients || "-"} />
+            <InfoRow label="Allergene" value={label.allergens || "-"} />
+          </div>
 
           <div style={noteBoxStyle}>
             <strong>Hinweis:</strong> Der QR-Code ersetzt nicht automatisch alle Pflichtangaben auf dem Etikett.
-            Er dient als digitale Zusatzinfo und zur Rückverfolgung.
+            Er dient als digitale Zusatzinfo und zur RÃ¼ckverfolgung.
           </div>
         </div>
       </section>
@@ -215,8 +215,8 @@ function FoodLabelCard({ label, qrDataUrl }: { label: any; qrDataUrl: string }) 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div style={infoRowStyle}>
-      <span>{label}</span>
-      <strong>{value}</strong>
+      <span style={infoLabelStyle}>{label}</span>
+      <strong style={infoValueStyle}>{value}</strong>
     </div>
   );
 }
@@ -285,16 +285,6 @@ const printButtonStyle: React.CSSProperties = {
   cursor: "pointer",
 };
 
-const copyButtonStyle: React.CSSProperties = {
-  border: "1px solid #d7dde5",
-  background: "#ffffff",
-  color: "#111827",
-  borderRadius: 12,
-  padding: "10px 14px",
-  fontWeight: 700,
-  cursor: "pointer",
-};
-
 const contentGridStyle: React.CSSProperties = {
   maxWidth: 1120,
   margin: "0 auto",
@@ -328,13 +318,33 @@ const infoTitleStyle: React.CSSProperties = {
   color: "#0f172a",
 };
 
+const dataTableStyle: React.CSSProperties = {
+  border: "1px solid #e5e7eb",
+  borderRadius: 14,
+  overflow: "hidden",
+  background: "#ffffff",
+};
+
 const infoRowStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "160px 1fr",
+  gridTemplateColumns: "170px 1fr",
   gap: 14,
-  padding: "12px 0",
+  padding: "13px 14px",
   borderBottom: "1px solid #eef2f7",
   fontSize: 14,
+  alignItems: "start",
+};
+
+const infoLabelStyle: React.CSSProperties = {
+  color: "#64748b",
+  fontWeight: 700,
+};
+
+const infoValueStyle: React.CSSProperties = {
+  color: "#111827",
+  fontWeight: 700,
+  lineHeight: 1.45,
+  wordBreak: "break-word",
 };
 
 const noteBoxStyle: React.CSSProperties = {
