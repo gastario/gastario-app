@@ -117,6 +117,22 @@ export async function action({ request }: { request: Request }) {
   await ensureFoodLabelTable(prisma);
 
   const formData = await request.formData();
+  const actionType = String(formData.get("_action") || "");
+
+  if (actionType === "delete") {
+    const labelId = String(formData.get("labelId") || "");
+
+    if (labelId) {
+      await prisma.foodLabel.deleteMany({
+        where: {
+          id: labelId,
+          tenantId: access.tenantId,
+        },
+      });
+    }
+
+    return redirect("/mhd-labels");
+  }
   const intent = String(formData.get("intent") || "");
 
   if (intent === "createLabel") {
@@ -337,6 +353,21 @@ export default function MhdLabelsPage() {
                       <Link to={`/mhd-labels/print/${label.id}`} style={primaryButtonStyle}>
                         Drucken
                       </Link>
+
+                      <Form
+                        method="post"
+                        onSubmit={(event) => {
+                          if (!window.confirm("Dieses Label wirklich loeschen?")) {
+                            event.preventDefault();
+                          }
+                        }}
+                      >
+                        <input type="hidden" name="_action" value="delete" />
+                        <input type="hidden" name="labelId" value={label.id} />
+                        <button type="submit" style={dangerButtonStyle}>
+                          Loeschen
+                        </button>
+                      </Form>
                     </div>
                   </div>
                 ))}
@@ -650,38 +681,37 @@ const labelCardStyle: React.CSSProperties = {
   width: "76mm",
   height: "51mm",
   boxSizing: "border-box",
-  border: "1.5px solid #0f172a",
-  borderRadius: "2.4mm",
-  padding: "3mm",
+  border: "1.3px solid #0f172a",
+  borderRadius: "2mm",
+  padding: "2.6mm",
   background: "#ffffff",
   color: "#0f172a",
   overflow: "hidden",
   display: "flex",
   flexDirection: "column",
-  gap: "1.3mm",
-  fontFamily: "Arial, Helvetica, sans-serif",
-  boxShadow: "0 6px 16px rgba(15, 23, 42, 0.12)"
+  gap: "0.9mm",
+  fontFamily: "Arial, Helvetica, sans-serif"
 };
 
 const smallLabelCardStyle: React.CSSProperties = {
   ...labelCardStyle,
   width: "57mm",
   height: "32mm",
-  padding: "2.3mm",
-  borderRadius: "2mm",
-  gap: "0.8mm",
-  fontSize: "6.8pt"
+  padding: "2mm",
+  borderRadius: "1.6mm",
+  gap: "0.55mm",
+  fontSize: "6.2pt"
 };
 
 const labelTopStyle: React.CSSProperties = {
   display: "flex",
-  alignItems: "center",
   justifyContent: "space-between",
-  gap: "2mm",
-  fontSize: "6.4pt",
-  lineHeight: 1.1,
+  alignItems: "center",
+  gap: "1.5mm",
+  fontSize: "5.6pt",
+  lineHeight: 1,
   color: "#475569",
-  paddingBottom: "1mm",
+  paddingBottom: "0.8mm",
   borderBottom: "1px solid #dbe5eb"
 };
 
@@ -692,11 +722,11 @@ const brandStyle: React.CSSProperties = {
 
 const customerStyle: React.CSSProperties = {
   margin: 0,
-  fontSize: "6.4pt",
-  lineHeight: 1.15,
+  fontSize: "5.7pt",
+  lineHeight: 1.1,
   color: "#475569",
   fontWeight: 700,
-  maxHeight: "4mm",
+  maxHeight: "3.3mm",
   overflow: "hidden"
 };
 
@@ -737,8 +767,8 @@ const storageStyle: React.CSSProperties = {
 
 const labelBottomStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "1fr 17.5mm",
-  gap: "2mm",
+  gridTemplateColumns: "1fr 15.8mm",
+  gap: "1.8mm",
   alignItems: "end",
   minHeight: 0,
   flex: 1
@@ -802,3 +832,11 @@ const successStyle: React.CSSProperties = {
 
 
 
+
+
+const dangerButtonStyle: React.CSSProperties = {
+  ...actionButtonBaseStyle,
+  background: "#ffffff",
+  color: "#b42318",
+  border: "1px solid #f3c6c0",
+};
