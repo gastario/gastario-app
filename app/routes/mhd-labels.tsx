@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
@@ -370,17 +370,15 @@ export default function MhdLabelsPage() {
                       <Form
                         method="post"
                         onSubmit={(event) => {
-                          if (!window.confirm("Dieses Label wirklich l?schen?")) {
+                          if (!window.confirm("Dieses Label wirklich l\u00f6schen?")) {
                             event.preventDefault();
                           }
                         }}
                       >
                         <input type="hidden" name="_action" value="delete" />
                         <input type="hidden" name="labelId" value={label.id} />
-                        <button type="submit" style={dangerButtonStyle}>
-                          Loeschen
-                        </button>
-                      </Form></div>
+                        <button type="submit" style={dangerButtonStyle}>{"L\u00f6schen"}</button>
+                          {"L\u00f6schen"}
                   </div>
                 ))}
               </div>
