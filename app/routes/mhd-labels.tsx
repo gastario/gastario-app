@@ -649,7 +649,7 @@ const secondaryButtonStyle: React.CSSProperties = {
 const labelCardStyle: React.CSSProperties = {
   width: "76mm",
   height: "51mm",
-  border: "1px solid #0f172a",
+  border: "1.4px solid #0f172a",
   borderRadius: 8,
   padding: "3.2mm",
   background: "#ffffff",
