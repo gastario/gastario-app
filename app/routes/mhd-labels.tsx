@@ -622,12 +622,6 @@ const previewFooterActionsStyle: React.CSSProperties = {
   marginTop: 14,
 };
 
-const previewFooterActionsStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "flex-end",
-  marginTop: 14,
-};
-
 const secondaryButtonStyle: React.CSSProperties = {
   minHeight: 38,
   borderRadius: 11,
@@ -771,6 +765,7 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
 
 
 
