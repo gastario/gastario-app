@@ -17,6 +17,8 @@ export default [
   route("produkte", "routes/produkte.tsx"),
   route("produktion", "routes/produktion.tsx"),
   route("mhd-labels", "routes/mhd-labels.tsx"),
+  route("foodlabels", "routes/foodlabels.tsx"),
+  route("foodlabels/print/:labelId", "routes/foodlabels.print.$labelId.tsx"),
   route("mhd-labels/print/:labelId", "routes/mhd-labels.print.$labelId.tsx"),
   route("label/:publicToken", "routes/label.$publicToken.tsx"),
   route("packlisten", "routes/packlisten.tsx"),
