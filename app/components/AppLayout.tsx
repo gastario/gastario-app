@@ -21,6 +21,7 @@ const navigationGroups = [
     label: "Betrieb",
     items: [
       { label: "Produktion", to: "/produktion" },
+      { label: "MHD-Labels", to: "/mhd-labels" },
       { label: "Packlisten", to: "/packlisten" },
       { label: "Lieferscheine", to: "/lieferscheine" },
       { label: "Lieferungen", to: "/lieferungen" },
@@ -358,4 +359,5 @@ export default function AppLayout({ children }: AppLayoutProps) {
     </main>
   );
 }
+
 
