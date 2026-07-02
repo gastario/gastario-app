@@ -40,7 +40,7 @@ function buildQrValue(label: any) {
 
 
 export function meta() {
-  return [{ title: "MHD-Labels ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· Gastario" }];
+  return [{ title: "MHD-Labels ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· Gastario" }];
 }
 
 export async function loader({ request }: { request: Request }) {
@@ -326,7 +326,7 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Lagerhinweis">
-              <input name="storageNote" defaultValue="GekÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼hlt lagern bei max. +7 ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°C" />
+              <input name="storageNote" defaultValue="GekÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¼hlt lagern bei max. +7 ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°C" />
             </Field>
 
             <Field label="Allergene">
@@ -334,13 +334,13 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Zutaten">
-              <input name="ingredients" placeholder="z. B. Reis, HÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤hnchen, GemÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼se, Sauce" />
+              <input name="ingredients" placeholder="z. B. Reis, HÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤hnchen, GemÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¼se, Sauce" />
             </Field>
 
-            <Field label="LabelgrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¶ÃƒÆ’Ã†â€™Ãƒâ€¦Ã‚Â¸e">
+            <Field label="LabelgrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¶ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸e">
               <select name="labelSize" defaultValue="76x51">
-                <option value="76x51">76 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â 51 mm</option>
-                <option value="57x32">57 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â 32 mm</option>
+                <option value="76x51">76 ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â 51 mm</option>
+                <option value="57x32">57 ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â 32 mm</option>
               </select>
             </Field>
 
@@ -377,14 +377,14 @@ export default function MhdLabelsPage() {
               </button>
               {data.searchQuery ? (
                 <Link to="/mhd-labels" style={clearSearchStyle}>
-                  ZurÃƒÆ’Ã‚Â¼cksetzen
+                  ZurÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¼cksetzen
                 </Link>
               ) : null}
             </Form>
 
             {data.hasMoreLabels ? (
               <div style={resultLimitStyle}>
-                Es werden nur die neuesten 80 Labels angezeigt. Bitte nutze die Suche, wenn du ÃƒÆ’Ã‚Â¤ltere Labels brauchst.
+                Es werden nur die neuesten 80 Labels angezeigt. Bitte nutze die Suche, wenn du ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤ltere Labels brauchst.
               </div>
             ) : null}
 
@@ -398,13 +398,13 @@ export default function MhdLabelsPage() {
                       <div>
                         <strong>{label.productName}</strong>
                         <span>
-                          MHD: {formatDate(label.bestBeforeDate)} · Los / Charge: {label.batchNumber || "-"}
-                          {label.ingredients ? <> · Zutaten: {label.ingredients}</> : null}
+                          MHD: {formatDate(label.bestBeforeDate)} Ã‚Â· Los / Charge: {label.batchNumber || "-"}
+                          {label.ingredients ? <> Ã‚Â· Zutaten: {label.ingredients}</> : null}
                         </span>
                       </div>
 
                       <div style={rowMetaStyle}>
-                        <span>{label.labelCount} × {label.labelSize}</span>
+                        <span>{label.labelCount} Ãƒâ€” {label.labelSize}</span>
                         <span>MHD: {formatDate(label.bestBeforeDate)}</span>
                       </div>
 
@@ -420,15 +420,15 @@ export default function MhdLabelsPage() {
                         <Form
                           method="post"
                           onSubmit={(event) => {
-                            if (!window.confirm("Dieses Label wirklich löschen?")) {
+                            if (!window.confirm("Dieses Label wirklich lÃƒÂ¶schen?")) {
                               event.preventDefault();
                             }
                           }}
                         >
                           <input type="hidden" name="_action" value="delete" />
                           <input type="hidden" name="labelId" value={label.id} />
-                          <button type="submit" style={dangerButtonStyle} title="Label löschen">
-                            Löschen
+                          <button type="submit" style={dangerButtonStyle} title="Label lÃƒÂ¶schen">
+                            LÃƒÂ¶schen
                           </button>
                         </Form>
                       </div>
@@ -443,7 +443,7 @@ export default function MhdLabelsPage() {
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Vorschau</p>
-                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤hlen"}</h2>
+                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤hlen"}</h2>
               </div>
 
 
@@ -462,7 +462,7 @@ export default function MhdLabelsPage() {
                 </div>
               </>
             ) : (
-              <div style={emptyStyle}>WÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤hle links ein gespeichertes Label ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼ber ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾VorschauÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ aus. Danach erscheint hier die Druckvorschau.</div>
+              <div style={emptyStyle}>WÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤hle links ein gespeichertes Label ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¼ber ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¾VorschauÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ aus. Danach erscheint hier die Druckvorschau.</div>
             )}
           </div>
         </div>
@@ -952,7 +952,7 @@ const labelListScrollStyle: React.CSSProperties = {
 };
 
 const previewCardStickyStyle: React.CSSProperties = {
-  ...cardStyle,
+  ...previewCardStyle,
   position: "sticky",
   top: 24,
   alignSelf: "start",
