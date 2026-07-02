@@ -27,11 +27,11 @@ export async function ensureFoodLabelTable(prisma: any) {
     );
   `);
 
+  await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "publicToken" TEXT;`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "customerName" TEXT;`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "quantityText" TEXT;`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "labelCount" INTEGER NOT NULL DEFAULT 1;`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "labelSize" TEXT NOT NULL DEFAULT '76x51';`);
-  await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "publicToken" TEXT;`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "status" TEXT NOT NULL DEFAULT 'CREATED';`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "printedAt" TIMESTAMP(3);`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;`);

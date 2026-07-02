@@ -37,40 +37,7 @@ function buildQrValue(label: any) {
   return "https://gastario-app-production.up.railway.app/mhd-labels?print=" + label.id;
 }
 
-async function ensureFoodLabelTable(prisma: any) {
-  await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS "FoodLabel" (
-      "id" TEXT PRIMARY KEY,
-      "tenantId" TEXT NOT NULL,
-      "productName" TEXT NOT NULL,
-      "customerName" TEXT,
-      "productionDate" TIMESTAMP(3) NOT NULL,
-      "bestBeforeDate" TIMESTAMP(3) NOT NULL,
-      "batchNumber" TEXT,
-      "storageNote" TEXT,
-      "allergens" TEXT,
-      "quantityText" TEXT,
-      "labelCount" INTEGER NOT NULL DEFAULT 1,
-      "labelSize" TEXT NOT NULL DEFAULT '76x51',
-      "status" TEXT NOT NULL DEFAULT 'CREATED',
-      "printedAt" TIMESTAMP(3),
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
 
-  await prisma.$executeRawUnsafe(`
-    CREATE INDEX IF NOT EXISTS "FoodLabel_tenantId_idx" ON "FoodLabel"("tenantId");
-  `);
-
-  await prisma.$executeRawUnsafe(`
-    CREATE INDEX IF NOT EXISTS "FoodLabel_createdAt_idx" ON "FoodLabel"("createdAt");
-  `);
-
-  await prisma.$executeRawUnsafe(`
-    CREATE INDEX IF NOT EXISTS "FoodLabel_bestBeforeDate_idx" ON "FoodLabel"("bestBeforeDate");
-  `);
-}
 
 export function meta() {
   return [{ title: "MHD-Labels · Gastario" }];
@@ -79,6 +46,7 @@ export function meta() {
 export async function loader({ request }: { request: Request }) {
   const { getUserId } = await import("../lib/session.server");
   const { prisma } = await import("../lib/prisma.server");
+  const { ensureFoodLabelTable } = await import("../lib/food-labels.server");
 
   const url = new URL(request.url);
   const printId = url.searchParams.get("print");
@@ -130,6 +98,7 @@ export async function loader({ request }: { request: Request }) {
 export async function action({ request }: { request: Request }) {
   const { getUserId } = await import("../lib/session.server");
   const { prisma } = await import("../lib/prisma.server");
+  const { ensureFoodLabelTable } = await import("../lib/food-labels.server");
 
   const userId = await getUserId(request);
 
@@ -180,6 +149,7 @@ export async function action({ request }: { request: Request }) {
         quantityText: quantityText || null,
         labelCount,
         labelSize,
+        publicToken: createFoodLabelPublicToken(),
       },
     });
 
@@ -767,6 +737,7 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
 
 
 
