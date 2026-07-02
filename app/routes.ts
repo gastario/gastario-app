@@ -17,7 +17,6 @@ export default [
   route("produkte", "routes/produkte.tsx"),
   route("produktion", "routes/produktion.tsx"),
   route("mhd-labels", "routes/mhd-labels.tsx"),
-  route("mhd_labels", "routes/mhd-labels.tsx"),
   route("packlisten", "routes/packlisten.tsx"),
   route("lieferscheine", "routes/lieferscheine.tsx"),
   route("fahrerzettel", "routes/fahrerzettel.tsx"),
@@ -38,6 +37,7 @@ export default [
   route("gastario-control/features", "routes/gastario-control.features.tsx"),
   route("gastario-control/codes", "routes/gastario-control.codes.tsx"),
 ] satisfies RouteConfig;
+
 
 
 
