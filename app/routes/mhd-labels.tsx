@@ -34,7 +34,7 @@ function formatDate(value: Date | string | null | undefined) {
 }
 
 function buildQrValue(label: any) {
-  return "https://gastario-app-production.up.railway.app/mhd-labels?print=" + label.id;
+  return label.publicUrl || "";
 }
 
 
@@ -49,6 +49,7 @@ export async function loader({ request }: { request: Request }) {
   const { ensureFoodLabelTable } = await import("../lib/food-labels.server");
 
   const url = new URL(request.url);
+  const origin = url.origin;
   const printId = url.searchParams.get("print");
 
   const userId = await getUserId(request);
@@ -87,10 +88,24 @@ export async function loader({ request }: { request: Request }) {
       })
     : null;
 
+  const labelsWithUrls = labels.map((label: any) => ({
+    ...label,
+    publicUrl: label.publicToken ? `${origin}/label/${label.publicToken}` : "",
+    publicPrintUrl: label.publicToken ? `${origin}/label/${label.publicToken}?print=1` : "",
+  }));
+
+  const printLabelWithUrl = printLabel
+    ? {
+        ...printLabel,
+        publicUrl: printLabel.publicToken ? `${origin}/label/${printLabel.publicToken}` : "",
+        publicPrintUrl: printLabel.publicToken ? `${origin}/label/${printLabel.publicToken}?print=1` : "",
+      }
+    : null;
+
   return {
     tenantName: access.tenant.name || "Gastario",
-    labels,
-    printLabel,
+    labels: labelsWithUrls,
+    printLabel: printLabelWithUrl,
     today: todayInput(),
   };
 }
@@ -328,9 +343,9 @@ export default function MhdLabelsPage() {
                       <Link to={`/mhd-labels?print=${label.id}`} style={previewButtonStyle}>
                         Vorschau
                       </Link>
-                      <Link to={`/mhd-labels/print/${label.id}`} style={primaryButtonStyle}>
+                      <a href={label.publicPrintUrl || `/mhd-labels/print/${label.id}`} target="_blank" rel="noreferrer" style={primaryButtonStyle}>
                         Drucken
-                      </Link>
+                      </a>
                     </div>
                   </div>
                 ))}
@@ -355,9 +370,9 @@ export default function MhdLabelsPage() {
                 </div>
 
                 <div style={previewFooterActionsStyle}>
-                  <Link to={`/mhd-labels/print/${data.printLabel.id}`} style={primaryButtonStyle}>
+                  <a href={data.printLabel.publicPrintUrl || `/mhd-labels/print/${data.printLabel.id}`} target="_blank" rel="noreferrer" style={primaryButtonStyle}>
                     Drucken
-                  </Link>
+                  </a>
                 </div>
               </>
             ) : (
@@ -765,6 +780,7 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
 
 
 

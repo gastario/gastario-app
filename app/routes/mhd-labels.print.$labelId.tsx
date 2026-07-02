@@ -13,6 +13,10 @@ function toInputDate(value: Date | string | null | undefined) {
 }
 
 function buildQrValue(label: any) {
+  if (label.publicToken) {
+    return "https://gastario-app-production.up.railway.app/label/" + label.publicToken;
+  }
+
   return "https://gastario-app-production.up.railway.app/mhd-labels?print=" + label.id;
 }
 
@@ -349,3 +353,5 @@ function QrCode({ value }: { value: string }) {
 
   return <img src={src} alt="QR-Code" className="qr" />;
 }
+
+
