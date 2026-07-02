@@ -324,11 +324,11 @@ export default function MhdLabelsPage() {
                       <span>MHD: {formatDate(label.bestBeforeDate)}</span>
                     </div>
 
-                    <div style={rowActionsStyle}>
-                      <Link to={`/mhd-labels?print=${label.id}`} style={secondaryLinkStyle}>
+                    <div style={listActionGroupStyle}>
+                      <Link to={`/mhd-labels?print=${label.id}`} style={previewButtonStyle}>
                         Vorschau
                       </Link>
-                      <Link to={`/mhd-labels/print/${label.id}`} style={secondaryLinkStyle}>
+                      <Link to={`/mhd-labels/print/${label.id}`} style={primaryButtonStyle}>
                         Drucken
                       </Link>
                     </div>
@@ -548,21 +548,7 @@ const rowActionsStyle: React.CSSProperties = {
   flexWrap: "wrap",
 };
 
-const secondaryLinkStyle: React.CSSProperties = {
-  minHeight: 38,
-  borderRadius: 11,
-  padding: "0 12px",
-  fontSize: 13,
-  fontWeight: 600,
-  border: "1px solid #057a67",
-  background: "#eef7f5",
-  color: "#057a67",
-  cursor: "pointer",
-  textDecoration: "none",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-};
+const secondaryLinkStyle: React.CSSProperties = previewButtonStyle;
 
 const previewWrapStyle: React.CSSProperties = {
   background: "#f8fafc",
@@ -582,16 +568,48 @@ const printOnlyStyle: React.CSSProperties = {
   display: "none",
 };
 
-const primaryButtonStyle: React.CSSProperties = {
-  minHeight: 42,
-  borderRadius: 12,
-  padding: "0 17px",
+const actionButtonBaseStyle: React.CSSProperties = {
+  minHeight: 38,
+  padding: "0 14px",
+  borderRadius: 10,
+  border: "1px solid transparent",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 6,
   fontSize: 14,
-  fontWeight: 650,
-  border: "1px solid #036b5a",
-  background: "#057a67",
-  color: "#ffffff",
+  fontWeight: 600,
+  lineHeight: 1,
   cursor: "pointer",
+  textDecoration: "none",
+  whiteSpace: "nowrap",
+};
+
+const primaryButtonStyle: React.CSSProperties = {
+  ...actionButtonBaseStyle,
+  background: "#0f7b61",
+  border: "1px solid #0f7b61",
+  color: "#ffffff",
+};
+
+const previewButtonStyle: React.CSSProperties = {
+  ...actionButtonBaseStyle,
+  background: "#ffffff",
+  border: "1px solid #c7d8d2",
+  color: "#184c3a",
+};
+
+const listActionGroupStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 8,
+  alignItems: "flex-end",
+};
+
+const previewCardActionStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "flex-end",
+  marginBottom: 12,
 };
 
 const secondaryButtonStyle: React.CSSProperties = {
@@ -737,6 +755,7 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
 
 
 
