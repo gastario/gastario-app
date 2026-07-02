@@ -34,13 +34,13 @@ function formatDate(value: Date | string | null | undefined) {
 }
 
 function buildQrValue(label: any) {
-  return "https://gastario-app-production.up.railway.app/mhd-labelsGradprint=" + label.id;
+  return "https://gastario-app-production.up.railway.app/mhd-labels?print=" + label.id;
 }
 
 
 
 export function meta() {
-  return [{ title: "MHD-Labels - Gastario" }];
+  return [{ title: "MHD-Labels Â· Gastario" }];
 }
 
 export async function loader({ request }: { request: Request }) {
@@ -62,7 +62,7 @@ export async function loader({ request }: { request: Request }) {
     include: { tenant: true },
   });
 
-  if (!accessGrad.tenant) {
+  if (!access?.tenant) {
     return {
       tenantName: "Gastario",
       labels: [],
@@ -158,9 +158,8 @@ export async function action({ request }: { request: Request }) {
     const ingredients = String(formData.get("ingredients") || "").trim();
     const quantityText = String(formData.get("quantityText") || "").trim();
     const labelSize = String(formData.get("labelSize") || "76x51").trim();
-  const printPreset = String(formData.get("printPreset") || "a4-2").trim();
     const labelCountRaw = Number(String(formData.get("labelCount") || "1"));
-  const labelCount = Math.max(1, Math.min(Number.isFinite(labelCountRaw) ? labelCountRaw : 1, 200));
+    const labelCount = Math.max(1, Math.min(Number.isFinite(labelCountRaw) ? labelCountRaw : 1, 200));
 
     if (!productName) return { error: "Produktname fehlt." };
     if (!productionDate) return { error: "Produktionsdatum fehlt." };
@@ -180,7 +179,6 @@ export async function action({ request }: { request: Request }) {
         quantityText: quantityText || null,
         labelCount,
         labelSize,
-        printPreset,
         publicToken: createFoodLabelPublicToken(),
       },
     });
@@ -303,7 +301,11 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Lagerhinweis">
-              <input name="storageNote" placeholder="z. B. Gekuehlt lagern bei max. +7 Grad C" defaultValue="Gekuehlt lagern bei max. +7 Grad C" />
+              <input
+                name="storageNote"
+                placeholder={"z. B. Gek\u00fchlt lagern bei max. +7 \u00b0C"}
+                defaultValue={"Gek\u00fchlt lagern bei max. +7 \u00b0C"}
+              />
             </Field>
 
             <Field label="Allergene">
@@ -311,7 +313,7 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Zutaten">
-              <input name="ingredients" placeholder="z. B. Reis, Haehnchen, Gemuese, Sauce" />
+              <input name="ingredients" placeholder={"z. B. Reis, H\u00e4hnchen, Gem\u00fcse, Sauce"} />
             </Field>
 
             <Field label={"Labelgr\u00f6\u00dfe"}>
@@ -321,15 +323,7 @@ export default function MhdLabelsPage() {
               </select>
             </Field>
 
-                        <Field label="Druckformat">
-              <select name="printPreset" defaultValue="a4-2">
-                <option value="a4-2">A4 Hochformat - 2 Labels pro Reihe</option>
-                <option value="a4-3">A4 Hochformat - 3 Labels pro Reihe</option>
-                <option value="a4-4">A4 Hochformat - 4 Labels pro Reihe</option>
-              </select>
-            </Field>
-
-<Field label="Anzahl Labels">
+            <Field label="Anzahl Labels">
               <input name="labelCount" type="number" min="1" max="200" defaultValue="12" />
             </Field>
 
@@ -366,12 +360,11 @@ export default function MhdLabelsPage() {
 
                     <div style={rowMetaStyle}>
                       <span>{label.labelCount} x {label.labelSize}</span>
-                      <span>{label.printPreset || "a4-2"}</span>
                       <span>MHD: {formatDate(label.bestBeforeDate)}</span>
                     </div>
 
                     <div style={listActionGroupStyle}>
-                      <Link to={`/mhd-labelsGradprint=${label.id}`} style={previewButtonStyle}>
+                      <Link to={`/mhd-labels?print=${label.id}`} style={previewButtonStyle}>
                         Vorschau
                       </Link>
 
@@ -382,7 +375,7 @@ export default function MhdLabelsPage() {
                       <Form
                         method="post"
                         onSubmit={(event) => {
-                          if (!window.confirm("Dieses Label wirklich l\u00f6schenGrad")) {
+                          if (!window.confirm("Dieses Label wirklich l\u00f6schen?")) {
                             event.preventDefault();
                           }
                         }}
@@ -404,7 +397,7 @@ export default function MhdLabelsPage() {
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Vorschau</p>
-                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswaehlen"}</h2>
+                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswÃ¤hlen"}</h2>
               </div>
 
 
@@ -423,7 +416,7 @@ export default function MhdLabelsPage() {
                 </div>
               </>
             ) : (
-              <div style={emptyStyle}>Waehle links ein gespeichertes Label ueber Vorschau aus. Danach erscheint hier die Druckvorschau.</div>
+              <div style={emptyStyle}>WÃ¤hle links ein gespeichertes Label Ã¼ber â€žVorschauâ€œ aus. Danach erscheint hier die Druckvorschau.</div>
             )}
           </div>
         </div>

@@ -15,39 +15,24 @@ function buildQrValue(label: any) {
   return "https://gastario-app-production.up.railway.app/mhd-labels?print=" + label.id;
 }
 
-function getSize(label: any) {
-  const preset = label.printPreset || "a4-2";
-
-  if (preset === "a4-4") {
+function getSize(labelSize: string) {
+  if (labelSize === "57x32") {
     return {
-      columns: 4,
-      width: "43mm",
+      width: "57mm",
       height: "32mm",
+      columns: 3,
       gap: "4mm",
-      qr: "10mm",
+      qr: "11mm",
       padding: "2.1mm",
       product: "8pt",
-      base: "5.4pt",
-    };
-  }
-
-  if (preset === "a4-3") {
-    return {
-      columns: 3,
-      width: "58mm",
-      height: "38mm",
-      gap: "5mm",
-      qr: "12mm",
-      padding: "2.4mm",
-      product: "9.3pt",
-      base: "5.9pt",
+      base: "5.8pt",
     };
   }
 
   return {
+    width: "76mm",
+    height: "51mm",
     columns: 2,
-    width: "86mm",
-    height: "52mm",
     gap: "6mm",
     qr: "15mm",
     padding: "3mm",
@@ -102,7 +87,7 @@ export async function loader({ request, params }: { request: Request; params: { 
 export default function MhdLabelPrintPage() {
   const data = useLoaderData<typeof loader>();
   const label = data.label as any;
-  const size = getSize(label);
+  const size = getSize(label.labelSize);
   const labelCount = Math.max(1, Math.min(Number(label.labelCount || 1), 200));
   const labels = Array.from({ length: labelCount }, (_, index) => index);
 

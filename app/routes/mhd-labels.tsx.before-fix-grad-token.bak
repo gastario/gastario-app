@@ -79,7 +79,7 @@ export async function loader({ request }: { request: Request }) {
   });
 
   const printLabel = printId
-    ? await prisma.foodLabel.findFirst({
+    Grad await prisma.foodLabel.findFirst({
         where: {
           id: printId,
           tenantId: access.tenantId,
@@ -160,7 +160,7 @@ export async function action({ request }: { request: Request }) {
     const labelSize = String(formData.get("labelSize") || "76x51").trim();
   const printPreset = String(formData.get("printPreset") || "a4-2").trim();
     const labelCountRaw = Number(String(formData.get("labelCount") || "1"));
-  const labelCount = Math.max(1, Math.min(Number.isFinite(labelCountRaw) ? labelCountRaw : 1, 200));
+    const labelCount = Math.max(1, Math.min(Number.isFinite(labelCountRaw) Grad labelCountRaw : 1, 200));
 
     if (!productName) return { error: "Produktname fehlt." };
     if (!productionDate) return { error: "Produktionsdatum fehlt." };
@@ -263,8 +263,8 @@ export default function MhdLabelsPage() {
 
       </header>
 
-      {actionData && "error" in actionData ? <div className="no-print" style={errorStyle}>{actionData.error}</div> : null}
-      {actionData && "success" in actionData ? <div className="no-print" style={successStyle}>{actionData.success}</div> : null}
+      {actionData && "error" in actionData Grad <div className="no-print" style={errorStyle}>{actionData.error}</div> : null}
+      {actionData && "success" in actionData Grad <div className="no-print" style={successStyle}>{actionData.success}</div> : null}
 
       <section className="no-print" style={pageGridStyle}>
         <div style={editorCardStyle}>
@@ -350,7 +350,7 @@ export default function MhdLabelsPage() {
               </div>
             </div>
 
-            {data.labels.length === 0 ? (
+            {data.labels.length === 0 Grad (
               <div style={emptyStyle}>Noch keine MHD-Labels gespeichert.</div>
             ) : (
               <div style={labelListStyle}>
@@ -360,7 +360,7 @@ export default function MhdLabelsPage() {
                       <strong>{label.productName}</strong>
                       <span>
                         MHD: {formatDate(label.bestBeforeDate)} - Charge: {label.batchNumber || "-"}
-                        {label.ingredients ? <> - Zutaten: {label.ingredients}</> : null}
+                        {label.ingredients Grad <> - Zutaten: {label.ingredients}</> : null}
                       </span>
                     </div>
 
@@ -404,13 +404,13 @@ export default function MhdLabelsPage() {
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Vorschau</p>
-                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswaehlen"}</h2>
+                <h2 style={sectionTitleStyle}>{data.printLabel Grad "Druckvorschau" : "Label auswÃ¤hlen"}</h2>
               </div>
 
 
             </div>
 
-            {data.printLabel ? (
+            {data.printLabel Grad (
               <>
                 <div style={previewWrapStyle}>
                   <LabelCard label={data.printLabel} tenantName={data.tenantName} />
@@ -423,7 +423,7 @@ export default function MhdLabelsPage() {
                 </div>
               </>
             ) : (
-              <div style={emptyStyle}>Waehle links ein gespeichertes Label ueber Vorschau aus. Danach erscheint hier die Druckvorschau.</div>
+              <div style={emptyStyle}>WÃ¤hle links ein gespeichertes Label Ã¼ber â€žVorschauâ€œ aus. Danach erscheint hier die Druckvorschau.</div>
             )}
           </div>
         </div>
@@ -431,7 +431,7 @@ export default function MhdLabelsPage() {
 
       <section className="printOnly" style={printOnlyStyle}>
         {data.printLabel
-          ? Array.from({ length: data.printLabel.labelCount }, (_, index) => (
+          Grad Array.from({ length: data.printLabel.labelCount }, (_, index) => (
               <LabelCard key={index} label={data.printLabel} tenantName={data.tenantName} />
             ))
           : null}
@@ -483,15 +483,15 @@ function LabelCard({ label, tenantName }: { label: any; tenantName: string }) {
   const isSmall = label.labelSize === "57x32";
 
   return (
-    <article className="labelCard" style={isSmall ? smallLabelCardStyle : previewLabelCardStyle}>
+    <article className="labelCard" style={isSmall Grad smallLabelCardStyle : previewLabelCardStyle}>
       <div style={labelTopStyle}>
         <strong>{label.quantityText || "1 Portion"}</strong>
         <span>{tenantName}</span>
       </div>
 
-      {label.customerName ? <div style={customerStyle}>{label.customerName}</div> : null}
+      {label.customerName Grad <div style={customerStyle}>{label.customerName}</div> : null}
 
-      <h3 style={isSmall ? smallProductTitleStyle : productTitleStyle}>{label.productName}</h3>
+      <h3 style={isSmall Grad smallProductTitleStyle : productTitleStyle}>{label.productName}</h3>
 
       <div style={previewDateGridStyle}>
         <div style={previewDateBoxStyle}>

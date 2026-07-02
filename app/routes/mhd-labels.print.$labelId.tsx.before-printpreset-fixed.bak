@@ -23,12 +23,7 @@ function getSize(label: any) {
       columns: 4,
       width: "43mm",
       height: "32mm",
-      gap: "4mm",
-      qr: "10mm",
-      padding: "2.1mm",
-      product: "8pt",
-      base: "5.4pt",
-    };
+      gap: ${size.gap};
   }
 
   if (preset === "a4-3") {

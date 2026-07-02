@@ -22,6 +22,7 @@ const navigationGroups = [
     items: [
       { label: "Produktion", to: "/produktion" },
       { label: "MHD-Labels", to: "/mhd-labels" },
+      { to: "/foodlabels", label: "Foodlabel erstellen" },
       { label: "Packlisten", to: "/packlisten" },
       { label: "Lieferscheine", to: "/lieferscheine" },
       { label: "Lieferungen", to: "/lieferungen" },
