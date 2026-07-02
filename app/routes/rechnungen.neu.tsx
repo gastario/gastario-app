@@ -214,6 +214,8 @@ export async function action({ request }: { request: Request }) {
 
   const invoiceDate = parseDateInput(formData.get("invoiceDate"));
   const serviceDate = parseDateInput(formData.get("serviceDate"));
+  const serviceEndDate = parseDateInput(formData.get("serviceEndDate"));
+  const serviceDateType = String(formData.get("serviceDateType") || "Leistungsdatum");
 
   const title = String(formData.get("title") || "Rechnung").trim();
   const introText = String(formData.get("introText") || "").trim();
@@ -236,6 +238,9 @@ export async function action({ request }: { request: Request }) {
   if (!street || !zip || !city || !country) return { error: "Vollständige Rechnungsadresse des Kunden fehlt." };
   if (!invoiceDate) return { error: "Rechnungsdatum fehlt." };
   if (!serviceDate) return { error: "Leistungsdatum fehlt." };
+  if (serviceDateType.toLowerCase().includes("zeitraum") && !serviceEndDate) {
+    return { error: "Bei Lieferzeitraum oder Leistungszeitraum fehlt das Bis-Datum." };
+  }
 
   const existing = await prisma.invoice.findFirst({
     where: {
@@ -355,6 +360,8 @@ export async function action({ request }: { request: Request }) {
       notes: [
         "Kundennummer: " + customerNumber,
         "Preisangabe: " + (priceMode === "GROSS" ? "Brutto" : "Netto"),
+        "Leistungsangabe: " + serviceDateType,
+        serviceEndDate ? "Zeitraum bis: " + serviceEndDate.toISOString().slice(0, 10) : "",
         title,
         introText,
         globalDiscountCents > 0 ? "Gesamtrabatt: " + (globalDiscountMode === "PERCENT" ? globalDiscountValue + "%" : globalDiscountValue + " €") : "",
@@ -381,6 +388,11 @@ export default function NeueRechnungPage() {
   const actionData = useActionData<typeof action>();
   const today = data.today;
   const tenant = data.tenant as any;
+
+  const [language, setLanguage] = useState<"DE" | "EN">("DE");
+  const [serviceDateType, setServiceDateType] = useState("Leistungsdatum");
+  const isEnglish = language === "EN";
+  const isPeriod = serviceDateType.toLowerCase().includes("zeitraum");
 
   const [priceMode, setPriceMode] = useState<"NET" | "GROSS">("NET");
   const [discountVisible, setDiscountVisible] = useState(false);
@@ -460,7 +472,7 @@ export default function NeueRechnungPage() {
         <div>
           <p className="eyebrow">Verkauf</p>
           <h1>Rechnung erstellen</h1>
-          <p className="muted">Professioneller Editor mit Pflichtangaben-Prüfung und Live-Berechnung.</p>
+
         </div>
 
         <Link className="button secondary" to="/rechnungen">
@@ -629,10 +641,15 @@ export default function NeueRechnungPage() {
 
               <FloatingInput name="invoiceDate" label="Rechnungsdatum" type="date" defaultValue={today} required />
 
-              <div style={twoColSmallStyle}>
+              <div style={isPeriod ? threeDateGridStyle : twoColSmallStyle}>
                 <label style={labelStyle}>
                   <span>Lieferung oder Leistung</span>
-                  <select name="serviceDateType" defaultValue="Leistungsdatum" style={inputStyle}>
+                  <select
+                    name="serviceDateType"
+                    value={serviceDateType}
+                    onChange={(event) => setServiceDateType(event.currentTarget.value)}
+                    style={inputStyle}
+                  >
                     <option>Lieferdatum</option>
                     <option>Leistungsdatum</option>
                     <option>Lieferzeitraum</option>
@@ -640,12 +657,21 @@ export default function NeueRechnungPage() {
                   </select>
                 </label>
 
-                <FloatingInput name="serviceDate" label="Datum" type="date" defaultValue={today} required />
+                <FloatingInput name="serviceDate" label={isPeriod ? "Von" : "Datum"} type="date" defaultValue={today} required />
+
+                {isPeriod ? (
+                  <FloatingInput name="serviceEndDate" label="Bis" type="date" defaultValue={today} required />
+                ) : null}
               </div>
 
               <label style={labelStyle}>
                 <span>Belegsprache</span>
-                <select name="language" defaultValue="DE" style={inputStyle}>
+                <select
+                  name="language"
+                  value={language}
+                  onChange={(event) => setLanguage(event.currentTarget.value as "DE" | "EN")}
+                  style={inputStyle}
+                >
                   <option value="DE">Deutsch</option>
                   <option value="EN">Englisch</option>
                 </select>
@@ -672,18 +698,18 @@ export default function NeueRechnungPage() {
           </div>
         </section>
 
-        <section style={simpleTextCardStyle}>
+        <section key={`text-${language}`} style={simpleTextCardStyle}>
           <div style={sectionHeaderStyle}>
             <p style={sectionLabelStyle}>Text</p>
             <h2 style={sectionTitleStyle}>Belegtext</h2>
           </div>
 
           <div style={gridStyle}>
-            <FloatingInput name="title" label="Belegtitel" defaultValue="Rechnung" />
+            <FloatingInput name="title" label={isEnglish ? "Document title" : "Belegtitel"} defaultValue={isEnglish ? "Invoice" : "Rechnung"} />
             <FloatingInput
               name="introText"
-              label="Einleitungstext"
-              defaultValue="Unsere Lieferungen/Leistungen stellen wir Ihnen wie folgt in Rechnung."
+              label={isEnglish ? "Intro text" : "Einleitungstext"}
+              defaultValue={isEnglish ? "We invoice you for the following goods/services." : "Unsere Lieferungen/Leistungen stellen wir Ihnen wie folgt in Rechnung."}
             />
           </div>
         </section>
@@ -728,7 +754,7 @@ export default function NeueRechnungPage() {
                   <CleanInput name="discountPercent" value={row.discount} onChange={(value) => updateItem(row.id, "discount", value)} />
 
                   <div style={amountBoxStyle}>
-                    <strong>{centsToEuro(calculateTotals([row], priceMode, "PERCENT", "0").netTotalCents)}</strong>
+                    <strong style={lineAmountStyle}>{centsToEuro(calculateTotals([row], priceMode, "PERCENT", "0").netTotalCents)}</strong>
                     <select name="taxRate" value={row.taxRate} onChange={(event) => updateItem(row.id, "taxRate", event.currentTarget.value)} style={taxPillStyle}>
                       <option value="19">USt 19 %</option>
                       <option value="7">USt 7 %</option>
@@ -783,9 +809,17 @@ export default function NeueRechnungPage() {
           </div>
         </section>
 
-        <section style={cardStyle}>
-          <FloatingInput name="paymentTerms" label="Zahlungsbedingung" defaultValue={tenant?.invoicePaymentTermsDe || "Zahlbar sofort, rein netto."} />
-          <FloatingInput name="closingText" label="Nachbemerkung" defaultValue={tenant?.invoiceClosingTextDe || "Vielen Dank für die gute Zusammenarbeit."} />
+        <section key={`terms-${language}`} style={cardStyle}>
+          <FloatingInput
+            name="paymentTerms"
+            label={isEnglish ? "Payment terms" : "Zahlungsbedingung"}
+            defaultValue={isEnglish ? tenant?.invoicePaymentTermsEn || "Payable immediately without deduction." : tenant?.invoicePaymentTermsDe || "Zahlbar sofort, rein netto."}
+          />
+          <FloatingInput
+            name="closingText"
+            label={isEnglish ? "Closing note" : "Nachbemerkung"}
+            defaultValue={isEnglish ? tenant?.invoiceClosingTextEn || "Thank you for your business." : tenant?.invoiceClosingTextDe || "Vielen Dank für die gute Zusammenarbeit."}
+          />
         </section>
 
         <div style={footerActionsStyle}>
@@ -930,6 +964,12 @@ const cleanInputStyle: React.CSSProperties = {
 };
 const twoColStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28 };
 const twoColSmallStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "0.7fr 1.3fr", gap: 12 };
+
+const threeDateGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr 1fr",
+  gap: 12,
+};
 const gridStyle: React.CSSProperties = { display: "grid", gap: 14 };
 const labelStyle: React.CSSProperties = {
   display: "grid",
@@ -998,8 +1038,17 @@ const numberCircleDarkStyle: React.CSSProperties = { ...numberCircleStyle, backg
 const amountBoxStyle: React.CSSProperties = {
   display: "grid",
   justifyItems: "end",
+  alignContent: "center",
   gap: 6,
   color: "#334155",
+  minHeight: 42,
+};
+
+const lineAmountStyle: React.CSSProperties = {
+  fontSize: 14,
+  fontWeight: 600,
+  lineHeight: 1,
+  color: "#0f172a",
 };
 const taxPillStyle: React.CSSProperties = {
   border: "1px solid #ccd7df",
@@ -1163,6 +1212,7 @@ const blockedTextStyle: React.CSSProperties = {
 };
 const errorStyle: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", borderRadius: 14, padding: 14, fontWeight: 700 };
 const successStyle: React.CSSProperties = { background: "#ecfdf5", border: "1px solid #bbf7d0", color: "#047857", borderRadius: 14, padding: 14, fontWeight: 700 };
+
 
 
 
