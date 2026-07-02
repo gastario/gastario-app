@@ -1,0 +1,59 @@
+﻿import crypto from "node:crypto";
+
+export function createFoodLabelPublicToken() {
+  return crypto.randomBytes(18).toString("hex");
+}
+
+export async function ensureFoodLabelTable(prisma: any) {
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "FoodLabel" (
+      "id" TEXT PRIMARY KEY,
+      "tenantId" TEXT NOT NULL,
+      "productName" TEXT NOT NULL,
+      "customerName" TEXT,
+      "productionDate" TIMESTAMP(3) NOT NULL,
+      "bestBeforeDate" TIMESTAMP(3) NOT NULL,
+      "batchNumber" TEXT,
+      "storageNote" TEXT,
+      "allergens" TEXT,
+      "quantityText" TEXT,
+      "labelCount" INTEGER NOT NULL DEFAULT 1,
+      "labelSize" TEXT NOT NULL DEFAULT '76x51',
+      "publicToken" TEXT,
+      "status" TEXT NOT NULL DEFAULT 'CREATED',
+      "printedAt" TIMESTAMP(3),
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "customerName" TEXT;`);
+  await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "quantityText" TEXT;`);
+  await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "labelCount" INTEGER NOT NULL DEFAULT 1;`);
+  await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "labelSize" TEXT NOT NULL DEFAULT '76x51';`);
+  await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "publicToken" TEXT;`);
+  await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "status" TEXT NOT NULL DEFAULT 'CREATED';`);
+  await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "printedAt" TIMESTAMP(3);`);
+  await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;`);
+
+  await prisma.$executeRawUnsafe(`
+    CREATE UNIQUE INDEX IF NOT EXISTS "FoodLabel_publicToken_key"
+    ON "FoodLabel"("publicToken");
+  `);
+
+  const rows = await prisma.$queryRawUnsafe<Array<{ id: string }>>(`
+    SELECT "id"
+    FROM "FoodLabel"
+    WHERE "publicToken" IS NULL OR "publicToken" = ''
+  `);
+
+  for (const row of rows) {
+    await prisma.$executeRawUnsafe(
+      `UPDATE "FoodLabel"
+       SET "publicToken" = $1, "updatedAt" = CURRENT_TIMESTAMP
+       WHERE "id" = $2`,
+      createFoodLabelPublicToken(),
+      row.id
+    );
+  }
+}

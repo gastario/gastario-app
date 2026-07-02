@@ -447,8 +447,9 @@ model FoodLabel {
   quantityText   String?
 
   labelCount Int    @default(1)
-  labelSize  String @default("76x51")
-  status     String @default("CREATED")
+  labelSize   String  @default("76x51")
+  publicToken String? @unique
+  status      String  @default("CREATED")
 
   printedAt DateTime?
   createdAt DateTime  @default(now())
@@ -730,3 +731,5 @@ enum TaxTreatment {
   EXPORT
   OTHER
 }
+
+
