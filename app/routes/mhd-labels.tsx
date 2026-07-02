@@ -317,7 +317,7 @@ export default function MhdLabelsPage() {
       {actionData && "error" in actionData ? <div className="no-print" style={errorStyle}>{actionData.error}</div> : null}
       {actionData && "success" in actionData ? <div className="no-print" style={successStyle}>{actionData.success}</div> : null}
 
-      <section className="no-print" style={pageGridStyle}>
+      <section className="no-print" style={contentGridStyle}>
         <div style={editorCardStyle}>
           <div style={cardHeaderStyle}>
             <div>
