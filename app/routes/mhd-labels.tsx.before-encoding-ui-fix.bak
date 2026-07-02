@@ -301,11 +301,7 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Lagerhinweis">
-              <input
-                name="storageNote"
-                placeholder={"z. B. Gek\u00fchlt lagern bei max. +7 \u00b0C"}
-                defaultValue={"Gek\u00fchlt lagern bei max. +7 \u00b0C"}
-              />
+              <input name="storageNote" defaultValue="GekÃ¼hlt lagern bei max. +7 Â°C" />
             </Field>
 
             <Field label="Allergene">
@@ -313,13 +309,13 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Zutaten">
-              <input name="ingredients" placeholder={"z. B. Reis, H\u00e4hnchen, Gem\u00fcse, Sauce"} />
+              <input name="ingredients" placeholder="z. B. Reis, Haehnchen, Gemuese, Sauce" />
             </Field>
 
-            <Field label={"Labelgr\u00f6\u00dfe"}>
+            <Field label="LabelgrÃ¶ÃŸe">
               <select name="labelSize" defaultValue="76x51">
-                <option value="76x51">{"76 \u00d7 51 mm"}</option>
-                <option value="57x32">{"57 \u00d7 32 mm"}</option>
+                <option value="76x51">76 Ã— 51 mm</option>
+                <option value="57x32">57 Ã— 32 mm</option>
               </select>
             </Field>
 
@@ -353,13 +349,13 @@ export default function MhdLabelsPage() {
                     <div>
                       <strong>{label.productName}</strong>
                       <span>
-                        MHD: {formatDate(label.bestBeforeDate)} - Charge: {label.batchNumber || "-"}
-                        {label.ingredients ? <> - Zutaten: {label.ingredients}</> : null}
+                        MHD: {formatDate(label.bestBeforeDate)} ? Charge: {label.batchNumber || "-"}
+                        {label.ingredients ? <> ? Zutaten: {label.ingredients}</> : null}
                       </span>
                     </div>
 
                     <div style={rowMetaStyle}>
-                      <span>{label.labelCount} x {label.labelSize}</span>
+                      <span>{label.labelCount} ? {label.labelSize}</span>
                       <span>MHD: {formatDate(label.bestBeforeDate)}</span>
                     </div>
 
