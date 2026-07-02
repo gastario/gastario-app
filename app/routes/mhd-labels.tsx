@@ -261,11 +261,7 @@ export default function MhdLabelsPage() {
           <h1>MHD-Labels</h1>
         </div>
 
-        {data.printLabel ? (
-          <button type="button" onClick={() => window.print()} className="button primary">
-            Label drucken
-          </button>
-        ) : null}
+
       </header>
 
       {actionData && "error" in actionData ? <div className="no-print" style={errorStyle}>{actionData.error}</div> : null}
@@ -378,6 +374,12 @@ export default function MhdLabelsPage() {
                 <p style={smallLabelStyle}>Vorschau</p>
                 <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswählen"}</h2>
               </div>
+
+              {data.printLabel ? (
+                <button type="button" onClick={() => window.print()} style={primaryButtonStyle}>
+                  Drucken
+                </button>
+              ) : null}
             </div>
 
             {data.printLabel ? (
@@ -420,7 +422,7 @@ function QrCode({ value }: { value: string }) {
     QRCode.toDataURL(value, {
       errorCorrectionLevel: "M",
       margin: 0,
-      width: 96,
+      width: 72,
     }).then((url) => {
       if (active) setSrc(url);
     });
@@ -635,14 +637,15 @@ const labelCardStyle: React.CSSProperties = {
   height: "51mm",
   border: "1px solid #0f172a",
   borderRadius: 8,
-  padding: "4mm",
+  padding: "3.2mm",
   background: "#ffffff",
   color: "#0f172a",
   display: "grid",
   alignContent: "start",
-  gap: "1.6mm",
-  fontSize: "9.5pt",
-  lineHeight: 1.18,
+  gap: "1.1mm",
+  fontSize: "8.2pt",
+  lineHeight: 1.12,
+  overflow: "hidden",
 };
 
 const smallLabelCardStyle: React.CSSProperties = {
@@ -677,8 +680,8 @@ const customerStyle: React.CSSProperties = {
 
 const productTitleStyle: React.CSSProperties = {
   margin: 0,
-  fontSize: "14pt",
-  lineHeight: 1.05,
+  fontSize: "12pt",
+  lineHeight: 1.02,
   fontWeight: 700,
 };
 
@@ -705,34 +708,38 @@ const batchStyle: React.CSSProperties = {
 
 const storageStyle: React.CSSProperties = {
   borderTop: "1px solid #cbd5e1",
-  paddingTop: "1.4mm",
-  fontSize: "8pt",
+  paddingTop: "1mm",
+  fontSize: "7pt",
   color: "#0f172a",
 };
 
 const labelBottomStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "1fr 18mm",
-  gap: "2mm",
+  gridTemplateColumns: "1fr 13mm",
+  gap: "1.5mm",
   alignItems: "end",
+  minHeight: "13mm",
 };
 
 const allergenStyle: React.CSSProperties = {
   display: "grid",
-  gap: "0.5mm",
-  fontSize: "7.5pt",
+  gap: "0.4mm",
+  fontSize: "6.8pt",
   color: "#334155",
+  overflow: "hidden",
 };
 
 const qrStyle: React.CSSProperties = {
-  width: "18mm",
-  height: "18mm",
+  width: "13mm",
+  height: "13mm",
   display: "block",
+  alignSelf: "end",
+  justifySelf: "end",
 };
 
 const qrPlaceholderStyle: React.CSSProperties = {
-  width: "18mm",
-  height: "18mm",
+  width: "13mm",
+  height: "13mm",
   border: "1px solid #e2e8f0",
 };
 
@@ -753,6 +760,7 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
 
 
 
