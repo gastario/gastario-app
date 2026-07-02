@@ -649,34 +649,40 @@ const secondaryButtonStyle: React.CSSProperties = {
 const labelCardStyle: React.CSSProperties = {
   width: "76mm",
   height: "51mm",
-  border: "1.4px solid #0f172a",
-  borderRadius: 8,
-  padding: "3.2mm",
+  boxSizing: "border-box",
+  border: "1.5px solid #0f172a",
+  borderRadius: "2.4mm",
+  padding: "3mm",
   background: "#ffffff",
   color: "#0f172a",
-  display: "grid",
-  alignContent: "start",
-  gap: "0.9mm",
-  fontSize: "7.8pt",
-  lineHeight: 1.12,
   overflow: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  gap: "1.3mm",
+  fontFamily: "Arial, Helvetica, sans-serif",
+  boxShadow: "0 6px 16px rgba(15, 23, 42, 0.12)"
 };
 
 const smallLabelCardStyle: React.CSSProperties = {
   ...labelCardStyle,
   width: "57mm",
   height: "32mm",
-  padding: "2.8mm",
-  fontSize: "7.5pt",
-  gap: "1mm",
+  padding: "2.3mm",
+  borderRadius: "2mm",
+  gap: "0.8mm",
+  fontSize: "6.8pt"
 };
 
 const labelTopStyle: React.CSSProperties = {
   display: "flex",
+  alignItems: "center",
   justifyContent: "space-between",
-  gap: 8,
-  fontSize: "8pt",
-  color: "#334155",
+  gap: "2mm",
+  fontSize: "6.4pt",
+  lineHeight: 1.1,
+  color: "#475569",
+  paddingBottom: "1mm",
+  borderBottom: "1px solid #dbe5eb"
 };
 
 const brandStyle: React.CSSProperties = {
@@ -685,11 +691,13 @@ const brandStyle: React.CSSProperties = {
 };
 
 const customerStyle: React.CSSProperties = {
-  fontSize: "7.5pt",
-  color: "#64748b",
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
+  margin: 0,
+  fontSize: "6.4pt",
+  lineHeight: 1.15,
+  color: "#475569",
+  fontWeight: 700,
+  maxHeight: "4mm",
+  overflow: "hidden"
 };
 
 const productTitleStyle: React.CSSProperties = {
@@ -729,10 +737,11 @@ const storageStyle: React.CSSProperties = {
 
 const labelBottomStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "1fr 20mm",
+  gridTemplateColumns: "1fr 17.5mm",
   gap: "2mm",
   alignItems: "end",
-  minHeight: "20mm",
+  minHeight: 0,
+  flex: 1
 };
 
 const allergenStyle: React.CSSProperties = {
