@@ -29,7 +29,7 @@ function getPageSize(labelSize: string) {
       padding: "2.4mm",
       title: "9pt",
       base: "6.8pt",
-      columns: 4,
+      columns: 3,
       gap: "4mm",
     };
   }
@@ -41,7 +41,7 @@ function getPageSize(labelSize: string) {
     padding: "3.2mm",
     title: "11pt",
     base: "7.6pt",
-    columns: 3,
+    columns: 2,
     gap: "5mm",
   };
 }
@@ -139,7 +139,7 @@ export default function MhdLabelPrintPage() {
           }
 
           @page {
-            size: A4 landscape;
+            size: A4 portrait;
             margin: 8mm;
           }
 
