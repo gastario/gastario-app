@@ -98,7 +98,7 @@ export async function loader({ request }: { request: Request }) {
 export async function action({ request }: { request: Request }) {
   const { getUserId } = await import("../lib/session.server");
   const { prisma } = await import("../lib/prisma.server");
-  const { ensureFoodLabelTable } = await import("../lib/food-labels.server");
+  const { ensureFoodLabelTable, createFoodLabelPublicToken } = await import("../lib/food-labels.server");
 
   const userId = await getUserId(request);
 
@@ -737,6 +737,7 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
 
 
 
