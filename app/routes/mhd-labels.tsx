@@ -40,7 +40,7 @@ function buildQrValue(label: any) {
 
 
 export function meta() {
-  return [{ title: "MHD-Labels ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· Gastario" }];
+  return [{ title: "MHD-Labels - Gastario" }];
 }
 
 export async function loader({ request }: { request: Request }) {
@@ -64,7 +64,7 @@ export async function loader({ request }: { request: Request }) {
     include: { tenant: true },
   });
 
-  if (!access?.tenant) {
+  if (!access.tenant) {
     return {
       tenantName: "Gastario",
       labels: [],
@@ -326,7 +326,7 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Lagerhinweis">
-              <input name="storageNote" placeholder="z. B. GekÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¼hlt lagern bei max. +7 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°C" defaultValue="GekÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¼hlt lagern bei max. +7 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°C" />
+              <input name="storageNote" placeholder="z. B. gekuehlt lagern bei max. +7 Grad C" defaultValue="gekuehlt lagern bei max. +7 Grad C" />
             </Field>
 
             <Field label="Allergene">
@@ -334,13 +334,13 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Zutaten">
-              <input name="ingredients" placeholder="z. B. Reis, HÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤hnchen, GemÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¼se, Sauce" />
+              <input name="ingredients" placeholder="z. B. Reis, Haehnchen, Gemuese, Sauce" />
             </Field>
 
-            <Field label="LabelgrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¶ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸e">
+            <Field label="Labelgroesse">
               <select name="labelSize" defaultValue="76x51">
-                <option value="76x51">76 ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â 51 mm</option>
-                <option value="57x32">57 ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â 32 mm</option>
+                <option value="76x51">76 x 51 mm</option>
+                <option value="57x32">57 x 32 mm</option>
               </select>
             </Field>
 
@@ -377,14 +377,14 @@ export default function MhdLabelsPage() {
               </button>
               {data.searchQuery ? (
                 <Link to="/mhd-labels" style={clearSearchStyle}>
-                  ZurÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼cksetzen
+                  Zuruecksetzen
                 </Link>
               ) : null}
             </Form>
 
             {data.hasMoreLabels ? (
               <div style={resultLimitStyle}>
-                Es werden nur die neuesten 80 Labels angezeigt. Bitte nutze die Suche, wenn du ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤ltere Labels brauchst.
+                Es werden nur die neuesten 80 Labels angezeigt. Bitte nutze die Suche, wenn du aeltere Labels brauchst.
               </div>
             ) : null}
 
@@ -398,13 +398,13 @@ export default function MhdLabelsPage() {
                       <div>
                         <strong>{label.productName}</strong>
                         <span>
-                          MHD: {formatDate(label.bestBeforeDate)} Ã‚Â· Los / Charge: {label.batchNumber || "-"}
-                          {label.ingredients ? <> Ã‚Â· Zutaten: {label.ingredients}</> : null}
+                          MHD: {formatDate(label.bestBeforeDate)} - Los / Charge: {label.batchNumber || "-"}
+                          {label.ingredients ? <> - Zutaten: {label.ingredients}</> : null}
                         </span>
                       </div>
 
                       <div style={rowMetaStyle}>
-                        <span>{label.labelCount} Ãƒâ€” {label.labelSize}</span>
+                        <span>{label.labelCount} x {label.labelSize}</span>
                         <span>MHD: {formatDate(label.bestBeforeDate)}</span>
                       </div>
 
@@ -420,15 +420,15 @@ export default function MhdLabelsPage() {
                         <Form
                           method="post"
                           onSubmit={(event) => {
-                            if (!window.confirm("Dieses Label wirklich lÃƒÂ¶schen?")) {
+                            if (!window.confirm("Dieses Label wirklich loeschen?")) {
                               event.preventDefault();
                             }
                           }}
                         >
                           <input type="hidden" name="_action" value="delete" />
                           <input type="hidden" name="labelId" value={label.id} />
-                          <button type="submit" style={dangerButtonStyle} title="Label lÃƒÂ¶schen">
-                            LÃƒÂ¶schen
+                          <button type="submit" style={dangerButtonStyle} title="Label loeschen">
+                            Loeschen
                           </button>
                         </Form>
                       </div>
@@ -443,7 +443,7 @@ export default function MhdLabelsPage() {
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Vorschau</p>
-                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswÃ¤hlen"}</h2>
+                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswaehlen"}</h2>
               </div>
             </div>
 
@@ -460,7 +460,7 @@ export default function MhdLabelsPage() {
                 </div>
               </>
             ) : (
-              <div style={emptyStyle}>WÃ¤hle links ein gespeichertes Label Ã¼ber â€žVorschauâ€œ aus. Danach erscheint hier die Druckvorschau.</div>
+              <div style={emptyStyle}>Waehle links ein gespeichertes Label ueber Vorschau aus. Danach erscheint hier die Druckvorschau.</div>
             )}
           </div>
         </div>
@@ -518,50 +518,65 @@ function QrCode({ value }: { value: string }) {
 
 function LabelCard({ label, tenantName }: { label: any; tenantName: string }) {
   const isSmall = label.labelSize === "57x32";
+  const qrValue = buildQrValue(label);
 
   return (
     <article className="labelCard" style={isSmall ? smallLabelCardStyle : labelCardStyle}>
       <div style={labelTopStyle}>
-        <strong>{label.quantityText || ""}</strong>
+        <strong>{label.quantityText || "1 Portion"}</strong>
         <span>{tenantName}</span>
       </div>
 
-      {label.customerName ? <div style={customerStyle}>{label.customerName}</div> : null}
+      <h3 style={labelProductStyle}>{label.productName}</h3>
 
-      <h3 style={isSmall ? smallProductTitleStyle : productTitleStyle}>{label.productName}</h3>
+      {label.customerName ? (
+        <div style={customerStyle}>{label.customerName}</div>
+      ) : null}
 
-      <div style={dateStackStyle}>
-        <span>mindestens haltbar bis: <strong>{formatDate(label.bestBeforeDate)}</strong></span>
-        <span>hergestellt am: <strong>{formatDate(label.productionDate)}</strong></span>
+      <div style={labelDateStyle}>
+        <span>mindestens haltbar bis:</span>
+        <strong>{formatDate(label.bestBeforeDate)}</strong>
       </div>
 
-      <div style={batchStyle}>Los/Charge: {label.batchNumber ? label.batchNumber.startsWith("L") ? label.batchNumber : "L-" + label.batchNumber : "-"}</div>
+      <div style={labelDateStyle}>
+        <span>hergestellt am:</span>
+        <strong>{formatDate(label.productionDate)}</strong>
+      </div>
 
-      {label.storageNote ? <div style={storageStyle}>{label.storageNote}</div> : null}
+      <div style={labelDateStyle}>
+        <span>Los / Charge:</span>
+        <strong>{label.batchNumber || "-"}</strong>
+      </div>
+
+      <div style={labelDividerStyle} />
 
       <div style={labelBottomStyle}>
-        <div style={allergenStyle}>
+        <div style={labelInfoStyle}>
+          <div>
+            <span>Lagerung:</span>
+            <strong>{label.storageNote || "-"}</strong>
+          </div>
+
           {label.ingredients ? (
-            <>
+            <div>
               <span>Zutaten:</span>
               <strong>{label.ingredients}</strong>
-            </>
+            </div>
           ) : null}
 
-          <span>Allergene:</span>
-          <strong>{label.allergens || "-"}</strong>
+          <div>
+            <span>Allergene:</span>
+            <strong>{label.allergens || "-"}</strong>
+          </div>
         </div>
 
-        <QrCode value={buildQrValue(label)} />
+        {qrValue ? (
+          <QRCodeImage value={qrValue} />
+        ) : null}
       </div>
     </article>
   );
 }
-
-const pageGridStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 20,
-};
 
 const editorCardStyle: React.CSSProperties = {
   background: "#ffffff",
