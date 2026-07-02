@@ -356,7 +356,10 @@ export default function MhdLabelsPage() {
 
                     <div style={rowActionsStyle}>
                       <Link to={`/mhd-labels?print=${label.id}`} style={secondaryLinkStyle}>
-                        Vorschau / Drucken
+                        Vorschau
+                      </Link>
+                      <Link to={`/mhd-labels/print/${label.id}`} style={secondaryLinkStyle}>
+                        Drucken
                       </Link>
                     </div>
                   </div>
@@ -373,9 +376,9 @@ export default function MhdLabelsPage() {
               </div>
 
               {data.printLabel ? (
-                <button type="button" onClick={() => window.print()} style={primaryButtonStyle}>
+                <Link to={`/mhd-labels/print/${data.printLabel.id}`} style={primaryButtonStyle}>
                   Drucken
-                </button>
+                </Link>
               ) : null}
             </div>
 
@@ -764,6 +767,7 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
 
 
 
