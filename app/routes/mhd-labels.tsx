@@ -1,4 +1,6 @@
-﻿import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
+﻿import { useEffect, useState } from "react";
+import QRCode from "qrcode";
+import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 function todayInput() {
@@ -29,6 +31,16 @@ function toInputDate(value: Date | string | null | undefined) {
 function formatDate(value: Date | string | null | undefined) {
   if (!value) return "-";
   return new Date(value).toLocaleDateString("de-DE");
+}
+
+function buildQrValue(label: any) {
+  return [
+    "GASTARIO_FOOD_LABEL",
+    "id=" + label.id,
+    "product=" + label.productName,
+    "batch=" + (label.batchNumber || ""),
+    "mhd=" + toInputDate(label.bestBeforeDate),
+  ].join("|");
 }
 
 async function ensureFoodLabelTable(prisma: any) {
@@ -180,29 +192,6 @@ export async function action({ request }: { request: Request }) {
     return { success: "MHD-Label wurde gespeichert." };
   }
 
-  if (intent === "markPrinted") {
-    const labelId = String(formData.get("labelId") || "");
-
-    const label = await prisma.foodLabel.findFirst({
-      where: {
-        id: labelId,
-        tenantId: access.tenantId,
-      },
-    });
-
-    if (!label) return { error: "Label wurde nicht gefunden." };
-
-    await prisma.foodLabel.update({
-      where: { id: label.id },
-      data: {
-        status: "PRINTED",
-        printedAt: new Date(),
-      },
-    });
-
-    return { success: "Label wurde als gedruckt markiert." };
-  }
-
   return { error: "Unbekannte Aktion." };
 }
 
@@ -274,7 +263,7 @@ export default function MhdLabelsPage() {
 
         {data.printLabel ? (
           <button type="button" onClick={() => window.print()} className="button primary">
-            Ausgewähltes Label drucken
+            Label drucken
           </button>
         ) : null}
       </header>
@@ -369,19 +358,13 @@ export default function MhdLabelsPage() {
 
                     <div style={rowMetaStyle}>
                       <span>{label.labelCount} × {label.labelSize}</span>
-                      <span>{label.status === "PRINTED" ? "Gedruckt" : "Erstellt"}</span>
+                      <span>MHD: {formatDate(label.bestBeforeDate)}</span>
                     </div>
 
                     <div style={rowActionsStyle}>
                       <Link to={`/mhd-labels?print=${label.id}`} style={secondaryLinkStyle}>
-                        Drucken
+                        Vorschau / Drucken
                       </Link>
-
-                      <Form method="post">
-                        <input type="hidden" name="intent" value="markPrinted" />
-                        <input type="hidden" name="labelId" value={label.id} />
-                        <button type="submit" style={secondaryButtonStyle}>Als gedruckt markieren</button>
-                      </Form>
                     </div>
                   </div>
                 ))}
@@ -393,7 +376,7 @@ export default function MhdLabelsPage() {
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Vorschau</p>
-                <h2 style={sectionTitleStyle}>{data.printLabel ? "Ausgewähltes Label" : "Label auswählen"}</h2>
+                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswählen"}</h2>
               </div>
             </div>
 
@@ -402,7 +385,7 @@ export default function MhdLabelsPage() {
                 <LabelCard label={data.printLabel} tenantName={data.tenantName} />
               </div>
             ) : (
-              <div style={emptyStyle}>Wähle in der Liste ein Label über „Drucken“ aus.</div>
+              <div style={emptyStyle}>Wähle links ein gespeichertes Label über „Vorschau / Drucken“ aus. Danach erscheint hier die Druckvorschau.</div>
             )}
           </div>
         </div>
@@ -428,6 +411,32 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+function QrCode({ value }: { value: string }) {
+  const [src, setSrc] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    QRCode.toDataURL(value, {
+      errorCorrectionLevel: "M",
+      margin: 0,
+      width: 96,
+    }).then((url) => {
+      if (active) setSrc(url);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [value]);
+
+  if (!src) {
+    return <div style={qrPlaceholderStyle} />;
+  }
+
+  return <img src={src} alt="QR-Code" style={qrStyle} />;
+}
+
 function LabelCard({ label, tenantName }: { label: any; tenantName: string }) {
   const isSmall = label.labelSize === "57x32";
 
@@ -451,9 +460,13 @@ function LabelCard({ label, tenantName }: { label: any; tenantName: string }) {
 
       {label.storageNote ? <div style={storageStyle}>{label.storageNote}</div> : null}
 
-      <div style={allergenStyle}>
-        <span>Allergene:</span>
-        <strong>{label.allergens || "-"}</strong>
+      <div style={labelBottomStyle}>
+        <div style={allergenStyle}>
+          <span>Allergene:</span>
+          <strong>{label.allergens || "-"}</strong>
+        </div>
+
+        <QrCode value={buildQrValue(label)} />
       </div>
     </article>
   );
@@ -540,7 +553,7 @@ const labelRowStyle: React.CSSProperties = {
   borderRadius: 14,
   padding: 14,
   display: "grid",
-  gridTemplateColumns: "1fr 160px 260px",
+  gridTemplateColumns: "1fr 150px 170px",
   gap: 14,
   alignItems: "center",
 };
@@ -562,7 +575,7 @@ const rowActionsStyle: React.CSSProperties = {
 const secondaryLinkStyle: React.CSSProperties = {
   minHeight: 38,
   borderRadius: 11,
-  padding: "0 14px",
+  padding: "0 12px",
   fontSize: 13,
   fontWeight: 600,
   border: "1px solid #057a67",
@@ -608,7 +621,7 @@ const primaryButtonStyle: React.CSSProperties = {
 const secondaryButtonStyle: React.CSSProperties = {
   minHeight: 38,
   borderRadius: 11,
-  padding: "0 14px",
+  padding: "0 12px",
   fontSize: 13,
   fontWeight: 600,
   border: "1px solid #c8d4dd",
@@ -697,11 +710,30 @@ const storageStyle: React.CSSProperties = {
   color: "#0f172a",
 };
 
+const labelBottomStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "1fr 18mm",
+  gap: "2mm",
+  alignItems: "end",
+};
+
 const allergenStyle: React.CSSProperties = {
   display: "grid",
   gap: "0.5mm",
   fontSize: "7.5pt",
   color: "#334155",
+};
+
+const qrStyle: React.CSSProperties = {
+  width: "18mm",
+  height: "18mm",
+  display: "block",
+};
+
+const qrPlaceholderStyle: React.CSSProperties = {
+  width: "18mm",
+  height: "18mm",
+  border: "1px solid #e2e8f0",
 };
 
 const errorStyle: React.CSSProperties = {
@@ -721,6 +753,8 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
+
 
 
 
