@@ -840,7 +840,9 @@ const dangerButtonStyle: React.CSSProperties = {
   color: "#b42318",
   border: "1px solid #f3c6c0",
 };
-\n\nconst labelProductStyle: React.CSSProperties = {
+
+
+const labelProductStyle: React.CSSProperties = {
   margin: "0.5mm 0 0.2mm",
   fontSize: "8.8pt",
   lineHeight: 1.05,
@@ -848,7 +850,10 @@ const dangerButtonStyle: React.CSSProperties = {
   color: "#0f172a",
   maxHeight: "8mm",
   overflow: "hidden"
-};\n\n\nconst labelExpiryStyle: React.CSSProperties = {
+};
+
+
+const labelExpiryStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "1fr auto",
   alignItems: "baseline",
@@ -859,7 +864,10 @@ const dangerButtonStyle: React.CSSProperties = {
   fontSize: "6.5pt",
   lineHeight: 1.05,
   color: "#0f172a"
-};\n\n\nconst labelSecondaryDateStyle: React.CSSProperties = {
+};
+
+
+const labelSecondaryDateStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "1fr auto",
   alignItems: "baseline",
@@ -867,7 +875,10 @@ const dangerButtonStyle: React.CSSProperties = {
   fontSize: "5.45pt",
   lineHeight: 1.05,
   color: "#475569"
-};\n\n\nconst labelDateStyle: React.CSSProperties = {
+};
+
+
+const labelDateStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "1fr auto",
   alignItems: "baseline",
@@ -875,7 +886,10 @@ const dangerButtonStyle: React.CSSProperties = {
   fontSize: "5.45pt",
   lineHeight: 1.05,
   color: "#475569"
-};\n\n\nconst labelInfoStyle: React.CSSProperties = {
+};
+
+
+const labelInfoStyle: React.CSSProperties = {
   minWidth: 0,
   overflow: "hidden",
   display: "flex",
@@ -884,7 +898,10 @@ const dangerButtonStyle: React.CSSProperties = {
   fontSize: "5.15pt",
   lineHeight: 1.08,
   color: "#334155"
-};\n\n\nconst labelQrStyle: React.CSSProperties = {
+};
+
+
+const labelQrStyle: React.CSSProperties = {
   width: "15.4mm",
   height: "15.4mm",
   display: "block",
@@ -893,4 +910,4 @@ const dangerButtonStyle: React.CSSProperties = {
   borderRadius: "0.9mm",
   padding: "0.5mm",
   background: "#ffffff"
-};\n
+};
