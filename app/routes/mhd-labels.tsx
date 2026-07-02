@@ -370,7 +370,7 @@ export default function MhdLabelsPage() {
                       <Form
                         method="post"
                         onSubmit={(event) => {
-                          if (!window.confirm("Dieses Label wirklich loeschen?")) {
+                          if (!window.confirm("Dieses Label wirklich l?schen?")) {
                             event.preventDefault();
                           }
                         }}
@@ -470,7 +470,7 @@ function LabelCard({ label, tenantName }: { label: any; tenantName: string }) {
   const isSmall = label.labelSize === "57x32";
 
   return (
-    <article className="labelCard" style={isSmall ? smallLabelCardStyle : labelCardStyle}>
+    <article className="labelCard" style={isSmall ? smallLabelCardStyle : previewLabelCardStyle}>
       <div style={labelTopStyle}>
         <strong>{label.quantityText || "1 Portion"}</strong>
         <span>{tenantName}</span>
@@ -589,6 +589,7 @@ const listCardStyle: React.CSSProperties = {
 
 const previewCardStyle: React.CSSProperties = {
   ...editorCardStyle,
+  alignSelf: "start",
 };
 
 const labelListStyle: React.CSSProperties = {
@@ -627,12 +628,15 @@ const rowActionsStyle: React.CSSProperties = {
 
 
 const previewWrapStyle: React.CSSProperties = {
-  background: "#f8fafc",
-  border: "1px solid #e2e8f0",
+  border: "1px solid #dbe5eb",
   borderRadius: 16,
-  padding: 18,
+  background: "#f8fafc",
+  padding: 20,
+  minHeight: 245,
   display: "flex",
+  alignItems: "center",
   justifyContent: "center",
+  overflow: "visible",
 };
 
 const emptyStyle: React.CSSProperties = {
@@ -706,6 +710,14 @@ const secondaryButtonStyle: React.CSSProperties = {
   background: "#ffffff",
   color: "#0f172a",
   cursor: "pointer",
+};
+
+
+const previewLabelCardStyle: React.CSSProperties = {
+  ...labelCardStyle,
+  transform: "scale(0.92)",
+  transformOrigin: "center center",
+  flexShrink: 0,
 };
 
 const labelCardStyle: React.CSSProperties = {
