@@ -487,7 +487,105 @@ export default function NeueRechnungPage() {
           </Link>
         </div>
       ) : (
-      <Form method="post" style={pageStyle}>
+      <Form method="post" style={pageStyle} className="invoiceEditorForm">
+        <style>
+          {`
+            .invoiceEditorForm {
+              color: #102033;
+            }
+
+            .invoiceEditorForm section {
+              box-shadow: 0 10px 26px rgba(15, 23, 42, 0.045) !important;
+            }
+
+            .invoiceEditorForm input,
+            .invoiceEditorForm select,
+            .invoiceEditorForm textarea {
+              font-weight: 400 !important;
+              font-size: 14px !important;
+              border-radius: 9px !important;
+              border-color: #d4dee6 !important;
+              box-shadow: none !important;
+            }
+
+            .invoiceEditorForm input:focus,
+            .invoiceEditorForm select:focus,
+            .invoiceEditorForm textarea:focus {
+              border-color: #0f8a73 !important;
+              box-shadow: 0 0 0 3px rgba(15, 138, 115, 0.10) !important;
+            }
+
+            .invoiceEditorForm label {
+              font-weight: 500 !important;
+              color: #5b6b7f !important;
+            }
+
+            .invoiceEditorForm strong {
+              font-weight: 600 !important;
+            }
+
+            .invoiceEditorForm button,
+            .invoiceEditorForm a {
+              font-weight: 600 !important;
+            }
+
+            .invoiceEditorForm .positionCardClean {
+              border-radius: 18px !important;
+              overflow: hidden !important;
+              background: #ffffff !important;
+            }
+
+            .invoiceEditorForm .positionHeaderClean {
+              background: #f8fafc !important;
+              border-bottom: 1px solid #e8eef3 !important;
+              color: #738296 !important;
+              font-weight: 600 !important;
+            }
+
+            .invoiceEditorForm .positionRowClean {
+              background: #ffffff !important;
+              border-top: none !important;
+              border-bottom: 1px solid #eef3f7 !important;
+            }
+
+            .invoiceEditorForm .positionRowClean:hover {
+              background: #fbfdfd !important;
+            }
+
+            .invoiceEditorForm .sumClean {
+              background: #fbfdfe !important;
+              border-top: 1px solid #e8eef3 !important;
+              color: #334155 !important;
+            }
+
+            .invoiceEditorForm .sumClean strong {
+              font-size: 15px !important;
+            }
+
+            .invoiceEditorForm .grossClean {
+              background: #f2faf8 !important;
+              color: #057a67 !important;
+            }
+
+            .invoiceEditorForm .softAction {
+              background: transparent !important;
+              color: #475569 !important;
+              border: 1px solid transparent !important;
+              box-shadow: none !important;
+            }
+
+            .invoiceEditorForm .softAction:hover {
+              background: #f8fafc !important;
+              border-color: #e2e8f0 !important;
+            }
+
+            .invoiceEditorForm .primarySoft {
+              background: #057a67 !important;
+              border-color: #057a67 !important;
+              box-shadow: 0 8px 18px rgba(5, 122, 103, 0.14) !important;
+            }
+          `}
+        </style>
         <input type="hidden" name="intent" value="createInvoiceDraft" />
         <input type="hidden" name="priceMode" value={priceMode} />
         <input type="hidden" name="globalDiscountMode" value={discountMode} />
@@ -590,8 +688,8 @@ export default function NeueRechnungPage() {
           </div>
         </section>
 
-        <section style={positionCardStyle}>
-          <div style={positionHeaderStyle}>
+        <section style={positionCardStyle} className="positionCardClean">
+          <div style={positionHeaderStyle} className="positionHeaderClean">
             <span></span>
             <span>Artikel</span>
             <span>Menge</span>
@@ -618,7 +716,7 @@ export default function NeueRechnungPage() {
                   <button type="button" onClick={() => removeRow(row.id)} style={deleteButtonStyle}>×</button>
                 </div>
               ) : (
-                <div key={row.id} style={positionRowStyle}>
+                <div key={row.id} style={positionRowStyle} className="positionRowClean">
                   <input type="hidden" name="itemKind" value="item" />
 
                   <div style={numberCircleStyle}>{index + 1}</div>
@@ -668,17 +766,17 @@ export default function NeueRechnungPage() {
 
           <div style={positionActionsStyle}>
             <button type="button" onClick={addItem} style={outlineButtonStyle}>+ Artikel</button>
-            <button type="button" onClick={addText} style={textActionStyle}>Freitext</button>
-            <button type="button" onClick={() => setDiscountVisible(true)} style={textActionStyle}>Gesamtrabatt</button>
+            <button type="button" onClick={addText} style={textActionStyle} className="softAction">Freitext</button>
+            <button type="button" onClick={() => setDiscountVisible(true)} style={textActionStyle} className="softAction">Gesamtrabatt</button>
           </div>
 
-          <div style={totalBarStyle}>
+          <div style={totalBarStyle} className="sumClean">
             <div />
             <div style={sumBoxStyle}>
               <span>Summe Netto</span>
               <strong>{centsToEuro(totals.netTotalCents)}</strong>
             </div>
-            <div style={grossBoxStyle}>
+            <div style={grossBoxStyle} className="grossClean">
               <span>Gesamtbetrag</span>
               <strong>{centsToEuro(totals.grossTotalCents)}</strong>
             </div>
@@ -692,7 +790,7 @@ export default function NeueRechnungPage() {
 
         <div style={footerActionsStyle}>
           <Link to="/rechnungen" style={secondaryButtonStyle}>Abbrechen</Link>
-          <button type="submit" disabled={!data.invoiceSettingsComplete} style={data.invoiceSettingsComplete ? primaryButtonStyle : disabledButtonStyle}>
+          <button type="submit" disabled={!data.invoiceSettingsComplete} style={data.invoiceSettingsComplete ? primaryButtonStyle : disabledButtonStyle} className="primarySoft">
             Rechnungsentwurf speichern
           </button>
         </div>
@@ -777,9 +875,9 @@ const pageStyle: React.CSSProperties = { maxWidth: 1480, margin: "0 auto", displ
 const cardStyle: React.CSSProperties = {
   background: "#ffffff",
   border: "1px solid #dbe5eb",
-  borderRadius: 22,
-  padding: 24,
-  boxShadow: "0 16px 36px rgba(15, 23, 42, 0.055)",
+  borderRadius: 18,
+  padding: 22,
+  boxShadow: "0 10px 26px rgba(15, 23, 42, 0.045)",
 };
 const positionCardStyle: React.CSSProperties = {
   ...cardStyle,
@@ -800,9 +898,9 @@ const sectionHeaderStyle: React.CSSProperties = {
 
 const sectionTitleStyle: React.CSSProperties = {
   margin: 0,
-  fontSize: 20,
-  letterSpacing: "-0.025em",
-  fontWeight: 650,
+  fontSize: 19,
+  letterSpacing: "-0.015em",
+  fontWeight: 600,
   color: "#0f172a",
 };
 
@@ -810,13 +908,13 @@ const positionHeaderStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "34px minmax(280px, 1fr) 84px 110px 120px 88px 130px 28px",
   gap: 10,
-  padding: "16px 20px 10px",
-  color: "#64748b",
+  padding: "14px 20px",
+  color: "#738296",
   fontSize: 11,
-  fontWeight: 650,
+  fontWeight: 600,
   textTransform: "uppercase",
-  letterSpacing: "0.05em",
-  background: "#ffffff",
+  letterSpacing: "0.045em",
+  background: "#f8fafc",
 };
 
 const cleanInputStyle: React.CSSProperties = {
@@ -879,8 +977,8 @@ const positionRowStyle: React.CSSProperties = {
   gridTemplateColumns: "34px minmax(280px, 1fr) 84px 110px 120px 88px 130px 28px",
   gap: 10,
   alignItems: "center",
-  padding: "14px 20px",
-  borderTop: "1px solid #eef2f7",
+  padding: "12px 20px",
+  borderBottom: "1px solid #eef3f7",
 };
 const textRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "42px minmax(0, 1fr) 30px", gap: 10, alignItems: "end", padding: "18px 22px 8px" };
 const discountRowStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "42px minmax(260px, 1fr) 180px 180px 30px", gap: 10, alignItems: "end", padding: "18px 22px", borderTop: "1px solid #eef2f7" };
@@ -932,13 +1030,13 @@ const positionActionsStyle: React.CSSProperties = {
   borderTop: "1px solid #f1f5f9",
 };
 const outlineButtonStyle: React.CSSProperties = {
-  minHeight: 38,
+  minHeight: 36,
   border: "1px solid #0f8a73",
   background: "#ffffff",
   color: "#057a67",
-  borderRadius: 11,
-  padding: "0 15px",
-  fontWeight: 650,
+  borderRadius: 10,
+  padding: "0 14px",
+  fontWeight: 600,
   cursor: "pointer",
 };
 const textActionStyle: React.CSSProperties = {
@@ -973,7 +1071,20 @@ const grossBoxStyle: React.CSSProperties = {
   color: "#045f50",
   fontWeight: 650,
 };
-const footerActionsStyle: React.CSSProperties = { position: "sticky", bottom: 18, zIndex: 3, background: "rgba(255, 255, 255, 0.94)", backdropFilter: "blur(10px)", border: "1px solid #dbe5eb", borderRadius: 20, padding: 16, display: "flex", justifyContent: "flex-end", gap: 12, boxShadow: "0 18px 45px rgba(15, 23, 42, 0.12)" };
+const footerActionsStyle: React.CSSProperties = {
+  position: "sticky",
+  bottom: 18,
+  zIndex: 3,
+  background: "rgba(255, 255, 255, 0.96)",
+  backdropFilter: "blur(10px)",
+  border: "1px solid #dbe5eb",
+  borderRadius: 18,
+  padding: 14,
+  display: "flex",
+  justifyContent: "flex-end",
+  gap: 10,
+  boxShadow: "0 12px 30px rgba(15, 23, 42, 0.10)",
+};
 const primaryButtonStyle: React.CSSProperties = {
   minHeight: 42,
   borderRadius: 12,
@@ -1052,6 +1163,8 @@ const blockedTextStyle: React.CSSProperties = {
 };
 const errorStyle: React.CSSProperties = { background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", borderRadius: 14, padding: 14, fontWeight: 700 };
 const successStyle: React.CSSProperties = { background: "#ecfdf5", border: "1px solid #bbf7d0", color: "#047857", borderRadius: 14, padding: 14, fontWeight: 700 };
+
+
 
 
 
