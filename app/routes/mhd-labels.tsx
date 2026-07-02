@@ -681,15 +681,15 @@ const labelCardStyle: React.CSSProperties = {
   width: "76mm",
   height: "51mm",
   boxSizing: "border-box",
-  border: "1.3px solid #0f172a",
-  borderRadius: "2mm",
-  padding: "2.6mm",
+  border: "1.4px solid #0f172a",
+  borderRadius: "1.8mm",
+  padding: "2.7mm",
   background: "#ffffff",
   color: "#0f172a",
   overflow: "hidden",
   display: "flex",
   flexDirection: "column",
-  gap: "0.9mm",
+  gap: "0.85mm",
   fontFamily: "Arial, Helvetica, sans-serif"
 };
 
@@ -698,8 +698,8 @@ const smallLabelCardStyle: React.CSSProperties = {
   width: "57mm",
   height: "32mm",
   padding: "2mm",
-  borderRadius: "1.6mm",
-  gap: "0.55mm",
+  borderRadius: "1.4mm",
+  gap: "0.5mm",
   fontSize: "6.2pt"
 };
 
@@ -708,10 +708,10 @@ const labelTopStyle: React.CSSProperties = {
   justifyContent: "space-between",
   alignItems: "center",
   gap: "1.5mm",
-  fontSize: "5.6pt",
+  fontSize: "5.4pt",
   lineHeight: 1,
   color: "#475569",
-  paddingBottom: "0.8mm",
+  paddingBottom: "0.7mm",
   borderBottom: "1px solid #dbe5eb"
 };
 
@@ -767,7 +767,7 @@ const storageStyle: React.CSSProperties = {
 
 const labelBottomStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "1fr 15.8mm",
+  gridTemplateColumns: "1fr 15.5mm",
   gap: "1.8mm",
   alignItems: "end",
   minHeight: 0,
@@ -840,3 +840,57 @@ const dangerButtonStyle: React.CSSProperties = {
   color: "#b42318",
   border: "1px solid #f3c6c0",
 };
+\n\nconst labelProductStyle: React.CSSProperties = {
+  margin: "0.5mm 0 0.2mm",
+  fontSize: "8.8pt",
+  lineHeight: 1.05,
+  fontWeight: 800,
+  color: "#0f172a",
+  maxHeight: "8mm",
+  overflow: "hidden"
+};\n\n\nconst labelExpiryStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "1fr auto",
+  alignItems: "baseline",
+  gap: "1.2mm",
+  padding: "0.7mm 0",
+  borderTop: "1px solid #e2e8f0",
+  borderBottom: "1px solid #e2e8f0",
+  fontSize: "6.5pt",
+  lineHeight: 1.05,
+  color: "#0f172a"
+};\n\n\nconst labelSecondaryDateStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "1fr auto",
+  alignItems: "baseline",
+  gap: "1.1mm",
+  fontSize: "5.45pt",
+  lineHeight: 1.05,
+  color: "#475569"
+};\n\n\nconst labelDateStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "1fr auto",
+  alignItems: "baseline",
+  gap: "1.1mm",
+  fontSize: "5.45pt",
+  lineHeight: 1.05,
+  color: "#475569"
+};\n\n\nconst labelInfoStyle: React.CSSProperties = {
+  minWidth: 0,
+  overflow: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  gap: "0.45mm",
+  fontSize: "5.15pt",
+  lineHeight: 1.08,
+  color: "#334155"
+};\n\n\nconst labelQrStyle: React.CSSProperties = {
+  width: "15.4mm",
+  height: "15.4mm",
+  display: "block",
+  flexShrink: 0,
+  border: "1px solid #dbe5eb",
+  borderRadius: "0.9mm",
+  padding: "0.5mm",
+  background: "#ffffff"
+};\n
