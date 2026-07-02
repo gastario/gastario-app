@@ -31,6 +31,41 @@ function formatDate(value: Date | string | null | undefined) {
   return new Date(value).toLocaleDateString("de-DE");
 }
 
+async function ensureFoodLabelTable(prisma: any) {
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "FoodLabel" (
+      "id" TEXT PRIMARY KEY,
+      "tenantId" TEXT NOT NULL,
+      "productName" TEXT NOT NULL,
+      "customerName" TEXT,
+      "productionDate" TIMESTAMP(3) NOT NULL,
+      "bestBeforeDate" TIMESTAMP(3) NOT NULL,
+      "batchNumber" TEXT,
+      "storageNote" TEXT,
+      "allergens" TEXT,
+      "quantityText" TEXT,
+      "labelCount" INTEGER NOT NULL DEFAULT 1,
+      "labelSize" TEXT NOT NULL DEFAULT '76x51',
+      "status" TEXT NOT NULL DEFAULT 'CREATED',
+      "printedAt" TIMESTAMP(3),
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS "FoodLabel_tenantId_idx" ON "FoodLabel"("tenantId");
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS "FoodLabel_createdAt_idx" ON "FoodLabel"("createdAt");
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS "FoodLabel_bestBeforeDate_idx" ON "FoodLabel"("bestBeforeDate");
+  `);
+}
+
 export function meta() {
   return [{ title: "MHD-Labels · Gastario" }];
 }
@@ -57,6 +92,8 @@ export async function loader({ request }: { request: Request }) {
       today: todayInput(),
     };
   }
+
+  await ensureFoodLabelTable(prisma);
 
   const labels = await prisma.foodLabel.findMany({
     where: { tenantId: access.tenantId },
@@ -88,6 +125,8 @@ export async function action({ request }: { request: Request }) {
   if (!access) {
     return { error: "Kein Mandant gefunden." };
   }
+
+  await ensureFoodLabelTable(prisma);
 
   const formData = await request.formData();
   const intent = String(formData.get("intent") || "");
@@ -633,3 +672,4 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
