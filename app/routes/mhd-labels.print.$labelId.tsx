@@ -258,6 +258,27 @@ export default function MhdLabelPrintPage() {
             background: #ffffff;
           }
 
+
+          /* Sichtbarer Etiketten-Rand fuer Druck und Vorschau */
+          .label {
+            position: relative !important;
+            border: 2px solid #000000 !important;
+            outline: 1px solid #000000 !important;
+            outline-offset: -2px !important;
+            box-shadow: inset 0 0 0 1.5px #000000 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          .label::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border: 2px solid #000000;
+            pointer-events: none;
+            box-sizing: border-box;
+          }
+
           @media print {
             .toolbar {
               display: none !important;
