@@ -232,24 +232,27 @@ export default function MhdLabelsPage() {
             }
 
             .printOnly {
-              display: flex !important;
-              flex-wrap: wrap !important;
-              gap: 0 !important;
+              display: block !important;
               padding: 0 !important;
+              margin: 0 !important;
               background: #ffffff !important;
+              width: 76mm !important;
             }
 
             .labelCard {
+              width: 76mm !important;
+              height: 51mm !important;
               box-shadow: none !important;
-              border: 1px solid #000 !important;
+              border: none !important;
               border-radius: 0 !important;
+              page-break-after: always !important;
               page-break-inside: avoid !important;
               break-inside: avoid !important;
             }
 
             @page {
-              size: A4;
-              margin: 8mm;
+              size: 76mm 51mm;
+              margin: 0;
             }
           }
         `}
@@ -760,6 +763,7 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
 
 
 
