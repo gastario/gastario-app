@@ -1,4 +1,4 @@
-﻿import { Form, redirect, useActionData, useLoaderData } from "react-router";
+﻿import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 function todayInput() {
@@ -74,6 +74,9 @@ export async function loader({ request }: { request: Request }) {
   const { getUserId } = await import("../lib/session.server");
   const { prisma } = await import("../lib/prisma.server");
 
+  const url = new URL(request.url);
+  const printId = url.searchParams.get("print");
+
   const userId = await getUserId(request);
 
   if (!userId) {
@@ -101,9 +104,19 @@ export async function loader({ request }: { request: Request }) {
     take: 40,
   });
 
+  const printLabel = printId
+    ? await prisma.foodLabel.findFirst({
+        where: {
+          id: printId,
+          tenantId: access.tenantId,
+        },
+      })
+    : null;
+
   return {
     tenantName: access.tenant.name || "Gastario",
     labels,
+    printLabel,
     today: todayInput(),
   };
 }
@@ -259,13 +272,15 @@ export default function MhdLabelsPage() {
           <h1>MHD-Labels</h1>
         </div>
 
-        <button type="button" onClick={() => window.print()} className="button primary">
-          Letztes Label drucken
-        </button>
+        {data.printLabel ? (
+          <button type="button" onClick={() => window.print()} className="button primary">
+            Ausgewähltes Label drucken
+          </button>
+        ) : null}
       </header>
 
-      {actionData && "error" in actionData ? <div style={errorStyle}>{actionData.error}</div> : null}
-      {actionData && "success" in actionData ? <div style={successStyle}>{actionData.success}</div> : null}
+      {actionData && "error" in actionData ? <div className="no-print" style={errorStyle}>{actionData.error}</div> : null}
+      {actionData && "success" in actionData ? <div className="no-print" style={successStyle}>{actionData.success}</div> : null}
 
       <section className="no-print" style={pageGridStyle}>
         <div style={editorCardStyle}>
@@ -357,11 +372,17 @@ export default function MhdLabelsPage() {
                       <span>{label.status === "PRINTED" ? "Gedruckt" : "Erstellt"}</span>
                     </div>
 
-                    <Form method="post">
-                      <input type="hidden" name="intent" value="markPrinted" />
-                      <input type="hidden" name="labelId" value={label.id} />
-                      <button type="submit" style={secondaryButtonStyle}>Gedruckt</button>
-                    </Form>
+                    <div style={rowActionsStyle}>
+                      <Link to={`/mhd-labels?print=${label.id}`} style={secondaryLinkStyle}>
+                        Drucken
+                      </Link>
+
+                      <Form method="post">
+                        <input type="hidden" name="intent" value="markPrinted" />
+                        <input type="hidden" name="labelId" value={label.id} />
+                        <button type="submit" style={secondaryButtonStyle}>Als gedruckt markieren</button>
+                      </Form>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -372,25 +393,25 @@ export default function MhdLabelsPage() {
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Vorschau</p>
-                <h2 style={sectionTitleStyle}>Letztes Label</h2>
+                <h2 style={sectionTitleStyle}>{data.printLabel ? "Ausgewähltes Label" : "Label auswählen"}</h2>
               </div>
             </div>
 
-            {latestLabel ? (
+            {data.printLabel ? (
               <div style={previewWrapStyle}>
-                <LabelCard label={latestLabel} />
+                <LabelCard label={data.printLabel} tenantName={data.tenantName} />
               </div>
             ) : (
-              <div style={emptyStyle}>Nach dem Speichern erscheint hier die Label-Vorschau.</div>
+              <div style={emptyStyle}>Wähle in der Liste ein Label über „Drucken“ aus.</div>
             )}
           </div>
         </div>
       </section>
 
       <section className="printOnly" style={printOnlyStyle}>
-        {latestLabel
-          ? Array.from({ length: latestLabel.labelCount }, (_, index) => (
-              <LabelCard key={index} label={latestLabel} />
+        {data.printLabel
+          ? Array.from({ length: data.printLabel.labelCount }, (_, index) => (
+              <LabelCard key={index} label={data.printLabel} tenantName={data.tenantName} />
             ))
           : null}
       </section>
@@ -407,26 +428,26 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function LabelCard({ label }: { label: any }) {
+function LabelCard({ label, tenantName }: { label: any; tenantName: string }) {
   const isSmall = label.labelSize === "57x32";
 
   return (
     <article className="labelCard" style={isSmall ? smallLabelCardStyle : labelCardStyle}>
       <div style={labelTopStyle}>
-        <strong style={brandStyle}>Gastario</strong>
-        <span>{label.quantityText || ""}</span>
+        <strong>{label.quantityText || ""}</strong>
+        <span>{tenantName}</span>
       </div>
 
       {label.customerName ? <div style={customerStyle}>{label.customerName}</div> : null}
 
       <h3 style={isSmall ? smallProductTitleStyle : productTitleStyle}>{label.productName}</h3>
 
-      <div style={dateGridStyle}>
-        <span>Prod.: <strong>{formatDate(label.productionDate)}</strong></span>
-        <span>MHD: <strong>{formatDate(label.bestBeforeDate)}</strong></span>
+      <div style={dateStackStyle}>
+        <span>mindestens haltbar bis: <strong>{formatDate(label.bestBeforeDate)}</strong></span>
+        <span>hergestellt am: <strong>{formatDate(label.productionDate)}</strong></span>
       </div>
 
-      <div style={batchStyle}>Charge: {label.batchNumber || "-"}</div>
+      <div style={batchStyle}>Los/Charge: {label.batchNumber ? label.batchNumber.startsWith("L") ? label.batchNumber : "L-" + label.batchNumber : "-"}</div>
 
       {label.storageNote ? <div style={storageStyle}>{label.storageNote}</div> : null}
 
@@ -519,7 +540,7 @@ const labelRowStyle: React.CSSProperties = {
   borderRadius: 14,
   padding: 14,
   display: "grid",
-  gridTemplateColumns: "1fr 160px auto",
+  gridTemplateColumns: "1fr 160px 260px",
   gap: 14,
   alignItems: "center",
 };
@@ -529,6 +550,29 @@ const rowMetaStyle: React.CSSProperties = {
   gap: 4,
   color: "#64748b",
   fontSize: 13,
+};
+
+const rowActionsStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "flex-end",
+  gap: 8,
+  flexWrap: "wrap",
+};
+
+const secondaryLinkStyle: React.CSSProperties = {
+  minHeight: 38,
+  borderRadius: 11,
+  padding: "0 14px",
+  fontSize: 13,
+  fontWeight: 600,
+  border: "1px solid #057a67",
+  background: "#eef7f5",
+  color: "#057a67",
+  cursor: "pointer",
+  textDecoration: "none",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
 };
 
 const previewWrapStyle: React.CSSProperties = {
@@ -636,6 +680,11 @@ const dateGridStyle: React.CSSProperties = {
   gap: "2mm",
 };
 
+const dateStackStyle: React.CSSProperties = {
+  display: "grid",
+  gap: "0.8mm",
+};
+
 const batchStyle: React.CSSProperties = {
   fontSize: "8pt",
   color: "#334155",
@@ -672,4 +721,7 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
+
+
 
