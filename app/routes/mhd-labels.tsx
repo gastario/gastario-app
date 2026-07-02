@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
@@ -51,6 +51,7 @@ export async function loader({ request }: { request: Request }) {
   const url = new URL(request.url);
   const origin = url.origin;
   const printId = url.searchParams.get("print");
+  const searchQuery = (url.searchParams.get("q") || "").trim();
 
   const userId = await getUserId(request);
 
@@ -73,10 +74,26 @@ export async function loader({ request }: { request: Request }) {
 
   await ensureFoodLabelTable(prisma);
 
+  const labelWhere: any = {
+    tenantId: access.tenantId,
+    ...(searchQuery
+      ? {
+          OR: [
+            { productName: { contains: searchQuery, mode: "insensitive" } },
+            { customerName: { contains: searchQuery, mode: "insensitive" } },
+            { batchNumber: { contains: searchQuery, mode: "insensitive" } },
+            { ingredients: { contains: searchQuery, mode: "insensitive" } },
+            { allergens: { contains: searchQuery, mode: "insensitive" } },
+            { storageNote: { contains: searchQuery, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+  };
+
   const labels = await prisma.foodLabel.findMany({
-    where: { tenantId: access.tenantId },
+    where: labelWhere,
     orderBy: { createdAt: "desc" },
-    take: 40,
+    take: 81,
   });
 
   const printLabel = printId
@@ -88,7 +105,10 @@ export async function loader({ request }: { request: Request }) {
       })
     : null;
 
-  const labelsWithUrls = labels.map((label: any) => ({
+  const hasMoreLabels = labels.length > 80;
+  const visibleLabels = labels.slice(0, 80);
+
+  const labelsWithUrls = visibleLabels.map((label: any) => ({
     ...label,
     publicUrl: label.publicToken ? `${origin}/label/${label.publicToken}` : "",
     publicPrintUrl: label.publicToken ? `${origin}/label/${label.publicToken}?print=1` : "",
@@ -105,6 +125,8 @@ export async function loader({ request }: { request: Request }) {
   return {
     tenantName: access.tenant.name || "Gastario",
     labels: labelsWithUrls,
+    hasMoreLabels,
+    searchQuery,
     printLabel: printLabelWithUrl,
     today: todayInput(),
   };
@@ -132,6 +154,22 @@ export async function action({ request }: { request: Request }) {
   await ensureFoodLabelTable(prisma);
 
   const formData = await request.formData();
+  const actionType = String(formData.get("_action") || "");
+
+  if (actionType === "delete") {
+    const labelId = String(formData.get("labelId") || "");
+
+    if (labelId) {
+      await prisma.foodLabel.deleteMany({
+        where: {
+          id: labelId,
+          tenantId: access.tenantId,
+        },
+      });
+    }
+
+    return redirect("/mhd-labels");
+  }
   const intent = String(formData.get("intent") || "");
 
   if (intent === "createLabel") {
@@ -353,6 +391,21 @@ export default function MhdLabelsPage() {
                       <a href={label.publicPrintUrl || `/mhd-labels/print/${label.id}`} target="_blank" rel="noreferrer" style={primaryButtonStyle}>
                         Drucken
                       </a>
+
+                      <Form
+                        method="post"
+                        onSubmit={(event) => {
+                          if (!window.confirm("Dieses Label wirklich löschen?")) {
+                            event.preventDefault();
+                          }
+                        }}
+                      >
+                        <input type="hidden" name="_action" value="delete" />
+                        <input type="hidden" name="labelId" value={label.id} />
+                        <button type="submit" style={dangerButtonStyle} title="Label löschen">
+                          Löschen
+                        </button>
+                      </Form>
                     </div>
                   </div>
                 ))}
@@ -813,3 +866,55 @@ const successStyle: React.CSSProperties = {
 
 
 
+
+const labelSearchStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "1fr auto auto",
+  gap: 10,
+  alignItems: "center",
+  marginBottom: 14,
+};
+
+const labelSearchInputStyle: React.CSSProperties = {
+  width: "100%",
+  minHeight: 38,
+  border: "1px solid #d7dde5",
+  borderRadius: 12,
+  padding: "0 12px",
+  fontSize: 13,
+  outline: "none",
+  background: "#ffffff",
+};
+
+const clearSearchStyle: React.CSSProperties = {
+  minHeight: 38,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  border: "1px solid #d7dde5",
+  borderRadius: 12,
+  padding: "0 12px",
+  color: "#475569",
+  textDecoration: "none",
+  fontSize: 13,
+  fontWeight: 700,
+  background: "#ffffff",
+};
+
+const resultLimitStyle: React.CSSProperties = {
+  marginBottom: 12,
+  padding: "10px 12px",
+  borderRadius: 12,
+  border: "1px solid #fde68a",
+  background: "#fffbeb",
+  color: "#92400e",
+  fontSize: 13,
+  lineHeight: 1.4,
+};
+
+const dangerButtonStyle: React.CSSProperties = {
+  ...actionButtonBaseStyle,
+  background: "#ffffff",
+  color: "#b42318",
+  border: "1px solid #f3c6c0",
+};
