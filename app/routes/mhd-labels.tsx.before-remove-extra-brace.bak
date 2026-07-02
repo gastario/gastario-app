@@ -40,7 +40,7 @@ function buildQrValue(label: any) {
 
 
 export function meta() {
-  return [{ title: "MHD-Labels Â· Gastario" }];
+  return [{ title: "MHD-Labels · Gastario" }];
 }
 
 export async function loader({ request }: { request: Request }) {
@@ -301,7 +301,7 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Lagerhinweis">
-              <input name="storageNote" defaultValue="GekÃ¼hlt lagern bei max. +7 Â°C" />
+              <input name="storageNote" defaultValue="Gekühlt lagern bei max. +7 °C" />
             </Field>
 
             <Field label="Allergene">
@@ -312,10 +312,10 @@ export default function MhdLabelsPage() {
               <input name="ingredients" placeholder="z. B. Reis, Haehnchen, Gemuese, Sauce" />
             </Field>
 
-            <Field label="LabelgrÃ¶ÃŸe">
+            <Field label="Labelgröße">
               <select name="labelSize" defaultValue="76x51">
-                <option value="76x51">76 Ã— 51 mm</option>
-                <option value="57x32">57 Ã— 32 mm</option>
+                <option value="76x51">76 × 51 mm</option>
+                <option value="57x32">57 × 32 mm</option>
               </select>
             </Field>
 
@@ -344,18 +344,17 @@ export default function MhdLabelsPage() {
               <div style={emptyStyle}>Noch keine MHD-Labels gespeichert.</div>
             ) : (
               <div style={labelListStyle}>
-                {data.labels.map((label: any) => (
+                {data.labels.map((label) => (
                   <div key={label.id} style={labelRowStyle}>
                     <div>
                       <strong>{label.productName}</strong>
                       <span>
-                        MHD: {formatDate(label.bestBeforeDate)} ? Charge: {label.batchNumber || "-"}
-                        {label.ingredients ? <> ? Zutaten: {label.ingredients}</> : null}
+                        MHD: {formatDate(label.bestBeforeDate)} · Charge: {label.batchNumber || "-"}
                       </span>
                     </div>
 
                     <div style={rowMetaStyle}>
-                      <span>{label.labelCount} ? {label.labelSize}</span>
+                      <span>{label.labelCount} × {label.labelSize}</span>
                       <span>MHD: {formatDate(label.bestBeforeDate)}</span>
                     </div>
 
@@ -363,15 +362,15 @@ export default function MhdLabelsPage() {
                       <Link to={`/mhd-labels?print=${label.id}`} style={previewButtonStyle}>
                         Vorschau
                       </Link>
-
                       <Link to={`/mhd-labels/print/${label.id}`} style={primaryButtonStyle}>
                         Drucken
                       </Link>
+                    
 
                       <Form
                         method="post"
                         onSubmit={(event) => {
-                          if (!window.confirm("Dieses Label wirklich l\u00f6schen?")) {
+                          if (!window.confirm("Dieses Label wirklich l\\u00f6schen?")) {
                             event.preventDefault();
                           }
                         }}
@@ -379,10 +378,10 @@ export default function MhdLabelsPage() {
                         <input type="hidden" name="_action" value="delete" />
                         <input type="hidden" name="labelId" value={label.id} />
                         <button type="submit" style={dangerButtonStyle}>
-                          {"L\u00f6schen"}
+                          {"L\\u00f6schen"}
                         </button>
                       </Form>
-                    </div>
+                          {"L\u00f6schen"}
                   </div>
                 ))}
               </div>
@@ -393,7 +392,7 @@ export default function MhdLabelsPage() {
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Vorschau</p>
-                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswÃ¤hlen"}</h2>
+                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswählen"}</h2>
               </div>
 
 
@@ -412,7 +411,7 @@ export default function MhdLabelsPage() {
                 </div>
               </>
             ) : (
-              <div style={emptyStyle}>WÃ¤hle links ein gespeichertes Label Ã¼ber â€žVorschauâ€œ aus. Danach erscheint hier die Druckvorschau.</div>
+              <div style={emptyStyle}>Wähle links ein gespeichertes Label über „Vorschau“ aus. Danach erscheint hier die Druckvorschau.</div>
             )}
           </div>
         </div>

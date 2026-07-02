@@ -344,18 +344,17 @@ export default function MhdLabelsPage() {
               <div style={emptyStyle}>Noch keine MHD-Labels gespeichert.</div>
             ) : (
               <div style={labelListStyle}>
-                {data.labels.map((label: any) => (
+                {data.labels.map((label) => (
                   <div key={label.id} style={labelRowStyle}>
                     <div>
                       <strong>{label.productName}</strong>
                       <span>
-                        MHD: {formatDate(label.bestBeforeDate)} ? Charge: {label.batchNumber || "-"}
-                        {label.ingredients ? <> ? Zutaten: {label.ingredients}</> : null}
+                        MHD: {formatDate(label.bestBeforeDate)} Â· Charge: {label.batchNumber || "-"}
                       </span>
                     </div>
 
                     <div style={rowMetaStyle}>
-                      <span>{label.labelCount} ? {label.labelSize}</span>
+                      <span>{label.labelCount} Ã— {label.labelSize}</span>
                       <span>MHD: {formatDate(label.bestBeforeDate)}</span>
                     </div>
 
@@ -363,10 +362,10 @@ export default function MhdLabelsPage() {
                       <Link to={`/mhd-labels?print=${label.id}`} style={previewButtonStyle}>
                         Vorschau
                       </Link>
-
                       <Link to={`/mhd-labels/print/${label.id}`} style={primaryButtonStyle}>
                         Drucken
                       </Link>
+                    
 
                       <Form
                         method="post"
@@ -382,7 +381,6 @@ export default function MhdLabelsPage() {
                           {"L\u00f6schen"}
                         </button>
                       </Form>
-                    </div>
                   </div>
                 ))}
               </div>
