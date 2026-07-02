@@ -34,13 +34,7 @@ function formatDate(value: Date | string | null | undefined) {
 }
 
 function buildQrValue(label: any) {
-  return [
-    "GASTARIO_FOOD_LABEL",
-    "id=" + label.id,
-    "product=" + label.productName,
-    "batch=" + (label.batchNumber || ""),
-    "mhd=" + toInputDate(label.bestBeforeDate),
-  ].join("|");
+  return "https://gastario-app-production.up.railway.app/mhd-labels?print=" + label.id;
 }
 
 async function ensureFoodLabelTable(prisma: any) {
@@ -423,9 +417,13 @@ function QrCode({ value }: { value: string }) {
     let active = true;
 
     QRCode.toDataURL(value, {
-      errorCorrectionLevel: "M",
-      margin: 0,
-      width: 72,
+      errorCorrectionLevel: "H",
+      margin: 2,
+      width: 160,
+      color: {
+        dark: "#000000",
+        light: "#ffffff",
+      },
     }).then((url) => {
       if (active) setSrc(url);
     });
@@ -645,8 +643,8 @@ const labelCardStyle: React.CSSProperties = {
   color: "#0f172a",
   display: "grid",
   alignContent: "start",
-  gap: "1.1mm",
-  fontSize: "8.2pt",
+  gap: "0.9mm",
+  fontSize: "7.8pt",
   lineHeight: 1.12,
   overflow: "hidden",
 };
@@ -683,7 +681,7 @@ const customerStyle: React.CSSProperties = {
 
 const productTitleStyle: React.CSSProperties = {
   margin: 0,
-  fontSize: "12pt",
+  fontSize: "11pt",
   lineHeight: 1.02,
   fontWeight: 700,
 };
@@ -718,10 +716,10 @@ const storageStyle: React.CSSProperties = {
 
 const labelBottomStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "1fr 13mm",
-  gap: "1.5mm",
+  gridTemplateColumns: "1fr 20mm",
+  gap: "2mm",
   alignItems: "end",
-  minHeight: "13mm",
+  minHeight: "20mm",
 };
 
 const allergenStyle: React.CSSProperties = {
@@ -733,17 +731,20 @@ const allergenStyle: React.CSSProperties = {
 };
 
 const qrStyle: React.CSSProperties = {
-  width: "13mm",
-  height: "13mm",
+  width: "20mm",
+  height: "20mm",
   display: "block",
   alignSelf: "end",
   justifySelf: "end",
+  background: "#ffffff",
+  padding: "1mm",
 };
 
 const qrPlaceholderStyle: React.CSSProperties = {
-  width: "13mm",
-  height: "13mm",
+  width: "20mm",
+  height: "20mm",
   border: "1px solid #e2e8f0",
+  background: "#ffffff",
 };
 
 const errorStyle: React.CSSProperties = {
@@ -763,6 +764,8 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
+
 
 
 
