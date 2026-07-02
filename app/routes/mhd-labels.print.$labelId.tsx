@@ -135,8 +135,8 @@ export default function MhdLabelPrintPage() {
           }
 
           @page {
-            size: A4 landscape;
-            margin: 8mm;
+            size: ${size.width} ${size.height};
+            margin: 0;
           }
 
           .toolbar {
@@ -180,31 +180,13 @@ export default function MhdLabelPrintPage() {
           }
 
           .sheet {
-            padding: 0;
+            padding: 18px;
             display: grid;
-            grid-template-columns: repeat(3, ${size.width});
-            gap: 5mm;
-            align-items: start;
-            justify-content: start;
-            box-sizing: border-box;
+            gap: 12px;
           }
 
           .label {
             width: ${size.width};
-            height: ${size.height};
-            border: 1.2px solid #0f172a;
-            padding: ${size.padding};
-            display: grid;
-            align-content: start;
-            gap: 0.8mm;
-            overflow: hidden;
-            background: #ffffff;
-            font-size: ${size.base};
-            line-height: 1.12;
-            box-sizing: border-box;
-            break-inside: avoid;
-            page-break-inside: avoid;
-          };
             height: ${size.height};
             border: 1px solid #0f172a;
             padding: ${size.padding};
@@ -273,20 +255,17 @@ export default function MhdLabelPrintPage() {
             }
 
             .sheet {
-              display: grid !important;
-              grid-template-columns: repeat(3, ${size.width}) !important;
-              gap: 5mm !important;
+              display: block !important;
               padding: 0 !important;
               margin: 0 !important;
-              align-items: start !important;
-              justify-content: start !important;
             }
 
             .label {
-              break-inside: avoid !important;
-              page-break-inside: avoid !important;
+              border: none !important;
+              border-radius: 0 !important;
+              page-break-after: always !important;
+              break-after: page !important;
             }
-          }
           }
         `}
       </style>

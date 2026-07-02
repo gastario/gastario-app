@@ -72,22 +72,6 @@ export async function loader({ request }: { request: Request }) {
 
   await ensureFoodLabelTable(prisma);
 
-  if (actionType === "delete") {
-    const labelId = String(formData.get("labelId") || "");
-
-    if (labelId) {
-      await prisma.foodLabel.deleteMany({
-        where: {
-          id: labelId,
-          tenantId: access.tenantId,
-        },
-      });
-    }
-
-    return redirect("/mhd-labels");
-  }
-
-
   const labels = await prisma.foodLabel.findMany({
     where: { tenantId: access.tenantId },
     orderBy: { createdAt: "desc" },
@@ -133,7 +117,6 @@ export async function action({ request }: { request: Request }) {
   await ensureFoodLabelTable(prisma);
 
   const formData = await request.formData();
-  const actionType = String(formData.get("_action") || "");
   const intent = String(formData.get("intent") || "");
 
   if (intent === "createLabel") {
@@ -354,21 +337,6 @@ export default function MhdLabelsPage() {
                       <Link to={`/mhd-labels/print/${label.id}`} style={primaryButtonStyle}>
                         Drucken
                       </Link>
-
-                      <Form
-                        method="post"
-                        onSubmit={(event) => {
-                          if (!window.confirm("Dieses Label wirklich loeschen?")) {
-                            event.preventDefault();
-                          }
-                        }}
-                      >
-                        <input type="hidden" name="_action" value="delete" />
-                        <input type="hidden" name="labelId" value={label.id} />
-                        <button type="submit" style={dangerButtonStyle}>
-                          Loeschen
-                        </button>
-                      </Form>
                     </div>
                   </div>
                 ))}
@@ -825,12 +793,3 @@ const successStyle: React.CSSProperties = {
 
 
 
-
-
-
-const dangerButtonStyle: React.CSSProperties = {
-  ...actionButtonBaseStyle,
-  background: "#ffffff",
-  color: "#b42318",
-  border: "1px solid #f3c6c0",
-};
