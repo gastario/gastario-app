@@ -16,6 +16,7 @@ export async function ensureFoodLabelTable(prisma: any) {
       "batchNumber" TEXT,
       "storageNote" TEXT,
       "allergens" TEXT,
+      "ingredients" TEXT,
       "quantityText" TEXT,
       "labelCount" INTEGER NOT NULL DEFAULT 1,
       "labelSize" TEXT NOT NULL DEFAULT '76x51',
@@ -29,6 +30,7 @@ export async function ensureFoodLabelTable(prisma: any) {
 
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "publicToken" TEXT;`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "customerName" TEXT;`);
+  await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "ingredients" TEXT;`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "quantityText" TEXT;`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "labelCount" INTEGER NOT NULL DEFAULT 1;`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodLabel" ADD COLUMN IF NOT EXISTS "labelSize" TEXT NOT NULL DEFAULT '76x51';`);
@@ -57,3 +59,4 @@ export async function ensureFoodLabelTable(prisma: any) {
     );
   }
 }
+

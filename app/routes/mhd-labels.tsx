@@ -142,6 +142,7 @@ export async function action({ request }: { request: Request }) {
     const batchNumber = String(formData.get("batchNumber") || "").trim();
     const storageNote = String(formData.get("storageNote") || "").trim();
     const allergens = String(formData.get("allergens") || "").trim();
+    const ingredients = String(formData.get("ingredients") || "").trim();
     const quantityText = String(formData.get("quantityText") || "").trim();
     const labelSize = String(formData.get("labelSize") || "76x51").trim();
     const labelCountRaw = Number(String(formData.get("labelCount") || "1"));
@@ -161,6 +162,7 @@ export async function action({ request }: { request: Request }) {
         batchNumber: batchNumber || null,
         storageNote: storageNote || null,
         allergens: allergens || null,
+        ingredients: ingredients || null,
         quantityText: quantityText || null,
         labelCount,
         labelSize,
@@ -293,6 +295,10 @@ export default function MhdLabelsPage() {
               <input name="allergens" placeholder="z. B. Soja, Sesam, Gluten" />
             </Field>
 
+            <Field label="Zutaten">
+              <input name="ingredients" placeholder="z. B. Reis, Hähnchen, Gemüse, Sauce" />
+            </Field>
+
             <Field label="Labelgröße">
               <select name="labelSize" defaultValue="76x51">
                 <option value="76x51">76 × 51 mm</option>
@@ -331,6 +337,7 @@ export default function MhdLabelsPage() {
                       <strong>{label.productName}</strong>
                       <span>
                         MHD: {formatDate(label.bestBeforeDate)} · Charge: {label.batchNumber || "-"}
+                        {label.ingredients ? <> · Zutaten: {label.ingredients}</> : null}
                       </span>
                     </div>
 
@@ -457,6 +464,13 @@ function LabelCard({ label, tenantName }: { label: any; tenantName: string }) {
 
       <div style={labelBottomStyle}>
         <div style={allergenStyle}>
+          {label.ingredients ? (
+            <>
+              <span>Zutaten:</span>
+              <strong>{label.ingredients}</strong>
+            </>
+          ) : null}
+
           <span>Allergene:</span>
           <strong>{label.allergens || "-"}</strong>
         </div>
@@ -780,6 +794,7 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
 
 
 

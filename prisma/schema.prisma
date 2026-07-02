@@ -444,6 +444,7 @@ model FoodLabel {
   batchNumber    String?
   storageNote    String?
   allergens      String?
+  ingredients    String?
   quantityText   String?
 
   labelCount Int    @default(1)

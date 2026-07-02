@@ -316,6 +316,13 @@ function PrintLabel({ label, tenantName, size }: { label: any; tenantName: strin
 
       <div className="bottom">
         <div className="allergens">
+          {label.ingredients ? (
+            <>
+              <span>Zutaten:</span>
+              <strong>{label.ingredients}</strong>
+            </>
+          ) : null}
+
           <span>Allergene:</span>
           <strong>{label.allergens || "-"}</strong>
         </div>
@@ -353,5 +360,6 @@ function QrCode({ value }: { value: string }) {
 
   return <img src={src} alt="QR-Code" className="qr" />;
 }
+
 
 

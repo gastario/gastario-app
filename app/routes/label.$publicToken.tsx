@@ -72,6 +72,7 @@ function buildCopyText(label: any, publicUrl: string) {
     `Los / Charge: ${label.batchNumber || "-"}`,
     `Menge / Portion: ${label.quantityText || "-"}`,
     `Lagerhinweis: ${label.storageNote || "-"}`,
+    `Zutaten: ${label.ingredients || "-"}`,
     `Allergene: ${label.allergens || "-"}`,
     `Link: ${publicUrl}`,
   ].join("\n");
@@ -175,6 +176,7 @@ export default function PublicFoodLabelPage() {
             <Fact label="Los / Charge" value={label.batchNumber || "-"} />
             <Fact label="Menge / Portion" value={label.quantityText || "-"} />
             <Fact label="Lagerhinweis" value={label.storageNote || "-"} />
+            <Fact label="Zutaten" value={label.ingredients || "-"} />
             <Fact label="Allergene" value={label.allergens || "-"} />
           </div>
 
@@ -237,6 +239,13 @@ function PublicLabelCard({
 
       <div style={{ ...labelBottomStyle, gridTemplateColumns: `1fr ${size.qr}` }}>
         <div style={labelAllergenBlockStyle}>
+          {label.ingredients ? (
+            <>
+              <span style={labelMutedStyle}>Zutaten</span>
+              <strong>{label.ingredients}</strong>
+            </>
+          ) : null}
+
           <span style={labelMutedStyle}>Allergene</span>
           <strong>{label.allergens || "-"}</strong>
         </div>
@@ -478,3 +487,4 @@ const secondaryButtonStyle: React.CSSProperties = {
   fontWeight: 600,
   cursor: "pointer",
 };
+
