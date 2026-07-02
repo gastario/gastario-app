@@ -95,6 +95,16 @@ export async function loader({ request }: { request: Request }) {
   };
 }
 
+function createFoodLabelBatchNumber() {
+  const now = new Date();
+  const pad = (value: number) => String(value).padStart(2, "0");
+
+  const monthDay = `${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
+  const hourMinute = `${pad(now.getHours())}${pad(now.getMinutes())}`;
+
+  return `CH-${monthDay}-${hourMinute}`;
+}
+
 export async function action({ request }: { request: Request }) {
   const { getUserId } = await import("../lib/session.server");
   const { prisma } = await import("../lib/prisma.server");
@@ -141,7 +151,8 @@ export async function action({ request }: { request: Request }) {
     const customerName = String(formData.get("customerName") || "").trim();
     const productionDate = parseDateInput(formData.get("productionDate"));
     const bestBeforeDate = parseDateInput(formData.get("bestBeforeDate"));
-    const batchNumber = String(formData.get("batchNumber") || "").trim();
+    const batchNumberInput = String(formData.get("batchNumber") || "").trim();
+  const batchNumber = batchNumberInput || createFoodLabelBatchNumber();
     const storageNote = String(formData.get("storageNote") || "").trim();
     const allergens = String(formData.get("allergens") || "").trim();
     const ingredients = String(formData.get("ingredients") || "").trim();
@@ -282,7 +293,7 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Charge / Losnummer">
-              <input name="batchNumber" defaultValue={"CH-" + today.replaceAll("-", "") + "-001"} />
+              <input name="batchNumber" placeholder="automatisch, wenn leer" />
             </Field>
 
             <Field label="Menge / Portion">
