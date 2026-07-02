@@ -1045,3 +1045,8 @@ const labelInfoValueStyle: React.CSSProperties = {
   wordBreak: "break-word",
   overflow: "hidden"
 };
+
+
+/* Auto-added fallback styles to prevent runtime crashes */
+
+const pageGridStyle: React.CSSProperties = {};
