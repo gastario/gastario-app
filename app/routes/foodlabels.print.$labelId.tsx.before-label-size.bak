@@ -1,19 +1,7 @@
 import { useEffect } from "react";
 import { Link, redirect, useLoaderData } from "react-router";
 
-function getPrintPreset(preset: string, labelSize: string = "auto") {
-  if (labelSize === "76x51") {
-    return { columns: 2, width: "76mm", height: "51mm", gap: "6mm", logo: "17mm", title: "12pt", base: "7.2pt" };
-  }
-
-  if (labelSize === "57x32") {
-    return { columns: 3, width: "57mm", height: "32mm", gap: "5mm", logo: "12mm", title: "9pt", base: "5.8pt" };
-  }
-
-  if (labelSize === "50x30") {
-    return { columns: 3, width: "50mm", height: "30mm", gap: "5mm", logo: "11mm", title: "8.5pt", base: "5.4pt" };
-  }
-
+function getPrintPreset(preset: string) {
   if (preset === "a4-4") {
     return { columns: 4, width: "43mm", height: "32mm", gap: "4mm", logo: "10mm", title: "8pt", base: "5.4pt" };
   }
@@ -36,7 +24,6 @@ async function ensureFoodProductLabelTable(prisma: any) {
       "logoDataUrl" TEXT,
       "labelCount" INTEGER NOT NULL DEFAULT 12,
       "printPreset" TEXT NOT NULL DEFAULT 'a4-3',
-      "labelSize" TEXT NOT NULL DEFAULT 'auto',
       "publicToken" TEXT UNIQUE,
       "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
       "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -90,7 +77,7 @@ export async function loader({ request, params }: { request: Request; params: { 
 export default function FoodLabelPrintPage() {
   const data = useLoaderData<typeof loader>();
   const label = data.label as any;
-  const preset = getPrintPreset(label.printPreset || "a4-3", label.labelSize || "auto");
+  const preset = getPrintPreset(label.printPreset || "a4-3");
   const count = Math.max(1, Math.min(Number(label.labelCount || 1), 200));
   const labels = Array.from({ length: count }, (_, index) => index);
 
