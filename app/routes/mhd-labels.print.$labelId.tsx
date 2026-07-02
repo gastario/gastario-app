@@ -195,7 +195,7 @@ export default function MhdLabelPrintPage() {
           .label {
             width: ${size.width};
             height: ${size.height};
-            border: 1.2px solid #0f172a;
+            border: 1.6px solid #000000;
             padding: ${size.padding};
             display: grid;
             align-content: start;

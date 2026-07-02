@@ -359,7 +359,7 @@ export default function MhdLabelsPage() {
                       <Form
                         method="post"
                         onSubmit={(event) => {
-                          if (!window.confirm("Dieses Label wirklich l?schen?")) {
+                          if (!window.confirm("Dieses Label wirklich loeschen?")) {
                             event.preventDefault();
                           }
                         }}
@@ -367,7 +367,7 @@ export default function MhdLabelsPage() {
                         <input type="hidden" name="_action" value="delete" />
                         <input type="hidden" name="labelId" value={label.id} />
                         <button type="submit" style={dangerButtonStyle}>
-                          L?schen
+                          Loeschen
                         </button>
                       </Form></div>
                   </div>
