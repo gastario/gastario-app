@@ -6,29 +6,6 @@ export function meta() {
   return [{ title: "Import pruefen - Gastario" }];
 }
 
-function splitKeywords(value: string) {
-  return String(value || "")
-    .split(/[;,\n]/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-const FIELD_LABELS: Record<string, string> = {
-  customerName: "Kunde",
-  eventName: "Eventname",
-  deliveryDate: "Lieferdatum",
-  deliveryTime: "Lieferzeit",
-  deliveryAddress: "Lieferadresse",
-  contactName: "Kontaktperson",
-  contactPhone: "Telefon",
-  personCount: "Personenanzahl",
-  items: "Positionen / Produkte",
-  allergens: "Allergene / Hinweise",
-  budget: "Budget / Preis",
-  invoiceAddress: "Rechnungsadresse",
-  notes: "Sonstige Hinweise",
-};
-
 
 export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
@@ -81,34 +58,9 @@ export async function action({ request }: { request: Request }) {
       return { error: "Aus dem PDF konnte kein Text gelesen werden. Eventuell ist es ein Scan/Bild-PDF." };
     }
 
-    const rules = await prisma.$queryRawUnsafe<any[]>(
-      `SELECT * FROM "OrderImportRule"
-       WHERE "tenantId" = $1 AND "active" = true
-       ORDER BY "fieldKey" ASC`,
-      access.tenantId
-    );
-
-    const lowerText = text.toLowerCase();
-
-    const matches = rules
-      .map((rule) => {
-        const hits = splitKeywords(rule.keywords).filter((keyword) =>
-          lowerText.includes(keyword.toLowerCase())
-        );
-
-        return {
-          fieldKey: rule.fieldKey,
-          label: FIELD_LABELS[rule.fieldKey] || rule.fieldKey,
-          sourceName: rule.sourceName || "Alle",
-          hits,
-        };
-      })
-      .filter((match) => match.hits.length > 0);
-
     return {
-      success: "PDF wurde gelesen und gegen Import-Regeln geprueft.",
+      success: "PDF wurde gelesen.",
       fileName: pdfFileName,
-      matches,
       preview: text.slice(0, 2500),
     };
   } catch (error: any) {
@@ -209,29 +161,6 @@ export default function ImportPruefenPage() {
             </button>
           </form>
         </section>
-
-        {actionData?.matches ? (
-          <section style={cardStyle}>
-            <p style={eyebrowStyle}>Erkennung</p>
-            <h2 style={sectionTitleStyle}>Erkannte Felder</h2>
-
-            {actionData.matches.length === 0 ? (
-              <div style={emptyStyle}>
-                Keine Treffer gefunden. Bitte Import-Regeln erweitern.
-              </div>
-            ) : (
-              <div style={matchListStyle}>
-                {actionData.matches.map((match: any, index: number) => (
-                  <div key={index} style={matchRowStyle}>
-                    <strong>{match.label}</strong>
-                    <span>{match.sourceName}</span>
-                    <small>{match.hits.join(", ")}</small>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        ) : null}
 
         {actionData?.preview ? (
           <section style={cardStyle}>
@@ -357,29 +286,4 @@ const preStyle: React.CSSProperties = {
 const hintStyle: React.CSSProperties = {
   color: "#64748b",
   fontWeight: 650,
-};
-
-
-const emptyStyle: React.CSSProperties = {
-  border: "1px dashed #cbd5e1",
-  borderRadius: 14,
-  padding: 18,
-  color: "#64748b",
-  fontWeight: 650,
-};
-
-const matchListStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 8,
-};
-
-const matchRowStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "190px 120px 1fr",
-  gap: 10,
-  alignItems: "center",
-  background: "#f8fafc",
-  border: "1px solid #e2e8f0",
-  borderRadius: 10,
-  padding: "10px 12px",
 };
