@@ -1,5 +1,4 @@
 import { Form, useActionData, useLoaderData } from "react-router";
-import AppLayout from "../components/AppLayout";
 
 const FIELD_OPTIONS = [
   { value: "customerName", label: "Kunde" },
@@ -144,8 +143,7 @@ export default function ImportRegelnPage() {
   const rules = data.rules as any[];
 
   return (
-    <AppLayout>
-      <div style={pageStyle}>
+    <div style={pageStyle}>
       <div style={headerStyle}>
         <div>
           <p style={eyebrowStyle}>Import & Auftragserkennung</p>
@@ -258,8 +256,7 @@ export default function ImportRegelnPage() {
           </div>
         )}
       </section>
-      </div>
-    </AppLayout>
+    </div>
   );
 }
 
