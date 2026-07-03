@@ -1091,15 +1091,6 @@ export default function AuftragseingangPage() {
                           </span>
                         </td>
                         <td style={tdStyle}>
-                          <a
-                            href={"/auftrag-pruefung/" + order.id}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={smallButtonStyle}
-                          >
-                            Pruef-PDF
-                          </a>
-
                           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                             <Form method="post" style={{ display: "flex", gap: 8 }}>
                               <input type="hidden" name="intent" value="updateStatus" />
