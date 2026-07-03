@@ -67,7 +67,7 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
     const line = productLines[index];
 
     const priceLine =
-      /\b\d+\s*(\u20ac|EUR)\s*\d+/i.test(line) ||
+      /\b\d+\s*(?|EUR)\s*\d+/i.test(line) ||
       /\b\d+\s+[0-9]+[,\.]?[0-9]*\s+[0-9]+[,\.]?[0-9]*/i.test(line);
 
     if (!priceLine) {
