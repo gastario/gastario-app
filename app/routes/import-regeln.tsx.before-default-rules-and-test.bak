@@ -17,34 +17,6 @@ const FIELD_OPTIONS = [
   { value: "notes", label: "Sonstige Hinweise" },
 ];
 
-const DEFAULT_RULES = [
-  { sourceName: "Allgemein", fieldKey: "customerName", keywords: "Kunde, Auftraggeber, Firma, Company, Client" },
-  { sourceName: "Allgemein", fieldKey: "eventName", keywords: "Event, Veranstaltung, Anlass, Eventname" },
-  { sourceName: "Allgemein", fieldKey: "deliveryDate", keywords: "Lieferdatum, Delivery Date, Eventdatum, Auslieferung am, Datum" },
-  { sourceName: "Allgemein", fieldKey: "deliveryTime", keywords: "Lieferzeit, Delivery Time, Uhrzeit, Anlieferung, Zeitfenster, Time Slot" },
-  { sourceName: "Allgemein", fieldKey: "deliveryAddress", keywords: "Lieferadresse, Delivery Address, Location, Adresse, Lieferort, Venue" },
-  { sourceName: "Allgemein", fieldKey: "contactName", keywords: "Kontaktperson, Ansprechpartner, Contact Person, Kontakt" },
-  { sourceName: "Allgemein", fieldKey: "contactPhone", keywords: "Telefon, Phone, Telefonnummer, Mobile, Mobil" },
-  { sourceName: "Allgemein", fieldKey: "personCount", keywords: "Personenanzahl, Personen, Teilnehmer, Pax, Guests, Anzahl Personen" },
-  { sourceName: "Allgemein", fieldKey: "items", keywords: "Positionen, Produkte, Menu, Men?, Speisen, Artikel, Items, Bowl, Buffet, Wrap, Dessert, Fr?hst?ck, Lunch" },
-  { sourceName: "Allgemein", fieldKey: "allergens", keywords: "Allergene, Allergies, Unvertr?glichkeiten, Unvertraeglichkeiten, Hinweise, vegan, vegetarisch, glutenfrei, laktosefrei" },
-  { sourceName: "Allgemein", fieldKey: "budget", keywords: "Budget, Preis, Gesamtpreis, Amount, Total, Netto, Brutto" },
-  { sourceName: "Allgemein", fieldKey: "invoiceAddress", keywords: "Rechnungsadresse, Billing Address, Rechnung, Invoice" },
-  { sourceName: "Heycater", fieldKey: "deliveryDate", keywords: "Delivery Date, Lieferdatum, Event Date" },
-  { sourceName: "Heycater", fieldKey: "deliveryAddress", keywords: "Delivery Address, Location, Venue" },
-  { sourceName: "Heycater", fieldKey: "items", keywords: "Menu, Items, Order Details, Food" },
-  { sourceName: "Egora", fieldKey: "deliveryDate", keywords: "Eventdatum, Lieferdatum, Datum" },
-  { sourceName: "Egora", fieldKey: "deliveryAddress", keywords: "Location, Lieferort, Adresse" },
-  { sourceName: "Egora", fieldKey: "items", keywords: "Positionen, Speisen, Produkte" },
-];
-
-function splitKeywords(value: string) {
-  return String(value || "")
-    .split(/[;,\n]/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
 function safeText(value: FormDataEntryValue | null) {
   return String(value || "").trim();
 }
@@ -116,70 +88,6 @@ export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
   const intent = safeText(formData.get("_intent"));
 
-  if (intent === "seedDefaults") {
-    let created = 0;
-
-    for (const rule of DEFAULT_RULES) {
-      const existing = await prisma.$queryRawUnsafe<any[]>(
-        `SELECT "id" FROM "OrderImportRule"
-         WHERE "tenantId" = $1 AND "sourceName" = $2 AND "fieldKey" = $3 AND "keywords" = $4
-         LIMIT 1`,
-        access.tenantId,
-        rule.sourceName,
-        rule.fieldKey,
-        rule.keywords
-      );
-
-      if (existing.length === 0) {
-        await prisma.$executeRawUnsafe(
-          `INSERT INTO "OrderImportRule"
-            ("id", "tenantId", "sourceName", "fieldKey", "keywords", "active", "updatedAt")
-           VALUES ($1, $2, $3, $4, $5, true, CURRENT_TIMESTAMP)`,
-          createId(),
-          access.tenantId,
-          rule.sourceName,
-          rule.fieldKey,
-          rule.keywords
-        );
-        created++;
-      }
-    }
-
-    return { success: created + " Standard-Regeln wurden eingespielt." };
-  }
-
-  if (intent === "testText") {
-    const testText = safeText(formData.get("testText"));
-    const normalizedText = testText.toLowerCase();
-
-    const rules = await prisma.$queryRawUnsafe<any[]>(
-      `SELECT * FROM "OrderImportRule"
-       WHERE "tenantId" = $1 AND "active" = true
-       ORDER BY "fieldKey" ASC`,
-      access.tenantId
-    );
-
-    const matches = rules
-      .map((rule) => {
-        const hits = splitKeywords(rule.keywords).filter((keyword) =>
-          normalizedText.includes(keyword.toLowerCase())
-        );
-
-        return {
-          fieldKey: rule.fieldKey,
-          sourceName: rule.sourceName || "Alle",
-          keywords: hits,
-        };
-      })
-      .filter((match) => match.keywords.length > 0);
-
-    return {
-      success: matches.length > 0 ? "Test abgeschlossen: Treffer gefunden." : "Test abgeschlossen: Noch keine Treffer.",
-      matches,
-      testText,
-    };
-  }
-
   if (intent === "delete") {
     const ruleId = safeText(formData.get("ruleId"));
 
@@ -233,7 +141,6 @@ export async function action({ request }: { request: Request }) {
 export default function ImportRegelnPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const anyAction = actionData as any;
   const rules = data.rules as any[];
 
   return (
@@ -251,60 +158,6 @@ export default function ImportRegelnPage() {
 
       {actionData && "error" in actionData ? <div style={errorStyle}>{actionData.error}</div> : null}
       {actionData && "success" in actionData ? <div style={successStyle}>{actionData.success}</div> : null}
-
-      <section style={cardStyle}>
-        <div style={cardHeaderStyle}>
-          <div>
-            <p style={eyebrowStyle}>Schnellstart</p>
-            <h2 style={sectionTitleStyle}>Standard-Regeln und PDF-Test</h2>
-          </div>
-
-          <Form method="post">
-            <input type="hidden" name="_intent" value="seedDefaults" />
-            <button type="submit" style={secondaryButtonStyle}>Standard-Regeln einspielen</button>
-          </Form>
-        </div>
-
-        <Form method="post" style={testGridStyle}>
-          <input type="hidden" name="_intent" value="testText" />
-          <label style={fieldStyle}>
-            <span>PDF-Text testen</span>
-            <textarea
-              name="testText"
-              rows={5}
-              placeholder="Hier testweise Text aus einem PDF einfuegen, z. B. Lieferdatum, Lieferadresse, Positionen..."
-              defaultValue={anyAction?.testText || ""}
-              style={textareaStyle}
-            />
-          </label>
-          <div style={formActionStyle}>
-            <button type="submit" style={primaryButtonStyle}>Erkennung testen</button>
-          </div>
-        </Form>
-
-        {anyAction?.matches ? (
-          <div style={matchBoxStyle}>
-            <strong>Erkannte Felder</strong>
-            {anyAction.matches.length === 0 ? (
-              <p style={matchEmptyStyle}>Keine Treffer. Bitte mehr Erkennungswoerter anlegen.</p>
-            ) : (
-              <div style={matchListStyle}>
-                {anyAction.matches.map((match: any, index: number) => {
-                  const label = FIELD_OPTIONS.find((option) => option.value === match.fieldKey)?.label || match.fieldKey;
-
-                  return (
-                    <div key={index} style={matchRowStyle}>
-                      <strong>{label}</strong>
-                      <span>{match.sourceName}</span>
-                      <small>{match.keywords.join(", ")}</small>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        ) : null}
-      </section>
 
       <section style={cardStyle}>
         <div style={cardHeaderStyle}>
@@ -628,54 +481,4 @@ const keywordBoxStyle: React.CSSProperties = {
 const ruleActionsStyle: React.CSSProperties = {
   display: "grid",
   gap: 8,
-};
-
-
-const testGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr auto",
-  gap: 14,
-  alignItems: "end",
-};
-
-const textareaStyle: React.CSSProperties = {
-  width: "100%",
-  border: "1px solid #cbd5e1",
-  borderRadius: 12,
-  padding: "11px 12px",
-  font: "inherit",
-  resize: "vertical",
-  minHeight: 110,
-};
-
-const matchBoxStyle: React.CSSProperties = {
-  marginTop: 16,
-  border: "1px solid #dbe5eb",
-  borderRadius: 14,
-  padding: 14,
-  background: "#f8fafc",
-  display: "grid",
-  gap: 10,
-};
-
-const matchListStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 8,
-};
-
-const matchRowStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "180px 110px 1fr",
-  gap: 10,
-  alignItems: "center",
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
-  borderRadius: 10,
-  padding: "10px 12px",
-};
-
-const matchEmptyStyle: React.CSSProperties = {
-  margin: 0,
-  color: "#64748b",
-  fontWeight: 650,
 };
