@@ -67,8 +67,8 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
     const line = productLines[index];
 
     const priceLine =
-      /\b\d+\s*(?|EUR)\s*\d+/i.test(line) ||
-      /\b\d+\s+[0-9]+[,\.]?[0-9]*\s+[0-9]+[,\.]?[0-9]*/i.test(line);
+      /\b\d+\s*?\s*\d+/i.test(line) ||
+      /\b\d+\s+?\s+\d+/i.test(line);
 
     if (!priceLine) {
       continue;
@@ -80,16 +80,10 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
     if (
       !name ||
       name.toLowerCase().includes("bezeichnung") ||
-      name.toLowerCase().includes("gesch") ||
+      name.toLowerCase().includes("gesch?ftsf?hrung") ||
       name.toLowerCase().includes("registergericht") ||
       name.toLowerCase().includes("iban") ||
-      name.toLowerCase().includes("bic") ||
-      name.toLowerCase().includes("qonto") ||
-      name.toLowerCase().includes("bank") ||
-      name.toLowerCase().includes("ust-idnr") ||
-      name.toLowerCase().includes("hey group") ||
-      name.toLowerCase().includes("goerzallee") ||
-      name.toLowerCase().includes("gorman")
+      name.toLowerCase().includes("ust-idnr")
     ) {
       continue;
     }
