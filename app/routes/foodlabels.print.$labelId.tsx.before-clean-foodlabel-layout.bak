@@ -90,7 +90,7 @@ export async function loader({ request, params }: { request: Request; params: { 
 export default function FoodLabelPrintPage() {
   const data = useLoaderData<typeof loader>();
   const label = data.label as any;
-  const preset = getPrintPreset(label.printPreset || "a4-3", "auto");
+  const preset = getPrintPreset(label.printPreset || "a4-3", label.labelSize || "auto");
   const count = Math.max(1, Math.min(Number(label.labelCount || 1), 200));
   const labels = Array.from({ length: count }, (_, index) => index);
 
@@ -162,10 +162,10 @@ export default function FoodLabelPrintPage() {
             outline: 1px solid #111827;
             outline-offset: -2px;
             background: #ffffff;
-            padding: 4mm;
+            padding: 3mm;
             display: grid;
             grid-template-rows: auto auto 1fr;
-            gap: 2.8mm;
+            gap: 2mm;
             overflow: hidden;
             box-sizing: border-box;
             font-size: ${preset.base};
@@ -208,18 +208,16 @@ export default function FoodLabelPrintPage() {
           .name {
             margin: 0;
             font-size: ${preset.title};
-            line-height: 1.08;
+            line-height: 1.05;
             font-weight: 900;
             color: #0f172a;
             word-break: break-word;
-            padding-bottom: 1.5mm;
-            border-bottom: 1px solid #dbe4ea;
           }
 
           .info {
             display: grid;
-            gap: 1.8mm;
-            line-height: 1.2;
+            gap: 1.5mm;
+            line-height: 1.15;
             overflow: hidden;
             text-align: left;
             align-content: start;
