@@ -21,23 +21,25 @@ function buildQrValue(label: any) {
 }
 
 function getPageSize(labelSize: string) {
-  if (labelSize === "a4-4") {
-    return { mode: "a4", columns: 4, width: "43mm", height: "32mm", gap: "4mm", qr: "10mm", padding: "2.1mm", title: "8pt", base: "5.4pt" };
-  }
-
-  if (labelSize === "a4-3") {
-    return { mode: "a4", columns: 3, width: "58mm", height: "38mm", gap: "5mm", qr: "12mm", padding: "2.4mm", title: "9.3pt", base: "5.9pt" };
-  }
-
-  if (labelSize === "a4-2") {
-    return { mode: "a4", columns: 2, width: "86mm", height: "52mm", gap: "6mm", qr: "15mm", padding: "3mm", title: "10.5pt", base: "6.7pt" };
-  }
-
   if (labelSize === "57x32") {
-    return { mode: "roll", columns: 1, width: "57mm", height: "32mm", gap: "0", qr: "13mm", padding: "2.4mm", title: "9pt", base: "6.8pt" };
+    return {
+      width: "57mm",
+      height: "32mm",
+      qr: "13mm",
+      padding: "2.4mm",
+      title: "9pt",
+      base: "6.8pt",
+    };
   }
 
-  return { mode: "roll", columns: 1, width: "76mm", height: "51mm", gap: "0", qr: "19mm", padding: "3.2mm", title: "11pt", base: "7.6pt" };
+  return {
+    width: "76mm",
+    height: "51mm",
+    qr: "19mm",
+    padding: "3.2mm",
+    title: "11pt",
+    base: "7.6pt",
+  };
 }
 
 async function ensureFoodLabelTable(prisma: any) {
@@ -109,9 +111,6 @@ export default function MhdLabelPrintPage() {
   const data = useLoaderData<typeof loader>();
   const label = data.label as any;
   const size = getPageSize(label.labelSize);
-  const isA4Print = size.mode === "a4";
-  const pageSize = isA4Print ? "A4 portrait" : `${size.width} ${size.height}`;
-  const pageMargin = isA4Print ? "8mm" : "0";
   const labels = Array.from({ length: Math.max(1, Math.min(label.labelCount || 1, 200)) }, (_, index) => index);
 
   useEffect(() => {
@@ -136,8 +135,8 @@ export default function MhdLabelPrintPage() {
           }
 
           @page {
-            size: ${pageSize};
-            margin: ${pageMargin};
+            size: ${size.width} ${size.height};
+            margin: 0;
           }
 
           .toolbar {
@@ -181,12 +180,9 @@ export default function MhdLabelPrintPage() {
           }
 
           .sheet {
-            padding: ${isA4Print ? "18px" : "0"};
-            display: ${isA4Print ? "grid" : "block"};
-            grid-template-columns: repeat(${size.columns}, ${size.width});
-            gap: ${size.gap};
-            justify-content: start;
-            align-items: start;
+            padding: 18px;
+            display: grid;
+            gap: 12px;
           }
 
           .label {
@@ -259,9 +255,7 @@ export default function MhdLabelPrintPage() {
             }
 
             .sheet {
-              display: ${isA4Print ? "grid" : "block"} !important;
-              grid-template-columns: repeat(${size.columns}, ${size.width}) !important;
-              gap: ${size.gap} !important;
+              display: block !important;
               padding: 0 !important;
               margin: 0 !important;
             }
@@ -269,8 +263,8 @@ export default function MhdLabelPrintPage() {
             .label {
               border: none !important;
               border-radius: 0 !important;
-              page-break-after: ${isA4Print ? "auto" : "always"} !important;
-              break-after: ${isA4Print ? "auto" : "page"} !important;
+              page-break-after: always !important;
+              break-after: page !important;
             }
           }
         `}

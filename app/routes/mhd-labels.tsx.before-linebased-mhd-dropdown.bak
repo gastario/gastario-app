@@ -301,13 +301,10 @@ export default function MhdLabelsPage() {
               <input name="allergens" placeholder="z. B. Soja, Sesam, Gluten" />
             </Field>
 
-            <Field label="Druckformat">
+            <Field label="Labelgröße">
               <select name="labelSize" defaultValue="76x51">
-                <option value="a4-2">A4 Hochformat - 2 Labels pro Reihe</option>
-                <option value="a4-3">A4 Hochformat - 3 Labels pro Reihe</option>
-                <option value="a4-4">A4 Hochformat - 4 Labels pro Reihe</option>
-                <option value="76x51">Etikettenrolle - 76 x 51 mm</option>
-                <option value="57x32">Etikettenrolle - 57 x 32 mm</option>
+                <option value="76x51">76 × 51 mm</option>
+                <option value="57x32">57 × 32 mm</option>
               </select>
             </Field>
 
@@ -368,7 +365,7 @@ export default function MhdLabelsPage() {
                       <Form
                         method="post"
                         onSubmit={(event) => {
-                          if (!window.confirm("Dieses Label wirklich l" + String.fromCharCode(246) + "schen?")) {
+                          if (!window.confirm("Dieses Label wirklich l" + "\u00f6" + "schen?")) {
                             event.preventDefault();
                           }
                         }}
@@ -376,7 +373,7 @@ export default function MhdLabelsPage() {
                         <input type="hidden" name="_action" value="delete" />
                         <input type="hidden" name="labelId" value={label.id} />
                         <button type="submit" style={dangerButtonStyle}>
-                          {"L" + String.fromCharCode(246) + "schen"}
+                          {"L" + "\u00f6" + "schen"}
                         </button>
                       </Form>
                     </div>
