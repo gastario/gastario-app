@@ -1,10 +1,15 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link, redirect, useLoaderData } from "react-router";
 import QRCode from "qrcode";
 
 function formatDate(value: Date | string | null | undefined) {
   if (!value) return "-";
   return new Date(value).toLocaleDateString("de-DE");
+}
+
+function toInputDate(value: Date | string | null | undefined) {
+  if (!value) return "";
+  return new Date(value).toISOString().slice(0, 10);
 }
 
 function buildQrValue(label: any) {
@@ -15,55 +20,58 @@ function buildQrValue(label: any) {
   return "https://gastario-app-production.up.railway.app/mhd-labels?print=" + label.id;
 }
 
-function getSize(label: any) {
-  const preset = label.printPreset || "a4-2";
-
-  if (preset === "a4-4") {
+function getPageSize(labelSize: string) {
+  if (labelSize === "57x32") {
     return {
-      columns: 4,
-      width: "43mm",
+      width: "57mm",
       height: "32mm",
-      gap: "4mm",
-      qr: "10mm",
-      padding: "2.1mm",
-      product: "8pt",
-      base: "5.4pt",
-    };
-  }
-
-  if (preset === "a4-3") {
-    return {
-      columns: 3,
-      width: "58mm",
-      height: "38mm",
-      gap: "5mm",
-      qr: "12mm",
+      qr: "13mm",
       padding: "2.4mm",
-      product: "9.3pt",
-      base: "5.9pt",
+      title: "9pt",
+      base: "6.8pt",
     };
   }
 
   return {
-    columns: 2,
-    width: "86mm",
-    height: "52mm",
-    gap: "6mm",
-    qr: "15mm",
-    padding: "3mm",
-    product: "10.5pt",
-    base: "6.7pt",
+    width: "76mm",
+    height: "51mm",
+    qr: "19mm",
+    padding: "3.2mm",
+    title: "11pt",
+    base: "7.6pt",
   };
 }
 
+async function ensureFoodLabelTable(prisma: any) {
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "FoodLabel" (
+      "id" TEXT PRIMARY KEY,
+      "tenantId" TEXT NOT NULL,
+      "productName" TEXT NOT NULL,
+      "customerName" TEXT,
+      "productionDate" TIMESTAMP(3) NOT NULL,
+      "bestBeforeDate" TIMESTAMP(3) NOT NULL,
+      "batchNumber" TEXT,
+      "storageNote" TEXT,
+      "allergens" TEXT,
+      "quantityText" TEXT,
+      "labelCount" INTEGER NOT NULL DEFAULT 1,
+      "labelSize" TEXT NOT NULL DEFAULT '76x51',
+      "status" TEXT NOT NULL DEFAULT 'CREATED',
+      "printedAt" TIMESTAMP(3),
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+}
+
 export function meta() {
-  return [{ title: "MHD-Label drucken - Gastario" }];
+  return [{ title: "MHD-Label drucken · Gastario" }];
 }
 
 export async function loader({ request, params }: { request: Request; params: { labelId?: string } }) {
   const { getUserId } = await import("../lib/session.server");
   const { prisma } = await import("../lib/prisma.server");
-  const { ensureFoodLabelTable } = await import("../lib/food-labels.server");
 
   const userId = await getUserId(request);
 
@@ -102,9 +110,8 @@ export async function loader({ request, params }: { request: Request; params: { 
 export default function MhdLabelPrintPage() {
   const data = useLoaderData<typeof loader>();
   const label = data.label as any;
-  const size = getSize(label);
-  const labelCount = Math.max(1, Math.min(Number(label.labelCount || 1), 200));
-  const labels = Array.from({ length: labelCount }, (_, index) => index);
+  const size = getPageSize(label.labelSize);
+  const labels = Array.from({ length: Math.max(1, Math.min(label.labelCount || 1, 200)) }, (_, index) => index);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -128,8 +135,8 @@ export default function MhdLabelPrintPage() {
           }
 
           @page {
-            size: A4 portrait;
-            margin: 8mm;
+            size: ${size.width} ${size.height};
+            margin: 0;
           }
 
           .toolbar {
@@ -160,7 +167,7 @@ export default function MhdLabelPrintPage() {
             color: #0f172a;
             text-decoration: none;
             font-size: 14px;
-            font-weight: 700;
+            font-weight: 600;
             display: inline-flex;
             align-items: center;
             cursor: pointer;
@@ -175,165 +182,64 @@ export default function MhdLabelPrintPage() {
           .sheet {
             padding: 18px;
             display: grid;
-            grid-template-columns: repeat(${size.columns}, ${size.width});
-            gap: ${size.gap};
-            justify-content: start;
-            align-items: start;
-            box-sizing: border-box;
+            gap: 12px;
           }
 
           .label {
             width: ${size.width};
             height: ${size.height};
-            border: 2px solid #000000;
-            outline: 1px solid #000000;
-            outline-offset: -2px;
-            box-shadow: inset 0 0 0 1px #000000;
+            border: 1px solid #0f172a;
             padding: ${size.padding};
-            display: flex;
-            flex-direction: column;
-            gap: 1mm;
+            display: grid;
+            align-content: start;
+            gap: 0.8mm;
             overflow: hidden;
             background: #ffffff;
             font-size: ${size.base};
             line-height: 1.12;
             box-sizing: border-box;
-            break-inside: avoid;
-            page-break-inside: avoid;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
           }
 
           .top {
             display: flex;
             justify-content: space-between;
             gap: 2mm;
-            color: #475569;
-            font-size: 5.8pt;
-            border-bottom: 1px solid #cbd5e1;
-            padding-bottom: 0.8mm;
+            color: #334155;
+            font-size: 6.5pt;
           }
 
           .product {
             margin: 0;
-            font-size: ${size.product};
-            line-height: 1.05;
-            font-weight: 800;
-            color: #0f172a;
-            max-height: 8.5mm;
-            overflow: hidden;
+            font-size: ${size.title};
+            line-height: 1.02;
+            font-weight: 700;
           }
 
-          .dateGrid {
+          .dates {
             display: grid;
-            grid-template-columns: 1fr 1.25fr;
-            gap: 1.5mm;
-          }
-
-          .dateBox {
-            border: 1px solid #cbd5e1;
-            border-radius: 5px;
-            padding: 0.9mm 1.1mm;
-            background: #f8fafc;
-          }
-
-          .dateBox.expiry {
-            border: 1.4px solid #0f172a;
-            background: #f1f5f9;
-          }
-
-          .caption {
-            display: block;
-            font-size: 5.4pt;
-            color: #64748b;
-            font-weight: 700;
-            line-height: 1;
-            margin-bottom: 0.4mm;
-          }
-
-          .producedValue {
-            display: block;
-            font-size: 6.5pt;
-            font-weight: 700;
-            color: #334155;
-          }
-
-          .expiryValue {
-            display: inline-block;
-            font-size: 8.4pt;
-            font-weight: 900;
-            color: #0f172a;
-            border-bottom: 1px solid #0f172a;
-            padding-bottom: 0.2mm;
+            gap: 0.5mm;
           }
 
           .charge {
             color: #334155;
-            font-size: 6pt;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 0.7mm;
           }
 
-
-          .ingredientsTop {
-            border-bottom: 1px solid #dbe4ea;
-            padding-bottom: 1mm;
-            margin-bottom: 0.8mm;
-            min-height: 7mm;
-            overflow: hidden;
-          }
-
-          .ingredientsTopLabel {
-            display: block;
-            font-size: 5.4pt;
-            font-weight: 800;
-            color: #64748b;
-            margin-bottom: 0.35mm;
-          }
-
-          .ingredientsTopValue {
-            display: block;
-            font-size: 5.7pt;
-            line-height: 1.12;
-            color: #0f172a;
-            overflow: hidden;
-            word-break: break-word;
+          .storage {
+            border-top: 1px solid #cbd5e1;
+            padding-top: 0.8mm;
           }
 
           .bottom {
-            margin-top: auto;
             display: grid;
             grid-template-columns: 1fr ${size.qr};
-            gap: 1.6mm;
+            gap: 1.5mm;
             align-items: end;
-            min-height: 0;
           }
 
-          .info {
+          .allergens {
             display: grid;
-            gap: 0.45mm;
+            gap: 0.3mm;
             overflow: hidden;
-            min-width: 0;
-          }
-
-          .row {
-            display: grid;
-            grid-template-columns: 14mm 1fr;
-            gap: 0.8mm;
-            font-size: 5.5pt;
-            line-height: 1.08;
-            min-width: 0;
-          }
-
-          .key {
-            color: #64748b;
-            font-weight: 800;
-          }
-
-          .value {
-            color: #111827;
-            overflow: hidden;
-            word-break: break-word;
           }
 
           .qr {
@@ -341,8 +247,6 @@ export default function MhdLabelPrintPage() {
             height: ${size.qr};
             display: block;
             background: #ffffff;
-            border: 1px solid #cbd5e1;
-            box-sizing: border-box;
           }
 
           @media print {
@@ -351,36 +255,28 @@ export default function MhdLabelPrintPage() {
             }
 
             .sheet {
+              display: block !important;
               padding: 0 !important;
               margin: 0 !important;
-              display: grid !important;
-              grid-template-columns: repeat(${size.columns}, ${size.width}) !important;
-              gap: ${size.gap} !important;
-              justify-content: start !important;
-              align-items: start !important;
             }
 
             .label {
-              border: 2px solid #000000 !important;
-              outline: 1px solid #000000 !important;
-              outline-offset: -2px !important;
-              box-shadow: inset 0 0 0 1px #000000 !important;
-              break-inside: avoid !important;
-              page-break-inside: avoid !important;
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
+              border: none !important;
+              border-radius: 0 !important;
+              page-break-after: always !important;
+              break-after: page !important;
             }
           }
         `}
       </style>
 
       <div className="toolbar">
-        <strong>MHD-Label drucken ? {label.labelSize}</strong>
+        <strong>MHD-Label drucken · {label.labelSize}</strong>
         <div>
-          <Link to="/mhd-labels" className="button">
-            Zur?ck
+          <Link to={`/mhd-labels?print=${label.id}`} className="button">
+            Zurück
           </Link>
-          <button className="button primary" onClick={() => window.print()}>
+          <button type="button" onClick={() => window.print()} className="button primary">
             Drucken
           </button>
         </div>
@@ -388,80 +284,72 @@ export default function MhdLabelPrintPage() {
 
       <section className="sheet">
         {labels.map((index) => (
-          <LabelCard key={index} label={label} tenantName={data.tenantName} />
+          <PrintLabel key={index} label={label} tenantName={data.tenantName} size={size} />
         ))}
       </section>
     </main>
   );
 }
 
-function LabelCard({ label, tenantName }: { label: any; tenantName: string }) {
-  const qrValue = buildQrValue(label);
-
+function PrintLabel({ label, tenantName, size }: { label: any; tenantName: string; size: any }) {
   return (
     <article className="label">
       <div className="top">
-        <strong>{label.quantityText || "1 Portion"}</strong>
+        <strong>{label.quantityText || ""}</strong>
         <span>{tenantName}</span>
       </div>
 
+      {label.customerName ? <div>{label.customerName}</div> : null}
+
       <h1 className="product">{label.productName}</h1>
 
-      <div className="dateGrid">
-        <div className="dateBox">
-          <span className="caption">Produziert am</span>
-          <strong className="producedValue">{formatDate(label.productionDate)}</strong>
-        </div>
-
-        <div className="dateBox expiry">
-          <span className="caption">MHD / Ablauf am</span>
-          <strong className="expiryValue">{formatDate(label.bestBeforeDate)}</strong>
-        </div>
+      <div className="dates">
+        <span>mindestens haltbar bis: <strong>{formatDate(label.bestBeforeDate)}</strong></span>
+        <span>hergestellt am: <strong>{formatDate(label.productionDate)}</strong></span>
       </div>
 
-      <div className="charge">Los / Charge: {label.batchNumber || "-"}</div>
-
-      <div className="ingredientsTop">
-        <span className="ingredientsTopLabel">Zutaten</span>
-        <span className="ingredientsTopValue">{label.ingredients || "-"}</span>
+      <div className="charge">
+        Los/Charge: {label.batchNumber ? label.batchNumber.startsWith("L") ? label.batchNumber : "L-" + label.batchNumber : "-"}
       </div>
+
+      {label.storageNote ? <div className="storage">{label.storageNote}</div> : null}
 
       <div className="bottom">
-        <div className="info">
-          <div className="row">
-            <span className="key">Lagerung</span>
-            <span className="value">{label.storageNote || "-"}</span>
-          </div>
+        <div className="allergens">
+          {label.ingredients ? (
+            <>
+              <span>Zutaten:</span>
+              <strong>{label.ingredients}</strong>
+            </>
+          ) : null}
 
-          <div className="row">
-            <span className="key">Allergene</span>
-            <span className="value">{label.allergens || "-"}</span>
-          </div>
+          <span>Allergene:</span>
+          <strong>{label.allergens || "-"}</strong>
         </div>
 
-        <QRCodeImage value={qrValue} />
+        <QrCode value={buildQrValue(label)} />
       </div>
     </article>
   );
 }
 
-function QRCodeImage({ value }: { value: string }) {
+function QrCode({ value }: { value: string }) {
   const [src, setSrc] = useState("");
 
   useEffect(() => {
     let active = true;
 
     QRCode.toDataURL(value, {
-      errorCorrectionLevel: "M",
+      errorCorrectionLevel: "H",
       margin: 2,
-      width: 220,
-    })
-      .then((dataUrl: string) => {
-        if (active) setSrc(dataUrl);
-      })
-      .catch(() => {
-        if (active) setSrc("");
-      });
+      width: 180,
+      color: {
+        dark: "#000000",
+        light: "#ffffff",
+      },
+    }).then((url) => {
+      if (active) setSrc(url);
+    });
 
     return () => {
       active = false;
@@ -472,3 +360,6 @@ function QRCodeImage({ value }: { value: string }) {
 
   return <img src={src} alt="QR-Code" className="qr" />;
 }
+
+
+

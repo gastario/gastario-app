@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
@@ -34,13 +34,13 @@ function formatDate(value: Date | string | null | undefined) {
 }
 
 function buildQrValue(label: any) {
-  return "https://gastario-app-production.up.railway.app/mhd-labelsGradprint=" + label.id;
+  return "https://gastario-app-production.up.railway.app/mhd-labels?print=" + label.id;
 }
 
 
 
 export function meta() {
-  return [{ title: "MHD-Labels - Gastario" }];
+  return [{ title: "MHD-Labels · Gastario" }];
 }
 
 export async function loader({ request }: { request: Request }) {
@@ -62,7 +62,7 @@ export async function loader({ request }: { request: Request }) {
     include: { tenant: true },
   });
 
-  if (!accessGrad.tenant) {
+  if (!access?.tenant) {
     return {
       tenantName: "Gastario",
       labels: [],
@@ -95,16 +95,6 @@ export async function loader({ request }: { request: Request }) {
   };
 }
 
-function createFoodLabelBatchNumber() {
-  const now = new Date();
-  const pad = (value: number) => String(value).padStart(2, "0");
-
-  const monthDay = `${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
-  const hourMinute = `${pad(now.getHours())}${pad(now.getMinutes())}`;
-
-  return `CH-${monthDay}-${hourMinute}`;
-}
-
 export async function action({ request }: { request: Request }) {
   const { getUserId } = await import("../lib/session.server");
   const { prisma } = await import("../lib/prisma.server");
@@ -127,23 +117,6 @@ export async function action({ request }: { request: Request }) {
   await ensureFoodLabelTable(prisma);
 
   const formData = await request.formData();
-  const actionType = String(formData.get("_action") || "");
-
-  if (actionType === "delete") {
-    const labelId = String(formData.get("labelId") || "");
-
-    if (labelId) {
-      await prisma.foodLabel.deleteMany({
-        where: {
-          id: labelId,
-          tenantId: access.tenantId,
-        },
-      });
-    }
-
-    return redirect("/mhd-labels");
-  }
-
   const intent = String(formData.get("intent") || "");
 
   if (intent === "createLabel") {
@@ -151,16 +124,13 @@ export async function action({ request }: { request: Request }) {
     const customerName = String(formData.get("customerName") || "").trim();
     const productionDate = parseDateInput(formData.get("productionDate"));
     const bestBeforeDate = parseDateInput(formData.get("bestBeforeDate"));
-    const batchNumberInput = String(formData.get("batchNumber") || "").trim();
-  const batchNumber = batchNumberInput || createFoodLabelBatchNumber();
+    const batchNumber = String(formData.get("batchNumber") || "").trim();
     const storageNote = String(formData.get("storageNote") || "").trim();
     const allergens = String(formData.get("allergens") || "").trim();
-    const ingredients = String(formData.get("ingredients") || "").trim();
     const quantityText = String(formData.get("quantityText") || "").trim();
     const labelSize = String(formData.get("labelSize") || "76x51").trim();
-  const printPreset = String(formData.get("printPreset") || "a4-2").trim();
     const labelCountRaw = Number(String(formData.get("labelCount") || "1"));
-  const labelCount = Math.max(1, Math.min(Number.isFinite(labelCountRaw) ? labelCountRaw : 1, 200));
+    const labelCount = Math.max(1, Math.min(Number.isFinite(labelCountRaw) ? labelCountRaw : 1, 200));
 
     if (!productName) return { error: "Produktname fehlt." };
     if (!productionDate) return { error: "Produktionsdatum fehlt." };
@@ -176,11 +146,9 @@ export async function action({ request }: { request: Request }) {
         batchNumber: batchNumber || null,
         storageNote: storageNote || null,
         allergens: allergens || null,
-        ingredients: ingredients || null,
         quantityText: quantityText || null,
         labelCount,
         labelSize,
-        printPreset,
         publicToken: createFoodLabelPublicToken(),
       },
     });
@@ -295,7 +263,7 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Charge / Losnummer">
-              <input name="batchNumber" placeholder="automatisch, wenn leer" />
+              <input name="batchNumber" defaultValue={"CH-" + today.replaceAll("-", "") + "-001"} />
             </Field>
 
             <Field label="Menge / Portion">
@@ -303,33 +271,21 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Lagerhinweis">
-              <input name="storageNote" placeholder="z. B. Gekuehlt lagern bei max. +7 Grad C" defaultValue="Gekuehlt lagern bei max. +7 Grad C" />
+              <input name="storageNote" defaultValue="Gekühlt lagern bei max. +7 °C" />
             </Field>
 
             <Field label="Allergene">
               <input name="allergens" placeholder="z. B. Soja, Sesam, Gluten" />
             </Field>
 
-            <Field label="Zutaten">
-              <input name="ingredients" placeholder="z. B. Reis, Haehnchen, Gemuese, Sauce" />
-            </Field>
-
-            <Field label={"Labelgr\u00f6\u00dfe"}>
+            <Field label="Labelgröße">
               <select name="labelSize" defaultValue="76x51">
-                <option value="76x51">{"76 \u00d7 51 mm"}</option>
-                <option value="57x32">{"57 \u00d7 32 mm"}</option>
+                <option value="76x51">76 × 51 mm</option>
+                <option value="57x32">57 × 32 mm</option>
               </select>
             </Field>
 
-                        <Field label="Druckformat">
-              <select name="printPreset" defaultValue="a4-2">
-                <option value="a4-2">A4 Hochformat - 2 Labels pro Reihe</option>
-                <option value="a4-3">A4 Hochformat - 3 Labels pro Reihe</option>
-                <option value="a4-4">A4 Hochformat - 4 Labels pro Reihe</option>
-              </select>
-            </Field>
-
-<Field label="Anzahl Labels">
+            <Field label="Anzahl Labels">
               <input name="labelCount" type="number" min="1" max="200" defaultValue="12" />
             </Field>
 
@@ -354,45 +310,27 @@ export default function MhdLabelsPage() {
               <div style={emptyStyle}>Noch keine MHD-Labels gespeichert.</div>
             ) : (
               <div style={labelListStyle}>
-                {data.labels.map((label: any) => (
+                {data.labels.map((label) => (
                   <div key={label.id} style={labelRowStyle}>
                     <div>
                       <strong>{label.productName}</strong>
                       <span>
-                        MHD: {formatDate(label.bestBeforeDate)} - Charge: {label.batchNumber || "-"}
-                        {label.ingredients ? <> - Zutaten: {label.ingredients}</> : null}
+                        MHD: {formatDate(label.bestBeforeDate)} · Charge: {label.batchNumber || "-"}
                       </span>
                     </div>
 
                     <div style={rowMetaStyle}>
-                      <span>{label.labelCount} x {label.labelSize}</span>
-                      <span>{label.printPreset || "a4-2"}</span>
+                      <span>{label.labelCount} × {label.labelSize}</span>
                       <span>MHD: {formatDate(label.bestBeforeDate)}</span>
                     </div>
 
                     <div style={listActionGroupStyle}>
-                      <Link to={`/mhd-labelsGradprint=${label.id}`} style={previewButtonStyle}>
+                      <Link to={`/mhd-labels?print=${label.id}`} style={previewButtonStyle}>
                         Vorschau
                       </Link>
-
                       <Link to={`/mhd-labels/print/${label.id}`} style={primaryButtonStyle}>
                         Drucken
                       </Link>
-
-                      <Form
-                        method="post"
-                        onSubmit={(event) => {
-                          if (!window.confirm("Dieses Label wirklich l\u00f6schenGrad")) {
-                            event.preventDefault();
-                          }
-                        }}
-                      >
-                        <input type="hidden" name="_action" value="delete" />
-                        <input type="hidden" name="labelId" value={label.id} />
-                        <button type="submit" style={dangerButtonStyle}>
-                          {"L\u00f6schen"}
-                        </button>
-                      </Form>
                     </div>
                   </div>
                 ))}
@@ -404,7 +342,7 @@ export default function MhdLabelsPage() {
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Vorschau</p>
-                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswaehlen"}</h2>
+                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswählen"}</h2>
               </div>
 
 
@@ -423,7 +361,7 @@ export default function MhdLabelsPage() {
                 </div>
               </>
             ) : (
-              <div style={emptyStyle}>Waehle links ein gespeichertes Label ueber Vorschau aus. Danach erscheint hier die Druckvorschau.</div>
+              <div style={emptyStyle}>Wähle links ein gespeichertes Label über „Vorschau“ aus. Danach erscheint hier die Druckvorschau.</div>
             )}
           </div>
         </div>
@@ -483,9 +421,9 @@ function LabelCard({ label, tenantName }: { label: any; tenantName: string }) {
   const isSmall = label.labelSize === "57x32";
 
   return (
-    <article className="labelCard" style={isSmall ? smallLabelCardStyle : previewLabelCardStyle}>
+    <article className="labelCard" style={isSmall ? smallLabelCardStyle : labelCardStyle}>
       <div style={labelTopStyle}>
-        <strong>{label.quantityText || "1 Portion"}</strong>
+        <strong>{label.quantityText || ""}</strong>
         <span>{tenantName}</span>
       </div>
 
@@ -493,38 +431,19 @@ function LabelCard({ label, tenantName }: { label: any; tenantName: string }) {
 
       <h3 style={isSmall ? smallProductTitleStyle : productTitleStyle}>{label.productName}</h3>
 
-      <div style={previewDateGridStyle}>
-        <div style={previewDateBoxStyle}>
-          <span style={previewDateCaptionStyle}>Produziert am</span>
-          <strong style={previewProducedValueStyle}>{formatDate(label.productionDate)}</strong>
-        </div>
-
-        <div style={previewExpiryBoxStyle}>
-          <span style={previewDateCaptionStyle}>MHD / Ablauf am</span>
-          <strong style={previewExpiryValueStyle}>{formatDate(label.bestBeforeDate)}</strong>
-        </div>
+      <div style={dateStackStyle}>
+        <span>mindestens haltbar bis: <strong>{formatDate(label.bestBeforeDate)}</strong></span>
+        <span>hergestellt am: <strong>{formatDate(label.productionDate)}</strong></span>
       </div>
 
-      <div style={batchStyle}>
-        Los / Charge: {label.batchNumber || "-"}
-      </div>
+      <div style={batchStyle}>Los/Charge: {label.batchNumber ? label.batchNumber.startsWith("L") ? label.batchNumber : "L-" + label.batchNumber : "-"}</div>
 
-      <div style={previewIngredientsTopStyle}>
-        <span style={previewIngredientsLabelStyle}>Zutaten</span>
-        <span style={previewIngredientsValueStyle}>{label.ingredients || "-"}</span>
-      </div>
+      {label.storageNote ? <div style={storageStyle}>{label.storageNote}</div> : null}
 
       <div style={labelBottomStyle}>
-        <div style={previewInfoStyle}>
-          <div style={previewInfoRowStyle}>
-            <span style={previewInfoKeyStyle}>Lagerung</span>
-            <strong style={previewInfoValueStyle}>{label.storageNote || "-"}</strong>
-          </div>
-
-          <div style={previewInfoRowStyle}>
-            <span style={previewInfoKeyStyle}>Allergene</span>
-            <strong style={previewInfoValueStyle}>{label.allergens || "-"}</strong>
-          </div>
+        <div style={allergenStyle}>
+          <span>Allergene:</span>
+          <strong>{label.allergens || "-"}</strong>
         </div>
 
         <QrCode value={buildQrValue(label)} />
@@ -602,16 +521,11 @@ const listCardStyle: React.CSSProperties = {
 
 const previewCardStyle: React.CSSProperties = {
   ...editorCardStyle,
-  alignSelf: "start",
 };
 
 const labelListStyle: React.CSSProperties = {
   display: "grid",
   gap: 10,
-  maxHeight: 520,
-  overflowY: "auto",
-  paddingRight: 6,
-  overscrollBehavior: "contain",
 };
 
 const labelRowStyle: React.CSSProperties = {
@@ -641,15 +555,12 @@ const rowActionsStyle: React.CSSProperties = {
 
 
 const previewWrapStyle: React.CSSProperties = {
-  border: "1px solid #dbe5eb",
-  borderRadius: 16,
   background: "#f8fafc",
-  padding: 20,
-  minHeight: 245,
+  border: "1px solid #e2e8f0",
+  borderRadius: 16,
+  padding: 18,
   display: "flex",
-  alignItems: "center",
   justifyContent: "center",
-  overflow: "visible",
 };
 
 const emptyStyle: React.CSSProperties = {
@@ -723,14 +634,6 @@ const secondaryButtonStyle: React.CSSProperties = {
   background: "#ffffff",
   color: "#0f172a",
   cursor: "pointer",
-};
-
-
-const previewLabelCardStyle: React.CSSProperties = {
-  ...labelCardStyle,
-  transform: "scale(0.92)",
-  transformOrigin: "center center",
-  flexShrink: 0,
 };
 
 const labelCardStyle: React.CSSProperties = {
@@ -879,111 +782,4 @@ const successStyle: React.CSSProperties = {
 
 
 
-
-
-
-const dangerButtonStyle: React.CSSProperties = {
-  ...actionButtonBaseStyle,
-  background: "#ffffff",
-  color: "#b42318",
-  border: "1px solid #f3c6c0",
-};
-
-
-const previewDateGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1.25fr",
-  gap: "1.5mm",
-};
-
-const previewDateBoxStyle: React.CSSProperties = {
-  border: "1px solid #cbd5e1",
-  borderRadius: 5,
-  padding: "0.9mm 1.1mm",
-  background: "#f8fafc",
-};
-
-const previewExpiryBoxStyle: React.CSSProperties = {
-  ...previewDateBoxStyle,
-  border: "1.4px solid #0f172a",
-  background: "#f1f5f9",
-};
-
-const previewDateCaptionStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "5.4pt",
-  color: "#64748b",
-  fontWeight: 800,
-  lineHeight: 1,
-  marginBottom: "0.4mm",
-};
-
-const previewProducedValueStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "6.5pt",
-  fontWeight: 700,
-  color: "#334155",
-};
-
-const previewExpiryValueStyle: React.CSSProperties = {
-  display: "inline-block",
-  fontSize: "8.4pt",
-  fontWeight: 900,
-  color: "#0f172a",
-  borderBottom: "1px solid #0f172a",
-  paddingBottom: "0.2mm",
-};
-
-const previewIngredientsTopStyle: React.CSSProperties = {
-  borderBottom: "1px solid #dbe4ea",
-  paddingBottom: "1mm",
-  marginBottom: "0.8mm",
-  minHeight: "7mm",
-  overflow: "hidden",
-};
-
-const previewIngredientsLabelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "5.4pt",
-  fontWeight: 800,
-  color: "#64748b",
-  marginBottom: "0.35mm",
-};
-
-const previewIngredientsValueStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "5.7pt",
-  lineHeight: 1.12,
-  color: "#0f172a",
-  overflow: "hidden",
-  wordBreak: "break-word",
-};
-
-const previewInfoStyle: React.CSSProperties = {
-  display: "grid",
-  gap: "0.45mm",
-  overflow: "hidden",
-  minWidth: 0,
-};
-
-const previewInfoRowStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "14mm 1fr",
-  gap: "0.8mm",
-  fontSize: "5.5pt",
-  lineHeight: 1.08,
-  minWidth: 0,
-};
-
-const previewInfoKeyStyle: React.CSSProperties = {
-  color: "#64748b",
-  fontWeight: 800,
-};
-
-const previewInfoValueStyle: React.CSSProperties = {
-  color: "#111827",
-  overflow: "hidden",
-  wordBreak: "break-word",
-  fontWeight: 600,
-};
 
