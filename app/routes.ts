@@ -8,6 +8,7 @@ export default [
   route("logout", "routes/logout.tsx"),
 
   route("auftraege", "routes/auftraege.tsx"),
+  route("import-regeln", "routes/import-regeln.tsx"),
   route("angebote", "routes/angebote.tsx"),
   route("rechnungen", "routes/rechnungen.tsx"),
   route("rechnungen/neu", "routes/rechnungen.neu.tsx"),
