@@ -34,42 +34,9 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
     extractValue(text, /Praesentation:\s*(.+)/i) ||
     extractValue(text, /Pr?sentation:\s*(.+)/i);
 
-  const ownOrPlatformWords = [
-    "goerzallee",
-    "edis gastrobetriebe",
-    "hey group",
-    "gormannstr",
-    "gormannstra?e",
-    "gormanstra?e",
-    "qonto",
-    "iban",
-    "bic",
-    "registergericht",
-    "gesch?ftsf?hrung",
-    "geschaeftsfuehrung",
-  ];
-
-  function isOwnOrPlatformLine(line: string) {
-    const lower = String(line || "").toLowerCase();
-    return ownOrPlatformWords.some((word) => lower.includes(word));
-  }
-
-  const possibleZipLines = lines.filter((line) =>
-    /^\d{5}\s+/.test(line) && !isOwnOrPlatformLine(line)
-  );
-
-  const zipCityLine =
-    possibleZipLines.find((line) => line.includes("10117")) ||
-    possibleZipLines[0] ||
-    "";
-
+  const zipCityLine = lines.find((line) => /^\d{5}\s+/.test(line)) || "";
   const addressIndex = zipCityLine ? lines.indexOf(zipCityLine) : -1;
-
-  const streetLine =
-    addressIndex > 0 && !isOwnOrPlatformLine(lines[addressIndex - 1])
-      ? lines[addressIndex - 1]
-      : "";
-
+  const streetLine = addressIndex > 0 ? lines[addressIndex - 1] : "";
   const deliveryAddress = [streetLine, zipCityLine].filter(Boolean).join(", ");
 
   const items: ExtractedOrderItem[] = [];
