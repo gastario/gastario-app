@@ -2,14 +2,6 @@ import { useEffect } from "react";
 import { Link, redirect, useLoaderData } from "react-router";
 
 function getPrintPreset(preset: string, labelSize: string = "auto") {
-  if (preset === "roll-76x51") {
-    return { columns: 2, width: "76mm", height: "51mm", gap: "6mm", logo: "17mm", title: "12pt", base: "7.2pt" };
-  }
-
-  if (preset === "roll-57x32") {
-    return { columns: 3, width: "57mm", height: "32mm", gap: "5mm", logo: "12mm", title: "9pt", base: "5.8pt" };
-  }
-
   if (labelSize === "76x51") {
     return { columns: 2, width: "76mm", height: "51mm", gap: "6mm", logo: "17mm", title: "12pt", base: "7.2pt" };
   }
