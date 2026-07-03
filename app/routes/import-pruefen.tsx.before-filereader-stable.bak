@@ -77,34 +77,20 @@ export default function ImportPruefenPage() {
   function handlePdfChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0];
 
-    setFileName("");
-    setFileBase64("");
-
     if (!file) {
+      setFileName("");
+      setFileBase64("");
       return;
     }
 
     setFileName(file.name);
+    setFileBase64("");
 
     const reader = new FileReader();
 
-    reader.onloadend = () => {
+    reader.onload = () => {
       const result = String(reader.result || "");
-
-      if (!result || !result.includes(",")) {
-        setFileBase64("");
-        alert("PDF-Datei konnte nicht vollstaendig gelesen werden.");
-        return;
-      }
-
-      const base64 = result.split(",")[1] || "";
-
-      if (!base64) {
-        setFileBase64("");
-        alert("PDF-Datei wurde gelesen, aber ohne Inhalt.");
-        return;
-      }
-
+      const base64 = result.includes(",") ? result.split(",")[1] : result;
       setFileBase64(base64);
     };
 
