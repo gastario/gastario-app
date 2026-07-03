@@ -33,7 +33,6 @@ const FIELD_LABELS: Record<string, string> = {
 export async function action({ request }: { request: Request }) {
   const { prisma } = await import("../lib/prisma.server");
   const { getTenantAccess } = await import("../lib/features.server");
-  const { extractHeycaterOrder } = await import("../lib/order-import-extract.server");
 
   const access = await getTenantAccess(request);
 
@@ -115,13 +114,10 @@ export async function action({ request }: { request: Request }) {
       })
       .filter((match) => match.hits.length > 0);
 
-    const extractedOrder = extractHeycaterOrder(text);
-
     return {
       success: "PDF wurde gelesen und gegen Import-Regeln geprueft.",
       fileName: pdfFileName,
       matches,
-      extractedOrder,
       preview: text.slice(0, 2500),
     };
   } catch (error: any) {
@@ -223,39 +219,6 @@ export default function ImportPruefenPage() {
           </form>
         </section>
 
-        {actionData?.extractedOrder ? (
-          <section style={cardStyle}>
-            <p style={eyebrowStyle}>Auftragsvorschlag</p>
-            <h2 style={sectionTitleStyle}>Erkannte Auftragsdaten</h2>
-
-            <div style={summaryGridStyle}>
-              <Info label="Quelle" value={actionData.extractedOrder.source} />
-              <Info label="Lieferdatum" value={actionData.extractedOrder.deliveryDate} />
-              <Info label="Lieferzeit" value={actionData.extractedOrder.deliveryTime} />
-              <Info label="Eventdatum" value={actionData.extractedOrder.eventDate} />
-              <Info label="Eventbeginn" value={actionData.extractedOrder.eventStart} />
-              <Info label="Lieferadresse" value={actionData.extractedOrder.deliveryAddress} />
-              <Info label="Praesentation" value={actionData.extractedOrder.presentation} />
-            </div>
-
-            <h3 style={smallTitleStyle}>Erkannte Positionen</h3>
-
-            {actionData.extractedOrder.items?.length ? (
-              <div style={itemListStyle}>
-                {actionData.extractedOrder.items.map((item: any, index: number) => (
-                  <div key={index} style={itemRowStyle}>
-                    <strong>{item.name}</strong>
-                    {item.description ? <span>{item.description}</span> : null}
-                    {item.rawLine ? <small>{item.rawLine}</small> : null}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div style={emptyStyle}>Noch keine Positionen erkannt.</div>
-            )}
-          </section>
-        ) : null}
-
         {actionData?.matches ? (
           <section style={cardStyle}>
             <p style={eyebrowStyle}>Erkennung</p>
@@ -288,15 +251,6 @@ export default function ImportPruefenPage() {
         ) : null}
       </div>
     </AppLayout>
-  );
-}
-
-function Info({ label, value }: { label: string; value?: string }) {
-  return (
-    <div style={infoBoxStyle}>
-      <span>{label}</span>
-      <strong>{value || "-"}</strong>
-    </div>
   );
 }
 
@@ -437,40 +391,4 @@ const matchRowStyle: React.CSSProperties = {
   border: "1px solid #e2e8f0",
   borderRadius: 10,
   padding: "10px 12px",
-};
-
-
-const summaryGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-  gap: 10,
-};
-
-const infoBoxStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 4,
-  border: "1px solid #e2e8f0",
-  background: "#f8fafc",
-  borderRadius: 12,
-  padding: "10px 12px",
-  color: "#64748b",
-  fontSize: 12,
-  fontWeight: 700,
-};
-
-const itemListStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 8,
-};
-
-const itemRowStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 4,
-  border: "1px solid #e2e8f0",
-  background: "#ffffff",
-  borderRadius: 10,
-  padding: "10px 12px",
-  color: "#0f172a",
-  fontWeight: 650,
-  fontSize: 13,
 };
