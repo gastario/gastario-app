@@ -74,7 +74,7 @@ export default function ImportPruefenPage() {
   const [fileName, setFileName] = useState("");
   const [fileBase64, setFileBase64] = useState("");
 
-  function handlePdfChange(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handlePdfChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0];
 
     if (!file) {
@@ -84,22 +84,16 @@ export default function ImportPruefenPage() {
     }
 
     setFileName(file.name);
-    setFileBase64("");
 
-    const reader = new FileReader();
+    const arrayBuffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    let binary = "";
 
-    reader.onload = () => {
-      const result = String(reader.result || "");
-      const base64 = result.includes(",") ? result.split(",")[1] : result;
-      setFileBase64(base64);
-    };
+    for (let index = 0; index < bytes.length; index++) {
+      binary += String.fromCharCode(bytes[index]);
+    }
 
-    reader.onerror = () => {
-      setFileBase64("");
-      alert("PDF-Datei konnte im Browser nicht gelesen werden.");
-    };
-
-    reader.readAsDataURL(file);
+    setFileBase64(window.btoa(binary));
   }
 
   return (
@@ -126,15 +120,10 @@ export default function ImportPruefenPage() {
               <input type="file" accept="application/pdf,.pdf" onChange={handlePdfChange} required />
               <input type="hidden" name="pdfFileName" value={fileName} />
               <input type="hidden" name="pdfBase64" value={fileBase64} />
-              {fileName ? (
-                <small style={hintStyle}>
-                  Ausgewaehlt: {fileName}
-                  {fileBase64 ? " ? Datei geladen: " + fileBase64.length + " Zeichen" : " ? Datei wird geladen..."}
-                </small>
-              ) : null}
+              {fileName ? <small style={hintStyle}>Ausgewaehlt: {fileName}</small> : null}
             </label>
 
-            <button type="submit" style={primaryButtonStyle}>PDF pruefen</button>
+            <button type="submit" style={primaryButtonStyle} disabled={!fileBase64}>PDF pruefen</button>
           </form>
         </section>
 
