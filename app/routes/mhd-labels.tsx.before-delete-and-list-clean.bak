@@ -117,24 +117,6 @@ export async function action({ request }: { request: Request }) {
   await ensureFoodLabelTable(prisma);
 
   const formData = await request.formData();
-  const actionType = String(formData.get("_action") || "").trim();
-
-  if (actionType === "delete") {
-    const labelId = String(formData.get("labelId") || "").trim();
-
-    if (!labelId) {
-      return { error: "Label wurde nicht gefunden." };
-    }
-
-    await prisma.foodLabel.deleteMany({
-      where: {
-        id: labelId,
-        tenantId: access.tenantId,
-      },
-    });
-
-    return { success: "Label wurde geloescht." };
-  }
   const intent = String(formData.get("intent") || "");
 
   if (intent === "createLabel") {
@@ -330,10 +312,10 @@ export default function MhdLabelsPage() {
               <div style={labelListStyle}>
                 {data.labels.map((label) => (
                   <div key={label.id} style={labelRowStyle}>
-                                        <div style={rowTitleBlockStyle}>
-                      <strong style={rowTitleStyle}>{label.productName}</strong>
-                      <span style={rowSubTextStyle}>
-                        MHD: {formatDate(label.bestBeforeDate)} - Charge: {label.batchNumber || "-"}
+                    <div>
+                      <strong>{label.productName}</strong>
+                      <span>
+                        MHD: {formatDate(label.bestBeforeDate)} · Charge: {label.batchNumber || "-"}
                       </span>
                     </div>
 
@@ -349,21 +331,6 @@ export default function MhdLabelsPage() {
                       <Link to={`/mhd-labels/print/${label.id}`} style={primaryButtonStyle}>
                         Drucken
                       </Link>
-
-                      <Form
-                        method="post"
-                        onSubmit={(event) => {
-                          if (!window.confirm("Dieses Label wirklich l\\u00f6schen?")) {
-                            event.preventDefault();
-                          }
-                        }}
-                      >
-                        <input type="hidden" name="_action" value="delete" />
-                        <input type="hidden" name="labelId" value={label.id} />
-                        <button type="submit" style={dangerButtonStyle}>
-                          {"L\\u00f6schen"}
-                        </button>
-                      </Form>
                     </div>
                   </div>
                 ))}
@@ -571,30 +538,6 @@ const labelRowStyle: React.CSSProperties = {
   alignItems: "center",
 };
 
-const rowTitleBlockStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 6,
-  minWidth: 0,
-};
-
-const rowTitleStyle: React.CSSProperties = {
-  display: "block",
-  color: "#0f172a",
-  fontSize: 15,
-  lineHeight: 1.25,
-  fontWeight: 750,
-  wordBreak: "break-word",
-};
-
-const rowSubTextStyle: React.CSSProperties = {
-  display: "block",
-  color: "#475569",
-  fontSize: 13,
-  lineHeight: 1.35,
-  fontWeight: 500,
-  wordBreak: "break-word",
-};
-
 const rowMetaStyle: React.CSSProperties = {
   display: "grid",
   gap: 4,
@@ -659,15 +602,6 @@ const previewButtonStyle: React.CSSProperties = {
   border: "1px solid #c7d8d2",
   color: "#184c3a",
 };
-
-const dangerButtonStyle: React.CSSProperties = {
-  ...buttonBaseStyle,
-  width: "100%",
-  background: "#fff7f5",
-  color: "#b42318",
-  borderColor: "#ffc9c0",
-};
-
 
 const listActionGroupStyle: React.CSSProperties = {
   display: "flex",
