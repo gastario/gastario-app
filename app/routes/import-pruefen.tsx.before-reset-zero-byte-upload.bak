@@ -90,10 +90,6 @@ export default function ImportPruefenPage() {
     setFileSize(file.size || 0);
 
     if (!file.size || file.size <= 0) {
-      setFileName("");
-      setFileSize(0);
-      setFileBase64("");
-      event.currentTarget.value = "";
       alert("Diese PDF-Datei hat 0 Bytes. Bitte die Datei neu herunterladen und nochmal auswaehlen.");
       return;
     }
