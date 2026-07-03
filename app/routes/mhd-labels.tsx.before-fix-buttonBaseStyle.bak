@@ -661,20 +661,11 @@ const previewButtonStyle: React.CSSProperties = {
 };
 
 const dangerButtonStyle: React.CSSProperties = {
-  minHeight: 34,
-  borderRadius: 10,
-  padding: "0 12px",
-  border: "1px solid #ffc9c0",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  textDecoration: "none",
-  fontWeight: 700,
-  fontSize: 13,
-  cursor: "pointer",
+  ...buttonBaseStyle,
   width: "100%",
   background: "#fff7f5",
   color: "#b42318",
+  borderColor: "#ffc9c0",
 };
 
 
