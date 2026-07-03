@@ -72,14 +72,12 @@ export async function action({ request }: { request: Request }) {
 export default function ImportPruefenPage() {
   const actionData = useActionData<typeof action>() as any;
   const [fileName, setFileName] = useState("");
-  const [fileSize, setFileSize] = useState(0);
   const [fileBase64, setFileBase64] = useState("");
 
-  async function handlePdfChange(event: React.ChangeEvent<HTMLInputElement>) {
+  function handlePdfChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0];
 
     setFileName("");
-    setFileSize(0);
     setFileBase64("");
 
     if (!file) {
@@ -87,36 +85,35 @@ export default function ImportPruefenPage() {
     }
 
     setFileName(file.name);
-    setFileSize(file.size || 0);
 
-    if (!file.size || file.size <= 0) {
-      alert("Diese PDF-Datei hat 0 Bytes. Bitte die Datei neu herunterladen und nochmal auswaehlen.");
-      return;
-    }
+    const reader = new FileReader();
 
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuffer);
+    reader.onloadend = () => {
+      const result = String(reader.result || "");
 
-      if (!bytes.length) {
-        alert("PDF-Datei wurde gelesen, aber mit 0 Bytes.");
+      if (!result || !result.includes(",")) {
+        setFileBase64("");
+        alert("PDF-Datei konnte nicht vollstaendig gelesen werden.");
         return;
       }
 
-      let binary = "";
-      const chunkSize = 8192;
+      const base64 = result.split(",")[1] || "";
 
-      for (let index = 0; index < bytes.length; index += chunkSize) {
-        const chunk = bytes.subarray(index, index + chunkSize);
-        binary += String.fromCharCode(...Array.from(chunk));
+      if (!base64) {
+        setFileBase64("");
+        alert("PDF-Datei wurde gelesen, aber ohne Inhalt.");
+        return;
       }
 
-      setFileBase64(window.btoa(binary));
-    } catch (error) {
-      console.error(error);
+      setFileBase64(base64);
+    };
+
+    reader.onerror = () => {
       setFileBase64("");
       alert("PDF-Datei konnte im Browser nicht gelesen werden.");
-    }
+    };
+
+    reader.readAsDataURL(file);
   }
 
   return (
@@ -146,7 +143,6 @@ export default function ImportPruefenPage() {
               {fileName ? (
                 <small style={hintStyle}>
                   Ausgewaehlt: {fileName}
-                  {" - Groesse: " + fileSize + " Bytes"}
                   {fileBase64 ? " - Datei geladen: " + fileBase64.length + " Zeichen" : " - Datei wird geladen..."}
                 </small>
               ) : null}
