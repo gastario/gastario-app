@@ -129,14 +129,12 @@ export default function ImportPruefenPage() {
               {fileName ? (
                 <small style={hintStyle}>
                   Ausgewaehlt: {fileName}
-                  {fileBase64 ? " - Datei geladen: " + fileBase64.length + " Zeichen" : " - Datei wird geladen..."}
+                  {fileBase64 ? " ? Datei geladen: " + fileBase64.length + " Zeichen" : " ? Datei wird geladen..."}
                 </small>
               ) : null}
             </label>
 
-            <button type="submit" style={primaryButtonStyle} disabled={!fileBase64}>
-              {fileBase64 ? "PDF pruefen" : "PDF wird geladen..."}
-            </button>
+            <button type="submit" style={primaryButtonStyle}>PDF pruefen</button>
           </form>
         </section>
 
