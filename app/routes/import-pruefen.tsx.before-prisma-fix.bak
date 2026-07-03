@@ -31,15 +31,6 @@ const FIELD_LABELS: Record<string, string> = {
 
 
 export async function action({ request }: { request: Request }) {
-  const { prisma } = await import("../lib/prisma.server");
-  const { getTenantAccess } = await import("../lib/features.server");
-
-  const access = await getTenantAccess(request);
-
-  if (!access?.tenantId) {
-    throw new Response("Nicht angemeldet", { status: 401 });
-  }
-
   const formData = await request.formData();
   const pdfBase64 = String(formData.get("pdfBase64") || "");
   const pdfFileName = String(formData.get("pdfFileName") || "upload.pdf");
