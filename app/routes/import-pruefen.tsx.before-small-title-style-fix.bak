@@ -474,11 +474,3 @@ const itemRowStyle: React.CSSProperties = {
   fontWeight: 650,
   fontSize: 13,
 };
-
-
-const smallTitleStyle: React.CSSProperties = {
-  margin: "22px 0 10px",
-  fontSize: 16,
-  color: "#0f172a",
-  fontWeight: 800,
-};
