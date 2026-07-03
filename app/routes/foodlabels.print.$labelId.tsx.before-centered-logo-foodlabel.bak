@@ -164,39 +164,36 @@ export default function FoodLabelPrintPage() {
             background: #ffffff;
             padding: 3mm;
             display: grid;
-            grid-template-rows: auto auto 1fr;
             gap: 2mm;
             overflow: hidden;
             box-sizing: border-box;
             font-size: ${preset.base};
-            text-align: center;
             break-inside: avoid;
             page-break-inside: avoid;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
 
-          .logoArea {
-            min-height: 13mm;
-            display: flex;
+          .top {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 2.5mm;
             align-items: center;
-            justify-content: center;
+            border-bottom: 1px solid #dbe4ea;
+            padding-bottom: 1.5mm;
           }
 
           .logo,
           .logoEmpty {
-            max-width: ${preset.logo};
-            max-height: ${preset.logo};
+            width: ${preset.logo};
+            height: ${preset.logo};
             object-fit: contain;
-            border: 0;
-            border-radius: 0;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
             background: #ffffff;
           }
 
           .logoEmpty {
-            width: ${preset.logo};
-            height: ${preset.logo};
-            border: 1px dashed #cbd5e1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -214,13 +211,16 @@ export default function FoodLabelPrintPage() {
             word-break: break-word;
           }
 
+          .tenant {
+            color: #64748b;
+            font-size: 0.85em;
+          }
+
           .info {
             display: grid;
             gap: 1.5mm;
             line-height: 1.15;
             overflow: hidden;
-            text-align: left;
-            align-content: start;
           }
 
           .section {
@@ -278,11 +278,13 @@ export default function FoodLabelPrintPage() {
       <section className="sheet">
         {labels.map((index) => (
           <article key={index} className="label">
-            <div className="logoArea">
+            <div className="top">
               {label.logoDataUrl ? <img src={label.logoDataUrl} className="logo" alt="" /> : <div className="logoEmpty">Logo</div>}
+              <div>
+                <h1 className="name">{label.name}</h1>
+                <div className="tenant">{data.tenantName}</div>
+              </div>
             </div>
-
-            <h1 className="name">{label.name}</h1>
 
             <div className="info">
               <div className="section">

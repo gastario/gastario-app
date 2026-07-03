@@ -96,6 +96,7 @@ export async function loader({ request }: { request: Request }) {
   );
 
   return {
+    tenantName: access.tenant.name,
     labels,
   };
 }
@@ -332,7 +333,7 @@ export default function FoodLabelsPage() {
             {selected ? (
               <>
                 <div style={previewWrapStyle}>
-                  <FoodLabelCard label={selected} />
+                  <FoodLabelCard label={selected} tenantName={data.tenantName} />
                 </div>
 
                 <div style={previewFooterActionsStyle}>
@@ -360,7 +361,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function FoodLabelCard({ label }: { label: any }) {
+function FoodLabelCard({ label, tenantName }: { label: any; tenantName: string }) {
   const preset = getPrintPreset(label.printPreset || "a4-3", label.labelSize || "auto");
 
   return (

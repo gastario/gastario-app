@@ -96,6 +96,7 @@ export async function loader({ request }: { request: Request }) {
   );
 
   return {
+    tenantName: access.tenant.name,
     labels,
   };
 }
@@ -224,7 +225,7 @@ export default function FoodLabelsPage() {
             </Field>
 
             <Field label="Zutaten">
-              <input name="ingredients" placeholder="z. B. Reis, Haehnchen, Gemuese, Sauce" />
+              <input name="ingredients" placeholder={"z. B. Reis, H\\u00e4hnchen, Gem\\u00fcse, Sauce"} />
             </Field>
 
             <Field label="Allergene">
@@ -332,7 +333,7 @@ export default function FoodLabelsPage() {
             {selected ? (
               <>
                 <div style={previewWrapStyle}>
-                  <FoodLabelCard label={selected} />
+                  <FoodLabelCard label={selected} tenantName={data.tenantName} />
                 </div>
 
                 <div style={previewFooterActionsStyle}>
@@ -360,24 +361,18 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function FoodLabelCard({ label }: { label: any }) {
+function FoodLabelCard({ label, tenantName }: { label: any; tenantName: string }) {
   const preset = getPrintPreset(label.printPreset || "a4-3", label.labelSize || "auto");
 
   return (
     <article style={{ ...foodLabelCardStyle, width: preset.width, height: preset.height, fontSize: preset.base }}>
-      <div style={foodLogoAreaStyle}>
-        {label.logoDataUrl ? (
-          <img
-            src={label.logoDataUrl}
-            alt=""
-            style={{ ...logoStyle, maxWidth: preset.logo, maxHeight: preset.logo }}
-          />
-        ) : (
-          <div style={{ ...logoPlaceholderStyle, width: preset.logo, height: preset.logo }}>Logo</div>
-        )}
+      <div style={foodTopStyle}>
+        {label.logoDataUrl ? <img src={label.logoDataUrl} alt="" style={{ ...logoStyle, width: preset.logo, height: preset.logo }} /> : <div style={{ ...logoPlaceholderStyle, width: preset.logo, height: preset.logo }}>Logo</div>}
+        <div style={foodHeaderTextStyle}>
+          <strong style={{ ...foodNameStyle, fontSize: preset.title }}>{label.name}</strong>
+          <span>{tenantName}</span>
+        </div>
       </div>
-
-      <h3 style={{ ...foodNameStyle, fontSize: preset.title }}>{label.name}</h3>
 
       <div style={foodInfoStyle}>
         <div style={foodSectionStyle}>
@@ -585,11 +580,9 @@ const foodLabelCardStyle: React.CSSProperties = {
   background: "#ffffff",
   padding: "3mm",
   display: "grid",
-  gridTemplateRows: "auto auto 1fr",
   gap: "2mm",
   overflow: "hidden",
   boxSizing: "border-box",
-  textAlign: "center",
 };
 
 const foodTopStyle: React.CSSProperties = {
@@ -601,20 +594,11 @@ const foodTopStyle: React.CSSProperties = {
   paddingBottom: "1.5mm",
 };
 
-
-const foodLogoAreaStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  minHeight: "13mm",
-};
-
 const logoStyle: React.CSSProperties = {
   objectFit: "contain",
-  border: "0",
-  borderRadius: 0,
+  border: "1px solid #e2e8f0",
+  borderRadius: 6,
   background: "#ffffff",
-  display: "block",
 };
 
 const logoPlaceholderStyle: React.CSSProperties = {
@@ -636,18 +620,14 @@ const foodHeaderTextStyle: React.CSSProperties = {
 };
 
 const foodNameStyle: React.CSSProperties = {
-  margin: 0,
   color: "#0f172a",
   lineHeight: 1.05,
-  fontWeight: 900,
   wordBreak: "break-word",
 };
 
 const foodInfoStyle: React.CSSProperties = {
   display: "grid",
   gap: "1.5mm",
-  alignContent: "start",
-  textAlign: "left",
 };
 
 const foodSectionStyle: React.CSSProperties = {
