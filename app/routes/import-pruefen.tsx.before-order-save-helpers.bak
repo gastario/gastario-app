@@ -13,26 +13,6 @@ function splitKeywords(value: string) {
     .filter(Boolean);
 }
 
-function parseGermanDate(value: string) {
-  const match = String(value || "").match(/^([0-9]{2})\.([0-9]{2})\.([0-9]{4})$/);
-
-  if (!match) {
-    return null;
-  }
-
-  return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
-}
-
-function createOrderNumber() {
-  const now = new Date();
-  const datePart =
-    String(now.getFullYear()) +
-    String(now.getMonth() + 1).padStart(2, "0") +
-    String(now.getDate()).padStart(2, "0");
-
-  return "PDF-" + datePart + "-" + Math.random().toString(36).slice(2, 7).toUpperCase();
-}
-
 const FIELD_LABELS: Record<string, string> = {
   customerName: "Kunde",
   eventName: "Eventname",
@@ -62,54 +42,6 @@ export async function action({ request }: { request: Request }) {
   }
 
   const formData = await request.formData();
-  const intent = String(formData.get("_intent") || "");
-
-  if (intent === "saveOrder") {
-    const orderJson = String(formData.get("orderJson") || "{}");
-    const pdfFileName = String(formData.get("pdfFileName") || "upload.pdf");
-    const extractedOrder = JSON.parse(orderJson);
-
-    const order = await prisma.order.create({
-      data: {
-        tenantId: access.tenantId,
-        orderNumber: createOrderNumber(),
-        source: extractedOrder.source === "Heycater" ? "HEYCATER" : "EMAIL",
-        status: "AUTO_CREATED",
-        customerName: extractedOrder.source === "Heycater" ? "Heycater Import" : "PDF Import",
-        eventName: extractedOrder.presentation || null,
-        deliveryDate: parseGermanDate(extractedOrder.deliveryDate),
-        deliveryTimeText: extractedOrder.deliveryTime || null,
-        deliveryAddress: extractedOrder.deliveryAddress || null,
-        notes:
-          "Automatisch aus PDF erkannt. Eventdatum: " +
-          String(extractedOrder.eventDate || "-") +
-          ", Eventbeginn: " +
-          String(extractedOrder.eventStart || "-"),
-        platformName: extractedOrder.source || "PDF",
-        originalPdfName: pdfFileName,
-        confidenceScore: 70,
-        reviewReason: "Automatisch aus PDF erstellt. Bitte pruefen.",
-        items: {
-          create: Array.isArray(extractedOrder.items)
-            ? extractedOrder.items.map((item: any) => ({
-                name: String(item.name || "Position"),
-                quantity: 1,
-                unit: "Stueck",
-                unitCents: 0,
-                totalCents: 0,
-                notes: [item.description, item.rawLine].filter(Boolean).join(" | ") || null,
-              }))
-            : [],
-        },
-      },
-    });
-
-    return {
-      success: "Auftrag wurde im Auftragseingang gespeichert: " + order.orderNumber,
-      savedOrderId: order.id,
-    };
-  }
-
   const pdfBase64 = String(formData.get("pdfBase64") || "");
   const pdfFileName = String(formData.get("pdfFileName") || "upload.pdf");
 
@@ -307,15 +239,6 @@ export default function ImportPruefenPage() {
             </div>
 
             <h3 style={smallTitleStyle}>Erkannte Positionen</h3>
-
-            <form method="post" style={saveOrderFormStyle}>
-              <input type="hidden" name="_intent" value="saveOrder" />
-              <input type="hidden" name="pdfFileName" value={actionData.fileName || "upload.pdf"} />
-              <input type="hidden" name="orderJson" value={JSON.stringify(actionData.extractedOrder)} />
-              <button type="submit" style={primaryButtonStyle}>
-                Als Auftrag speichern
-              </button>
-            </form>
 
             {actionData.extractedOrder.items?.length ? (
               <div style={itemListStyle}>
@@ -558,11 +481,4 @@ const smallTitleStyle: React.CSSProperties = {
   fontSize: 16,
   color: "#0f172a",
   fontWeight: 800,
-};
-
-
-const saveOrderFormStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "flex-start",
-  margin: "0 0 16px",
 };

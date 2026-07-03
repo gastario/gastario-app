@@ -308,15 +308,6 @@ export default function ImportPruefenPage() {
 
             <h3 style={smallTitleStyle}>Erkannte Positionen</h3>
 
-            <form method="post" style={saveOrderFormStyle}>
-              <input type="hidden" name="_intent" value="saveOrder" />
-              <input type="hidden" name="pdfFileName" value={actionData.fileName || "upload.pdf"} />
-              <input type="hidden" name="orderJson" value={JSON.stringify(actionData.extractedOrder)} />
-              <button type="submit" style={primaryButtonStyle}>
-                Als Auftrag speichern
-              </button>
-            </form>
-
             {actionData.extractedOrder.items?.length ? (
               <div style={itemListStyle}>
                 {actionData.extractedOrder.items.map((item: any, index: number) => (
@@ -558,11 +549,4 @@ const smallTitleStyle: React.CSSProperties = {
   fontSize: 16,
   color: "#0f172a",
   fontWeight: 800,
-};
-
-
-const saveOrderFormStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "flex-start",
-  margin: "0 0 16px",
 };
