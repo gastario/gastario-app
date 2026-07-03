@@ -22,9 +22,8 @@ export async function action({ request }: { request: Request }) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    const { createRequire } = await import("node:module");
-    const require = createRequire(import.meta.url);
-    const pdfParse = require("pdf-parse");
+    const pdfParseModule: any = await import("pdf-parse");
+    const pdfParse = pdfParseModule.default || pdfParseModule;
     const result = await pdfParse(buffer);
 
     const text = String(result.text || "").trim();
@@ -38,9 +37,9 @@ export async function action({ request }: { request: Request }) {
       fileName: file.name,
       preview: text.slice(0, 2500),
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error("PDF parse failed:", error);
-    return { error: "PDF konnte nicht gelesen werden: " + String(error?.message || error) };
+    return { error: "PDF konnte nicht gelesen werden. Eventuell ist es ein Scan/Bild-PDF." };
   }
 }
 
