@@ -1,5 +1,4 @@
 import { useActionData } from "react-router";
-import { useState } from "react";
 import AppLayout from "../components/AppLayout";
 
 export function meta() {
@@ -9,24 +8,29 @@ export function meta() {
 
 export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
-  const pdfBase64 = String(formData.get("pdfBase64") || "");
-  const pdfFileName = String(formData.get("pdfFileName") || "upload.pdf");
+  const file = formData.get("pdfFile");
 
-  if (!pdfBase64) {
-    return { error: "Bitte eine PDF-Datei auswaehlen. Der Browser konnte keinen Dateiinhalt senden." };
+  if (!(file instanceof File)) {
+    return { error: "Bitte eine PDF-Datei hochladen." };
   }
 
-  if (!pdfFileName.toLowerCase().endsWith(".pdf")) {
+  if (!file.name.toLowerCase().endsWith(".pdf")) {
     return { error: "Bitte nur PDF-Dateien hochladen." };
   }
 
   try {
-    const buffer = Buffer.from(pdfBase64, "base64");
-    const uint8 = new Uint8Array(buffer);
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const uint8 = new Uint8Array(arrayBuffer);
 
-    if (buffer.byteLength <= 0) {
+    if (!file.size || file.size <= 0 || buffer.byteLength <= 0) {
       return {
-        error: "PDF wurde ohne Inhalt empfangen. Server: 0 Bytes.",
+        error:
+          "PDF wurde ohne Inhalt empfangen. Dateigroesse Browser: " +
+          String(file.size || 0) +
+          " Bytes, Server: " +
+          String(buffer.byteLength) +
+          " Bytes.",
       };
     }
 
@@ -60,7 +64,7 @@ export async function action({ request }: { request: Request }) {
 
     return {
       success: "PDF wurde gelesen.",
-      fileName: pdfFileName,
+      fileName: file.name,
       preview: text.slice(0, 2500),
     };
   } catch (error: any) {
@@ -71,31 +75,6 @@ export async function action({ request }: { request: Request }) {
 
 export default function ImportPruefenPage() {
   const actionData = useActionData<typeof action>() as any;
-  const [fileName, setFileName] = useState("");
-  const [fileBase64, setFileBase64] = useState("");
-
-  async function handlePdfChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.currentTarget.files?.[0];
-
-    if (!file) {
-      setFileName("");
-      setFileBase64("");
-      return;
-    }
-
-    setFileName(file.name);
-
-    const arrayBuffer = await file.arrayBuffer();
-    const bytes = new Uint8Array(arrayBuffer);
-    let binary = "";
-
-    for (let index = 0; index < bytes.length; index++) {
-      binary += String.fromCharCode(bytes[index]);
-    }
-
-    setFileBase64(window.btoa(binary));
-  }
-
   return (
     <AppLayout>
       <div style={pageStyle}>
@@ -117,13 +96,10 @@ export default function ImportPruefenPage() {
           <form method="post" encType="multipart/form-data" style={formStyle}>
             <label style={fieldStyle}>
               <span>PDF-Datei</span>
-              <input type="file" accept="application/pdf,.pdf" onChange={handlePdfChange} required />
-              <input type="hidden" name="pdfFileName" value={fileName} />
-              <input type="hidden" name="pdfBase64" value={fileBase64} />
-              {fileName ? <small style={hintStyle}>Ausgewaehlt: {fileName}</small> : null}
+              <input type="file" name="pdfFile" accept="application/pdf,.pdf" required />
             </label>
 
-            <button type="submit" style={primaryButtonStyle} disabled={!fileBase64}>PDF pruefen</button>
+            <button type="submit" style={primaryButtonStyle}>PDF pruefen</button>
           </form>
         </section>
 
@@ -245,10 +221,4 @@ const preStyle: React.CSSProperties = {
   overflow: "auto",
   fontSize: 12,
   lineHeight: 1.45,
-};
-
-
-const hintStyle: React.CSSProperties = {
-  color: "#64748b",
-  fontWeight: 650,
 };
