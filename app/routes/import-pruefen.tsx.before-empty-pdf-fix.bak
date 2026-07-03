@@ -21,18 +21,6 @@ export async function action({ request }: { request: Request }) {
   try {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const uint8 = new Uint8Array(arrayBuffer);
-
-    if (!file.size || file.size <= 0 || buffer.byteLength <= 0) {
-      return {
-        error:
-          "PDF wurde ohne Inhalt empfangen. Dateigroesse Browser: " +
-          String(file.size || 0) +
-          " Bytes, Server: " +
-          String(buffer.byteLength) +
-          " Bytes.",
-      };
-    }
 
     const { createRequire } = await import("node:module");
     const require = createRequire(import.meta.url);
@@ -47,7 +35,7 @@ export async function action({ request }: { request: Request }) {
       const result = await pdfParseModule.default(buffer);
       text = String(result.text || "").trim();
     } else if (pdfParseModule.PDFParse) {
-      const parser = new pdfParseModule.PDFParse({ data: uint8 });
+      const parser = new pdfParseModule.PDFParse({ data: buffer });
       const result = await parser.getText();
       text = String(result.text || "").trim();
 
