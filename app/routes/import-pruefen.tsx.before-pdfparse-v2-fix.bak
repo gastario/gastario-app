@@ -24,27 +24,10 @@ export async function action({ request }: { request: Request }) {
 
     const { createRequire } = await import("node:module");
     const require = createRequire(import.meta.url);
-    const pdfParseModule = require("pdf-parse");
+    const pdfParse = require("pdf-parse");
+    const result = await pdfParse(buffer);
 
-    let text = "";
-
-    if (typeof pdfParseModule === "function") {
-      const result = await pdfParseModule(buffer);
-      text = String(result.text || "").trim();
-    } else if (typeof pdfParseModule.default === "function") {
-      const result = await pdfParseModule.default(buffer);
-      text = String(result.text || "").trim();
-    } else if (pdfParseModule.PDFParse) {
-      const parser = new pdfParseModule.PDFParse({ data: buffer });
-      const result = await parser.getText();
-      text = String(result.text || "").trim();
-
-      if (typeof parser.destroy === "function") {
-        await parser.destroy();
-      }
-    } else {
-      throw new Error("pdf-parse Export wurde nicht erkannt: " + Object.keys(pdfParseModule).join(", "));
-    }
+    const text = String(result.text || "").trim();
 
     if (!text) {
       return { error: "Aus dem PDF konnte kein Text gelesen werden. Eventuell ist es ein Scan/Bild-PDF." };
