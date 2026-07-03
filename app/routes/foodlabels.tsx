@@ -557,8 +557,9 @@ const primaryButtonStyle: React.CSSProperties = {
 const previewButtonStyle: React.CSSProperties = {
   ...buttonBaseStyle,
   background: "#ffffff",
-  color: "#0f513f",
-  borderColor: "#c8d8d2",
+  border: "1px solid #c7d8d2",
+  color: "#075f52",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
 };
 
 const dangerButtonStyle: React.CSSProperties = {
@@ -697,6 +698,7 @@ const foodKeyStyle: React.CSSProperties = {
   textTransform: "uppercase",
   letterSpacing: "0.05em",
 };
+
 
 
 
