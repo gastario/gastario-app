@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
@@ -144,8 +144,7 @@ export async function action({ request }: { request: Request }) {
     const bestBeforeDate = parseDateInput(formData.get("bestBeforeDate"));
     const batchNumber = String(formData.get("batchNumber") || "").trim();
     const storageNote = String(formData.get("storageNote") || "").trim();
-    const ingredients = String(formData.get("ingredients") || "").trim();
-  const allergens = String(formData.get("allergens") || "").trim();
+    const allergens = String(formData.get("allergens") || "").trim();
     const quantityText = String(formData.get("quantityText") || "").trim();
     const labelSize = String(formData.get("labelSize") || "76x51").trim();
     const labelCountRaw = Number(String(formData.get("labelCount") || "1"));
@@ -293,10 +292,6 @@ export default function MhdLabelsPage() {
               <input name="storageNote" defaultValue="Gekühlt lagern bei max. +7 °C" />
             </Field>
 
-            <Field label="Zutaten">
-              <input name="ingredients" placeholder="z. B. Reis, Haehnchen, Gemuese, Sauce" />
-            </Field>
-
             <Field label="Allergene">
               <input name="allergens" placeholder="z. B. Soja, Sesam, Gluten" />
             </Field>
@@ -337,13 +332,6 @@ export default function MhdLabelsPage() {
                   <div key={label.id} style={labelRowStyle}>
                                         <div style={rowTitleBlockStyle}>
                       <strong style={rowTitleStyle}>{label.productName}</strong>
-
-                      {label.ingredients ? (
-                        <span style={rowIngredientsStyle}>
-                          Zutaten: {label.ingredients}
-                        </span>
-                      ) : null}
-
                       <span style={rowSubTextStyle}>
                         MHD: {formatDate(label.bestBeforeDate)} - Charge: {label.batchNumber || "-"}
                       </span>
@@ -365,7 +353,7 @@ export default function MhdLabelsPage() {
                       <Form
                         method="post"
                         onSubmit={(event) => {
-                          if (!window.confirm("Dieses Label wirklich l" + "\u00f6" + "schen?")) {
+                          if (!window.confirm("Dieses Label wirklich l\\u00f6schen?")) {
                             event.preventDefault();
                           }
                         }}
@@ -373,7 +361,7 @@ export default function MhdLabelsPage() {
                         <input type="hidden" name="_action" value="delete" />
                         <input type="hidden" name="labelId" value={label.id} />
                         <button type="submit" style={dangerButtonStyle}>
-                          {"L" + "\u00f6" + "schen"}
+                          {"L\\u00f6schen"}
                         </button>
                       </Form>
                     </div>
@@ -606,16 +594,6 @@ const rowSubTextStyle: React.CSSProperties = {
   fontWeight: 500,
   wordBreak: "break-word",
 };
-
-const rowIngredientsStyle: React.CSSProperties = {
-  display: "block",
-  color: "#334155",
-  fontSize: 13,
-  lineHeight: 1.35,
-  fontWeight: 600,
-  wordBreak: "break-word",
-};
-
 
 const rowMetaStyle: React.CSSProperties = {
   display: "grid",
