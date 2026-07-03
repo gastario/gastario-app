@@ -1,4 +1,4 @@
-import { useActionData } from "react-router";
+import { Form, useActionData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 export function meta() {
@@ -93,14 +93,14 @@ export default function ImportPruefenPage() {
           <p style={eyebrowStyle}>PDF Upload</p>
           <h2 style={sectionTitleStyle}>PDF-Auftrag hochladen</h2>
 
-          <form method="post" encType="multipart/form-data" style={formStyle}>
+          <Form method="post" encType="multipart/form-data" style={formStyle}>
             <label style={fieldStyle}>
               <span>PDF-Datei</span>
               <input type="file" name="pdfFile" accept="application/pdf,.pdf" required />
             </label>
 
             <button type="submit" style={primaryButtonStyle}>PDF pruefen</button>
-          </form>
+          </Form>
         </section>
 
         {actionData?.preview ? (
