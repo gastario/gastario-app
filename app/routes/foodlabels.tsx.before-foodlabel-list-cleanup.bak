@@ -269,9 +269,9 @@ export default function FoodLabelsPage() {
               <div style={labelListStyle}>
                 {data.labels.map((label: any) => (
                   <div key={label.id} style={labelRowStyle}>
-                    <div style={rowTitleBlockStyle}>
-                      <strong style={rowTitleStyle}>{label.name}</strong>
-                      <span style={rowSubTextStyle}>
+                    <div>
+                      <strong>{label.name}</strong>
+                      <span>
                         {label.ingredients ? <>Zutaten: {label.ingredients}</> : "Ohne Zutatenliste"}
                       </span>
                     </div>
@@ -292,7 +292,7 @@ export default function FoodLabelsPage() {
                       <Form
                         method="post"
                         onSubmit={(event) => {
-                          if (!window.confirm("Dieses Foodlabel wirklich l\u00f6schen?")) {
+                          if (!window.confirm("Dieses Foodlabel wirklich loeschen?")) {
                             event.preventDefault();
                           }
                         }}
@@ -300,7 +300,7 @@ export default function FoodLabelsPage() {
                         <input type="hidden" name="_action" value="delete" />
                         <input type="hidden" name="labelId" value={label.id} />
                         <button type="submit" style={dangerButtonStyle}>
-                          {"L\u00f6schen"}
+                          Loeschen
                         </button>
                       </Form>
                     </div>
@@ -478,30 +478,6 @@ const labelRowStyle: React.CSSProperties = {
   gridTemplateColumns: "1fr 130px 170px",
   gap: 12,
   alignItems: "center",
-};
-
-const rowTitleBlockStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 6,
-  minWidth: 0,
-};
-
-const rowTitleStyle: React.CSSProperties = {
-  display: "block",
-  color: "#0f172a",
-  fontSize: 15,
-  lineHeight: 1.25,
-  fontWeight: 750,
-  wordBreak: "break-word",
-};
-
-const rowSubTextStyle: React.CSSProperties = {
-  display: "block",
-  color: "#475569",
-  fontSize: 13,
-  lineHeight: 1.35,
-  fontWeight: 500,
-  wordBreak: "break-word",
 };
 
 const rowMetaStyle: React.CSSProperties = {
