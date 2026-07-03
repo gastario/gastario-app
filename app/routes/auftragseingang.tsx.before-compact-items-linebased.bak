@@ -1062,20 +1062,14 @@ export default function AuftragseingangPage() {
                           <div style={{ color: "#64748b", fontSize: 12 }}>{order.deliveryTime || "-"}</div>
                         </td>
                         <td style={tdStyle}>
-                          <strong>{order.items.length} Positionen</strong>
-                          <div style={{ display: "grid", gap: 4, marginTop: 6 }}>
-                            {order.items.slice(0, 3).map((item) => (
-                              <div key={item.id} style={{ color: "#0f172a", fontSize: 13, lineHeight: 1.25 }}>
-                                {item.quantity} ? {item.name}
-                              </div>
-                            ))}
-
-                            {order.items.length > 3 ? (
-                              <div style={{ color: "#64748b", fontSize: 12, fontWeight: 750 }}>
-                                + {order.items.length - 3} weitere Positionen
-                              </div>
-                            ) : null}
-                          </div>
+                          {order.items.map((item) => (
+                            <div key={item.id} style={{ marginBottom: 4 }}>
+                              {item.quantity} × {item.name}
+                              {item.notes ? (
+                                <div style={{ color: "#64748b", fontSize: 12, marginTop: 2 }}>+ {item.notes}</div>
+                              ) : null}
+                            </div>
+                          ))}
                         </td>
                         <td style={tdStyle}><strong>{centsToEuro(total)}</strong></td>
                         <td style={tdStyle}>

@@ -41,58 +41,21 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
 
   const items: ExtractedOrderItem[] = [];
 
-  const tableStartIndex = lines.findIndex((line) =>
-    line.toLowerCase().includes("bezeichnung") &&
-    line.toLowerCase().includes("menge") &&
-    line.toLowerCase().includes("einzelpreis")
-  );
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
 
-  const stopIndex = lines.findIndex((line, index) =>
-    index > tableStartIndex &&
-    (
-      line.startsWith("--") ||
-      line.toLowerCase().includes("catering auftragsbest") ||
-      line.toLowerCase().includes("registergericht") ||
-      line.toLowerCase().includes("iban") ||
-      line.toLowerCase().includes("ust-idnr")
-    )
-  );
+    if (/\b\d+\s*?\s*\d+/i.test(line) || /\b\d+\s+x\s+/i.test(line)) {
+      const name = lines[index - 1] || "";
+      const description = lines[index - 2] || "";
 
-  const productLines =
-    tableStartIndex >= 0
-      ? lines.slice(tableStartIndex + 1, stopIndex > tableStartIndex ? stopIndex : lines.length)
-      : [];
-
-  for (let index = 0; index < productLines.length; index++) {
-    const line = productLines[index];
-
-    const priceLine =
-      /\b\d+\s*?\s*\d+/i.test(line) ||
-      /\b\d+\s+?\s+\d+/i.test(line);
-
-    if (!priceLine) {
-      continue;
+      if (name && !name.toLowerCase().includes("liefer")) {
+        items.push({
+          name,
+          description,
+          rawLine: line,
+        });
+      }
     }
-
-    const name = productLines[index - 2] || productLines[index - 1] || "";
-    const description = productLines[index - 1] || "";
-
-    if (
-      !name ||
-      name.toLowerCase().includes("bezeichnung") ||
-      name.toLowerCase().includes("gesch?ftsf?hrung") ||
-      name.toLowerCase().includes("registergericht") ||
-      name.toLowerCase().includes("iban") ||
-      name.toLowerCase().includes("ust-idnr")
-    ) {
-      continue;
-    }
-
-    items.push({
-      name,
-      description,
-      rawLine: line,
-    });
   }
 
   return {
