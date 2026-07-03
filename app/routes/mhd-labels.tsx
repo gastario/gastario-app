@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
@@ -40,7 +40,7 @@ function buildQrValue(label: any) {
 
 
 export function meta() {
-  return [{ title: "MHD-Labels · Gastario" }];
+  return [{ title: "MHD-Labels Â· Gastario" }];
 }
 
 export async function loader({ request }: { request: Request }) {
@@ -290,7 +290,7 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Lagerhinweis">
-              <input name="storageNote" defaultValue="Gekühlt lagern bei max. +7 °C" />
+              <input name="storageNote" defaultValue="GekÃ¼hlt lagern bei max. +7 Â°C" />
             </Field>
 
             <Field label="Zutaten">
@@ -353,7 +353,7 @@ export default function MhdLabelsPage() {
                     </div>
 
                     <div style={rowMetaStyle}>
-                      <span>{label.labelCount} × {label.labelSize}</span>
+                      <span>{label.labelCount} Ã— {label.labelSize}</span>
                       <span>MHD: {formatDate(label.bestBeforeDate)}</span>
                     </div>
 
@@ -390,7 +390,7 @@ export default function MhdLabelsPage() {
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Vorschau</p>
-                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswählen"}</h2>
+                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswÃ¤hlen"}</h2>
               </div>
 
 
@@ -409,7 +409,7 @@ export default function MhdLabelsPage() {
                 </div>
               </>
             ) : (
-              <div style={emptyStyle}>Wähle links ein gespeichertes Label über „Vorschau“ aus. Danach erscheint hier die Druckvorschau.</div>
+              <div style={emptyStyle}>WÃ¤hle links ein gespeichertes Label Ã¼ber â€žVorschauâ€œ aus. Danach erscheint hier die Druckvorschau.</div>
             )}
           </div>
         </div>
@@ -656,18 +656,18 @@ const printOnlyStyle: React.CSSProperties = {
 
 const actionButtonBaseStyle: React.CSSProperties = {
   minHeight: 38,
+  width: "100%",
+  minWidth: "100%",
   padding: "0 14px",
-  borderRadius: 10,
-  border: "1px solid transparent",
+  borderRadius: 11,
+  fontWeight: 900,
+  fontSize: 14,
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
-  gap: 6,
-  fontSize: 14,
-  fontWeight: 600,
-  lineHeight: 1,
-  cursor: "pointer",
   textDecoration: "none",
+  cursor: "pointer",
+  boxSizing: "border-box",
   whiteSpace: "nowrap",
 };
 
@@ -686,19 +686,10 @@ const previewButtonStyle: React.CSSProperties = {
 };
 
 const dangerButtonStyle: React.CSSProperties = {
-  minHeight: 34,
-  borderRadius: 10,
-  padding: "0 12px",
-  border: "1px solid #ffc9c0",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  textDecoration: "none",
-  fontWeight: 700,
-  fontSize: 13,
-  cursor: "pointer",
-  width: "100%",
-  background: "#fff7f5",
+  ...actionButtonBaseStyle,
+  minHeight: 38,
+  background: "#fff7f4",
+  border: "1px solid #ffb7a8",
   color: "#b42318",
 };
 
@@ -706,8 +697,10 @@ const dangerButtonStyle: React.CSSProperties = {
 const listActionGroupStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
-  gap: 8,
-  alignItems: "flex-end",
+  gap: 10,
+  width: 128,
+  minWidth: 128,
+  flexShrink: 0,
 };
 
 const previewCardActionStyle: React.CSSProperties = {
@@ -867,6 +860,8 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
+
 
 
 

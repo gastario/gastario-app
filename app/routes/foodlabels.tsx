@@ -1,4 +1,4 @@
-import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
+﻿import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import AppLayout from "../components/AppLayout";
@@ -324,7 +324,7 @@ export default function FoodLabelsPage() {
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Vorschau</p>
-                <h2 style={sectionTitleStyle}>{selected ? "Druckvorschau" : "Label auswaehlen"}</h2>
+                <h2 style={sectionTitleStyle}>{selected ? "Druckvorschau" : "Label auswählen"}</h2>
               </div>
             </div>
 
@@ -524,21 +524,27 @@ const rowMetaStyle: React.CSSProperties = {
 const listActionGroupStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "1fr",
-  gap: 8,
+  gap: 10,
+  width: 128,
+  minWidth: 128,
+  flexShrink: 0,
 };
 
 const buttonBaseStyle: React.CSSProperties = {
-  minHeight: 34,
-  borderRadius: 10,
-  padding: "0 12px",
-  border: "1px solid transparent",
+  minHeight: 38,
+  width: "100%",
+  minWidth: "100%",
+  padding: "0 14px",
+  borderRadius: 11,
+  fontWeight: 900,
+  fontSize: 14,
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
   textDecoration: "none",
-  fontWeight: 700,
-  fontSize: 13,
   cursor: "pointer",
+  boxSizing: "border-box",
+  whiteSpace: "nowrap",
 };
 
 const primaryButtonStyle: React.CSSProperties = {
@@ -557,10 +563,10 @@ const previewButtonStyle: React.CSSProperties = {
 
 const dangerButtonStyle: React.CSSProperties = {
   ...buttonBaseStyle,
-  width: "100%",
-  background: "#fff7f5",
+  minHeight: 38,
+  background: "#fff7f4",
+  border: "1px solid #ffb7a8",
   color: "#b42318",
-  borderColor: "#ffc9c0",
 };
 
 const previewWrapStyle: React.CSSProperties = {
@@ -691,3 +697,6 @@ const foodKeyStyle: React.CSSProperties = {
   textTransform: "uppercase",
   letterSpacing: "0.05em",
 };
+
+
+
