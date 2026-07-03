@@ -1,4 +1,4 @@
-﻿import { Form, Link, useActionData, useLoaderData } from "react-router";
+import { Form, Link, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 const STATUSES = [
@@ -74,7 +74,7 @@ export async function loader({ request }: { request: Request }) {
       },
       orderBy: [
         { deliveryDate: "asc" },
-        { deliveryTime: "asc" },
+        { deliveryTimeText: "asc" },
         { createdAt: "desc" },
       ],
       take: 300,
@@ -351,7 +351,7 @@ export default function OrdersPage() {
 
                   <div>
                     <strong>{formatDate(order.deliveryDate)}</strong>
-                    <small>{order.deliveryTime || "-"}</small>
+                    <small>{order.deliveryTimeText || "-"}</small>
                   </div>
 
                   <div>
