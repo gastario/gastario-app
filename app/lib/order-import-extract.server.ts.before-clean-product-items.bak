@@ -237,10 +237,6 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
       continue;
     }
 
-    if (isInvalidImportedItem(name, description, line)) {
-      continue;
-    }
-
     items.push({
       name,
       description,
@@ -264,50 +260,4 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
     presentation,
     items: items.slice(0, 20),
   };
-}
-
-
-function isInvalidImportedItem(name: string, description?: string, rawLine?: string) {
-  const value = [name, description || "", rawLine || ""]
-    .join(" ")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (!value) return true;
-
-  if (/^[-??\s]*\d+\s+of\s+\d+[-??\s]*/i.test(value)) return true;
-  if (value.includes("-- 1 of")) return true;
-  if (value.includes("-- 2 of")) return true;
-  if (value.includes("-- 3 of")) return true;
-
-  const blocked = [
-    "lieferkosten",
-    "liefergebuehr",
-    "liefergeb?hr",
-    "versand",
-    "transport",
-    "zwischensumme",
-    "summe",
-    "gesamtsumme",
-    "netto",
-    "brutto",
-    "ust",
-    "mwst",
-    "mehrwertsteuer",
-    "subtotal",
-    "total",
-    "invoice",
-    "rechnung",
-    "zahlbar",
-    "iban",
-    "bic"
-  ];
-
-  if (blocked.some((word) => value.includes(word))) return true;
-
-  const withoutPriceChars = value.replace(/[0-9\s,.?eur-]/g, "");
-  if (withoutPriceChars.length < 4) return true;
-
-  return false;
 }
