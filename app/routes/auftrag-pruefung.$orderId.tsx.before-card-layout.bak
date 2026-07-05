@@ -108,50 +108,36 @@ export default function AuftragPruefungPage() {
           <Info label="Summe" value={centsToEuro(total)} />
         </div>
 
-        <div style={contentGridStyle}>
-          <section style={positionsCardStyle}>
-            <h2 style={sectionTitleStyle}>Positionen</h2>
+        <h2 style={{ margin: "26px 0 10px", fontSize: 20 }}>Positionen</h2>
 
-            <table style={tableStyle}>
-              <thead>
-                <tr>
-                  <th style={thStyle}>Menge</th>
-                  <th style={thStyle}>Position</th>
-                  <th style={thStyle}>Hinweis / Rohdaten</th>
-                  <th style={thRightStyle}>Betrag</th>
-                </tr>
-              </thead>
-              <tbody>
-                {order.items.map((item) => (
-                  <tr key={item.id}>
-                    <td style={tdStyle}>
-                      <strong>{item.quantity}</strong>
-                      <div style={mutedCellStyle}>{item.unit}</div>
-                    </td>
-                    <td style={tdStyle}><strong>{item.name}</strong></td>
-                    <td style={tdMutedStyle}>{item.notes || "-"}</td>
-                    <td style={tdRightStyle}>{centsToEuro(item.totalCents)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={thStyle}>Menge</th>
+              <th style={thStyle}>Position</th>
+              <th style={thStyle}>Hinweis / Rohdaten</th>
+              <th style={thStyle}>Betrag</th>
+            </tr>
+          </thead>
+          <tbody>
+            {order.items.map((item) => (
+              <tr key={item.id}>
+                <td style={tdStyle}>{item.quantity} {item.unit}</td>
+                <td style={tdStyle}><strong>{item.name}</strong></td>
+                <td style={tdStyle}>{item.notes || "-"}</td>
+                <td style={tdStyle}>{centsToEuro(item.totalCents)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-          <aside style={checklistCardStyle}>
-            <h2 style={sectionTitleStyle}>Checkliste</h2>
-
-            <div style={checkListStyle}>
-              <div style={checkItemStyle}>? Kunde stimmt</div>
-              <div style={checkItemStyle}>? Lieferadresse stimmt</div>
-              <div style={checkItemStyle}>? Lieferdatum und Lieferzeit stimmen</div>
-              <div style={checkItemStyle}>? Positionen stimmen</div>
-              <div style={checkItemStyle}>? Hinweise / Allergene geprueft</div>
-            </div>
-
-            <p style={checkHintStyle}>
-              Bitte alle Punkte pruefen, bevor der Auftrag uebernommen wird.
-            </p>
-          </aside>
+        <h2 style={{ margin: "26px 0 10px", fontSize: 20 }}>Checkliste</h2>
+        <div style={{ display: "grid", gap: 6, fontWeight: 800 }}>
+          <div>☐ Kunde stimmt</div>
+          <div>☐ Lieferadresse stimmt</div>
+          <div>☐ Lieferdatum und Lieferzeit stimmen</div>
+          <div>☐ Positionen stimmen</div>
+          <div>☐ Hinweise / Allergene geprueft</div>
         </div>
       </section>
     </main>
@@ -180,85 +166,4 @@ const tdStyle: React.CSSProperties = {
   padding: 8,
   verticalAlign: "top",
   fontSize: 12,
-};
-
-
-const contentGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "minmax(0, 2fr) minmax(280px, 0.85fr)",
-  gap: 18,
-  alignItems: "start",
-  marginTop: 26,
-};
-
-const positionsCardStyle: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
-  borderRadius: 18,
-  padding: 18,
-  background: "#ffffff",
-  boxShadow: "0 10px 25px rgba(15, 23, 42, 0.04)",
-};
-
-const checklistCardStyle: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
-  borderRadius: 18,
-  padding: 18,
-  background: "#ffffff",
-  boxShadow: "0 10px 25px rgba(15, 23, 42, 0.04)",
-};
-
-const tableStyle: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "separate",
-  borderSpacing: 0,
-};
-
-const sectionTitleStyle: React.CSSProperties = {
-  margin: "0 0 14px",
-  fontSize: 22,
-  color: "#071633",
-  letterSpacing: "-0.02em",
-};
-
-const thRightStyle: React.CSSProperties = {
-  ...thStyle,
-  textAlign: "right",
-};
-
-const tdMutedStyle: React.CSSProperties = {
-  ...tdStyle,
-  color: "#334155",
-  lineHeight: 1.45,
-};
-
-const tdRightStyle: React.CSSProperties = {
-  ...tdStyle,
-  textAlign: "right",
-  fontWeight: 800,
-  whiteSpace: "nowrap",
-};
-
-const mutedCellStyle: React.CSSProperties = {
-  color: "#64748b",
-  fontSize: 12,
-  marginTop: 2,
-};
-
-const checkListStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 0,
-  fontWeight: 800,
-};
-
-const checkItemStyle: React.CSSProperties = {
-  padding: "13px 0",
-  borderBottom: "1px solid #e2e8f0",
-  color: "#0f172a",
-};
-
-const checkHintStyle: React.CSSProperties = {
-  margin: "16px 0 0",
-  color: "#64748b",
-  fontSize: 13,
-  lineHeight: 1.45,
 };
