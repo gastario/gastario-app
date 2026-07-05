@@ -51,7 +51,7 @@ export async function loader({ request }: { request: Request }) {
     }
 
     const url = new URL(request.url);
-    const requestedDate = url.searchParams.get("date") || "";
+    const selectedDate = url.searchParams.get("date") || todayInput();
 
     const orders = await prisma.order.findMany({
       where: {
@@ -60,35 +60,28 @@ export async function loader({ request }: { request: Request }) {
       include: {
         items: true,
       },
-      orderBy: [
-        { deliveryDate: "asc" },
-        { createdAt: "desc" },
-      ],
+      orderBy: {
+        createdAt: "desc",
+      },
       take: 300,
     });
 
-    const allowedOrders = orders.filter((order: any) => {
+    const relevantOrders = orders.filter((order: any) => {
       const status = String(order.status || "").toUpperCase();
+      const date = normalizeDate(order.deliveryDate);
 
       return (
-        status === "CONFIRMED" ||
-        status === "PAID" ||
-        status === "INVOICE_APPROVED" ||
-        status === "MANUAL" ||
-        status === "AUTO_CREATED" ||
-        status === "REVIEW_NEEDED" ||
-        status === "INCOMPLETE"
+        date === selectedDate &&
+        (
+          status === "CONFIRMED" ||
+          status === "PAID" ||
+          status === "INVOICE_APPROVED" ||
+          status === "MANUAL" ||
+          status === "AUTO_CREATED" ||
+          status === "REVIEW_NEEDED" ||
+          status === "INCOMPLETE"
+        )
       );
-    });
-
-    const selectedDate =
-      requestedDate ||
-      normalizeDate(allowedOrders.find((order: any) => normalizeDate(order.deliveryDate))?.deliveryDate) ||
-      todayInput();
-
-    const relevantOrders = allowedOrders.filter((order: any) => {
-      const date = normalizeDate(order.deliveryDate);
-      return date === selectedDate;
     });
 
     return {

@@ -373,32 +373,16 @@ export default function ImportPruefenPage() {
 
               {actionData.extractedOrder.items?.length ? (
                 <div style={itemListStyle}>
-                  {actionData.extractedOrder.items.slice(0, 5).map((item: any, index: number) => (
+                  {actionData.extractedOrder.items.map((item: any, index: number) => (
                     <div key={index} style={itemRowStyle}>
                       <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                         <strong>{index + 1}. {item.name}</strong>
                         <strong>{item.quantity || 1}x</strong>
                       </div>
                       {item.description ? <span>{item.description}</span> : null}
+                      {item.rawLine ? <small>{item.rawLine}</small> : null}
                     </div>
                   ))}
-
-                  {actionData.extractedOrder.items.length > 5 ? (
-                    <details style={moreItemsStyle}>
-                      <summary>
-                        + {actionData.extractedOrder.items.length - 5} weitere Positionen anzeigen
-                      </summary>
-
-                      <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
-                        {actionData.extractedOrder.items.slice(5).map((item: any, index: number) => (
-                          <div key={index} style={compactItemRowStyle}>
-                            <strong>{index + 6}. {item.name}</strong>
-                            <span>{item.quantity || 1}x</span>
-                          </div>
-                        ))}
-                      </div>
-                    </details>
-                  ) : null}
                 </div>
               ) : (
                 <div style={emptyStyle}>Noch keine Positionen erkannt.</div>
@@ -701,7 +685,7 @@ const uploadFormStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "1fr auto",
   gap: 14,
-  alignItems: "end",
+  alignItems: "stretch",
 };
 
 const uploadDropStyle: React.CSSProperties = {
@@ -715,8 +699,8 @@ const uploadDropStyle: React.CSSProperties = {
 
 const resultLayoutStyle: React.CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "1fr",
-  gap: 16,
+  gridTemplateColumns: "minmax(0, 1fr) 320px",
+  gap: 18,
   alignItems: "start",
 };
 
@@ -732,17 +716,18 @@ const sideCardStyle: React.CSSProperties = {
   background: "#ffffff",
   border: "1px solid #dbe5eb",
   borderRadius: 18,
-  padding: 18,
-  boxShadow: "0 10px 26px rgba(15, 23, 42, 0.04)",
+  padding: 22,
+  boxShadow: "0 10px 26px rgba(15, 23, 42, 0.045)",
+  position: "sticky",
+  top: 18,
 };
 
 const checkListStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 8,
+  display: "grid",
+  gap: 10,
   marginTop: 12,
   color: "#0f172a",
   fontWeight: 800,
-  flexWrap: "wrap",
 };
 
 const sideNoteStyle: React.CSSProperties = {
@@ -751,25 +736,4 @@ const sideNoteStyle: React.CSSProperties = {
   fontSize: 13,
   lineHeight: 1.45,
   fontWeight: 650,
-};
-
-
-const moreItemsStyle: React.CSSProperties = {
-  border: "1px dashed #cbd5e1",
-  background: "#f8fafc",
-  borderRadius: 14,
-  padding: 14,
-  color: "#0f172a",
-  fontWeight: 850,
-};
-
-const compactItemRowStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 12,
-  border: "1px solid #e2e8f0",
-  background: "#ffffff",
-  borderRadius: 12,
-  padding: "10px 12px",
-  fontSize: 13,
 };
