@@ -236,15 +236,14 @@ export default function Home() {
       <header className="topbar">
         <div>
           <p className="eyebrow">Dashboard</p>
-          <h1>Heute im Betrieb</h1>
+          <h1>Betriebszentrale</h1>
           <span className="pageSubline">
-            {data.tenant?.name} ? Tagesueberblick fuer Auftraege, Pruefung, Produktion und Lieferung.
+            {data.tenant?.name} · echte Kennzahlen aus Mandant, Auftraegen, Kunden, Produkten und Lager.
           </span>
         </div>
 
         <div className="topActions">
-          <Link className="secondaryButton" to="/auftragseingang">Auftragseingang</Link>
-          <Link className="secondaryButton" to="/import-pruefen">PDF importieren</Link>
+          <Link className="secondaryButton" to="/auftragseingang">Import pruefen</Link>
           <Link className="primaryButton" to="/auftragseingang">Neuer Auftrag</Link>
         </div>
       </header>
@@ -253,20 +252,20 @@ export default function Home() {
         <div className="commandCopy">
           <p className="eyebrow">Tagessteuerung</p>
           <h2>
-            {data.counts.ordersToday} heute ? {data.counts.openOrders} zu pruefen ? {data.counts.confirmedOrders} bestaetigt
+            {data.counts.ordersToday} Auftraege heute · {data.counts.confirmedOrders} bestaetigte Auftraege
           </h2>
           <p>
-            Starte zuerst mit dem Auftragseingang. Neue PDF- und E-Mail-Importe werden dort geprueft,
-            bevor sie als echte Auftraege in Produktion, Packlisten, Lieferscheine und Lieferung gehen.
+            Gastario nutzt echte Mandanten-Daten und bereitet daraus Produktion,
+            Einkauf, Packlisten, Lieferscheine und Fahrerunterlagen vor.
           </p>
         </div>
 
-        <div className="workflowRail" aria-label="Ablauf">
-          <span>Eingang</span>
-          <span>Pruefung</span>
+        <div className="workflowRail" aria-label="Workflow">
+          <span>Import</span>
+          <span>Angebot</span>
           <span>Auftrag</span>
           <span>Produktion</span>
-          <span>Packen</span>
+          <span>Einkauf</span>
           <span>Lieferung</span>
         </div>
       </section>
