@@ -237,104 +237,10 @@ export async function loader({ request }: { request: Request }) {
                 },
               ],
             },
-            include: {
-              attachments: true,
-              orders: {
-                select: {
-                  id: true,
-                },
-              },
-            },
           });
 
           if (existing) {
             result.skippedDuplicates += 1;
-
-            let bestText = String(existing.bodyText || parsed.text || "");
-
-            for (const attachment of parsed.attachments || []) {
-              let attachmentText = "";
-
-              if (
-                attachment.contentType === "application/pdf" ||
-                String(attachment.filename || "").toLowerCase().endsWith(".pdf")
-              ) {
-                attachmentText = await extractPdfText(Buffer.from(attachment.content));
-                bestText = attachmentText || bestText;
-              }
-
-              const filename = attachment.filename || "attachment";
-
-              const savedAttachment = existing.attachments.find((item: any) => {
-                return item.filename === filename;
-              });
-
-              if (savedAttachment) {
-                if (attachmentText && !savedAttachment.textContent) {
-                  await prisma.emailAttachment.update({
-                    where: {
-                      id: savedAttachment.id,
-                    },
-                    data: {
-                      textContent: attachmentText,
-                      extractedJson: {
-                        size: attachment.size,
-                        contentType: attachment.contentType,
-                        reprocessedAt: new Date().toISOString(),
-                      },
-                    },
-                  });
-                }
-              } else {
-                await prisma.emailAttachment.create({
-                  data: {
-                    incomingEmailId: existing.id,
-                    filename,
-                    mimeType: attachment.contentType || null,
-                    textContent: attachmentText || null,
-                    extractedJson: {
-                      size: attachment.size,
-                      contentType: attachment.contentType,
-                      reprocessedAt: new Date().toISOString(),
-                    },
-                  },
-                });
-              }
-            }
-
-            const extractedOrder = extractHeycaterOrder(bestText);
-
-            if (existing.orders.length === 0 && hasEnoughOrderData(extractedOrder)) {
-              await createReviewOrderFromExtracted({
-                tenantId: account.tenantId,
-                brandId: account.brandId,
-                incomingEmailId: existing.id,
-                extractedOrder,
-              });
-
-              await prisma.incomingEmail.update({
-                where: { id: existing.id },
-                data: {
-                  status: "ORDER_CREATED" as any,
-                  processedAt: new Date(),
-                  extractedJson: extractedOrder,
-                  errorMessage: null,
-                },
-              });
-
-              result.createdOrders += 1;
-            } else if (existing.orders.length === 0) {
-              await prisma.incomingEmail.update({
-                where: { id: existing.id },
-                data: {
-                  status: "REVIEW_NEEDED" as any,
-                  processedAt: new Date(),
-                  extractedJson: extractedOrder || undefined,
-                  errorMessage: "Keine ausreichenden Auftragsdaten erkannt.",
-                },
-              });
-            }
-
             continue;
           }
 
