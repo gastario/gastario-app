@@ -52,23 +52,14 @@ function createOrderNumber() {
 }
 
 function hasEnoughOrderData(order: any) {
-  if (!order) return false;
-
-  const itemCount = Array.isArray(order.items) ? order.items.length : 0;
-  const hasRealItems = itemCount > 0;
-
-  const customerName = String(order.customerName || "").trim();
-  const deliveryAddress = String(order.deliveryAddress || "").trim();
-  const deliveryDate = String(order.deliveryDate || "").trim();
-
-  const hasCustomer = customerName && customerName.toLowerCase() !== "e-mail import";
-  const hasDeliveryTarget = Boolean(deliveryAddress || hasCustomer);
-
-  // Ein Auftrag darf nur automatisch entstehen, wenn echte Positionen erkannt wurden
-  // oder mindestens Lieferdatum + Kunde/Adresse vorhanden sind.
   return Boolean(
-    hasRealItems ||
-    (deliveryDate && hasDeliveryTarget)
+    order &&
+      (
+        order.customerName ||
+        order.deliveryAddress ||
+        order.deliveryDate ||
+        (Array.isArray(order.items) && order.items.length > 0)
+      )
   );
 }
 

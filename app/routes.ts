@@ -36,6 +36,7 @@ export default [
   route("auftrag-pruefung/:orderId", "routes/auftrag-pruefung.$orderId.tsx"),
   route("auswertungen", "routes/auswertungen.tsx"),
   route("einstellungen", "routes/einstellungen.tsx"),
+  route("konto/abo", "routes/konto.abo.tsx"),
   route("einstellungen/rechnungen", "routes/einstellungen.rechnungen.tsx"),
 
   route("api/mailjet/inbound", "routes/api.mailjet.inbound.tsx"),

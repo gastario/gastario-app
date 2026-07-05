@@ -41,12 +41,6 @@ const navigationGroups = [
     ],
   },
   {
-    label: "Konto",
-    items: [
-      { label: "Plan & Abo", to: "/konto/abo" },
-    ],
-  },
-  {
     label: "System",
     items: [
       { label: "Auftragseingang", to: "/auftragseingang" },
