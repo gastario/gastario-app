@@ -2,29 +2,16 @@
 
 const navigationGroups = [
   {
-    label: "Uebersicht",
+    label: "Übersicht",
     items: [{ label: "Dashboard", to: "/" }],
-  },
-  {
-    label: "Auftraege",
-    items: [
-      { label: "Auftragseingang", to: "/auftragseingang" },
-      { label: "Bevorstehende Auftraege", to: "/auftraege" },
-      { label: "Vergangene Auftraege", to: "/auftraege?view=past" },
-      { label: "Neuer Auftrag", to: "/auftragseingang" },
-    ],
-  },
-  {
-    label: "Import",
-    items: [
-      { label: "PDF importieren", to: "/import-pruefen" },
-      { label: "E-Mail-Import", to: "/importe" },
-      { label: "Import-Regeln", to: "/import-regeln" },
-    ],
   },
   {
     label: "Verkauf",
     items: [
+      { label: "Aufträge", to: "/auftraege" },
+      { label: "Import-Regeln", to: "/import-regeln" },
+      { label: "Import pruefen", to: "/import-pruefen" },
+      { label: "E-Mail-Import", to: "/importe" },
       { label: "Angebote", to: "/angebote" },
       { label: "Rechnungen", to: "/rechnungen" },
       { label: "Neue Rechnung", to: "/rechnungen/neu" },
@@ -34,19 +21,13 @@ const navigationGroups = [
     ],
   },
   {
-    label: "Produktion & Labels",
+    label: "Betrieb",
     items: [
       { label: "Produktion", to: "/produktion" },
       { label: "MHD-Labels", to: "/mhd-labels" },
-      { label: "Foodlabel erstellen", to: "/foodlabels" },
+      { to: "/foodlabels", label: "Foodlabel erstellen" },
       { label: "Packlisten", to: "/packlisten" },
-    ],
-  },
-  {
-    label: "Lieferung",
-    items: [
       { label: "Lieferscheine", to: "/lieferscheine" },
-      { label: "Fahrerzettel", to: "/fahrerzettel" },
       { label: "Lieferungen", to: "/lieferungen" },
     ],
   },
@@ -68,6 +49,7 @@ const navigationGroups = [
   {
     label: "System",
     items: [
+      { label: "Auftragseingang", to: "/auftragseingang" },
       { label: "Auswertungen", to: "/auswertungen" },
       { label: "Einstellungen", to: "/einstellungen" },
     ],
