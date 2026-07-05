@@ -1,0 +1,421 @@
+﻿import { Link, useLoaderData } from "react-router";
+import AppLayout from "../components/AppLayout";
+
+function todayRange() {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
+
+  return { start, end };
+}
+
+function formatDate(value: string | Date | null | undefined) {
+  if (!value) return "-";
+  return new Date(value).toLocaleDateString("de-DE");
+}
+
+function formatTime(value: string | null | undefined) {
+  return value || "-";
+}
+
+export function meta() {
+  return [
+    { title: "Dashboard · Gastario" },
+    {
+      name: "description",
+      content:
+        "Gastario ist die Betriebssoftware fuer Caterer: Auftraege, Produktion, Einkauf, Lager und Lieferung an einem Ort.",
+    },
+  ];
+}
+
+export async function loader({ request }: { request: Request }) {
+  const { prisma } = await import("../lib/prisma.server");
+  const { getTenantAccess } = await import("../lib/features.server");
+
+  const access = await getTenantAccess(request);
+
+  if (!access.tenantId || !access.tenant) {
+    return {
+      tenant: null,
+      setupError: access.setupError || "Kein Mandant gefunden.",
+      counts: {
+        ordersToday: 0,
+        openOrders: 0,
+        confirmedOrders: 0,
+        customers: 0,
+        products: 0,
+        suppliers: 0,
+        inventoryItems: 0,
+        lowInventory: 0,
+      },
+      todayOrders: [],
+      openOrders: [],
+      lowInventoryItems: [],
+      features: [],
+    };
+  }
+
+  const { start, end } = todayRange();
+
+  const [
+    ordersToday,
+    openOrdersCount,
+    confirmedOrders,
+    customers,
+    products,
+    suppliers,
+    inventoryItems,
+    lowInventoryItems,
+    todayOrders,
+    openOrders,
+  ] = await Promise.all([
+    prisma.order.count({
+      where: {
+        tenantId: access.tenantId,
+        deliveryDate: {
+          gte: start,
+          lt: end,
+        },
+      },
+    }).catch(() => 0),
+
+    prisma.order.count({
+      where: {
+        tenantId: access.tenantId,
+        status: "AUTO_CREATED" as any,
+      },
+    }).catch(() => 0),
+
+    prisma.order.count({
+      where: {
+        tenantId: access.tenantId,
+        status: "CONFIRMED" as any,
+      },
+    }).catch(() => 0),
+
+    prisma.customer.count({
+      where: {
+        tenantId: access.tenantId,
+      },
+    }).catch(() => 0),
+
+    prisma.product.count({
+      where: {
+        tenantId: access.tenantId,
+      },
+    }).catch(() => 0),
+
+    prisma.supplier.count({
+      where: {
+        tenantId: access.tenantId,
+        active: true,
+      },
+    }).catch(() => 0),
+
+    prisma.inventoryItem.count({
+      where: {
+        tenantId: access.tenantId,
+        active: true,
+      },
+    }).catch(() => 0),
+
+    prisma.inventoryItem.findMany({
+      where: {
+        tenantId: access.tenantId,
+        active: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+      take: 50,
+    }).catch(() => []),
+
+    prisma.order.findMany({
+      where: {
+        tenantId: access.tenantId,
+        deliveryDate: {
+          gte: start,
+          lt: end,
+        },
+      },
+      include: {
+        items: true,
+        customer: true,
+      },
+      orderBy: [
+        { deliveryTime: "asc" },
+        { createdAt: "desc" },
+      ],
+      take: 8,
+    }).catch(() => []),
+
+    prisma.order.findMany({
+      where: {
+        tenantId: access.tenantId,
+        status: "AUTO_CREATED" as any,
+      },
+      include: {
+        items: true,
+        customer: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 6,
+    }).catch(() => []),
+  ]);
+
+  const lowItems = lowInventoryItems.filter((item: any) => {
+    return item.minStock > 0 && item.currentStock <= item.minStock;
+  });
+
+  return {
+    tenant: access.tenant,
+    setupError: null,
+    counts: {
+      ordersToday,
+      openOrders: openOrdersCount,
+      confirmedOrders,
+      customers,
+      products,
+      suppliers,
+      inventoryItems,
+      lowInventory: lowItems.length,
+    },
+    todayOrders,
+    openOrders,
+    lowInventoryItems: lowItems.slice(0, 6),
+    features: access.features,
+  };
+}
+
+export default function Home() {
+  const data = useLoaderData<typeof loader>();
+
+  if (data.setupError) {
+    return (
+      <AppLayout>
+        <header className="topbar">
+          <div>
+            <p className="eyebrow">Dashboard</p>
+            <h1>Einrichtung fehlt</h1>
+            <span className="pageSubline">{data.setupError}</span>
+          </div>
+
+          <div className="topActions">
+            <a className="secondaryButton" href="/logout">Ausloggen</a>
+            <a className="primaryButton" href="/login">Neu einloggen</a>
+          </div>
+        </header>
+
+        <section className="panel">
+          <div className="panelHeader">
+            <div>
+              <p className="eyebrow">Hinweis</p>
+              <h2>Benutzer ist noch keinem Mandanten zugeordnet</h2>
+            </div>
+          </div>
+
+          <div className="noteBox">
+            <strong>Was jetzt?</strong>
+            <p>
+              Lege im Super Admin einen Mandanten an oder fuege diesen Benutzer
+              einem bestehenden Mandanten als OWNER hinzu.
+            </p>
+          </div>
+        </section>
+      </AppLayout>
+    );
+  }
+
+  return (
+    <AppLayout>
+      <header className="topbar">
+        <div>
+          <p className="eyebrow">Dashboard</p>
+          <h1>Heute im Betrieb</h1>
+          <span className="pageSubline">
+            {data.tenant?.name} ? Tagesueberblick fuer Auftraege, Pruefung, Produktion und Lieferung.
+          </span>
+        </div>
+
+        <div className="topActions">
+          <Link className="secondaryButton" to="/auftragseingang">Auftragseingang</Link>
+          <Link className="secondaryButton" to="/import-pruefen">PDF importieren</Link>
+          <Link className="primaryButton" to="/auftragseingang">Neuer Auftrag</Link>
+        </div>
+      </header>
+
+      <section className="commandCenter">
+        <div className="commandCopy">
+          <p className="eyebrow">Tagessteuerung</p>
+          <h2>
+            {data.counts.ordersToday} heute ? {data.counts.openOrders} zu pruefen ? {data.counts.confirmedOrders} bestaetigt
+          </h2>
+          <p>
+            Starte zuerst mit dem Auftragseingang. Neue PDF- und E-Mail-Importe werden dort geprueft,
+            bevor sie als echte Auftraege in Produktion, Packlisten, Lieferscheine und Lieferung gehen.
+          </p>
+        </div>
+
+        <div className="workflowRail" aria-label="Ablauf">
+          <span>Eingang</span>
+          <span>Pruefung</span>
+          <span>Auftrag</span>
+          <span>Produktion</span>
+          <span>Packen</span>
+          <span>Lieferung</span>
+        </div>
+      </section>
+
+      <section className="metricsGrid" aria-label="Kennzahlen">
+        <article className="metricCard">
+          <div>
+            <p>Auftraege heute</p>
+            <strong>{data.counts.ordersToday}</strong>
+            <span>nach Lieferdatum</span>
+          </div>
+          <small data-trend="bereit">heute</small>
+        </article>
+
+        <article className="metricCard">
+          <div>
+            <p>Pruefen</p>
+            <strong>{data.counts.openOrders}</strong>
+            <span>im Auftragseingang</span>
+          </div>
+          <small data-trend="pruefen">offen</small>
+        </article>
+
+        <article className="metricCard">
+          <div>
+            <p>Kunden / Produkte</p>
+            <strong>{data.counts.customers}/{data.counts.products}</strong>
+            <span>Kunden und Produkte</span>
+          </div>
+          <small data-trend="aktiv">echt</small>
+        </article>
+
+        <article className="metricCard">
+          <div>
+            <p>Lager Warnungen</p>
+            <strong>{data.counts.lowInventory}</strong>
+            <span>unter Mindestbestand</span>
+          </div>
+          <small data-trend="kritisch">Lager</small>
+        </article>
+      </section>
+
+      <section className="mainGrid">
+        <article className="panel schedulePanel">
+          <div className="panelHeader">
+            <div>
+              <p className="eyebrow">Tagesplan</p>
+              <h2>Naechste Auftraege heute</h2>
+            </div>
+            <Link className="ghostButton" to="/auftraege">Alle Auftraege</Link>
+          </div>
+
+          <div className="table">
+            <div className="tableHead">
+              <span>Zeit</span>
+              <span>Kunde</span>
+              <span>Auftrag</span>
+              <span>Status</span>
+              <span>Datum</span>
+            </div>
+
+            {data.todayOrders.length === 0 ? (
+              <div className="tableRow">
+                <span className="timeCell">-</span>
+                <strong>Keine Auftraege heute</strong>
+                <span>-</span>
+                <em>leer</em>
+                <span>-</span>
+              </div>
+            ) : (
+              data.todayOrders.map((order: any) => (
+                <div className="tableRow" key={order.id}>
+                  <span className="timeCell">{formatTime(order.deliveryTime)}</span>
+                  <strong>{order.customerName}</strong>
+                  <span>
+                    {order.eventName || order.orderNumber} · {order.items.length} Positionen
+                  </span>
+                  <em>{order.status}</em>
+                  <span>{formatDate(order.deliveryDate)}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </article>
+
+        <aside className="sideStack">
+          <article className="panel">
+            <div className="panelHeader compact">
+              <div>
+                <p className="eyebrow">Auftragseingang</p>
+                <h2>Zu pruefen</h2>
+              </div>
+            </div>
+
+            <div className="compactList">
+              {data.openOrders.length === 0 ? (
+                <div className="compactItem">
+                  <div>
+                    <strong>Nichts offen</strong>
+                    <span>Keine Auftraege in Pruefung.</span>
+                  </div>
+                  <small>OK</small>
+                </div>
+              ) : (
+                data.openOrders.map((order: any) => (
+                  <div className="compactItem" key={order.id}>
+                    <div>
+                      <strong>{order.customerName}</strong>
+                      <span>{order.source} · {order.orderNumber}</span>
+                    </div>
+                    <small>Pruefen</small>
+                  </div>
+                ))
+              )}
+            </div>
+          </article>
+
+          <article className="panel">
+            <div className="panelHeader compact">
+              <div>
+                <p className="eyebrow">Lager</p>
+                <h2>Mindestbestand</h2>
+              </div>
+            </div>
+
+            <div className="compactList">
+              {data.lowInventoryItems.length === 0 ? (
+                <div className="compactItem">
+                  <div>
+                    <strong>Keine Warnung</strong>
+                    <span>Keine Lagerartikel unter Mindestbestand.</span>
+                  </div>
+                  <small>OK</small>
+                </div>
+              ) : (
+                data.lowInventoryItems.map((item: any) => (
+                  <div className="compactItem" key={item.id}>
+                    <div>
+                      <strong>{item.name}</strong>
+                      <span>{item.currentStock} / Mindest {item.minStock} {item.unit}</span>
+                    </div>
+                    <small>Kaufen</small>
+                  </div>
+                ))
+              )}
+            </div>
+          </article>
+        </aside>
+      </section>
+    </AppLayout>
+  );
+}
