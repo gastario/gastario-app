@@ -54,42 +54,22 @@ function createOrderNumber() {
 function hasEnoughOrderData(order: any) {
   if (!order) return false;
 
-  const items = Array.isArray(order.items) ? order.items : [];
-  const realItems = items.filter((item: any) => {
-    const name = String(item?.name || "").trim().toLowerCase();
-    const totalCents = Number(item?.totalCents || 0);
-    const quantity = Number(item?.quantity || 0);
-
-    if (!name) return false;
-    if (name.includes("lieferkosten")) return false;
-    if (name.includes("summe")) return false;
-    if (name.includes("netto")) return false;
-    if (name.includes("brutto")) return false;
-
-    return quantity > 0 || totalCents > 0;
-  });
+  const itemCount = Array.isArray(order.items) ? order.items.length : 0;
+  const hasRealItems = itemCount > 0;
 
   const customerName = String(order.customerName || "").trim();
   const deliveryAddress = String(order.deliveryAddress || "").trim();
   const deliveryDate = String(order.deliveryDate || "").trim();
 
-  const hasRealCustomer =
-    Boolean(customerName) &&
-    customerName.toLowerCase() !== "e-mail import" &&
-    customerName.toLowerCase() !== "heycater" &&
-    customerName.toLowerCase() !== "unbekannt";
+  const hasCustomer = customerName && customerName.toLowerCase() !== "e-mail import";
+  const hasDeliveryTarget = Boolean(deliveryAddress || hasCustomer);
 
-  const hasFullDeliveryData =
-    hasRealCustomer &&
-    Boolean(deliveryDate) &&
-    Boolean(deliveryAddress);
-
-  const hasEnoughRealItems =
-    realItems.length > 0 &&
-    hasRealCustomer &&
-    Boolean(deliveryDate);
-
-  return Boolean(hasEnoughRealItems || hasFullDeliveryData);
+  // Ein Auftrag darf nur automatisch entstehen, wenn echte Positionen erkannt wurden
+  // oder mindestens Lieferdatum + Kunde/Adresse vorhanden sind.
+  return Boolean(
+    hasRealItems ||
+    (deliveryDate && hasDeliveryTarget)
+  );
 }
 
 async function extractPdfText(buffer: Buffer) {
@@ -350,7 +330,7 @@ export async function loader({ request }: { request: Request }) {
                   status: "REVIEW_NEEDED" as any,
                   processedAt: new Date(),
                   extractedJson: extractedOrder || undefined,
-                  errorMessage: "Nicht automatisch als Auftrag erstellt: Daten nicht eindeutig genug. Bitte im Auftragseingang pruefen.",
+                  errorMessage: "Keine ausreichenden Auftragsdaten erkannt.",
                 },
               });
             }
@@ -435,7 +415,7 @@ export async function loader({ request }: { request: Request }) {
               data: {
                 status: "REVIEW_NEEDED" as any,
                 processedAt: new Date(),
-                errorMessage: "Nicht automatisch als Auftrag erstellt: Daten nicht eindeutig genug. Bitte im Auftragseingang pruefen.",
+                errorMessage: "Keine ausreichenden Auftragsdaten erkannt.",
               },
             });
           }

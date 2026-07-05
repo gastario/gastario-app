@@ -350,7 +350,7 @@ export async function loader({ request }: { request: Request }) {
                   status: "REVIEW_NEEDED" as any,
                   processedAt: new Date(),
                   extractedJson: extractedOrder || undefined,
-                  errorMessage: "Nicht automatisch als Auftrag erstellt: Daten nicht eindeutig genug. Bitte im Auftragseingang pruefen.",
+                  errorMessage: "Keine ausreichenden Auftragsdaten erkannt.",
                 },
               });
             }
@@ -435,7 +435,7 @@ export async function loader({ request }: { request: Request }) {
               data: {
                 status: "REVIEW_NEEDED" as any,
                 processedAt: new Date(),
-                errorMessage: "Nicht automatisch als Auftrag erstellt: Daten nicht eindeutig genug. Bitte im Auftragseingang pruefen.",
+                errorMessage: "Keine ausreichenden Auftragsdaten erkannt.",
               },
             });
           }
