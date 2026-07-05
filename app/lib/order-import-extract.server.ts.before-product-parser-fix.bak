@@ -2,9 +2,6 @@ export type ExtractedOrderItem = {
   name: string;
   description?: string;
   rawLine?: string;
-  quantity?: number;
-  unitCents?: number;
-  totalCents?: number;
 };
 
 export type ExtractedOrder = {
@@ -139,101 +136,50 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
     line.toLowerCase().includes("einzelpreis")
   );
 
-  const tableEndIndex = lines.findIndex((line, index) =>
+  const stopIndex = lines.findIndex((line, index) =>
     index > tableStartIndex &&
     (
-      line.toLowerCase().includes("gesamtbetrag netto") ||
-      line.toLowerCase().startsWith("sonstiges:")
+      line.startsWith("--") ||
+      line.toLowerCase().includes("catering auftragsbest") ||
+      line.toLowerCase().includes("registergericht") ||
+      line.toLowerCase().includes("iban") ||
+      line.toLowerCase().includes("ust-idnr")
     )
   );
 
   const productLines =
     tableStartIndex >= 0
-      ? lines.slice(tableStartIndex + 1, tableEndIndex > tableStartIndex ? tableEndIndex : lines.length)
+      ? lines.slice(tableStartIndex + 1, stopIndex > tableStartIndex ? stopIndex : lines.length)
       : [];
 
-  function isNoiseLine(line: string) {
-    const lower = line.toLowerCase();
+  for (let index = 0; index < productLines.length; index++) {
+    const line = productLines[index];
 
-    return (
-      lower.includes("catering auftragsbest") ||
-      lower.includes("hey group") ||
-      lower.includes("gormann") ||
-      lower.includes("registergericht") ||
-      lower.includes("ust-idnr") ||
-      lower.includes("iban") ||
-      lower.includes("bic") ||
-      lower.includes("qonto") ||
-      lower.includes("name der bank") ||
-      lower.includes("gesch?ftsf?hrung") ||
-      lower.includes("geschaeftsfuehrung") ||
-      lower.includes("zahlungsempf?nger") ||
-      lower.includes("zahlungsempfaenger") ||
-      lower.includes("bezeichnung menge") ||
-      lower.includes("einzelpreis")
-    );
-  }
+    const priceLine =
+      /\b\d+\s*(\u20ac|EUR)\s*\d+/i.test(line) ||
+      /\b\d+\s+[0-9]+[,\.]?[0-9]*\s+[0-9]+[,\.]?[0-9]*/i.test(line);
 
-  function toCents(value: string) {
-    const normalized = String(value || "0").replace(",", ".").trim();
-    const number = Number(normalized);
-
-    if (!Number.isFinite(number)) {
-      return 0;
-    }
-
-    return Math.round(number * 100);
-  }
-
-  let currentLines: string[] = [];
-
-  for (const rawLine of productLines) {
-    const line = rawLine.replace(/\uFFFD|\uFFFE/g, "-").trim();
-
-    if (!line || isNoiseLine(line)) {
+    if (!priceLine) {
       continue;
     }
 
-    const priceMatch = line.match(/^(?:(.*?)\s+)?(\d+)\s*(?:\u20ac|EUR)\s*([0-9]+[,.]?[0-9]*)\s+([0-9]+[,.]?[0-9]*)$/i);
+    const name = productLines[index - 2] || productLines[index - 1] || "";
+    const description = productLines[index - 1] || "";
 
-    if (!priceMatch) {
-      currentLines.push(line);
-      continue;
-    }
-
-    const prefixName = String(priceMatch[1] || "").trim();
-    const quantity = Number(priceMatch[2] || 1);
-    const unitCents = toCents(priceMatch[3]);
-    const totalCents = toCents(priceMatch[4]);
-
-    const rowLines = [...currentLines, prefixName]
-      .map((item) => item.trim())
-      .filter(Boolean)
-      .filter((item) => !isNoiseLine(item));
-
-    currentLines = [];
-
-    if (rowLines.length === 0) {
-      continue;
-    }
-
-    const descriptionStart = rowLines.findIndex((item, index) =>
-      index > 0 &&
-      (
-        item.toLowerCase().startsWith("mit ") ||
-        item.toLowerCase().startsWith("beinhaltet ") ||
-        item.toLowerCase().startsWith("vegane ") ||
-        item.toLowerCase().startsWith("weizenklein")
-      )
-    );
-
-    const nameLines = descriptionStart > 0 ? rowLines.slice(0, descriptionStart) : rowLines.slice(0, 1);
-    const descriptionLines = descriptionStart > 0 ? rowLines.slice(descriptionStart) : rowLines.slice(1);
-
-    const name = nameLines.join(" ").trim();
-    const description = descriptionLines.join(" ").trim();
-
-    if (!name) {
+    if (
+      !name ||
+      name.toLowerCase().includes("bezeichnung") ||
+      name.toLowerCase().includes("gesch") ||
+      name.toLowerCase().includes("registergericht") ||
+      name.toLowerCase().includes("iban") ||
+      name.toLowerCase().includes("bic") ||
+      name.toLowerCase().includes("qonto") ||
+      name.toLowerCase().includes("bank") ||
+      name.toLowerCase().includes("ust-idnr") ||
+      name.toLowerCase().includes("hey group") ||
+      name.toLowerCase().includes("goerzallee") ||
+      name.toLowerCase().includes("gorman")
+    ) {
       continue;
     }
 
@@ -241,9 +187,6 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
       name,
       description,
       rawLine: line,
-      quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
-      unitCents,
-      totalCents,
     });
   }
 
