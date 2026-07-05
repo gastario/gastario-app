@@ -1,4 +1,4 @@
-﻿import { Form, Link, redirect, useLoaderData } from "react-router";
+﻿import { Link, useLoaderData } from "react-router";
 
 function formatDate(value: string | Date | null | undefined) {
   if (!value) return "-";
@@ -10,11 +10,6 @@ function centsToEuro(value: number | null | undefined) {
     style: "currency",
     currency: "EUR",
   });
-}
-
-function formatDateInput(value: string | Date | null | undefined) {
-  if (!value) return "";
-  return new Date(value).toISOString().slice(0, 10);
 }
 
 export function meta() {
@@ -61,72 +56,32 @@ export async function loader({ request, params }: { request: Request; params: { 
   };
 }
 
-export async function action({ request, params }: { request: Request; params: { orderId?: string } }) {
-  const { getUserId } = await import("../lib/session.server");
-  const { prisma } = await import("../lib/prisma.server");
-
-  const userId = await getUserId(request);
-
-  if (!userId) {
-    throw new Response("Nicht angemeldet", { status: 401 });
-  }
-
-  const tenantUser = await prisma.tenantUser.findFirst({
-    where: { userId },
-  });
-
-  if (!tenantUser) {
-    throw new Response("Kein Mandant gefunden", { status: 404 });
-  }
-
-  const formData = await request.formData();
-  const intent = String(formData.get("_intent") || "");
-
-  if (intent === "confirmOrder") {
-    await prisma.order.updateMany({
-      where: {
-        id: params.orderId,
-        tenantId: tenantUser.tenantId,
-      },
-      data: {
-        status: "CONFIRMED" as any,
-      },
-    });
-
-    return redirect("/auftraege");
-  }
-
-  return redirect("/auftrag-pruefung/" + params.orderId);
-}
-
 export default function AuftragPruefungPage() {
   const { tenant, order } = useLoaderData<typeof loader>();
   const total = order.items.reduce((sum, item) => sum + (item.totalCents || 0), 0);
-  const deliveryHref = "/lieferscheine" + (order.deliveryDate ? "?date=" + formatDateInput(order.deliveryDate) : "");
 
   return (
     <main style={{ background: "linear-gradient(180deg, #eef6f8 0%, #f8fbfc 100%)", minHeight: "100vh", padding: 24 }}>
-      <div style={topbarStyle}>
-        <Link to="/auftragseingang" style={backLinkStyle}>
-          Zurueck zum Auftragseingang
+      <div style={{ maxWidth: 1180, margin: "0 auto 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Link to="/auftragseingang" style={{ fontWeight: 800, color: "#057a67" }}>
+          Zurueck
         </Link>
 
-        <div style={actionBarStyle}>
-          <Link to={deliveryHref} style={secondaryButtonStyle}>
-            Lieferschein oeffnen
-          </Link>
-
-          <Form method="post">
-            <input type="hidden" name="_intent" value="confirmOrder" />
-            <button type="submit" style={primaryButtonStyle}>
-              Auftrag uebernehmen
-            </button>
-          </Form>
-
-          <button type="button" onClick={() => window.print()} style={printButtonStyle}>
-            Drucken / als PDF speichern
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          style={{
+            border: "1px solid #057a67",
+            background: "#057a67",
+            color: "#fff",
+            borderRadius: 12,
+            padding: "10px 14px",
+            fontWeight: 800,
+            cursor: "pointer",
+          }}
+        >
+          Drucken / als PDF speichern
+        </button>
       </div>
 
       <section style={{ maxWidth: 1180, margin: "0 auto", background: "#fff", borderRadius: 22, padding: 34, boxShadow: "0 18px 45px rgba(15, 23, 42, 0.08)", border: "1px solid #dbe7ec" }}>
@@ -415,57 +370,4 @@ const statusBadgeStyle: React.CSSProperties = {
   border: "1px solid #86efac",
   fontSize: 12,
   fontWeight: 950,
-};
-
-
-const topbarStyle: React.CSSProperties = {
-  maxWidth: 1180,
-  margin: "0 auto 18px",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: 14,
-};
-
-const backLinkStyle: React.CSSProperties = {
-  fontWeight: 850,
-  color: "#057a67",
-  textDecoration: "none",
-};
-
-const actionBarStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  flexWrap: "wrap",
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  border: "1px solid #057a67",
-  background: "#057a67",
-  color: "#fff",
-  borderRadius: 12,
-  padding: "10px 14px",
-  fontWeight: 850,
-  cursor: "pointer",
-};
-
-const secondaryButtonStyle: React.CSSProperties = {
-  border: "1px solid #cbd5e1",
-  background: "#fff",
-  color: "#0f172a",
-  borderRadius: 12,
-  padding: "10px 14px",
-  fontWeight: 850,
-  textDecoration: "none",
-};
-
-const printButtonStyle: React.CSSProperties = {
-  border: "1px solid #0f766e",
-  background: "#0f766e",
-  color: "#fff",
-  borderRadius: 12,
-  padding: "10px 14px",
-  fontWeight: 850,
-  cursor: "pointer",
 };
