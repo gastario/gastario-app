@@ -106,28 +106,10 @@ export async function action({ request }: { request: Request }) {
       },
     });
 
-    const tour = await prisma.deliveryTour.create({
-      data: {
-        tenantId: access.tenantId,
-        name: "Import " + order.orderNumber,
-        deliveryDate: parseGermanDate(extractedOrder.deliveryDate),
-        status: "OPEN",
-        notes: "Automatisch aus PDF-Import erstellt.",
-      },
-    });
-
-    await prisma.deliveryStop.create({
-      data: {
-        tenantId: access.tenantId,
-        tourId: tour.id,
-        orderId: order.id,
-        plannedTime: extractedOrder.deliveryTime || null,
-        status: "OPEN",
-        notes: "Automatisch aus PDF-Import erstellt.",
-      },
-    });
-
-    return redirect("/auftrag-pruefung/" + order.id + "?created=1&delivery=1");
+    return {
+      success: "Auftrag wurde im Auftragseingang gespeichert: " + order.orderNumber,
+      savedOrderId: order.id,
+    };
   }
 
   const pdfBase64 = String(formData.get("pdfBase64") || "");
