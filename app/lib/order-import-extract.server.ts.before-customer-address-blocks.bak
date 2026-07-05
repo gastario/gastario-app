@@ -6,9 +6,6 @@ export type ExtractedOrderItem = {
 
 export type ExtractedOrder = {
   source: string;
-  customerName: string;
-  contactName: string;
-  contactPhone: string;
   deliveryDate: string;
   deliveryTime: string;
   eventDate: string;
@@ -21,28 +18,6 @@ export type ExtractedOrder = {
 function extractValue(text: string, pattern: RegExp) {
   const match = text.match(pattern);
   return match?.[1]?.trim() || "";
-}
-
-function extractLinesAfterLabel(lines: string[], label: string, stopLabels: string[]) {
-  const startIndex = lines.findIndex((line) => line.toLowerCase() === label.toLowerCase());
-
-  if (startIndex < 0) {
-    return [];
-  }
-
-  const result: string[] = [];
-
-  for (const line of lines.slice(startIndex + 1)) {
-    const lower = line.toLowerCase();
-
-    if (stopLabels.some((stop) => lower.startsWith(stop.toLowerCase()))) {
-      break;
-    }
-
-    result.push(line);
-  }
-
-  return result;
 }
 
 export function extractHeycaterOrder(text: string): ExtractedOrder {
@@ -58,31 +33,6 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
   const presentation =
     extractValue(text, /Praesentation:\s*(.+)/i) ||
     extractValue(text, /Pr?sentation:\s*(.+)/i);
-
-  const customerBlock = extractLinesAfterLabel(lines, "Kunde:", [
-    "Lieferadresse:",
-    "Pr?sentation:",
-    "Praesentation:",
-    "Lieferungen:",
-  ]);
-
-  const deliveryBlock = extractLinesAfterLabel(lines, "Lieferadresse:", [
-    "Stockwerk:",
-    "Aufzug:",
-    "Parkm?glichkeiten:",
-    "Parkmoeglichkeiten:",
-    "Pr?sentation:",
-    "Praesentation:",
-    "Lieferungen:",
-  ]);
-
-  const customerName = customerBlock[0] || "";
-  const contactName = customerBlock.find((line) => !line.toLowerCase().startsWith("telefon:") && line !== customerName) || "";
-  const contactPhone = extractValue(customerBlock.join("\n"), /Telefon:\s*(.+)/i);
-
-  const deliveryStreet = deliveryBlock.find((line) => /stra?e|strasse|str\.|allee|weg|platz|damm|ufer|ring/i.test(line)) || "";
-  const deliveryZipCity = deliveryBlock.find((line) => /^\d{5}\s+/.test(line)) || "";
-  const deliveryAddressFromBlock = [deliveryStreet, deliveryZipCity].filter(Boolean).join(", ");
 
   const ownOrPlatformWords = [
     "goerzallee",
@@ -126,7 +76,7 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
           ) || ""
       : "";
 
-  const deliveryAddress = deliveryAddressFromBlock || [streetLine, zipCityLine].filter(Boolean).join(", ");
+  const deliveryAddress = [streetLine, zipCityLine].filter(Boolean).join(", ");
 
   const items: ExtractedOrderItem[] = [];
 
@@ -192,9 +142,6 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
 
   return {
     source: text.toLowerCase().includes("hey") ? "Heycater" : "Unbekannt",
-    customerName,
-    contactName,
-    contactPhone,
     deliveryDate,
     deliveryTime,
     eventDate,

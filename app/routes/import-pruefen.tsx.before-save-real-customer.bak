@@ -75,13 +75,11 @@ export async function action({ request }: { request: Request }) {
         orderNumber: createOrderNumber(),
         source: extractedOrder.source === "Heycater" ? "HEYCATER" : "EMAIL",
         status: "AUTO_CREATED",
-        customerName: extractedOrder.customerName || (extractedOrder.source === "Heycater" ? "Heycater Import" : "PDF Import"),
+        customerName: extractedOrder.source === "Heycater" ? "Heycater Import" : "PDF Import",
         eventName: extractedOrder.presentation || null,
         deliveryDate: parseGermanDate(extractedOrder.deliveryDate),
         deliveryTimeText: extractedOrder.deliveryTime || null,
         deliveryAddress: extractedOrder.deliveryAddress || null,
-        contactName: extractedOrder.contactName || null,
-        contactPhone: extractedOrder.contactPhone || null,
         notes:
           "Automatisch aus PDF erkannt. Eventdatum: " +
           String(extractedOrder.eventDate || "-") +
