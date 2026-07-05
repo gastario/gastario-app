@@ -30,7 +30,6 @@ const navigationGroups = [
       { label: "Angebote", to: "/angebote" },
       { label: "Kunden", to: "/kunden" },
       { label: "Produkte", to: "/produkte" },
-      { label: "Produkt-Import", to: "/produkte/import" },
     ],
   },
   {

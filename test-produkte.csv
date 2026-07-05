@@ -1,0 +1,6 @@
+﻿name;kategorie;einheit;preis;mwst;aktiv
+Chicken Bowl;Bowls;Portion;9,90;7;ja
+Vegane Bowl;Bowls;Portion;8,90;7;ja
+Burger Classic;Burger;Stück;10,50;7;ja
+Cola 0,33l;Getränke;Flasche;2,50;19;ja
+Fehler ohne Preis;Test;Portion;;7;ja

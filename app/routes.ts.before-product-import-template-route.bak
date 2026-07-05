@@ -18,7 +18,6 @@ export default [
   route("rechnungen/:invoiceId/pdf", "routes/rechnungen.$invoiceId.pdf.tsx"),
   route("kunden", "routes/kunden.tsx"),
   route("produkte", "routes/produkte.tsx"),
-  route("produkte/import/vorlage", "routes/produkte.import.vorlage.tsx"),
   route("produkte/import", "routes/produkte.import.tsx"),
   route("produktion", "routes/produktion.tsx"),
   route("mhd-labels", "routes/mhd-labels.tsx"),
