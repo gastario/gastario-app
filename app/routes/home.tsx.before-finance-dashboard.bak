@@ -20,26 +20,6 @@ function formatTime(value: string | null | undefined) {
   return value || "-";
 }
 
-function centsToEuro(value: number | null | undefined) {
-  const amount = Number(value || 0) / 100;
-
-  return amount.toLocaleString("de-DE", {
-    style: "currency",
-    currency: "EUR",
-  });
-}
-
-function percentChange(current: number, previous: number) {
-  if (!previous) {
-    return current > 0 ? "+100%" : "0%";
-  }
-
-  const value = ((current - previous) / previous) * 100;
-  const sign = value > 0 ? "+" : "";
-
-  return sign + value.toFixed(1).replace(".", ",") + "%";
-}
-
 export function meta() {
   return [
     { title: "Dashboard · Gastario" },
@@ -75,14 +55,6 @@ export async function loader({ request }: { request: Request }) {
       openOrders: [],
       lowInventoryItems: [],
       features: [],
-      finance: {
-        currentMonthGrossCents: 0,
-        previousMonthGrossCents: 0,
-        monthChangeLabel: "0%",
-        openInvoiceCount: 0,
-        openInvoiceGrossCents: 0,
-        ordersWithoutInvoice: 0,
-      },
     };
   }
 
@@ -200,77 +172,6 @@ export async function loader({ request }: { request: Request }) {
     return item.minStock > 0 && item.currentStock <= item.minStock;
   });
 
-  const now = new Date();
-  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-
-  const [
-    currentMonthInvoices,
-    previousMonthInvoices,
-    openInvoices,
-    ordersWithoutInvoice,
-  ] = await Promise.all([
-    prisma.invoice.aggregate({
-      where: {
-        tenantId: access.tenantId,
-        invoiceDate: {
-          gte: currentMonthStart,
-          lt: nextMonthStart,
-        },
-        cancelledAt: null,
-      },
-      _sum: {
-        grossTotalCents: true,
-      },
-    }).catch(() => ({ _sum: { grossTotalCents: 0 } })),
-
-    prisma.invoice.aggregate({
-      where: {
-        tenantId: access.tenantId,
-        invoiceDate: {
-          gte: previousMonthStart,
-          lt: currentMonthStart,
-        },
-        cancelledAt: null,
-      },
-      _sum: {
-        grossTotalCents: true,
-      },
-    }).catch(() => ({ _sum: { grossTotalCents: 0 } })),
-
-    prisma.invoice.findMany({
-      where: {
-        tenantId: access.tenantId,
-        paidAt: null,
-        cancelledAt: null,
-      },
-      select: {
-        grossTotalCents: true,
-      },
-      take: 1000,
-    }).catch(() => []),
-
-    prisma.order.count({
-      where: {
-        tenantId: access.tenantId,
-        status: {
-          in: ["CONFIRMED", "IN_PRODUCTION", "PACKING_OPEN", "DELIVERED"] as any,
-        },
-        invoices: {
-          none: {},
-        },
-      },
-    }).catch(() => 0),
-  ]);
-
-  const currentMonthGrossCents = Number(currentMonthInvoices._sum.grossTotalCents || 0);
-  const previousMonthGrossCents = Number(previousMonthInvoices._sum.grossTotalCents || 0);
-  const openInvoiceGrossCents = openInvoices.reduce(
-    (sum: number, invoice: any) => sum + Number(invoice.grossTotalCents || 0),
-    0
-  );
-
   return {
     tenant: access.tenant,
     setupError: null,
@@ -288,14 +189,6 @@ export async function loader({ request }: { request: Request }) {
     openOrders,
     lowInventoryItems: lowItems.slice(0, 6),
     features: access.features,
-    finance: {
-      currentMonthGrossCents,
-      previousMonthGrossCents,
-      monthChangeLabel: percentChange(currentMonthGrossCents, previousMonthGrossCents),
-      openInvoiceCount: openInvoices.length,
-      openInvoiceGrossCents,
-      ordersWithoutInvoice,
-    },
   };
 }
 
@@ -382,43 +275,6 @@ export default function Home() {
             <strong>{data.counts.lowInventory}</strong>
             <small>Warnungen</small>
           </Link>
-        </section>
-
-        <section className="financePanel">
-          <div className="financeHead">
-            <div>
-              <p className="eyebrow">Finanzen</p>
-              <h2>Umsatz & Monatsabschluss</h2>
-              <span>Aktueller Monat, Vormonat und offene Punkte fuer Abrechnung und Steuerberater.</span>
-            </div>
-            <Link to="/rechnungen">Rechnungen oeffnen</Link>
-          </div>
-
-          <div className="financeGrid">
-            <div>
-              <span>Umsatz diesen Monat</span>
-              <strong>{centsToEuro(data.finance.currentMonthGrossCents)}</strong>
-              <small>nach Rechnungsdatum</small>
-            </div>
-
-            <div>
-              <span>Vormonat</span>
-              <strong>{centsToEuro(data.finance.previousMonthGrossCents)}</strong>
-              <small>{data.finance.monthChangeLabel} zum Vormonat</small>
-            </div>
-
-            <div>
-              <span>Offene Rechnungen</span>
-              <strong>{data.finance.openInvoiceCount}</strong>
-              <small>{centsToEuro(data.finance.openInvoiceGrossCents)} offen</small>
-            </div>
-
-            <div>
-              <span>Ohne Rechnung</span>
-              <strong>{data.finance.ordersWithoutInvoice}</strong>
-              <small>uebernommene Auftraege</small>
-            </div>
-          </div>
         </section>
 
         <section className="dashGrid">
@@ -738,79 +594,4 @@ const dashboardCss = `
     font-size: 13px;
     font-weight: 750;
   }
-
-  .financePanel {
-    background: #ffffff;
-    border: 1px solid #dbe5eb;
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.055);
-  }
-
-  .financeHead {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    align-items: flex-start;
-    margin-bottom: 16px;
-  }
-
-  .financeHead h2 {
-    margin: 4px 0 0;
-    color: #071426;
-    font-size: 22px;
-    letter-spacing: -0.035em;
-  }
-
-  .financeHead span {
-    display: block;
-    margin-top: 5px;
-    color: #64748b;
-    font-weight: 700;
-  }
-
-  .financeHead a {
-    border: 1px solid #cbd5e1;
-    background: #ffffff;
-    color: #0f172a;
-    border-radius: 999px;
-    padding: 9px 13px;
-    font-weight: 900;
-    text-decoration: none;
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
-    white-space: nowrap;
-  }
-
-  .financeGrid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-  }
-
-  .financeGrid > div {
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
-    border-radius: 16px;
-    padding: 15px;
-    display: grid;
-    gap: 5px;
-  }
-
-  .financeGrid span {
-    color: #64748b;
-    font-size: 13px;
-    font-weight: 900;
-  }
-
-  .financeGrid strong {
-    color: #071426;
-    font-size: 24px;
-    letter-spacing: -0.04em;
-  }
-
-  .financeGrid small {
-    color: #64748b;
-    font-weight: 750;
-  }
-
 `;
