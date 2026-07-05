@@ -91,7 +91,6 @@ enum IncomingEmailStatus {
   REVIEW_NEEDED
   FAILED
   DUPLICATE
-  IGNORED
 }
 
 enum ExtractionConfidence {

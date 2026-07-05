@@ -338,79 +338,6 @@ export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
   const intent = String(formData.get("intent") || "");
 
-  if (intent === "restoreIncomingEmail") {
-    const emailId = String(formData.get("emailId") || "").trim();
-
-    if (!emailId) {
-      return { error: "E-Mail fehlt." };
-    }
-
-    const email = await prisma.incomingEmail.findFirst({
-      where: {
-        id: emailId,
-        tenantId: tenantUser.tenantId,
-      },
-    });
-
-    if (!email) {
-      return { error: "E-Mail wurde nicht gefunden." };
-    }
-
-    await prisma.incomingEmail.update({
-      where: {
-        id: email.id,
-      },
-      data: {
-        status: "REVIEW_NEEDED" as any,
-        errorMessage: null,
-      },
-    });
-
-    return { success: "E-Mail wurde wieder eingeblendet." };
-  }
-
-  if (intent === "hideIncomingEmail") {
-    const emailId = String(formData.get("emailId") || "").trim();
-
-    if (!emailId) {
-      return { error: "E-Mail fehlt." };
-    }
-
-    const email = await prisma.incomingEmail.findFirst({
-      where: {
-        id: emailId,
-        tenantId: tenantUser.tenantId,
-      },
-      include: {
-        orders: {
-          select: {
-            id: true,
-          },
-        },
-      },
-    });
-
-    if (!email) {
-      return { error: "E-Mail wurde nicht gefunden." };
-    }
-
-    if (email.orders.length > 0) {
-      return { error: "Diese E-Mail ist bereits mit einem Auftrag verbunden." };
-    }
-
-    await prisma.incomingEmail.update({
-      where: {
-        id: email.id,
-      },
-      data: {
-        status: "IGNORED" as any,
-        errorMessage: "Manuell ausgeblendet.",
-      },
-    });
-
-    return { success: "E-Mail wurde ausgeblendet." };
-  }
-
   if (intent === "deleteIncomingEmail") {
     const emailId = String(formData.get("emailId") || "").trim();
 
@@ -1437,40 +1364,6 @@ export default function AuftragseingangPage() {
                       <td style={tdStyle}>
                         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                           <a href={"/email-pruefung/" + mail.id} style={smallButtonStyle}>Pruefen</a>
-
-                          {mail.status !== "IGNORED" ? (
-                            <Form method="post">
-                              <input type="hidden" name="intent" value="hideIncomingEmail" />
-                              <input type="hidden" name="emailId" value={mail.id} />
-                              <button
-                                type="submit"
-                                style={{
-                                  ...smallButtonStyle,
-                                  color: "#475569",
-                                  borderColor: "#cbd5e1",
-                                  background: "#f8fafc",
-                                }}
-                              >
-                                Ausblenden
-                              </button>
-                            </Form>
-                          ) : (
-                            <Form method="post">
-                              <input type="hidden" name="intent" value="restoreIncomingEmail" />
-                              <input type="hidden" name="emailId" value={mail.id} />
-                              <button
-                                type="submit"
-                                style={{
-                                  ...smallButtonStyle,
-                                  color: "#047857",
-                                  borderColor: "#bbf7d0",
-                                  background: "#f0fdf4",
-                                }}
-                              >
-                                Einblenden
-                              </button>
-                            </Form>
-                          )}
 
                           <Form method="post" onSubmit={(event) => {
                             if (!confirm("Diese E-Mail wirklich aus dem Eingang loeschen?")) {

@@ -1454,23 +1454,7 @@ export default function AuftragseingangPage() {
                                 Ausblenden
                               </button>
                             </Form>
-                          ) : (
-                            <Form method="post">
-                              <input type="hidden" name="intent" value="restoreIncomingEmail" />
-                              <input type="hidden" name="emailId" value={mail.id} />
-                              <button
-                                type="submit"
-                                style={{
-                                  ...smallButtonStyle,
-                                  color: "#047857",
-                                  borderColor: "#bbf7d0",
-                                  background: "#f0fdf4",
-                                }}
-                              >
-                                Einblenden
-                              </button>
-                            </Form>
-                          )}
+                          ) : null}
 
                           <Form method="post" onSubmit={(event) => {
                             if (!confirm("Diese E-Mail wirklich aus dem Eingang loeschen?")) {

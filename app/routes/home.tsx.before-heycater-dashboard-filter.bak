@@ -23,21 +23,38 @@ function formatTime(value: string | null | undefined) {
 
 function isLikelyOrderEmail(mail: any) {
   const subject = String(mail?.subject || "").toLowerCase();
+  const sender = String(mail?.sender || "").toLowerCase();
 
   const positiveSignals = [
-    "fast track order best?tigt",
-    "fast track order bestaetigt",
     "order best?tigt",
     "order bestaetigt",
-    "auftrag best?tigt",
-    "auftrag bestaetigt",
     "auftragsbest?tigung",
     "auftragsbestaetigung",
+    "gebucht",
+    "dein morgiges catering",
+    "dein morgiges heykantine",
+    "catering mit heycater",
   ];
+
+  const negativeSignals = [
+    "angebot freigeben",
+    "angebot erstellen",
+    "bitte angebot",
+    "anfrage",
+    "paypal",
+    "newsletter",
+    "kurz nachgehakt",
+    "guthaben",
+    "buust",
+    "werbung",
+  ];
+
+  if (negativeSignals.some((signal) => subject.includes(signal) || sender.includes(signal))) {
+    return false;
+  }
 
   return positiveSignals.some((signal) => subject.includes(signal));
 }
-
 
 function centsToEuro(value: number | null | undefined) {
   const amount = Number(value || 0) / 100;

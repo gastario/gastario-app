@@ -1,0 +1,1 @@
+﻿ALTER TYPE "IncomingEmailStatus" ADD VALUE IF NOT EXISTS 'IGNORED';
