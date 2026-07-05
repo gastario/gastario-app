@@ -181,45 +181,19 @@ export default function DeliveryNotesPage() {
                   gap: 18,
                   borderBottom: "1px solid #e2e8f0",
                   paddingBottom: 16,
-                  marginBottom: 16,
-                  alignItems: "flex-start"
+                  marginBottom: 16
                 }}>
                   <div>
                     <p className="eyebrow">Lieferschein</p>
                     <h2 style={{ margin: 0 }}>{order.orderNumber || order.id}</h2>
                     <p style={{ margin: "6px 0 0", color: "#64748b", fontWeight: 800 }}>
-                      {formatDate(order.deliveryDate)} ? {order.deliveryTime || "-"} Uhr
+                      {formatDate(order.deliveryDate)} · {order.deliveryTime || "-"} Uhr
                     </p>
-
-                    {String(order.status || "").toUpperCase() === "AUTO_CREATED" ? (
-                      <div style={{
-                        display: "inline-flex",
-                        marginTop: 10,
-                        border: "1px solid #fed7aa",
-                        background: "#fff7ed",
-                        color: "#9a3412",
-                        borderRadius: 999,
-                        padding: "6px 10px",
-                        fontSize: 12,
-                        fontWeight: 900
-                      }}>
-                        Automatisch aus Import vorbereitet
-                      </div>
-                    ) : null}
                   </div>
 
-                  <div style={{ display: "grid", gap: 8, justifyItems: "end" }}>
+                  <div style={{ textAlign: "right", fontWeight: 800 }}>
                     <strong>{data.tenantName}</strong>
-
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                      <Link className="ghostButton" to={"/auftrag-pruefung/" + order.id}>
-                        Auftrag oeffnen
-                      </Link>
-
-                      <button className="secondaryButton" type="button" onClick={() => window.print()}>
-                        Drucken
-                      </button>
-                    </div>
+                    <p style={{ margin: "6px 0 0", color: "#64748b" }}>Gastario</p>
                   </div>
                 </div>
 

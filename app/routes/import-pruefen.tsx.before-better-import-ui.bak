@@ -275,62 +275,34 @@ export default function ImportPruefenPage() {
   return (
     <AppLayout>
       <div style={pageStyle}>
-        <header style={heroStyle}>
-          <div>
-            <p style={eyebrowStyle}>Import & Auftragserkennung</p>
-            <h1 style={titleStyle}>Import pruefen</h1>
-            <p style={subtitleStyle}>
-              PDF-Auftrag hochladen, Daten sicher erkennen und danach als Pruefauftrag speichern.
-              Erst auf der Pruefseite wird der Auftrag uebernommen.
-            </p>
-          </div>
-
-          <div style={heroStepsStyle}>
-            <span>1 Upload</span>
-            <span>2 Erkennung</span>
-            <span>3 Pruefung</span>
-            <span>4 Uebernahme</span>
-          </div>
+        <header>
+          <p style={eyebrowStyle}>Import & Auftragserkennung</p>
+          <h1 style={titleStyle}>Import pruefen</h1>
+          <p style={subtitleStyle}>
+            Hier laden wir im naechsten Schritt PDF-Auftraege hoch und pruefen sie gegen die Import-Regeln.
+          </p>
         </header>
-
-        <section style={noticeStyle}>
-          <strong>Sicherer Import:</strong>
-          <span>
-            Aus einem PDF entsteht zuerst nur ein Pruefauftrag. Der Auftrag wird erst nach manueller Kontrolle
-            auf der Pruefseite als echter Auftrag uebernommen.
-          </span>
-        </section>
 
         {actionData?.error ? <div style={errorStyle}>{actionData.error}</div> : null}
         {actionData?.success ? <div style={successStyle}>{actionData.success}</div> : null}
 
-        <section style={uploadCardStyle}>
-          <div>
-            <p style={eyebrowStyle}>PDF Upload</p>
-            <h2 style={sectionTitleStyle}>Auftrag hochladen</h2>
-            <p style={textStyle}>
-              Aktuell optimiert fuer Heycater-PDFs. Weitere Quellen wie E-Mail, Egora oder Website-Anfragen
-              werden spaeter ueber die gleiche Prueflogik verarbeitet.
-            </p>
-          </div>
+        <section style={cardStyle}>
+          <p style={eyebrowStyle}>PDF Upload</p>
+          <h2 style={sectionTitleStyle}>PDF-Auftrag hochladen</h2>
 
-          <form method="post" encType="multipart/form-data" style={uploadFormStyle}>
-            <label style={uploadDropStyle}>
-              <span style={{ fontWeight: 900, color: "#0f172a" }}>
-                PDF-Datei auswaehlen
-              </span>
+          <form method="post" encType="multipart/form-data" style={formStyle}>
+            <label style={fieldStyle}>
+              <span>PDF-Datei</span>
               <input type="file" accept="application/pdf,.pdf" onChange={handlePdfChange} required />
               <input type="hidden" name="pdfFileName" value={fileName} />
               <input type="hidden" name="pdfBase64" value={fileBase64} />
-
               {fileName ? (
                 <small style={hintStyle}>
-                  {fileName} ? {fileSize} Bytes
-                  {fileBase64 ? " ? bereit zur Pruefung" : " ? Datei wird geladen..."}
+                  Ausgewaehlt: {fileName}
+                  {" - Groesse: " + fileSize + " Bytes"}
+                  {fileBase64 ? " - Datei geladen: " + fileBase64.length + " Zeichen" : " - Datei wird geladen..."}
                 </small>
-              ) : (
-                <small style={hintStyle}>PDF hochladen und anschliessend pruefen lassen.</small>
-              )}
+              ) : null}
             </label>
 
             <button type="submit" style={primaryButtonStyle} disabled={!fileBase64}>
@@ -340,79 +312,51 @@ export default function ImportPruefenPage() {
         </section>
 
         {actionData?.extractedOrder ? (
-          <section style={resultLayoutStyle}>
-            <div style={cardStyle}>
-              <div style={sectionHeaderStyle}>
-                <div>
-                  <p style={eyebrowStyle}>Auftragsvorschlag</p>
-                  <h2 style={sectionTitleStyle}>Erkannte Auftragsdaten</h2>
-                </div>
+          <section style={cardStyle}>
+            <p style={eyebrowStyle}>Auftragsvorschlag</p>
+            <h2 style={sectionTitleStyle}>Erkannte Auftragsdaten</h2>
 
-                <form method="post" style={saveOrderFormStyle}>
-                  <input type="hidden" name="_intent" value="saveOrder" />
-                  <input type="hidden" name="pdfFileName" value={actionData.fileName || "upload.pdf"} />
-                  <input type="hidden" name="orderJson" value={JSON.stringify(actionData.extractedOrder)} />
-                  <button type="submit" style={primaryButtonStyle}>
-                    Als Pruefauftrag speichern
-                  </button>
-                </form>
-              </div>
-
-              <div style={summaryGridStyle}>
-                <Info label="Quelle" value={actionData.extractedOrder.source} />
-                <Info label="Kunde" value={actionData.extractedOrder.customerName} />
-                <Info label="Kontakt" value={actionData.extractedOrder.contactName} />
-                <Info label="Telefon" value={actionData.extractedOrder.contactPhone} />
-                <Info label="Lieferdatum" value={actionData.extractedOrder.deliveryDate} />
-                <Info label="Lieferzeit" value={actionData.extractedOrder.deliveryTime} />
-                <Info label="Lieferadresse" value={actionData.extractedOrder.deliveryAddress} />
-                <Info label="Praesentation" value={actionData.extractedOrder.presentation} />
-              </div>
-
-              <h3 style={smallTitleStyle}>Erkannte Positionen</h3>
-
-              {actionData.extractedOrder.items?.length ? (
-                <div style={itemListStyle}>
-                  {actionData.extractedOrder.items.map((item: any, index: number) => (
-                    <div key={index} style={itemRowStyle}>
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                        <strong>{index + 1}. {item.name}</strong>
-                        <strong>{item.quantity || 1}x</strong>
-                      </div>
-                      {item.description ? <span>{item.description}</span> : null}
-                      {item.rawLine ? <small>{item.rawLine}</small> : null}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={emptyStyle}>Noch keine Positionen erkannt.</div>
-              )}
+            <div style={summaryGridStyle}>
+              <Info label="Quelle" value={actionData.extractedOrder.source} />
+              <Info label="Lieferdatum" value={actionData.extractedOrder.deliveryDate} />
+              <Info label="Lieferzeit" value={actionData.extractedOrder.deliveryTime} />
+              <Info label="Eventdatum" value={actionData.extractedOrder.eventDate} />
+              <Info label="Eventbeginn" value={actionData.extractedOrder.eventStart} />
+              <Info label="Lieferadresse" value={actionData.extractedOrder.deliveryAddress} />
+              <Info label="Praesentation" value={actionData.extractedOrder.presentation} />
             </div>
 
-            <aside style={sideCardStyle}>
-              <p style={eyebrowStyle}>Pruefung</p>
-              <h2 style={sectionTitleStyle}>Import-Check</h2>
+            <h3 style={smallTitleStyle}>Erkannte Positionen</h3>
 
-              <div style={checkListStyle}>
-                <span>Kunde erkannt</span>
-                <span>Lieferdatum erkannt</span>
-                <span>Lieferzeit erkannt</span>
-                <span>Lieferadresse erkannt</span>
-                <span>Positionen erkannt</span>
+            <form method="post" style={saveOrderFormStyle}>
+              <input type="hidden" name="_intent" value="saveOrder" />
+              <input type="hidden" name="pdfFileName" value={actionData.fileName || "upload.pdf"} />
+              <input type="hidden" name="orderJson" value={JSON.stringify(actionData.extractedOrder)} />
+              <button type="submit" style={primaryButtonStyle}>
+                Als Auftrag speichern
+              </button>
+            </form>
+
+            {actionData.extractedOrder.items?.length ? (
+              <div style={itemListStyle}>
+                {actionData.extractedOrder.items.map((item: any, index: number) => (
+                  <div key={index} style={itemRowStyle}>
+                    <strong>{item.name}</strong>
+                    {item.description ? <span>{item.description}</span> : null}
+                    {item.rawLine ? <small>{item.rawLine}</small> : null}
+                  </div>
+                ))}
               </div>
-
-              <p style={sideNoteStyle}>
-                Nach dem Speichern oeffnet sich automatisch die Pruefseite. Dort kann der Auftrag uebernommen
-                und danach unter Auftraege weiterbearbeitet werden.
-              </p>
-            </aside>
+            ) : (
+              <div style={emptyStyle}>Noch keine Positionen erkannt.</div>
+            )}
           </section>
         ) : null}
 
         {actionData?.matches ? (
           <section style={cardStyle}>
             <p style={eyebrowStyle}>Erkennung</p>
-            <h2 style={sectionTitleStyle}>Treffer aus Import-Regeln</h2>
+            <h2 style={sectionTitleStyle}>Erkannte Felder</h2>
 
             {actionData.matches.length === 0 ? (
               <div style={emptyStyle}>
@@ -433,12 +377,11 @@ export default function ImportPruefenPage() {
         ) : null}
 
         {actionData?.preview ? (
-          <details style={cardStyle}>
-            <summary style={{ cursor: "pointer", fontWeight: 900, color: "#0f172a" }}>
-              Ausgelesenen Rohtext anzeigen
-            </summary>
+          <section style={cardStyle}>
+            <p style={eyebrowStyle}>Ausgelesener Text</p>
+            <h2 style={sectionTitleStyle}>{actionData.fileName}</h2>
             <pre style={preStyle}>{actionData.preview}</pre>
-          </details>
+          </section>
         ) : null}
       </div>
     </AppLayout>
@@ -642,98 +585,4 @@ const saveOrderFormStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "flex-start",
   margin: "0 0 16px",
-};
-
-
-const heroStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 24,
-  alignItems: "flex-start",
-};
-
-const heroStepsStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 8,
-  flexWrap: "wrap",
-  justifyContent: "flex-end",
-  maxWidth: 430,
-};
-
-const noticeStyle: React.CSSProperties = {
-  border: "1px solid #bfdbfe",
-  background: "#eff6ff",
-  color: "#1e3a8a",
-  borderRadius: 16,
-  padding: 16,
-  display: "grid",
-  gap: 4,
-  fontWeight: 700,
-};
-
-const uploadCardStyle: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #dbe5eb",
-  borderRadius: 20,
-  padding: 24,
-  boxShadow: "0 16px 34px rgba(15, 23, 42, 0.06)",
-  display: "grid",
-  gap: 18,
-};
-
-const uploadFormStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr auto",
-  gap: 14,
-  alignItems: "stretch",
-};
-
-const uploadDropStyle: React.CSSProperties = {
-  border: "1px dashed #14b8a6",
-  background: "#f8fffd",
-  borderRadius: 16,
-  padding: 16,
-  display: "grid",
-  gap: 10,
-};
-
-const resultLayoutStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "minmax(0, 1fr) 320px",
-  gap: 18,
-  alignItems: "start",
-};
-
-const sectionHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 16,
-  alignItems: "flex-start",
-  marginBottom: 16,
-};
-
-const sideCardStyle: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #dbe5eb",
-  borderRadius: 18,
-  padding: 22,
-  boxShadow: "0 10px 26px rgba(15, 23, 42, 0.045)",
-  position: "sticky",
-  top: 18,
-};
-
-const checkListStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 10,
-  marginTop: 12,
-  color: "#0f172a",
-  fontWeight: 800,
-};
-
-const sideNoteStyle: React.CSSProperties = {
-  marginTop: 16,
-  color: "#64748b",
-  fontSize: 13,
-  lineHeight: 1.45,
-  fontWeight: 650,
 };

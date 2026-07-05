@@ -213,7 +213,7 @@ export default function OrdersPage() {
         </div>
 
         <div className="topActions">
-          <Link className="secondaryButton" to="/import-pruefen">Import pruefen</Link>
+          <Link className="secondaryButton" to="/auftragseingang">Import pruefen</Link>
           <Link className="primaryButton" to="/auftragseingang">Neuer Auftrag</Link>
         </div>
       </header>
@@ -379,20 +379,16 @@ export default function OrdersPage() {
                   <strong>{centsToEuro(total)}</strong>
 
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <Link className="ghostButton" to={"/auftrag-pruefung/" + order.id}>
-                      Oeffnen
-                    </Link>
-
-                    <Link className="ghostButton" to={"/auftrag-pruefung/" + order.id}>
-                      Pruefseite
-                    </Link>
-
-                    <Link
-                      className="ghostButton"
-                      to={"/lieferscheine?date=" + String(order.deliveryDate || "").slice(0, 10)}
-                    >
-                      Lieferschein
-                    </Link>
+                    <Form method="post" style={{ display: "flex", gap: 8 }}>
+                      <input type="hidden" name="intent" value="updateStatus" />
+                      <input type="hidden" name="orderId" value={order.id} />
+                      <select name="status" defaultValue={order.status} style={selectStyle}>
+                        <option value="AUTO_CREATED">Pruefen</option>
+                        <option value="CONFIRMED">Bestaetigt</option>
+                        <option value="REJECTED">Abgelehnt</option>
+                      </select>
+                      <button className="ghostButton" type="submit">Speichern</button>
+                    </Form>
 
                     <Form method="post">
                       <input type="hidden" name="intent" value="deleteOrder" />
