@@ -238,10 +238,7 @@ export default function EmailPruefung() {
 
         <div className="topActions">
           <Link className="secondaryButton" to="/auftragseingang">Zurück</Link>
-          <Form method="post">
-            <input type="hidden" name="intent" value="createOrderFromEmail" />
-            <button className="primaryButton" type="submit">Als Auftrag anlegen</button>
-          </Form>
+          <Link className="primaryButton" to="/auftragseingang">Auftrag später erstellen</Link>
         </div>
       </header>
 

@@ -1,35 +1,9 @@
-﻿import { Form, Link, redirect, useLoaderData } from "react-router";
+﻿import { Link, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 function formatDateTime(value: string | Date | null | undefined) {
   if (!value) return "-";
   return new Date(value).toLocaleString("de-DE");
-}
-
-function createEmailOrderNumber() {
-  const now = new Date();
-  const date = now.toISOString().slice(0, 10).replaceAll("-", "");
-  const random = Math.floor(1000 + Math.random() * 9000);
-  return "EMAIL-" + date + "-" + random;
-}
-
-function cleanSenderName(value: string | null | undefined) {
-  const raw = String(value || "").trim();
-
-  if (!raw) return "E-Mail Auftrag";
-
-  const match = raw.match(/^"?([^"<]+)"?\s*</);
-
-  if (match?.[1]) {
-    return match[1].trim();
-  }
-
-  return raw.replace(/<[^>]+>/g, "").replace(/"/g, "").trim() || "E-Mail Auftrag";
-}
-
-function extractExternalOrderNumber(subject: string | null | undefined) {
-  const match = String(subject || "").match(/\b\d{4}-\d{5,}\b/);
-  return match ? match[0] : null;
 }
 
 export function meta() {
@@ -96,113 +70,6 @@ export async function loader({
   };
 }
 
-export async function action({
-  request,
-  params,
-}: {
-  request: Request;
-  params: { emailId?: string };
-}) {
-  const { getUserId } = await import("../lib/session.server");
-  const { prisma } = await import("../lib/prisma.server");
-
-  const userId = await getUserId(request);
-
-  if (!userId) {
-    return { error: "Nicht angemeldet." };
-  }
-
-  const tenantUser = await prisma.tenantUser.findFirst({
-    where: { userId },
-  });
-
-  if (!tenantUser) {
-    return { error: "Kein Mandant gefunden." };
-  }
-
-  const formData = await request.formData();
-  const intent = String(formData.get("intent") || "");
-
-  if (intent !== "createOrderFromEmail") {
-    return { error: "Unbekannte Aktion." };
-  }
-
-  const email = await prisma.incomingEmail.findFirst({
-    where: {
-      id: params.emailId || "",
-      tenantId: tenantUser.tenantId,
-    },
-    include: {
-      attachments: true,
-      orders: true,
-    },
-  });
-
-  if (!email) {
-    return { error: "E-Mail wurde nicht gefunden." };
-  }
-
-  if (email.orders.length > 0) {
-    return redirect("/auftrag-pruefung/" + email.orders[0].id);
-  }
-
-  const externalOrderNumber = extractExternalOrderNumber(email.subject);
-  const customerName = cleanSenderName(email.sender);
-  const emailText = String(email.bodyText || "").trim();
-  const attachmentText = email.attachments
-    .map((attachment: any) => {
-      return [
-        "Anhang: " + (attachment.filename || "Datei"),
-        attachment.textContent || "",
-      ].filter(Boolean).join("\n");
-    })
-    .filter(Boolean)
-    .join("\n\n");
-
-  const notes = [
-    "Aus E-Mail angelegt.",
-    "Betreff: " + (email.subject || "-"),
-    "Absender: " + (email.sender || "-"),
-    "Postfach: " + (email.mailbox || "-"),
-    "",
-    emailText,
-    attachmentText ? "\n--- Anhaenge / erkannter Text ---\n" + attachmentText : "",
-  ].filter(Boolean).join("\n");
-
-  const order = await prisma.order.create({
-    data: {
-      tenantId: tenantUser.tenantId,
-      brandId: email.brandId || null,
-      incomingEmailId: email.id,
-      orderNumber: createEmailOrderNumber(),
-      externalOrderNumber,
-      source: email.source as any,
-      status: "AUTO_CREATED" as any,
-      customerName,
-      eventName: email.subject || null,
-      notes,
-      reviewReason: "Aus E-Mail angelegt. Bitte Kundendaten, Lieferdaten, Positionen und Summe pr?fen.",
-      confidenceScore: 20,
-      confidenceLabel: "LOW" as any,
-      totalCents: 0,
-      items: {
-        create: [
-          {
-            name: email.subject || "E-Mail Auftrag pr?fen",
-            quantity: 1,
-            unit: "Pruefung",
-            unitCents: 0,
-            totalCents: 0,
-            notes: "Platzhalter aus E-Mail. Positionen bitte pr?fen und ersetzen.",
-          },
-        ],
-      },
-    } as any,
-  });
-
-  return redirect("/auftrag-pruefung/" + order.id + "?created=1&source=email");
-}
-
 export default function EmailPruefung() {
   const data = useLoaderData<typeof loader>();
 
@@ -238,10 +105,7 @@ export default function EmailPruefung() {
 
         <div className="topActions">
           <Link className="secondaryButton" to="/auftragseingang">Zurück</Link>
-          <Form method="post">
-            <input type="hidden" name="intent" value="createOrderFromEmail" />
-            <button className="primaryButton" type="submit">Als Auftrag anlegen</button>
-          </Form>
+          <Link className="primaryButton" to="/auftragseingang">Auftrag später erstellen</Link>
         </div>
       </header>
 
