@@ -24,42 +24,6 @@ function euroToCents(value: FormDataEntryValue | null) {
   return Math.round(number * 100);
 }
 
-
-function isLikelyOrderEmail(mail: any) {
-  const subject = String(mail?.subject || "").toLowerCase();
-  const sender = String(mail?.sender || "").toLowerCase();
-
-  const positiveSignals = [
-    "order best?tigt",
-    "order bestaetigt",
-    "auftragsbest?tigung",
-    "auftragsbestaetigung",
-    "gebucht",
-    "dein morgiges catering",
-    "dein morgiges heykantine",
-    "catering mit heycater",
-  ];
-
-  const negativeSignals = [
-    "angebot freigeben",
-    "angebot erstellen",
-    "bitte angebot",
-    "anfrage",
-    "paypal",
-    "newsletter",
-    "kurz nachgehakt",
-    "guthaben",
-    "buust",
-    "werbung",
-  ];
-
-  if (negativeSignals.some((signal) => subject.includes(signal) || sender.includes(signal))) {
-    return false;
-  }
-
-  return positiveSignals.some((signal) => subject.includes(signal));
-}
-
 function centsToEuro(value: number | null | undefined) {
   return ((value || 0) / 100).toLocaleString("de-DE", {
     style: "currency",
@@ -154,16 +118,14 @@ export async function loader({ request }: { request: Request }) {
       ]),
     ]);
 
-    const likelyOrderEmails = emailInbox.filter(isLikelyOrderEmail);
-
     return {
       tenant: tenantUser.tenant,
       orders,
-      emailInbox: likelyOrderEmails,
+      emailInbox,
       activeStatus: status,
       counts: {
-        all: counts[0] + likelyOrderEmails.length,
-        review: counts[1] + likelyOrderEmails.length,
+        all: counts[0] + emailInbox.length,
+        review: counts[1] + emailInbox.length,
         confirmed: counts[2],
         rejected: counts[3],
       },

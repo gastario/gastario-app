@@ -20,42 +20,6 @@ function formatTime(value: string | null | undefined) {
   return value || "-";
 }
 
-
-function isLikelyOrderEmail(mail: any) {
-  const subject = String(mail?.subject || "").toLowerCase();
-  const sender = String(mail?.sender || "").toLowerCase();
-
-  const positiveSignals = [
-    "order best?tigt",
-    "order bestaetigt",
-    "auftragsbest?tigung",
-    "auftragsbestaetigung",
-    "gebucht",
-    "dein morgiges catering",
-    "dein morgiges heykantine",
-    "catering mit heycater",
-  ];
-
-  const negativeSignals = [
-    "angebot freigeben",
-    "angebot erstellen",
-    "bitte angebot",
-    "anfrage",
-    "paypal",
-    "newsletter",
-    "kurz nachgehakt",
-    "guthaben",
-    "buust",
-    "werbung",
-  ];
-
-  if (negativeSignals.some((signal) => subject.includes(signal) || sender.includes(signal))) {
-    return false;
-  }
-
-  return positiveSignals.some((signal) => subject.includes(signal));
-}
-
 function centsToEuro(value: number | null | undefined) {
   const amount = Number(value || 0) / 100;
 
@@ -342,7 +306,7 @@ export async function loader({ request }: { request: Request }) {
 
   const readyScore = Math.max(0, Math.min(100, 100 - openTaxTasks * 10));
 
-  const rawEmailInbox = await prisma.incomingEmail.findMany({
+  const emailInbox = await prisma.incomingEmail.findMany({
     where: {
       tenantId: access.tenantId,
       status: {
@@ -355,10 +319,8 @@ export async function loader({ request }: { request: Request }) {
     orderBy: {
       receivedAt: "desc",
     },
-    take: 25,
+    take: 5,
   }).catch(() => []);
-
-  const emailInbox = rawEmailInbox.filter(isLikelyOrderEmail).slice(0, 5);
 
   return {
     tenant: access.tenant,
