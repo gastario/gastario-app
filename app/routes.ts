@@ -37,6 +37,8 @@ export default [
   route("einstellungen", "routes/einstellungen.tsx"),
   route("einstellungen/rechnungen", "routes/einstellungen.rechnungen.tsx"),
 
+  route("api/mailjet/inbound", "routes/api.mailjet.inbound.tsx"),
+
   route("gastario-control", "routes/gastario-control.tsx"),
   route("gastario-control/mandanten", "routes/gastario-control.mandanten.tsx"),
   route("gastario-control/mandanten/:tenantId", "routes/gastario-control.mandanten.$tenantId.tsx"),
