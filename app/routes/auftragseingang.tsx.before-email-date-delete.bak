@@ -25,64 +25,6 @@ function euroToCents(value: FormDataEntryValue | null) {
 }
 
 
-
-function classifyIncomingEmail(mail: any) {
-  const subject = String(mail?.subject || "").toLowerCase();
-  const sender = String(mail?.sender || "").toLowerCase();
-
-  const orderSignals = [
-    "order best?tigt",
-    "order bestaetigt",
-    "auftragsbest?tigung",
-    "auftragsbestaetigung",
-    "fast track order",
-    "gebucht",
-    "dein morgiges catering",
-    "dein morgiges heykantine",
-    "catering mit heycater",
-  ];
-
-  const inquirySignals = [
-    "angebot freigeben",
-    "angebot erstellen",
-    "bitte angebot",
-    "anfrage",
-    "angebotsanfrage",
-    "catering anfrage",
-    "neue anfrage",
-  ];
-
-  const otherSignals = [
-    "paypal",
-    "newsletter",
-    "kurz nachgehakt",
-    "guthaben",
-    "buust",
-    "werbung",
-  ];
-
-  if (orderSignals.some((signal) => subject.includes(signal))) {
-    return "orders";
-  }
-
-  if (inquirySignals.some((signal) => subject.includes(signal))) {
-    return "inquiries";
-  }
-
-  if (otherSignals.some((signal) => subject.includes(signal) || sender.includes(signal))) {
-    return "other";
-  }
-
-  return "other";
-}
-
-function emailCategoryLabel(value: string) {
-  if (value === "orders") return "Auftragsbestaetigungen";
-  if (value === "inquiries") return "Anfragen / Angebote";
-  if (value === "other") return "Sonstiges";
-  return "Alle E-Mails";
-}
-
 function isLikelyOrderEmail(mail: any) {
   const subject = String(mail?.subject || "").toLowerCase();
   const sender = String(mail?.sender || "").toLowerCase();
@@ -143,9 +85,6 @@ export async function loader({ request }: { request: Request }) {
       tenant: null,
       orders: [],
       emailInbox: [],
-      selectedDate: "",
-      selectedEmailCategory: "orders",
-      emailBuckets: { orders: 0, inquiries: 0, other: 0, all: 0 },
       activeStatus: "",
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
       setupError: "Nicht angemeldet. Bitte neu einloggen.",
@@ -162,9 +101,6 @@ export async function loader({ request }: { request: Request }) {
       tenant: null,
       orders: [],
       emailInbox: [],
-      selectedDate: "",
-      selectedEmailCategory: "orders",
-      emailBuckets: { orders: 0, inquiries: 0, other: 0, all: 0 },
       activeStatus: "",
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
       setupError: "Kein Mandant gefunden. Bitte diesen Benutzer im Super Admin einem Mandanten zuordnen.",
@@ -173,14 +109,6 @@ export async function loader({ request }: { request: Request }) {
 
   const url = new URL(request.url);
   const status = url.searchParams.get("status") || "";
-  const selectedDate = url.searchParams.get("date") || "";
-  const selectedEmailCategory = url.searchParams.get("emailCategory") || "orders";
-  const selectedDateStart = selectedDate ? new Date(selectedDate + "T00:00:00") : null;
-  const selectedDateEnd = selectedDateStart ? new Date(selectedDateStart) : null;
-
-  if (selectedDateEnd) {
-    selectedDateEnd.setDate(selectedDateEnd.getDate() + 1);
-  }
 
   try {
     const [orders, emailInbox, counts] = await Promise.all([
@@ -208,14 +136,6 @@ export async function loader({ request }: { request: Request }) {
           orders: {
             none: {},
           },
-          ...(selectedDateStart && selectedDateEnd
-            ? {
-                receivedAt: {
-                  gte: selectedDateStart,
-                  lt: selectedDateEnd,
-                },
-              }
-            : {}),
         },
         include: {
           attachments: true,
@@ -234,29 +154,16 @@ export async function loader({ request }: { request: Request }) {
       ]),
     ]);
 
-    const emailBuckets = {
-      orders: emailInbox.filter((mail: any) => classifyIncomingEmail(mail) === "orders").length,
-      inquiries: emailInbox.filter((mail: any) => classifyIncomingEmail(mail) === "inquiries").length,
-      other: emailInbox.filter((mail: any) => classifyIncomingEmail(mail) === "other").length,
-      all: emailInbox.length,
-    };
-
-    const filteredEmailInbox =
-      selectedEmailCategory === "all"
-        ? emailInbox
-        : emailInbox.filter((mail: any) => classifyIncomingEmail(mail) === selectedEmailCategory);
+    const likelyOrderEmails = emailInbox.filter(isLikelyOrderEmail);
 
     return {
       tenant: tenantUser.tenant,
       orders,
-      emailInbox: filteredEmailInbox,
-      selectedDate,
-      selectedEmailCategory,
-      emailBuckets,
+      emailInbox: likelyOrderEmails,
       activeStatus: status,
       counts: {
-        all: counts[0] + filteredEmailInbox.length,
-        review: counts[1] + filteredEmailInbox.length,
+        all: counts[0] + likelyOrderEmails.length,
+        review: counts[1] + likelyOrderEmails.length,
         confirmed: counts[2],
         rejected: counts[3],
       },
@@ -269,9 +176,6 @@ export async function loader({ request }: { request: Request }) {
       tenant: tenantUser.tenant,
       orders: [],
       emailInbox: [],
-      selectedDate: "",
-      selectedEmailCategory: "orders",
-      emailBuckets: { orders: 0, inquiries: 0, other: 0, all: 0 },
       activeStatus: status,
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
       setupError: "Auftragseingang konnte die Auftragsdaten nicht laden. Wahrscheinlich ist die Railway-Datenbank noch nicht synchron oder es fehlen Tabellen/Spalten.",
@@ -299,44 +203,6 @@ export async function action({ request }: { request: Request }) {
 
   const formData = await request.formData();
   const intent = String(formData.get("intent") || "");
-
-  if (intent === "deleteIncomingEmail") {
-    const emailId = String(formData.get("emailId") || "").trim();
-
-    if (!emailId) {
-      return { error: "E-Mail fehlt." };
-    }
-
-    const email = await prisma.incomingEmail.findFirst({
-      where: {
-        id: emailId,
-        tenantId: tenantUser.tenantId,
-      },
-      include: {
-        orders: {
-          select: {
-            id: true,
-          },
-        },
-      },
-    });
-
-    if (!email) {
-      return { error: "E-Mail wurde nicht gefunden." };
-    }
-
-    if (email.orders.length > 0) {
-      return { error: "Diese E-Mail ist bereits mit einem Auftrag verbunden." };
-    }
-
-    await prisma.incomingEmail.delete({
-      where: {
-        id: email.id,
-      },
-    });
-
-    return { success: "E-Mail wurde geloescht." };
-  }
 
   if (intent === "createOrder") {
     const source = String(formData.get("source") || "DIRECT");
@@ -1216,64 +1082,12 @@ export default function AuftragseingangPage() {
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 14 }}>
             <div>
               <div style={sectionLabelStyle}>E-Mail Eingang</div>
-              <h2 style={{ margin: "5px 0 0", fontSize: 23, letterSpacing: "-0.03em" }}>{emailCategoryLabel(data.selectedEmailCategory)}</h2>
+              <h2 style={{ margin: "5px 0 0", fontSize: 23, letterSpacing: "-0.03em" }}>E-Mails zur Pruefung</h2>
               <p style={{ margin: "6px 0 0", color: "#64748b", fontWeight: 650 }}>
                 Diese E-Mails wurden empfangen, aber noch nicht sicher als Auftrag erkannt.
               </p>
             </div>
-
-            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
-              <Form method="get" style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <input
-                  type="date"
-                  name="date"
-                  defaultValue={data.selectedDate || ""}
-                  style={{
-                    border: "1px solid #cbd5e1",
-                    borderRadius: 999,
-                    padding: "9px 12px",
-                    fontWeight: 800,
-                    background: "#ffffff",
-                  }}
-                />
-                <button type="submit" style={smallButtonStyle}>Datum anzeigen</button>
-              </Form>
-
-              <a href="/auftragseingang" style={smallButtonStyle}>Alle</a>
-              <a href="/importe" style={smallButtonStyle}>E-Mail-Import</a>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-            {[
-              ["orders", "Auftragsbestaetigungen", data.emailBuckets.orders],
-              ["inquiries", "Anfragen / Angebote", data.emailBuckets.inquiries],
-              ["other", "Sonstiges", data.emailBuckets.other],
-              ["all", "Alle", data.emailBuckets.all],
-            ].map(([key, label, count]: any) => {
-              const params = new URLSearchParams();
-
-              if (data.selectedDate) {
-                params.set("date", data.selectedDate);
-              }
-
-              params.set("emailCategory", key);
-
-              return (
-                <a
-                  key={key}
-                  href={"/auftragseingang?" + params.toString()}
-                  style={{
-                    ...smallButtonStyle,
-                    background: data.selectedEmailCategory === key ? "#057a67" : "#ffffff",
-                    color: data.selectedEmailCategory === key ? "#ffffff" : "#0f172a",
-                    borderColor: data.selectedEmailCategory === key ? "#057a67" : "#cbd5e1",
-                  }}
-                >
-                  {label} ({count})
-                </a>
-              );
-            })}
+            <a href="/importe" style={smallButtonStyle}>E-Mail-Import</a>
           </div>
 
           <div style={{ overflowX: "auto", border: "1px solid #fed7aa", borderRadius: 12 }}>
@@ -1317,33 +1131,11 @@ export default function AuftragseingangPage() {
                           fontWeight: 850,
                           fontSize: 12,
                         }}>
-                          {emailCategoryLabel(classifyIncomingEmail(mail))}
+                          Erkennung noetig
                         </span>
                       </td>
                       <td style={tdStyle}>
-                        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                          <a href={"/email-pruefung/" + mail.id} style={smallButtonStyle}>Pruefen</a>
-
-                          <Form method="post" onSubmit={(event) => {
-                            if (!confirm("Diese E-Mail wirklich aus dem Eingang loeschen?")) {
-                              event.preventDefault();
-                            }
-                          }}>
-                            <input type="hidden" name="intent" value="deleteIncomingEmail" />
-                            <input type="hidden" name="emailId" value={mail.id} />
-                            <button
-                              type="submit"
-                              style={{
-                                ...smallButtonStyle,
-                                color: "#991b1b",
-                                borderColor: "#fecaca",
-                                background: "#fff1f2",
-                              }}
-                            >
-                              Loeschen
-                            </button>
-                          </Form>
-                        </div>
+                        <a href={"/email-pruefung/" + mail.id} style={smallButtonStyle}>Pruefen</a>
                       </td>
                     </tr>
                   ))

@@ -32,63 +32,6 @@ function extractExternalOrderNumber(subject: string | null | undefined) {
   return match ? match[0] : null;
 }
 
-function parseGermanDate(value: string | null | undefined) {
-  const raw = String(value || "").trim();
-  const match = raw.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
-
-  if (!match) return null;
-
-  const day = match[1].padStart(2, "0");
-  const month = match[2].padStart(2, "0");
-  const year = match[3];
-
-  return new Date(year + "-" + month + "-" + day + "T00:00:00");
-}
-
-function extractLineValue(text: string, label: string) {
-  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const regex = new RegExp(escaped + "\\s*:?\\s*([^\\n\\r]+)", "i");
-  const match = text.match(regex);
-
-  return match?.[1]?.trim() || "";
-}
-
-function extractEmailOrderDraft(email: any) {
-  const subject = String(email?.subject || "");
-  const body = String(email?.bodyText || "");
-
-  const externalOrderNumber =
-    extractLineValue(body, "Auftragsname") ||
-    extractExternalOrderNumber(subject);
-
-  const deliveryDate = parseGermanDate(extractLineValue(body, "Event Datum"));
-
-  const eventType = extractLineValue(body, "Anlass");
-  const persons = extractLineValue(body, "Personenanzahl");
-
-  let customerName = cleanSenderName(email?.sender);
-
-  const customerMatch = body.match(/Der Kunde\s+(.+?)\s+hat Dein Angebot gebucht/i);
-  if (customerMatch?.[1]) {
-    customerName = customerMatch[1].trim();
-  }
-
-  const eventNameParts = [
-    externalOrderNumber ? "Heycater " + externalOrderNumber : subject,
-    eventType ? eventType : "",
-    persons ? persons + " Personen" : "",
-  ].filter(Boolean);
-
-  return {
-    externalOrderNumber,
-    customerName,
-    deliveryDate,
-    eventName: eventNameParts.join(" ? "),
-    persons,
-    eventType,
-  };
-}
-
 export function meta() {
   return [
     { title: "E-Mail prüfen · Gastario" },
@@ -203,10 +146,8 @@ export async function action({
     return redirect("/auftrag-pruefung/" + email.orders[0].id);
   }
 
-  const draft = extractEmailOrderDraft(email);
-
-  const externalOrderNumber = draft.externalOrderNumber;
-  const customerName = draft.customerName;
+  const externalOrderNumber = extractExternalOrderNumber(email.subject);
+  const customerName = cleanSenderName(email.sender);
   const emailText = String(email.bodyText || "").trim();
   const attachmentText = email.attachments
     .map((attachment: any) => {
@@ -238,8 +179,7 @@ export async function action({
       source: email.source as any,
       status: "AUTO_CREATED" as any,
       customerName,
-      eventName: draft.eventName || email.subject || null,
-      deliveryDate: draft.deliveryDate,
+      eventName: email.subject || null,
       notes,
       reviewReason: "Aus E-Mail angelegt. Bitte Kundendaten, Lieferdaten, Positionen und Summe pr?fen.",
       confidenceScore: 20,
@@ -248,9 +188,9 @@ export async function action({
       items: {
         create: [
           {
-            name: draft.eventName || email.subject || "E-Mail Auftrag pr?fen",
-            quantity: draft.persons ? Number(draft.persons) || 1 : 1,
-            unit: draft.persons ? "Personen" : "Pruefung",
+            name: email.subject || "E-Mail Auftrag pr?fen",
+            quantity: 1,
+            unit: "Pruefung",
             unitCents: 0,
             totalCents: 0,
             notes: "Platzhalter aus E-Mail. Positionen bitte pr?fen und ersetzen.",
