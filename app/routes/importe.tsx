@@ -1,12 +1,42 @@
-﻿import { Form, useActionData, useLoaderData } from "react-router";
+﻿import crypto from "node:crypto";
+import { Form, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 export function meta() {
-  return [{ title: "Importe · Gastario" }];
+  return [{ title: "E-Mail-Import · Gastario" }];
 }
 
 function cleanEmail(value: FormDataEntryValue | null) {
   return String(value || "").trim().toLowerCase();
+}
+
+function encryptSecret(value: string) {
+  const keyValue = process.env.IMAP_ENCRYPTION_KEY || "";
+
+  if (!keyValue) {
+    throw new Error("IMAP_ENCRYPTION_KEY fehlt in Railway.");
+  }
+
+  const key = Buffer.from(keyValue, "base64");
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
+
+  const encrypted = Buffer.concat([
+    cipher.update(value, "utf8"),
+    cipher.final(),
+  ]);
+
+  const tag = cipher.getAuthTag();
+
+  return [
+    iv.toString("base64"),
+    tag.toString("base64"),
+    encrypted.toString("base64"),
+  ].join(".");
+}
+
+function maskSecret(value?: string | null) {
+  return value ? "Passwort gespeichert" : "Noch kein Passwort gespeichert";
 }
 
 export async function loader({ request }: { request: Request }) {
@@ -52,46 +82,76 @@ export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
   const intent = String(formData.get("intent") || "");
 
-  if (intent === "createEmailAccount") {
+  if (intent === "saveMailbox") {
     const email = cleanEmail(formData.get("email"));
     const label = String(formData.get("label") || "").trim();
+    const provider = String(formData.get("provider") || "STRATO").trim();
+    const imapHost = String(formData.get("imapHost") || "").trim();
+    const imapPort = Number(formData.get("imapPort") || 993);
+    const imapUsername = String(formData.get("imapUsername") || "").trim() || email;
+    const password = String(formData.get("password") || "");
 
     if (!email || !email.includes("@")) {
       return { error: "Bitte eine gueltige E-Mail-Adresse eintragen." };
     }
 
-    await prisma.emailAccount.upsert({
+    if (!imapHost) {
+      return { error: "Bitte IMAP-Server eintragen." };
+    }
+
+    if (!imapUsername) {
+      return { error: "Bitte Benutzername eintragen." };
+    }
+
+    const existing = await prisma.emailAccount.findFirst({
       where: {
-        tenantId_email: {
-          tenantId: access.tenantId,
-          email,
-        },
-      },
-      update: {
-        label: label || "Auftragseingang",
-        active: true,
-        provider: "MAILJET",
-        mode: "FORWARDING",
-      },
-      create: {
         tenantId: access.tenantId,
         email,
-        label: label || "Auftragseingang",
-        active: true,
-        provider: "MAILJET",
-        mode: "FORWARDING",
       },
     });
 
-    return { success: "Auftrags-E-Mail wurde gespeichert." };
+    const passwordData = password
+      ? { imapPasswordEncrypted: encryptSecret(password) }
+      : {};
+
+    if (existing) {
+      await prisma.emailAccount.update({
+        where: { id: existing.id },
+        data: {
+          label: label || "Auftragseingang",
+          active: true,
+          provider,
+          mode: "IMAP",
+          imapHost,
+          imapPort,
+          imapSecure: true,
+          imapUsername,
+          ...passwordData,
+        } as any,
+      });
+    } else {
+      await prisma.emailAccount.create({
+        data: {
+          tenantId: access.tenantId,
+          email,
+          label: label || "Auftragseingang",
+          active: true,
+          provider,
+          mode: "IMAP",
+          imapHost,
+          imapPort,
+          imapSecure: true,
+          imapUsername,
+          ...passwordData,
+        } as any,
+      });
+    }
+
+    return { success: "Postfach wurde gespeichert. Als naechstes bauen wir den automatischen Abruf." };
   }
 
   if (intent === "deleteEmailAccount") {
     const id = String(formData.get("id") || "");
-
-    if (!id) {
-      return { error: "E-Mail-Konto fehlt." };
-    }
 
     await prisma.emailAccount.deleteMany({
       where: {
@@ -100,7 +160,7 @@ export async function action({ request }: { request: Request }) {
       },
     });
 
-    return { success: "Auftrags-E-Mail wurde entfernt." };
+    return { success: "Postfach wurde entfernt." };
   }
 
   return { error: "Unbekannte Aktion." };
@@ -113,15 +173,13 @@ export default function ImportsPage() {
   return (
     <AppLayout>
       <div style={pageStyle}>
-        <header style={heroStyle}>
-          <div>
-            <p style={eyebrowStyle}>Importe</p>
-            <h1 style={titleStyle}>Auftragserkennung per E-Mail</h1>
-            <p style={subtitleStyle}>
-              Hinterlege die E-Mail-Adressen, ueber die Gastario eingehende Auftraege erkennen soll.
-              Eingehende Mails werden zuerst als Pruefauftrag verarbeitet.
-            </p>
-          </div>
+        <header>
+          <p style={eyebrowStyle}>E-Mail-Import</p>
+          <h1 style={titleStyle}>Postfach verbinden</h1>
+          <p style={subtitleStyle}>
+            Verbinde ein Auftrags-Postfach. Gastario liest spaeter neue Mails automatisch,
+            erkennt Auftraege und legt sie zuerst im Auftragseingang zur Pruefung ab.
+          </p>
         </header>
 
         {data.error ? <div style={errorStyle}>{data.error}</div> : null}
@@ -129,54 +187,73 @@ export default function ImportsPage() {
         {actionData?.success ? <div style={successStyle}>{actionData.success}</div> : null}
 
         <section style={cardStyle}>
-          <p style={eyebrowStyle}>Neue Quelle</p>
-          <h2 style={sectionTitleStyle}>Auftrags-E-Mail eintragen</h2>
+          <p style={eyebrowStyle}>Postfach</p>
+          <h2 style={sectionTitleStyle}>Auftrags-E-Mail verbinden</h2>
 
           <Form method="post" style={formStyle}>
-            <input type="hidden" name="intent" value="createEmailAccount" />
+            <input type="hidden" name="intent" value="saveMailbox" />
 
             <label style={fieldStyle}>
               <span>E-Mail-Adresse</span>
-              <input
-                name="email"
-                type="email"
-                placeholder="auftraege@deine-domain.de"
-                required
-                style={inputStyle}
-              />
+              <input name="email" type="email" placeholder="info@letmebowl-catering.de" required style={inputStyle} />
             </label>
 
             <label style={fieldStyle}>
               <span>Bezeichnung</span>
-              <input
-                name="label"
-                placeholder="z. B. Heycater, Website, Allgemein"
-                style={inputStyle}
-              />
+              <input name="label" placeholder="z. B. Heycater / Website / Allgemein" style={inputStyle} />
+            </label>
+
+            <label style={fieldStyle}>
+              <span>Anbieter</span>
+              <select name="provider" defaultValue="STRATO" style={inputStyle}>
+                <option value="STRATO">STRATO</option>
+                <option value="GMAIL">Gmail</option>
+                <option value="MICROSOFT">Microsoft 365</option>
+                <option value="IONOS">IONOS</option>
+                <option value="OTHER">Sonstiges</option>
+              </select>
+            </label>
+
+            <label style={fieldStyle}>
+              <span>IMAP-Server</span>
+              <input name="imapHost" defaultValue="imap.strato.de" required style={inputStyle} />
+            </label>
+
+            <label style={fieldStyle}>
+              <span>Port</span>
+              <input name="imapPort" defaultValue="993" inputMode="numeric" required style={inputStyle} />
+            </label>
+
+            <label style={fieldStyle}>
+              <span>Benutzername</span>
+              <input name="imapUsername" placeholder="meistens die E-Mail-Adresse" style={inputStyle} />
+            </label>
+
+            <label style={fieldStyle}>
+              <span>Passwort / App-Passwort</span>
+              <input name="password" type="password" placeholder="Passwort wird verschluesselt gespeichert" style={inputStyle} />
             </label>
 
             <button type="submit" style={primaryButtonStyle}>
-              Speichern
+              Postfach speichern
             </button>
           </Form>
 
           <div style={hintBoxStyle}>
-            <strong>Mailjet Webhook</strong>
+            <strong>Einfach fuer den Kunden:</strong>
             <span>
-              Diese Adresse muss in Mailjet oder bei deinem Mailanbieter so eingerichtet sein,
-              dass eingehende Auftraege an den Gastario Webhook weitergeleitet werden.
+              Der Kunde muss nur sein Postfach eintragen. Gastario ruft spaeter neue Mails automatisch ab.
+              SMTP wird dafuer nicht benoetigt, sondern IMAP.
             </span>
           </div>
         </section>
 
         <section style={cardStyle}>
-          <p style={eyebrowStyle}>Aktive Quellen</p>
-          <h2 style={sectionTitleStyle}>E-Mail-Importe</h2>
+          <p style={eyebrowStyle}>Verbunden</p>
+          <h2 style={sectionTitleStyle}>Aktive Postfaecher</h2>
 
           {data.emailAccounts.length === 0 ? (
-            <div style={emptyStyle}>
-              Noch keine Auftrags-E-Mail hinterlegt.
-            </div>
+            <div style={emptyStyle}>Noch kein Postfach verbunden.</div>
           ) : (
             <div style={listStyle}>
               {data.emailAccounts.map((account: any) => (
@@ -184,6 +261,9 @@ export default function ImportsPage() {
                   <div>
                     <strong>{account.email}</strong>
                     <span>{account.label || "Auftragseingang"}</span>
+                    <small>
+                      {account.provider || "IMAP"} · {account.imapHost || "-"}:{account.imapPort || "-"} · {maskSecret(account.imapPasswordEncrypted)}
+                    </small>
                   </div>
 
                   <div style={rowActionsStyle}>
@@ -192,9 +272,7 @@ export default function ImportsPage() {
                     <Form method="post">
                       <input type="hidden" name="intent" value="deleteEmailAccount" />
                       <input type="hidden" name="id" value={account.id} />
-                      <button type="submit" style={deleteButtonStyle}>
-                        Entfernen
-                      </button>
+                      <button type="submit" style={deleteButtonStyle}>Entfernen</button>
                     </Form>
                   </div>
                 </article>
@@ -207,165 +285,22 @@ export default function ImportsPage() {
   );
 }
 
-const pageStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 20,
-};
-
-const heroStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 24,
-};
-
-const eyebrowStyle: React.CSSProperties = {
-  margin: 0,
-  color: "#057a67",
-  textTransform: "uppercase",
-  letterSpacing: "0.07em",
-  fontSize: 11,
-  fontWeight: 800,
-};
-
-const titleStyle: React.CSSProperties = {
-  margin: "4px 0 0",
-  color: "#0f172a",
-  fontSize: 34,
-  letterSpacing: "-0.04em",
-  fontWeight: 850,
-};
-
-const subtitleStyle: React.CSSProperties = {
-  margin: "6px 0 0",
-  color: "#64748b",
-  fontSize: 15,
-  fontWeight: 650,
-  maxWidth: 880,
-};
-
-const cardStyle: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #dbe5eb",
-  borderRadius: 20,
-  padding: 24,
-  boxShadow: "0 16px 34px rgba(15, 23, 42, 0.06)",
-};
-
-const sectionTitleStyle: React.CSSProperties = {
-  margin: "4px 0 16px",
-  color: "#0f172a",
-  fontSize: 23,
-};
-
-const formStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr auto",
-  gap: 14,
-  alignItems: "end",
-};
-
-const fieldStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 7,
-  color: "#475569",
-  fontSize: 12,
-  fontWeight: 800,
-};
-
-const inputStyle: React.CSSProperties = {
-  minHeight: 42,
-  borderRadius: 12,
-  border: "1px solid #cbd5e1",
-  padding: "0 12px",
-  fontWeight: 700,
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  minHeight: 42,
-  borderRadius: 12,
-  border: "1px solid #057a67",
-  background: "#057a67",
-  color: "#ffffff",
-  padding: "0 18px",
-  fontWeight: 900,
-  cursor: "pointer",
-};
-
-const hintBoxStyle: React.CSSProperties = {
-  marginTop: 16,
-  border: "1px solid #bfdbfe",
-  background: "#eff6ff",
-  color: "#1e3a8a",
-  borderRadius: 14,
-  padding: 14,
-  display: "grid",
-  gap: 4,
-  fontWeight: 700,
-};
-
-const listStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 10,
-};
-
-const rowStyle: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
-  borderRadius: 16,
-  padding: 16,
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 16,
-  alignItems: "center",
-};
-
-const rowActionsStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 10,
-  alignItems: "center",
-};
-
-const badgeStyle: React.CSSProperties = {
-  border: "1px solid #bbf7d0",
-  background: "#f0fdf4",
-  color: "#166534",
-  borderRadius: 999,
-  padding: "5px 10px",
-  fontSize: 12,
-  fontWeight: 900,
-};
-
-const deleteButtonStyle: React.CSSProperties = {
-  border: "1px solid #fecaca",
-  background: "#fff1f2",
-  color: "#b91c1c",
-  borderRadius: 12,
-  padding: "9px 12px",
-  fontWeight: 900,
-  cursor: "pointer",
-};
-
-const errorStyle: React.CSSProperties = {
-  border: "1px solid #fecaca",
-  background: "#fff1f2",
-  color: "#9f1239",
-  borderRadius: 14,
-  padding: 14,
-  fontWeight: 800,
-};
-
-const successStyle: React.CSSProperties = {
-  border: "1px solid #bbf7d0",
-  background: "#f0fdf4",
-  color: "#166534",
-  borderRadius: 14,
-  padding: 14,
-  fontWeight: 800,
-};
-
-const emptyStyle: React.CSSProperties = {
-  border: "1px dashed #cbd5e1",
-  borderRadius: 14,
-  padding: 18,
-  color: "#64748b",
-  fontWeight: 700,
-};
+const pageStyle: React.CSSProperties = { display: "grid", gap: 20 };
+const eyebrowStyle: React.CSSProperties = { margin: 0, color: "#057a67", textTransform: "uppercase", letterSpacing: "0.07em", fontSize: 11, fontWeight: 800 };
+const titleStyle: React.CSSProperties = { margin: "4px 0 0", color: "#0f172a", fontSize: 34, letterSpacing: "-0.04em", fontWeight: 850 };
+const subtitleStyle: React.CSSProperties = { margin: "6px 0 0", color: "#64748b", fontSize: 15, fontWeight: 650, maxWidth: 900 };
+const cardStyle: React.CSSProperties = { background: "#ffffff", border: "1px solid #dbe5eb", borderRadius: 20, padding: 24, boxShadow: "0 16px 34px rgba(15, 23, 42, 0.06)" };
+const sectionTitleStyle: React.CSSProperties = { margin: "4px 0 16px", color: "#0f172a", fontSize: 23 };
+const formStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, alignItems: "end" };
+const fieldStyle: React.CSSProperties = { display: "grid", gap: 7, color: "#475569", fontSize: 12, fontWeight: 800 };
+const inputStyle: React.CSSProperties = { minHeight: 42, borderRadius: 12, border: "1px solid #cbd5e1", padding: "0 12px", fontWeight: 700 };
+const primaryButtonStyle: React.CSSProperties = { minHeight: 42, borderRadius: 12, border: "1px solid #057a67", background: "#057a67", color: "#ffffff", padding: "0 18px", fontWeight: 900, cursor: "pointer" };
+const hintBoxStyle: React.CSSProperties = { marginTop: 16, border: "1px solid #bfdbfe", background: "#eff6ff", color: "#1e3a8a", borderRadius: 14, padding: 14, display: "grid", gap: 4, fontWeight: 700 };
+const listStyle: React.CSSProperties = { display: "grid", gap: 10 };
+const rowStyle: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: 16, padding: 16, display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center" };
+const rowActionsStyle: React.CSSProperties = { display: "flex", gap: 10, alignItems: "center" };
+const badgeStyle: React.CSSProperties = { border: "1px solid #bbf7d0", background: "#f0fdf4", color: "#166534", borderRadius: 999, padding: "5px 10px", fontSize: 12, fontWeight: 900 };
+const deleteButtonStyle: React.CSSProperties = { border: "1px solid #fecaca", background: "#fff1f2", color: "#b91c1c", borderRadius: 12, padding: "9px 12px", fontWeight: 900, cursor: "pointer" };
+const errorStyle: React.CSSProperties = { border: "1px solid #fecaca", background: "#fff1f2", color: "#9f1239", borderRadius: 14, padding: 14, fontWeight: 800 };
+const successStyle: React.CSSProperties = { border: "1px solid #bbf7d0", background: "#f0fdf4", color: "#166534", borderRadius: 14, padding: 14, fontWeight: 800 };
+const emptyStyle: React.CSSProperties = { border: "1px dashed #cbd5e1", borderRadius: 14, padding: 18, color: "#64748b", fontWeight: 700 };
