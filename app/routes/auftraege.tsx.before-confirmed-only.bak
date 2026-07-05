@@ -66,18 +66,7 @@ export async function loader({ request }: { request: Request }) {
     const orders = await prisma.order.findMany({
       where: {
         tenantId: access.tenantId,
-        ...(activeStatus
-          ? { status: activeStatus as any }
-          : {
-              status: {
-                in: [
-                  "CONFIRMED",
-                  "IN_PRODUCTION",
-                  "PACKING_OPEN",
-                  "DELIVERED",
-                ] as any,
-              },
-            }),
+        ...(activeStatus ? { status: activeStatus as any } : {}),
       },
       include: {
         items: true,
@@ -208,7 +197,7 @@ export default function OrdersPage() {
           <p className="eyebrow">Verkauf</p>
           <h1>Auftraege</h1>
           <span className="pageSubline">
-            {data.tenant?.name || "Kein Mandant"} · uebernommene und operative Auftraege. Neue PDF-Importe zuerst im Auftragseingang pruefen.
+            {data.tenant?.name || "Kein Mandant"} · echte Auftragsdaten nach Mandant.
           </span>
         </div>
 

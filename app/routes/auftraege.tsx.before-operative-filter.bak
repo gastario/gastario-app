@@ -66,18 +66,7 @@ export async function loader({ request }: { request: Request }) {
     const orders = await prisma.order.findMany({
       where: {
         tenantId: access.tenantId,
-        ...(activeStatus
-          ? { status: activeStatus as any }
-          : {
-              status: {
-                in: [
-                  "CONFIRMED",
-                  "IN_PRODUCTION",
-                  "PACKING_OPEN",
-                  "DELIVERED",
-                ] as any,
-              },
-            }),
+        ...(activeStatus ? { status: activeStatus as any } : {}),
       },
       include: {
         items: true,
