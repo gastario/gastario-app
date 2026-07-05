@@ -218,14 +218,6 @@ model EmailAccount {
   mode     String  @default("FORWARDING")
   notes    String?
 
-  imapHost              String?
-  imapPort              Int?
-  imapSecure            Boolean @default(true)
-  imapUsername          String?
-  imapPasswordEncrypted String?
-  imapLastCheckedAt     DateTime?
-  imapLastUid           String?
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
