@@ -66,14 +66,8 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
   const addressIndex = zipCityLine ? lines.indexOf(zipCityLine) : -1;
 
   const streetLine =
-    addressIndex > 0
-      ? [...lines.slice(Math.max(0, addressIndex - 6), addressIndex)]
-          .reverse()
-          .find((line) =>
-            !isOwnOrPlatformLine(line) &&
-            !line.toLowerCase().includes("lieferadresse") &&
-            /stra?e|strasse|str\.|allee|weg|platz|damm|ufer|ring/i.test(line)
-          ) || ""
+    addressIndex > 0 && !isOwnOrPlatformLine(lines[addressIndex - 1])
+      ? lines[addressIndex - 1]
       : "";
 
   const deliveryAddress = [streetLine, zipCityLine].filter(Boolean).join(", ");
