@@ -1105,6 +1105,8 @@ export default function AuftragseingangPage() {
                             </Form>
                           </div>
                         </td>
+                          </div>
+                        </td>
                       </tr>
                     );
                   })
