@@ -107,23 +107,11 @@ export async function loader({ request }: { request: Request }) {
   }
 }
 
-
-
-function CheckItem({ text }: { text: string }) {
-  return (
-    <div style={checkItemStyle}>
-      <span style={checkBoxStyle}></span>
-      <span>{text}</span>
-    </div>
-  );
-}
-
 export default function DeliveryNotesPage() {
   const data = useLoaderData<typeof loader>();
 
   return (
     <AppLayout>
-      <style>{printCss}</style>
       <header className="topbar">
         <div>
           <p className="eyebrow">Betrieb</p>
@@ -287,50 +275,28 @@ export default function DeliveryNotesPage() {
                   ))}
                 </div>
 
-                <section style={deliveryCheckSectionStyle}>
-                  <h3 style={checkTitleStyle}>Vor der Lieferung pr?fen</h3>
-
-                  <div style={checkGridStyle}>
-                    <CheckItem text="Alle Positionen laut Liste gepackt" />
-                    <CheckItem text="Mengen kontrolliert" />
-                    <CheckItem text="Kalte Speisen gek?hlt" />
-                    <CheckItem text="Warme Speisen transportbereit" />
-                    <CheckItem text="Allergene / Hinweise gepr?ft" />
-                    <CheckItem text="Besteck / Servietten / Zubeh?r gepr?ft" />
-                    <CheckItem text="Lieferadresse gepr?ft" />
-                    <CheckItem text="Ansprechpartner / Telefonnummer gepr?ft" />
-                  </div>
-                </section>
-
-                <section style={deliveryCheckSectionStyle}>
-                  <h3 style={checkTitleStyle}>Fahrer-Check</h3>
-
-                  <div style={checkGridStyle}>
-                    <CheckItem text="Fahrzeug beladen" />
-                    <CheckItem text="Ware transportsicher verstaut" />
-                    <CheckItem text="Lieferzeit eingehalten" />
-                    <CheckItem text="Kunde bei Ankunft informiert" />
-                  </div>
-                </section>
-
-                <section style={deliveryCheckSectionStyle}>
-                  <h3 style={checkTitleStyle}>?bergabe beim Kunden</h3>
-
-                  <div style={checkGridStyle}>
-                    <CheckItem text="Ware vollst?ndig ?bergeben" />
-                    <CheckItem text="Aufbau / Ablageort abgestimmt" />
-                    <CheckItem text="Besonderheiten notiert" />
-                    <CheckItem text="Empfang best?tigt" />
-                  </div>
-                </section>
-
-                <div style={signatureGridStyle}>
-                  <div style={signatureBoxStyle}>
-                    <span>Fahrer / ?bergabe</span>
+                <div style={{
+                  marginTop: 28,
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 22
+                }}>
+                  <div style={{
+                    borderTop: "1px solid #94a3b8",
+                    paddingTop: 8,
+                    color: "#64748b",
+                    fontWeight: 800
+                  }}>
+                    Uebergabe / Fahrer
                   </div>
 
-                  <div style={signatureBoxStyle}>
-                    <span>Kunde / Empfang</span>
+                  <div style={{
+                    borderTop: "1px solid #94a3b8",
+                    paddingTop: 8,
+                    color: "#64748b",
+                    fontWeight: 800
+                  }}>
+                    Kunde / Empfang
                   </div>
                 </div>
               </article>
@@ -341,96 +307,3 @@ export default function DeliveryNotesPage() {
     </AppLayout>
   );
 }
-
-
-const deliveryCheckSectionStyle: React.CSSProperties = {
-  marginTop: 22,
-  border: "1px solid #e2e8f0",
-  borderRadius: 16,
-  padding: 16,
-  background: "#ffffff",
-};
-
-const checkTitleStyle: React.CSSProperties = {
-  margin: "0 0 12px",
-  color: "#0f172a",
-  fontSize: 16,
-  fontWeight: 900,
-};
-
-const checkGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 10,
-};
-
-const checkItemStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  color: "#0f172a",
-  fontWeight: 750,
-  fontSize: 13,
-};
-
-const checkBoxStyle: React.CSSProperties = {
-  width: 16,
-  height: 16,
-  border: "2px solid #0f766e",
-  borderRadius: 4,
-  display: "inline-block",
-  flex: "0 0 auto",
-};
-
-const signatureGridStyle: React.CSSProperties = {
-  marginTop: 30,
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 24,
-};
-
-const signatureBoxStyle: React.CSSProperties = {
-  borderTop: "1px solid #64748b",
-  paddingTop: 10,
-  minHeight: 54,
-  color: "#475569",
-  fontWeight: 850,
-};
-
-
-const printCss = `
-@media print {
-  body {
-    background: #ffffff !important;
-  }
-
-  aside,
-  nav,
-  .sidebar,
-  .topActions,
-  .orderSummaryGrid,
-  .panelHeader {
-    display: none !important;
-  }
-
-  main,
-  section,
-  article {
-    box-shadow: none !important;
-  }
-
-  article {
-    page-break-inside: avoid;
-  }
-
-  .panel {
-    border: none !important;
-    padding: 0 !important;
-  }
-
-  @page {
-    size: A4;
-    margin: 14mm;
-  }
-}
-`;
