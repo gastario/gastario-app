@@ -441,7 +441,6 @@ export default function Home() {
           </Link>
         </section>
 
-        <section className="managementGrid">
         <section className="financePanel">
           <div className="financeHead">
             <div>
@@ -515,8 +514,6 @@ export default function Home() {
               <small>Rechnungsdaten pruefen</small>
             </Link>
           </div>
-        </section>
-
         </section>
 
         <section className="dashGrid">
@@ -1004,56 +1001,6 @@ const dashboardCss = `
   .taxTask small {
     color: #64748b;
     font-weight: 750;
-  }
-
-
-  .managementGrid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-    align-items: start;
-  }
-
-  .managementGrid .financePanel,
-  .managementGrid .taxPanel {
-    min-height: 0;
-  }
-
-  .managementGrid .financeGrid,
-  .managementGrid .taxGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .managementGrid .financeGrid > div,
-  .managementGrid .taxTask {
-    min-height: 86px;
-    padding: 13px;
-  }
-
-  .managementGrid .financeGrid strong,
-  .managementGrid .taxTask strong {
-    font-size: 23px;
-  }
-
-  .managementGrid .financeHead,
-  .managementGrid .taxHead {
-    margin-bottom: 13px;
-  }
-
-  .managementGrid .financeHead h2,
-  .managementGrid .taxHead h2 {
-    font-size: 20px;
-  }
-
-  .managementGrid .financeHead span,
-  .managementGrid .taxHead span {
-    font-size: 13px;
-  }
-
-  .managementGrid .financeHead a,
-  .managementGrid .taxHead a {
-    padding: 8px 11px;
-    font-size: 13px;
   }
 
 `;
