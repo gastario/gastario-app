@@ -75,7 +75,6 @@ export async function loader({ request }: { request: Request }) {
       openOrders: [],
       lowInventoryItems: [],
       features: [],
-      emailInbox: [],
       finance: {
         currentMonthGrossCents: 0,
         previousMonthGrossCents: 0,
@@ -306,22 +305,6 @@ export async function loader({ request }: { request: Request }) {
 
   const readyScore = Math.max(0, Math.min(100, 100 - openTaxTasks * 10));
 
-  const emailInbox = await prisma.incomingEmail.findMany({
-    where: {
-      tenantId: access.tenantId,
-      status: {
-        in: ["RECEIVED", "REVIEW_NEEDED", "FAILED"] as any,
-      },
-      orders: {
-        none: {},
-      },
-    },
-    orderBy: {
-      receivedAt: "desc",
-    },
-    take: 5,
-  }).catch(() => []);
-
   return {
     tenant: access.tenant,
     setupError: null,
@@ -339,7 +322,6 @@ export async function loader({ request }: { request: Request }) {
     openOrders,
     lowInventoryItems: lowItems.slice(0, 6),
     features: access.features,
-    emailInbox,
     finance: {
       currentMonthGrossCents,
       previousMonthGrossCents,
@@ -563,26 +545,19 @@ export default function Home() {
               </div>
 
               <div className="inboxList">
-                {data.openOrders.length === 0 && data.emailInbox.length === 0 ? (
+                {data.openOrders.length === 0 ? (
                   <div className="inboxItem">
                     <strong>Nichts offen</strong>
-                    <span>Keine neuen Auftraege oder E-Mails in Pruefung.</span>
+                    <span>Keine neuen Auftraege in Pruefung.</span>
                   </div>
-                ) : null}
-
-                {data.openOrders.map((order: any) => (
-                  <Link className="inboxItem" to={"/auftrag-pruefung/" + order.id} key={order.id}>
-                    <strong>{order.customerName || "Pruefauftrag"}</strong>
-                    <span>{order.source} ? {order.orderNumber}</span>
-                  </Link>
-                ))}
-
-                {data.emailInbox.map((mail: any) => (
-                  <Link className="inboxItem" to="/auftragseingang" key={mail.id} data-mail="true">
-                    <strong>{mail.subject || "E-Mail ohne Betreff"}</strong>
-                    <span>{mail.sender || "Unbekannter Absender"} ? Erkennung noetig</span>
-                  </Link>
-                ))}
+                ) : (
+                  data.openOrders.map((order: any) => (
+                    <Link className="inboxItem" to={"/auftrag-pruefung/" + order.id} key={order.id}>
+                      <strong>{order.customerName}</strong>
+                      <span>{order.source} ? {order.orderNumber}</span>
+                    </Link>
+                  ))
+                )}
               </div>
             </article>
 
@@ -839,15 +814,6 @@ const dashboardCss = `
     color: #64748b;
     font-size: 13px;
     font-weight: 750;
-  }
-
-  .inboxItem[data-mail="true"] {
-    border-color: #fed7aa;
-    background: #fffaf0;
-  }
-
-  .inboxItem[data-mail="true"] strong {
-    color: #92400e;
   }
 
   .financePanel {
