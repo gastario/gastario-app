@@ -76,10 +76,7 @@ export async function loader({ request }: { request: Request }) {
           status === "CONFIRMED" ||
           status === "PAID" ||
           status === "INVOICE_APPROVED" ||
-          status === "MANUAL" ||
-          status === "AUTO_CREATED" ||
-          status === "REVIEW_NEEDED" ||
-          status === "INCOMPLETE"
+          status === "MANUAL"
         )
       );
     });
