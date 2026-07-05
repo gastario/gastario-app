@@ -1091,10 +1091,26 @@ export default function AuftragseingangPage() {
                           </span>
                         </td>
                         <td style={tdStyle}>
-                          <div style={{ display: "grid", gap: 8, minWidth: 130 }}>
+                          <div style={{ display: "grid", gap: 8, minWidth: 150 }}>
                             <a href={"/auftrag-pruefung/" + order.id} style={smallButtonStyle}>
                               Pruefen
                             </a>
+
+                            <a
+                              href={"/lieferscheine?date=" + String(order.deliveryDate || "").slice(0, 10)}
+                              style={smallButtonStyle}
+                            >
+                              Lieferschein
+                            </a>
+
+                            <Form method="post">
+                              <input type="hidden" name="intent" value="updateStatus" />
+                              <input type="hidden" name="orderId" value={order.id} />
+                              <input type="hidden" name="status" value="CONFIRMED" />
+                              <button type="submit" style={{ ...smallButtonStyle, width: "100%" }}>
+                                Uebernehmen
+                              </button>
+                            </Form>
 
                             <Form method="post">
                               <input type="hidden" name="intent" value="deleteOrder" />
@@ -1103,8 +1119,6 @@ export default function AuftragseingangPage() {
                                 Loeschen
                               </button>
                             </Form>
-                          </div>
-                        </td>
                           </div>
                         </td>
                       </tr>
