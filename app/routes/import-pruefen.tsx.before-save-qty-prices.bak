@@ -95,10 +95,10 @@ export async function action({ request }: { request: Request }) {
           create: Array.isArray(extractedOrder.items)
             ? extractedOrder.items.map((item: any) => ({
                 name: String(item.name || "Position"),
-                quantity: Number(item.quantity || 1),
+                quantity: 1,
                 unit: "Stueck",
-                unitCents: Number(item.unitCents || 0),
-                totalCents: Number(item.totalCents || 0),
+                unitCents: 0,
+                totalCents: 0,
                 notes: [item.description, item.rawLine].filter(Boolean).join(" | ") || null,
               }))
             : [],
