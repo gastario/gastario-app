@@ -581,7 +581,7 @@ export default function Home() {
                 ))}
 
                 {data.emailInbox.map((mail: any) => (
-                  <Link className="inboxItem" to={"/email-pruefung/" + mail.id} key={mail.id} data-mail="true">
+                  <Link className="inboxItem" to="/auftragseingang" key={mail.id} data-mail="true">
                     <strong>{mail.subject || "E-Mail ohne Betreff"}</strong>
                     <span>{mail.sender || "Unbekannter Absender"} ? Erkennung noetig</span>
                   </Link>

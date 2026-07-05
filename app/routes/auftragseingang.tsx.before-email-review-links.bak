@@ -1097,7 +1097,7 @@ export default function AuftragseingangPage() {
                         </span>
                       </td>
                       <td style={tdStyle}>
-                        <a href={"/email-pruefung/" + mail.id} style={smallButtonStyle}>Pruefen</a>
+                        <a href={"/auftragseingang?emailId=" + mail.id} style={smallButtonStyle}>Pruefen</a>
                       </td>
                     </tr>
                   ))

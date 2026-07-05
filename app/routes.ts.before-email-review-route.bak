@@ -34,7 +34,6 @@ export default [
   route("rezepte", "routes/rezepte.tsx"),
   route("auftragseingang", "routes/auftragseingang.tsx"),
   route("auftrag-pruefung/:orderId", "routes/auftrag-pruefung.$orderId.tsx"),
-  route("email-pruefung/:emailId", "routes/email-pruefung.$emailId.tsx"),
   route("auswertungen", "routes/auswertungen.tsx"),
   route("einstellungen", "routes/einstellungen.tsx"),
   route("konto/abo", "routes/konto.abo.tsx"),
