@@ -245,43 +245,23 @@ export default function ImportsPage() {
 
   return (
     <AppLayout>
-      <style>{importPageCss}</style>
       <div style={pageStyle}>
-        <header style={heroStyle}>
-          <div>
-            <p style={eyebrowStyle}>E-Mail-Import</p>
-            <h1 style={titleStyle}>Auftraege automatisch erkennen</h1>
-            <p style={subtitleStyle}>
-              Verbinde einmal dein Auftrags-Postfach. Gastario liest neue Mails automatisch,
-              erkennt Auftraege und legt sie zuerst sicher im Auftragseingang zur Pruefung ab.
-            </p>
-          </div>
-
-          <div style={stepPillWrapStyle}>
-            <span>1 Postfach</span>
-            <span>2 Testen</span>
-            <span>3 Automatisch</span>
-          </div>
+        <header>
+          <p style={eyebrowStyle}>E-Mail-Import</p>
+          <h1 style={titleStyle}>Postfach verbinden</h1>
+          <p style={subtitleStyle}>
+            Verbinde ein Auftrags-Postfach. Gastario liest spaeter neue Mails automatisch,
+            erkennt Auftraege und legt sie zuerst im Auftragseingang zur Pruefung ab.
+          </p>
         </header>
 
         {data.error ? <div style={errorStyle}>{data.error}</div> : null}
         {actionData?.error ? <div style={errorStyle}>{actionData.error}</div> : null}
         {actionData?.success ? <div style={successStyle}>{actionData.success}</div> : null}
 
-        <section style={setupCardStyle}>
-          <div style={sectionHeaderStyle}>
-            <div>
-              <p style={eyebrowStyle}>Postfach</p>
-              <h2 style={sectionTitleStyle}>Auftrags-Postfach verbinden</h2>
-              <p style={sectionTextStyle}>
-                Trage die E-Mail ein, auf der Bestellungen von Heycater, Kunden oder deiner Website eingehen.
-              </p>
-            </div>
-
-            <div style={statusBadgeStyle}>
-              sicherer IMAP-Abruf
-            </div>
-          </div>
+        <section style={cardStyle}>
+          <p style={eyebrowStyle}>Postfach</p>
+          <h2 style={sectionTitleStyle}>Auftrags-E-Mail verbinden</h2>
 
           <Form method="post" style={formStyle}>
             <label style={fieldStyle}>
@@ -336,30 +316,18 @@ export default function ImportsPage() {
             </div>
           </Form>
 
-          <div style={hintGridStyle}>
-            <div>
-              <strong>Keine Weiterleitung noetig</strong>
-              <span>Gastario verbindet sich direkt mit dem Postfach.</span>
-            </div>
-            <div>
-              <strong>Erst Pruefung, dann Auftrag</strong>
-              <span>Neue Mails landen nicht blind als Auftrag, sondern im Auftragseingang.</span>
-            </div>
-            <div>
-              <strong>SMTP wird nicht gebraucht</strong>
-              <span>Zum Lesen der Mails nutzen wir IMAP.</span>
-            </div>
+          <div style={hintBoxStyle}>
+            <strong>Einfach fuer den Kunden:</strong>
+            <span>
+              Der Kunde muss nur sein Postfach eintragen. Gastario ruft spaeter neue Mails automatisch ab.
+              SMTP wird dafuer nicht benoetigt, sondern IMAP.
+            </span>
           </div>
         </section>
 
         <section style={cardStyle}>
-          <div style={sectionHeaderStyle}>
-            <div>
-              <p style={eyebrowStyle}>Verbunden</p>
-              <h2 style={sectionTitleStyle}>Aktive Postfaecher</h2>
-              <p style={sectionTextStyle}>Diese Postfaecher werden fuer die Auftragserkennung vorbereitet.</p>
-            </div>
-          </div>
+          <p style={eyebrowStyle}>Verbunden</p>
+          <h2 style={sectionTitleStyle}>Aktive Postfaecher</h2>
 
           {data.emailAccounts.length === 0 ? (
             <div style={emptyStyle}>Noch kein Postfach verbunden.</div>
@@ -400,27 +368,13 @@ const titleStyle: React.CSSProperties = { margin: "4px 0 0", color: "#0f172a", f
 const subtitleStyle: React.CSSProperties = { margin: "6px 0 0", color: "#64748b", fontSize: 15, fontWeight: 650, maxWidth: 900 };
 const cardStyle: React.CSSProperties = { background: "#ffffff", border: "1px solid #dbe5eb", borderRadius: 20, padding: 24, boxShadow: "0 16px 34px rgba(15, 23, 42, 0.06)" };
 const sectionTitleStyle: React.CSSProperties = { margin: "4px 0 16px", color: "#0f172a", fontSize: 23 };
-const formStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 16,
-  alignItems: "end",
-};
+const formStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, alignItems: "end" };
 const fieldStyle: React.CSSProperties = { display: "grid", gap: 7, color: "#475569", fontSize: 12, fontWeight: 800 };
 const inputStyle: React.CSSProperties = { minHeight: 42, borderRadius: 12, border: "1px solid #cbd5e1", padding: "0 12px", fontWeight: 700 };
 const primaryButtonStyle: React.CSSProperties = { minHeight: 42, borderRadius: 12, border: "1px solid #057a67", background: "#057a67", color: "#ffffff", padding: "0 18px", fontWeight: 900, cursor: "pointer" };
 const hintBoxStyle: React.CSSProperties = { marginTop: 16, border: "1px solid #bfdbfe", background: "#eff6ff", color: "#1e3a8a", borderRadius: 14, padding: 14, display: "grid", gap: 4, fontWeight: 700 };
 const listStyle: React.CSSProperties = { display: "grid", gap: 10 };
-const rowStyle: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
-  borderRadius: 18,
-  padding: 18,
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 18,
-  alignItems: "center",
-  background: "#f8fafc",
-};
+const rowStyle: React.CSSProperties = { border: "1px solid #e2e8f0", borderRadius: 16, padding: 16, display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center" };
 const rowActionsStyle: React.CSSProperties = { display: "flex", gap: 10, alignItems: "center" };
 const badgeStyle: React.CSSProperties = { border: "1px solid #bbf7d0", background: "#f0fdf4", color: "#166534", borderRadius: 999, padding: "5px 10px", fontSize: 12, fontWeight: 900 };
 const deleteButtonStyle: React.CSSProperties = { border: "1px solid #fecaca", background: "#fff1f2", color: "#b91c1c", borderRadius: 12, padding: "9px 12px", fontWeight: 900, cursor: "pointer" };
@@ -446,101 +400,3 @@ const secondaryButtonStyle: React.CSSProperties = {
   fontWeight: 900,
   cursor: "pointer",
 };
-
-
-const heroStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 24,
-  alignItems: "flex-start",
-};
-
-const stepPillWrapStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 8,
-  flexWrap: "wrap",
-  justifyContent: "flex-end",
-  maxWidth: 360,
-};
-
-
-
-const setupCardStyle: React.CSSProperties = {
-  background: "linear-gradient(135deg, #ffffff 0%, #f8fffd 100%)",
-  border: "1px solid #cdeee8",
-  borderRadius: 22,
-  padding: 26,
-  boxShadow: "0 18px 38px rgba(15, 23, 42, 0.07)",
-};
-
-const sectionHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 16,
-  alignItems: "flex-start",
-  marginBottom: 18,
-};
-
-const sectionTextStyle: React.CSSProperties = {
-  margin: "4px 0 0",
-  color: "#64748b",
-  fontWeight: 650,
-};
-
-const statusBadgeStyle: React.CSSProperties = {
-  border: "1px solid #bbf7d0",
-  background: "#f0fdf4",
-  color: "#166534",
-  borderRadius: 999,
-  padding: "8px 12px",
-  fontSize: 12,
-  fontWeight: 900,
-  whiteSpace: "nowrap",
-};
-
-const hintGridStyle: React.CSSProperties = {
-  marginTop: 18,
-  display: "grid",
-  gridTemplateColumns: "repeat(3, 1fr)",
-  gap: 12,
-};
-
-const mailboxInfoStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 5,
-};
-
-
-
-const importPageCss = `
-  [style*="max-width: 360"] span {
-    display: inline-flex;
-    border: 1px solid #cdeee8;
-    background: #eefbf7;
-    color: #047857;
-    border-radius: 999px;
-    padding: 8px 11px;
-    font-size: 12px;
-    font-weight: 900;
-  }
-
-  [style*="grid-template-columns: repeat(3, 1fr)"] > div {
-    border: 1px solid #dbeafe;
-    background: #eff6ff;
-    color: #1e3a8a;
-    border-radius: 14px;
-    padding: 14px;
-    display: grid;
-    gap: 4px;
-    font-weight: 700;
-  }
-
-  [style*="grid-template-columns: repeat(3, 1fr)"] strong {
-    color: #0f172a;
-  }
-
-  [style*="grid-template-columns: repeat(3, 1fr)"] span {
-    color: #475569;
-    font-size: 13px;
-  }
-`;
