@@ -1,4 +1,4 @@
-import { redirect, useActionData } from "react-router";
+import { useActionData } from "react-router";
 import { useState } from "react";
 import AppLayout from "../components/AppLayout";
 
