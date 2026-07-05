@@ -35,56 +35,6 @@ function encryptSecret(value: string) {
   ].join(".");
 }
 
-
-function decryptSecret(value: string) {
-  const keyValue = process.env.IMAP_ENCRYPTION_KEY || "";
-
-  if (!keyValue) {
-    throw new Error("IMAP_ENCRYPTION_KEY fehlt in Railway.");
-  }
-
-  const [ivValue, tagValue, encryptedValue] = value.split(".");
-  const key = Buffer.from(keyValue, "base64");
-  const iv = Buffer.from(ivValue, "base64");
-  const tag = Buffer.from(tagValue, "base64");
-  const encrypted = Buffer.from(encryptedValue, "base64");
-
-  const decipher = crypto.createDecipheriv("aes-256-gcm", key, iv);
-  decipher.setAuthTag(tag);
-
-  return Buffer.concat([
-    decipher.update(encrypted),
-    decipher.final(),
-  ]).toString("utf8");
-}
-
-async function testImapConnection(options: {
-  host: string;
-  port: number;
-  username: string;
-  password: string;
-}) {
-  const { ImapFlow } = await import("imapflow");
-
-  const client = new ImapFlow({
-    host: options.host,
-    port: options.port,
-    secure: true,
-    auth: {
-      user: options.username,
-      pass: options.password,
-    },
-    logger: false,
-  });
-
-  await client.connect();
-  const mailbox = await client.mailboxOpen("INBOX");
-  await client.logout();
-
-  return Number(mailbox.exists || 0);
-}
-
-
 function maskSecret(value?: string | null) {
   return value ? "Passwort gespeichert" : "Noch kein Passwort gespeichert";
 }
@@ -132,7 +82,7 @@ export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
   const intent = String(formData.get("intent") || "");
 
-  if (intent === "saveMailbox" || intent === "testMailbox") {
+  if (intent === "saveMailbox") {
     const email = cleanEmail(formData.get("email"));
     const label = String(formData.get("label") || "").trim();
     const provider = String(formData.get("provider") || "STRATO").trim();
@@ -163,29 +113,6 @@ export async function action({ request }: { request: Request }) {
     const passwordData = password
       ? { imapPasswordEncrypted: encryptSecret(password) }
       : {};
-
-    if (intent === "testMailbox") {
-      const passwordForTest =
-        password ||
-        (existing?.imapPasswordEncrypted ? decryptSecret(existing.imapPasswordEncrypted) : "");
-
-      if (!passwordForTest) {
-        return { error: "Bitte Passwort eintragen oder zuerst ein Passwort speichern." };
-      }
-
-      try {
-        const inboxCount = await testImapConnection({
-          host: imapHost,
-          port: imapPort,
-          username: imapUsername,
-          password: passwordForTest,
-        });
-
-        return { success: "Verbindung erfolgreich. Posteingang erreichbar. Mails im INBOX: " + inboxCount };
-      } catch (error: any) {
-        return { error: "Verbindung fehlgeschlagen: " + String(error?.message || error) };
-      }
-    }
 
     if (existing) {
       await prisma.emailAccount.update({
@@ -264,6 +191,8 @@ export default function ImportsPage() {
           <h2 style={sectionTitleStyle}>Auftrags-E-Mail verbinden</h2>
 
           <Form method="post" style={formStyle}>
+            <input type="hidden" name="intent" value="saveMailbox" />
+
             <label style={fieldStyle}>
               <span>E-Mail-Adresse</span>
               <input name="email" type="email" placeholder="info@letmebowl-catering.de" required style={inputStyle} />
@@ -305,15 +234,9 @@ export default function ImportsPage() {
               <input name="password" type="password" placeholder="Passwort wird verschluesselt gespeichert" style={inputStyle} />
             </label>
 
-            <div style={buttonRowStyle}>
-              <button type="submit" name="intent" value="testMailbox" style={secondaryButtonStyle}>
-                Verbindung testen
-              </button>
-
-              <button type="submit" name="intent" value="saveMailbox" style={primaryButtonStyle}>
-                Postfach speichern
-              </button>
-            </div>
+            <button type="submit" style={primaryButtonStyle}>
+              Postfach speichern
+            </button>
           </Form>
 
           <div style={hintBoxStyle}>
@@ -381,22 +304,3 @@ const deleteButtonStyle: React.CSSProperties = { border: "1px solid #fecaca", ba
 const errorStyle: React.CSSProperties = { border: "1px solid #fecaca", background: "#fff1f2", color: "#9f1239", borderRadius: 14, padding: 14, fontWeight: 800 };
 const successStyle: React.CSSProperties = { border: "1px solid #bbf7d0", background: "#f0fdf4", color: "#166534", borderRadius: 14, padding: 14, fontWeight: 800 };
 const emptyStyle: React.CSSProperties = { border: "1px dashed #cbd5e1", borderRadius: 14, padding: 18, color: "#64748b", fontWeight: 700 };
-
-
-const buttonRowStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 10,
-  alignItems: "center",
-  justifyContent: "flex-end",
-};
-
-const secondaryButtonStyle: React.CSSProperties = {
-  minHeight: 42,
-  borderRadius: 12,
-  border: "1px solid #cbd5e1",
-  background: "#ffffff",
-  color: "#0f172a",
-  padding: "0 18px",
-  fontWeight: 900,
-  cursor: "pointer",
-};

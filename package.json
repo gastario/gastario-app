@@ -13,6 +13,7 @@
         "@react-router/node": "8.0.0",
         "@react-router/serve": "8.0.0",
         "bcryptjs": "^3.0.3",
+        "imapflow": "^1.4.3",
         "isbot": "^5.1.36",
         "pdf-parse": "^2.4.5",
         "qrcode": "^1.5.4",
