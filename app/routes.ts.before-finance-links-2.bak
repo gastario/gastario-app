@@ -48,9 +48,6 @@ export default [
   route("gastario-control/pakete", "routes/gastario-control.pakete.tsx"),
   route("gastario-control/features", "routes/gastario-control.features.tsx"),
   route("gastario-control/codes", "routes/gastario-control.codes.tsx"),
-
-  route("belege", "routes/belege.tsx"),
-  route("steuerberater-export", "routes/steuerberater-export.tsx"),
 ] satisfies RouteConfig;
 
 
