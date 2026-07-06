@@ -359,20 +359,6 @@ function isDishLine(value: string) {
   return dishWords.some((word) => lower.includes(word));
 }
 
-function looksLikeNamePart(value: string) {
-  const text = cleanLine(value);
-  if (!text) return false;
-  if (text.length < 2 || text.length > 40) return false;
-  if (isDishLine(text)) return false;
-  if (isInfoLine(text)) return false;
-  if (isAddressLine(text)) return false;
-  if (isCatererLine(text)) return false;
-  if (isCustomerLine(text)) return false;
-  if (isDate(text)) return false;
-
-  return /^[A-Za-zÀ-ž.'’\- ]+$/.test(text);
-}
-
 function splitMealAndInfo(value: string) {
   const line = cleanLine(value);
   const parts = line
@@ -422,28 +408,12 @@ function parseOneHeycaterLabel(date: string, block: string[]) {
     .filter((line) => !isCustomerLine(line))
     .filter((line) => !isAddressLine(line));
 
-  let name = cleanContent[0] || "Name nicht erkannt";
-  let startIndex = 1;
-
-  // Manche Heycater-PDFs brechen Vorname/Nachname in zwei Zeilen:
-  // Martyna
-  // Radziszewicz
-  // Salmon Tempura Bowl
-  // Dann darf Radziszewicz nicht als Gericht genommen werden.
-  if (
-    cleanContent.length >= 3 &&
-    looksLikeNamePart(cleanContent[0]) &&
-    looksLikeNamePart(cleanContent[1]) &&
-    isDishLine(cleanContent[2])
-  ) {
-    name = cleanContent[0] + " " + cleanContent[1];
-    startIndex = 2;
-  }
+  const name = cleanContent[0] || "Name nicht erkannt";
 
   let meal = "Gericht nicht erkannt";
   const details: string[] = [];
 
-  for (let i = startIndex; i < cleanContent.length; i++) {
+  for (let i = 1; i < cleanContent.length; i++) {
     const line = cleanContent[i];
     if (!line) continue;
 
