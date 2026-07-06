@@ -1717,6 +1717,26 @@ export default function AuftragseingangPage() {
     return dateB - dateA;
   });
 
+  const visibleOrders = sortedOrders.filter((order: any) => {
+    if (!order.deliveryDate) return true;
+
+    const deliveryDate = new Date(order.deliveryDate);
+
+    if (Number.isNaN(deliveryDate.getTime())) return true;
+
+    const match = String(order.deliveryTimeText || "").match(/(\d{1,2})[:.](\d{2})/);
+
+    if (match) {
+      deliveryDate.setHours(Number(match[1]), Number(match[2]), 0, 0);
+    } else {
+      deliveryDate.setHours(23, 59, 59, 999);
+    }
+
+    return deliveryDate.getTime() >= Date.now();
+  });
+
+  const hiddenPastOrderCount = sortedOrders.length - visibleOrders.length;
+
   return (
     <AppLayout>
       <div className="inboxPage">
@@ -1923,10 +1943,10 @@ export default function AuftragseingangPage() {
               <span>Aktion</span>
             </div>
 
-            {sortedOrders.length === 0 ? (
-              <div className="ordersEmpty">Keine Aufträge im aktuellen Filter.</div>
+            {visibleOrders.length === 0 ? (
+              <div className="ordersEmpty">Keine aktuellen Aufträge im Auftragseingang. Vergangene Lieferungen findest du unter „Vergangene Aufträge“.</div>
             ) : (
-              sortedOrders.map((order: any) => {
+              visibleOrders.map((order: any) => {
                 const total = order.items.reduce((sum: number, item: any) => sum + (item.totalCents || item.totalPriceCents || 0), 0);
 
                 return (
@@ -1971,6 +1991,13 @@ export default function AuftragseingangPage() {
               })
             )}
           </div>
+
+          {hiddenPastOrderCount > 0 ? (
+            <div className="pastOrdersHint">
+              {hiddenPastOrderCount} vergangene Auftrag{hiddenPastOrderCount === 1 ? "" : "e"} ausgeblendet.{" "}
+              <a href="/auftraege?view=past">Vergangene Aufträge öffnen</a>
+            </div>
+          ) : null}
         </section>
       </div>
 
@@ -3641,6 +3668,28 @@ export default function AuftragseingangPage() {
             justify-content: flex-start !important;
             flex-wrap: wrap !important;
           }
+        }
+      `}</style>
+
+    
+      <style>{`
+        /* past-orders-hidden-hint-v1 */
+
+        .pastOrdersHint {
+          margin-top: 8px;
+          padding: 8px 10px;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          background: #f8fafc;
+          color: #64748b;
+          font-size: 12px;
+          font-weight: 500;
+        }
+
+        .pastOrdersHint a {
+          color: #047857;
+          font-weight: 600;
+          text-decoration: none;
         }
       `}</style>
 
