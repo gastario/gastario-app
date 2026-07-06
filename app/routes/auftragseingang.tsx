@@ -1868,35 +1868,53 @@ export default function AuftragseingangPage() {
           {data.emailInbox.length === 0 ? (
             <div className="emptyState">Keine ungeprüften E-Mails in dieser Kategorie.</div>
           ) : (
-            <div className="mailList">
+            <div className="ordersTable emailTable">
+              <div className="ordersHead emailHead">
+                <span>Betreff</span>
+                <span>Absender</span>
+                <span>Datum</span>
+                <span>Kategorie</span>
+                <span>Anhang</span>
+                <span>Status</span>
+                <span>Aktion</span>
+              </div>
+
               {sortedEmails.map((mail: any) => {
                 const category = classifyIncomingEmail(mail);
+                const receivedDate = new Date(mail.receivedAt || mail.createdAt);
 
                 return (
-                  <article className="mailRow" key={mail.id}>
-                    <div className="mailMain">
-                      <div className="mailMeta">
-                        <span>{emailCategoryLabel(category)}</span>
-                        <time>{new Date(mail.receivedAt || mail.createdAt).toLocaleString("de-DE")}</time>
-                      </div>
-
-                      <h3>{mail.subject || "Ohne Betreff"}</h3>
-
-                      <div className="mailSub">
-                        <span>Von: {mail.sender || "-"}</span>
-                        <span>Postfach: {mail.account?.email || mail.accountEmail || "-"}</span>
-                        <span>{mail.attachments?.length || 0} Anhänge</span>
-                      </div>
-
-                      {mail.errorMessage ? <p className="mailHint">{mail.errorMessage}</p> : null}
+                  <div className="ordersRow emailRow" key={mail.id}>
+                    <div>
+                      <strong>{mail.subject || "Ohne Betreff"}</strong>
+                      {mail.errorMessage ? <small className="emailErrorText">{mail.errorMessage}</small> : null}
                     </div>
 
-                    <div className="mailActions">
+                    <div>
+                      <strong>{mail.sender || "-"}</strong>
+                      <small>{mail.account?.email || mail.accountEmail || "-"}</small>
+                    </div>
+
+                    <div>
+                      <strong>{receivedDate.toLocaleDateString("de-DE")}</strong>
+                      <small>{receivedDate.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}</small>
+                    </div>
+
+                    <div>
+                      <strong>{emailCategoryLabel(category)}</strong>
+                      <small>{category === "inquiries" ? "Angebot vorbereiten" : "E-Mail prüfen"}</small>
+                    </div>
+
+                    <strong>{mail.attachments?.length || 0}</strong>
+
+                    <span className="statusBadge">{mail.status === "IGNORED" ? "Ausgeblendet" : "Ungeprüft"}</span>
+
+                    <div className="orderActions">
                       <a href={"/email-pruefung/" + mail.id} className="primaryBtn small">Prüfen</a>
 
                       {category === "inquiries" ? (
                         <a href={"/angebot-vorbereiten/" + mail.id} className="softBtn small">
-                          Angebot vorbereiten
+                          Angebot
                         </a>
                       ) : null}
 
@@ -1920,7 +1938,7 @@ export default function AuftragseingangPage() {
                         <button type="submit" className="dangerBtn small">Löschen</button>
                       </Form>
                     </div>
-                  </article>
+                  </div>
                 );
               })}
             </div>
@@ -3880,6 +3898,59 @@ export default function AuftragseingangPage() {
           .mailActions {
             grid-column: auto !important;
             grid-row: auto !important;
+            justify-content: flex-start !important;
+            flex-wrap: wrap !important;
+          }
+        }
+      `}</style>
+
+    
+      <style>{`
+        /* email-table-uses-orders-table-v15 */
+
+        .emailTable .ordersHead,
+        .emailTable .ordersRow {
+          grid-template-columns: 1.35fr 1.35fr .75fr 1fr .45fr .7fr auto !important;
+        }
+
+        .emailTable .ordersRow {
+          min-height: 62px !important;
+        }
+
+        .emailTable .orderActions {
+          justify-content: flex-end !important;
+          flex-wrap: nowrap !important;
+          gap: 6px !important;
+        }
+
+        .emailTable .softBtn {
+          background: #ecfdf5 !important;
+          border: 1px solid #bbf7d0 !important;
+          color: #047857 !important;
+        }
+
+        .emailErrorText {
+          color: #9a3412 !important;
+          font-size: 11px !important;
+          line-height: 1.25 !important;
+          margin-top: 3px !important;
+          max-width: 360px !important;
+        }
+
+        .emailTable .statusBadge {
+          justify-self: start !important;
+        }
+
+        @media (max-width: 1150px) {
+          .emailTable .ordersHead {
+            display: none !important;
+          }
+
+          .emailTable .ordersRow {
+            grid-template-columns: 1fr !important;
+          }
+
+          .emailTable .orderActions {
             justify-content: flex-start !important;
             flex-wrap: wrap !important;
           }
