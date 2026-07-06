@@ -24,6 +24,18 @@ function normalizeText(value: unknown) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+function isHeycaterCorrectionItem(item: any) {
+  const name = normalizeText(item?.name);
+  const notes = normalizeText(item?.notes);
+
+  return (
+    name.includes("fehlende position") ||
+    name.includes("heycater-pdf") ||
+    notes.includes("summenabgleich") ||
+    notes.includes("gesamtbetrag netto aus der heycater-pdf")
+  );
+}
+
 function isPlaceholderOrderItem(item: any) {
   const text = normalizeText([
     item?.name,
@@ -238,12 +250,12 @@ export default function AuftragPruefungPage() {
         <p style={{ margin: 0, color: "#64748b", fontWeight: 700 }}>{tenant?.name || "Gastario"}</p>
 
         <div style={{ marginTop: 20, padding: "14px 16px", borderRadius: 14, background: "#fff7ed", color: "#9a3412", fontWeight: 850, border: "1px solid #fed7aa" }}>
-          Bitte vor Uebernahme pruefen: Kunde, Lieferadresse, Datum, Uhrzeit und Positionen.
+          Bitte vor Übernahme prüfen: Kunde, Lieferadresse, Datum, Uhrzeit und Positionen.
         </div>
 
         {!canConfirmOrder ? (
           <div style={dangerBoxStyle}>
-            <strong>Nicht uebernehmen: Erst Daten ergaenzen.</strong>
+            <strong>Nicht übernehmen: Erst Daten ergänzen.</strong>
             <ul style={dangerListStyle}>
               {missingChecks.map((item) => (
                 <li key={item}>{item}</li>
@@ -259,7 +271,7 @@ export default function AuftragPruefungPage() {
 
             {blocked ? (
               <div style={dangerSmallStyle}>
-                Der Auftrag wurde nicht uebernommen, weil wichtige Daten fehlen.
+                Der Auftrag wurde nicht übernommen, weil wichtige Daten fehlen.
               </div>
             ) : null}
           </div>
@@ -281,7 +293,7 @@ export default function AuftragPruefungPage() {
           <section style={positionsCardStyle}>
             <div style={sectionHeaderStyle}>
               <h2 style={sectionTitleStyle}>Positionen</h2>
-              <span style={countBadgeStyle}>{order.items.length} Positionen</span>
+              <span style={countBadgeStyle}>{visibleItems.length} Positionen</span>
             </div>
 
             <table style={tableStyle}>
@@ -294,14 +306,20 @@ export default function AuftragPruefungPage() {
                 </tr>
               </thead>
               <tbody>
-                {order.items.map((item) => (
+                {visibleItems.map((item) => (
                   <tr key={item.id} style={tableRowStyle}>
                     <td style={tdStyle}>
                       <strong>{item.quantity}</strong>
                       <div style={mutedCellStyle}>{item.unit}</div>
                     </td>
                     <td style={tdStyle}><strong>{item.name}</strong></td>
-                    <td style={tdMutedStyle}>{item.notes || "-"}</td>
+                    <td style={tdMutedStyle}>
+                      {item.notes
+                        ? String(item.notes).length > 180
+                          ? String(item.notes).slice(0, 180) + "..."
+                          : item.notes
+                        : "-"}
+                    </td>
                     <td style={tdRightStyle}>{centsToEuro(item.totalCents)}</td>
                   </tr>
                 ))}
@@ -317,11 +335,11 @@ export default function AuftragPruefungPage() {
               <div style={checkItemStyle}><span style={checkBoxStyle}></span><span>Lieferadresse stimmt</span></div>
               <div style={checkItemStyle}><span style={checkBoxStyle}></span><span>Lieferdatum und Lieferzeit stimmen</span></div>
               <div style={checkItemStyle}><span style={checkBoxStyle}></span><span>Positionen stimmen</span></div>
-              <div style={checkItemStyle}><span style={checkBoxStyle}></span><span>Hinweise / Allergene geprueft</span></div>
+              <div style={checkItemStyle}><span style={checkBoxStyle}></span><span>Hinweise / Allergene geprüft</span></div>
             </div>
 
             <p style={checkHintStyle}>
-              Bitte alle Punkte pruefen, bevor der Auftrag uebernommen wird.
+              Bitte alle Punkte prüfen, bevor der Auftrag übernommen wird.
             </p>
           </aside>
         </div>
