@@ -17,6 +17,57 @@ function formatDateInput(value: string | Date | null | undefined) {
   return new Date(value).toISOString().slice(0, 10);
 }
 
+function normalizeText(value: unknown) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function isPlaceholderOrderItem(item: any) {
+  const text = normalizeText([
+    item?.name,
+    item?.unit,
+    item?.notes,
+  ].join(" "));
+
+  return (
+    text.includes("pruefung") ||
+    text.includes("prufung") ||
+    text.includes("platzhalter") ||
+    text.includes("positionen bitte") ||
+    text.includes("fast track order") ||
+    text.includes("e-mail auftrag") ||
+    text.includes("email auftrag")
+  );
+}
+
+function getMissingOrderChecks(order: any) {
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const totalCents = items.reduce((sum: number, item: any) => sum + (item?.totalCents || 0), 0);
+  const realItems = items.filter((item: any) => !isPlaceholderOrderItem(item));
+
+  const missing: string[] = [];
+
+  if (!String(order?.deliveryAddress || "").trim()) {
+    missing.push("Lieferadresse fehlt");
+  }
+
+  if (!String(order?.deliveryTimeText || "").trim()) {
+    missing.push("Lieferzeit fehlt");
+  }
+
+  if (realItems.length === 0) {
+    missing.push("Keine echten bestellten Produkte erkannt");
+  }
+
+  if (totalCents <= 0) {
+    missing.push("Summe ist 0 Euro");
+  }
+
+  return missing;
+}
+
 export function meta() {
   return [{ title: "Auftragspruefung - Gastario" }];
 }
@@ -55,9 +106,12 @@ export async function loader({ request, params }: { request: Request; params: { 
     throw new Response("Auftrag nicht gefunden", { status: 404 });
   }
 
+  const url = new URL(request.url);
+
   return {
     tenant: tenantUser.tenant,
     order,
+    blocked: url.searchParams.get("blocked") === "1",
   };
 }
 
@@ -83,6 +137,26 @@ export async function action({ request, params }: { request: Request; params: { 
   const intent = String(formData.get("_intent") || "");
 
   if (intent === "confirmOrder") {
+    const order = await prisma.order.findFirst({
+      where: {
+        id: params.orderId,
+        tenantId: tenantUser.tenantId,
+      },
+      include: {
+        items: true,
+      },
+    });
+
+    if (!order) {
+      throw new Response("Auftrag nicht gefunden", { status: 404 });
+    }
+
+    const missingChecks = getMissingOrderChecks(order);
+
+    if (missingChecks.length > 0) {
+      return redirect("/auftrag-pruefung/" + params.orderId + "?blocked=1");
+    }
+
     await prisma.order.updateMany({
       where: {
         id: params.orderId,
@@ -100,8 +174,10 @@ export async function action({ request, params }: { request: Request; params: { 
 }
 
 export default function AuftragPruefungPage() {
-  const { tenant, order } = useLoaderData<typeof loader>();
+  const { tenant, order, blocked } = useLoaderData<typeof loader>();
   const total = order.items.reduce((sum, item) => sum + (item.totalCents || 0), 0);
+  const missingChecks = getMissingOrderChecks(order);
+  const canConfirmOrder = missingChecks.length === 0;
   const deliveryHref = "/lieferscheine" + (order.deliveryDate ? "?date=" + formatDateInput(order.deliveryDate) : "");
 
   return (
@@ -118,8 +194,13 @@ export default function AuftragPruefungPage() {
 
           <Form method="post">
             <input type="hidden" name="_intent" value="confirmOrder" />
-            <button type="submit" style={primaryButtonStyle}>
-              Auftrag uebernehmen
+            <button
+              type="submit"
+              disabled={!canConfirmOrder}
+              style={canConfirmOrder ? primaryButtonStyle : disabledButtonStyle}
+              title={canConfirmOrder ? "Auftrag uebernehmen" : "Erst Daten ergaenzen"}
+            >
+              {canConfirmOrder ? "Auftrag uebernehmen" : "Erst Daten ergaenzen"}
             </button>
           </Form>
 
@@ -140,6 +221,22 @@ export default function AuftragPruefungPage() {
         <div style={{ marginTop: 20, padding: "14px 16px", borderRadius: 14, background: "#fff7ed", color: "#9a3412", fontWeight: 850, border: "1px solid #fed7aa" }}>
           Bitte vor Uebernahme pruefen: Kunde, Lieferadresse, Datum, Uhrzeit und Positionen.
         </div>
+
+        {!canConfirmOrder ? (
+          <div style={dangerBoxStyle}>
+            <strong>Nicht uebernehmen: Erst Daten ergaenzen.</strong>
+            <ul style={dangerListStyle}>
+              {missingChecks.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+            {blocked ? (
+              <div style={dangerSmallStyle}>
+                Der Auftrag wurde nicht uebernommen, weil wichtige Daten fehlen.
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12, marginTop: 20 }}>
           <Info label="Kunde" value={order.customerName} />
@@ -468,4 +565,36 @@ const printButtonStyle: React.CSSProperties = {
   padding: "10px 14px",
   fontWeight: 850,
   cursor: "pointer",
+};
+
+const disabledButtonStyle: React.CSSProperties = {
+  border: "1px solid #cbd5e1",
+  background: "#e2e8f0",
+  color: "#64748b",
+  borderRadius: 12,
+  padding: "10px 14px",
+  fontWeight: 850,
+  cursor: "not-allowed",
+};
+
+const dangerBoxStyle: React.CSSProperties = {
+  marginTop: 14,
+  padding: "14px 16px",
+  borderRadius: 14,
+  background: "#fef2f2",
+  color: "#991b1b",
+  fontWeight: 850,
+  border: "1px solid #fecaca",
+};
+
+const dangerListStyle: React.CSSProperties = {
+  margin: "8px 0 0",
+  paddingLeft: 20,
+  lineHeight: 1.6,
+};
+
+const dangerSmallStyle: React.CSSProperties = {
+  marginTop: 8,
+  fontSize: 13,
+  color: "#7f1d1d",
 };
