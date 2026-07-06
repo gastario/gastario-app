@@ -172,14 +172,11 @@ export function parseHeycaterLabelsFromText(rawText: string): HeycaterLabelData[
     const dateLine = block.find(isDate) || "";
     const mealIndex = block.findIndex((line, index) => index > 0 && looksLikeMeal(line));
 
-    // Wichtig: Kein Label darf verloren gehen.
-    // Wenn ein Gericht nicht sauber erkannt wird, erstellen wir trotzdem ein Label.
-    // Danach sieht man im Ausdruck sofort, dass Daten fehlen, aber niemand wird ausgelassen.
+    // Wichtig: Kein falsches Zusatzetikett erzeugen.
+    // Wenn kein Gericht im Block erkannt wird, ist das meistens nur ein abgetrennter Vor-/Nachname.
+    if (mealIndex === -1) continue;
 
-    const meal =
-      mealIndex >= 0
-        ? block[mealIndex]
-        : block.find((line, index) => index > 0 && !isDate(line) && !isMetaLine(line)) || "Gericht nicht erkannt";
+    const meal = block[mealIndex];
 
     const catererIndex = block.findIndex((line) => normalize(line).includes("caterer:"));
     const customerIndex = block.findIndex((line) => normalize(line).includes("customer:"));
