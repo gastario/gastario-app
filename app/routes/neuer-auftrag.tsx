@@ -333,37 +333,90 @@ export default function NeuerAuftragPage() {
               <h2 style={sectionTitleStyle}>Positionen</h2>
 
               <div style={{ display: "grid", gap: 10 }}>
-                {[0, 1, 2, 3, 4].map((index) => (
-                  <div
-                    key={index}
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "minmax(0, 1fr) 100px 140px minmax(0, 1fr)",
-                      gap: 10,
-                      alignItems: "end",
-                    }}
-                  >
-                    <label style={labelStyle}>
-                      Position {index + 1}
-                      <input name="itemName" style={inputStyle} placeholder={index === 0 ? "z. B. Chicken Bowl" : "Optional"} />
-                    </label>
+                <div id="manual-order-items" style={{ display: "grid", gap: 10 }}>
+                  {[0, 1, 2].map((index) => (
+                    <div
+                      key={index}
+                      className="manual-order-item-row"
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "minmax(0, 1fr) 100px 140px minmax(0, 1fr)",
+                        gap: 10,
+                        alignItems: "end",
+                      }}
+                    >
+                      <label style={labelStyle}>
+                        Position {index + 1}
+                        <input name="itemName" style={inputStyle} placeholder={index === 0 ? "z. B. Chicken Bowl" : "Optional"} />
+                      </label>
 
-                    <label style={labelStyle}>
-                      Menge
-                      <input name="quantity" type="number" min="0" step="1" defaultValue={index === 0 ? 1 : ""} style={inputStyle} />
-                    </label>
+                      <label style={labelStyle}>
+                        Menge
+                        <input name="quantity" type="number" min="0" step="1" defaultValue={index === 0 ? 1 : ""} style={inputStyle} />
+                      </label>
 
-                    <label style={labelStyle}>
-                      Einzelpreis netto
-                      <input name="unitPriceEuro" style={inputStyle} placeholder="0,00" />
-                    </label>
+                      <label style={labelStyle}>
+                        Einzelpreis netto
+                        <input name="unitPriceEuro" style={inputStyle} placeholder="0,00" />
+                      </label>
 
-                    <label style={labelStyle}>
-                      Hinweis
-                      <input name="itemNotes" style={inputStyle} placeholder="Allergene / Besonderheit" />
-                    </label>
-                  </div>
-                ))}
+                      <label style={labelStyle}>
+                        Hinweis
+                        <input name="itemNotes" style={inputStyle} placeholder="Allergene / Besonderheit" />
+                      </label>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  id="add-manual-order-item"
+                  style={{
+                    marginTop: 12,
+                    border: "1px solid #bbf7d0",
+                    background: "#ecfdf5",
+                    color: "#047857",
+                    borderRadius: 14,
+                    padding: "11px 14px",
+                    fontWeight: 950,
+                    cursor: "pointer",
+                    width: "fit-content",
+                  }}
+                >
+                  + Position hinzufügen
+                </button>
+
+                <script
+                  dangerouslySetInnerHTML={{
+                    __html: `
+                      (function () {
+                        var container = document.getElementById("manual-order-items");
+                        var button = document.getElementById("add-manual-order-item");
+
+                        if (!container || !button) return;
+
+                        button.addEventListener("click", function () {
+                          var count = container.querySelectorAll(".manual-order-item-row").length + 1;
+                          var row = document.createElement("div");
+
+                          row.className = "manual-order-item-row";
+                          row.style.display = "grid";
+                          row.style.gridTemplateColumns = "minmax(0, 1fr) 100px 140px minmax(0, 1fr)";
+                          row.style.gap = "10px";
+                          row.style.alignItems = "end";
+
+                          row.innerHTML =
+                            '<label style="display:grid;gap:6px;color:#475569;font-size:12px;font-weight:900;">Position ' + count + '<input name="itemName" placeholder="Weitere Position" style="width:100%;min-height:44px;border:1px solid #d6e1ea;border-radius:14px;padding:0 13px;font-weight:800;color:#0f172a;background:#fff;box-sizing:border-box;" /></label>' +
+                            '<label style="display:grid;gap:6px;color:#475569;font-size:12px;font-weight:900;">Menge<input name="quantity" type="number" min="0" step="1" style="width:100%;min-height:44px;border:1px solid #d6e1ea;border-radius:14px;padding:0 13px;font-weight:800;color:#0f172a;background:#fff;box-sizing:border-box;" /></label>' +
+                            '<label style="display:grid;gap:6px;color:#475569;font-size:12px;font-weight:900;">Einzelpreis netto<input name="unitPriceEuro" placeholder="0,00" style="width:100%;min-height:44px;border:1px solid #d6e1ea;border-radius:14px;padding:0 13px;font-weight:800;color:#0f172a;background:#fff;box-sizing:border-box;" /></label>' +
+                            '<label style="display:grid;gap:6px;color:#475569;font-size:12px;font-weight:900;">Hinweis<input name="itemNotes" placeholder="Allergene / Besonderheit" style="width:100%;min-height:44px;border:1px solid #d6e1ea;border-radius:14px;padding:0 13px;font-weight:800;color:#0f172a;background:#fff;box-sizing:border-box;" /></label>';
+
+                          container.appendChild(row);
+                        });
+                      })();
+                    `,
+                  }}
+                />
               </div>
             </section>
 
@@ -386,3 +439,4 @@ export default function NeuerAuftragPage() {
     </AppLayout>
   );
 }
+
