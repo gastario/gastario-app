@@ -35,6 +35,7 @@ export default [
   route("lieferanten", "routes/lieferanten.tsx"),
   route("rezepte", "routes/rezepte.tsx"),
   route("auftragseingang", "routes/auftragseingang.tsx"),
+  route("neuer-auftrag", "routes/neuer-auftrag.tsx"),
   route("auftrag-pruefung/:orderId", "routes/auftrag-pruefung.$orderId.tsx"),
   route("email-pruefung/:emailId", "routes/email-pruefung.$emailId.tsx"),
   route("auswertungen", "routes/auswertungen.tsx"),
@@ -55,6 +56,7 @@ export default [
   route("belege", "routes/belege.tsx"),
   route("steuerberater-export", "routes/steuerberater-export.tsx"),
 ] satisfies RouteConfig;
+
 
 
 
