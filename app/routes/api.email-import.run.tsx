@@ -62,16 +62,20 @@ function hasEnoughOrderData(order: any) {
 
     if (!name) return false;
     if (name.includes("lieferkosten")) return false;
+    if (name.includes("lieferung")) return false;
     if (name.includes("summe")) return false;
     if (name.includes("netto")) return false;
     if (name.includes("brutto")) return false;
+    if (name.includes("rabatt")) return false;
+    if (name.includes("gutschein")) return false;
 
-    return quantity > 0 || totalCents > 0;
+    return quantity > 0 && totalCents > 0;
   });
 
   const customerName = String(order.customerName || "").trim();
   const deliveryAddress = String(order.deliveryAddress || "").trim();
   const deliveryDate = String(order.deliveryDate || "").trim();
+  const deliveryTime = String(order.deliveryTime || "").trim();
 
   const hasRealCustomer =
     Boolean(customerName) &&
@@ -79,17 +83,18 @@ function hasEnoughOrderData(order: any) {
     customerName.toLowerCase() !== "heycater" &&
     customerName.toLowerCase() !== "unbekannt";
 
-  const hasFullDeliveryData =
-    hasRealCustomer &&
-    Boolean(deliveryDate) &&
-    Boolean(deliveryAddress);
+  const totalCents = realItems.reduce((sum: number, item: any) => {
+    return sum + Number(item?.totalCents || 0);
+  }, 0);
 
-  const hasEnoughRealItems =
+  return Boolean(
+    hasRealCustomer &&
+    deliveryDate &&
+    deliveryTime &&
+    deliveryAddress &&
     realItems.length > 0 &&
-    hasRealCustomer &&
-    Boolean(deliveryDate);
-
-  return Boolean(hasEnoughRealItems || hasFullDeliveryData);
+    totalCents > 0
+  );
 }
 
 async function extractPdfText(buffer: Buffer) {
@@ -523,6 +528,7 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
 
 
 
