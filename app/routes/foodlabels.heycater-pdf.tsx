@@ -3,15 +3,39 @@ import type { ActionFunctionArgs } from "react-router";
 
 
 async function extractPdfText(inputBuffer: Buffer) {
-  const imported = await import("pdf-parse");
-  const pdfParse: any = (imported as any).default || imported;
+  const imported: any = await import("pdf-parse");
 
-  if (typeof pdfParse !== "function") {
-    throw new Error("pdf-parse konnte nicht als Funktion geladen werden.");
+  const candidates = [
+    imported,
+    imported.default,
+    imported.default?.default,
+    imported.pdfParse,
+    imported.default?.pdfParse,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === "function") {
+      const parsed = await candidate(inputBuffer);
+      return String(parsed?.text || "");
+    }
   }
 
-  const parsed = await pdfParse(inputBuffer);
-  return String(parsed?.text || "");
+  const PDFParseClass = imported.PDFParse || imported.default?.PDFParse;
+
+  if (typeof PDFParseClass === "function") {
+    const parser = new PDFParseClass({ data: inputBuffer });
+
+    try {
+      const result = await parser.getText();
+      return String(result?.text || result || "");
+    } finally {
+      if (typeof parser.destroy === "function") {
+        await parser.destroy();
+      }
+    }
+  }
+
+  throw new Error("pdf-parse Export nicht erkannt. Gefunden: " + Object.keys(imported || {}).join(", "));
 }
 
 function mmToPt(mm: number) {
