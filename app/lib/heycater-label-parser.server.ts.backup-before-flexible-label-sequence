@@ -322,10 +322,7 @@ function parseOneHeycaterLabel(date: string, block: string[]) {
   let caterer = "Caterer: Let Me Bowl heykantine";
   let customer = "Customer: Heycater";
 
-  for (const rawLine of block) {
-    const line = cleanLine(rawLine);
-    if (!line) continue;
-
+  for (const line of block) {
     if (isCatererLine(line)) {
       caterer = line;
       continue;
@@ -336,20 +333,17 @@ function parseOneHeycaterLabel(date: string, block: string[]) {
       continue;
     }
 
-    if (isAddressLine(line)) {
-      if (!address) address = line;
-      continue;
-    }
-
-    if (!name && !isInfoLine(line)) {
+    if (!name && !isAddressLine(line) && !isInfoLine(line)) {
       name = line;
       continue;
     }
 
-    // Wichtig:
-    // Heycater-PDF-Text kommt nicht immer gleich raus.
-    // Manchmal steht nach dem Namen direkt das Gericht und die Adresse kommt erst spaeter.
-    if (name && !meal && !isInfoLine(line) && !isCatererLine(line) && !isCustomerLine(line)) {
+    if (!address && isAddressLine(line)) {
+      address = line;
+      continue;
+    }
+
+    if (name && address && !meal && !isInfoLine(line) && !isCatererLine(line) && !isCustomerLine(line)) {
       meal = line;
       continue;
     }
@@ -357,6 +351,22 @@ function parseOneHeycaterLabel(date: string, block: string[]) {
     if (meal && isInfoLine(line)) {
       details.push(line);
       continue;
+    }
+  }
+
+  if (!meal && address) {
+    const addressIndex = block.findIndex((line) => cleanLine(line) === cleanLine(address));
+
+    for (let i = addressIndex + 1; i < block.length; i++) {
+      const line = block[i];
+      if (!line) continue;
+      if (isInfoLine(line)) continue;
+      if (isCatererLine(line)) continue;
+      if (isCustomerLine(line)) continue;
+      if (isAddressLine(line)) continue;
+
+      meal = line;
+      break;
     }
   }
 
