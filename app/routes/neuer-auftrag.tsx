@@ -14,6 +14,25 @@ function euroToCents(value: FormDataEntryValue | null) {
   return Math.round(number * 100);
 }
 
+function parseGermanDateInput(value: string) {
+  const raw = String(value || "").trim();
+
+  const germanMatch = raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if (germanMatch) {
+    const day = germanMatch[1].padStart(2, "0");
+    const month = germanMatch[2].padStart(2, "0");
+    const year = germanMatch[3];
+    return new Date(year + "-" + month + "-" + day + "T00:00:00");
+  }
+
+  const isoMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    return new Date(raw + "T00:00:00");
+  }
+
+  return null;
+}
+
 function createOrderNumber() {
   const now = new Date();
   const date = now.toISOString().slice(0, 10).replaceAll("-", "");
@@ -98,7 +117,11 @@ export async function action({ request }: { request: Request }) {
     return { error: "Bitte mindestens eine Position eintragen." };
   }
 
-  const deliveryDate = new Date(deliveryDateRaw + "T00:00:00");
+  const deliveryDate = parseGermanDateInput(deliveryDateRaw);
+
+  if (!deliveryDate || Number.isNaN(deliveryDate.getTime())) {
+    return { error: "Bitte Lieferdatum im Format TT.MM.JJJJ eintragen." };
+  }
 
   let customer = await prisma.customer.findFirst({
     where: {
@@ -171,8 +194,8 @@ export default function NeuerAuftragPage() {
   const cardStyle: any = {
     background: "#ffffff",
     border: "1px solid #dbe7ee",
-    borderRadius: 24,
-    boxShadow: "0 18px 50px rgba(15, 23, 42, 0.08)",
+    borderRadius: 18,
+    boxShadow: "0 10px 28px rgba(15, 23, 42, 0.055)",
     padding: 24,
   };
 
@@ -181,16 +204,16 @@ export default function NeuerAuftragPage() {
     gap: 6,
     color: "#475569",
     fontSize: 12,
-    fontWeight: 900,
+    fontWeight: 650,
   };
 
   const inputStyle: any = {
     width: "100%",
-    minHeight: 44,
+    minHeight: 40,
     border: "1px solid #d6e1ea",
-    borderRadius: 14,
+    borderRadius: 10,
     padding: "0 13px",
-    fontWeight: 800,
+    fontWeight: 500,
     color: "#0f172a",
     background: "#ffffff",
     boxSizing: "border-box",
@@ -207,26 +230,26 @@ export default function NeuerAuftragPage() {
     border: "1px solid #0f9f7a",
     background: "#0f9f7a",
     color: "#ffffff",
-    borderRadius: 14,
-    padding: "12px 16px",
-    fontWeight: 950,
+    borderRadius: 10,
+    padding: "10px 14px",
+    fontWeight: 700,
     cursor: "pointer",
-    boxShadow: "0 10px 22px rgba(15, 159, 122, 0.18)",
+    boxShadow: "0 6px 14px rgba(15, 159, 122, 0.13)",
   };
 
   const secondaryButtonStyle: any = {
     border: "1px solid #d6e1ea",
     background: "#ffffff",
     color: "#0f172a",
-    borderRadius: 14,
-    padding: "12px 16px",
-    fontWeight: 900,
+    borderRadius: 10,
+    padding: "10px 14px",
+    fontWeight: 650,
     textDecoration: "none",
   };
 
   const sectionTitleStyle: any = {
     margin: "0 0 14px",
-    fontSize: 22,
+    fontSize: 20,
     letterSpacing: "-0.035em",
   };
 
@@ -247,7 +270,7 @@ export default function NeuerAuftragPage() {
                   Auftrag
                 </div>
 
-                <h1 style={{ margin: "6px 0 0", fontSize: 38, lineHeight: 1, letterSpacing: "-0.055em" }}>
+                <h1 style={{ margin: "6px 0 0", fontSize: 34, lineHeight: 1, letterSpacing: "-0.055em" }}>
                   Neuer Auftrag
                 </h1>
 
@@ -269,7 +292,7 @@ export default function NeuerAuftragPage() {
               color: "#9a3412",
               borderRadius: 18,
               padding: 14,
-              fontWeight: 850,
+              fontWeight: 650,
               marginBottom: 16,
             }}>
               {actionData.error}
@@ -314,12 +337,12 @@ export default function NeuerAuftragPage() {
               <div style={{ display: "grid", gridTemplateColumns: "180px 160px minmax(0, 1fr)", gap: 14 }}>
                 <label style={labelStyle}>
                   Lieferdatum *
-                  <input name="deliveryDate" type="date" style={inputStyle} />
+                  <input name="deliveryDate" inputMode="numeric" style={inputStyle} placeholder="TT.MM.JJJJ" />
                 </label>
 
                 <label style={labelStyle}>
                   Lieferzeit
-                  <input name="deliveryTime" type="time" style={inputStyle} />
+                  <input name="deliveryTime" style={inputStyle} placeholder="z. B. 12:00" />
                 </label>
 
                 <label style={labelStyle}>
@@ -376,7 +399,7 @@ export default function NeuerAuftragPage() {
                     border: "1px solid #bbf7d0",
                     background: "#ecfdf5",
                     color: "#047857",
-                    borderRadius: 14,
+                    borderRadius: 10,
                     padding: "11px 14px",
                     fontWeight: 950,
                     cursor: "pointer",
@@ -436,6 +459,39 @@ export default function NeuerAuftragPage() {
           </Form>
         </div>
       </div>
+      <style>{`
+        /* manual-order-lexoffice-polish */
+        input,
+        textarea,
+        select {
+          font-size: 14px !important;
+          font-weight: 500 !important;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+          color: #8a94a6 !important;
+          font-weight: 500 !important;
+        }
+
+        label {
+          font-size: 12px !important;
+          font-weight: 650 !important;
+        }
+
+        h1 {
+          font-weight: 700 !important;
+        }
+
+        h2 {
+          font-weight: 650 !important;
+        }
+
+        button,
+        a {
+          font-weight: 650 !important;
+        }
+      `}</style>
     </AppLayout>
   );
 }
