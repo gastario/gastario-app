@@ -1,4 +1,8 @@
-import { PDFDocument } from "pdf-lib";
+﻿const fs = require("fs");
+
+const routePath = "app/routes/foodlabels.heycater-pdf.tsx";
+
+fs.writeFileSync(routePath, `import { PDFDocument } from "pdf-lib";
 import type { ActionFunctionArgs } from "react-router";
 
 function mmToPt(mm: number) {
@@ -110,3 +114,6 @@ export async function action({ request }: ActionFunctionArgs) {
 export async function loader() {
   return new Response("Nur Upload per Formular erlaubt.", { status: 405 });
 }
+`, "utf8");
+
+console.log("PDF-Schnitt mit Innenrand neu geschrieben.");

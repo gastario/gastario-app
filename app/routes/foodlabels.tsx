@@ -223,140 +223,76 @@ export default function FoodLabelsPage() {
             <div>
               <p style={smallLabelStyle}>Foodlabel</p>
               <h2 style={sectionTitleStyle}>
-        <section style={{
-          background: "#fff",
-          border: "1px solid #d9e4ea",
-          borderRadius: 12,
-          padding: 18,
-          marginBottom: 18,
-        }}>
-          <div style={{ marginBottom: 14 }}>
-            <div style={{
-              color: "#047857",
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: ".08em",
-              textTransform: "uppercase",
-              marginBottom: 4,
-            }}>
-              PDF Import
+        
+        <section className="heycaterUploadBox">
+          <div className="heycaterUploadHeader">
+            <div>
+              <p>PDF Import</p>
+              <h2>Heycater-Labels fuer Zebra vorbereiten</h2>
+              <span>A4-PDF hochladen und in einzelne 76 x 51 mm Etiketten schneiden.</span>
             </div>
-            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>
-              Heycater-PDF hochladen
-            </h2>
-            <p style={{ margin: "6px 0 0", color: "#64748b", fontSize: 14 }}>
-              A4-PDF mit mehreren Stickern hochladen. Gastario erstellt daraus einzelne Zebra-Etiketten.
-            </p>
           </div>
 
-          <form
-            action="/foodlabels/heycater-pdf"
-            method="post"
-            encType="multipart/form-data"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1.6fr .75fr .75fr .85fr .85fr auto",
-              gap: 10,
-              alignItems: "end",
-            }}
-          >
-            <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 600 }}>
+          <form action="/foodlabels/heycater-pdf" method="post" encType="multipart/form-data" className="heycaterUploadForm">
+            <label>
               PDF-Datei
-              <input
-                type="file"
-                name="pdf"
-                accept="application/pdf"
-                required
-                style={{
-                  height: 38,
-                  border: "1px solid #d6e2e8",
-                  borderRadius: 8,
-                  padding: "7px 10px",
-                  background: "#fff",
-                }}
-              />
+              <input type="file" name="pdf" accept="application/pdf" required />
             </label>
 
-            <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 600 }}>
-              Spalten
-              <select name="columns" defaultValue="3" style={{
-                height: 38,
-                border: "1px solid #d6e2e8",
-                borderRadius: 8,
-                padding: "0 10px",
-                background: "#fff",
-              }}>
+            <label>
+              Raster
+              <select name="columns" defaultValue="3">
                 <option value="3">3 Spalten</option>
                 <option value="2">2 Spalten</option>
                 <option value="1">1 Spalte</option>
               </select>
             </label>
 
-            <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 600 }}>
+            <label>
               Reihen
-              <select name="rows" defaultValue="6" style={{
-                height: 38,
-                border: "1px solid #d6e2e8",
-                borderRadius: 8,
-                padding: "0 10px",
-                background: "#fff",
-              }}>
+              <select name="rows" defaultValue="6">
                 <option value="6">6 Reihen</option>
                 <option value="5">5 Reihen</option>
                 <option value="4">4 Reihen</option>
               </select>
             </label>
 
-            <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 600 }}>
-              Breite
-              <select name="labelWidthMm" defaultValue="76" style={{
-                height: 38,
-                border: "1px solid #d6e2e8",
-                borderRadius: 8,
-                padding: "0 10px",
-                background: "#fff",
-              }}>
-                <option value="76">76 mm</option>
-                <option value="70">70 mm</option>
-                <option value="60">60 mm</option>
+            <label>
+              Etikett
+              <select name="labelWidthMm" defaultValue="76">
+                <option value="76">76 mm breit</option>
+                <option value="70">70 mm breit</option>
+                <option value="60">60 mm breit</option>
               </select>
             </label>
 
-            <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 600 }}>
+            <label>
               Hoehe
-              <select name="labelHeightMm" defaultValue="51" style={{
-                height: 38,
-                border: "1px solid #d6e2e8",
-                borderRadius: 8,
-                padding: "0 10px",
-                background: "#fff",
-              }}>
-                <option value="51">51 mm</option>
-                <option value="50">50 mm</option>
-                <option value="38">38 mm</option>
+              <select name="labelHeightMm" defaultValue="51">
+                <option value="51">51 mm hoch</option>
+                <option value="50">50 mm hoch</option>
+                <option value="38">38 mm hoch</option>
               </select>
             </label>
 
-            <button type="submit" style={{
-              height: 38,
-              border: 0,
-              borderRadius: 8,
-              padding: "0 16px",
-              background: "#059669",
-              color: "#fff",
-              fontWeight: 700,
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}>
-              Zebra-PDF erstellen
-            </button>
+            <button type="submit">PDF erstellen</button>
 
-            <input type="hidden" name="marginTopMm" value="0" />
-            <input type="hidden" name="marginRightMm" value="0" />
-            <input type="hidden" name="marginBottomMm" value="0" />
-            <input type="hidden" name="marginLeftMm" value="0" />
+            <input type="hidden" name="pageTopMm" value="0" />
+            <input type="hidden" name="pageRightMm" value="0" />
+            <input type="hidden" name="pageBottomMm" value="0" />
+            <input type="hidden" name="pageLeftMm" value="0" />
+
+            <input type="hidden" name="innerTopMm" value="1.5" />
+            <input type="hidden" name="innerRightMm" value="1.5" />
+            <input type="hidden" name="innerBottomMm" value="5" />
+            <input type="hidden" name="innerLeftMm" value="1.5" />
           </form>
+
+          <div className="heycaterUploadHint">
+            Standard: 3 Spalten x 6 Reihen. Wenn ein Nachbarlabel sichtbar ist, erhoehen wir danach den Innenrand unten.
+          </div>
         </section>
+
 
 Labeldaten speichern</h2>
             </div>
@@ -482,6 +418,121 @@ Labeldaten speichern</h2>
           </div>
         </div>
       </section>
+    
+      <style>{`
+        /* heycater-upload-clean-v2 */
+
+        .heycaterUploadBox {
+          border: 1px solid #d9e4ea;
+          background: #ffffff;
+          border-radius: 12px;
+          padding: 14px 16px;
+          margin: 0 0 18px;
+          box-shadow: none;
+        }
+
+        .heycaterUploadHeader {
+          display: flex;
+          justify-content: space-between;
+          gap: 14px;
+          margin-bottom: 12px;
+        }
+
+        .heycaterUploadHeader p {
+          margin: 0 0 4px;
+          font-size: 10px;
+          line-height: 1.1;
+          font-weight: 700;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+          color: #047857;
+        }
+
+        .heycaterUploadHeader h2 {
+          margin: 0;
+          font-size: 18px;
+          line-height: 1.2;
+          font-weight: 600;
+          color: #0f172a;
+        }
+
+        .heycaterUploadHeader span {
+          display: block;
+          margin-top: 4px;
+          font-size: 13px;
+          line-height: 1.35;
+          font-weight: 400;
+          color: #64748b;
+        }
+
+        .heycaterUploadForm {
+          display: grid;
+          grid-template-columns: minmax(220px, 1.4fr) repeat(4, minmax(120px, .7fr)) auto;
+          gap: 8px;
+          align-items: end;
+        }
+
+        .heycaterUploadForm label {
+          display: grid;
+          gap: 5px;
+          font-size: 11.5px;
+          line-height: 1.2;
+          font-weight: 600;
+          color: #334155;
+        }
+
+        .heycaterUploadForm input,
+        .heycaterUploadForm select {
+          height: 34px;
+          border: 1px solid #d6e2e8;
+          border-radius: 7px;
+          padding: 0 9px;
+          background: #ffffff;
+          color: #0f172a;
+          font-size: 13px;
+          font-weight: 400;
+        }
+
+        .heycaterUploadForm input[type="file"] {
+          padding: 6px 9px;
+        }
+
+        .heycaterUploadForm button {
+          height: 34px;
+          border: 1px solid #047857;
+          border-radius: 7px;
+          padding: 0 13px;
+          background: #059669;
+          color: #ffffff;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          white-space: nowrap;
+          box-shadow: none;
+        }
+
+        .heycaterUploadHint {
+          margin-top: 9px;
+          padding: 8px 10px;
+          border: 1px dashed #d6e2e8;
+          border-radius: 8px;
+          color: #64748b;
+          font-size: 12px;
+          line-height: 1.35;
+          background: #f8fafc;
+        }
+
+        @media (max-width: 1150px) {
+          .heycaterUploadForm {
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .heycaterUploadForm button {
+            width: 100%;
+          }
+        }
+      `}</style>
+
     </AppLayout>
   );
 }
