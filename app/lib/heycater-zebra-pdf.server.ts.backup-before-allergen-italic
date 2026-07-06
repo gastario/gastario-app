@@ -95,7 +95,6 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
 
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
-  const italic = await pdf.embedFont(StandardFonts.HelveticaOblique);
 
   const qrDataUrl = await makeQrPngDataUrl();
   const qrImage = await pdf.embedPng(dataUrlToBytes(qrDataUrl));
@@ -128,7 +127,7 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
       page.drawText(date, {
         x: width - 55,
         y: height - 19,
-        size: 7.6,
+        size: 7.8,
         font: regular,
         color: black,
       });
@@ -153,11 +152,11 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
       page.drawText(line, {
         x: left,
         y,
-        size: 7.6,
-        font: italic,
+        size: 7.8,
+        font: bold,
         color: black,
       });
-      y -= 9.0;
+      y -= 9.2;
     }
 
     y -= 2.5;
@@ -166,7 +165,7 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
       x: left,
       y,
       size: 7.4,
-      font: italic,
+      font: bold,
       color: black,
     });
 
