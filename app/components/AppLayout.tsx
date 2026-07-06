@@ -2,18 +2,18 @@
 
 const navigationGroups = [
   {
-    label: "Uebersicht",
+    label: "Übersicht",
     items: [
       { label: "Dashboard", to: "/" },
     ],
   },
   {
-    label: "Auftraege",
+    label: "Aufträge",
     items: [
       { label: "Auftragseingang", to: "/auftragseingang" },
-      { label: "Bevorstehende Auftraege", to: "/auftraege" },
-      { label: "Vergangene Auftraege", to: "/auftraege?view=past" },
-      { label: "Neuer Auftrag", to: "/auftragseingang" },
+      { label: "Bevorstehende Aufträge", to: "/auftraege" },
+      { label: "Vergangene Aufträge", to: "/auftraege?view=past" },
+      { label: "Neuer Auftrag", to: "/neuer-auftrag" },
     ],
   },
   {
@@ -397,5 +397,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
     </main>
   );
 }
+
 
 
