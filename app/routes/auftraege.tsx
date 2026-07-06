@@ -600,6 +600,98 @@ export default function OrdersPage() {
         }
       `}</style>
 
+    
+      <style>{`
+        /* orders-filter-redesign */
+        .niceOrdersFilterBar {
+          display: grid !important;
+          grid-template-columns: minmax(0, 1fr) auto !important;
+          gap: 14px !important;
+          align-items: end !important;
+          margin-top: 14px !important;
+        }
+
+        .ordersFilterForm {
+          display: flex !important;
+          gap: 10px !important;
+          flex-wrap: wrap !important;
+          align-items: end !important;
+          background: #f8fafc !important;
+          border: 1px solid #e2e8f0 !important;
+          border-radius: 20px !important;
+          padding: 10px !important;
+        }
+
+        .statusFilterGroup {
+          display: flex !important;
+          gap: 8px !important;
+          flex-wrap: wrap !important;
+          justify-content: flex-end !important;
+        }
+
+        .filterLabel {
+          display: grid !important;
+          gap: 5px !important;
+          color: #64748b !important;
+          font-size: 11px !important;
+          font-weight: 950 !important;
+          text-transform: uppercase !important;
+          letter-spacing: .06em !important;
+        }
+
+        .filterInput {
+          min-width: 210px !important;
+          height: 42px !important;
+          border: 1px solid #d6e1ea !important;
+          border-radius: 16px !important;
+          padding: 0 13px !important;
+          background: #ffffff !important;
+          color: #0f172a !important;
+          font-weight: 850 !important;
+          outline: none !important;
+        }
+
+        .filterInput:focus {
+          border-color: #99d5ca !important;
+          box-shadow: 0 0 0 4px rgba(15, 159, 122, 0.10) !important;
+        }
+
+        .ghostButton {
+          min-height: 42px !important;
+          border-radius: 999px !important;
+          padding: 9px 15px !important;
+          border: 1px solid #d6e1ea !important;
+          background: #ffffff !important;
+          color: #0f172a !important;
+          font-weight: 950 !important;
+          text-decoration: none !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+          cursor: pointer !important;
+          white-space: nowrap !important;
+        }
+
+        .primaryGhostButton,
+        .activeFilter {
+          background: #0f9f7a !important;
+          color: #ffffff !important;
+          border-color: #0f9f7a !important;
+          box-shadow: 0 10px 22px rgba(15, 159, 122, 0.18) !important;
+        }
+
+        @media (max-width: 1150px) {
+          .niceOrdersFilterBar {
+            grid-template-columns: 1fr !important;
+          }
+
+          .statusFilterGroup {
+            justify-content: flex-start !important;
+          }
+        }
+      `}</style>
+
     </AppLayout>
   );
 }
