@@ -222,7 +222,143 @@ export default function FoodLabelsPage() {
           <div style={cardHeaderStyle}>
             <div>
               <p style={smallLabelStyle}>Foodlabel</p>
-              <h2 style={sectionTitleStyle}>Labeldaten speichern</h2>
+              <h2 style={sectionTitleStyle}>
+        <section style={{
+          background: "#fff",
+          border: "1px solid #d9e4ea",
+          borderRadius: 12,
+          padding: 18,
+          marginBottom: 18,
+        }}>
+          <div style={{ marginBottom: 14 }}>
+            <div style={{
+              color: "#047857",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: ".08em",
+              textTransform: "uppercase",
+              marginBottom: 4,
+            }}>
+              PDF Import
+            </div>
+            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>
+              Heycater-PDF hochladen
+            </h2>
+            <p style={{ margin: "6px 0 0", color: "#64748b", fontSize: 14 }}>
+              A4-PDF mit mehreren Stickern hochladen. Gastario erstellt daraus einzelne Zebra-Etiketten.
+            </p>
+          </div>
+
+          <form
+            action="/foodlabels/heycater-pdf"
+            method="post"
+            encType="multipart/form-data"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1.6fr .75fr .75fr .85fr .85fr auto",
+              gap: 10,
+              alignItems: "end",
+            }}
+          >
+            <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 600 }}>
+              PDF-Datei
+              <input
+                type="file"
+                name="pdf"
+                accept="application/pdf"
+                required
+                style={{
+                  height: 38,
+                  border: "1px solid #d6e2e8",
+                  borderRadius: 8,
+                  padding: "7px 10px",
+                  background: "#fff",
+                }}
+              />
+            </label>
+
+            <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 600 }}>
+              Spalten
+              <select name="columns" defaultValue="3" style={{
+                height: 38,
+                border: "1px solid #d6e2e8",
+                borderRadius: 8,
+                padding: "0 10px",
+                background: "#fff",
+              }}>
+                <option value="3">3 Spalten</option>
+                <option value="2">2 Spalten</option>
+                <option value="1">1 Spalte</option>
+              </select>
+            </label>
+
+            <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 600 }}>
+              Reihen
+              <select name="rows" defaultValue="6" style={{
+                height: 38,
+                border: "1px solid #d6e2e8",
+                borderRadius: 8,
+                padding: "0 10px",
+                background: "#fff",
+              }}>
+                <option value="6">6 Reihen</option>
+                <option value="5">5 Reihen</option>
+                <option value="4">4 Reihen</option>
+              </select>
+            </label>
+
+            <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 600 }}>
+              Breite
+              <select name="labelWidthMm" defaultValue="76" style={{
+                height: 38,
+                border: "1px solid #d6e2e8",
+                borderRadius: 8,
+                padding: "0 10px",
+                background: "#fff",
+              }}>
+                <option value="76">76 mm</option>
+                <option value="70">70 mm</option>
+                <option value="60">60 mm</option>
+              </select>
+            </label>
+
+            <label style={{ display: "grid", gap: 6, fontSize: 12, fontWeight: 600 }}>
+              Hoehe
+              <select name="labelHeightMm" defaultValue="51" style={{
+                height: 38,
+                border: "1px solid #d6e2e8",
+                borderRadius: 8,
+                padding: "0 10px",
+                background: "#fff",
+              }}>
+                <option value="51">51 mm</option>
+                <option value="50">50 mm</option>
+                <option value="38">38 mm</option>
+              </select>
+            </label>
+
+            <button type="submit" style={{
+              height: 38,
+              border: 0,
+              borderRadius: 8,
+              padding: "0 16px",
+              background: "#059669",
+              color: "#fff",
+              fontWeight: 700,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}>
+              Zebra-PDF erstellen
+            </button>
+
+            <input type="hidden" name="marginTopMm" value="0" />
+            <input type="hidden" name="marginRightMm" value="0" />
+            <input type="hidden" name="marginBottomMm" value="0" />
+            <input type="hidden" name="marginLeftMm" value="0" />
+          </form>
+        </section>
+
+Labeldaten speichern</h2>
             </div>
           </div>
 
@@ -324,7 +460,7 @@ export default function FoodLabelsPage() {
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Vorschau</p>
-                <h2 style={sectionTitleStyle}>{selected ? "Druckvorschau" : "Label auswählen"}</h2>
+                <h2 style={sectionTitleStyle}>{selected ? "Druckvorschau" : "Label auswaehlen"}</h2>
               </div>
             </div>
 

@@ -2,17 +2,17 @@
 
 const navigationGroups = [
   {
-    label: "Übersicht",
+    label: "Uebersicht",
     items: [
       { label: "Dashboard", to: "/" },
     ],
   },
   {
-    label: "Aufträge",
+    label: "Auftraege",
     items: [
       { label: "Auftragseingang", to: "/auftragseingang" },
-      { label: "Bevorstehende Aufträge", to: "/auftraege" },
-      { label: "Vergangene Aufträge", to: "/auftraege?view=past" },
+      { label: "Bevorstehende Auftraege", to: "/auftraege" },
+      { label: "Vergangene Auftraege", to: "/auftraege?view=past" },
       { label: "Neuer Auftrag", to: "/neuer-auftrag" },
     ],
   },

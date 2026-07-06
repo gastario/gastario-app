@@ -40,7 +40,7 @@ function buildQrValue(label: any) {
 
 
 export function meta() {
-  return [{ title: "MHD-Labels Â· Gastario" }];
+  return [{ title: "MHD-Labels · Gastario" }];
 }
 
 export async function loader({ request }: { request: Request }) {
@@ -290,7 +290,7 @@ export default function MhdLabelsPage() {
             </Field>
 
             <Field label="Lagerhinweis">
-              <input name="storageNote" defaultValue="GekÃ¼hlt lagern bei max. +7 Â°C" />
+              <input name="storageNote" defaultValue="Gekuehlt lagern bei max. +7 °C" />
             </Field>
 
             <Field label="Zutaten">
@@ -390,7 +390,7 @@ export default function MhdLabelsPage() {
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Vorschau</p>
-                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswÃ¤hlen"}</h2>
+                <h2 style={sectionTitleStyle}>{data.printLabel ? "Druckvorschau" : "Label auswaehlen"}</h2>
               </div>
 
 
@@ -409,7 +409,7 @@ export default function MhdLabelsPage() {
                 </div>
               </>
             ) : (
-              <div style={emptyStyle}>WÃ¤hle links ein gespeichertes Label Ã¼ber â€žVorschauâ€œ aus. Danach erscheint hier die Druckvorschau.</div>
+              <div style={emptyStyle}>Waehle links ein gespeichertes Label ueber â€žVorschauâ€œ aus. Danach erscheint hier die Druckvorschau.</div>
             )}
           </div>
         </div>
