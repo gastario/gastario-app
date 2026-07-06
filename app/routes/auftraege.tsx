@@ -379,12 +379,8 @@ export default function OrdersPage() {
                   <strong>{centsToEuro(total)}</strong>
 
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <Link className="ghostButton" to={"/auftrag-pruefung/" + order.id}>
-                      Öffnen
-                    </Link>
-
-                    <Link className="ghostButton" to={"/auftrag-pruefung/" + order.id}>
-                      Prüfseite
+                    <Link className="ghostButton primaryGhostButton" to={"/auftrag-pruefung/" + order.id}>
+                      Prüfen
                     </Link>
 
                     <Link
@@ -495,6 +491,111 @@ export default function OrdersPage() {
           .orderRow {
             grid-template-columns: 1fr !important;
             gap: 12px !important;
+          }
+        }
+      `}</style>
+
+    
+      <style>{`
+        /* auftraege-polish-v2 */
+        .niceFilterBar {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: flex-end !important;
+          gap: 10px !important;
+          flex-wrap: wrap !important;
+        }
+
+        .dateFilterForm {
+          display: flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+          flex-wrap: wrap !important;
+        }
+
+        .dateFilterInput {
+          height: 38px !important;
+          border: 1px solid #d6e1ea !important;
+          border-radius: 999px !important;
+          padding: 0 13px !important;
+          background: #ffffff !important;
+          color: #0f172a !important;
+          font-weight: 850 !important;
+          outline: none !important;
+        }
+
+        .ghostButton {
+          min-height: 38px !important;
+          border-radius: 999px !important;
+          padding: 8px 14px !important;
+          border: 1px solid #d6e1ea !important;
+          background: #ffffff !important;
+          color: #0f172a !important;
+          font-weight: 950 !important;
+          text-decoration: none !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+          cursor: pointer !important;
+          white-space: nowrap !important;
+        }
+
+        .ghostButton:hover {
+          border-color: #0f9f7a !important;
+          color: #047857 !important;
+          background: #f0fdf4 !important;
+        }
+
+        .activeFilter {
+          background: #0f9f7a !important;
+          color: #ffffff !important;
+          border-color: #0f9f7a !important;
+          box-shadow: 0 10px 22px rgba(15, 159, 122, 0.18) !important;
+        }
+
+        .primaryGhostButton {
+          background: #0f9f7a !important;
+          color: #ffffff !important;
+          border-color: #0f9f7a !important;
+          box-shadow: 0 10px 22px rgba(15, 159, 122, 0.18) !important;
+        }
+
+        .orderStatus {
+          border-radius: 999px !important;
+          padding: 7px 11px !important;
+          font-size: 12px !important;
+          font-weight: 950 !important;
+        }
+
+        .orderRow {
+          min-height: 96px !important;
+          align-items: center !important;
+        }
+
+        .orderRow small {
+          color: #64748b !important;
+          line-height: 1.35 !important;
+        }
+
+        .orderRow form button {
+          min-height: 38px !important;
+          border-radius: 999px !important;
+          border: 1px solid #fecaca !important;
+          background: #fff7f7 !important;
+          color: #b91c1c !important;
+          font-weight: 950 !important;
+          padding: 8px 14px !important;
+          cursor: pointer !important;
+        }
+
+        .orderRow form button:hover {
+          background: #fee2e2 !important;
+        }
+
+        @media (max-width: 1100px) {
+          .niceFilterBar {
+            justify-content: flex-start !important;
           }
         }
       `}</style>
