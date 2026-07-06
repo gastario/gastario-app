@@ -152,6 +152,49 @@ function findNearby(lines: string[], start: number, matcher: (value: string) => 
   return "";
 }
 
+function isPossibleNameLine(value: string) {
+  const text = cleanLine(value);
+  const lower = normalize(text);
+
+  if (!text || text.length < 2 || text.length > 60) return false;
+  if (isDate(text)) return false;
+  if (isMetaLine(text)) return false;
+  if (looksLikeMeal(text)) return false;
+  if (looksLikeDetails(text)) return false;
+  if (lower.includes("powered by")) return false;
+  if (lower.includes("pdf generator")) return false;
+  if (lower.includes("caterer:")) return false;
+  if (lower.includes("customer:")) return false;
+  if (/^[-–—_]+$/.test(text)) return false;
+
+  return true;
+}
+
+function findNameBeforeMeal(lines: string[], mealIndex: number) {
+  const candidates: string[] = [];
+
+  for (let i = mealIndex - 1; i >= Math.max(0, mealIndex - 5); i--) {
+    const line = cleanLine(lines[i]);
+
+    if (!line) continue;
+    if (isPossibleNameLine(line)) {
+      candidates.unshift(line);
+    }
+  }
+
+  if (candidates.length === 0) return "Name nicht erkannt";
+
+  // Wenn PDF Vorname und Nachname getrennt hat, wieder zusammenbauen.
+  const joined = candidates.join(" ").replace(/\s+/g, " ").trim();
+
+  // Maximal die letzten 2 sinnvollen Namenszeilen nehmen.
+  if (candidates.length >= 2) {
+    return candidates.slice(-2).join(" ").replace(/\s+/g, " ").trim();
+  }
+
+  return joined;
+}
+
 export function parseHeycaterLabelsFromText(rawText: string): HeycaterLabelData[] {
   const lines = String(rawText || "")
     .split(/\r?\n/)
@@ -161,76 +204,68 @@ export function parseHeycaterLabelsFromText(rawText: string): HeycaterLabelData[
   const labels: HeycaterLabelData[] = [];
 
   for (let i = 0; i < lines.length; i++) {
-    const name = lines[i];
+    const meal = lines[i];
 
-    if (!looksLikePersonName(name)) continue;
+    // Neue sichere Logik:
+    // Jedes erkannte Gericht erzeugt genau ein Foodlabel.
+    // Dadurch verlieren wir keine Labels, wenn Namen im PDF komisch getrennt sind.
+    if (!looksLikeMeal(meal)) continue;
 
-    const nextNameIndex = lines.findIndex((line, index) => index > i && looksLikePersonName(line));
-    const blockEnd = nextNameIndex > i ? nextNameIndex : Math.min(lines.length, i + 18);
-    const block = lines.slice(i, blockEnd);
+    const name = findNameBeforeMeal(lines, i);
 
-    const dateLine = block.find(isDate) || "";
-    const mealIndex = block.findIndex((line, index) => index > 0 && looksLikeMeal(line));
+    const block = lines.slice(i - 5 >= 0 ? i - 5 : 0, Math.min(lines.length, i + 14));
 
-    // Wichtig: Kein falsches Zusatzetikett erzeugen.
-    // Wenn kein Gericht im Block erkannt wird, ist das meistens nur ein abgetrennter Vor-/Nachname.
-    if (mealIndex === -1) continue;
+    const dateLine =
+      block.find(isDate) ||
+      lines.slice(i, Math.min(lines.length, i + 8)).find(isDate) ||
+      "";
 
-    const meal = block[mealIndex];
+    const detailLines: string[] = [];
 
-    const catererIndex = block.findIndex((line) => normalize(line).includes("caterer:"));
-    const customerIndex = block.findIndex((line) => normalize(line).includes("customer:"));
+    for (let d = i + 1; d < Math.min(lines.length, i + 8); d++) {
+      const line = cleanLine(lines[d]);
+      const lower = normalize(line);
 
-    const detailsEnd =
-      catererIndex > Math.max(mealIndex, 0)
-        ? catererIndex
-        : customerIndex > Math.max(mealIndex, 0)
-          ? customerIndex
-          : Math.min(block.length, mealIndex + 5);
+      if (!line) continue;
+      if (isDate(line)) continue;
+      if (lower.includes("caterer:")) break;
+      if (lower.includes("customer:")) break;
+      if (lower.includes("alexander")) break;
+      if (/\b\d{5}\b/.test(line)) break;
+      if (looksLikeMeal(line)) break;
 
-    const detailsLines = block
-      .slice(Math.max(mealIndex, 0) + 1, detailsEnd)
-      .map(cleanLine)
-      .filter((line) => {
-        const text = normalize(line);
-
-        return (
-          line &&
-          !isDate(line) &&
-          !isMetaLine(line) &&
-          !looksLikePersonName(line) &&
-          !looksLikeMeal(line) &&
-          !text.includes("caterer:") &&
-          !text.includes("customer:")
-        );
-      });
-
-    const details = detailsLines.join(" / ");
+      if (!isMetaLine(line) && !isPossibleNameLine(line)) {
+        detailLines.push(line);
+      } else if (looksLikeDetails(line)) {
+        detailLines.push(line);
+      }
+    }
 
     const caterer =
-      block.find((line) => normalize(line).includes("caterer:")) ||
+      lines.slice(i, Math.min(lines.length, i + 14)).find((line) => normalize(line).includes("caterer:")) ||
       "Caterer: Let Me Bowl heykantine";
 
     const customer =
-      block.find((line) => normalize(line).includes("customer:")) ||
+      lines.slice(i, Math.min(lines.length, i + 14)).find((line) => normalize(line).includes("customer:")) ||
       "Customer: NinjaOne GmbH";
 
     const address =
-      block.find((line) => normalize(line).includes("alexander") || /\b\d{5}\b/.test(line)) ||
+      lines
+        .slice(i, Math.min(lines.length, i + 16))
+        .find((line) => normalize(line).includes("alexander") || /\b\d{5}\b/.test(line)) ||
       "Alexanderstrasse 5, Berlin, 10178";
 
     labels.push({
       name,
       date: extractDate(dateLine),
       meal,
-      details,
+      details: detailLines.join(" / "),
       caterer,
       customer,
       address,
     });
   }
 
-  // Wichtig: Foodlabels duerfen NICHT dedupliziert werden.
-  // Wenn Heycater 115 Etiketten liefert, muessen auch 115 Etiketten erzeugt werden.
+  // Keine Deduplizierung. Ein Gericht im PDF = ein Etikett.
   return labels;
 }
