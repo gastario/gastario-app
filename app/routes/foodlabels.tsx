@@ -223,60 +223,64 @@ export default function FoodLabelsPage() {
             <div>
               <p style={smallLabelStyle}>Foodlabel</p>
               <h2 style={sectionTitleStyle}>
-        
-        <section className="heycaterUploadBox">
-          <div className="heycaterUploadHeader">
+        <section className="heycaterUploadCard">
+          <div className="heycaterUploadTop">
             <div>
-              <p>PDF Import</p>
-              <h2>Heycater-Labels fuer Zebra vorbereiten</h2>
-              <span>A4-PDF hochladen und in einzelne 76 x 51 mm Etiketten schneiden.</span>
+              <p>Heycater Import</p>
+              <h2>Heycater-PDF zu Zebra-Etiketten</h2>
+              <span>
+                A4-Heycater-Labelbogen hochladen und in einzelne 76 x 51 mm Zebra-Etiketten schneiden.
+              </span>
             </div>
           </div>
 
           <form action="/foodlabels/heycater-pdf" method="post" encType="multipart/form-data" className="heycaterUploadForm">
-            <label>
-              PDF-Datei
+            <label className="heycaterDropzone">
               <input type="file" name="pdf" accept="application/pdf" required />
+              <strong>PDF hier reinziehen oder auswählen</strong>
+              <span>Nur Heycater-A4-PDFs verwenden. Die Erstellung stoppt, wenn Anzahl oder Labeldaten nicht sicher erkannt werden.</span>
             </label>
 
-            <label>
-              Raster
-              <select name="columns" defaultValue="3">
-                <option value="3">3 Spalten</option>
-                <option value="2">2 Spalten</option>
-                <option value="1">1 Spalte</option>
-              </select>
-            </label>
+            <div className="heycaterSettingsGrid">
+              <label>
+                Raster
+                <select name="columns" defaultValue="3">
+                  <option value="3">3 Spalten</option>
+                  <option value="2">2 Spalten</option>
+                  <option value="1">1 Spalte</option>
+                </select>
+              </label>
 
-            <label>
-              Reihen
-              <select name="rows" defaultValue="8">
-                <option value="8">8 Reihen</option>
-                <option value="6">6 Reihen</option>
-                <option value="5">5 Reihen</option>
-                <option value="4">4 Reihen</option>
-              </select>
-            </label>
+              <label>
+                Reihen
+                <select name="rows" defaultValue="8">
+                  <option value="8">8 Reihen</option>
+                  <option value="6">6 Reihen</option>
+                  <option value="5">5 Reihen</option>
+                  <option value="4">4 Reihen</option>
+                </select>
+              </label>
 
-            <label>
-              Etikett
-              <select name="labelWidthMm" defaultValue="76">
-                <option value="76">76 mm breit</option>
-                <option value="70">70 mm breit</option>
-                <option value="60">60 mm breit</option>
-              </select>
-            </label>
+              <label>
+                Etikett
+                <select name="labelWidthMm" defaultValue="76">
+                  <option value="76">76 mm breit</option>
+                  <option value="70">70 mm breit</option>
+                  <option value="57">57 mm breit</option>
+                </select>
+              </label>
 
-            <label>
-              Hoehe
-              <select name="labelHeightMm" defaultValue="51">
-                <option value="51">51 mm hoch</option>
-                <option value="50">50 mm hoch</option>
-                <option value="38">38 mm hoch</option>
-              </select>
-            </label>
+              <label>
+                Hoehe
+                <select name="labelHeightMm" defaultValue="51">
+                  <option value="51">51 mm hoch</option>
+                  <option value="50">50 mm hoch</option>
+                  <option value="38">38 mm hoch</option>
+                </select>
+              </label>
 
-            <button type="submit">PDF erstellen</button>
+              <button type="submit">Zebra-PDF erstellen</button>
+            </div>
 
             <input type="hidden" name="pageTopMm" value="0" />
             <input type="hidden" name="pageRightMm" value="0" />
@@ -289,11 +293,10 @@ export default function FoodLabelsPage() {
             <input type="hidden" name="innerLeftMm" value="0.4" />
           </form>
 
-          <div className="heycaterUploadHint">
-            Standard: Heycater A4 mit 3 Spalten x 8 Reihen. Jeder gestrichelte Bereich wird als einzelnes Label geschnitten.</div>
+          <div className="heycaterSafetyHint">
+            Sicherheitsregel: Es darf kein Label fehlen und kein falsches Gericht gedruckt werden. Bei unsicherer Erkennung wird keine Druckdatei erstellt.
+          </div>
         </section>
-
-
 Labeldaten speichern</h2>
             </div>
           </div>
@@ -420,107 +423,154 @@ Labeldaten speichern</h2>
       </section>
     
       <style>{`
-        /* heycater-upload-clean-v2 */
+        /* heycater-upload-card-v3 */
 
-        .heycaterUploadBox {
+        .heycaterUploadCard {
           border: 1px solid #d9e4ea;
           background: #ffffff;
-          border-radius: 12px;
-          padding: 14px 16px;
-          margin: 0 0 18px;
-          box-shadow: none;
+          border-radius: 22px;
+          padding: 20px 22px;
+          margin: 0 0 22px;
+          box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
         }
 
-        .heycaterUploadHeader {
+        .heycaterUploadTop {
           display: flex;
           justify-content: space-between;
           gap: 14px;
-          margin-bottom: 12px;
+          margin-bottom: 16px;
         }
 
-        .heycaterUploadHeader p {
-          margin: 0 0 4px;
-          font-size: 10px;
+        .heycaterUploadTop p {
+          margin: 0 0 6px;
+          font-size: 11px;
           line-height: 1.1;
-          font-weight: 700;
-          letter-spacing: .08em;
+          font-weight: 800;
+          letter-spacing: .09em;
           text-transform: uppercase;
           color: #047857;
         }
 
-        .heycaterUploadHeader h2 {
+        .heycaterUploadTop h2 {
           margin: 0;
-          font-size: 18px;
-          line-height: 1.2;
-          font-weight: 600;
+          font-size: 24px;
+          line-height: 1.15;
+          font-weight: 750;
           color: #0f172a;
         }
 
-        .heycaterUploadHeader span {
+        .heycaterUploadTop span {
           display: block;
-          margin-top: 4px;
-          font-size: 13px;
-          line-height: 1.35;
-          font-weight: 400;
+          margin-top: 6px;
+          max-width: 780px;
+          font-size: 14px;
+          line-height: 1.45;
           color: #64748b;
         }
 
         .heycaterUploadForm {
           display: grid;
-          grid-template-columns: minmax(220px, 1.4fr) repeat(4, minmax(120px, .7fr)) auto;
+          gap: 14px;
+        }
+
+        .heycaterDropzone {
+          position: relative;
+          display: grid;
+          place-items: center;
           gap: 8px;
+          min-height: 132px;
+          padding: 22px;
+          border: 2px dashed #b8d8ce;
+          border-radius: 18px;
+          background: linear-gradient(180deg, #f8fffc 0%, #f8fafc 100%);
+          text-align: center;
+          color: #0f172a;
+          cursor: pointer;
+        }
+
+        .heycaterDropzone:hover {
+          border-color: #059669;
+          background: #f0fdf8;
+        }
+
+        .heycaterDropzone input[type="file"] {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          opacity: 0;
+          cursor: pointer;
+        }
+
+        .heycaterDropzone strong {
+          font-size: 17px;
+          line-height: 1.2;
+          font-weight: 750;
+        }
+
+        .heycaterDropzone span {
+          max-width: 680px;
+          font-size: 13px;
+          line-height: 1.45;
+          color: #64748b;
+        }
+
+        .heycaterSettingsGrid {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(120px, 1fr)) auto;
+          gap: 10px;
           align-items: end;
         }
 
-        .heycaterUploadForm label {
+        .heycaterSettingsGrid label {
           display: grid;
-          gap: 5px;
-          font-size: 11.5px;
+          gap: 6px;
+          font-size: 12px;
           line-height: 1.2;
-          font-weight: 600;
+          font-weight: 700;
           color: #334155;
         }
 
-        .heycaterUploadForm input,
-        .heycaterUploadForm select {
-          height: 34px;
+        .heycaterSettingsGrid select {
+          height: 40px;
           border: 1px solid #d6e2e8;
-          border-radius: 7px;
-          padding: 0 9px;
+          border-radius: 10px;
+          padding: 0 11px;
           background: #ffffff;
           color: #0f172a;
-          font-size: 13px;
-          font-weight: 400;
+          font-size: 14px;
+          font-weight: 500;
         }
 
-        .heycaterUploadForm input[type="file"] {
-          padding: 6px 9px;
-        }
-
-        .heycaterUploadForm button {
-          height: 34px;
+        .heycaterSettingsGrid button {
+          height: 40px;
           border: 1px solid #047857;
-          border-radius: 7px;
-          padding: 0 13px;
+          border-radius: 10px;
+          padding: 0 18px;
           background: #059669;
           color: #ffffff;
-          font-size: 13px;
-          font-weight: 600;
+          font-size: 14px;
+          font-weight: 750;
           cursor: pointer;
           white-space: nowrap;
-          box-shadow: none;
+          box-shadow: 0 10px 22px rgba(5, 150, 105, 0.18);
         }
 
-        .heycaterUploadHint {
-          margin-top: 9px;
-          padding: 8px 10px;
-          border: 1px dashed #d6e2e8;
-          border-radius: 8px;
-          color: #64748b;
-          font-size: 12px;
-          line-height: 1.35;
-          background: #f8fafc;
+        .heycaterSettingsGrid button:hover {
+          background: #047857;
         }
+
+        .heycaterSafetyHint {
+          margin-top: 14px;
+          padding: 11px 13px;
+          border: 1px solid #cfe7dc;
+          border-radius: 12px;
+          color: #285244;
+          font-size: 13px;
+          line-height: 1.45;
+          background: #f0fdf8;
+        }
+
 
         @media (max-width: 1150px) {
           .heycaterUploadForm {
@@ -885,6 +935,8 @@ const foodKeyStyle: React.CSSProperties = {
   textTransform: "uppercase",
   letterSpacing: "0.05em",
 };
+
+
 
 
 
