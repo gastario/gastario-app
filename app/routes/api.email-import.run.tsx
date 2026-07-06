@@ -509,7 +509,7 @@ export async function loader({ request }: { request: Request }) {
                   status: "REVIEW_NEEDED" as any,
                   processedAt: new Date(),
                   extractedJson: extractedOrder || undefined,
-                  errorMessage: importDecision.reason || "Nicht automatisch als Auftrag erstellt: Daten nicht eindeutig genug. Bitte im Auftragseingang pruefen.",
+                  errorMessage: "Nicht automatisch als Auftrag erstellt: Daten nicht eindeutig genug. Bitte im Auftragseingang pruefen.",
                 },
               });
             }
@@ -610,7 +610,7 @@ export async function loader({ request }: { request: Request }) {
               data: {
                 status: "REVIEW_NEEDED" as any,
                 processedAt: new Date(),
-                errorMessage: importDecision.reason || "Nicht automatisch als Auftrag erstellt: Daten nicht eindeutig genug. Bitte im Auftragseingang pruefen.",
+                errorMessage: "Nicht automatisch als Auftrag erstellt: Daten nicht eindeutig genug. Bitte im Auftragseingang pruefen.",
               },
             });
           }
@@ -633,6 +633,7 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
 
 
 
