@@ -1,0 +1,202 @@
+﻿import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import type { HeycaterLabelData } from "./heycater-label-parser.server";
+
+const QR_URL = "https://heycater.com/de/account/login";
+
+function mmToPt(mm: number) {
+  return (mm / 25.4) * 72;
+}
+
+function safeText(value: string) {
+  return String(value || "")
+    .replace(/ä/g, "ae")
+    .replace(/Ä/g, "Ae")
+    .replace(/ö/g, "oe")
+    .replace(/Ö/g, "Oe")
+    .replace(/ü/g, "ue")
+    .replace(/Ü/g, "Ue")
+    .replace(/ß/g, "ss")
+    .replace(/–|—/g, "-")
+    .trim();
+}
+
+function wrapText(value: string, maxChars: number) {
+  const words = safeText(value).split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let current = "";
+
+  for (const word of words) {
+    const next = current ? current + " " + word : word;
+
+    if (next.length > maxChars && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = next;
+    }
+  }
+
+  if (current) lines.push(current);
+  return lines;
+}
+
+function formatDate(value: string) {
+  const text = safeText(value);
+
+  const match = text.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (match) return `${match[1]}-${match[2]}-${match[3]}`;
+
+  return text;
+}
+
+async function makeQrPngDataUrl() {
+  const imported: any = await import("qrcode");
+  const qrcode = imported.default || imported;
+
+  if (!qrcode?.toDataURL) {
+    throw new Error("QRCode Modul konnte nicht geladen werden.");
+  }
+
+  return await qrcode.toDataURL(QR_URL, {
+    margin: 0,
+    width: 120,
+    errorCorrectionLevel: "M",
+    color: {
+      dark: "#000000",
+      light: "#FFFFFF",
+    },
+  });
+}
+
+function dataUrlToBytes(dataUrl: string) {
+  const base64 = dataUrl.split(",")[1] || "";
+  return Uint8Array.from(Buffer.from(base64, "base64"));
+}
+
+function drawDashedLine(page: any, x1: number, x2: number, y: number) {
+  let x = x1;
+
+  while (x < x2) {
+    const end = Math.min(x + 9, x2);
+
+    page.drawLine({
+      start: { x, y },
+      end: { x: end, y },
+      thickness: 0.9,
+      color: rgb(0, 0, 0),
+    });
+
+    x += 16;
+  }
+}
+
+export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
+  const pdf = await PDFDocument.create();
+
+  const regular = await pdf.embedFont(StandardFonts.Helvetica);
+  const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+
+  const qrDataUrl = await makeQrPngDataUrl();
+  const qrImage = await pdf.embedPng(dataUrlToBytes(qrDataUrl));
+
+  const width = mmToPt(76);
+  const height = mmToPt(51);
+
+  const black = rgb(0, 0, 0);
+  const muted = rgb(0.12, 0.12, 0.12);
+
+  for (const label of labels) {
+    const page = pdf.addPage([width, height]);
+
+    const left = 9;
+    const right = width - 9;
+
+    drawDashedLine(page, left, right, height - 9);
+
+    page.drawText(safeText(label.name || "-").slice(0, 34), {
+      x: left,
+      y: height - 22,
+      size: 10.5,
+      font: bold,
+      color: black,
+    });
+
+    const date = formatDate(label.date);
+
+    if (date) {
+      page.drawText(date, {
+        x: width - 55,
+        y: height - 19,
+        size: 6.4,
+        font: regular,
+        color: black,
+      });
+    }
+
+    let y = height - 36;
+
+    for (const line of wrapText(label.meal, 42).slice(0, 2)) {
+      page.drawText(line, {
+        x: left,
+        y,
+        size: 7.1,
+        font: regular,
+        color: black,
+      });
+      y -= 8.3;
+    }
+
+    y -= 2;
+
+    for (const line of wrapText(label.details, 58).slice(0, 2)) {
+      page.drawText(line, {
+        x: left,
+        y,
+        size: 5.1,
+        font: regular,
+        color: muted,
+      });
+      y -= 6.2;
+    }
+
+    y -= 2;
+
+    page.drawText(safeText(label.caterer || "Caterer: Let Me Bowl heykantine").slice(0, 54), {
+      x: left,
+      y,
+      size: 6.2,
+      font: bold,
+      color: black,
+    });
+
+    y -= 7.2;
+
+    page.drawText(safeText(label.customer || "Customer: NinjaOne GmbH").slice(0, 54), {
+      x: left,
+      y,
+      size: 6.2,
+      font: bold,
+      color: black,
+    });
+
+    const qrSize = 18;
+    page.drawImage(qrImage, {
+      x: width - qrSize - 9,
+      y: 9,
+      width: qrSize,
+      height: qrSize,
+    });
+
+    page.drawText(safeText(label.address || "Alexanderstrasse 5, Berlin, 10178").slice(0, 42), {
+      x: left,
+      y: 13,
+      size: 5.8,
+      font: regular,
+      color: black,
+    });
+
+    drawDashedLine(page, left, width - qrSize - 13, 7);
+  }
+
+  return await pdf.save();
+}
