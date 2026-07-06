@@ -275,7 +275,7 @@ function isFooterLine(value: string) {
 function isInfoLine(value: string) {
   const lower = normalize(value);
 
-  return [
+  const words = [
     "gluten",
     "lactose",
     "halal",
@@ -301,21 +301,9 @@ function isInfoLine(value: string) {
     "mustard",
     "egg",
     "eggs"
-  ].some((word) => lower.includes(word));
-}
+  ];
 
-function isUsableLabelContentLine(value: string) {
-  const line = cleanLine(value);
-
-  if (!line) return false;
-  if (isDate(line)) return false;
-  if (isFooterLine(line)) return false;
-  if (isCatererLine(line)) return false;
-  if (isCustomerLine(line)) return false;
-  if (isAddressLine(line)) return false;
-  if (isInfoLine(line)) return false;
-
-  return true;
+  return words.some((word) => lower.includes(word));
 }
 
 function cleanBlockAfterDate(lines: string[], start: number, end: number) {
@@ -327,35 +315,59 @@ function cleanBlockAfterDate(lines: string[], start: number, end: number) {
 }
 
 function parseOneHeycaterLabel(date: string, block: string[]) {
-  const contentLines = block.filter(isUsableLabelContentLine);
+  let name = "";
+  let address = "";
+  let meal = "";
+  const details: string[] = [];
+  let caterer = "Caterer: Let Me Bowl heykantine";
+  let customer = "Customer: Heycater";
 
-  const name = contentLines[0] || "Name nicht erkannt";
-  const meal = contentLines[1] || "Gericht nicht erkannt";
+  for (const rawLine of block) {
+    const line = cleanLine(rawLine);
+    if (!line) continue;
 
-  const details = block
-    .filter((line) => isInfoLine(line))
-    .join(" / ");
+    if (isCatererLine(line)) {
+      caterer = line;
+      continue;
+    }
 
-  const address =
-    block.find((line) => isAddressLine(line)) ||
-    "Adresse nicht erkannt";
+    if (isCustomerLine(line)) {
+      customer = line;
+      continue;
+    }
 
-  const caterer =
-    block.find((line) => isCatererLine(line)) ||
-    "Caterer: Let Me Bowl heykantine";
+    if (isAddressLine(line)) {
+      if (!address) address = line;
+      continue;
+    }
 
-  const customer =
-    block.find((line) => isCustomerLine(line)) ||
-    "Customer: Heycater";
+    if (!name && !isInfoLine(line)) {
+      name = line;
+      continue;
+    }
+
+    // Wichtig:
+    // Heycater-PDF-Text kommt nicht immer gleich raus.
+    // Manchmal steht nach dem Namen direkt das Gericht und die Adresse kommt erst spaeter.
+    if (name && !meal && !isInfoLine(line) && !isCatererLine(line) && !isCustomerLine(line)) {
+      meal = line;
+      continue;
+    }
+
+    if (meal && isInfoLine(line)) {
+      details.push(line);
+      continue;
+    }
+  }
 
   return {
-    name,
+    name: name || "Name nicht erkannt",
     date,
-    meal,
-    details,
+    meal: meal || "Gericht nicht erkannt",
+    details: details.join(" / "),
     caterer,
     customer,
-    address,
+    address: address || "Adresse nicht erkannt",
   };
 }
 
