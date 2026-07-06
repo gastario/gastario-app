@@ -1,6 +1,6 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import AppLayout from "../components/AppLayout";
-﻿
+ï»¿
 import { Form, useActionData, useLoaderData } from "react-router";
 
 const SOURCES = [
@@ -12,8 +12,8 @@ const SOURCES = [
 ];
 
 const STATUSES = [
-  { value: "AUTO_CREATED", label: "Prüfen" },
-  { value: "CONFIRMED", label: "Übernommen" },
+  { value: "AUTO_CREATED", label: "PrÃ¼fen" },
+  { value: "CONFIRMED", label: "Ãœbernommen" },
   { value: "REJECTED", label: "Abgelehnt" },
 ];
 
@@ -468,7 +468,7 @@ export async function action({ request }: { request: Request }) {
     const itemKinds = formData.getAll("itemKind").map((value) => String(value || "item"));
     const itemNames = formData.getAll("itemName").map((value) => String(value || "").trim());
     const quantities = formData.getAll("quantity").map((value) => Number(value || 1));
-    const units = formData.getAll("unit").map((value) => String(value || "Stück").trim());
+    const units = formData.getAll("unit").map((value) => String(value || "StÃ¼ck").trim());
     const unitCentsList = formData.getAll("unitPriceEuro").map((value) => euroToCents(value));
     const discountPercents = formData.getAll("discountPercent").map((value) => Number(String(value || "0").replace(",", ".")));
     const taxRates = formData.getAll("taxRate").map((value) => Number(value || 19));
@@ -498,7 +498,7 @@ export async function action({ request }: { request: Request }) {
         return {
           name,
           quantity,
-          unit: kind === "text" ? "Text" : units[index] || "Stück",
+          unit: kind === "text" ? "Text" : units[index] || "StÃ¼ck",
           unitCents,
           totalCents,
           notes: metaNotes || null,
@@ -615,15 +615,15 @@ export async function action({ request }: { request: Request }) {
         id: orderId,      },
     });
 
-    return { success: "Auftrag wurde gelöscht." };
+    return { success: "Auftrag wurde gelÃ¶scht." };
   }
 
   return { error: "Unbekannte Aktion." };
 }
 
 function statusLabel(status: string) {
-  if (status === "AUTO_CREATED") return "Prüfen";
-  if (status === "CONFIRMED") return "Übernommen";
+  if (status === "AUTO_CREATED") return "PrÃ¼fen";
+  if (status === "CONFIRMED") return "Ãœbernommen";
   if (status === "REJECTED") return "Abgelehnt";
   return status;
 }
@@ -656,7 +656,7 @@ export default function AuftragseingangPage() {
   }>({
     open: false,
     name: "",
-    unit: "Stück",
+    unit: "StÃ¼ck",
     priceEuro: "",
     taxRate: "19",
   });
@@ -666,7 +666,7 @@ export default function AuftragseingangPage() {
 
   function parseEuroInput(value: string) {
     const normalized = String(value || "")
-      .replace(/€/g, "")
+      .replace(/â‚¬/g, "")
       .replace(/\s/g, "")
       .replace(/\./g, "")
       .replace(",", ".");
@@ -961,7 +961,7 @@ export default function AuftragseingangPage() {
               Auftragseingang
             </h1>
             <p style={{ margin: "8px 0 0", color: "#64748b", fontWeight: 650 }}>
-              Neue Aufträge erfassen, prüfen und übernehmen.
+              Neue AuftrÃ¤ge erfassen, prÃ¼fen und Ã¼bernehmen.
             </p>
           </div>
 
@@ -981,8 +981,8 @@ export default function AuftragseingangPage() {
         <section style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 14, marginBottom: 18 }}>
           {[
             ["Alle", data.counts.all, ""],
-            ["Prüfen", data.counts.review, "AUTO_CREATED"],
-            ["Übernommen", data.counts.confirmed, "CONFIRMED"],
+            ["PrÃ¼fen", data.counts.review, "AUTO_CREATED"],
+            ["Ãœbernommen", data.counts.confirmed, "CONFIRMED"],
             ["Abgelehnt", data.counts.rejected, "REJECTED"],
           ].map(([label, count, status]) => (
             <a
@@ -1151,7 +1151,7 @@ export default function AuftragseingangPage() {
                       </td>
                       <td style={tdStyle}>
                         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                          <a href={"/email-pruefung/" + mail.id} style={primaryActionStyle}>Prüfen</a>
+                          <a href={"/email-pruefung/" + mail.id} style={{ ...smallButtonStyle, textDecoration: "none" }}>PrÃ¼fen</a>
                           {classifyIncomingEmail(mail) === "inquiries" ? (
                             <a
                               href={"/angebot-vorbereiten/" + mail.id}
@@ -1232,7 +1232,7 @@ export default function AuftragseingangPage() {
         <section style={{ ...documentStyle, marginTop: 18 }}>
           <div style={{ marginBottom: 14 }}>
             <div style={sectionLabelStyle}>Eingang</div>
-            <h2 style={{ margin: "5px 0 0", fontSize: 23, letterSpacing: "-0.03em" }}>Aufträge</h2>
+            <h2 style={{ margin: "5px 0 0", fontSize: 23, letterSpacing: "-0.03em" }}>AuftrÃ¤ge</h2>
           </div>
 
           <div style={{ overflowX: "auto", border: "1px solid #e5e7eb", borderRadius: 4 }}>
@@ -1253,7 +1253,7 @@ export default function AuftragseingangPage() {
                 {data.orders.length === 0 ? (
                   <tr>
                     <td style={tdStyle} colSpan={8}>
-                      <strong>Noch keine Aufträge vorhanden.</strong>
+                      <strong>Noch keine AuftrÃ¤ge vorhanden.</strong>
                     </td>
                   </tr>
                 ) : (
@@ -1429,4 +1429,5 @@ export function ErrorBoundary({ error }: { error: any }) {
     </div>
   );
 }
+
 
