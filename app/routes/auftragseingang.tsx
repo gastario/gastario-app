@@ -636,7 +636,7 @@ export default function AuftragseingangPage() {
                   {isImportingNow ? "Abrufen..." : "E-Mails jetzt abrufen"}
                 </button>
 
-                <a href="/neuer-auftrag" style={secondaryButtonStyle}>+ Neuer Auftrag</a>
+
               </div>
             </div>
           </header>
@@ -979,4 +979,5 @@ export function ErrorBoundary({ error }: { error: any }) {
     </div>
   );
 }
+
 
