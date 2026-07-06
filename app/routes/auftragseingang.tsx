@@ -197,7 +197,7 @@ export async function loader({ request }: { request: Request }) {
       selectedDate: "",
       selectedEmailCategory: "orders",
       searchQuery: "",
-      dateRange: "",
+      dateRange: "last7",
       emailBuckets: { orders: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
       activeStatus: "",
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
@@ -218,7 +218,7 @@ export async function loader({ request }: { request: Request }) {
       selectedDate: "",
       selectedEmailCategory: "orders",
       searchQuery: "",
-      dateRange: "",
+      dateRange: "last7",
       emailBuckets: { orders: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
       activeStatus: "",
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
@@ -231,7 +231,7 @@ export async function loader({ request }: { request: Request }) {
   const selectedDate = url.searchParams.get("date") || "";
   const selectedEmailCategory = url.searchParams.get("emailCategory") || "orders";
   const searchQuery = url.searchParams.get("q") || "";
-  const dateRange = url.searchParams.get("dateRange") || "";
+  const dateRange = url.searchParams.get("dateRange") || "last7";
 
   let selectedDateStart = selectedDate ? new Date(selectedDate + "T00:00:00") : null;
   let selectedDateEnd = selectedDateStart ? new Date(selectedDateStart) : null;
@@ -242,23 +242,23 @@ export async function loader({ request }: { request: Request }) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    if (dateRange === "last7") {
+      selectedDateStart = new Date(today);
+      selectedDateStart.setDate(selectedDateStart.getDate() - 7);
+      selectedDateEnd = new Date(today);
+      selectedDateEnd.setDate(selectedDateEnd.getDate() + 1);
+    }
+
     if (dateRange === "today") {
       selectedDateStart = new Date(today);
       selectedDateEnd = new Date(today);
       selectedDateEnd.setDate(selectedDateEnd.getDate() + 1);
     }
 
-    if (dateRange === "tomorrow") {
+    if (dateRange === "yesterday") {
       selectedDateStart = new Date(today);
-      selectedDateStart.setDate(selectedDateStart.getDate() + 1);
-      selectedDateEnd = new Date(selectedDateStart);
-      selectedDateEnd.setDate(selectedDateEnd.getDate() + 1);
-    }
-
-    if (dateRange === "week") {
-      selectedDateStart = new Date(today);
+      selectedDateStart.setDate(selectedDateStart.getDate() - 1);
       selectedDateEnd = new Date(today);
-      selectedDateEnd.setDate(selectedDateEnd.getDate() + 7);
     }
   }
 
@@ -354,7 +354,7 @@ export async function loader({ request }: { request: Request }) {
       selectedDate: "",
       selectedEmailCategory: "orders",
       searchQuery: "",
-      dateRange: "",
+      dateRange: "last7",
       emailBuckets: { orders: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
       activeStatus: status,
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
@@ -796,16 +796,15 @@ export default function AuftragseingangPage() {
                     textTransform: "uppercase",
                     letterSpacing: ".06em",
                   }}>
-                    Zeitraum
+                    Postfach-Zeitraum
                     <select
                       name="dateRange"
                       defaultValue={data.dateRange || ""}
                       style={{ ...inputStyle, minWidth: 190, borderRadius: 16 }}
                     >
-                      <option value="">Alle Zeiträume</option>
+                      <option value="last7">Letzte 7 Tage</option>
                       <option value="today">Heute</option>
-                      <option value="tomorrow">Morgen</option>
-                      <option value="week">Nächste 7 Tage</option>
+                      <option value="yesterday">Gestern</option>
                     </select>
                   </label>
 
@@ -813,7 +812,7 @@ export default function AuftragseingangPage() {
                     Filtern
                   </button>
 
-                  <a href={"/auftragseingang?emailCategory=" + data.selectedEmailCategory} style={{ ...secondaryButtonStyle, height: 44 }}>
+                  <a href={"/auftragseingang?emailCategory=" + data.selectedEmailCategory + "&dateRange=last7"} style={{ ...secondaryButtonStyle, height: 44 }}>
                     Zurücksetzen
                   </a>
                 </Form>
