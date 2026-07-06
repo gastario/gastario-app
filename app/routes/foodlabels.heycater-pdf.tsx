@@ -1,9 +1,18 @@
-import { createRequire } from "module";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import type { ActionFunctionArgs } from "react-router";
 
-const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
+
+async function extractPdfText(inputBuffer: Buffer) {
+  const imported = await import("pdf-parse");
+  const pdfParse: any = (imported as any).default || imported;
+
+  if (typeof pdfParse !== "function") {
+    throw new Error("pdf-parse konnte nicht als Funktion geladen werden.");
+  }
+
+  const parsed = await pdfParse(inputBuffer);
+  return String(parsed?.text || "");
+}
 
 function mmToPt(mm: number) {
   return (mm / 25.4) * 72;
@@ -159,6 +168,7 @@ function wrapText(text: string, maxChars: number) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
+  try {
   const formData = await request.formData();
   const file = formData.get("pdf");
 
@@ -167,8 +177,8 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   const inputBuffer = Buffer.from(await file.arrayBuffer());
-  const parsed = await pdfParse(inputBuffer);
-  const labels = parseHeycaterLabels(parsed.text || "");
+  const extractedText = await extractPdfText(inputBuffer);
+  const labels = parseHeycaterLabels(extractedText);
 
   if (labels.length === 0) {
     return new Response("Keine Labels im PDF erkannt.", { status: 400 });
@@ -273,6 +283,13 @@ export async function action({ request }: ActionFunctionArgs) {
       "Cache-Control": "no-store",
     },
   });
+  } catch (error: any) {
+    console.error("HEY_LABEL_DEBUG_ERROR", error);
+    return new Response("Heycater Label Fehler: " + (error?.message || String(error)), {
+      status: 500,
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
+  }
 }
 
 export async function loader() {
