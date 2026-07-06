@@ -1869,12 +1869,12 @@ export default function AuftragseingangPage() {
             <div className="emptyState">Keine ungeprüften E-Mails in dieser Kategorie.</div>
           ) : (
             <div className="ordersTable emailTable">
-              <div className="ordersHead emailHead">
+              <div className="ordersHead">
                 <span>Betreff</span>
                 <span>Absender</span>
-                <span>Datum</span>
-                <span>Kategorie</span>
-                <span>Anhang</span>
+                <span>Eingang</span>
+                <span>Typ</span>
+                <span></span>
                 <span>Status</span>
                 <span>Aktion</span>
               </div>
@@ -1882,12 +1882,13 @@ export default function AuftragseingangPage() {
               {sortedEmails.map((mail: any) => {
                 const category = classifyIncomingEmail(mail);
                 const receivedDate = new Date(mail.receivedAt || mail.createdAt);
+                const isInquiry = category === "inquiries";
 
                 return (
                   <div className="ordersRow emailRow" key={mail.id}>
                     <div>
                       <strong>{mail.subject || "Ohne Betreff"}</strong>
-                      {mail.errorMessage ? <small className="emailErrorText">{mail.errorMessage}</small> : null}
+                      <small>{emailCategoryLabel(category)}</small>
                     </div>
 
                     <div>
@@ -1901,36 +1902,21 @@ export default function AuftragseingangPage() {
                     </div>
 
                     <div>
-                      <strong>{emailCategoryLabel(category)}</strong>
-                      <small>{category === "inquiries" ? "Angebot vorbereiten" : "E-Mail prüfen"}</small>
+                      <strong>{isInquiry ? "Anfrage" : "E-Mail"}</strong>
+                      <small>{mail.attachments?.length || 0} Anhänge</small>
                     </div>
 
-                    <strong>{mail.attachments?.length || 0}</strong>
+                    <strong>-</strong>
 
                     <span className="statusBadge">{mail.status === "IGNORED" ? "Ausgeblendet" : "Ungeprüft"}</span>
 
                     <div className="orderActions">
-                      <a href={"/email-pruefung/" + mail.id} className="primaryBtn small">Prüfen</a>
-
-                      {category === "inquiries" ? (
-                        <a href={"/angebot-vorbereiten/" + mail.id} className="softBtn small">
-                          Angebot
-                        </a>
-                      ) : null}
-
-                      {mail.status !== "IGNORED" ? (
-                        <Form method="post">
-                          <input type="hidden" name="intent" value="hideIncomingEmail" />
-                          <input type="hidden" name="emailId" value={mail.id} />
-                          <button type="submit" className="secondaryBtn small">Ausblenden</button>
-                        </Form>
-                      ) : (
-                        <Form method="post">
-                          <input type="hidden" name="intent" value="unhideIncomingEmail" />
-                          <input type="hidden" name="emailId" value={mail.id} />
-                          <button type="submit" className="secondaryBtn small">Einblenden</button>
-                        </Form>
-                      )}
+                      <a
+                        href={(isInquiry ? "/angebot-vorbereiten/" : "/email-pruefung/") + mail.id}
+                        className="primaryBtn small"
+                      >
+                        {isInquiry ? "Angebot" : "Prüfen"}
+                      </a>
 
                       <Form method="post">
                         <input type="hidden" name="intent" value="deleteIncomingEmail" />
@@ -3954,6 +3940,71 @@ export default function AuftragseingangPage() {
             justify-content: flex-start !important;
             flex-wrap: wrap !important;
           }
+        }
+      `}</style>
+
+    
+      <style>{`
+        /* email-table-identical-to-orders-v16 */
+
+        .emailTable .ordersHead,
+        .emailTable .ordersRow {
+          grid-template-columns: 1.15fr 1.25fr .85fr 1.45fr .75fr .7fr auto !important;
+          gap: 9px !important;
+        }
+
+        .emailTable .ordersRow {
+          min-height: 50px !important;
+          padding: 8px 9px !important;
+        }
+
+        .emailTable .ordersRow strong {
+          font-size: 12.5px !important;
+          font-weight: 600 !important;
+          line-height: 1.2 !important;
+        }
+
+        .emailTable .ordersRow small {
+          font-size: 10.8px !important;
+          margin-top: 2px !important;
+          line-height: 1.2 !important;
+          color: #64748b !important;
+        }
+
+        .emailTable .orderActions {
+          display: flex !important;
+          justify-content: flex-end !important;
+          align-items: center !important;
+          flex-wrap: nowrap !important;
+          gap: 6px !important;
+        }
+
+        .emailTable .primaryBtn,
+        .emailTable .dangerBtn,
+        .ordersTable .primaryBtn,
+        .ordersTable .dangerBtn {
+          height: 30px !important;
+          min-height: 30px !important;
+          border-radius: 7px !important;
+          padding: 0 10px !important;
+          font-size: 12px !important;
+          font-weight: 600 !important;
+          box-shadow: none !important;
+          white-space: nowrap !important;
+        }
+
+        .emailTable .dangerBtn,
+        .ordersTable .dangerBtn {
+          background: #fff5f5 !important;
+          border: 1px solid #fecaca !important;
+          color: #b91c1c !important;
+        }
+
+        .emailTable .dangerBtn:hover,
+        .ordersTable .dangerBtn:hover {
+          background: #fee2e2 !important;
+          border-color: #fca5a5 !important;
+          color: #991b1b !important;
         }
       `}</style>
 
