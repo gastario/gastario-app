@@ -91,9 +91,48 @@ function looksLikePersonName(value: string) {
 }
 
 function looksLikeMeal(value: string) {
-  const text = normalize(value);
+  const raw = cleanLine(value);
+  const text = normalize(raw);
 
-  if (!text || isDate(value) || isMetaLine(value)) return false;
+  if (!text || isDate(raw) || isMetaLine(raw)) return false;
+
+  // Sehr wichtig:
+  // Allergen-/Hinweiszeilen wie "Vegan, Vegetarian / Soybeans"
+  // duerfen NIE als eigenes Gericht/Label zaehlen.
+  if (raw.includes(",") || raw.includes(" / ") || raw.includes("/")) {
+    const strongDish =
+      text.includes("bowl") ||
+      text.includes("wrap") ||
+      text.includes("salad") ||
+      text.includes("salmon") ||
+      text.includes("chicken") ||
+      text.includes("tofu") ||
+      text.includes("falafel") ||
+      text.includes("tempura");
+
+    if (!strongDish) return false;
+  }
+
+  const blockedDetailOnly = [
+    "gluten free",
+    "halal",
+    "poultry",
+    "milk",
+    "sesame",
+    "soybeans",
+    "soya",
+    "sulphur",
+    "sulfur",
+    "nuts",
+    "peanut",
+    "vegetarian /",
+    "vegan,",
+    "pescatarian /",
+  ];
+
+  if (blockedDetailOnly.some((word) => text.includes(word))) {
+    return false;
+  }
 
   const mealWords = [
     "bowl",
@@ -104,12 +143,11 @@ function looksLikeMeal(value: string) {
     "tofu",
     "falafel",
     "tempura",
-    "greens",
-    "rice",
     "shawarma",
-    "veggie",
-    "vegan",
     "oriental",
+    "beetroot",
+    "tuna",
+    "greens with sesame",
   ];
 
   return mealWords.some((word) => text.includes(word));
