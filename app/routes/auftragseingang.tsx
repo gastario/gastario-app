@@ -1,60 +1,56 @@
-﻿import { useState } from "react";
-import AppLayout from "../components/AppLayout";
-
+﻿import AppLayout from "../components/AppLayout";
 import { Form, redirect, useActionData, useLoaderData } from "react-router";
 
-const SOURCES = [
-  { value: "DIRECT", label: "Direkt" },
-  { value: "HEYCATER", label: "Heycater" },
-  { value: "EGORA", label: "Egora" },
-  { value: "EMAIL", label: "E-Mail" },
-  { value: "WEBSITE", label: "Website" },
+const EMAIL_BUCKETS = [
+  { key: "orders", label: "Bestätigungen", help: "Sichere Auftragsbestätigungen" },
+  { key: "possible", label: "Unklar", help: "Heycater-Mails prüfen" },
+  { key: "inquiries", label: "Anfragen", help: "Angebote vorbereiten" },
+  { key: "reminders", label: "Lieferscheine", help: "Morgen-/Lieferhinweise" },
+  { key: "other", label: "Sonstiges", help: "Absagen, Werbung, Belege" },
+  { key: "hidden", label: "Ausgeblendet", help: "Manuell ausgeblendet" },
+  { key: "all", label: "Alle", help: "Alle ungeprüften E-Mails" },
 ];
 
-const STATUSES = [
-  { value: "AUTO_CREATED", label: "Prüfen" },
-  { value: "CONFIRMED", label: "Übernommen" },
-  { value: "REJECTED", label: "Abgelehnt" },
-];
-
-function euroToCents(value: FormDataEntryValue | null) {
-  const raw = String(value || "0").replace(",", ".").trim();
-  const number = Number(raw);
-  if (!Number.isFinite(number)) return 0;
-  return Math.round(number * 100);
+function normalizeEmailText(value: unknown) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
 
-
-
 function classifyIncomingEmail(mail: any) {
-  const subject = String(mail?.subject || "").toLowerCase();
-  const sender = String(mail?.sender || "").toLowerCase();
+  const subject = normalizeEmailText(mail?.subject || "");
+  const sender = normalizeEmailText(mail?.sender || "");
+  const combined = subject + " " + sender;
 
-  if (mail?.status === "IGNORED") {
-    return "hidden";
-  }
+  if (mail?.status === "IGNORED") return "hidden";
 
-  const orderSignals = [
-    "fast track order best?tigt",
-    "fast track order bestaetigt",
-    "order best?tigt",
-    "order bestaetigt",
-    "auftrag best?tigt",
-    "auftrag bestaetigt",
-    "auftragsbest?tigung",
-    "auftragsbestaetigung",
+  const cancellationSignals = [
+    "storniert",
+    "stornierung",
+    "abgesagt",
+    "absage",
+    "canceled",
+    "cancelled",
+    "cancellation",
+    "findet nicht statt",
+    "nicht statt",
   ];
 
-  const inquirySignals = [
-    "bitte auftrag best?tigen",
-    "bitte auftrag bestaetigen",
-    "angebot freigeben",
-    "angebot erstellen",
-    "bitte angebot",
-    "anfrage",
-    "angebotsanfrage",
-    "catering anfrage",
-    "neue anfrage",
+  const orderSignals = [
+    "fast track order bestatigt",
+    "fast track order bestaetigt",
+    "order bestatigt",
+    "order bestaetigt",
+    "auftrag bestatigt",
+    "auftrag bestaetigt",
+    "auftragsbestatigung",
+    "auftragsbestaetigung",
+    "angebotsbestatigung",
+    "angebotsbestaetigung",
+    "partner event confirmation",
+    "event confirmation",
+    "order confirmation",
   ];
 
   const reminderSignals = [
@@ -62,6 +58,34 @@ function classifyIncomingEmail(mail: any) {
     "dein morgiges heykantine",
     "morgiges catering mit heycater",
     "morgiges heykantine",
+    "delivery note",
+    "lieferschein",
+  ];
+
+  const inquirySignals = [
+    "bitte auftrag bestatigen",
+    "bitte auftrag bestaetigen",
+    "angebot freigeben",
+    "bitte angebot freigeben",
+    "angebot erstellen",
+    "bitte angebot",
+    "angebotsanfrage",
+    "catering anfrage",
+    "neue anfrage",
+    "anfrage",
+    "catering am",
+    "catering fur",
+    "catering fuer",
+    "catering gesucht",
+    "catering nahe",
+    "catering naehe",
+    "nahe ludwigsfelde",
+    "naehe ludwigsfelde",
+    "fingerfood",
+    "buffet",
+    "personen",
+    "gaste",
+    "gaeste",
   ];
 
   const otherSignals = [
@@ -71,19 +95,15 @@ function classifyIncomingEmail(mail: any) {
     "guthaben",
     "buust",
     "werbung",
+    "logistikbeleg",
+    "chefs culinar",
   ];
 
-  if (orderSignals.some((signal) => subject.includes(signal))) {
-    return "orders";
-  }
-
-  if (inquirySignals.some((signal) => subject.includes(signal))) {
-    return "inquiries";
-  }
-
-  if (reminderSignals.some((signal) => subject.includes(signal))) {
-    return "reminders";
-  }
+  if (cancellationSignals.some((signal) => combined.includes(signal))) return "other";
+  if (orderSignals.some((signal) => subject.includes(signal))) return "orders";
+  if (reminderSignals.some((signal) => subject.includes(signal))) return "reminders";
+  if (inquirySignals.some((signal) => subject.includes(signal))) return "inquiries";
+  if (otherSignals.some((signal) => combined.includes(signal))) return "other";
 
   const looksLikeHeycater =
     sender.includes("heycater") ||
@@ -91,18 +111,8 @@ function classifyIncomingEmail(mail: any) {
     subject.includes("heykantine");
 
   const hasOrderNumber = /\b\d{4}-\d{5,}\b/.test(subject);
-  const mentionsOrderOrCatering =
-    subject.includes("auftrag") ||
-    subject.includes("order") ||
-    subject.includes("catering");
 
-  if (looksLikeHeycater && (hasOrderNumber || mentionsOrderOrCatering)) {
-    return "possible";
-  }
-
-  if (otherSignals.some((signal) => subject.includes(signal) || sender.includes(signal))) {
-    return "other";
-  }
+  if (looksLikeHeycater && hasOrderNumber) return "possible";
 
   return "other";
 }
@@ -117,42 +127,6 @@ function emailCategoryLabel(value: string) {
   return "Alle E-Mails";
 }
 
-
-function isLikelyOrderEmail(mail: any) {
-  const subject = String(mail?.subject || "").toLowerCase();
-  const sender = String(mail?.sender || "").toLowerCase();
-
-  const positiveSignals = [
-    "order best?tigt",
-    "order bestaetigt",
-    "auftragsbest?tigung",
-    "auftragsbestaetigung",
-    "gebucht",
-    "dein morgiges catering",
-    "dein morgiges heykantine",
-    "catering mit heycater",
-  ];
-
-  const negativeSignals = [
-    "angebot freigeben",
-    "angebot erstellen",
-    "bitte angebot",
-    "anfrage",
-    "paypal",
-    "newsletter",
-    "kurz nachgehakt",
-    "guthaben",
-    "buust",
-    "werbung",
-  ];
-
-  if (negativeSignals.some((signal) => subject.includes(signal) || sender.includes(signal))) {
-    return false;
-  }
-
-  return positiveSignals.some((signal) => subject.includes(signal));
-}
-
 function centsToEuro(value: number | null | undefined) {
   return ((value || 0) / 100).toLocaleString("de-DE", {
     style: "currency",
@@ -160,11 +134,25 @@ function centsToEuro(value: number | null | undefined) {
   });
 }
 
-function createOrderNumber() {
-  const now = new Date();
-  const date = now.toISOString().slice(0, 10).replaceAll("-", "");
-  const random = Math.floor(1000 + Math.random() * 9000);
-  return "GA-" + date + "-" + random;
+function formatDate(value: string | Date | null | undefined) {
+  if (!value) return "-";
+  return new Date(value).toLocaleDateString("de-DE");
+}
+
+function statusLabel(status: string) {
+  if (status === "AUTO_CREATED") return "Prüfen";
+  if (status === "CONFIRMED") return "Übernommen";
+  if (status === "REJECTED") return "Abgelehnt";
+  return status;
+}
+
+function sourceLabel(source: string) {
+  if (source === "HEYCATER") return "Heycater";
+  if (source === "EGORA") return "Egora";
+  if (source === "EMAIL") return "E-Mail";
+  if (source === "WEBSITE") return "Website";
+  if (source === "DIRECT") return "Direkt";
+  return source;
 }
 
 export async function loader({ request }: { request: Request }) {
@@ -213,9 +201,7 @@ export async function loader({ request }: { request: Request }) {
   const selectedDateStart = selectedDate ? new Date(selectedDate + "T00:00:00") : null;
   const selectedDateEnd = selectedDateStart ? new Date(selectedDateStart) : null;
 
-  if (selectedDateEnd) {
-    selectedDateEnd.setDate(selectedDateEnd.getDate() + 1);
-  }
+  if (selectedDateEnd) selectedDateEnd.setDate(selectedDateEnd.getDate() + 1);
 
   try {
     const [orders, emailInbox, counts] = await Promise.all([
@@ -228,37 +214,22 @@ export async function loader({ request }: { request: Request }) {
           items: true,
           customer: true,
         },
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy: { createdAt: "desc" },
         take: 100,
       }),
 
       prisma.incomingEmail.findMany({
         where: {
           tenantId: tenantUser.tenantId,
-          status: {
-            in: ["RECEIVED", "REVIEW_NEEDED", "FAILED", "IGNORED"] as any,
-          },
-          orders: {
-            none: {},
-          },
+          status: { in: ["RECEIVED", "REVIEW_NEEDED", "FAILED", "IGNORED"] as any },
+          orders: { none: {} },
           ...(selectedDateStart && selectedDateEnd
-            ? {
-                receivedAt: {
-                  gte: selectedDateStart,
-                  lt: selectedDateEnd,
-                },
-              }
+            ? { receivedAt: { gte: selectedDateStart, lt: selectedDateEnd } }
             : {}),
         },
-        include: {
-          attachments: true,
-        },
-        orderBy: {
-          receivedAt: "desc",
-        },
-        take: 50,
+        include: { attachments: true },
+        orderBy: { receivedAt: "desc" },
+        take: 80,
       }),
 
       Promise.all([
@@ -293,8 +264,8 @@ export async function loader({ request }: { request: Request }) {
       emailBuckets,
       activeStatus: status,
       counts: {
-        all: counts[0] + filteredEmailInbox.length,
-        review: counts[1] + filteredEmailInbox.length,
+        all: counts[0],
+        review: counts[1],
         confirmed: counts[2],
         rejected: counts[3],
       },
@@ -312,7 +283,7 @@ export async function loader({ request }: { request: Request }) {
       emailBuckets: { orders: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
       activeStatus: status,
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
-      setupError: "Auftragseingang konnte die Auftragsdaten nicht laden. Wahrscheinlich ist die Railway-Datenbank noch nicht synchron oder es fehlen Tabellen/Spalten.",
+      setupError: "Auftragseingang konnte die Auftragsdaten nicht laden.",
     };
   }
 }
@@ -322,48 +293,38 @@ export async function action({ request }: { request: Request }) {
   const { prisma } = await import("../lib/prisma.server");
 
   const userId = await getUserId(request);
+  if (!userId) return { error: "Nicht angemeldet." };
 
-  if (!userId) {
-    return { error: "Nicht angemeldet." };
-  }
-
-  const tenantUser = await prisma.tenantUser.findFirst({
-    where: { userId },
-  });
-
-  if (!tenantUser) {
-    return { error: "Kein Mandant gefunden." };
-  }
+  const tenantUser = await prisma.tenantUser.findFirst({ where: { userId } });
+  if (!tenantUser) return { error: "Kein Mandant gefunden." };
 
   const formData = await request.formData();
   const intent = String(formData.get("intent") || "");
 
+  if (intent === "runEmailImportNow") {
+    const origin = new URL(request.url).origin;
+    const secret = process.env.EMAIL_IMPORT_RUN_SECRET || "";
+    const runUrl = secret
+      ? origin + "/api/email-import/run?secret=" + encodeURIComponent(secret)
+      : origin + "/api/email-import/run";
+
+    await fetch(runUrl);
+    return redirect("/auftragseingang");
+  }
+
   if (intent === "restoreIncomingEmail") {
     const emailId = String(formData.get("emailId") || "").trim();
-
-    if (!emailId) {
-      return { error: "E-Mail fehlt." };
-    }
+    if (!emailId) return { error: "E-Mail fehlt." };
 
     const email = await prisma.incomingEmail.findFirst({
-      where: {
-        id: emailId,
-        tenantId: tenantUser.tenantId,
-      },
+      where: { id: emailId, tenantId: tenantUser.tenantId },
     });
 
-    if (!email) {
-      return { error: "E-Mail wurde nicht gefunden." };
-    }
+    if (!email) return { error: "E-Mail wurde nicht gefunden." };
 
     await prisma.incomingEmail.update({
-      where: {
-        id: email.id,
-      },
-      data: {
-        status: "REVIEW_NEEDED" as any,
-        errorMessage: null,
-      },
+      where: { id: email.id },
+      data: { status: "REVIEW_NEEDED" as any, errorMessage: null },
     });
 
     return { success: "E-Mail wurde wieder eingeblendet." };
@@ -371,41 +332,19 @@ export async function action({ request }: { request: Request }) {
 
   if (intent === "hideIncomingEmail") {
     const emailId = String(formData.get("emailId") || "").trim();
-
-    if (!emailId) {
-      return { error: "E-Mail fehlt." };
-    }
+    if (!emailId) return { error: "E-Mail fehlt." };
 
     const email = await prisma.incomingEmail.findFirst({
-      where: {
-        id: emailId,
-        tenantId: tenantUser.tenantId,
-      },
-      include: {
-        orders: {
-          select: {
-            id: true,
-          },
-        },
-      },
+      where: { id: emailId, tenantId: tenantUser.tenantId },
+      include: { orders: { select: { id: true } } },
     });
 
-    if (!email) {
-      return { error: "E-Mail wurde nicht gefunden." };
-    }
-
-    if (email.orders.length > 0) {
-      return { error: "Diese E-Mail ist bereits mit einem Auftrag verbunden." };
-    }
+    if (!email) return { error: "E-Mail wurde nicht gefunden." };
+    if (email.orders.length > 0) return { error: "Diese E-Mail ist bereits mit einem Auftrag verbunden." };
 
     await prisma.incomingEmail.update({
-      where: {
-        id: email.id,
-      },
-      data: {
-        status: "IGNORED" as any,
-        errorMessage: "Manuell ausgeblendet.",
-      },
+      where: { id: email.id },
+      data: { status: "IGNORED" as any, errorMessage: "Manuell ausgeblendet." },
     });
 
     return { success: "E-Mail wurde ausgeblendet." };
@@ -413,207 +352,27 @@ export async function action({ request }: { request: Request }) {
 
   if (intent === "deleteIncomingEmail") {
     const emailId = String(formData.get("emailId") || "").trim();
-
-    if (!emailId) {
-      return { error: "E-Mail fehlt." };
-    }
+    if (!emailId) return { error: "E-Mail fehlt." };
 
     const email = await prisma.incomingEmail.findFirst({
-      where: {
-        id: emailId,
-        tenantId: tenantUser.tenantId,
-      },
-      include: {
-        orders: {
-          select: {
-            id: true,
-          },
-        },
-      },
+      where: { id: emailId, tenantId: tenantUser.tenantId },
+      include: { orders: { select: { id: true } } },
     });
 
-    if (!email) {
-      return { error: "E-Mail wurde nicht gefunden." };
-    }
+    if (!email) return { error: "E-Mail wurde nicht gefunden." };
+    if (email.orders.length > 0) return { error: "Diese E-Mail ist bereits mit einem Auftrag verbunden." };
 
-    if (email.orders.length > 0) {
-      return { error: "Diese E-Mail ist bereits mit einem Auftrag verbunden." };
-    }
-
-    await prisma.incomingEmail.delete({
-      where: {
-        id: email.id,
-      },
-    });
-
-    return { success: "E-Mail wurde geloescht." };
-  }
-
-  if (intent === "createOrder") {
-    const source = String(formData.get("source") || "DIRECT");
-    const externalOrderNumber = String(formData.get("externalOrderNumber") || "").trim();
-
-    const customerName = String(formData.get("customerName") || "").trim();
-    const customerEmail = String(formData.get("customerEmail") || "").trim().toLowerCase();
-    const customerPhone = String(formData.get("customerPhone") || "").trim();
-
-    const eventName = String(formData.get("eventName") || "").trim();
-    const deliveryDateRaw = String(formData.get("deliveryDate") || "").trim();
-    const deliveryTime = String(formData.get("deliveryTime") || "").trim();
-    const deliveryAddress = String(formData.get("deliveryAddress") || "").trim();
-
-    const contactName = String(formData.get("contactName") || "").trim();
-    const contactPhone = String(formData.get("contactPhone") || "").trim();
-
-    const itemKinds = formData.getAll("itemKind").map((value) => String(value || "item"));
-    const itemNames = formData.getAll("itemName").map((value) => String(value || "").trim());
-    const quantities = formData.getAll("quantity").map((value) => Number(value || 1));
-    const units = formData.getAll("unit").map((value) => String(value || "StÃ¼ck").trim());
-    const unitCentsList = formData.getAll("unitPriceEuro").map((value) => euroToCents(value));
-    const discountPercents = formData.getAll("discountPercent").map((value) => Number(String(value || "0").replace(",", ".")));
-    const taxRates = formData.getAll("taxRate").map((value) => Number(value || 19));
-    const itemNotes = formData.getAll("itemNotes").map((value) => String(value || "").trim());
-    const notes = String(formData.get("notes") || "").trim();
-
-    const items = itemNames
-      .map((name, index) => {
-        const kind = itemKinds[index] === "text" ? "text" : itemKinds[index] === "optional" ? "optional" : "item";
-        const quantity = kind === "text" ? 1 : Number.isFinite(quantities[index]) && quantities[index] > 0 ? quantities[index] : 1;
-        const unitCents = kind === "text" ? 0 : unitCentsList[index] || 0;
-        const discountPercent = Number.isFinite(discountPercents[index]) ? Math.max(0, discountPercents[index]) : 0;
-        const taxRate = Number.isFinite(taxRates[index]) ? taxRates[index] : 19;
-        const netBeforeDiscount = unitCents * quantity;
-        const discountCents = Math.round(netBeforeDiscount * (discountPercent / 100));
-        const totalCents = Math.max(0, netBeforeDiscount - discountCents);
-
-        const metaNotes = [
-          itemNotes[index] || "",
-          kind === "text" ? "Freitext" : "",
-          kind === "optional" ? "Optional" : "",
-          kind === "optional" ? "Optional" : "",
-          kind === "item" ? "MwSt " + taxRate + "%" : "",
-          kind === "item" && discountPercent > 0 ? "Rabatt " + discountPercent + "%" : "",
-        ].filter(Boolean).join(" | ");
-
-        return {
-          name,
-          quantity,
-          unit: kind === "text" ? "Text" : units[index] || "StÃ¼ck",
-          unitCents,
-          totalCents,
-          notes: metaNotes || null,
-        };
-      })
-      .filter((item) => item.name);
-
-    if (!customerName) {
-      return { error: "Kundenname fehlt." };
-    }
-
-    if (items.length === 0) {
-      return { error: "Mindestens eine Position fehlt." };
-    }
-
-    let customer = await prisma.customer.findFirst({
-      where: {        OR: [
-          ...(customerEmail ? [{ email: customerEmail }] : []),
-          { name: customerName },
-        ],
-      },
-    });
-
-    if (!customer) {
-      customer = await prisma.customer.create({
-        data: {          name: customerName,
-          email: customerEmail || null,
-          phone: customerPhone || null,
-        } as any,
-      });
-    }
-
-    let deliveryDate: Date | null = null;
-
-    if (deliveryDateRaw) {
-      const germanDateMatch = deliveryDateRaw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-
-      if (germanDateMatch) {
-        const day = germanDateMatch[1].padStart(2, "0");
-        const month = germanDateMatch[2].padStart(2, "0");
-        const year = germanDateMatch[3];
-        deliveryDate = new Date(year + "-" + month + "-" + day + "T00:00:00");
-      } else {
-        deliveryDate = new Date(deliveryDateRaw + "T00:00:00");
-      }
-    }
-
-    const order = await prisma.order.create({
-      data: {        customerId: customer.id,
-        orderNumber: createOrderNumber(),
-        externalOrderNumber: externalOrderNumber || null,
-        source: source as any,
-        status: "AUTO_CREATED" as any,        customerName,
-        customerEmail: customerEmail || null,
-        customerPhone: customerPhone || null,
-        eventName: eventName || null,
-        deliveryDate,
-        deliveryTime: deliveryTime || null,
-        deliveryAddress: deliveryAddress || null,
-        contactName: contactName || null,
-        contactPhone: contactPhone || null,
-        notes: notes || null,
-      } as any,
-    });
-
-    await prisma.orderItem.createMany({
-      data: items.map((item) => ({
-        orderId: order.id,
-        name: item.name,
-        quantity: item.quantity,
-        unit: item.unit,
-        unitCents: item.unitCents,
-        totalCents: item.totalCents,
-        notes: item.notes,
-      })),
-    });
-
-    return { success: "Auftrag wurde angelegt." };
-  }
-
-  if (intent === "updateStatus") {
-    const orderId = String(formData.get("orderId") || "");
-    const status = String(formData.get("status") || "AUTO_CREATED");
-
-    if (!orderId) {
-      return { error: "Auftrag fehlt." };
-    }
-
-    await prisma.order.updateMany({
-      where: {
-        id: orderId,      },
-      data: {
-        status: status as any,
-      },
-    });
-
-    return { success: "Auftragsstatus wurde aktualisiert." };
+    await prisma.incomingEmail.delete({ where: { id: email.id } });
+    return { success: "E-Mail wurde gelöscht." };
   }
 
   if (intent === "deleteOrder") {
     const orderId = String(formData.get("orderId") || "");
+    if (!orderId) return { error: "Auftrag fehlt." };
 
-    if (!orderId) {
-      return { error: "Auftrag fehlt." };
-    }
-
-    await prisma.orderItem.deleteMany({
-      where: {
-        orderId,      },
-    });
-
-    await prisma.order.deleteMany({
-      where: {
-        id: orderId,      },
-    });
+    await prisma.deliveryStop.deleteMany({ where: { orderId } });
+    await prisma.orderItem.deleteMany({ where: { orderId } });
+    await prisma.order.deleteMany({ where: { id: orderId, tenantId: tenantUser.tenantId } });
 
     return { success: "Auftrag wurde gelöscht." };
   }
@@ -621,242 +380,63 @@ export async function action({ request }: { request: Request }) {
   return { error: "Unbekannte Aktion." };
 }
 
-function statusLabel(status: string) {
-  if (status === "AUTO_CREATED") return "Prüfen";
-  if (status === "CONFIRMED") return "Übernommen";
-  if (status === "REJECTED") return "Abgelehnt";
-  return status;
-}
-
-function sourceLabel(source: string) {
-  const item = SOURCES.find((entry) => entry.value === source);
-  return item?.label || source;
-}
-
-function formatDate(value: string | Date | null | undefined) {
-  if (!value) return "-";
-  return new Date(value).toLocaleDateString("de-DE");
-}
-
-
 export default function AuftragseingangPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
-  const [positionRows, setPositionRows] = useState<Array<{ id: number; type: "item" | "text" | "optional" }>>([
-    { id: Date.now(), type: "item" },
-  ]);
-
-  const [productDraft, setProductDraft] = useState<{
-    open: boolean;
-    name: string;
-    unit: string;
-    priceEuro: string;
-    taxRate: string;
-  }>({
-    open: false,
-    name: "",
-    unit: "StÃ¼ck",
-    priceEuro: "",
-    taxRate: "19",
-  });
-  const [liveNetTotalCents, setLiveNetTotalCents] = useState(0);
-  const [liveTaxTotalCents, setLiveTaxTotalCents] = useState(0);
-  const [liveGrossTotalCents, setLiveGrossTotalCents] = useState(0);
-
-  function parseEuroInput(value: string) {
-    const normalized = String(value || "")
-      .replace(/â‚¬/g, "")
-      .replace(/\s/g, "")
-      .replace(/\./g, "")
-      .replace(",", ".");
-
-    const amount = Number(normalized);
-    if (!Number.isFinite(amount)) return 0;
-
-    return Math.round(amount * 100);
-  }
-
-  function formatEuroCents(value: number) {
-    return (value / 100).toLocaleString("de-DE", {
-      style: "currency",
-      currency: "EUR",
-    });
-  }
-
-  function recalculatePositionTotals(form: HTMLFormElement) {
-    let netTotalCents = 0;
-    let taxTotalCents = 0;
-    let grossTotalCents = 0;
-
-    const rows = Array.from(form.querySelectorAll('[data-position-row="item"]'));
-
-    for (const row of rows) {
-      const quantityInput = row.querySelector('input[name="quantity"]') as HTMLInputElement | null;
-      const priceInput = row.querySelector('input[name="unitPriceEuro"]') as HTMLInputElement | null;
-      const discountInput = row.querySelector('input[name="discountPercent"]') as HTMLInputElement | null;
-      const taxInput = row.querySelector('select[name="taxRate"]') as HTMLSelectElement | null;
-      const totalElement = row.querySelector("[data-line-total]") as HTMLElement | null;
-
-      const quantity = Number(String(quantityInput?.value || "1").replace(",", "."));
-      const unitCents = parseEuroInput(priceInput?.value || "0");
-      const discountPercent = Number(String(discountInput?.value || "0").replace(",", "."));
-      const taxRate = Number(String(taxInput?.value || "19").replace(",", "."));
-
-      const safeQuantity = Number.isFinite(quantity) && quantity > 0 ? quantity : 0;
-      const safeDiscount = Number.isFinite(discountPercent) && discountPercent > 0 ? discountPercent : 0;
-      const safeTaxRate = Number.isFinite(taxRate) && taxRate > 0 ? taxRate : 0;
-
-      const beforeDiscount = Math.round(unitCents * safeQuantity);
-      const discountCents = Math.round(beforeDiscount * (safeDiscount / 100));
-      const netLineCents = Math.max(0, beforeDiscount - discountCents);
-      const taxLineCents = Math.round(netLineCents * (safeTaxRate / 100));
-      const grossLineCents = netLineCents + taxLineCents;
-
-      netTotalCents += netLineCents;
-      taxTotalCents += taxLineCents;
-      grossTotalCents += grossLineCents;
-
-      if (totalElement) {
-        totalElement.textContent = formatEuroCents(netLineCents);
-      }
-    }
-
-    const discountInput = form.querySelector('input[name="globalDiscountPercent"]') as HTMLInputElement | null;
-    const globalDiscountPercent = Number(String(discountInput?.value || "0").replace(",", "."));
-    const safeGlobalDiscount = Number.isFinite(globalDiscountPercent) && globalDiscountPercent > 0
-      ? Math.min(globalDiscountPercent, 100)
-      : 0;
-
-    if (safeGlobalDiscount > 0) {
-      const factor = Math.max(0, 1 - safeGlobalDiscount / 100);
-      netTotalCents = Math.round(netTotalCents * factor);
-      taxTotalCents = Math.round(taxTotalCents * factor);
-      grossTotalCents = Math.round(grossTotalCents * factor);
-    }
-
-    setLiveNetTotalCents(netTotalCents);
-    setLiveTaxTotalCents(taxTotalCents);
-    setLiveGrossTotalCents(grossTotalCents);
-  }
-
   const pageStyle: any = {
     minHeight: "100vh",
-    background: "transparent",
-    padding: "0 0 40px",
+    padding: "0 0 46px",
+    color: "#0f172a",
     fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
-    color: "#111827",
   };
 
   const shellStyle: any = {
     width: "100%",
-    maxWidth: 1360,
+    maxWidth: 1320,
     margin: "0 auto",
     padding: "0 24px",
   };
 
-  const documentStyle: any = {
-    background: "#ffffff",
-    border: "1px solid #d2d2d2",
-    borderRadius: 4,
-    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-    padding: 22,
-  };
-
-  const inputStyle: any = {
-    width: "100%",
-    minHeight: 42,
-    border: "1px solid #cfd8e3",
-    borderRadius: 3,
-    padding: "0 12px",
-    fontSize: 14,
-    fontWeight: 600,
-    color: "#111827",
-    background: "#ffffff",
-    boxSizing: "border-box",
-  };
-
-  const labelStyle: any = {
-    display: "grid",
-    gap: 5,
-    color: "#555",
-    fontSize: 12,
-    fontWeight: 700,
+  const cardStyle: any = {
+    background: "rgba(255,255,255,0.96)",
+    border: "1px solid #dbe7ee",
+    borderRadius: 24,
+    boxShadow: "0 18px 50px rgba(15, 23, 42, 0.08)",
   };
 
   const sectionLabelStyle: any = {
-    color: "#00796b",
+    color: "#047857",
     textTransform: "uppercase",
-    letterSpacing: ".08em",
+    letterSpacing: ".10em",
     fontSize: 11,
     fontWeight: 950,
   };
 
-  const smallButtonStyle: any = {
-    border: "1px solid #cfd8e3",
-    background: "#ffffff",
-    borderRadius: 3,
-    padding: "8px 12px",
-    fontWeight: 850,
-    cursor: "pointer",
-    color: "#111827",
-  };
-
-  const toolbarInputStyle: any = {
-    height: 44,
-    border: "1px solid #d7e2ec",
-    borderRadius: 14,
-    padding: "0 14px",
-    fontSize: 14,
-    fontWeight: 850,
-    background: "#ffffff",
-    color: "#0f172a",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
-  };
-
-  const toolbarButtonStyle: any = {
-    height: 44,
-    border: "1px solid #d7e2ec",
-    background: "#ffffff",
-    borderRadius: 14,
-    padding: "0 15px",
-    fontSize: 14,
-    fontWeight: 950,
-    color: "#0f172a",
-    cursor: "pointer",
-    textDecoration: "none",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
-  };
-
-  const primaryActionStyle: any = {
-    minHeight: 38,
+  const primaryButtonStyle: any = {
     border: "1px solid #0f9f7a",
     background: "#0f9f7a",
     color: "#ffffff",
-    borderRadius: 12,
-    padding: "8px 13px",
-    fontSize: 13,
+    borderRadius: 14,
+    padding: "10px 14px",
     fontWeight: 950,
+    fontSize: 14,
     cursor: "pointer",
     textDecoration: "none",
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    boxShadow: "0 8px 18px rgba(15, 159, 122, 0.18)",
+    boxShadow: "0 10px 22px rgba(15, 159, 122, 0.18)",
   };
 
-  const quietActionStyle: any = {
-    minHeight: 38,
-    border: "1px solid #dbe5ee",
+  const secondaryButtonStyle: any = {
+    border: "1px solid #d6e1ea",
     background: "#ffffff",
-    color: "#334155",
-    borderRadius: 12,
-    padding: "8px 13px",
-    fontSize: 13,
+    color: "#0f172a",
+    borderRadius: 14,
+    padding: "10px 14px",
     fontWeight: 900,
+    fontSize: 14,
     cursor: "pointer",
     textDecoration: "none",
     display: "inline-flex",
@@ -864,68 +444,35 @@ export default function AuftragseingangPage() {
     justifyContent: "center",
   };
 
-  const dangerActionStyle: any = {
-    minHeight: 38,
-    border: "1px solid #fecaca",
-    background: "#fff7f7",
+  const dangerButtonStyle: any = {
+    ...secondaryButtonStyle,
     color: "#b91c1c",
-    borderRadius: 12,
-    padding: "8px 13px",
-    fontSize: 13,
-    fontWeight: 950,
-    cursor: "pointer",
-    textDecoration: "none",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
+    borderColor: "#fecaca",
+    background: "#fff7f7",
   };
 
-  const statusPillStyle: any = {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    border: "1px solid #dbe5ee",
-    borderRadius: 999,
-    padding: "6px 10px",
-    fontSize: 12,
-    fontWeight: 950,
-    background: "#f8fafc",
-    color: "#334155",
-  };
-
-  const primaryButtonStyle: any = {
-    border: "1px solid #009b72",
+  const inputStyle: any = {
+    height: 44,
+    border: "1px solid #d6e1ea",
+    borderRadius: 14,
+    padding: "0 13px",
+    fontWeight: 850,
+    color: "#0f172a",
     background: "#ffffff",
-    color: "#009b72",
-    borderRadius: 3,
-    padding: "8px 14px",
-    fontWeight: 950,
-    cursor: "pointer",
-  };
-
-  const submitButtonStyle: any = {
-    border: "none",
-    background: "#079682",
-    color: "#ffffff",
-    borderRadius: 999,
-    padding: "12px 18px",
-    fontWeight: 950,
-    cursor: "pointer",
-    width: "fit-content",
   };
 
   const thStyle: any = {
     textAlign: "left",
-    padding: "12px 14px",
+    padding: "14px 16px",
     color: "#64748b",
     fontSize: 11,
     textTransform: "uppercase",
-    letterSpacing: ".04em",
-    borderBottom: "1px solid #e5e7eb",
+    letterSpacing: ".06em",
+    borderBottom: "1px solid #e8eef4",
   };
 
   const tdStyle: any = {
-    padding: "13px 14px",
+    padding: "16px",
     borderBottom: "1px solid #edf2f7",
     verticalAlign: "top",
     fontSize: 14,
@@ -933,414 +480,340 @@ export default function AuftragseingangPage() {
 
   if (data.setupError) {
     return (
-      <div style={pageStyle}>
-        <div style={shellStyle}>
-          <section style={{ ...documentStyle, maxWidth: 760 }}>
-            <div style={sectionLabelStyle}>Fehler</div>
-            <h1 style={{ margin: "8px 0 10px", fontSize: 30 }}>Auftragseingang konnte nicht geladen werden</h1>
-            <p style={{ margin: 0, color: "#475569", fontWeight: 650 }}>{data.setupError}</p>
-            <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
-              <a href="/logout" style={smallButtonStyle}>Ausloggen</a>
-              <a href="/login" style={primaryButtonStyle}>Neu einloggen</a>
-              <a href="/super-admin" style={smallButtonStyle}>Super Admin</a>
-            </div>
-          </section>
+      <AppLayout>
+        <div style={pageStyle}>
+          <div style={shellStyle}>
+            <section style={{ ...cardStyle, padding: 28, maxWidth: 760 }}>
+              <div style={sectionLabelStyle}>Fehler</div>
+              <h1 style={{ margin: "8px 0 10px", fontSize: 32 }}>Auftragseingang konnte nicht geladen werden</h1>
+              <p style={{ margin: 0, color: "#475569", fontWeight: 700 }}>{data.setupError}</p>
+            </section>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
+  const currentBucket = EMAIL_BUCKETS.find((bucket) => bucket.key === data.selectedEmailCategory) || EMAIL_BUCKETS[0];
+
   return (
     <AppLayout>
-      <div style={{ ...pageStyle, minHeight: "auto", padding: "0 0 40px", background: "transparent" }}>
-      <div style={shellStyle}>
-        <header style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 20, marginBottom: 22 }}>
-          <div>
-            <div style={sectionLabelStyle}>Gastario</div>
-            <h1 style={{ margin: "4px 0 0", fontSize: 34, lineHeight: 1, letterSpacing: "-0.05em" }}>
-              Auftragseingang
-            </h1>
-            <p style={{ margin: "8px 0 0", color: "#64748b", fontWeight: 650 }}>
-              Neue Aufträge erfassen, prüfen und übernehmen.
-            </p>
-          </div>
+      <div style={pageStyle}>
+        <div style={shellStyle}>
+          <header style={{ ...cardStyle, padding: 24, marginBottom: 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 18, alignItems: "flex-start", flexWrap: "wrap" }}>
+              <div>
+                <div style={sectionLabelStyle}>Arbeitsbereich</div>
+                <h1 style={{ margin: "6px 0 0", fontSize: 38, lineHeight: 1, letterSpacing: "-0.055em" }}>
+                  Auftragseingang
+                </h1>
+                <p style={{ margin: "10px 0 0", color: "#64748b", fontWeight: 700, maxWidth: 740 }}>
+                  E-Mails abrufen, Anfragen vorbereiten, Aufträge prüfen und Lieferscheine sauber trennen.
+                </p>
+              </div>
 
-          <div style={{
-            border: "1px solid #d2d2d2",
-            background: "#ffffff",
-            borderRadius: 4,
-            padding: "12px 16px",
-            fontWeight: 900,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-            whiteSpace: "nowrap",
-          }}>
-            {data.tenant.name}
-          </div>
-        </header>
-
-        <section style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 14, marginBottom: 18 }}>
-          {[
-            ["Alle", data.counts.all, ""],
-            ["Prüfen", data.counts.review, "AUTO_CREATED"],
-            ["Übernommen", data.counts.confirmed, "CONFIRMED"],
-            ["Abgelehnt", data.counts.rejected, "REJECTED"],
-          ].map(([label, count, status]) => (
-            <a
-              key={String(label)}
-              href={status ? "/auftragseingang?status=" + status : "/auftragseingang"}
-              style={{
-                background: data.activeStatus === status ? "#087f72" : "#ffffff",
-                color: data.activeStatus === status ? "#ffffff" : "#111827",
-                border: "1px solid #d2d2d2",
-                borderRadius: 4,
-                padding: "14px 16px",
-                textDecoration: "none",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-              }}
-            >
-              <div style={{ fontSize: 12, fontWeight: 850 }}>{label}</div>
-              <div style={{ fontSize: 28, fontWeight: 950, lineHeight: 1.1 }}>{count}</div>
-            </a>
-          ))}
-        </section>
-
-        {actionData?.error ? (
-          <div style={{
-            background: "#fff7ed",
-            border: "1px solid #fdba74",
-            color: "#9a3412",
-            borderRadius: 4,
-            padding: 12,
-            fontWeight: 800,
-            marginBottom: 16,
-          }}>
-            {actionData.error}
-          </div>
-        ) : null}
-
-        <section style={{
-          ...documentStyle,
-          marginTop: 18,
-          borderColor: "#dbe5ee",
-          background: "#ffffff",
-          borderRadius: 18,
-          boxShadow: "0 14px 36px rgba(15, 23, 42, 0.06)"
-        }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 14 }}>
-            <div>
-              <div style={sectionLabelStyle}>E-Mail Eingang</div>
-              <h2 style={{ margin: "5px 0 0", fontSize: 23, letterSpacing: "-0.03em" }}>{emailCategoryLabel(data.selectedEmailCategory)}</h2>
-              <p style={{ margin: "6px 0 0", color: "#64748b", fontWeight: 650 }}>
-                Diese E-Mails wurden empfangen, aber noch nicht sicher als Auftrag erkannt.
-              </p>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                <Form method="post">
+                  <input type="hidden" name="intent" value="runEmailImportNow" />
+                  <button type="submit" style={primaryButtonStyle}>E-Mails jetzt abrufen</button>
+                </Form>
+                <a href="/neuer-auftrag" style={secondaryButtonStyle}>+ Neuer Auftrag</a>
+              </div>
             </div>
+          </header>
 
-            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
-              <Form method="get" style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <input
-                  type="date"
-                  name="date"
-                  defaultValue={data.selectedDate || ""}
-                  style={{
-                    border: "1px solid #cbd5e1",
-                    borderRadius: 999,
-                    padding: "9px 12px",
-                    fontWeight: 800,
-                    background: "#ffffff",
-                  }}
-                />
-                <button type="submit" style={smallButtonStyle}>Datum anzeigen</button>
-              </Form>
-
-              <a href="/auftragseingang" style={smallButtonStyle}>Alle</a>
-              <a href="/importe" style={smallButtonStyle}>E-Mail-Import</a>
-            </div>
-          </div>
-
-          <div style={{
-            display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
-            marginBottom: 14,
-            padding: 8,
-            border: "1px solid #e2e8f0",
-            borderRadius: 16,
-            background: "#f8fafc"
-          }}>
+          <section style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 14, marginBottom: 18 }}>
             {[
-              ["orders", "Auftragsbestätigungen", data.emailBuckets.orders],
-              ["possible", "Unklare Heycater-Mails", data.emailBuckets.possible],
-              ["inquiries", "Anfragen / Angebote", data.emailBuckets.inquiries],
-              ["reminders", "Erinnerungen / Lieferscheine", data.emailBuckets.reminders],
-              ["hidden", "Ausgeblendet", data.emailBuckets.hidden],
-              ["other", "Sonstiges / Absagen", data.emailBuckets.other],
-              ["all", "Alle", data.emailBuckets.all],
-            ].map(([key, label, count]: any) => {
-              const params = new URLSearchParams();
-
-              if (data.selectedDate) {
-                params.set("date", data.selectedDate);
-              }
-
-              params.set("emailCategory", key);
-
+              ["Alle Aufträge", data.counts.all, ""],
+              ["Zu prüfen", data.counts.review, "AUTO_CREATED"],
+              ["Übernommen", data.counts.confirmed, "CONFIRMED"],
+              ["Abgelehnt", data.counts.rejected, "REJECTED"],
+            ].map(([label, count, status]) => {
+              const active = data.activeStatus === status;
               return (
                 <a
-                  key={key}
-                  href={"/auftragseingang?" + params.toString()}
+                  key={String(label)}
+                  href={status ? "/auftragseingang?status=" + status : "/auftragseingang"}
                   style={{
-                    ...smallButtonStyle,
-                    background: data.selectedEmailCategory === key ? "#057a67" : "#ffffff",
-                    color: data.selectedEmailCategory === key ? "#ffffff" : "#0f172a",
-                    borderColor: data.selectedEmailCategory === key ? "#057a67" : "#dbe5ee",
-                    borderRadius: 999,
-                    padding: "9px 13px",
-                    boxShadow: data.selectedEmailCategory === key ? "0 10px 20px rgba(5, 122, 103, 0.14)" : "none",
+                    ...cardStyle,
+                    padding: 18,
                     textDecoration: "none",
+                    background: active ? "#057a67" : "#ffffff",
+                    color: active ? "#ffffff" : "#0f172a",
                   }}
                 >
-                  {label} ({count})
+                  <div style={{ fontSize: 12, fontWeight: 900, color: active ? "rgba(255,255,255,.8)" : "#64748b" }}>{label}</div>
+                  <div style={{ fontSize: 32, fontWeight: 950, lineHeight: 1.1, marginTop: 4 }}>{count}</div>
                 </a>
               );
             })}
-          </div>
+          </section>
 
-          <div style={{ overflowX: "auto", border: "1px solid #e2e8f0", borderRadius: 16 }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", background: "#ffffff" }}>
-              <thead>
-                <tr>
-                  <th style={thStyle}>Betreff</th>
-                  <th style={thStyle}>Absender</th>
-                  <th style={thStyle}>Postfach</th>
-                  <th style={thStyle}>Anhaenge</th>
-                  <th style={thStyle}>Status</th>
-                  <th style={thStyle}>Aktion</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.emailInbox.length === 0 ? (
-                  <tr>
-                    <td style={tdStyle} colSpan={6}>
-                      <strong>Keine ungeprueften E-Mails vorhanden.</strong>
-                    </td>
-                  </tr>
-                ) : (
-                  data.emailInbox.map((mail: any) => (
-                    <tr key={mail.id} style={{ background: "#ffffff" }}>
-                      <td style={tdStyle}>
-                        <strong>{mail.subject || "E-Mail ohne Betreff"}</strong>
-                        <div style={{ color: "#64748b", fontSize: 12, marginTop: 3 }}>
-                          {mail.receivedAt ? new Date(mail.receivedAt).toLocaleString("de-DE") : "-"}
+          {actionData?.error ? (
+            <div style={{
+              background: "#fff7ed",
+              border: "1px solid #fdba74",
+              color: "#9a3412",
+              borderRadius: 18,
+              padding: 14,
+              fontWeight: 850,
+              marginBottom: 16,
+            }}>
+              {actionData.error}
+            </div>
+          ) : null}
+
+          <section style={{ ...cardStyle, padding: 22, marginBottom: 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap", marginBottom: 16 }}>
+              <div>
+                <div style={sectionLabelStyle}>E-Mail Eingang</div>
+                <h2 style={{ margin: "5px 0 0", fontSize: 26, letterSpacing: "-0.04em" }}>{emailCategoryLabel(data.selectedEmailCategory)}</h2>
+                <p style={{ margin: "7px 0 0", color: "#64748b", fontWeight: 700 }}>
+                  {currentBucket.help}
+                </p>
+              </div>
+
+              <div style={{ display: "flex", gap: 10, alignItems: "end", flexWrap: "wrap" }}>
+                <Form method="get" style={{ display: "flex", gap: 8, alignItems: "end", flexWrap: "wrap" }}>
+                  <input type="hidden" name="emailCategory" value={data.selectedEmailCategory} />
+                  <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: ".06em" }}>
+                    Datum
+                    <input type="date" name="date" defaultValue={data.selectedDate || ""} style={inputStyle} />
+                  </label>
+                  <button type="submit" style={secondaryButtonStyle}>Anzeigen</button>
+                </Form>
+                <a href="/auftragseingang" style={secondaryButtonStyle}>Alle zeigen</a>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, marginBottom: 16 }}>
+              {EMAIL_BUCKETS.map((bucket) => {
+                const count = data.emailBuckets[bucket.key as keyof typeof data.emailBuckets] ?? 0;
+                const params = new URLSearchParams();
+                if (data.selectedDate) params.set("date", data.selectedDate);
+                params.set("emailCategory", bucket.key);
+                const active = data.selectedEmailCategory === bucket.key;
+
+                return (
+                  <a
+                    key={bucket.key}
+                    href={"/auftragseingang?" + params.toString()}
+                    style={{
+                      border: "1px solid " + (active ? "#057a67" : "#dbe7ee"),
+                      background: active ? "#057a67" : "#f8fafc",
+                      color: active ? "#ffffff" : "#0f172a",
+                      borderRadius: 18,
+                      padding: "12px 14px",
+                      textDecoration: "none",
+                      display: "grid",
+                      gap: 4,
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
+                      <strong>{bucket.label}</strong>
+                      <span style={{
+                        borderRadius: 999,
+                        padding: "3px 8px",
+                        background: active ? "rgba(255,255,255,.18)" : "#ffffff",
+                        fontSize: 12,
+                        fontWeight: 950,
+                      }}>
+                        {count}
+                      </span>
+                    </div>
+                    <span style={{ fontSize: 12, color: active ? "rgba(255,255,255,.78)" : "#64748b", fontWeight: 700 }}>
+                      {bucket.help}
+                    </span>
+                  </a>
+                );
+              })}
+            </div>
+
+            {data.emailInbox.length === 0 ? (
+              <div style={{ border: "1px dashed #cbd5e1", borderRadius: 20, padding: 22, background: "#f8fafc", color: "#475569", fontWeight: 800 }}>
+                Keine ungeprüften E-Mails in dieser Kategorie.
+              </div>
+            ) : (
+              <div style={{ display: "grid", gap: 12 }}>
+                {data.emailInbox.map((mail: any) => {
+                  const category = classifyIncomingEmail(mail);
+                  return (
+                    <article
+                      key={mail.id}
+                      style={{
+                        border: "1px solid #e2e8f0",
+                        borderRadius: 20,
+                        padding: 16,
+                        background: "#ffffff",
+                        display: "grid",
+                        gridTemplateColumns: "minmax(0, 1fr) auto",
+                        gap: 16,
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 7 }}>
+                          <span style={{ borderRadius: 999, padding: "5px 9px", background: "#f1f5f9", color: "#334155", fontSize: 12, fontWeight: 900 }}>
+                            {emailCategoryLabel(category)}
+                          </span>
+                          <span style={{ color: "#94a3b8", fontSize: 12, fontWeight: 800 }}>
+                            {mail.receivedAt ? new Date(mail.receivedAt).toLocaleString("de-DE") : "-"}
+                          </span>
                         </div>
-                      </td>
-                      <td style={tdStyle}>{mail.sender || "-"}</td>
-                      <td style={tdStyle}>{mail.mailbox || "-"}</td>
-                      <td style={tdStyle}>{mail.attachments?.length || 0}</td>
-                      <td style={tdStyle}>
-                        <span style={{
-                          display: "inline-flex",
-                          borderRadius: 999,
-                          padding: "5px 9px",
-                          background: "#fff7ed",
-                          color: "#9a3412",
-                          fontWeight: 850,
-                          fontSize: 12,
-                        }}>
-                          {emailCategoryLabel(classifyIncomingEmail(mail))}
-                        </span>
-                      </td>
-                      <td style={tdStyle}>
-                        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                          <a href={"/email-pruefung/" + mail.id} style={{ ...smallButtonStyle, textDecoration: "none" }}>Prüfen</a>
-                          {classifyIncomingEmail(mail) === "inquiries" ? (
-                            <a
-                              href={"/angebot-vorbereiten/" + mail.id}
-                              style={{
-                                ...quietActionStyle,
-                                background: "#ecfdf5",
-                                borderColor: "#bbf7d0",
-                                color: "#047857",
-                              }}
-                            >
-                              Angebot vorbereiten
-                            </a>
-                          ) : null}
 
-                          {mail.status !== "IGNORED" ? (
-                            <Form method="post">
-                              <input type="hidden" name="intent" value="hideIncomingEmail" />
-                              <input type="hidden" name="emailId" value={mail.id} />
-                              <button
-                                type="submit"
-                                style={{
-                                  ...smallButtonStyle,
-                                  color: "#475569",
-                                  borderColor: "#cbd5e1",
-                                  background: "#f8fafc",
-                                }}
-                              >
-                                Ausblenden
-                              </button>
-                            </Form>
-                          ) : (
-                            <Form method="post">
-                              <input type="hidden" name="intent" value="restoreIncomingEmail" />
-                              <input type="hidden" name="emailId" value={mail.id} />
-                              <button
-                                type="submit"
-                                style={{
-                                  ...smallButtonStyle,
-                                  color: "#047857",
-                                  borderColor: "#bbf7d0",
-                                  background: "#f0fdf4",
-                                }}
-                              >
-                                Einblenden
-                              </button>
-                            </Form>
-                          )}
+                        <h3 style={{ margin: 0, fontSize: 17, letterSpacing: "-0.02em" }}>
+                          {mail.subject || "E-Mail ohne Betreff"}
+                        </h3>
 
-                          <Form method="post" onSubmit={(event) => {
-                            if (!confirm("Diese E-Mail wirklich aus dem Eingang loeschen?")) {
-                              event.preventDefault();
-                            }
-                          }}>
-                            <input type="hidden" name="intent" value="deleteIncomingEmail" />
+                        <div style={{ marginTop: 8, display: "flex", gap: 14, flexWrap: "wrap", color: "#64748b", fontSize: 13, fontWeight: 750 }}>
+                          <span>Von: {mail.sender || "-"}</span>
+                          <span>Postfach: {mail.mailbox || "-"}</span>
+                          <span>Anhänge: {mail.attachments?.length || 0}</span>
+                        </div>
+                      </div>
+
+                      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                        <a href={"/email-pruefung/" + mail.id} style={primaryButtonStyle}>Prüfen</a>
+
+                        {category === "inquiries" ? (
+                          <a href={"/angebot-vorbereiten/" + mail.id} style={{ ...secondaryButtonStyle, borderColor: "#bbf7d0", color: "#047857", background: "#ecfdf5" }}>
+                            Angebot vorbereiten
+                          </a>
+                        ) : null}
+
+                        {mail.status !== "IGNORED" ? (
+                          <Form method="post">
+                            <input type="hidden" name="intent" value="hideIncomingEmail" />
                             <input type="hidden" name="emailId" value={mail.id} />
-                            <button
-                              type="submit"
-                              style={{
-                                ...smallButtonStyle,
-                                color: "#991b1b",
-                                borderColor: "#fecaca",
-                                background: "#fff1f2",
-                              }}
-                            >
-                              Löschen
-                            </button>
+                            <button type="submit" style={secondaryButtonStyle}>Ausblenden</button>
                           </Form>
-                        </div>
+                        ) : (
+                          <Form method="post">
+                            <input type="hidden" name="intent" value="restoreIncomingEmail" />
+                            <input type="hidden" name="emailId" value={mail.id} />
+                            <button type="submit" style={secondaryButtonStyle}>Einblenden</button>
+                          </Form>
+                        )}
+
+                        <Form method="post" onSubmit={(event) => {
+                          if (!confirm("Diese E-Mail wirklich aus dem Eingang löschen?")) event.preventDefault();
+                        }}>
+                          <input type="hidden" name="intent" value="deleteIncomingEmail" />
+                          <input type="hidden" name="emailId" value={mail.id} />
+                          <button type="submit" style={dangerButtonStyle}>Löschen</button>
+                        </Form>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          <section style={{ ...cardStyle, padding: 22 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 16 }}>
+              <div>
+                <div style={sectionLabelStyle}>Aufträge</div>
+                <h2 style={{ margin: "5px 0 0", fontSize: 26, letterSpacing: "-0.04em" }}>Zu prüfende Aufträge</h2>
+              </div>
+            </div>
+
+            <div style={{ overflowX: "auto", border: "1px solid #e2e8f0", borderRadius: 18 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", background: "#ffffff" }}>
+                <thead>
+                  <tr>
+                    <th style={thStyle}>Nummer</th>
+                    <th style={thStyle}>Kunde</th>
+                    <th style={thStyle}>Quelle</th>
+                    <th style={thStyle}>Lieferung</th>
+                    <th style={thStyle}>Positionen</th>
+                    <th style={thStyle}>Summe</th>
+                    <th style={thStyle}>Status</th>
+                    <th style={thStyle}>Aktion</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.orders.length === 0 ? (
+                    <tr>
+                      <td style={tdStyle} colSpan={8}>
+                        <strong>Noch keine Aufträge vorhanden.</strong>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+                  ) : (
+                    data.orders.map((order: any) => {
+                      const total = order.items.reduce((sum: number, item: any) => sum + Number(item.totalCents || 0), 0);
 
-        <section style={{ ...documentStyle, marginTop: 18 }}>
-          <div style={{ marginBottom: 14 }}>
-            <div style={sectionLabelStyle}>Eingang</div>
-            <h2 style={{ margin: "5px 0 0", fontSize: 23, letterSpacing: "-0.03em" }}>Aufträge</h2>
-          </div>
-
-          <div style={{ overflowX: "auto", border: "1px solid #e5e7eb", borderRadius: 4 }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", background: "#ffffff" }}>
-              <thead>
-                <tr>
-                  <th style={thStyle}>Nummer</th>
-                  <th style={thStyle}>Kunde</th>
-                  <th style={thStyle}>Quelle</th>
-                  <th style={thStyle}>Lieferung</th>
-                  <th style={thStyle}>Positionen</th>
-                  <th style={thStyle}>Summe</th>
-                  <th style={thStyle}>Status</th>
-                  <th style={thStyle}>Aktion</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.orders.length === 0 ? (
-                  <tr>
-                    <td style={tdStyle} colSpan={8}>
-                      <strong>Noch keine Aufträge vorhanden.</strong>
-                    </td>
-                  </tr>
-                ) : (
-                  data.orders.map((order) => {
-                    const total = order.items.reduce((sum, item) => sum + (item.totalCents || 0), 0);
-
-                    return (
-                      <tr key={order.id} style={{ background: "#ffffff" }}>
-                        <td style={tdStyle}>
-                          <strong>{order.orderNumber}</strong>
-                          {order.externalOrderNumber ? (
-                            <div style={{ color: "#64748b", fontSize: 12 }}>{order.externalOrderNumber}</div>
-                          ) : null}
-                        </td>
-                        <td style={tdStyle}>
-                          <strong>{order.customerName}</strong>
-                          <div style={{ color: "#64748b", fontSize: 12 }}>{order.customerEmail || "-"}</div>
-                        </td>
-                        <td style={tdStyle}>{sourceLabel(order.source)}</td>
-                        <td style={tdStyle}>
-                          {formatDate(order.deliveryDate)}
-                          <div style={{ color: "#64748b", fontSize: 12 }}>{order.deliveryTime || "-"}</div>
-                        </td>
-                        <td style={tdStyle}>
-                          <strong>{order.items.length} Positionen</strong>
-                          <div style={{ display: "grid", gap: 5, marginTop: 7, maxWidth: 300 }}>
-                            {order.items.slice(0, 2).map((item, index) => (
-                              <div key={item.id} style={{ color: "#0f172a", fontSize: 13, lineHeight: 1.3 }}>
-                                <strong>{index + 1}.</strong> {item.name}
-                              </div>
-                            ))}
-
-                            {order.items.length > 2 ? (
-                              <div style={{ color: "#64748b", fontSize: 12, fontWeight: 800 }}>
-                                + {order.items.length - 2} weitere Positionen
-                              </div>
-                            ) : null}
-                          </div>
-                        </td>
-                        <td style={tdStyle}><strong>{centsToEuro(total)}</strong></td>
-                        <td style={tdStyle}>
-                          <span style={{
-                            display: "inline-flex",
-                            border: "1px solid #d2d2d2",
-                            borderRadius: 999,
-                            padding: "5px 9px",
-                            fontSize: 12,
-                            fontWeight: 850,
-                          }}>
-                            {statusLabel(order.status)}
-                          </span>
-                        </td>
-                        <td style={tdStyle}>
-                          <div style={{ display: "grid", gap: 8, minWidth: 130 }}>
-                            <a href={"/auftrag-pruefung/" + order.id} style={smallButtonStyle}>
-                              Prüfen
-                            </a>
-
-                            <Form method="post">
-                              <input type="hidden" name="intent" value="deleteOrder" />
-                              <input type="hidden" name="orderId" value={order.id} />
-                              <button type="submit" style={{ ...smallButtonStyle, width: "100%", color: "#b91c1c" }}>
-                                Löschen
-                              </button>
-                            </Form>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
+                      return (
+                        <tr key={order.id}>
+                          <td style={tdStyle}>
+                            <strong>{order.orderNumber}</strong>
+                            {order.externalOrderNumber ? <div style={{ color: "#64748b", fontSize: 12 }}>{order.externalOrderNumber}</div> : null}
+                          </td>
+                          <td style={tdStyle}>
+                            <strong>{order.customerName}</strong>
+                            <div style={{ color: "#64748b", fontSize: 12 }}>{order.customerEmail || "-"}</div>
+                          </td>
+                          <td style={tdStyle}>{sourceLabel(order.source)}</td>
+                          <td style={tdStyle}>
+                            {formatDate(order.deliveryDate)}
+                            <div style={{ color: "#64748b", fontSize: 12 }}>{order.deliveryTimeText || order.deliveryTime || "-"}</div>
+                          </td>
+                          <td style={tdStyle}>
+                            <strong>{order.items.length} Positionen</strong>
+                            <div style={{ display: "grid", gap: 5, marginTop: 7, maxWidth: 320 }}>
+                              {order.items.slice(0, 2).map((item: any, index: number) => (
+                                <div key={item.id} style={{ color: "#0f172a", fontSize: 13, lineHeight: 1.35 }}>
+                                  <strong>{index + 1}.</strong> {item.name}
+                                </div>
+                              ))}
+                              {order.items.length > 2 ? (
+                                <div style={{ color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                                  + {order.items.length - 2} weitere Positionen
+                                </div>
+                              ) : null}
+                            </div>
+                          </td>
+                          <td style={tdStyle}><strong>{centsToEuro(total)}</strong></td>
+                          <td style={tdStyle}>
+                            <span style={{
+                              borderRadius: 999,
+                              padding: "6px 10px",
+                              background: order.status === "AUTO_CREATED" ? "#ecfdf5" : order.status === "CONFIRMED" ? "#eff6ff" : "#fff7ed",
+                              color: order.status === "AUTO_CREATED" ? "#047857" : order.status === "CONFIRMED" ? "#1d4ed8" : "#9a3412",
+                              fontSize: 12,
+                              fontWeight: 950,
+                              display: "inline-flex",
+                            }}>
+                              {statusLabel(order.status)}
+                            </span>
+                          </td>
+                          <td style={tdStyle}>
+                            <div style={{ display: "grid", gap: 8, minWidth: 132 }}>
+                              <a href={"/auftrag-pruefung/" + order.id} style={primaryButtonStyle}>Prüfen</a>
+                              <Form method="post" onSubmit={(event) => {
+                                if (!confirm("Diesen Auftrag wirklich löschen?")) event.preventDefault();
+                              }}>
+                                <input type="hidden" name="intent" value="deleteOrder" />
+                                <input type="hidden" name="orderId" value={order.id} />
+                                <button type="submit" style={{ ...dangerButtonStyle, width: "100%" }}>Löschen</button>
+                              </Form>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
       </div>
     </AppLayout>
   );
 }
 
 export function ErrorBoundary({ error }: { error: any }) {
-  const message =
-    error?.data ||
-    error?.message ||
-    "Unbekannter Fehler im Auftragseingang.";
-
+  const message = error?.data || error?.message || "Unbekannter Fehler im Auftragseingang.";
   const status = error?.status || 500;
 
   return (
@@ -1359,77 +832,16 @@ export function ErrorBoundary({ error }: { error: any }) {
         padding: 28,
         boxShadow: "0 24px 70px rgba(15, 23, 42, 0.10)"
       }}>
-        <div style={{
-          color: "#b91c1c",
-          textTransform: "uppercase",
-          letterSpacing: ".11em",
-          fontSize: 11,
-          fontWeight: 950,
-          marginBottom: 8
-        }}>
+        <div style={{ color: "#b91c1c", textTransform: "uppercase", letterSpacing: ".11em", fontSize: 11, fontWeight: 950, marginBottom: 8 }}>
           Fehler {status}
         </div>
-
-        <h1 style={{
-          margin: 0,
-          fontSize: 38,
-          lineHeight: 1,
-          letterSpacing: "-0.055em"
-        }}>
+        <h1 style={{ margin: 0, fontSize: 38, lineHeight: 1, letterSpacing: "-0.055em" }}>
           Auftragseingang konnte nicht geladen werden
         </h1>
-
-        <p style={{
-          margin: "14px 0 0",
-          color: "#475569",
-          fontWeight: 750,
-          lineHeight: 1.55
-        }}>
+        <p style={{ margin: "14px 0 0", color: "#475569", fontWeight: 750, lineHeight: 1.55 }}>
           {String(message)}
         </p>
-
-        <div style={{ display: "flex", gap: 10, marginTop: 22, flexWrap: "wrap" }}>
-          <a href="/logout" style={{
-            border: "1px solid #dbe5ee",
-            background: "white",
-            color: "#07111f",
-            borderRadius: 999,
-            padding: "12px 16px",
-            fontWeight: 950,
-            textDecoration: "none"
-          }}>
-            Ausloggen
-          </a>
-
-          <a href="/login" style={{
-            border: "none",
-            background: "linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)",
-            color: "white",
-            borderRadius: 999,
-            padding: "12px 16px",
-            fontWeight: 950,
-            textDecoration: "none"
-          }}>
-            Neu einloggen
-          </a>
-
-          <a href="/gastario-control" style={{
-            border: "1px solid #dbe5ee",
-            background: "white",
-            color: "#07111f",
-            borderRadius: 999,
-            padding: "12px 16px",
-            fontWeight: 950,
-            textDecoration: "none"
-          }}>
-            Super Admin
-          </a>
-        </div>
       </section>
     </div>
   );
 }
-
-
-
-
