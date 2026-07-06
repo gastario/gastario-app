@@ -241,6 +241,183 @@ function isAddressLine(value: string) {
   const text = cleanLine(value);
   const lower = normalize(text);
 
+  if (!text) return false;
+  if (/\b\d{5}\b/.test(text)) return true;
+  if (lower.includes("strasse")) return true;
+  if (lower.includes("straße")) return true;
+  if (lower.includes("allee")) return true;
+  if (lower.includes("platz")) return true;
+  if (lower.includes("berlin")) return true;
+
+  return false;
+}
+
+function isAllergenOrInfoLine(value: string) {
+  const text = cleanLine(value);
+  const lower = normalize(text);
+
+  if (!text) return false;
+
+  const allergyWords = [
+    "gluten",
+    "lactose",
+    "halal",
+    "poultry",
+    "milk",
+    "soy",
+    "soya",
+    "soybeans",
+    "sesame",
+    "nuts",
+    "peanut",
+    "fish",
+    "crustaceans",
+    "cereals containing gluten",
+    "vegetarian",
+    "vegan",
+    "pescatarian",
+    "sulphur",
+    "sulfur",
+    "sulphites",
+    "sulfites",
+    "celery",
+    "mustard",
+    "egg",
+    "eggs"
+  ];
+
+  return allergyWords.some((word) => lower.includes(word));
+}
+
+function isHardMetaLine(value: string) {
+  const text = cleanLine(value);
+  const lower = normalize(text);
+
+  if (!text) return true;
+  if (isDate(text)) return true;
+  if (lower.includes("caterer:")) return true;
+  if (lower.includes("customer:")) return true;
+  if (lower.includes("powered by")) return true;
+  if (lower.includes("pdf generator")) return true;
+  if (/--\s*\d+\s*of\s*\d+\s*--/i.test(text)) return true;
+  if (/^\d+\s*of\s*\d+$/i.test(text)) return true;
+
+  return false;
+}
+
+function isProbablyPersonName(value: string) {
+  const text = cleanLine(value);
+  const lower = normalize(text);
+
+  if (!text) return false;
+  if (text.length < 2 || text.length > 70) return false;
+  if (isHardMetaLine(text)) return false;
+  if (isAddressLine(text)) return false;
+  if (isAllergenOrInfoLine(text)) return false;
+  if (isAllergenOrInfoLine(text)) return false;
+  if (lower.includes("gluten")) return false;
+  if (lower.includes("halal")) return false;
+  if (lower.includes("vegetarian")) return false;
+  if (lower.includes("vegan")) return false;
+  if (lower.includes("poultry")) return false;
+  if (lower.includes("milk")) return false;
+  if (lower.includes("soy")) return false;
+  if (lower.includes("sesame")) return false;
+  if (lower.includes("nuts")) return false;
+  if (lower.includes("fish")) return false;
+  if (lower.includes("bowl")) return false;
+  if (lower.includes("wrap")) return false;
+  if (lower.includes("salad")) return false;
+  if (lower.includes("risotto")) return false;
+  if (lower.includes("curry")) return false;
+  if (lower.includes("chicken")) return false;
+  if (lower.includes("salmon")) return false;
+
+  return true;
+}
+
+function pickNameFromBlock(block: string[]) {
+  for (const line of block) {
+    if (isProbablyPersonName(line)) return cleanLine(line);
+  }
+
+  return "Name nicht erkannt";
+}
+
+function pickAddressFromBlock(block: string[]) {
+  return (
+    block.find((line) => isAddressLine(line)) ||
+    "Adresse nicht erkannt"
+  );
+}
+
+function pickMealFromBlock(block: string[], name: string, address: string) {
+  const addressIndex = block.findIndex((line) => cleanLine(line) === cleanLine(address));
+  const nameIndex = block.findIndex((line) => cleanLine(line) === cleanLine(name));
+
+  const isValidMealCandidate = (value: string) => {
+    const line = cleanLine(value);
+    if (!line) return false;
+    if (isHardMetaLine(line)) return false;
+    if (isAddressLine(line)) return false;
+    if (isAllergenOrInfoLine(line)) return false;
+    if (isProbablyPersonName(line)) return false;
+
+    return true;
+  };
+
+  // Normalfall Heycater:
+  // Datum -> Name -> Adresse -> Gericht -> Allergene -> Caterer -> Customer
+  if (addressIndex >= 0) {
+    for (let i = addressIndex + 1; i < block.length; i++) {
+      if (isValidMealCandidate(block[i])) return cleanLine(block[i]);
+    }
+  }
+
+  // Fallback: nach Name suchen
+  if (nameIndex >= 0) {
+    for (let i = nameIndex + 1; i < block.length; i++) {
+      if (isValidMealCandidate(block[i])) return cleanLine(block[i]);
+    }
+  }
+
+  // Letzter Fallback: irgendeine echte Gerichtszeile im Block
+  for (const line of block) {
+    if (isValidMealCandidate(line)) return cleanLine(line);
+  }
+
+  return "Gericht nicht erkannt";
+}
+
+function pickDetailsFromBlock(block: string[], meal: string) {
+  const mealIndex = block.findIndex((line) => cleanLine(line) === cleanLine(meal));
+  const detailLines: string[] = [];
+
+  if (mealIndex === -1) return "";
+
+  for (let i = mealIndex + 1; i < block.length; i++) {
+    const line = cleanLine(block[i]);
+    const lower = normalize(line);
+
+    if (!line) continue;
+    if (isHardMetaLine(line)) break;
+    if (isAddressLine(line)) break;
+    if (isProbablyPersonName(line)) break;
+
+    // Nur Hinweis-/Allergenzeilen als Details uebernehmen.
+    // So landet kein Gericht versehentlich in den Allergenen und umgekehrt.
+    if (isAllergenOrInfoLine(line)) {
+      detailLines.push(line);
+    }
+  }
+
+  return detailLines.join(" / ");
+}
+
+function isAddressLine(value: string) {
+  const text = cleanLine(value);
+  const lower = normalize(text);
+
   return (
     /\b\d{5}\b/.test(text) ||
     lower.includes("strasse") ||
@@ -354,9 +531,10 @@ function parseOneHeycaterLabel(date: string, block: string[]) {
     }
   }
 
+  // Fallback fuer seltene PDF-Reihenfolge:
+  // Wenn Gericht fehlt, nimm die erste sinnvolle Zeile nach Adresse, die keine Info/Meta ist.
   if (!meal && address) {
     const addressIndex = block.findIndex((line) => cleanLine(line) === cleanLine(address));
-
     for (let i = addressIndex + 1; i < block.length; i++) {
       const line = block[i];
       if (!line) continue;
@@ -364,7 +542,6 @@ function parseOneHeycaterLabel(date: string, block: string[]) {
       if (isCatererLine(line)) continue;
       if (isCustomerLine(line)) continue;
       if (isAddressLine(line)) continue;
-
       meal = line;
       break;
     }
