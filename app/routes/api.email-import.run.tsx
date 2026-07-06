@@ -97,6 +97,109 @@ function hasEnoughOrderData(order: any) {
   );
 }
 
+
+function normalizeImportText(value: unknown) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function getHeycaterOrderNumber(...values: unknown[]) {
+  const text = values.map((value) => String(value || "")).join("\n");
+  const match = text.match(/\b(20[0-9]{2}-[0-9]{5,})\b/);
+  return match?.[1] || "";
+}
+
+function getHeycaterEmailKind(subject: string, text: string) {
+  const combined = normalizeImportText(subject + "\n" + text);
+
+  const isDeliveryNote =
+    combined.includes("delivery note") ||
+    combined.includes("lieferschein") ||
+    combined.includes("dein morgiges catering") ||
+    combined.includes("dein morgiges heykantine");
+
+  const isConfirmation =
+    combined.includes("partner event confirmation") ||
+    combined.includes("fast track order bestatigt") ||
+    combined.includes("fast track order bestaetigt") ||
+    combined.includes("order bestatigt") ||
+    combined.includes("order bestaetigt") ||
+    combined.includes("auftragsbestatigung") ||
+    combined.includes("auftragsbestaetigung") ||
+    combined.includes("auftrag bestatigt") ||
+    combined.includes("auftrag bestaetigt");
+
+  return {
+    isDeliveryNote,
+    isConfirmation,
+  };
+}
+
+async function findExistingHeycaterOrderByExternalNumber(tenantId: string, heycaterOrderNumber: string) {
+  if (!heycaterOrderNumber) {
+    return null;
+  }
+
+  const rows = await prisma.$queryRawUnsafe<any[]>(
+    `
+      SELECT o.id, o."orderNumber", o.status
+      FROM "Order" o
+      LEFT JOIN "IncomingEmail" e ON e.id = o."incomingEmailId"
+      WHERE o."tenantId" = $1
+        AND o.source = 'HEYCATER'
+        AND (
+          e.subject ILIKE $2
+          OR o.notes ILIKE $2
+          OR o."reviewReason" ILIKE $2
+        )
+      ORDER BY o."createdAt" ASC
+      LIMIT 1
+    `,
+    tenantId,
+    "%" + heycaterOrderNumber + "%"
+  );
+
+  return rows[0] || null;
+}
+
+function getEmailImportDecision(params: {
+  subject: string;
+  bestText: string;
+  extractedOrder: any;
+  existingHeycaterOrder: any;
+}) {
+  const { subject, bestText, extractedOrder, existingHeycaterOrder } = params;
+  const heycaterOrderNumber = getHeycaterOrderNumber(subject, bestText);
+  const kind = getHeycaterEmailKind(subject, bestText);
+
+  if (heycaterOrderNumber && kind.isDeliveryNote) {
+    return {
+      shouldCreateOrder: false,
+      heycaterOrderNumber,
+      reason: existingHeycaterOrder
+        ? "Heycater-Lieferschein erkannt. Kein neuer Auftrag erstellt, weil die Heycater-Auftragsnummer bereits vorhanden ist."
+        : "Heycater-Lieferschein erkannt. Kein automatischer Auftrag erstellt, weil Lieferscheine keine Preise enthalten. Bitte Auftragsbestaetigung importieren oder manuell pruefen.",
+    };
+  }
+
+  if (heycaterOrderNumber && existingHeycaterOrder) {
+    return {
+      shouldCreateOrder: false,
+      heycaterOrderNumber,
+      reason: "Heycater-Auftragsnummer bereits vorhanden. Keine Dublette erstellt.",
+    };
+  }
+
+  return {
+    shouldCreateOrder: hasEnoughOrderData(extractedOrder),
+    heycaterOrderNumber,
+    reason: "",
+  };
+}
+
+
 async function extractPdfText(buffer: Buffer) {
   let parser: any = null;
 
@@ -404,7 +507,7 @@ export async function loader({ request }: { request: Request }) {
                   status: "REVIEW_NEEDED" as any,
                   processedAt: new Date(),
                   extractedJson: extractedOrder || undefined,
-                  errorMessage: "Nicht automatisch als Auftrag erstellt: Daten nicht eindeutig genug. Bitte im Auftragseingang pruefen.",
+                  errorMessage: importDecision.reason || "Nicht automatisch als Auftrag erstellt: Daten nicht eindeutig genug. Bitte im Auftragseingang pruefen.",
                 },
               });
             }
@@ -505,7 +608,7 @@ export async function loader({ request }: { request: Request }) {
               data: {
                 status: "REVIEW_NEEDED" as any,
                 processedAt: new Date(),
-                errorMessage: "Nicht automatisch als Auftrag erstellt: Daten nicht eindeutig genug. Bitte im Auftragseingang pruefen.",
+                errorMessage: importDecision.reason || "Nicht automatisch als Auftrag erstellt: Daten nicht eindeutig genug. Bitte im Auftragseingang pruefen.",
               },
             });
           }
