@@ -118,7 +118,7 @@ function looksLikeMeal(value: string) {
     "halal",
     "poultry",
     "milk",
-    "sesame",
+    "sesame seeds",
     "soybeans",
     "soya",
     "sulphur",
@@ -201,6 +201,10 @@ function isPossibleNameLine(value: string) {
   if (looksLikeDetails(text)) return false;
   if (lower.includes("powered by")) return false;
   if (lower.includes("pdf generator")) return false;
+  if (/--\s*\d+\s*of\s*\d+\s*--/i.test(text)) return false;
+  if (/^\d+\s*of\s*\d+$/i.test(text)) return false;
+  if (/--\s*\d+\s*of\s*\d+\s*--/i.test(text)) return false;
+  if (/^\d+\s*of\s*\d+$/i.test(text)) return false;
   if (lower.includes("caterer:")) return false;
   if (lower.includes("customer:")) return false;
   if (/^[-–—_]+$/.test(text)) return false;
