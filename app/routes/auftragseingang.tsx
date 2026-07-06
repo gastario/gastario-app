@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
 ﻿
 import { Form, useActionData, useLoaderData } from "react-router";
@@ -111,7 +111,7 @@ function emailCategoryLabel(value: string) {
   if (value === "orders") return "Auftragsbestaetigungen";
   if (value === "possible") return "Unklare Heycater-Mails";
   if (value === "inquiries") return "Anfragen / Angebote";
-  if (value === "reminders") return "Erinnerungen / Lieferscheine / Lieferscheine";
+  if (value === "reminders") return "Erinnerungen / Lieferscheine";
   if (value === "hidden") return "Ausgeblendet";
   if (value === "other") return "Sonstiges / Absagen";
   return "Alle E-Mails";
@@ -665,8 +665,10 @@ export default function AuftragseingangPage() {
   const [liveGrossTotalCents, setLiveGrossTotalCents] = useState(0);
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
 
-  if (typeof window !== "undefined" && autoRefreshEnabled) {
-    window.setTimeout(() => {
+  useEffect(() => {
+    if (!autoRefreshEnabled) return;
+
+    const timer = window.setInterval(() => {
       const activeElement = document.activeElement;
       const isTyping =
         activeElement instanceof HTMLInputElement ||
@@ -677,7 +679,9 @@ export default function AuftragseingangPage() {
         window.location.reload();
       }
     }, 30000);
-  }
+
+    return () => window.clearInterval(timer);
+  }, [autoRefreshEnabled]);
 
   function parseEuroInput(value: string) {
     const normalized = String(value || "")
