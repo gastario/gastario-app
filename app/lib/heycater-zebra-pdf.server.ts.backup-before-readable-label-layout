@@ -115,7 +115,7 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
 
     page.drawText(safeText(label.name || "-").slice(0, 34), {
       x: left,
-      y: height - 23,
+      y: height - 22,
       size: 10.5,
       font: bold,
       color: black,
@@ -127,75 +127,75 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
       page.drawText(date, {
         x: width - 55,
         y: height - 19,
-        size: 7,
+        size: 6.4,
         font: regular,
         color: black,
       });
     }
 
-    let y = height - 39;
+    let y = height - 36;
 
     for (const line of wrapText(label.meal, 42).slice(0, 2)) {
       page.drawText(line, {
         x: left,
         y,
-        size: 8.2,
+        size: 7.1,
         font: regular,
         color: black,
       });
-      y -= 9.6;
+      y -= 8.3;
     }
 
     y -= 2;
 
-    for (const line of wrapText(label.details, 52).slice(0, 3)) {
+    for (const line of wrapText(label.details, 58).slice(0, 3)) {
       page.drawText(line, {
         x: left,
         y,
-        size: 6.1,
+        size: 4.8,
         font: regular,
         color: muted,
       });
-      y -= 8.4;
+      y -= 5.6;
     }
 
-    y -= 3;
+    y -= 2;
 
     page.drawText(safeText(label.caterer || "Caterer: Let Me Bowl heykantine").slice(0, 54), {
       x: left,
       y,
-      size: 7.1,
+      size: 6.2,
       font: bold,
       color: black,
     });
 
-    y -= 8.4;
+    y -= 7.2;
 
     page.drawText(safeText(label.customer || "Customer: NinjaOne GmbH").slice(0, 54), {
       x: left,
       y,
-      size: 7.1,
+      size: 6.2,
       font: bold,
       color: black,
     });
 
-    const qrSize = 20;
+    const qrSize = 18;
     page.drawImage(qrImage, {
       x: width - qrSize - 9,
-      y: 10,
+      y: 9,
       width: qrSize,
       height: qrSize,
     });
 
     page.drawText(safeText(label.address || "Alexanderstrasse 5, Berlin, 10178").slice(0, 42), {
       x: left,
-      y: 15,
-      size: 6.5,
+      y: 13,
+      size: 5.8,
       font: regular,
       color: black,
     });
 
-    drawDashedLine(page, left, width - qrSize - 13, 6);
+    drawDashedLine(page, left, width - qrSize - 13, 7);
   }
 
   return await pdf.save();
