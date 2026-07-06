@@ -109,11 +109,11 @@ function classifyIncomingEmail(mail: any) {
 
 function emailCategoryLabel(value: string) {
   if (value === "orders") return "Auftragsbestaetigungen";
-  if (value === "possible") return "Moegliche Auftraege";
+  if (value === "possible") return "Unklare Heycater-Mails";
   if (value === "inquiries") return "Anfragen / Angebote";
-  if (value === "reminders") return "Erinnerungen";
+  if (value === "reminders") return "Erinnerungen / Lieferscheine / Lieferscheine";
   if (value === "hidden") return "Ausgeblendet";
-  if (value === "other") return "Sonstiges";
+  if (value === "other") return "Sonstiges / Absagen / Absagen";
   return "Alle E-Mails";
 }
 
@@ -1358,11 +1358,11 @@ export default function AuftragseingangPage() {
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
             {[
               ["orders", "Auftragsbestaetigungen", data.emailBuckets.orders],
-              ["possible", "Moegliche Auftraege", data.emailBuckets.possible],
+              ["possible", "Unklare Heycater-Mails", data.emailBuckets.possible],
               ["inquiries", "Anfragen / Angebote", data.emailBuckets.inquiries],
-              ["reminders", "Erinnerungen", data.emailBuckets.reminders],
+              ["reminders", "Erinnerungen / Lieferscheine", data.emailBuckets.reminders],
               ["hidden", "Ausgeblendet", data.emailBuckets.hidden],
-              ["other", "Sonstiges", data.emailBuckets.other],
+              ["other", "Sonstiges / Absagen", data.emailBuckets.other],
               ["all", "Alle", data.emailBuckets.all],
             ].map(([key, label, count]: any) => {
               const params = new URLSearchParams();
