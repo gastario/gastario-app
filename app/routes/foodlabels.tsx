@@ -223,13 +223,56 @@ export default function FoodLabelsPage() {
             <div>
               <p style={smallLabelStyle}>Foodlabel</p>
               <h2 style={sectionTitleStyle}>
+Labeldaten speichern</h2>
+            </div>
+          </div>
+
+          <Form method="post" encType="multipart/form-data" style={formGridStyle}>
+            <Field label="Name *">
+              <input name="name" placeholder="z. B. Chicken Bowl, Wrap, Dessert" required />
+            </Field>
+
+            <Field label="Zutaten">
+              <input name="ingredients" placeholder="z. B. Reis, Haehnchen, Gemuese, Sauce" />
+            </Field>
+
+            <Field label="Allergene">
+              <input name="allergens" placeholder="z. B. Soja, Sesam, Gluten" />
+            </Field>
+
+            <Field label="Logo">
+              <input name="logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
+            </Field>
+
+            <Field label="Druckformat">
+              <select name="printPreset" defaultValue="a4-3">
+                <option value="a4-2">A4 Hochformat - 2 Labels pro Reihe</option>
+                <option value="a4-3">A4 Hochformat - 3 Labels pro Reihe</option>
+                <option value="a4-4">A4 Hochformat - 4 Labels pro Reihe</option>
+                <option value="roll-76x51">Etikettenrolle - 76 x 51 mm</option>
+                <option value="roll-57x32">Etikettenrolle - 57 x 32 mm</option>
+              </select>
+            </Field>
+<Field label="Anzahl Labels">
+              <input name="labelCount" type="number" min="1" max="200" defaultValue="12" />
+            </Field>
+
+            <div style={formActionStyle}>
+              <button type="submit" style={primaryButtonStyle}>
+                Label speichern
+              </button>
+            </div>
+          </Form>
+        </div>
+
+
         <section className="heycaterUploadCard">
           <div className="heycaterUploadTop">
             <div>
-              <p>Heycater Import</p>
-              <h2>Heycater-PDF zu Zebra-Etiketten</h2>
+              <p>PDF Zuschnitt</p>
+              <h2>A4-PDF zu Zebra-Etiketten</h2>
               <span>
-                A4-Heycater-Labelbogen hochladen und in einzelne 76 x 51 mm Zebra-Etiketten schneiden.
+                A4-Labelbogen hochladen und in einzelne 76 x 51 mm Zebra-Etiketten schneiden.
               </span>
             </div>
           </div>
@@ -238,7 +281,7 @@ export default function FoodLabelsPage() {
             <label className="heycaterDropzone">
               <input type="file" name="pdf" accept="application/pdf" required />
               <strong>PDF hier reinziehen oder auswählen</strong>
-              <span>Nur Heycater-A4-PDFs verwenden. Die Erstellung stoppt, wenn Anzahl oder Labeldaten nicht sicher erkannt werden.</span>
+              <span>Nur passende A4-Labelbögen verwenden. Die Erstellung stoppt, wenn Anzahl oder Labeldaten nicht sicher erkannt werden.</span>
             </label>
 
             <div className="heycaterSettingsGrid">
@@ -297,47 +340,6 @@ export default function FoodLabelsPage() {
             Sicherheitsregel: Es darf kein Label fehlen und kein falsches Gericht gedruckt werden. Bei unsicherer Erkennung wird keine Druckdatei erstellt.
           </div>
         </section>
-Labeldaten speichern</h2>
-            </div>
-          </div>
-
-          <Form method="post" encType="multipart/form-data" style={formGridStyle}>
-            <Field label="Name *">
-              <input name="name" placeholder="z. B. Chicken Bowl, Wrap, Dessert" required />
-            </Field>
-
-            <Field label="Zutaten">
-              <input name="ingredients" placeholder="z. B. Reis, Haehnchen, Gemuese, Sauce" />
-            </Field>
-
-            <Field label="Allergene">
-              <input name="allergens" placeholder="z. B. Soja, Sesam, Gluten" />
-            </Field>
-
-            <Field label="Logo">
-              <input name="logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
-            </Field>
-
-            <Field label="Druckformat">
-              <select name="printPreset" defaultValue="a4-3">
-                <option value="a4-2">A4 Hochformat - 2 Labels pro Reihe</option>
-                <option value="a4-3">A4 Hochformat - 3 Labels pro Reihe</option>
-                <option value="a4-4">A4 Hochformat - 4 Labels pro Reihe</option>
-                <option value="roll-76x51">Etikettenrolle - 76 x 51 mm</option>
-                <option value="roll-57x32">Etikettenrolle - 57 x 32 mm</option>
-              </select>
-            </Field>
-<Field label="Anzahl Labels">
-              <input name="labelCount" type="number" min="1" max="200" defaultValue="12" />
-            </Field>
-
-            <div style={formActionStyle}>
-              <button type="submit" style={primaryButtonStyle}>
-                Label speichern
-              </button>
-            </div>
-          </Form>
-        </div>
 
         <div style={contentGridStyle}>
           <div style={listCardStyle}>
@@ -935,6 +937,8 @@ const foodKeyStyle: React.CSSProperties = {
   textTransform: "uppercase",
   letterSpacing: "0.05em",
 };
+
+
 
 
 
