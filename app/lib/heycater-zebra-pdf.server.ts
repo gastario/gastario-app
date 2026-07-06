@@ -148,15 +148,15 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
 
     y -= 2;
 
-    for (const line of wrapText(label.details, 58).slice(0, 2)) {
+    for (const line of wrapText(label.details, 58).slice(0, 3)) {
       page.drawText(line, {
         x: left,
         y,
-        size: 5.1,
+        size: 4.8,
         font: regular,
         color: muted,
       });
-      y -= 6.2;
+      y -= 5.6;
     }
 
     y -= 2;

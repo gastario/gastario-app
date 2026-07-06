@@ -165,27 +165,57 @@ export function parseHeycaterLabelsFromText(rawText: string): HeycaterLabelData[
 
     if (!looksLikePersonName(name)) continue;
 
-    const dateLine = findNearby(lines, i, isDate, 10);
-    const meal = findNearby(lines, i + 1, looksLikeMeal, 8);
-    const details = findNearby(lines, i + 1, looksLikeDetails, 10);
+    const nextNameIndex = lines.findIndex((line, index) => index > i && looksLikePersonName(line));
+    const blockEnd = nextNameIndex > i ? nextNameIndex : Math.min(lines.length, i + 18);
+    const block = lines.slice(i, blockEnd);
+
+    const dateLine = block.find(isDate) || "";
+    const mealIndex = block.findIndex((line, index) => index > 0 && looksLikeMeal(line));
+
+    if (mealIndex === -1) continue;
+
+    const meal = block[mealIndex];
+
+    const catererIndex = block.findIndex((line) => normalize(line).includes("caterer:"));
+    const customerIndex = block.findIndex((line) => normalize(line).includes("customer:"));
+
+    const detailsEnd =
+      catererIndex > mealIndex
+        ? catererIndex
+        : customerIndex > mealIndex
+          ? customerIndex
+          : Math.min(block.length, mealIndex + 5);
+
+    const detailsLines = block
+      .slice(mealIndex + 1, detailsEnd)
+      .map(cleanLine)
+      .filter((line) => {
+        const text = normalize(line);
+
+        return (
+          line &&
+          !isDate(line) &&
+          !isMetaLine(line) &&
+          !looksLikePersonName(line) &&
+          !looksLikeMeal(line) &&
+          !text.includes("caterer:") &&
+          !text.includes("customer:")
+        );
+      });
+
+    const details = detailsLines.join(" / ");
 
     const caterer =
-      findNearby(lines, i, (line) => normalize(line).includes("caterer:"), 14) ||
+      block.find((line) => normalize(line).includes("caterer:")) ||
       "Caterer: Let Me Bowl heykantine";
 
     const customer =
-      findNearby(lines, i, (line) => normalize(line).includes("customer:"), 14) ||
+      block.find((line) => normalize(line).includes("customer:")) ||
       "Customer: NinjaOne GmbH";
 
     const address =
-      findNearby(
-        lines,
-        i,
-        (line) => normalize(line).includes("alexander") || /\b\d{5}\b/.test(line),
-        16
-      ) || "Alexanderstrasse 5, Berlin, 10178";
-
-    if (!meal) continue;
+      block.find((line) => normalize(line).includes("alexander") || /\b\d{5}\b/.test(line)) ||
+      "Alexanderstrasse 5, Berlin, 10178";
 
     labels.push({
       name,
