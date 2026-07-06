@@ -113,7 +113,7 @@ function emailCategoryLabel(value: string) {
   if (value === "inquiries") return "Anfragen / Angebote";
   if (value === "reminders") return "Erinnerungen / Lieferscheine / Lieferscheine";
   if (value === "hidden") return "Ausgeblendet";
-  if (value === "other") return "Sonstiges / Absagen";
+  if (value === "other") return "Sonstiges / Absagen / Absagen";
   return "Alle E-Mails";
 }
 
@@ -663,21 +663,6 @@ export default function AuftragseingangPage() {
   const [liveNetTotalCents, setLiveNetTotalCents] = useState(0);
   const [liveTaxTotalCents, setLiveTaxTotalCents] = useState(0);
   const [liveGrossTotalCents, setLiveGrossTotalCents] = useState(0);
-  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
-
-  if (typeof window !== "undefined" && autoRefreshEnabled) {
-    window.setTimeout(() => {
-      const activeElement = document.activeElement;
-      const isTyping =
-        activeElement instanceof HTMLInputElement ||
-        activeElement instanceof HTMLTextAreaElement ||
-        activeElement instanceof HTMLSelectElement;
-
-      if (!isTyping) {
-        window.location.reload();
-      }
-    }, 30000);
-  }
 
   function parseEuroInput(value: string) {
     const normalized = String(value || "")
@@ -1050,7 +1035,7 @@ export default function AuftragseingangPage() {
                   </tr>
                 ) : (
                   data.emailInbox.map((mail: any) => (
-                    <tr key={mail.id} style={{ background: "#ffffff" }}>
+                    <tr key={mail.id}>
                       <td style={tdStyle}>
                         <strong>{mail.subject || "E-Mail ohne Betreff"}</strong>
                         <div style={{ color: "#64748b", fontSize: 12, marginTop: 3 }}>
@@ -1075,15 +1060,17 @@ export default function AuftragseingangPage() {
                       </td>
                       <td style={tdStyle}>
                         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                          <a href={"/email-pruefung/" + mail.id} style={primaryActionStyle}>Prüfen</a>
+                          <a href={"/email-pruefung/" + mail.id} style={{ ...smallButtonStyle, borderRadius: 999, textDecoration: "none" }}>Pruefen</a>
                           {classifyIncomingEmail(mail) === "inquiries" ? (
                             <a
                               href={"/angebot-vorbereiten/" + mail.id}
                               style={{
-                                ...quietActionStyle,
+                                ...smallButtonStyle,
+                                borderRadius: 999,
                                 background: "#ecfdf5",
                                 borderColor: "#bbf7d0",
                                 color: "#047857",
+                                textDecoration: "none",
                               }}
                             >
                               Angebot vorbereiten
@@ -1185,7 +1172,7 @@ export default function AuftragseingangPage() {
                     const total = order.items.reduce((sum, item) => sum + (item.totalCents || 0), 0);
 
                     return (
-                      <tr key={order.id} style={{ background: "#ffffff" }}>
+                      <tr key={order.id}>
                         <td style={tdStyle}>
                           <strong>{order.orderNumber}</strong>
                           {order.externalOrderNumber ? (

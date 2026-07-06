@@ -113,7 +113,7 @@ function emailCategoryLabel(value: string) {
   if (value === "inquiries") return "Anfragen / Angebote";
   if (value === "reminders") return "Erinnerungen / Lieferscheine / Lieferscheine";
   if (value === "hidden") return "Ausgeblendet";
-  if (value === "other") return "Sonstiges / Absagen";
+  if (value === "other") return "Sonstiges / Absagen / Absagen";
   return "Alle E-Mails";
 }
 
@@ -663,21 +663,6 @@ export default function AuftragseingangPage() {
   const [liveNetTotalCents, setLiveNetTotalCents] = useState(0);
   const [liveTaxTotalCents, setLiveTaxTotalCents] = useState(0);
   const [liveGrossTotalCents, setLiveGrossTotalCents] = useState(0);
-  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
-
-  if (typeof window !== "undefined" && autoRefreshEnabled) {
-    window.setTimeout(() => {
-      const activeElement = document.activeElement;
-      const isTyping =
-        activeElement instanceof HTMLInputElement ||
-        activeElement instanceof HTMLTextAreaElement ||
-        activeElement instanceof HTMLSelectElement;
-
-      if (!isTyping) {
-        window.location.reload();
-      }
-    }, 30000);
-  }
 
   function parseEuroInput(value: string) {
     const normalized = String(value || "")
