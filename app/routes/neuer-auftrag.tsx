@@ -19,7 +19,6 @@ function euroToCents(value: FormDataEntryValue | null) {
 
   const number = Number(raw);
   if (!Number.isFinite(number)) return 0;
-
   return Math.round(number * 100);
 }
 
@@ -79,7 +78,6 @@ function makeItem(partial: Partial<ManualItem> = {}): ManualItem {
 
 export async function loader({ request }: { request: Request }) {
   const { getUserId } = await import("../lib/session.server");
-
   const userId = await getUserId(request);
 
   if (!userId) {
@@ -230,7 +228,7 @@ export default function NeuerAuftragPage() {
 
   const [items, setItems] = useState<ManualItem[]>([
     makeItem({ name: "", quantity: "1" }),
-    makeItem({ name: "", quantity: "" }),
+    makeItem({ name: "", quantity: "1" }),
   ]);
 
   const total = useMemo(() => {
@@ -273,8 +271,8 @@ export default function NeuerAuftragPage() {
 
   const pageStyle: any = {
     padding: "0 0 44px",
-    color: "#111827",
-    fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+    color: "#0f172a",
+    fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   };
 
   const shellStyle: any = {
@@ -285,18 +283,59 @@ export default function NeuerAuftragPage() {
 
   const cardStyle: any = {
     background: "#ffffff",
-    border: "1px solid #dbe7ee",
+    border: "1px solid #dbe5ec",
     borderRadius: 18,
-    boxShadow: "0 10px 28px rgba(15, 23, 42, 0.055)",
+    boxShadow: "0 8px 22px rgba(15, 23, 42, 0.035)",
     padding: 24,
+  };
+
+  const smallOverlineStyle: any = {
+    color: "#047857",
+    textTransform: "uppercase",
+    letterSpacing: ".09em",
+    fontSize: 11,
+    fontWeight: 700,
+  };
+
+  const titleStyle: any = {
+    margin: "8px 0 0",
+    fontSize: 32,
+    lineHeight: 1.05,
+    letterSpacing: "-0.04em",
+    fontWeight: 600,
+    color: "#0f172a",
+  };
+
+  const subtitleStyle: any = {
+    margin: "10px 0 0",
+    color: "#64748b",
+    fontSize: 14,
+    lineHeight: 1.45,
+    fontWeight: 500,
+  };
+
+  const sectionTitleStyle: any = {
+    margin: "0 0 16px",
+    fontSize: 18,
+    letterSpacing: "-0.02em",
+    fontWeight: 600,
+    color: "#0f172a",
+  };
+
+  const sectionSubtextStyle: any = {
+    margin: "-6px 0 0",
+    color: "#64748b",
+    fontSize: 14,
+    lineHeight: 1.45,
+    fontWeight: 450,
   };
 
   const labelStyle: any = {
     display: "grid",
-    gap: 6,
-    color: "#374151",
+    gap: 7,
+    color: "#334155",
     fontSize: 12,
-    fontWeight: 650,
+    fontWeight: 600,
   };
 
   const inputStyle: any = {
@@ -306,15 +345,16 @@ export default function NeuerAuftragPage() {
     borderRadius: 10,
     padding: "0 13px",
     fontSize: 14,
-    fontWeight: 500,
-    color: "#111827",
+    fontWeight: 450,
+    color: "#0f172a",
     background: "#ffffff",
     boxSizing: "border-box",
+    outline: "none",
   };
 
   const textareaStyle: any = {
     ...inputStyle,
-    minHeight: 86,
+    minHeight: 82,
     padding: 13,
     resize: "vertical",
     lineHeight: 1.45,
@@ -326,47 +366,58 @@ export default function NeuerAuftragPage() {
     color: "#ffffff",
     borderRadius: 10,
     padding: "10px 14px",
-    fontWeight: 650,
+    fontWeight: 600,
+    fontSize: 14,
     cursor: "pointer",
-    boxShadow: "0 6px 14px rgba(15, 159, 122, 0.13)",
+    boxShadow: "0 6px 14px rgba(15, 159, 122, 0.12)",
   };
 
   const secondaryButtonStyle: any = {
-    border: "1px solid #d6e1ea",
+    border: "1px solid #d7e2ea",
     background: "#ffffff",
-    color: "#111827",
+    color: "#0f172a",
     borderRadius: 10,
     padding: "10px 14px",
-    fontWeight: 650,
+    fontWeight: 600,
+    fontSize: 14,
     textDecoration: "none",
     cursor: "pointer",
   };
 
   const subtleButtonStyle: any = {
-    border: "1px solid #bbf7d0",
-    background: "#ecfdf5",
+    border: "1px solid #cfe9df",
+    background: "#edf9f3",
     color: "#047857",
     borderRadius: 10,
-    padding: "10px 13px",
-    fontWeight: 650,
+    padding: "10px 14px",
+    fontWeight: 600,
+    fontSize: 14,
     cursor: "pointer",
   };
 
   const dangerButtonStyle: any = {
-    border: "1px solid #fecaca",
-    background: "#fff7f7",
+    border: "1px solid #f3caca",
+    background: "#fffafa",
     color: "#b91c1c",
     borderRadius: 10,
-    padding: "10px 12px",
-    fontWeight: 650,
+    padding: "10px 13px",
+    fontWeight: 600,
+    fontSize: 14,
     cursor: "pointer",
+    minWidth: 96,
   };
 
-  const sectionTitleStyle: any = {
-    margin: "0 0 14px",
-    fontSize: 20,
-    letterSpacing: "-0.025em",
-    fontWeight: 650,
+  const darkTotalBarStyle: any = {
+    marginTop: 18,
+    borderRadius: 14,
+    background: "#111827",
+    color: "#ffffff",
+    padding: "18px 20px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 16,
+    flexWrap: "wrap",
   };
 
   return (
@@ -376,21 +427,9 @@ export default function NeuerAuftragPage() {
           <header style={{ ...cardStyle, marginBottom: 18 }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
               <div>
-                <div style={{
-                  color: "#047857",
-                  textTransform: "uppercase",
-                  letterSpacing: ".10em",
-                  fontSize: 11,
-                  fontWeight: 700,
-                }}>
-                  Auftrag
-                </div>
-
-                <h1 style={{ margin: "6px 0 0", fontSize: 34, lineHeight: 1, letterSpacing: "-0.045em", fontWeight: 700 }}>
-                  Neuer Auftrag
-                </h1>
-
-                <p style={{ margin: "10px 0 0", color: "#64748b", fontWeight: 500 }}>
+                <div style={smallOverlineStyle}>Auftrag</div>
+                <h1 style={titleStyle}>Neuer Auftrag</h1>
+                <p style={subtitleStyle}>
                   Manuell erfassen und anschließend im Auftragseingang prüfen.
                 </p>
               </div>
@@ -408,7 +447,7 @@ export default function NeuerAuftragPage() {
               color: "#9a3412",
               borderRadius: 14,
               padding: 14,
-              fontWeight: 650,
+              fontWeight: 600,
               marginBottom: 16,
             }}>
               {actionData.error}
@@ -419,7 +458,7 @@ export default function NeuerAuftragPage() {
             <section style={cardStyle}>
               <h2 style={sectionTitleStyle}>Kundendaten</h2>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14 }}>
+              <div className="manualOrderGrid customerGrid">
                 <label style={labelStyle}>
                   Kunde *
                   <input name="customerName" style={inputStyle} placeholder="z. B. Muster GmbH" />
@@ -450,7 +489,7 @@ export default function NeuerAuftragPage() {
             <section style={cardStyle}>
               <h2 style={sectionTitleStyle}>Lieferung</h2>
 
-              <div style={{ display: "grid", gridTemplateColumns: "160px 140px minmax(0, 1.4fr) 110px 160px", gap: 12, alignItems: "end" }}>
+              <div className="manualOrderGrid deliveryGrid">
                 <label style={labelStyle}>
                   Lieferdatum *
                   <input name="deliveryDate" inputMode="numeric" style={inputStyle} placeholder="TT.MM.JJJJ" />
@@ -458,7 +497,7 @@ export default function NeuerAuftragPage() {
 
                 <label style={labelStyle}>
                   Lieferzeit
-                  <input name="deliveryTime" style={inputStyle} placeholder="12:00" />
+                  <input name="deliveryTime" style={inputStyle} placeholder="z. B. 12:00" />
                 </label>
 
                 <label style={labelStyle}>
@@ -479,110 +518,94 @@ export default function NeuerAuftragPage() {
 
               <label style={{ ...labelStyle, marginTop: 12 }}>
                 Zusatz zur Lieferadresse
-                <textarea name="deliveryAddressNote" style={textareaStyle} placeholder="z. B. Hinterhof, Etage, Ansprechpartner vor Ort, Klingelname..." />
+                <textarea
+                  name="deliveryAddressNote"
+                  style={textareaStyle}
+                  placeholder="z. B. Hinterhof, Etage, Ansprechpartner vor Ort, Klingelname..."
+                />
               </label>
             </section>
 
             <section style={cardStyle}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 14, alignItems: "flex-start", flexWrap: "wrap", marginBottom: 14 }}>
-                <div>
-                  <h2 style={{ ...sectionTitleStyle, marginBottom: 4 }}>Positionen</h2>
-                  <p style={{ margin: 0, color: "#64748b", fontSize: 13 }}>
-                    Positionen können frei ergänzt oder gelöscht werden.
-                  </p>
-                </div>
+              <h2 style={{ ...sectionTitleStyle, marginBottom: 6 }}>Positionen</h2>
+              <p style={sectionSubtextStyle}>
+                Positionen können frei ergänzt, als Freitext erfasst oder gelöscht werden.
+              </p>
 
-                <div style={{
-                  border: "1px solid #dbe7ee",
-                  background: "#f8fafc",
-                  borderRadius: 14,
-                  padding: "10px 14px",
-                  minWidth: 160,
-                  textAlign: "right",
-                }}>
-                  <div style={{ color: "#64748b", fontSize: 11, fontWeight: 650, textTransform: "uppercase", letterSpacing: ".06em" }}>
-                    Gesamtsumme netto
-                  </div>
-                  <strong style={{ display: "block", fontSize: 20, fontWeight: 700, marginTop: 2 }}>
-                    {formatEuro(total)}
-                  </strong>
-                </div>
-              </div>
-
-              <div style={{ display: "grid", gap: 10 }}>
+              <div style={{ display: "grid", gap: 12, marginTop: 18 }}>
                 {items.map((item, index) => (
                   <div
                     key={item.id}
                     style={{
-                      display: "grid",
-                      gridTemplateColumns: "minmax(220px, 1.3fr) 90px 130px minmax(220px, 1fr) auto",
-                      gap: 10,
-                      alignItems: "end",
-                      border: "1px solid #eef2f6",
+                      border: "1px solid #e8eef3",
                       background: "#fcfdff",
                       borderRadius: 14,
-                      padding: 10,
+                      padding: 12,
                     }}
                   >
-                    <label style={labelStyle}>
-                      Position {index + 1}
-                      <input
-                        name="itemName"
-                        value={item.name}
-                        onChange={(event) => updateItem(item.id, "name", event.target.value)}
-                        style={inputStyle}
-                        placeholder={index === 0 ? "z. B. Chicken Bowl" : "Weitere Position"}
-                      />
-                    </label>
+                    <div className="manualOrderItemRow">
+                      <label style={labelStyle}>
+                        Position {index + 1}
+                        <input
+                          name="itemName"
+                          value={item.name}
+                          onChange={(event) => updateItem(item.id, "name", event.target.value)}
+                          style={inputStyle}
+                          placeholder={index === 0 ? "z. B. Chicken Bowl" : "Weitere Position"}
+                        />
+                      </label>
 
-                    <label style={labelStyle}>
-                      Menge
-                      <input
-                        name="quantity"
-                        type="number"
-                        min="0"
-                        step="1"
-                        value={item.quantity}
-                        onChange={(event) => updateItem(item.id, "quantity", event.target.value)}
-                        style={inputStyle}
-                      />
-                    </label>
+                      <label style={labelStyle}>
+                        Menge
+                        <input
+                          name="quantity"
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={item.quantity}
+                          onChange={(event) => updateItem(item.id, "quantity", event.target.value)}
+                          style={inputStyle}
+                        />
+                      </label>
 
-                    <label style={labelStyle}>
-                      Einzelpreis netto
-                      <input
-                        name="unitPriceEuro"
-                        value={item.unitPriceEuro}
-                        onChange={(event) => updateItem(item.id, "unitPriceEuro", event.target.value)}
-                        style={inputStyle}
-                        placeholder="0,00"
-                      />
-                    </label>
+                      <label style={labelStyle}>
+                        Einzelpreis netto
+                        <input
+                          name="unitPriceEuro"
+                          value={item.unitPriceEuro}
+                          onChange={(event) => updateItem(item.id, "unitPriceEuro", event.target.value)}
+                          style={inputStyle}
+                          placeholder="0,00"
+                        />
+                      </label>
 
-                    <label style={labelStyle}>
-                      Freitext / Hinweis
-                      <input
-                        name="itemNotes"
-                        value={item.itemNotes}
-                        onChange={(event) => updateItem(item.id, "itemNotes", event.target.value)}
-                        style={inputStyle}
-                        placeholder="Allergene, Besonderheit, Beschreibung..."
-                      />
-                    </label>
+                      <label style={labelStyle}>
+                        Freitext / Hinweis
+                        <input
+                          name="itemNotes"
+                          value={item.itemNotes}
+                          onChange={(event) => updateItem(item.id, "itemNotes", event.target.value)}
+                          style={inputStyle}
+                          placeholder="Allergene, Besonderheit, Beschreibung..."
+                        />
+                      </label>
 
-                    <button
-                      type="button"
-                      onClick={() => removeItem(item.id)}
-                      style={dangerButtonStyle}
-                      disabled={items.length <= 1}
-                    >
-                      Löschen
-                    </button>
+                      <div style={{ display: "flex", alignItems: "end" }}>
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.id)}
+                          style={dangerButtonStyle}
+                          disabled={items.length <= 1}
+                        >
+                          Löschen
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16 }}>
                 <button type="button" onClick={addItem} style={subtleButtonStyle}>
                   + Position hinzufügen
                 </button>
@@ -591,6 +614,37 @@ export default function NeuerAuftragPage() {
                   + Freitextposition
                 </button>
               </div>
+
+              <div style={darkTotalBarStyle}>
+                <div>
+                  <div style={{
+                    fontSize: 12,
+                    letterSpacing: ".08em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.72)",
+                    fontWeight: 600,
+                    marginBottom: 4,
+                  }}>
+                    Gesamtsumme netto
+                  </div>
+                  <div style={{
+                    fontSize: 13,
+                    color: "rgba(255,255,255,0.78)",
+                    fontWeight: 450,
+                  }}>
+                    Summe aller aktuell erfassten Positionen
+                  </div>
+                </div>
+
+                <div style={{
+                  fontSize: 34,
+                  lineHeight: 1,
+                  letterSpacing: "-0.03em",
+                  fontWeight: 600,
+                }}>
+                  {formatEuro(total)}
+                </div>
+              </div>
             </section>
 
             <section style={cardStyle}>
@@ -598,17 +652,32 @@ export default function NeuerAuftragPage() {
 
               <label style={labelStyle}>
                 Interne Notizen
-                <textarea name="notes" style={textareaStyle} placeholder="Besonderheiten, Absprachen, Hinweise..." />
+                <textarea
+                  name="notes"
+                  style={textareaStyle}
+                  placeholder="Besonderheiten, Absprachen, Hinweise..."
+                />
               </label>
 
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginTop: 18, alignItems: "center", flexWrap: "wrap" }}>
-                <div style={{ color: "#64748b", fontSize: 13 }}>
+              <div style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 12,
+                marginTop: 18,
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}>
+                <div style={{ color: "#64748b", fontSize: 13, fontWeight: 450 }}>
                   Der Auftrag wird zuerst im Auftragseingang geprüft.
                 </div>
 
-                <div style={{ display: "flex", gap: 10 }}>
-                  <a href="/auftragseingang" style={secondaryButtonStyle}>Abbrechen</a>
-                  <button type="submit" style={primaryButtonStyle}>Auftrag anlegen</button>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <a href="/auftragseingang" style={secondaryButtonStyle}>
+                    Abbrechen
+                  </a>
+                  <button type="submit" style={primaryButtonStyle}>
+                    Auftrag anlegen
+                  </button>
                 </div>
               </div>
             </section>
@@ -620,7 +689,13 @@ export default function NeuerAuftragPage() {
         input::placeholder,
         textarea::placeholder {
           color: #8a94a6 !important;
-          font-weight: 500 !important;
+          font-weight: 450 !important;
+        }
+
+        input:focus,
+        textarea:focus {
+          border-color: #9fc9bc !important;
+          box-shadow: 0 0 0 3px rgba(15, 159, 122, 0.08) !important;
         }
 
         button:disabled {
@@ -628,8 +703,30 @@ export default function NeuerAuftragPage() {
           cursor: not-allowed !important;
         }
 
+        .manualOrderGrid {
+          display: grid;
+          gap: 14px;
+        }
+
+        .customerGrid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .deliveryGrid {
+          grid-template-columns: 160px 140px minmax(0, 1.5fr) 110px 160px;
+        }
+
+        .manualOrderItemRow {
+          display: grid;
+          grid-template-columns: minmax(220px, 1.3fr) 90px 130px minmax(240px, 1fr) auto;
+          gap: 10px;
+          align-items: end;
+        }
+
         @media (max-width: 1100px) {
-          form section div {
+          .customerGrid,
+          .deliveryGrid,
+          .manualOrderItemRow {
             grid-template-columns: 1fr !important;
           }
         }
