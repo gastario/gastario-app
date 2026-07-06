@@ -242,7 +242,7 @@ function isAddressLine(value: string) {
   const lower = normalize(text);
 
   if (!text) return false;
-  if (/\b\d{5}\b/.test(text)) return true;
+  if (/\\b\\d{5}\\b/.test(text)) return true;
   if (lower.includes("strasse")) return true;
   if (lower.includes("straße")) return true;
   if (lower.includes("allee")) return true;
@@ -262,8 +262,8 @@ function isHardMetaLine(value: string) {
   if (lower.includes("customer:")) return true;
   if (lower.includes("powered by")) return true;
   if (lower.includes("pdf generator")) return true;
-  if (/--\s*\d+\s*of\s*\d+\s*--/i.test(text)) return true;
-  if (/^\d+\s*of\s*\d+$/i.test(text)) return true;
+  if (/--\\s*\\d+\\s*of\\s*\\d+\\s*--/i.test(text)) return true;
+  if (/^\\d+\\s*of\\s*\\d+$/i.test(text)) return true;
 
   return false;
 }
@@ -374,7 +374,7 @@ function pickDetailsFromBlock(block: string[], meal: string) {
 
 export function parseHeycaterLabelsFromText(rawText: string): HeycaterLabelData[] {
   const lines = String(rawText || "")
-    .split(/\r?\n/)
+    .split(/\\r?\\n/)
     .map(cleanLine)
     .filter(Boolean);
 
