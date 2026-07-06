@@ -1,7 +1,7 @@
 ﻿import { useState } from "react";
 import AppLayout from "../components/AppLayout";
 
-import { Form, useActionData, useLoaderData } from "react-router";
+import { Form, redirect, useActionData, useLoaderData } from "react-router";
 
 const SOURCES = [
   { value: "DIRECT", label: "Direkt" },
@@ -12,8 +12,8 @@ const SOURCES = [
 ];
 
 const STATUSES = [
-  { value: "AUTO_CREATED", label: "PrÃ¼fen" },
-  { value: "CONFIRMED", label: "Ãœbernommen" },
+  { value: "AUTO_CREATED", label: "Prüfen" },
+  { value: "CONFIRMED", label: "Übernommen" },
   { value: "REJECTED", label: "Abgelehnt" },
 ];
 
@@ -108,7 +108,7 @@ function classifyIncomingEmail(mail: any) {
 }
 
 function emailCategoryLabel(value: string) {
-  if (value === "orders") return "Auftragsbestaetigungen";
+  if (value === "orders") return "Auftragsbestätigungen";
   if (value === "possible") return "Unklare Heycater-Mails";
   if (value === "inquiries") return "Anfragen / Angebote";
   if (value === "reminders") return "Erinnerungen / Lieferscheine";
@@ -615,15 +615,15 @@ export async function action({ request }: { request: Request }) {
         id: orderId,      },
     });
 
-    return { success: "Auftrag wurde gelÃ¶scht." };
+    return { success: "Auftrag wurde gelöscht." };
   }
 
   return { error: "Unbekannte Aktion." };
 }
 
 function statusLabel(status: string) {
-  if (status === "AUTO_CREATED") return "PrÃ¼fen";
-  if (status === "CONFIRMED") return "Ãœbernommen";
+  if (status === "AUTO_CREATED") return "Prüfen";
+  if (status === "CONFIRMED") return "Übernommen";
   if (status === "REJECTED") return "Abgelehnt";
   return status;
 }
@@ -961,7 +961,7 @@ export default function AuftragseingangPage() {
               Auftragseingang
             </h1>
             <p style={{ margin: "8px 0 0", color: "#64748b", fontWeight: 650 }}>
-              Neue AuftrÃ¤ge erfassen, prÃ¼fen und Ã¼bernehmen.
+              Neue Aufträge erfassen, prüfen und übernehmen.
             </p>
           </div>
 
@@ -981,8 +981,8 @@ export default function AuftragseingangPage() {
         <section style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 14, marginBottom: 18 }}>
           {[
             ["Alle", data.counts.all, ""],
-            ["PrÃ¼fen", data.counts.review, "AUTO_CREATED"],
-            ["Ãœbernommen", data.counts.confirmed, "CONFIRMED"],
+            ["Prüfen", data.counts.review, "AUTO_CREATED"],
+            ["Übernommen", data.counts.confirmed, "CONFIRMED"],
             ["Abgelehnt", data.counts.rejected, "REJECTED"],
           ].map(([label, count, status]) => (
             <a
@@ -1068,7 +1068,7 @@ export default function AuftragseingangPage() {
             background: "#f8fafc"
           }}>
             {[
-              ["orders", "Auftragsbestaetigungen", data.emailBuckets.orders],
+              ["orders", "Auftragsbestätigungen", data.emailBuckets.orders],
               ["possible", "Unklare Heycater-Mails", data.emailBuckets.possible],
               ["inquiries", "Anfragen / Angebote", data.emailBuckets.inquiries],
               ["reminders", "Erinnerungen / Lieferscheine", data.emailBuckets.reminders],
@@ -1151,7 +1151,7 @@ export default function AuftragseingangPage() {
                       </td>
                       <td style={tdStyle}>
                         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                          <a href={"/email-pruefung/" + mail.id} style={{ ...smallButtonStyle, textDecoration: "none" }}>PrÃ¼fen</a>
+                          <a href={"/email-pruefung/" + mail.id} style={{ ...smallButtonStyle, textDecoration: "none" }}>Prüfen</a>
                           {classifyIncomingEmail(mail) === "inquiries" ? (
                             <a
                               href={"/angebot-vorbereiten/" + mail.id}
@@ -1216,7 +1216,7 @@ export default function AuftragseingangPage() {
                                 background: "#fff1f2",
                               }}
                             >
-                              Loeschen
+                              Löschen
                             </button>
                           </Form>
                         </div>
@@ -1232,7 +1232,7 @@ export default function AuftragseingangPage() {
         <section style={{ ...documentStyle, marginTop: 18 }}>
           <div style={{ marginBottom: 14 }}>
             <div style={sectionLabelStyle}>Eingang</div>
-            <h2 style={{ margin: "5px 0 0", fontSize: 23, letterSpacing: "-0.03em" }}>AuftrÃ¤ge</h2>
+            <h2 style={{ margin: "5px 0 0", fontSize: 23, letterSpacing: "-0.03em" }}>Aufträge</h2>
           </div>
 
           <div style={{ overflowX: "auto", border: "1px solid #e5e7eb", borderRadius: 4 }}>
@@ -1253,7 +1253,7 @@ export default function AuftragseingangPage() {
                 {data.orders.length === 0 ? (
                   <tr>
                     <td style={tdStyle} colSpan={8}>
-                      <strong>Noch keine AuftrÃ¤ge vorhanden.</strong>
+                      <strong>Noch keine Aufträge vorhanden.</strong>
                     </td>
                   </tr>
                 ) : (
@@ -1309,14 +1309,14 @@ export default function AuftragseingangPage() {
                         <td style={tdStyle}>
                           <div style={{ display: "grid", gap: 8, minWidth: 130 }}>
                             <a href={"/auftrag-pruefung/" + order.id} style={smallButtonStyle}>
-                              Pruefen
+                              Prüfen
                             </a>
 
                             <Form method="post">
                               <input type="hidden" name="intent" value="deleteOrder" />
                               <input type="hidden" name="orderId" value={order.id} />
                               <button type="submit" style={{ ...smallButtonStyle, width: "100%", color: "#b91c1c" }}>
-                                Loeschen
+                                Löschen
                               </button>
                             </Form>
                           </div>
