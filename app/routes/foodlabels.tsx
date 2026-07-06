@@ -277,15 +277,15 @@ export default function FoodLabelsPage() {
 
             <button type="submit">PDF erstellen</button>
 
-            <input type="hidden" name="pageTopMm" value="9" />
-            <input type="hidden" name="pageRightMm" value="9" />
-            <input type="hidden" name="pageBottomMm" value="9" />
-            <input type="hidden" name="pageLeftMm" value="9" />
+            <input type="hidden" name="pageTopMm" value="0" />
+            <input type="hidden" name="pageRightMm" value="0" />
+            <input type="hidden" name="pageBottomMm" value="0" />
+            <input type="hidden" name="pageLeftMm" value="0" />
 
-            <input type="hidden" name="innerTopMm" value="0.8" />
-            <input type="hidden" name="innerRightMm" value="1.2" />
-            <input type="hidden" name="innerBottomMm" value="9" />
-            <input type="hidden" name="innerLeftMm" value="1.2" />
+            <input type="hidden" name="innerTopMm" value="0" />
+            <input type="hidden" name="innerRightMm" value="1" />
+            <input type="hidden" name="innerBottomMm" value="12" />
+            <input type="hidden" name="innerLeftMm" value="1" />
           </form>
 
           <div className="heycaterUploadHint">

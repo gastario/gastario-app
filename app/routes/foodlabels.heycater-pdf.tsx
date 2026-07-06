@@ -20,15 +20,15 @@ export async function action({ request }: ActionFunctionArgs) {
   const labelWidthMm = readNumber(formData.get("labelWidthMm"), 76);
   const labelHeightMm = readNumber(formData.get("labelHeightMm"), 51);
 
-  const pageTopMm = readNumber(formData.get("pageTopMm"), 9);
-  const pageRightMm = readNumber(formData.get("pageRightMm"), 9);
-  const pageBottomMm = readNumber(formData.get("pageBottomMm"), 9);
-  const pageLeftMm = readNumber(formData.get("pageLeftMm"), 9);
+  const pageTopMm = readNumber(formData.get("pageTopMm"), 0);
+  const pageRightMm = readNumber(formData.get("pageRightMm"), 0);
+  const pageBottomMm = readNumber(formData.get("pageBottomMm"), 0);
+  const pageLeftMm = readNumber(formData.get("pageLeftMm"), 0);
 
-  const innerTopMm = readNumber(formData.get("innerTopMm"), 0.8);
-  const innerRightMm = readNumber(formData.get("innerRightMm"), 1.2);
-  const innerBottomMm = readNumber(formData.get("innerBottomMm"), 9);
-  const innerLeftMm = readNumber(formData.get("innerLeftMm"), 1.2);
+  const innerTopMm = readNumber(formData.get("innerTopMm"), 0);
+  const innerRightMm = readNumber(formData.get("innerRightMm"), 1);
+  const innerBottomMm = readNumber(formData.get("innerBottomMm"), 12);
+  const innerLeftMm = readNumber(formData.get("innerLeftMm"), 1);
 
   if (!(file instanceof File) || file.size === 0) {
     return new Response("Keine PDF-Datei hochgeladen.", { status: 400 });
