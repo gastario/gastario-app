@@ -659,9 +659,9 @@ const actionButtonBaseStyle: React.CSSProperties = {
   width: "100%",
   minWidth: "100%",
   padding: "0 14px",
-  borderRadius: 11,
-  fontWeight: 900,
-  fontSize: 14,
+  borderRadius: 10,
+  fontWeight: 750,
+  fontSize: 13,
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
@@ -669,12 +669,13 @@ const actionButtonBaseStyle: React.CSSProperties = {
   cursor: "pointer",
   boxSizing: "border-box",
   whiteSpace: "nowrap",
+  transition: "background 0.15s ease, border-color 0.15s ease, transform 0.15s ease",
 };
 
 const primaryButtonStyle: React.CSSProperties = {
   ...actionButtonBaseStyle,
-  background: "#0f7b61",
-  border: "1px solid #0f7b61",
+  background: "#057a67",
+  border: "1px solid #057a67",
   color: "#ffffff",
 };
 
@@ -682,7 +683,8 @@ const previewButtonStyle: React.CSSProperties = {
   ...actionButtonBaseStyle,
   background: "#ffffff",
   border: "1px solid #c7d8d2",
-  color: "#184c3a",
+  color: "#075f52",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
 };
 
 const dangerButtonStyle: React.CSSProperties = {
@@ -860,6 +862,7 @@ const successStyle: React.CSSProperties = {
   padding: 14,
   fontWeight: 650,
 };
+
 
 
 
