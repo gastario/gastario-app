@@ -138,6 +138,8 @@ function getHeycaterEmailKind(subject: string, text: string) {
 }
 
 async function findExistingHeycaterOrderByExternalNumber(tenantId: string, heycaterOrderNumber: string) {
+  const { prisma } = await import("../lib/prisma.server");
+
   if (!heycaterOrderNumber) {
     return null;
   }
