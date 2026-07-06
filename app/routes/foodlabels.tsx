@@ -502,15 +502,22 @@ Labeldaten speichern</h2>
           height: 100%;
           opacity: 0;
           cursor: pointer;
+          z-index: 5;
         }
 
         .heycaterDropzone strong {
+          position: relative;
+          z-index: 1;
+          pointer-events: none;
           font-size: 17px;
           line-height: 1.2;
           font-weight: 750;
         }
 
         .heycaterDropzone span {
+          position: relative;
+          z-index: 1;
+          pointer-events: none;
           max-width: 680px;
           font-size: 13px;
           line-height: 1.45;
@@ -937,6 +944,7 @@ const foodKeyStyle: React.CSSProperties = {
   textTransform: "uppercase",
   letterSpacing: "0.05em",
 };
+
 
 
 
