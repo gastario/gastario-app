@@ -93,20 +93,40 @@ function hasEnoughOrderData(order: any) {
 }
 
 async function extractPdfText(buffer: Buffer) {
-  const require = createRequire(import.meta.url);
-  const pdfParseModule = require("pdf-parse");
+  try {
+    if (!buffer || buffer.length === 0) {
+      return {
+        text: "",
+        error: "PDF_BUFFER_EMPTY",
+      };
+    }
 
-  if (typeof pdfParseModule === "function") {
-    const result = await pdfParseModule(buffer);
-    return String(result.text || "").trim();
+    const require = createRequire(import.meta.url);
+    const pdfParseModule = require("pdf-parse");
+
+    let result: any = null;
+
+    if (typeof pdfParseModule === "function") {
+      result = await pdfParseModule(buffer);
+    } else if (typeof pdfParseModule.default === "function") {
+      result = await pdfParseModule.default(buffer);
+    } else {
+      return {
+        text: "",
+        error: "PDF_PARSE_FUNCTION_NOT_FOUND",
+      };
+    }
+
+    return {
+      text: String(result?.text || "").trim(),
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      text: "",
+      error: String(error?.message || error),
+    };
   }
-
-  if (typeof pdfParseModule.default === "function") {
-    const result = await pdfParseModule.default(buffer);
-    return String(result.text || "").trim();
-  }
-
-  return "";
 }
 
 async function createReviewOrderFromExtracted(params: {
@@ -210,6 +230,10 @@ export async function loader({ request }: { request: Request }) {
     savedEmails: 0,
     createdOrders: 0,
     skippedDuplicates: 0,
+    pdfAttachments: 0,
+    pdfTextExtracted: 0,
+    pdfTextEmpty: 0,
+    pdfErrors: [] as string[],
     errors: [] as string[],
   };
 
@@ -279,7 +303,21 @@ export async function loader({ request }: { request: Request }) {
                 attachment.contentType === "application/pdf" ||
                 String(attachment.filename || "").toLowerCase().endsWith(".pdf")
               ) {
-                attachmentText = await extractPdfText(Buffer.from(attachment.content));
+                result.pdfAttachments += 1;
+
+                const pdfResult = await extractPdfText(Buffer.from(attachment.content));
+                attachmentText = pdfResult.text;
+
+                if (attachmentText) {
+                  result.pdfTextExtracted += 1;
+                } else {
+                  result.pdfTextEmpty += 1;
+                }
+
+                if (pdfResult.error) {
+                  result.pdfErrors.push(String(attachment.filename || "attachment") + ": " + pdfResult.error);
+                }
+
                 bestText = attachmentText || bestText;
               }
 
@@ -300,6 +338,8 @@ export async function loader({ request }: { request: Request }) {
                       extractedJson: {
                         size: attachment.size,
                         contentType: attachment.contentType,
+                        pdfTextLength: attachmentText.length,
+                        pdfTextError: attachmentText ? null : "PDF_TEXT_EMPTY",
                         reprocessedAt: new Date().toISOString(),
                       },
                     },
@@ -315,6 +355,8 @@ export async function loader({ request }: { request: Request }) {
                     extractedJson: {
                       size: attachment.size,
                       contentType: attachment.contentType,
+                      pdfTextLength: attachmentText.length,
+                      pdfTextError: attachmentText ? null : "PDF_TEXT_EMPTY",
                       reprocessedAt: new Date().toISOString(),
                     },
                   },
@@ -391,7 +433,21 @@ export async function loader({ request }: { request: Request }) {
               attachment.contentType === "application/pdf" ||
               String(attachment.filename || "").toLowerCase().endsWith(".pdf")
             ) {
-              attachmentText = await extractPdfText(Buffer.from(attachment.content));
+              result.pdfAttachments += 1;
+
+              const pdfResult = await extractPdfText(Buffer.from(attachment.content));
+              attachmentText = pdfResult.text;
+
+              if (attachmentText) {
+                result.pdfTextExtracted += 1;
+              } else {
+                result.pdfTextEmpty += 1;
+              }
+
+              if (pdfResult.error) {
+                result.pdfErrors.push(String(attachment.filename || "attachment") + ": " + pdfResult.error);
+              }
+
               bestText = attachmentText || bestText;
             }
 
@@ -404,6 +460,8 @@ export async function loader({ request }: { request: Request }) {
                 extractedJson: {
                   size: attachment.size,
                   contentType: attachment.contentType,
+                  pdfTextLength: attachmentText.length,
+                  pdfTextError: attachmentText ? null : "PDF_TEXT_EMPTY",
                 },
               },
             });
@@ -458,3 +516,4 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
