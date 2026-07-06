@@ -250,8 +250,8 @@ export default function FoodLabelsPage() {
 
             <label>
               Reihen
-              <select name="rows" defaultValue="12">
-                <option value="12">12 Reihen</option>
+              <select name="rows" defaultValue="8">
+                <option value="8">8 Reihen</option>
                 <option value="6">6 Reihen</option>
                 <option value="5">5 Reihen</option>
                 <option value="4">4 Reihen</option>
@@ -284,14 +284,13 @@ export default function FoodLabelsPage() {
             <input type="hidden" name="pageLeftMm" value="0" />
 
             <input type="hidden" name="innerTopMm" value="0.4" />
-            <input type="hidden" name="innerRightMm" value="0.8" />
-            <input type="hidden" name="innerBottomMm" value="0.8" />
-            <input type="hidden" name="innerLeftMm" value="0.8" />
+            <input type="hidden" name="innerRightMm" value="0.4" />
+            <input type="hidden" name="innerBottomMm" value="0.4" />
+            <input type="hidden" name="innerLeftMm" value="0.4" />
           </form>
 
           <div className="heycaterUploadHint">
-            Standard: Heycater A4 mit 3 Spalten x 12 Reihen. Jeder gestrichelte Bereich wird als einzelnes Label geschnitten.
-          </div>
+            Standard: Heycater A4 mit 3 Spalten x 8 Reihen. Jeder gestrichelte Bereich wird als einzelnes Label geschnitten.</div>
         </section>
 
 

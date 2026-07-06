@@ -15,7 +15,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const file = formData.get("pdf");
   const columns = Math.max(1, Math.floor(readNumber(formData.get("columns"), 3)));
-  const rows = Math.max(1, Math.floor(readNumber(formData.get("rows"), 12)));
+  const rows = Math.max(1, Math.floor(readNumber(formData.get("rows"), 8)));
 
   const labelWidthMm = readNumber(formData.get("labelWidthMm"), 76);
   const labelHeightMm = readNumber(formData.get("labelHeightMm"), 51);
@@ -26,9 +26,9 @@ export async function action({ request }: ActionFunctionArgs) {
   const pageLeftMm = readNumber(formData.get("pageLeftMm"), 0);
 
   const innerTopMm = readNumber(formData.get("innerTopMm"), 0.4);
-  const innerRightMm = readNumber(formData.get("innerRightMm"), 0.8);
-  const innerBottomMm = readNumber(formData.get("innerBottomMm"), 0.8);
-  const innerLeftMm = readNumber(formData.get("innerLeftMm"), 0.8);
+  const innerRightMm = readNumber(formData.get("innerRightMm"), 0.4);
+  const innerBottomMm = readNumber(formData.get("innerBottomMm"), 0.4);
+  const innerLeftMm = readNumber(formData.get("innerLeftMm"), 0.4);
 
   if (!(file instanceof File) || file.size === 0) {
     return new Response("Keine PDF-Datei hochgeladen.", { status: 400 });
