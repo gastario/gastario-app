@@ -233,6 +233,9 @@ export async function loader({ request }: { request: Request }) {
   const searchQuery = url.searchParams.get("q") || "";
   const dateRange = url.searchParams.get("dateRange") || "last7";
 
+  const currentOrdersDateStart = new Date();
+  currentOrdersDateStart.setHours(0, 0, 0, 0);
+
   let selectedDateStart = selectedDate ? new Date(selectedDate + "T00:00:00") : null;
   let selectedDateEnd = selectedDateStart ? new Date(selectedDateStart) : null;
 
@@ -304,10 +307,33 @@ export async function loader({ request }: { request: Request }) {
       }),
 
       Promise.all([
-        prisma.order.count({ where: { tenantId: tenantUser.tenantId } }),
-        prisma.order.count({ where: { tenantId: tenantUser.tenantId, status: "AUTO_CREATED" as any } }),
-        prisma.order.count({ where: { tenantId: tenantUser.tenantId, status: "CONFIRMED" as any } }),
-        prisma.order.count({ where: { tenantId: tenantUser.tenantId, status: "REJECTED" as any } }),
+        prisma.order.count({
+          where: {
+            tenantId: tenantUser.tenantId,
+            OR: [{ deliveryDate: null }, { deliveryDate: { gte: currentOrdersDateStart } }],
+          },
+        }),
+        prisma.order.count({
+          where: {
+            tenantId: tenantUser.tenantId,
+            status: "AUTO_CREATED" as any,
+            OR: [{ deliveryDate: null }, { deliveryDate: { gte: currentOrdersDateStart } }],
+          },
+        }),
+        prisma.order.count({
+          where: {
+            tenantId: tenantUser.tenantId,
+            status: "CONFIRMED" as any,
+            OR: [{ deliveryDate: null }, { deliveryDate: { gte: currentOrdersDateStart } }],
+          },
+        }),
+        prisma.order.count({
+          where: {
+            tenantId: tenantUser.tenantId,
+            status: "REJECTED" as any,
+            OR: [{ deliveryDate: null }, { deliveryDate: { gte: currentOrdersDateStart } }],
+          },
+        }),
       ]),
     ]);
 
@@ -1740,29 +1766,11 @@ export default function AuftragseingangPage() {
 
   const hiddenPastOrderCount = sortedOrders.length - visibleOrders.length;
 
-  const currentOrdersForStats = sortedOrders.filter((order: any) => {
-    if (!order.deliveryDate) return true;
-
-    const deliveryDate = new Date(order.deliveryDate);
-
-    if (Number.isNaN(deliveryDate.getTime())) return true;
-
-    const match = String(order.deliveryTimeText || "").match(/(\d{1,2})[:.](\d{2})/);
-
-    if (match) {
-      deliveryDate.setHours(Number(match[1]), Number(match[2]), 0, 0);
-    } else {
-      deliveryDate.setHours(23, 59, 59, 999);
-    }
-
-    return deliveryDate.getTime() >= Date.now();
-  });
-
   const currentOrderStats = {
-    all: currentOrdersForStats.length,
-    review: currentOrdersForStats.filter((order: any) => order.status === "AUTO_CREATED").length,
-    confirmed: currentOrdersForStats.filter((order: any) => order.status === "CONFIRMED").length,
-    rejected: currentOrdersForStats.filter((order: any) => order.status === "REJECTED").length,
+    all: data.counts?.all || 0,
+    review: data.counts?.review || 0,
+    confirmed: data.counts?.confirmed || 0,
+    rejected: data.counts?.rejected || 0,
   };
 
 
@@ -1816,6 +1824,15 @@ export default function AuftragseingangPage() {
               <a key={String(label)} href={href} className={active ? "statCard active" : "statCard"}>
                 <span>{label}</span>
                 <strong>{count}</strong>
+                <small>
+                  {status === "AUTO_CREATED"
+                    ? "aktuell offen"
+                    : status === "CONFIRMED"
+                      ? "bevorstehend"
+                      : status === "REJECTED"
+                        ? "nicht übernommen"
+                        : "aktuell / kommend"}
+                </small>
               </a>
             );
           })}
@@ -4086,6 +4103,31 @@ export default function AuftragseingangPage() {
           .inboxPage {
             max-width: 1420px !important;
           }
+        }
+      `}</style>
+
+    
+      <style>{`
+        /* stat-card-info-lines-v18 */
+
+        .statCard small {
+          display: block !important;
+          margin-top: 3px !important;
+          font-size: 10.8px !important;
+          line-height: 1.2 !important;
+          font-weight: 500 !important;
+          color: inherit !important;
+          opacity: .72 !important;
+        }
+
+        .statCard {
+          align-content: center !important;
+          gap: 1px !important;
+        }
+
+        .statCard strong {
+          font-weight: 600 !important;
+          letter-spacing: -0.02em !important;
         }
       `}</style>
 
