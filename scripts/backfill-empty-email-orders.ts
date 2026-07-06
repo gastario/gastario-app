@@ -50,7 +50,7 @@ try {
           const quantity = Number(item?.quantity || 0);
           const totalCents = Number(item?.totalCents || 0);
 
-          return Boolean(name) && quantity > 0 && totalCents > 0;
+          return Boolean(name) && quantity > 0;
         })
       : [];
 
@@ -135,3 +135,4 @@ try {
 } finally {
   await prisma.$disconnect();
 }
+
