@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
-import {Form, redirect, useActionData, useFetcher, useLoaderData, Link} from "react-router";
+import { Form, redirect, useActionData, useFetcher, useLoaderData } from "react-router";
 
 const EMAIL_BUCKETS = [
   { key: "orders", label: "Bestätigungen", help: "Sichere Auftragsbestätigungen" },
@@ -1761,7 +1761,7 @@ export default function AuftragseingangPage() {
               <a key={String(label)} href={href} className={active ? "statCard active" : "statCard"}>
                 <span>{label}</span>
                 <strong>{count}</strong>
-              </Link>
+              </a>
             );
           })}
         </section>
@@ -1804,7 +1804,7 @@ export default function AuftragseingangPage() {
               </label>
 
               <button type="submit" className="primaryBtn small">Filtern</button>
-              <Link to={emailResetHref} className="secondaryBtn small">Zurücksetzen</Link>
+              <a href={emailResetHref} className="secondaryBtn small">Zurücksetzen</a>
             </Form>
           </div>
 
@@ -1831,7 +1831,7 @@ export default function AuftragseingangPage() {
                     <small>{bucket.help}</small>
                   </span>
                   <b>{count}</b>
-                </Link>
+                </a>
               );
             })}
           </div>
@@ -1863,12 +1863,12 @@ export default function AuftragseingangPage() {
                     </div>
 
                     <div className="mailActions">
-                      <Link to={"/email-pruefung/" + mail.id} className="primaryBtn small">Prüfen</Link>
+                      <a href={"/email-pruefung/" + mail.id} className="primaryBtn small">Prüfen</a>
 
                       {category === "inquiries" ? (
-                        <Link to={"/angebot-vorbereiten/" + mail.id} className="softBtn small">
+                        <a href={"/angebot-vorbereiten/" + mail.id} className="softBtn small">
                           Angebot vorbereiten
-                        </Link>
+                        </a>
                       ) : null}
 
                       {mail.status !== "IGNORED" ? (
@@ -1950,7 +1950,7 @@ export default function AuftragseingangPage() {
                     <span className="statusBadge">{statusLabel(order.status)}</span>
 
                     <div className="orderActions">
-                      <Link to={"/auftrag-pruefung/" + order.id} className="primaryBtn small">Prüfen</Link>
+                      <a href={"/auftrag-pruefung/" + order.id} className="primaryBtn small">Prüfen</a>
 
                       <Form method="post">
                         <input type="hidden" name="intent" value="deleteOrder" />
