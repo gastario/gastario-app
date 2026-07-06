@@ -197,6 +197,7 @@ export async function loader({ request }: { request: Request }) {
       selectedDate: "",
       selectedEmailCategory: "orders",
       searchQuery: "",
+      dateRange: "",
       emailBuckets: { orders: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
       activeStatus: "",
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
@@ -217,6 +218,7 @@ export async function loader({ request }: { request: Request }) {
       selectedDate: "",
       selectedEmailCategory: "orders",
       searchQuery: "",
+      dateRange: "",
       emailBuckets: { orders: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
       activeStatus: "",
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
@@ -229,10 +231,36 @@ export async function loader({ request }: { request: Request }) {
   const selectedDate = url.searchParams.get("date") || "";
   const selectedEmailCategory = url.searchParams.get("emailCategory") || "orders";
   const searchQuery = url.searchParams.get("q") || "";
-  const selectedDateStart = selectedDate ? new Date(selectedDate + "T00:00:00") : null;
-  const selectedDateEnd = selectedDateStart ? new Date(selectedDateStart) : null;
+  const dateRange = url.searchParams.get("dateRange") || "";
+
+  let selectedDateStart = selectedDate ? new Date(selectedDate + "T00:00:00") : null;
+  let selectedDateEnd = selectedDateStart ? new Date(selectedDateStart) : null;
 
   if (selectedDateEnd) selectedDateEnd.setDate(selectedDateEnd.getDate() + 1);
+
+  if (!selectedDate && dateRange) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (dateRange === "today") {
+      selectedDateStart = new Date(today);
+      selectedDateEnd = new Date(today);
+      selectedDateEnd.setDate(selectedDateEnd.getDate() + 1);
+    }
+
+    if (dateRange === "tomorrow") {
+      selectedDateStart = new Date(today);
+      selectedDateStart.setDate(selectedDateStart.getDate() + 1);
+      selectedDateEnd = new Date(selectedDateStart);
+      selectedDateEnd.setDate(selectedDateEnd.getDate() + 1);
+    }
+
+    if (dateRange === "week") {
+      selectedDateStart = new Date(today);
+      selectedDateEnd = new Date(today);
+      selectedDateEnd.setDate(selectedDateEnd.getDate() + 7);
+    }
+  }
 
   try {
     const [orders, emailInbox, counts] = await Promise.all([
@@ -305,6 +333,7 @@ export async function loader({ request }: { request: Request }) {
       selectedDate,
       selectedEmailCategory,
       searchQuery,
+      dateRange,
       emailBuckets,
       activeStatus: status,
       counts: {
@@ -325,6 +354,7 @@ export async function loader({ request }: { request: Request }) {
       selectedDate: "",
       selectedEmailCategory: "orders",
       searchQuery: "",
+      dateRange: "",
       emailBuckets: { orders: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
       activeStatus: status,
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
@@ -726,28 +756,67 @@ export default function AuftragseingangPage() {
               </div>
 
               <div style={{ display: "flex", gap: 10, alignItems: "end", flexWrap: "wrap" }}>
-                <Form method="get" style={{ display: "flex", gap: 8, alignItems: "end", flexWrap: "wrap" }}>
+                <Form method="get" style={{
+                  display: "flex",
+                  gap: 10,
+                  alignItems: "end",
+                  flexWrap: "wrap",
+                  background: "#f8fafc",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 20,
+                  padding: 10,
+                }}>
                   <input type="hidden" name="emailCategory" value={data.selectedEmailCategory} />
 
-                  <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: ".06em" }}>
+                  <label style={{
+                    display: "grid",
+                    gap: 5,
+                    color: "#64748b",
+                    fontSize: 11,
+                    fontWeight: 950,
+                    textTransform: "uppercase",
+                    letterSpacing: ".06em",
+                  }}>
                     Suche
                     <input
                       type="search"
                       name="q"
                       defaultValue={data.searchQuery || ""}
-                      placeholder="Betreff, Absender, Kunde..."
-                      style={{ ...inputStyle, minWidth: 240 }}
+                      placeholder="Betreff, Absender oder Kunde"
+                      style={{ ...inputStyle, minWidth: 270, borderRadius: 16 }}
                     />
                   </label>
 
-                  <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: ".06em" }}>
-                    Datum
-                    <input type="date" name="date" defaultValue={data.selectedDate || ""} style={inputStyle} />
+                  <label style={{
+                    display: "grid",
+                    gap: 5,
+                    color: "#64748b",
+                    fontSize: 11,
+                    fontWeight: 950,
+                    textTransform: "uppercase",
+                    letterSpacing: ".06em",
+                  }}>
+                    Zeitraum
+                    <select
+                      name="dateRange"
+                      defaultValue={data.dateRange || ""}
+                      style={{ ...inputStyle, minWidth: 190, borderRadius: 16 }}
+                    >
+                      <option value="">Alle Zeiträume</option>
+                      <option value="today">Heute</option>
+                      <option value="tomorrow">Morgen</option>
+                      <option value="week">Nächste 7 Tage</option>
+                    </select>
                   </label>
 
-                  <button type="submit" style={secondaryButtonStyle}>Filtern</button>
+                  <button type="submit" style={{ ...primaryButtonStyle, height: 44 }}>
+                    Filtern
+                  </button>
+
+                  <a href={"/auftragseingang?emailCategory=" + data.selectedEmailCategory} style={{ ...secondaryButtonStyle, height: 44 }}>
+                    Zurücksetzen
+                  </a>
                 </Form>
-                <a href={"/auftragseingang?emailCategory=" + data.selectedEmailCategory} style={secondaryButtonStyle}>Filter löschen</a>
               </div>
             </div>
 
@@ -757,6 +826,7 @@ export default function AuftragseingangPage() {
                 const params = new URLSearchParams();
                 if (data.selectedDate) params.set("date", data.selectedDate);
                 if (data.searchQuery) params.set("q", data.searchQuery);
+                if (data.dateRange) params.set("dateRange", data.dateRange);
                 params.set("emailCategory", bucket.key);
                 const active = data.selectedEmailCategory === bucket.key;
 
