@@ -118,22 +118,40 @@ function getHeycaterEmailKind(subject: string, text: string) {
     combined.includes("delivery note") ||
     combined.includes("lieferschein") ||
     combined.includes("dein morgiges catering") ||
-    combined.includes("dein morgiges heykantine");
+    combined.includes("dein morgiges heykantine") ||
+    combined.includes("morgiges catering mit heycater") ||
+    combined.includes("morgiges heykantine");
 
   const isConfirmation =
     combined.includes("partner event confirmation") ||
+    combined.includes("event confirmation") ||
+    combined.includes("order confirmation") ||
     combined.includes("fast track order bestatigt") ||
     combined.includes("fast track order bestaetigt") ||
     combined.includes("order bestatigt") ||
     combined.includes("order bestaetigt") ||
+    combined.includes("auftrag bestatigt") ||
+    combined.includes("auftrag bestaetigt") ||
     combined.includes("auftragsbestatigung") ||
     combined.includes("auftragsbestaetigung") ||
-    combined.includes("auftrag bestatigt") ||
-    combined.includes("auftrag bestaetigt");
+    combined.includes("angebotsbestatigung") ||
+    combined.includes("angebotsbestaetigung");
+
+  const isRequestOrOffer =
+    combined.includes("bitte auftrag bestatigen") ||
+    combined.includes("bitte auftrag bestaetigen") ||
+    combined.includes("angebot freigeben") ||
+    combined.includes("bitte angebot freigeben") ||
+    combined.includes("angebot erstellen") ||
+    combined.includes("bitte angebot") ||
+    combined.includes("anfrage") ||
+    combined.includes("angebotsanfrage") ||
+    combined.includes("catering anfrage");
 
   return {
     isDeliveryNote,
     isConfirmation,
+    isRequestOrOffer,
   };
 }
 
@@ -633,6 +651,7 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
 
 
 
