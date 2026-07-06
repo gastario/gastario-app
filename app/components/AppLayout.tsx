@@ -47,8 +47,8 @@ const navigationGroups = [
     label: "Produktion & Labels",
     items: [
       { label: "Produktion", to: "/produktion" },
-      { label: "MHD-Labels", to: "/foodlabels" },
-      { label: "Foodlabel erstellen", to: "/foodlabels/neu" },
+      { label: "MHD-Labels", to: "/mhd-labels" },
+      { label: "Foodlabel erstellen", to: "/foodlabels" },
       { label: "Packlisten", to: "/packlisten" },
     ],
   },
