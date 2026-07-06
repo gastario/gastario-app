@@ -1,4 +1,8 @@
-import { createRequire } from "module";
+﻿const fs = require("fs");
+
+const routePath = "app/routes/foodlabels.heycater-pdf.tsx";
+
+fs.writeFileSync(routePath, `import { createRequire } from "module";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import type { ActionFunctionArgs } from "react-router";
 
@@ -11,17 +15,17 @@ function mmToPt(mm: number) {
 
 function cleanLine(value: string) {
   return String(value || "")
-    .replace(/\s+/g, " ")
+    .replace(/\\s+/g, " ")
     .replace(/[–—]/g, "-")
     .trim();
 }
 
 function isDateLine(line: string) {
-  return /\b\d{2}[.-]\d{2}[.-]\d{4}\b/.test(line);
+  return /\\b\\d{2}[.-]\\d{2}[.-]\\d{4}\\b/.test(line);
 }
 
 function getDateFromLine(line: string) {
-  const match = line.match(/\b\d{2}[.-]\d{2}[.-]\d{4}\b/);
+  const match = line.match(/\\b\\d{2}[.-]\\d{2}[.-]\\d{4}\\b/);
   return match ? match[0].replace(/-/g, ".") : "";
 }
 
@@ -55,9 +59,9 @@ function looksLikeName(line: string) {
   if (lower.includes("salmon")) return false;
   if (lower.includes("chicken")) return false;
   if (lower.includes("catering")) return false;
-  if (/\d{4,}/.test(text)) return false;
+  if (/\\d{4,}/.test(text)) return false;
 
-  return /^[A-Za-zÄÖÜäöüßÀ-ÿ'’\- ]+$/.test(text);
+  return /^[A-Za-zÄÖÜäöüßÀ-ÿ'’\\- ]+$/.test(text);
 }
 
 type LabelData = {
@@ -72,7 +76,7 @@ type LabelData = {
 
 function parseHeycaterLabels(rawText: string): LabelData[] {
   const lines = rawText
-    .split(/\r?\n/)
+    .split(/\\r?\\n/)
     .map(cleanLine)
     .filter((line) => line && !isNoise(line));
 
@@ -95,7 +99,7 @@ function parseHeycaterLabels(rawText: string): LabelData[] {
         !lower.includes("caterer:") &&
         !lower.includes("customer:") &&
         !lower.includes("alexander") &&
-        !/^\d{5}/.test(lower)
+        !/^\\d{5}/.test(lower)
       );
     });
 
@@ -113,7 +117,7 @@ function parseHeycaterLabels(rawText: string): LabelData[] {
       "Customer:";
 
     const address =
-      searchArea.find((item) => /\d{5}/.test(item) || item.toLowerCase().includes("alexander")) ||
+      searchArea.find((item) => /\\d{5}/.test(item) || item.toLowerCase().includes("alexander")) ||
       "Alexanderstrasse 5, Berlin, 10178";
 
     if (dish || date) {
@@ -278,3 +282,6 @@ export async function action({ request }: ActionFunctionArgs) {
 export async function loader() {
   return new Response("Nur Upload per Formular erlaubt.", { status: 405 });
 }
+`, "utf8");
+
+console.log("Heycater PDF Route rendert jetzt eigene saubere Zebra Labels.");
