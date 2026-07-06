@@ -1,10 +1,10 @@
-import { Form, Link, useActionData, useLoaderData } from "react-router";
+﻿import { Form, Link, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 const STATUSES = [
   { value: "", label: "Alle" },
   { value: "AUTO_CREATED", label: "Pruefen" },
-  { value: "CONFIRMED", label: "Bestaetigt" },
+  { value: "CONFIRMED", label: "Bestätigt" },
   { value: "REJECTED", label: "Abgelehnt" },
 ];
 
@@ -22,7 +22,7 @@ function formatDate(value: string | Date | null | undefined) {
 
 function statusLabel(status: string) {
   if (status === "AUTO_CREATED") return "Pruefen";
-  if (status === "CONFIRMED") return "Bestaetigt";
+  if (status === "CONFIRMED") return "Bestätigt";
   if (status === "REJECTED") return "Abgelehnt";
   return status;
 }
@@ -34,7 +34,7 @@ function statusClass(status: string) {
 }
 
 export function meta() {
-  return [{ title: "Auftraege · Gastario" }];
+  return [{ title: "Auftraege Â· Gastario" }];
 }
 
 export async function loader({ request }: { request: Request }) {
@@ -102,7 +102,7 @@ export async function loader({ request }: { request: Request }) {
     });
 
     const totalValueCents = allOrders.reduce((sum, order) => {
-      return sum + order.items.reduce((itemSum, item) => itemSum + (item.totalPriceCents || 0), 0);
+      return sum + order.items.reduce((itemSum, item) => itemSum + (item.totalCents || item.totalPriceCents || 0), 0);
     }, 0);
 
     return {
@@ -208,7 +208,7 @@ export default function OrdersPage() {
           <p className="eyebrow">Verkauf</p>
           <h1>Auftraege</h1>
           <span className="pageSubline">
-            {data.tenant?.name || "Kein Mandant"} · uebernommene und operative Auftraege. Neue PDF-Importe zuerst im Auftragseingang pruefen.
+            {data.tenant?.name || "Kein Mandant"} Â· uebernommene und operative Auftraege. Neue PDF-Importe zuerst im Auftragseingang pruefen.
           </span>
         </div>
 
@@ -265,7 +265,7 @@ export default function OrdersPage() {
           <div>
             <p>Auftraege gesamt</p>
             <strong>{data.counts.all}</strong>
-            <span>{data.counts.confirmed} bestaetigt</span>
+            <span>{data.counts.confirmed} bestätigt</span>
           </div>
           <small data-trend="aktiv">echt</small>
         </article>
@@ -345,7 +345,7 @@ export default function OrdersPage() {
           ) : (
             data.orders.map((order: any) => {
               const total = order.items.reduce((sum: number, item: any) => {
-                return sum + (item.totalPriceCents || 0);
+                return sum + (item.totalCents || item.totalPriceCents || 0);
               }, 0);
 
               return (
@@ -380,11 +380,11 @@ export default function OrdersPage() {
 
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     <Link className="ghostButton" to={"/auftrag-pruefung/" + order.id}>
-                      Oeffnen
+                      Öffnen
                     </Link>
 
                     <Link className="ghostButton" to={"/auftrag-pruefung/" + order.id}>
-                      Pruefseite
+                      Prüfseite
                     </Link>
 
                     <Link
@@ -398,7 +398,7 @@ export default function OrdersPage() {
                       <input type="hidden" name="intent" value="deleteOrder" />
                       <input type="hidden" name="orderId" value={order.id} />
                       <button className="ghostButton" type="submit" style={{ color: "#b91c1c" }}>
-                        Loeschen
+                        Löschen
                       </button>
                     </Form>
                   </div>
@@ -419,3 +419,4 @@ const selectStyle = {
   fontWeight: 850,
   background: "white",
 };
+
