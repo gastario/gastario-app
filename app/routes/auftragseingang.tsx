@@ -108,6 +108,11 @@ function classifyIncomingEmail(mail: any) {
     "werbung",
     "logistikbeleg",
     "chefs culinar",
+    "briefing kw",
+    "eure uebersicht",
+    "eure übersicht",
+    "wochenuebersicht",
+    "wochenübersicht",
   ];
 
   if (cancellationSignals.some((signal) => combined.includes(signal))) return "other";
@@ -974,3 +979,4 @@ export function ErrorBoundary({ error }: { error: any }) {
     </div>
   );
 }
+
