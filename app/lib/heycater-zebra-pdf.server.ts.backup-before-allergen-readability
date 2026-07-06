@@ -148,23 +148,23 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
 
     y -= 2;
 
-    for (const line of wrapText(label.details, 42).slice(0, 3)) {
+    for (const line of wrapText(label.details, 46).slice(0, 3)) {
       page.drawText(line, {
         x: left,
         y,
-        size: 7.8,
-        font: bold,
-        color: black,
+        size: 7.1,
+        font: regular,
+        color: muted,
       });
-      y -= 9.2;
+      y -= 9.7;
     }
 
-    y -= 2.5;
+    y -= 4.5;
 
     page.drawText(safeText(label.caterer || "Caterer: Let Me Bowl heykantine").slice(0, 54), {
       x: left,
       y,
-      size: 7.4,
+      size: 7.9,
       font: bold,
       color: black,
     });
@@ -174,7 +174,7 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
     page.drawText(safeText(label.customer || "Customer: NinjaOne GmbH").slice(0, 54), {
       x: left,
       y,
-      size: 7.4,
+      size: 7.9,
       font: bold,
       color: black,
     });
