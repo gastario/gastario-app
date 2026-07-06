@@ -206,6 +206,11 @@ export async function action({ request, params }: { request: Request; params: { 
 export default function AuftragPruefungPage() {
   const { tenant, order, blocked } = useLoaderData<typeof loader>();
   const total = order.items.reduce((sum, item) => sum + (item.totalCents || 0), 0);
+  const correctionItems = order.items.filter((item) => isHeycaterCorrectionItem(item));
+  const visibleItems = order.items.filter((item) => !isHeycaterCorrectionItem(item));
+  const visibleItemsTotal = visibleItems.reduce((sum, item) => sum + (item.totalCents || 0), 0);
+  const correctionTotal = correctionItems.reduce((sum, item) => sum + (item.totalCents || 0), 0);
+  const hasHeycaterCorrection = correctionTotal > 0;
   const reviewState = getOrderReviewState(order);
   const missingChecks = reviewState.missing;
   const canConfirmOrder = missingChecks.length === 0;
