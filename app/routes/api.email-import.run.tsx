@@ -171,9 +171,7 @@ async function createReviewOrderFromExtracted(params: {
       reviewReason: "Automatisch aus E-Mail erstellt. Bitte pruefen.",
       items: {
         create: Array.isArray(extractedOrder.items)
-          ? extractedOrder.items.map((item: any) => ({
-              tenantId,
-              name: String(item.name || "Position"),
+          ? extractedOrder.items.map((item: any) => ({              name: String(item.name || "Position"),
               quantity: Number(item.quantity || 1),
               unit: "Stueck",
               unitCents: Number(item.unitCents || 0),
@@ -525,5 +523,6 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
 
 
