@@ -42,12 +42,14 @@ function isPlaceholderOrderItem(item: any) {
   );
 }
 
-function getMissingOrderChecks(order: any) {
+function getOrderReviewState(order: any) {
   const items = Array.isArray(order?.items) ? order.items : [];
   const totalCents = items.reduce((sum: number, item: any) => sum + (item?.totalCents || 0), 0);
   const realItems = items.filter((item: any) => !isPlaceholderOrderItem(item));
+  const isHeycater = normalizeText(order?.platformName || order?.source).includes("heycater");
 
   const missing: string[] = [];
+  const hints: string[] = [];
 
   if (!String(order?.deliveryAddress || "").trim()) {
     missing.push("Lieferadresse fehlt");
@@ -62,10 +64,26 @@ function getMissingOrderChecks(order: any) {
   }
 
   if (totalCents <= 0) {
-    missing.push("Summe ist 0 Euro");
+    if (isHeycater && realItems.length > 0) {
+      missing.push("Preise fehlen");
+      hints.push("Die Positionen wurden aus einem Heycater-Lieferschein erkannt. Dieser Lieferschein enthaelt Mengen und Produkte, aber keine Preise.");
+      hints.push("Bitte Preise ergaenzen oder die Heycater-Auftragsbestaetigung mit Preisen importieren.");
+    } else {
+      missing.push("Summe ist 0 Euro");
+    }
   }
 
-  return missing;
+  return {
+    missing,
+    hints,
+    totalCents,
+    realItemCount: realItems.length,
+    isHeycater,
+  };
+}
+
+function getMissingOrderChecks(order: any) {
+  return getOrderReviewState(order).missing;
 }
 
 export function meta() {
@@ -176,7 +194,8 @@ export async function action({ request, params }: { request: Request; params: { 
 export default function AuftragPruefungPage() {
   const { tenant, order, blocked } = useLoaderData<typeof loader>();
   const total = order.items.reduce((sum, item) => sum + (item.totalCents || 0), 0);
-  const missingChecks = getMissingOrderChecks(order);
+  const reviewState = getOrderReviewState(order);
+  const missingChecks = reviewState.missing;
   const canConfirmOrder = missingChecks.length === 0;
   const deliveryHref = "/lieferscheine" + (order.deliveryDate ? "?date=" + formatDateInput(order.deliveryDate) : "");
 
@@ -230,6 +249,14 @@ export default function AuftragPruefungPage() {
                 <li key={item}>{item}</li>
               ))}
             </ul>
+            {reviewState.hints.length > 0 ? (
+              <div style={dangerHintBoxStyle}>
+                {reviewState.hints.map((hint) => (
+                  <div key={hint}>{hint}</div>
+                ))}
+              </div>
+            ) : null}
+
             {blocked ? (
               <div style={dangerSmallStyle}>
                 Der Auftrag wurde nicht uebernommen, weil wichtige Daten fehlen.
@@ -597,4 +624,15 @@ const dangerSmallStyle: React.CSSProperties = {
   marginTop: 8,
   fontSize: 13,
   color: "#7f1d1d",
+};
+
+const dangerHintBoxStyle: React.CSSProperties = {
+  marginTop: 10,
+  padding: "10px 12px",
+  borderRadius: 12,
+  background: "#fff7ed",
+  border: "1px solid #fed7aa",
+  color: "#9a3412",
+  fontSize: 13,
+  lineHeight: 1.55,
 };
