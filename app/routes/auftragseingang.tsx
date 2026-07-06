@@ -515,22 +515,22 @@ export default function AuftragseingangPage() {
   };
 
   const cardStyle: any = {
-    background: "rgba(255,255,255,0.97)",
-    border: "1px solid #dbe7ee",
-    borderRadius: 24,
-    boxShadow: "0 18px 50px rgba(15, 23, 42, 0.08)",
+    background: "#ffffff",
+    border: "1px solid #dbe5ec",
+    borderRadius: 14,
+    boxShadow: "0 6px 16px rgba(15, 23, 42, 0.035)",
   };
 
   const mailCardStyle: any = {
     border: "1px solid #e2e8f0",
-    borderRadius: 20,
-    padding: 15,
-    background: "linear-gradient(180deg, #ffffff 0%, #fbfdff 100%)",
+    borderRadius: 12,
+    padding: 12,
+    background: "#ffffff",
     display: "grid",
     gridTemplateColumns: "minmax(0, 1fr) auto",
-    gap: 14,
+    gap: 12,
     alignItems: "center",
-    boxShadow: "0 8px 22px rgba(15, 23, 42, 0.035)",
+    boxShadow: "none",
   };
 
   const mailMetaStyle: any = {
@@ -555,40 +555,42 @@ export default function AuftragseingangPage() {
   const sectionLabelStyle: any = {
     color: "#047857",
     textTransform: "uppercase",
-    letterSpacing: ".10em",
-    fontSize: 11,
-    fontWeight: 950,
+    letterSpacing: ".09em",
+    fontSize: 10,
+    fontWeight: 700,
   };
 
   const primaryButtonStyle: any = {
     border: "1px solid #0f9f7a",
     background: "#0f9f7a",
     color: "#ffffff",
-    borderRadius: 14,
-    padding: "9px 14px",
-    fontWeight: 950,
+    borderRadius: 8,
+    padding: "7px 11px",
+    fontWeight: 600,
     fontSize: 13,
     cursor: "pointer",
     textDecoration: "none",
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    boxShadow: "0 10px 22px rgba(15, 159, 122, 0.18)",
+    boxShadow: "none",
+    minHeight: 34,
   };
 
   const secondaryButtonStyle: any = {
     border: "1px solid #d6e1ea",
     background: "#ffffff",
     color: "#0f172a",
-    borderRadius: 14,
-    padding: "9px 14px",
-    fontWeight: 900,
+    borderRadius: 8,
+    padding: "7px 11px",
+    fontWeight: 600,
     fontSize: 13,
     cursor: "pointer",
     textDecoration: "none",
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
+    minHeight: 34,
   };
 
   const dangerButtonStyle: any = {
@@ -599,30 +601,33 @@ export default function AuftragseingangPage() {
   };
 
   const inputStyle: any = {
-    height: 44,
+    height: 36,
     border: "1px solid #d6e1ea",
-    borderRadius: 14,
-    padding: "0 13px",
-    fontWeight: 850,
+    borderRadius: 8,
+    padding: "0 10px",
+    fontWeight: 450,
+    fontSize: 13,
     color: "#0f172a",
     background: "#ffffff",
   };
 
   const thStyle: any = {
     textAlign: "left",
-    padding: "14px 16px",
+    padding: "10px 12px",
     color: "#64748b",
-    fontSize: 11,
+    fontSize: 10,
     textTransform: "uppercase",
-    letterSpacing: ".06em",
+    letterSpacing: ".055em",
     borderBottom: "1px solid #e8eef4",
+    fontWeight: 700,
   };
 
   const tdStyle: any = {
-    padding: "16px",
+    padding: "11px 12px",
     borderBottom: "1px solid #edf2f7",
     verticalAlign: "top",
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: 450,
   };
 
   if (data.setupError) {
@@ -630,9 +635,9 @@ export default function AuftragseingangPage() {
       <AppLayout>
         <div style={pageStyle}>
           <div style={shellStyle}>
-            <section style={{ ...cardStyle, padding: 28, maxWidth: 760 }}>
+            <section style={{ ...cardStyle, padding: 20, maxWidth: 760 }}>
               <div style={sectionLabelStyle}>Fehler</div>
-              <h1 style={{ margin: "8px 0 10px", fontSize: 32 }}>Auftragseingang konnte nicht geladen werden</h1>
+              <h1 style={{ margin: "8px 0 10px", fontSize: 25 }}>Auftragseingang konnte nicht geladen werden</h1>
               <p style={{ margin: 0, color: "#475569", fontWeight: 700 }}>{data.setupError}</p>
             </section>
           </div>
@@ -845,7 +850,7 @@ export default function AuftragseingangPage() {
 
         /* E-Mail-Karte kompakter */
         section {
-          padding: 22px !important;
+          padding: 16px !important;
           border-radius: 17px !important;
         }
 
@@ -1200,11 +1205,11 @@ export default function AuftragseingangPage() {
     <AppLayout>
       <div style={pageStyle}>
         <div style={shellStyle}>
-          <header style={{ ...cardStyle, padding: 24, marginBottom: 18 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 18, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <header style={{ ...cardStyle, padding: 18, marginBottom: 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start", flexWrap: "wrap" }}>
               <div>
                 <div style={sectionLabelStyle}>Arbeitsbereich</div>
-                <h1 style={{ margin: "6px 0 0", fontSize: 38, lineHeight: 1, letterSpacing: "-0.055em" }}>
+                <h1 style={{ margin: "6px 0 0", fontSize: 27, lineHeight: 1, letterSpacing: "-0.055em" }}>
                   Auftragseingang
                 </h1>
                 <p style={{ margin: "10px 0 0", color: "#64748b", fontWeight: 700, maxWidth: 740 }}>
@@ -1277,8 +1282,8 @@ export default function AuftragseingangPage() {
                     color: active ? "#ffffff" : "#0f172a",
                   }}
                 >
-                  <div style={{ fontSize: 12, fontWeight: 900, color: active ? "rgba(255,255,255,.8)" : "#64748b" }}>{label}</div>
-                  <div style={{ fontSize: 32, fontWeight: 950, lineHeight: 1.1, marginTop: 4 }}>{count}</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: active ? "rgba(255,255,255,.8)" : "#64748b" }}>{label}</div>
+                  <div style={{ fontSize: 25, fontWeight: 700, lineHeight: 1.1, marginTop: 4 }}>{count}</div>
                 </a>
               );
             })}
@@ -1289,17 +1294,17 @@ export default function AuftragseingangPage() {
               background: "#fff7ed",
               border: "1px solid #fdba74",
               color: "#9a3412",
-              borderRadius: 18,
+              borderRadius: 12,
               padding: 14,
-              fontWeight: 850,
+              fontWeight: 500,
               marginBottom: 16,
             }}>
               {actionData.error}
             </div>
           ) : null}
 
-          <section style={{ ...cardStyle, padding: 22, marginBottom: 18 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap", marginBottom: 16 }}>
+          <section style={{ ...cardStyle, padding: 16, marginBottom: 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start", flexWrap: "wrap", marginBottom: 16 }}>
               <div>
                 <div style={sectionLabelStyle}>E-Mail Eingang</div>
                 <h2 style={{ margin: "5px 0 0", fontSize: 26, letterSpacing: "-0.04em" }}>{emailCategoryLabel(data.selectedEmailCategory)}</h2>
@@ -1316,7 +1321,7 @@ export default function AuftragseingangPage() {
                   flexWrap: "wrap",
                   background: "#f8fafc",
                   border: "1px solid #e2e8f0",
-                  borderRadius: 20,
+                  borderRadius: 12,
                   padding: 10,
                 }}>
                   <input type="hidden" name="emailCategory" value={data.selectedEmailCategory} />
@@ -1326,7 +1331,7 @@ export default function AuftragseingangPage() {
                     gap: 5,
                     color: "#64748b",
                     fontSize: 11,
-                    fontWeight: 950,
+                    fontWeight: 700,
                     textTransform: "uppercase",
                     letterSpacing: ".06em",
                   }}>
@@ -1345,7 +1350,7 @@ export default function AuftragseingangPage() {
                     gap: 5,
                     color: "#64748b",
                     fontSize: 11,
-                    fontWeight: 950,
+                    fontWeight: 700,
                     textTransform: "uppercase",
                     letterSpacing: ".06em",
                   }}>
@@ -1390,7 +1395,7 @@ export default function AuftragseingangPage() {
                       border: "1px solid " + (active ? "#057a67" : "#dbe7ee"),
                       background: active ? "#057a67" : "#f8fafc",
                       color: active ? "#ffffff" : "#0f172a",
-                      borderRadius: 18,
+                      borderRadius: 12,
                       padding: "13px 14px",
                       textDecoration: "none",
                       display: "grid",
@@ -1404,7 +1409,7 @@ export default function AuftragseingangPage() {
                         padding: "3px 8px",
                         background: active ? "rgba(255,255,255,.18)" : "#ffffff",
                         fontSize: 12,
-                        fontWeight: 950,
+                        fontWeight: 700,
                       }}>
                         {count}
                       </span>
@@ -1418,7 +1423,7 @@ export default function AuftragseingangPage() {
             </div>
 
             {data.emailInbox.length === 0 ? (
-              <div style={{ border: "1px dashed #cbd5e1", borderRadius: 20, padding: 22, background: "#f8fafc", color: "#475569", fontWeight: 800 }}>
+              <div style={{ border: "1px dashed #cbd5e1", borderRadius: 12, padding: 16, background: "#f8fafc", color: "#475569", fontWeight: 600 }}>
                 {data.searchQuery
                   ? "Keine E-Mails für diese Suche gefunden."
                   : "Keine ungeprüften E-Mails in dieser Kategorie."}
@@ -1440,11 +1445,11 @@ export default function AuftragseingangPage() {
                             background: category === "inquiries" ? "#ecfdf5" : "#f1f5f9",
                             color: category === "inquiries" ? "#047857" : "#334155",
                             fontSize: 12,
-                            fontWeight: 950,
+                            fontWeight: 700,
                           }}>
                             {emailCategoryLabel(category)}
                           </span>
-                          <span style={{ color: "#94a3b8", fontSize: 12, fontWeight: 850 }}>
+                          <span style={{ color: "#94a3b8", fontSize: 12, fontWeight: 500 }}>
                             {mail.receivedAt ? new Date(mail.receivedAt).toLocaleString("de-DE") : "-"}
                           </span>
                         </div>
@@ -1498,15 +1503,15 @@ export default function AuftragseingangPage() {
             )}
           </section>
 
-          <section style={{ ...cardStyle, padding: 22 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 16 }}>
+          <section style={{ ...cardStyle, padding: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 16 }}>
               <div>
                 <div style={sectionLabelStyle}>Aufträge</div>
                 <h2 style={{ margin: "5px 0 0", fontSize: 26, letterSpacing: "-0.04em" }}>Zu prüfende Aufträge</h2>
               </div>
             </div>
 
-            <div style={{ overflowX: "auto", border: "1px solid #e2e8f0", borderRadius: 18 }}>
+            <div style={{ overflowX: "auto", border: "1px solid #e2e8f0", borderRadius: 12 }}>
               <table style={{ width: "100%", borderCollapse: "collapse", background: "#ffffff" }}>
                 <thead>
                   <tr>
@@ -1555,7 +1560,7 @@ export default function AuftragseingangPage() {
                                 </div>
                               ))}
                               {order.items.length > 2 ? (
-                                <div style={{ color: "#64748b", fontSize: 12, fontWeight: 850 }}>
+                                <div style={{ color: "#64748b", fontSize: 12, fontWeight: 500 }}>
                                   + {order.items.length - 2} weitere Positionen
                                 </div>
                               ) : null}
@@ -1569,7 +1574,7 @@ export default function AuftragseingangPage() {
                               background: order.status === "AUTO_CREATED" ? "#ecfdf5" : order.status === "CONFIRMED" ? "#eff6ff" : "#fff7ed",
                               color: order.status === "AUTO_CREATED" ? "#047857" : order.status === "CONFIRMED" ? "#1d4ed8" : "#9a3412",
                               fontSize: 12,
-                              fontWeight: 950,
+                              fontWeight: 700,
                               display: "inline-flex",
                             }}>
                               {statusLabel(order.status)}
@@ -1618,13 +1623,13 @@ export function ErrorBoundary({ error }: { error: any }) {
         background: "white",
         border: "1px solid #dbe5ee",
         borderRadius: 28,
-        padding: 28,
+        padding: 20,
         boxShadow: "0 24px 70px rgba(15, 23, 42, 0.10)"
       }}>
-        <div style={{ color: "#b91c1c", textTransform: "uppercase", letterSpacing: ".11em", fontSize: 11, fontWeight: 950, marginBottom: 8 }}>
+        <div style={{ color: "#b91c1c", textTransform: "uppercase", letterSpacing: ".11em", fontSize: 11, fontWeight: 700, marginBottom: 8 }}>
           Fehler {status}
         </div>
-        <h1 style={{ margin: 0, fontSize: 38, lineHeight: 1, letterSpacing: "-0.055em" }}>
+        <h1 style={{ margin: 0, fontSize: 27, lineHeight: 1, letterSpacing: "-0.055em" }}>
           Auftragseingang konnte nicht geladen werden
         </h1>
         <p style={{ margin: "14px 0 0", color: "#475569", fontWeight: 750, lineHeight: 1.55 }}>
