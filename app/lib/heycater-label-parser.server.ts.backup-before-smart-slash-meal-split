@@ -337,20 +337,9 @@ function splitMealAndInfo(value: string) {
     return { meal: line, info: "" };
   }
 
-  // Heycater kann so liefern:
-  // Korean BBQ Veggie Wrap / Vegetarian / Cereals containing gluten
-  // oder auch:
-  // Vegetarian / Korean BBQ Veggie Wrap / Cereals containing gluten
-  //
-  // Deshalb ist das Gericht NICHT immer der erste Teil.
-  // Gericht = erster Teil, der keine Info/Allergen-Zeile ist.
-  const mealPart = parts.find((part) => !isInfoLine(part)) || parts[0];
-
-  const infoParts = parts.filter((part) => part !== mealPart);
-
   return {
-    meal: mealPart,
-    info: infoParts.join(" / "),
+    meal: parts[0],
+    info: parts.slice(1).join(" / "),
   };
 }
 
