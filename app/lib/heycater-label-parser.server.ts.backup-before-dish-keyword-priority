@@ -326,39 +326,6 @@ function cleanBlockAfterDate(lines: string[], start: number, end: number) {
     .filter((line) => !isFooterLine(line));
 }
 
-function isDishLine(value: string) {
-  const lower = normalize(value);
-
-  const dishWords = [
-    "bowl",
-    "wrap",
-    "salad",
-    "risotto",
-    "curry",
-    "chicken",
-    "salmon",
-    "tofu",
-    "bbq",
-    "veggie",
-    "tempura",
-    "falafel",
-    "pasta",
-    "mushroom",
-    "rice",
-    "noodle",
-    "shawarma",
-    "grill",
-    "tuna",
-    "beetroot",
-    "oriental",
-    "korean",
-    "panaeng",
-    "teriyaki"
-  ];
-
-  return dishWords.some((word) => lower.includes(word));
-}
-
 function splitMealAndInfo(value: string) {
   const line = cleanLine(value);
   const parts = line
@@ -370,13 +337,14 @@ function splitMealAndInfo(value: string) {
     return { meal: line, info: "" };
   }
 
-  // Gericht gewinnt immer, wenn ein typisches Gerichtswort vorkommt.
-  // Beispiel: Vegetarian / Korean BBQ Veggie Wrap / Cereals containing gluten
-  // => Gericht: Korean BBQ Veggie Wrap
-  const mealPart =
-    parts.find((part) => isDishLine(part)) ||
-    parts.find((part) => !isInfoLine(part)) ||
-    parts[0];
+  // Heycater kann so liefern:
+  // Korean BBQ Veggie Wrap / Vegetarian / Cereals containing gluten
+  // oder auch:
+  // Vegetarian / Korean BBQ Veggie Wrap / Cereals containing gluten
+  //
+  // Deshalb ist das Gericht NICHT immer der erste Teil.
+  // Gericht = erster Teil, der keine Info/Allergen-Zeile ist.
+  const mealPart = parts.find((part) => !isInfoLine(part)) || parts[0];
 
   const infoParts = parts.filter((part) => part !== mealPart);
 
@@ -450,15 +418,13 @@ function parseOneHeycaterLabel(date: string, block: string[]) {
   // Sicherheitskorrektur:
   // Wenn versehentlich "Vegetarian", "Vegan", "Halal" usw. als Gericht genommen wurde,
   // aber in den Details ein echter Gerichtname steckt, dann tauschen.
-  if ((isInfoLine(finalMeal) || !isDishLine(finalMeal)) && finalDetails) {
+  if (isInfoLine(finalMeal) && finalDetails) {
     const detailParts = finalDetails
       .split("/")
       .map((part) => cleanLine(part))
       .filter(Boolean);
 
-    const realMealFromDetails =
-      detailParts.find((part) => isDishLine(part)) ||
-      detailParts.find((part) => !isInfoLine(part));
+    const realMealFromDetails = detailParts.find((part) => !isInfoLine(part));
 
     if (realMealFromDetails) {
       finalMeal = realMealFromDetails;
