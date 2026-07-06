@@ -196,6 +196,7 @@ export async function loader({ request }: { request: Request }) {
       emailInbox: [],
       selectedDate: "",
       selectedEmailCategory: "orders",
+      searchQuery: "",
       emailBuckets: { orders: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
       activeStatus: "",
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
@@ -215,6 +216,7 @@ export async function loader({ request }: { request: Request }) {
       emailInbox: [],
       selectedDate: "",
       selectedEmailCategory: "orders",
+      searchQuery: "",
       emailBuckets: { orders: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
       activeStatus: "",
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
@@ -226,6 +228,7 @@ export async function loader({ request }: { request: Request }) {
   const status = url.searchParams.get("status") || "";
   const selectedDate = url.searchParams.get("date") || "";
   const selectedEmailCategory = url.searchParams.get("emailCategory") || "orders";
+  const searchQuery = url.searchParams.get("q") || "";
   const selectedDateStart = selectedDate ? new Date(selectedDate + "T00:00:00") : null;
   const selectedDateEnd = selectedDateStart ? new Date(selectedDateStart) : null;
 
@@ -254,9 +257,21 @@ export async function loader({ request }: { request: Request }) {
           ...(selectedDateStart && selectedDateEnd
             ? { receivedAt: { gte: selectedDateStart, lt: selectedDateEnd } }
             : {}),
+          ...(searchQuery
+            ? {
+                OR: [
+                  { subject: { contains: searchQuery, mode: "insensitive" } },
+                  { sender: { contains: searchQuery, mode: "insensitive" } },
+                  { mailbox: { contains: searchQuery, mode: "insensitive" } },
+                ],
+              }
+            : {}),
         },
         include: { attachments: true },
-        orderBy: { receivedAt: "desc" },
+        orderBy: [
+          { receivedAt: "desc" },
+          { createdAt: "desc" },
+        ],
         take: 80,
       }),
 
@@ -289,6 +304,7 @@ export async function loader({ request }: { request: Request }) {
       emailInbox: filteredEmailInbox,
       selectedDate,
       selectedEmailCategory,
+      searchQuery,
       emailBuckets,
       activeStatus: status,
       counts: {
@@ -308,6 +324,7 @@ export async function loader({ request }: { request: Request }) {
       emailInbox: [],
       selectedDate: "",
       selectedEmailCategory: "orders",
+      searchQuery: "",
       emailBuckets: { orders: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
       activeStatus: status,
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
@@ -711,13 +728,26 @@ export default function AuftragseingangPage() {
               <div style={{ display: "flex", gap: 10, alignItems: "end", flexWrap: "wrap" }}>
                 <Form method="get" style={{ display: "flex", gap: 8, alignItems: "end", flexWrap: "wrap" }}>
                   <input type="hidden" name="emailCategory" value={data.selectedEmailCategory} />
+
+                  <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: ".06em" }}>
+                    Suche
+                    <input
+                      type="search"
+                      name="q"
+                      defaultValue={data.searchQuery || ""}
+                      placeholder="Betreff, Absender, Kunde..."
+                      style={{ ...inputStyle, minWidth: 240 }}
+                    />
+                  </label>
+
                   <label style={{ display: "grid", gap: 5, color: "#64748b", fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: ".06em" }}>
                     Datum
                     <input type="date" name="date" defaultValue={data.selectedDate || ""} style={inputStyle} />
                   </label>
-                  <button type="submit" style={secondaryButtonStyle}>Anzeigen</button>
+
+                  <button type="submit" style={secondaryButtonStyle}>Filtern</button>
                 </Form>
-                <a href="/auftragseingang" style={secondaryButtonStyle}>Alle zeigen</a>
+                <a href={"/auftragseingang?emailCategory=" + data.selectedEmailCategory} style={secondaryButtonStyle}>Filter löschen</a>
               </div>
             </div>
 
@@ -726,6 +756,7 @@ export default function AuftragseingangPage() {
                 const count = data.emailBuckets[bucket.key as keyof typeof data.emailBuckets] ?? 0;
                 const params = new URLSearchParams();
                 if (data.selectedDate) params.set("date", data.selectedDate);
+                if (data.searchQuery) params.set("q", data.searchQuery);
                 params.set("emailCategory", bucket.key);
                 const active = data.selectedEmailCategory === bucket.key;
 
@@ -766,7 +797,9 @@ export default function AuftragseingangPage() {
 
             {data.emailInbox.length === 0 ? (
               <div style={{ border: "1px dashed #cbd5e1", borderRadius: 20, padding: 22, background: "#f8fafc", color: "#475569", fontWeight: 800 }}>
-                Keine ungeprüften E-Mails in dieser Kategorie.
+                {data.searchQuery
+                  ? "Keine E-Mails für diese Suche gefunden."
+                  : "Keine ungeprüften E-Mails in dieser Kategorie."}
               </div>
             ) : (
               <div style={{ display: "grid", gap: 12 }}>
