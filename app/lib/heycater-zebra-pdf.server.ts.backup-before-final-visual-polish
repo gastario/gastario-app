@@ -111,7 +111,7 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
     const left = 9;
     const right = width - 9;
 
-    drawDashedLine(page, left, right, height - 8);
+    drawDashedLine(page, left, right, height - 9);
 
     page.drawText(safeText(label.name || "-").slice(0, 34), {
       x: left,
@@ -127,7 +127,7 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
       page.drawText(date, {
         x: width - 55,
         y: height - 19,
-        size: 7.8,
+        size: 7.4,
         font: regular,
         color: black,
       });
@@ -139,24 +139,24 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
       page.drawText(line, {
         x: left,
         y,
-        size: 9.8,
+        size: 9.2,
         font: regular,
         color: black,
       });
-      y -= 11.8;
+      y -= 11.2;
     }
 
     y -= 2;
 
-    for (const line of wrapText(label.details, 46).slice(0, 3)) {
+    for (const line of wrapText(label.details, 48).slice(0, 3)) {
       page.drawText(line, {
         x: left,
         y,
-        size: 7.1,
+        size: 6.8,
         font: regular,
         color: muted,
       });
-      y -= 9.7;
+      y -= 9.4;
     }
 
     y -= 4.5;
@@ -164,17 +164,17 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
     page.drawText(safeText(label.caterer || "Caterer: Let Me Bowl heykantine").slice(0, 54), {
       x: left,
       y,
-      size: 7.9,
+      size: 7.6,
       font: bold,
       color: black,
     });
 
-    y -= 9.7;
+    y -= 9.4;
 
     page.drawText(safeText(label.customer || "Customer: NinjaOne GmbH").slice(0, 54), {
       x: left,
       y,
-      size: 7.9,
+      size: 7.6,
       font: bold,
       color: black,
     });
@@ -190,7 +190,7 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
     page.drawText(safeText(label.address || "Alexanderstrasse 5, Berlin, 10178").slice(0, 42), {
       x: left,
       y: 17,
-      size: 7.3,
+      size: 7,
       font: regular,
       color: black,
     });
