@@ -93,6 +93,8 @@ function hasEnoughOrderData(order: any) {
 }
 
 async function extractPdfText(buffer: Buffer) {
+  let parser: any = null;
+
   try {
     if (!buffer || buffer.length === 0) {
       return {
@@ -110,10 +112,13 @@ async function extractPdfText(buffer: Buffer) {
       result = await pdfParseModule(buffer);
     } else if (typeof pdfParseModule.default === "function") {
       result = await pdfParseModule.default(buffer);
+    } else if (typeof pdfParseModule.PDFParse === "function") {
+      parser = new pdfParseModule.PDFParse({ data: buffer });
+      result = await parser.getText();
     } else {
       return {
         text: "",
-        error: "PDF_PARSE_FUNCTION_NOT_FOUND",
+        error: "PDF_PARSE_FUNCTION_NOT_FOUND exports=" + Object.keys(pdfParseModule || {}).join(","),
       };
     }
 
@@ -126,6 +131,10 @@ async function extractPdfText(buffer: Buffer) {
       text: "",
       error: String(error?.message || error),
     };
+  } finally {
+    if (parser && typeof parser.destroy === "function") {
+      await parser.destroy();
+    }
   }
 }
 
@@ -516,4 +525,5 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
 
