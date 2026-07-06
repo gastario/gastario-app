@@ -3,7 +3,7 @@ import AppLayout from "../components/AppLayout";
 
 const STATUSES = [
   { value: "", label: "Alle" },
-  { value: "AUTO_CREATED", label: "Pruefen" },
+  { value: "AUTO_CREATED", label: "Prüfen" },
   { value: "CONFIRMED", label: "Bestätigt" },
   { value: "REJECTED", label: "Abgelehnt" },
 ];
@@ -21,7 +21,7 @@ function formatDate(value: string | Date | null | undefined) {
 }
 
 function statusLabel(status: string) {
-  if (status === "AUTO_CREATED") return "Pruefen";
+  if (status === "AUTO_CREATED") return "Prüfen";
   if (status === "CONFIRMED") return "Bestätigt";
   if (status === "REJECTED") return "Abgelehnt";
   return status;
@@ -34,7 +34,7 @@ function statusClass(status: string) {
 }
 
 export function meta() {
-  return [{ title: "Auftraege Â· Gastario" }];
+  return [{ title: "Aufträge Â· Gastario" }];
 }
 
 export async function loader({ request }: { request: Request }) {
@@ -119,11 +119,11 @@ export async function loader({ request }: { request: Request }) {
       },
     };
   } catch (error) {
-    console.error("Auftraege loader failed:", error);
+    console.error("Aufträge loader failed:", error);
 
     return {
       tenant: access.tenant,
-      setupError: "Auftraege konnten nicht geladen werden. Bitte Datenbank/Schema pruefen.",
+      setupError: "Aufträge konnten nicht geladen werden. Bitte Datenbank/Schema pruefen.",
       activeStatus,
       orders: [],
       counts: {
@@ -206,9 +206,9 @@ export default function OrdersPage() {
       <header className="topbar">
         <div>
           <p className="eyebrow">Verkauf</p>
-          <h1>Auftraege</h1>
+          <h1>Aufträge</h1>
           <span className="pageSubline">
-            {data.tenant?.name || "Kein Mandant"} Â· uebernommene und operative Auftraege. Neue PDF-Importe zuerst im Auftragseingang pruefen.
+            {data.tenant?.name || "Kein Mandant"} Â· übernommene und operative Aufträge. Neue PDF-Importe zuerst im Auftragseingang pruefen.
           </span>
         </div>
 
@@ -263,7 +263,7 @@ export default function OrdersPage() {
       <section className="orderSummaryGrid">
         <article className="metricCard">
           <div>
-            <p>Auftraege gesamt</p>
+            <p>Aufträge gesamt</p>
             <strong>{data.counts.all}</strong>
             <span>{data.counts.confirmed} bestätigt</span>
           </div>
@@ -272,7 +272,7 @@ export default function OrdersPage() {
 
         <article className="metricCard">
           <div>
-            <p>Pruefen</p>
+            <p>Prüfen</p>
             <strong>{data.counts.review}</strong>
             <span>im Auftragseingang</span>
           </div>
@@ -301,8 +301,8 @@ export default function OrdersPage() {
       <section className="panel">
         <div className="panelHeader">
           <div>
-            <p className="eyebrow">Auftragsuebersicht</p>
-            <h2>Aktuelle Auftraege</h2>
+            <p className="eyebrow">Auftragsübersicht</p>
+            <h2>Aktuelle Aufträge</h2>
           </div>
 
           <div className="filterActions">
@@ -332,7 +332,7 @@ export default function OrdersPage() {
           {data.orders.length === 0 ? (
             <div className="ordersRow">
               <div>
-                <strong>Keine Auftraege vorhanden.</strong>
+                <strong>Keine Aufträge vorhanden.</strong>
                 <small>{data.activeStatus ? "Filter aktiv" : "Noch leer"}</small>
               </div>
               <div>-</div>
