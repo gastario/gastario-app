@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
-import { Form, redirect, useActionData, useFetcher, useLoaderData } from "react-router";
+import {Form, redirect, useActionData, useFetcher, useLoaderData, Link} from "react-router";
 
 const EMAIL_BUCKETS = [
   { key: "orders", label: "Bestätigungen", help: "Sichere Auftragsbestätigungen" },
@@ -1761,7 +1761,7 @@ export default function AuftragseingangPage() {
               <a key={String(label)} href={href} className={active ? "statCard active" : "statCard"}>
                 <span>{label}</span>
                 <strong>{count}</strong>
-              </a>
+              </Link>
             );
           })}
         </section>
@@ -1804,7 +1804,7 @@ export default function AuftragseingangPage() {
               </label>
 
               <button type="submit" className="primaryBtn small">Filtern</button>
-              <a href={emailResetHref} className="secondaryBtn small">Zurücksetzen</a>
+              <Link to={emailResetHref} className="secondaryBtn small">Zurücksetzen</Link>
             </Form>
           </div>
 
@@ -1831,7 +1831,7 @@ export default function AuftragseingangPage() {
                     <small>{bucket.help}</small>
                   </span>
                   <b>{count}</b>
-                </a>
+                </Link>
               );
             })}
           </div>
@@ -1863,12 +1863,12 @@ export default function AuftragseingangPage() {
                     </div>
 
                     <div className="mailActions">
-                      <a href={"/email-pruefung/" + mail.id} className="primaryBtn small">Prüfen</a>
+                      <Link to={"/email-pruefung/" + mail.id} className="primaryBtn small">Prüfen</Link>
 
                       {category === "inquiries" ? (
-                        <a href={"/angebot-vorbereiten/" + mail.id} className="softBtn small">
+                        <Link to={"/angebot-vorbereiten/" + mail.id} className="softBtn small">
                           Angebot vorbereiten
-                        </a>
+                        </Link>
                       ) : null}
 
                       {mail.status !== "IGNORED" ? (
@@ -1950,7 +1950,7 @@ export default function AuftragseingangPage() {
                     <span className="statusBadge">{statusLabel(order.status)}</span>
 
                     <div className="orderActions">
-                      <a href={"/auftrag-pruefung/" + order.id} className="primaryBtn small">Prüfen</a>
+                      <Link to={"/auftrag-pruefung/" + order.id} className="primaryBtn small">Prüfen</Link>
 
                       <Form method="post">
                         <input type="hidden" name="intent" value="deleteOrder" />
@@ -3204,6 +3204,228 @@ export default function AuftragseingangPage() {
           .filterBar {
             grid-template-columns: 1fr !important;
           }
+        }
+      `}</style>
+
+    
+      <style>{`
+        /* inbox-nav-and-danger-final-v11 */
+
+        /* Kategorie-Navigation etwas größer und sauberer */
+        .bucketNav {
+          gap: 7px !important;
+          margin: 10px 0 11px !important;
+        }
+
+        .bucket {
+          height: 34px !important;
+          min-height: 34px !important;
+          padding: 0 10px 0 12px !important;
+          border-radius: 999px !important;
+          border: 1px solid #d4e0e8 !important;
+          background: #ffffff !important;
+          color: #111827 !important;
+        }
+
+        .bucket strong {
+          font-size: 12.8px !important;
+          font-weight: 600 !important;
+          letter-spacing: -0.01em !important;
+        }
+
+        .bucket b {
+          height: 18px !important;
+          min-width: 18px !important;
+          padding: 0 6px !important;
+          font-size: 10.5px !important;
+          font-weight: 650 !important;
+          background: #f1f5f9 !important;
+          color: #0f172a !important;
+        }
+
+        .bucket.active {
+          background: #0f8f70 !important;
+          border-color: #0f8f70 !important;
+          color: #ffffff !important;
+        }
+
+        .bucket.active b {
+          background: rgba(255,255,255,.22) !important;
+          color: #ffffff !important;
+        }
+
+        /* Löschen-Buttons klar rot */
+        .dangerBtn,
+        .mailActions .dangerBtn,
+        .orderActions .dangerBtn,
+        button.dangerBtn,
+        a.dangerBtn {
+          background: #fff5f5 !important;
+          border: 1px solid #fecaca !important;
+          color: #b91c1c !important;
+          box-shadow: none !important;
+        }
+
+        .dangerBtn:hover,
+        .mailActions .dangerBtn:hover,
+        .orderActions .dangerBtn:hover,
+        button.dangerBtn:hover,
+        a.dangerBtn:hover {
+          background: #fee2e2 !important;
+          border-color: #fca5a5 !important;
+          color: #991b1b !important;
+        }
+
+        /* Prüfen bleibt grün, aber nicht zu schwer */
+        .orderActions .primaryBtn,
+        .mailActions .primaryBtn {
+          background: #0f9f7a !important;
+          border-color: #0f9f7a !important;
+          color: #ffffff !important;
+        }
+
+        /* Buttons in Tabellen minimal besser lesbar */
+        .mailActions .primaryBtn,
+        .mailActions .secondaryBtn,
+        .mailActions .softBtn,
+        .mailActions .dangerBtn,
+        .orderActions .primaryBtn,
+        .orderActions .secondaryBtn,
+        .orderActions .softBtn,
+        .orderActions .dangerBtn {
+          height: 32px !important;
+          min-height: 32px !important;
+          border-radius: 7px !important;
+          padding: 0 11px !important;
+          font-size: 12.4px !important;
+          font-weight: 600 !important;
+        }
+      `}</style>
+
+    
+      <style>{`
+        /* inbox-mail-table-match-v12 */
+
+        /* E-Mail-Liste näher an Auftrags-Tabelle */
+        .mailList {
+          border: 1px solid #e2e8f0 !important;
+          border-radius: 9px !important;
+          overflow: hidden !important;
+          background: #ffffff !important;
+          gap: 0 !important;
+        }
+
+        .mailList::before {
+          content: "BETREFF / ABSENDER    STATUS    AKTION";
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          padding: 8px 12px;
+          background: #f8fafc;
+          border-bottom: 1px solid #e2e8f0;
+          color: #64748b;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: .055em;
+          white-space: pre;
+        }
+
+        .mailRow {
+          border: 0 !important;
+          border-bottom: 1px solid #edf2f7 !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
+          padding: 10px 12px !important;
+          min-height: 58px !important;
+          background: #ffffff !important;
+        }
+
+        .mailRow:last-child {
+          border-bottom: 0 !important;
+        }
+
+        .mailRow h3 {
+          font-size: 13.2px !important;
+          font-weight: 600 !important;
+          margin: 4px 0 3px !important;
+          line-height: 1.25 !important;
+        }
+
+        .mailMeta {
+          font-size: 11px !important;
+          gap: 8px !important;
+        }
+
+        .mailMeta span {
+          font-size: 10.5px !important;
+          padding: 2px 7px !important;
+        }
+
+        .mailSub {
+          font-size: 11.2px !important;
+          gap: 8px !important;
+        }
+
+        .mailHint {
+          font-size: 11.2px !important;
+          margin-top: 4px !important;
+          color: #9a3412 !important;
+        }
+
+        /* Alle Tabellen/Listen-Buttons gleich */
+        .mailActions,
+        .orderActions {
+          gap: 6px !important;
+          flex-wrap: nowrap !important;
+        }
+
+        .mailActions .primaryBtn,
+        .mailActions .secondaryBtn,
+        .mailActions .softBtn,
+        .mailActions .dangerBtn,
+        .orderActions .primaryBtn,
+        .orderActions .secondaryBtn,
+        .orderActions .softBtn,
+        .orderActions .dangerBtn {
+          height: 31px !important;
+          min-height: 31px !important;
+          border-radius: 6px !important;
+          padding: 0 10px !important;
+          font-size: 12px !important;
+          font-weight: 600 !important;
+          box-shadow: none !important;
+        }
+
+        .dangerBtn,
+        button.dangerBtn {
+          background: #fff5f5 !important;
+          border: 1px solid #fecaca !important;
+          color: #b91c1c !important;
+        }
+
+        .dangerBtn:hover,
+        button.dangerBtn:hover {
+          background: #fee2e2 !important;
+          border-color: #fca5a5 !important;
+          color: #991b1b !important;
+        }
+
+        /* Kategorie Navigation stabiler, damit nichts springt */
+        .bucketNav {
+          min-height: 34px !important;
+          align-items: center !important;
+        }
+
+        .bucket {
+          transition: none !important;
+        }
+
+        .statCard,
+        .bucket,
+        .primaryBtn,
+        .secondaryBtn,
+        .softBtn,
+        .dangerBtn {
+          transition: none !important;
         }
       `}</style>
 
