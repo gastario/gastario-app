@@ -252,43 +252,6 @@ function isAddressLine(value: string) {
   return false;
 }
 
-function isAllergenOrInfoLine(value: string) {
-  const text = cleanLine(value);
-  const lower = normalize(text);
-
-  if (!text) return false;
-
-  const allergyWords = [
-    "gluten",
-    "lactose",
-    "halal",
-    "poultry",
-    "milk",
-    "soy",
-    "soya",
-    "soybeans",
-    "sesame",
-    "nuts",
-    "peanut",
-    "fish",
-    "crustaceans",
-    "cereals containing gluten",
-    "vegetarian",
-    "vegan",
-    "pescatarian",
-    "sulphur",
-    "sulfur",
-    "sulphites",
-    "sulfites",
-    "celery",
-    "mustard",
-    "egg",
-    "eggs"
-  ];
-
-  return allergyWords.some((word) => lower.includes(word));
-}
-
 function isHardMetaLine(value: string) {
   const text = cleanLine(value);
   const lower = normalize(text);
@@ -313,8 +276,6 @@ function isProbablyPersonName(value: string) {
   if (text.length < 2 || text.length > 70) return false;
   if (isHardMetaLine(text)) return false;
   if (isAddressLine(text)) return false;
-  if (isAllergenOrInfoLine(text)) return false;
-  if (isAllergenOrInfoLine(text)) return false;
   if (lower.includes("gluten")) return false;
   if (lower.includes("halal")) return false;
   if (lower.includes("vegetarian")) return false;
@@ -353,37 +314,38 @@ function pickAddressFromBlock(block: string[]) {
 
 function pickMealFromBlock(block: string[], name: string, address: string) {
   const addressIndex = block.findIndex((line) => cleanLine(line) === cleanLine(address));
-  const nameIndex = block.findIndex((line) => cleanLine(line) === cleanLine(name));
 
-  const isValidMealCandidate = (value: string) => {
-    const line = cleanLine(value);
-    if (!line) return false;
-    if (isHardMetaLine(line)) return false;
-    if (isAddressLine(line)) return false;
-    if (isAllergenOrInfoLine(line)) return false;
-    if (isProbablyPersonName(line)) return false;
-
-    return true;
-  };
-
-  // Normalfall Heycater:
-  // Datum -> Name -> Adresse -> Gericht -> Allergene -> Caterer -> Customer
   if (addressIndex >= 0) {
     for (let i = addressIndex + 1; i < block.length; i++) {
-      if (isValidMealCandidate(block[i])) return cleanLine(block[i]);
+      const line = cleanLine(block[i]);
+      if (!line || isHardMetaLine(line)) continue;
+      if (isAddressLine(line)) continue;
+      if (isProbablyPersonName(line)) continue;
+
+      return line;
     }
   }
 
-  // Fallback: nach Name suchen
+  const nameIndex = block.findIndex((line) => cleanLine(line) === cleanLine(name));
+
   if (nameIndex >= 0) {
     for (let i = nameIndex + 1; i < block.length; i++) {
-      if (isValidMealCandidate(block[i])) return cleanLine(block[i]);
+      const line = cleanLine(block[i]);
+      if (!line || isHardMetaLine(line)) continue;
+      if (isAddressLine(line)) continue;
+      if (isProbablyPersonName(line)) continue;
+
+      return line;
     }
   }
 
-  // Letzter Fallback: irgendeine echte Gerichtszeile im Block
   for (const line of block) {
-    if (isValidMealCandidate(line)) return cleanLine(line);
+    const cleaned = cleanLine(line);
+    if (!cleaned || isHardMetaLine(cleaned)) continue;
+    if (isAddressLine(cleaned)) continue;
+    if (isProbablyPersonName(cleaned)) continue;
+
+    return cleaned;
   }
 
   return "Gericht nicht erkannt";
@@ -404,11 +366,7 @@ function pickDetailsFromBlock(block: string[], meal: string) {
     if (isAddressLine(line)) break;
     if (isProbablyPersonName(line)) break;
 
-    // Nur Hinweis-/Allergenzeilen als Details uebernehmen.
-    // So landet kein Gericht versehentlich in den Allergenen und umgekehrt.
-    if (isAllergenOrInfoLine(line)) {
-      detailLines.push(line);
-    }
+    detailLines.push(line);
   }
 
   return detailLines.join(" / ");
