@@ -172,22 +172,27 @@ export function parseHeycaterLabelsFromText(rawText: string): HeycaterLabelData[
     const dateLine = block.find(isDate) || "";
     const mealIndex = block.findIndex((line, index) => index > 0 && looksLikeMeal(line));
 
-    if (mealIndex === -1) continue;
+    // Wichtig: Kein Label darf verloren gehen.
+    // Wenn ein Gericht nicht sauber erkannt wird, erstellen wir trotzdem ein Label.
+    // Danach sieht man im Ausdruck sofort, dass Daten fehlen, aber niemand wird ausgelassen.
 
-    const meal = block[mealIndex];
+    const meal =
+      mealIndex >= 0
+        ? block[mealIndex]
+        : block.find((line, index) => index > 0 && !isDate(line) && !isMetaLine(line)) || "Gericht nicht erkannt";
 
     const catererIndex = block.findIndex((line) => normalize(line).includes("caterer:"));
     const customerIndex = block.findIndex((line) => normalize(line).includes("customer:"));
 
     const detailsEnd =
-      catererIndex > mealIndex
+      catererIndex > Math.max(mealIndex, 0)
         ? catererIndex
-        : customerIndex > mealIndex
+        : customerIndex > Math.max(mealIndex, 0)
           ? customerIndex
           : Math.min(block.length, mealIndex + 5);
 
     const detailsLines = block
-      .slice(mealIndex + 1, detailsEnd)
+      .slice(Math.max(mealIndex, 0) + 1, detailsEnd)
       .map(cleanLine)
       .filter((line) => {
         const text = normalize(line);
@@ -228,15 +233,7 @@ export function parseHeycaterLabelsFromText(rawText: string): HeycaterLabelData[
     });
   }
 
-  const unique = new Map<string, HeycaterLabelData>();
-
-  for (const label of labels) {
-    const key = [label.name, label.date, label.meal].join("|").toLowerCase();
-
-    if (!unique.has(key)) {
-      unique.set(key, label);
-    }
-  }
-
-  return Array.from(unique.values());
+  // Wichtig: Foodlabels duerfen NICHT dedupliziert werden.
+  // Wenn Heycater 115 Etiketten liefert, muessen auch 115 Etiketten erzeugt werden.
+  return labels;
 }
