@@ -223,44 +223,6 @@ export default function FoodLabelsPage() {
         <div style={editorCardStyle}>
           <div style={cardHeaderStyle}>
             <div>
-              <p style={smallLabelStyle}>Schnellstart</p>
-              <h2 style={sectionTitleStyle}>Aus Auftrag erstellen</h2>
-              <p style={helperTextStyle}>
-                Gerichte und Mengen direkt aus einem Auftrag übernehmen. Allergene werden automatisch aus dem Gerichtsnamen vorgeschlagen.
-              </p>
-            </div>
-
-            <Link to="/auftragseingang" style={secondaryButtonStyle}>
-              Auftrag importieren
-            </Link>
-          </div>
-
-          {data.recentOrders && data.recentOrders.length > 0 ? (
-            <div style={orderShortcutGridStyle}>
-              {data.recentOrders.map((order: any) => (
-                <Link key={order.id} to={"/auftraege/" + order.id + "/foodlabels"} style={orderShortcutStyle}>
-                  <div style={orderShortcutTitleStyle}>
-                    <strong>{order.customerName || order.orderNumber}</strong>
-                    <span>{order.orderNumber}</span>
-                  </div>
-
-                  <div style={orderShortcutMetaStyle}>
-                    <span>{formatDate(order.deliveryDate)}</span>
-                    <span>{order.deliveryTimeText || "-"}</span>
-                    <span>{order.items?.length || 0} Positionen</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div style={emptyStyle}>
-              Noch keine Aufträge gefunden. Importiere zuerst einen Auftrag oder erstelle Foodlabels weiter unten manuell.
-            </div>
-          )}
-        </div>
-        <div style={editorCardStyle}>
-          <div style={cardHeaderStyle}>
-            <div>
               <p style={smallLabelStyle}>Foodlabel</p>
               <h2 style={sectionTitleStyle}>
 Labeldaten speichern</h2>
@@ -1039,35 +1001,3 @@ const foodKeyStyle: React.CSSProperties = {
 
 
 
-
-const orderShortcutGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-  gap: 12,
-};
-
-const orderShortcutStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 10,
-  padding: 14,
-  borderRadius: 14,
-  border: "1px solid #dbe7ec",
-  background: "#f8fafc",
-  color: "#0f172a",
-  textDecoration: "none",
-  boxShadow: "0 8px 18px rgba(15, 23, 42, 0.035)",
-};
-
-const orderShortcutTitleStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 3,
-};
-
-const orderShortcutMetaStyle: React.CSSProperties = {
-  display: "flex",
-  flexWrap: "wrap",
-  gap: 7,
-  color: "#64748b",
-  fontSize: 12,
-  fontWeight: 700,
-};
