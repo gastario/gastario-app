@@ -174,7 +174,7 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
       page.drawText(line, {
         x: left,
         y,
-        size: 10.7,
+        size: 11.2,
         font: bold,
         color: black,
       });
@@ -186,12 +186,12 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
     const detailLines = wrapText(label.details, 48).slice(0, 3);
 
     if (detailLines.length > 0) {
-      page.drawText("Allergene / Hinweis", {
+      page.drawText("Allergens / Notes", {
         x: left,
         y,
-        size: 6.2,
+        size: 6.8,
         font: bold,
-        color: rgb(0.25, 0.32, 0.36),
+        color: black,
       });
 
       y -= 7.4;
@@ -200,11 +200,11 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
         page.drawText(line, {
           x: left,
           y,
-          size: 7.1,
+          size: 7.7,
           font: regular,
           color: black,
         });
-        y -= 8.1;
+        y -= 8.7;
       }
     }
 
@@ -227,7 +227,7 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
     page.drawText(safeText(label.caterer || "Let Me Bowl heykantine").replace(/^Caterer:\s*/i, "").slice(0, 42), {
       x: left,
       y: 24,
-      size: 6.7,
+      size: 7.0,
       font: bold,
       color: black,
     });
@@ -235,7 +235,7 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
     page.drawText(safeText(label.customer || "Delivery Overview").replace(/^Customer:\s*/i, "").slice(0, 42), {
       x: left,
       y: 16,
-      size: 6.7,
+      size: 7.0,
       font: regular,
       color: black,
     });
@@ -243,14 +243,15 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
     page.drawText(safeText(label.address || "Alexanderstrasse 5, Berlin, 10178").slice(0, 44), {
       x: left,
       y: 8,
-      size: 6.4,
+      size: 6.8,
       font: regular,
-      color: rgb(0.25, 0.32, 0.36),
+      color: black,
     });
   }
 
   return await pdf.save();
 }
+
 
 
 
