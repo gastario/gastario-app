@@ -228,6 +228,10 @@ export default function AuftragPruefungPage() {
             Lieferschein oeffnen
           </Link>
 
+
+          <Link to={"/auftraege/" + order.id + "/foodlabels"} style={primaryButtonStyle}>
+            Foodlabels erstellen
+          </Link>
           <Form method="post">
             <input type="hidden" name="_intent" value="confirmOrder" />
             <button
@@ -659,3 +663,5 @@ const dangerHintBoxStyle: React.CSSProperties = {
   fontSize: 13,
   lineHeight: 1.55,
 };
+
+
