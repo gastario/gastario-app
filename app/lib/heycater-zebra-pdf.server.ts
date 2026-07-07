@@ -16,7 +16,22 @@ function safeText(value: string) {
     .replace(/ü/g, "ue")
     .replace(/Ü/g, "Ue")
     .replace(/ß/g, "ss")
-    .replace(/–|—/g, "-")
+    .replace(/ł/g, "l")
+    .replace(/Ł/g, "L")
+    .replace(/Œ/g, "OE")
+    .replace(/œ/g, "oe")
+    .replace(/Š/g, "S")
+    .replace(/š/g, "s")
+    .replace(/Ž/g, "Z")
+    .replace(/ž/g, "z")
+    .replace(/Ÿ/g, "Y")
+    .replace(/ƒ/g, "f")
+    .replace(/[’‘‚‛]/g, "'")
+    .replace(/[“”„‟]/g, '"')
+    .replace(/–|—|−/g, "-")
+    .replace(/\u00a0/g, " ")
+    .replace(/[^\x20-\x7E]/g, "")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
@@ -210,3 +225,4 @@ page.drawText("Info", {
 
   return await pdf.save();
 }
+
