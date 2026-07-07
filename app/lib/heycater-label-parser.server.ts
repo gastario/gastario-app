@@ -510,9 +510,9 @@ function parseOneHeycaterLabel(date: string, block: string[]) {
 }
 
 const DELIVERY_OVERVIEW_DISH_DETAILS: Record<string, string> = {
-  "Chicken Shawarma Grill Bowl": "Allergens: Gluten, Milk, Sesame, Mustard | Note: Chicken",
-  "Lemon Chicken Bowl": "Allergens: Milk, Mustard | Note: Chicken",
-  "Crispy Chicken Salad": "Allergens: Gluten, Egg, Milk, Mustard | Note: Chicken",
+  "Chicken Shawarma Grill Bowl": "Allergens: Egg, Soy, Gluten, Sesame, Mustard | Note: Chicken",
+  "Lemon Chicken Bowl": "No declared allergens | Note: Chicken, spices",
+  "Crispy Chicken Salad": "Allergens: Gluten, Egg, Soy, Milk, Mustard | Note: Chicken",
   "Falafel Wrap": "Allergens: Gluten, Sesame | Note: Vegan",
   "Mediterranean Halloumi Crunch Wrap": "Allergens: Gluten, Milk, Sesame | Note: Vegetarian",
   "Ebi Tempura Bowl": "Allergens: Gluten, Crustaceans, Egg, Soy | Note: Ebi/Shrimp",
@@ -709,7 +709,7 @@ function parseDeliveryOverviewLabelsFromText(rawText: string): HeycaterLabelData
           meal: parsed.meal,
           details: DELIVERY_OVERVIEW_DISH_DETAILS[parsed.meal],
           caterer: "Caterer: Let Me Bowl heykantine",
-          customer: "Customer: Delivery Overview",
+          customer: "Customer: NinjaOne GmbH",
           address,
         });
       }
@@ -768,6 +768,9 @@ export function parseHeycaterLabelsFromText(rawText: string): HeycaterLabelData[
 
   return labels;
 }
+
+
+
 
 
 

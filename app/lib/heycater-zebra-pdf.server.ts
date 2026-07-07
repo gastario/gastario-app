@@ -208,18 +208,18 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
       }
     }
 
-    const qrSize = 16;
+    const qrSize = 23;
 
     page.drawImage(qrImage, {
-      x: width - qrSize - 9,
-      y: 12,
+      x: width - qrSize - 7,
+      y: 8,
       width: qrSize,
       height: qrSize,
     });
 
     page.drawLine({
       start: { x: left, y: 32 },
-      end: { x: width - qrSize - 14, y: 32 },
+      end: { x: width - qrSize - 11, y: 32 },
       thickness: 0.5,
       color: rgb(0.82, 0.88, 0.86),
     });
@@ -232,7 +232,7 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
       color: black,
     });
 
-    page.drawText(safeText(label.customer || "Delivery Overview").replace(/^Customer:\s*/i, "").slice(0, 42), {
+    page.drawText(safeText(label.customer || "NinjaOne GmbH").replace(/^Customer:\s*/i, "").replace(/Delivery Overview/gi, "NinjaOne GmbH").slice(0, 42), {
       x: left,
       y: 16,
       size: 7.0,
@@ -251,6 +251,7 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
 
   return await pdf.save();
 }
+
 
 
 
