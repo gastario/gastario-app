@@ -556,10 +556,12 @@ function parseDeliveryOverviewOrderLine(line: string, pendingNameParts: string[]
   for (const dish of DELIVERY_OVERVIEW_DISHES) {
     const dishPattern = escapeRegExp(dish);
 
-    const fullLineMatch = clean.match(new RegExp("^(.*?)\\s+(" + dishPattern + ")\\s+(\\d+)x$", "i"));
-    if (fullLineMatch) {
-      const inlineName = cleanLine(fullLineMatch[1]);
-      const quantity = Number(fullLineMatch[3]);
+    // Variante 1:
+    // Akhil Jacob Lemon Chicken Bowl 1x
+    const quantityAfterDishMatch = clean.match(new RegExp("^(.*?)\\s+(" + dishPattern + ")\\s+(\\d+)x$", "i"));
+    if (quantityAfterDishMatch) {
+      const inlineName = cleanLine(quantityAfterDishMatch[1]);
+      const quantity = Number(quantityAfterDishMatch[3]);
 
       return {
         name: cleanLine([...pendingNameParts, inlineName].filter(Boolean).join(" ")),
@@ -568,9 +570,70 @@ function parseDeliveryOverviewOrderLine(line: string, pendingNameParts: string[]
       };
     }
 
-    const dishOnlyMatch = clean.match(new RegExp("^(" + dishPattern + ")\\s+(\\d+)x$", "i"));
-    if (dishOnlyMatch && pendingNameParts.length > 0) {
-      const quantity = Number(dishOnlyMatch[2]);
+    // Variante 2:
+    // Akhil Jacob 1x Lemon Chicken Bowl
+    const quantityBeforeDishMatch = clean.match(new RegExp("^(.*?)\\s+(\\d+)x\\s+(" + dishPattern + ")$", "i"));
+    if (quantityBeforeDishMatch) {
+      const inlineName = cleanLine(quantityBeforeDishMatch[1]);
+      const quantity = Number(quantityBeforeDishMatch[2]);
+
+      return {
+        name: cleanLine([...pendingNameParts, inlineName].filter(Boolean).join(" ")),
+        meal: dish,
+        quantity,
+      };
+    }
+
+    // Variante 3:
+    // Alejandro Nicolas
+    // Becerra Ebi Tempura Bowl 1x
+    const splitNameQuantityAfterDishMatch = clean.match(new RegExp("^(.*?)\\s+(" + dishPattern + ")\\s+(\\d+)x$", "i"));
+    if (splitNameQuantityAfterDishMatch && pendingNameParts.length > 0) {
+      const inlineName = cleanLine(splitNameQuantityAfterDishMatch[1]);
+      const quantity = Number(splitNameQuantityAfterDishMatch[3]);
+
+      return {
+        name: cleanLine([...pendingNameParts, inlineName].filter(Boolean).join(" ")),
+        meal: dish,
+        quantity,
+      };
+    }
+
+    // Variante 4:
+    // Alejandro Nicolas
+    // Becerra 1x Ebi Tempura Bowl
+    const splitNameQuantityBeforeDishMatch = clean.match(new RegExp("^(.*?)\\s+(\\d+)x\\s+(" + dishPattern + ")$", "i"));
+    if (splitNameQuantityBeforeDishMatch && pendingNameParts.length > 0) {
+      const inlineName = cleanLine(splitNameQuantityBeforeDishMatch[1]);
+      const quantity = Number(splitNameQuantityBeforeDishMatch[2]);
+
+      return {
+        name: cleanLine([...pendingNameParts, inlineName].filter(Boolean).join(" ")),
+        meal: dish,
+        quantity,
+      };
+    }
+
+    // Variante 5:
+    // Ebi Tempura Bowl 1x
+    // wenn Name komplett in vorherigen Zeilen steht
+    const dishOnlyQuantityAfterMatch = clean.match(new RegExp("^(" + dishPattern + ")\\s+(\\d+)x$", "i"));
+    if (dishOnlyQuantityAfterMatch && pendingNameParts.length > 0) {
+      const quantity = Number(dishOnlyQuantityAfterMatch[2]);
+
+      return {
+        name: cleanLine(pendingNameParts.join(" ")),
+        meal: dish,
+        quantity,
+      };
+    }
+
+    // Variante 6:
+    // 1x Ebi Tempura Bowl
+    // wenn Name komplett in vorherigen Zeilen steht
+    const dishOnlyQuantityBeforeMatch = clean.match(new RegExp("^(\\d+)x\\s+(" + dishPattern + ")$", "i"));
+    if (dishOnlyQuantityBeforeMatch && pendingNameParts.length > 0) {
+      const quantity = Number(dishOnlyQuantityBeforeMatch[1]);
 
       return {
         name: cleanLine(pendingNameParts.join(" ")),
@@ -704,6 +767,7 @@ export function parseHeycaterLabelsFromText(rawText: string): HeycaterLabelData[
 
   return labels;
 }
+
 
 
 
