@@ -660,6 +660,7 @@ function isDeliveryOverviewMetaLine(line: string) {
     lower.includes("kontaktperson") ||
     lower.includes("customer name dish type dish name quantity") ||
     lower.includes("powered by pdf generator") ||
+    /^--\s*\d+\s+of\s+\d+\s*--$/i.test(line) ||
     /^\d{2}-\d{2}-\d{4}\s+\d{1,2}:\d{2}$/.test(line) ||
     (/\b\d{5}\b/.test(line) && lower.includes("berlin"))
   );
@@ -767,6 +768,7 @@ export function parseHeycaterLabelsFromText(rawText: string): HeycaterLabelData[
 
   return labels;
 }
+
 
 
 
