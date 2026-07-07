@@ -2115,7 +2115,7 @@ export default function AuftragseingangPage() {
                         <div className="orderCardPrice">
                           <strong>{formatImportCurrencyFromCents(totalInfo.cents)}</strong>
                           <span>{totalInfo.source}</span>
-                          {totalInfo.source === "vorläufig" ? (
+                          {totalInfo.source === "vorläufige Summe" ? (
                             <small>aus erkannten Positionen berechnet — bitte prüfen</small>
                           ) : null}
 
@@ -4242,9 +4242,8 @@ export default function AuftragseingangPage() {
       
       
       
-      
       <style>{`
-        /* gastario-premium-ops-console-v2-20260707 */
+        /* gastario-premium-ops-console-20260707 */
 
         .inboxPage {
           max-width: 1160px !important;
@@ -4252,14 +4251,15 @@ export default function AuftragseingangPage() {
           color: #0f172a !important;
         }
 
+        /* HERO: hochwertiger SaaS-Header */
         .inboxHero {
           background:
-            radial-gradient(circle at top right, rgba(34, 197, 94, .18), transparent 36%),
-            linear-gradient(135deg, #063b35 0%, #07594e 55%, #0f9f7a 100%) !important;
+            radial-gradient(circle at top right, rgba(34, 197, 94, .22), transparent 34%),
+            linear-gradient(135deg, #052e2b 0%, #073f37 42%, #0f766e 100%) !important;
           border: 0 !important;
           border-radius: 24px !important;
           padding: 26px 28px !important;
-          box-shadow: 0 22px 46px rgba(6, 95, 70, .16) !important;
+          box-shadow: 0 22px 46px rgba(6, 95, 70, .18) !important;
           margin-bottom: 14px !important;
           display: flex !important;
           justify-content: space-between !important;
@@ -4276,7 +4276,6 @@ export default function AuftragseingangPage() {
           letter-spacing: .12em !important;
           font-size: 10.5px !important;
           font-weight: 850 !important;
-          color: #047857 !important;
         }
 
         .inboxHero h1 {
@@ -4290,7 +4289,7 @@ export default function AuftragseingangPage() {
 
         .inboxHero p {
           margin: 9px 0 0 !important;
-          color: rgba(255,255,255,.80) !important;
+          color: rgba(255,255,255,.78) !important;
           font-size: 14px !important;
           font-weight: 560 !important;
         }
@@ -4305,8 +4304,9 @@ export default function AuftragseingangPage() {
 
         .heroActions .statusPill {
           background: rgba(255,255,255,.10) !important;
-          border-color: rgba(255,255,255,.25) !important;
+          border-color: rgba(255,255,255,.24) !important;
           color: #ffffff !important;
+          backdrop-filter: blur(8px) !important;
         }
 
         .heroActions .primaryBtn {
@@ -4322,6 +4322,7 @@ export default function AuftragseingangPage() {
           font-weight: 680 !important;
         }
 
+        /* KPI: kleine, hochwertige Tabs */
         .compactStats {
           display: flex !important;
           flex-wrap: wrap !important;
@@ -4385,28 +4386,28 @@ export default function AuftragseingangPage() {
           display: none !important;
         }
 
-        /* E-Mail-Bereich ruhiger, nicht mehr wie markierte Rohdaten */
+        /* E-Mail Eingang: kompakte Kommandozeile */
         .inboxPanel {
           background: #ffffff !important;
           border: 1px solid #dbe7e2 !important;
-          border-radius: 18px !important;
-          padding: 14px 16px !important;
-          box-shadow: 0 10px 26px rgba(15, 23, 42, .04) !important;
+          border-radius: 20px !important;
+          padding: 16px !important;
+          box-shadow: 0 14px 34px rgba(15, 23, 42, .055) !important;
           margin-bottom: 20px !important;
         }
 
         .panelTop {
           display: grid !important;
-          grid-template-columns: minmax(220px, 1fr) minmax(520px, 650px) !important;
+          grid-template-columns: minmax(240px, 1fr) minmax(530px, 660px) !important;
           gap: 16px !important;
-          align-items: center !important;
-          margin-bottom: 12px !important;
+          align-items: end !important;
+          margin-bottom: 13px !important;
         }
 
         .panelTop h2 {
           margin: 4px 0 0 !important;
           color: #061f1b !important;
-          font-size: 21px !important;
+          font-size: 22px !important;
           line-height: 1.08 !important;
           font-weight: 880 !important;
           letter-spacing: -0.05em !important;
@@ -4424,7 +4425,7 @@ export default function AuftragseingangPage() {
           grid-template-columns: minmax(220px, 1fr) 180px auto auto !important;
           gap: 7px !important;
           padding: 7px !important;
-          border-radius: 13px !important;
+          border-radius: 14px !important;
           border: 1px solid #dbe7e2 !important;
           background: #f8fafc !important;
         }
@@ -4459,8 +4460,8 @@ export default function AuftragseingangPage() {
         }
 
         .bucket {
-          height: 33px !important;
-          min-height: 33px !important;
+          height: 34px !important;
+          min-height: 34px !important;
           border-radius: 999px !important;
           padding: 0 8px 0 12px !important;
           border: 1px solid #dbe7e2 !important;
@@ -4511,8 +4512,8 @@ export default function AuftragseingangPage() {
 
         .emptyState {
           margin-top: 12px !important;
-          padding: 11px 13px !important;
-          border-radius: 13px !important;
+          padding: 12px 14px !important;
+          border-radius: 14px !important;
           border: 1px dashed #cbd5e1 !important;
           background: #f8fafc !important;
           color: #64748b !important;
@@ -4520,6 +4521,7 @@ export default function AuftragseingangPage() {
           font-weight: 650 !important;
         }
 
+        /* Prüfaufträge: Premium Arbeitsliste, keine Riesenboxen */
         .orderReviewPanel {
           background: transparent !important;
           border: 0 !important;
@@ -4721,13 +4723,13 @@ export default function AuftragseingangPage() {
           padding: 10px 12px !important;
           border: 1px solid #dbe7e2 !important;
           border-radius: 15px !important;
-          background: #fff7ed !important;
+          background: #f8fafc !important;
         }
 
         .orderCardPrice strong {
           display: block !important;
           color: #061f1b !important;
-          font-size: 22px !important;
+          font-size: 23px !important;
           line-height: 1 !important;
           font-weight: 900 !important;
           letter-spacing: -0.055em !important;
@@ -4737,7 +4739,7 @@ export default function AuftragseingangPage() {
         .orderCardPrice small {
           display: block !important;
           margin-top: 5px !important;
-          color: #9a3412 !important;
+          color: #64748b !important;
           font-size: 10px !important;
           font-weight: 850 !important;
           text-transform: uppercase !important;
@@ -4755,8 +4757,8 @@ export default function AuftragseingangPage() {
           display: inline-flex !important;
           align-items: center !important;
           min-height: 26px !important;
-          padding: 0 9px !important;
           border-radius: 999px !important;
+          padding: 0 9px !important;
           font-size: 11.5px !important;
           font-weight: 850 !important;
         }
@@ -4818,6 +4820,18 @@ export default function AuftragseingangPage() {
           color: #b91c1c !important;
         }
 
+        .pastOrdersHint {
+          margin-top: 12px !important;
+          color: #64748b !important;
+          font-size: 13px !important;
+          font-weight: 650 !important;
+        }
+
+        .pastOrdersHint a {
+          color: #047857 !important;
+          font-weight: 850 !important;
+        }
+
         @media (max-width: 1000px) {
           .inboxHero,
           .panelTop,
@@ -4842,9 +4856,6 @@ export default function AuftragseingangPage() {
       `}</style></AppLayout>
   );
 }
-
-
-
 
 
 
