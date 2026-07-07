@@ -8,6 +8,7 @@ export default [
   route("logout", "routes/logout.tsx"),
 
   route("auftraege", "routes/auftraege.tsx"),
+  route("auftraege/:orderId/foodlabels", "routes/auftraege.$orderId.foodlabels.tsx"),
   route("import-regeln", "routes/import-regeln.tsx"),
   route("import-pruefen", "routes/import-pruefen.tsx"),
   route("importe", "routes/importe.tsx"),
@@ -57,6 +58,7 @@ export default [
   route("belege", "routes/belege.tsx"),
   route("steuerberater-export", "routes/steuerberater-export.tsx"),
 ] satisfies RouteConfig;
+
 
 
 
