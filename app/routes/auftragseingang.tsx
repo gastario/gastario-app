@@ -1853,73 +1853,66 @@ export default function AuftragseingangPage() {
   return (
     <AppLayout>
       <div className="inboxPage">
-        <header className="inboxHero">
-          <div>
-            <div className="inboxOverline">Arbeitsbereich</div>
-            <h1>Auftragseingang</h1>
-            <p>E-Mails abrufen, Anfragen vorbereiten, Aufträge prüfen und Lieferscheine trennen.</p>
+        <section className="commandCenter">
+          <div className="commandTop">
+            <div>
+              <div className="commandEyebrow">Auftragseingang</div>
+              <h1>Import-Zentrale</h1>
+              <p>E-Mails prüfen, Aufträge vorbereiten und neue Vorgänge sicher übernehmen.</p>
+            </div>
+
+            <div className="commandActions">
+              <button
+                type="button"
+                className={liveEnabled ? "commandGhost isLive" : "commandGhost"}
+                onClick={() => setLiveEnabled((value) => !value)}
+                title={lastAutoImportAt ? "Letzter Auto-Abruf: " + lastAutoImportAt : "Automatischer Abruf"}
+              >
+                {liveEnabled ? "Live aktiv" : "Live aus"}
+              </button>
+
+              <button
+                type="button"
+                className="commandPrimary"
+                onClick={runEmailImportAndReload}
+                disabled={isImportingNow}
+              >
+                {isImportingNow ? "E-Mails werden abgerufen..." : "E-Mails abrufen"}
+              </button>
+            </div>
           </div>
 
-          <div className="heroActions">
-            <button
-              type="button"
-              className={liveEnabled ? "statusPill isLive" : "statusPill"}
-              onClick={() => setLiveEnabled((value) => !value)}
-              title={lastAutoImportAt ? "Letzter Auto-Abruf: " + lastAutoImportAt : "Automatischer Abruf"}
-            >
-              {liveEnabled ? "Live an" : "Live aus"}
-            </button>
-
-            <button
-              type="button"
-              className="primaryBtn"
-              onClick={runEmailImportAndReload}
-              disabled={isImportingNow}
-            >
-              {isImportingNow ? "Abrufen..." : "E-Mails abrufen"}
-            </button>
+          <div className="commandMeta">
+            <span>{liveEnabled ? "Automatischer Abruf aktiv" : "Automatischer Abruf deaktiviert"}</span>
+            {lastAutoImportAt ? <span>Letzter Abruf: {lastAutoImportAt}</span> : null}
           </div>
-        </header>
 
-        <div className="liveInfo">
-          {liveEnabled ? "Live-Abruf aktiv: neue E-Mails werden automatisch geprüft." : "Live-Abruf ist aus."}
-          {lastAutoImportAt ? <span>Letzter Abruf: {lastAutoImportAt}</span> : null}
-        </div>
+          <nav className="statusRail" aria-label="Auftragsstatus">
+            {[
+              ["Alle Aufträge", currentOrderStats.all, ""],
+              ["Zu prüfen", currentOrderStats.review, "AUTO_CREATED"],
+              ["Übernommen", currentOrderStats.confirmed, "CONFIRMED"],
+              ["Abgelehnt", currentOrderStats.rejected, "REJECTED"],
+            ].map(([label, count, status]) => {
+              const active = data.activeStatus === status || (!data.activeStatus && !status);
+              const params = new URLSearchParams();
 
-        <section className="compactStats">
-          {[
-            ["Alle Aufträge", currentOrderStats.all, ""],
-            ["Zu prüfen", currentOrderStats.review, "AUTO_CREATED"],
-            ["Übernommen", currentOrderStats.confirmed, "CONFIRMED"],
-            ["Abgelehnt", currentOrderStats.rejected, "REJECTED"],
-          ].map(([label, count, status]) => {
-            const active = data.activeStatus === status || (!data.activeStatus && !status);
-            const params = new URLSearchParams();
+              if (status) params.set("status", String(status));
+              if (data.selectedEmailCategory) params.set("emailCategory", data.selectedEmailCategory);
+              if (data.dateRange) params.set("dateRange", data.dateRange);
+              if (data.searchQuery) params.set("q", data.searchQuery);
+              if (data.selectedDate) params.set("date", data.selectedDate);
 
-            if (status) params.set("status", String(status));
-            if (data.selectedEmailCategory) params.set("emailCategory", data.selectedEmailCategory);
-            if (data.dateRange) params.set("dateRange", data.dateRange);
-            if (data.searchQuery) params.set("q", data.searchQuery);
-            if (data.selectedDate) params.set("date", data.selectedDate);
+              const href = "/auftragseingang" + (params.toString() ? "?" + params.toString() : "");
 
-            const href = "/auftragseingang" + (params.toString() ? "?" + params.toString() : "");
-
-            return (
-              <a key={String(label)} href={href} className={active ? "statCard active" : "statCard"}>
-                <span>{label}</span>
-                <strong>{count}</strong>
-                <small>
-                  {status === "AUTO_CREATED"
-                    ? "aktuell offen"
-                    : status === "CONFIRMED"
-                      ? "bevorstehend"
-                      : status === "REJECTED"
-                        ? "nicht übernommen"
-                        : "aktuell / kommend"}
-                </small>
-              </a>
-            );
-          })}
+              return (
+                <a key={String(label)} href={href} className={active ? "statusTab active" : "statusTab"}>
+                  <span>{label}</span>
+                  <strong>{count}</strong>
+                </a>
+              );
+            })}
+          </nav>
         </section>
 
         {actionData?.error ? (
@@ -1930,16 +1923,17 @@ export default function AuftragseingangPage() {
           <div className="alertBox success">{actionData.success}</div>
         ) : null}
 
-        <section className="inboxPanel">
-          <div className="panelTop">
+        <section className="mailWorkbench">
+          <div className="mailWorkbenchTop">
             <div>
-              <div className="inboxOverline">E-Mail Eingang</div>
+              <div className="commandEyebrow">Postfach</div>
               <h2>{emailCategoryLabel(data.selectedEmailCategory)}</h2>
               <p>{currentBucket.help}</p>
             </div>
 
-            <Form method="get" className="filterBar">
+            <Form method="get" className="mailSearchBar">
               <input type="hidden" name="emailCategory" value={data.selectedEmailCategory} />
+              {data.activeStatus ? <input type="hidden" name="status" value={data.activeStatus} /> : null}
 
               <label>
                 Suche
@@ -1951,7 +1945,7 @@ export default function AuftragseingangPage() {
               </label>
 
               <label>
-                Postfach-Zeitraum
+                Zeitraum
                 <select name="dateRange" defaultValue={data.dateRange || "last7"}>
                   <option value="last7">Letzte 7 Tage</option>
                   <option value="today">Heute</option>
@@ -1959,12 +1953,12 @@ export default function AuftragseingangPage() {
                 </select>
               </label>
 
-              <button type="submit" className="primaryBtn small">Filtern</button>
-              <a href={emailResetHref} className="secondaryBtn small">Zurücksetzen</a>
+              <button type="submit" className="commandPrimary small">Filtern</button>
+              <a href={emailResetHref} className="commandGhost small">Zurücksetzen</a>
             </Form>
           </div>
 
-          <div className="bucketNav">
+          <nav className="mailTabs" aria-label="E-Mail-Kategorien">
             {EMAIL_BUCKETS.map((bucket) => {
               const count = data.emailBuckets[bucket.key as keyof typeof data.emailBuckets] ?? 0;
               const params = new URLSearchParams();
@@ -1981,67 +1975,35 @@ export default function AuftragseingangPage() {
                 <a
                   key={bucket.key}
                   href={"/auftragseingang?" + params.toString()}
-                  className={active ? "bucket active" : "bucket"}
+                  className={active ? "mailTab active" : "mailTab"}
                 >
-                  <span>
-                    <strong>{bucket.label}</strong>
-                    <small>{bucket.help}</small>
-                  </span>
-                  <b>{count}</b>
+                  <span>{bucket.label}</span>
+                  <strong>{count}</strong>
                 </a>
               );
             })}
-          </div>
+          </nav>
 
           {data.emailInbox.length === 0 ? (
-            <div className="emptyState">Keine ungeprüften E-Mails in dieser Kategorie.</div>
+            <div className="mailEmpty">Keine ungeprüften E-Mails in dieser Kategorie.</div>
           ) : (
-            <div className="ordersTable emailTable">
-              <div className="ordersHead">
-                <span>Betreff</span>
-                <span>Absender</span>
-                <span>Eingang</span>
-                <span>Typ</span>
-                <span></span>
-                <span>Status</span>
-                <span>Aktion</span>
-              </div>
-
-              {sortedEmails.map((mail: any) => {
+            <div className="mailQueue">
+              {sortedEmails.slice(0, 5).map((mail: any) => {
                 const category = classifyIncomingEmail(mail);
                 const receivedDate = new Date(mail.receivedAt || mail.createdAt);
                 const isInquiry = category === "inquiries";
 
                 return (
-                  <div className="ordersRow emailRow" key={mail.id}>
+                  <div className="mailQueueRow" key={mail.id}>
                     <div>
                       <strong>{mail.subject || "Ohne Betreff"}</strong>
-                      <small>{emailCategoryLabel(category)}</small>
+                      <span>{mail.sender || "-"} · {receivedDate.toLocaleDateString("de-DE")}</span>
                     </div>
 
-                    <div>
-                      <strong>{mail.sender || "-"}</strong>
-                      <small>{mail.account?.email || mail.accountEmail || "-"}</small>
-                    </div>
-
-                    <div>
-                      <strong>{receivedDate.toLocaleDateString("de-DE")}</strong>
-                      <small>{receivedDate.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}</small>
-                    </div>
-
-                    <div>
-                      <strong>{isInquiry ? "Anfrage" : "E-Mail"}</strong>
-                      <small>{mail.attachments?.length || 0} Anhänge</small>
-                    </div>
-
-                    <strong>-</strong>
-
-                    <span className="statusBadge">{mail.status === "IGNORED" ? "Ausgeblendet" : "Ungeprüft"}</span>
-
-                    <div className="orderActions">
+                    <div className="mailQueueActions">
                       <a
                         href={(isInquiry ? "/angebot-vorbereiten/" : "/email-pruefung/") + mail.id}
-                        className="primaryBtn small"
+                        className="commandPrimary small"
                       >
                         {isInquiry ? "Angebot" : "Prüfen"}
                       </a>
@@ -2049,12 +2011,16 @@ export default function AuftragseingangPage() {
                       <Form method="post">
                         <input type="hidden" name="intent" value="deleteIncomingEmail" />
                         <input type="hidden" name="emailId" value={mail.id} />
-                        <button type="submit" className="dangerBtn small">Löschen</button>
+                        <button type="submit" className="commandDanger small">Löschen</button>
                       </Form>
                     </div>
                   </div>
                 );
               })}
+
+              {sortedEmails.length > 5 ? (
+                <div className="mailMore">+ {sortedEmails.length - 5} weitere E-Mails in dieser Kategorie</div>
+              ) : null}
             </div>
           )}
         </section>
@@ -4254,14 +4220,14 @@ export default function AuftragseingangPage() {
       
       
       
+      
       <style>{`
-        /* gastario-command-center-nav-20260707 */
+        /* gastario-real-command-center-20260707 */
 
         .inboxPage {
           max-width: 1160px !important;
           padding: 0 24px 46px !important;
           color: #0f172a !important;
-          user-select: auto !important;
         }
 
         .inboxPage ::selection {
@@ -4269,26 +4235,23 @@ export default function AuftragseingangPage() {
           color: #052e2b !important;
         }
 
-        /* HEADER: Command-Center statt großer Marketing-Box */
-        .inboxHero {
+        .commandCenter {
           background: #ffffff !important;
           border: 1px solid #dbe7e2 !important;
-          border-radius: 20px !important;
-          padding: 20px 22px !important;
-          box-shadow: 0 12px 30px rgba(15, 23, 42, .045) !important;
-          margin-bottom: 12px !important;
+          border-radius: 22px !important;
+          padding: 20px !important;
+          box-shadow: 0 16px 36px rgba(15, 23, 42, .055) !important;
+          margin-bottom: 16px !important;
+        }
+
+        .commandTop {
           display: grid !important;
           grid-template-columns: minmax(0, 1fr) auto !important;
-          align-items: center !important;
           gap: 18px !important;
+          align-items: center !important;
         }
 
-        .inboxHero::before,
-        .inboxHero::after {
-          display: none !important;
-        }
-
-        .inboxOverline {
+        .commandEyebrow {
           color: #0f9f7a !important;
           text-transform: uppercase !important;
           letter-spacing: .115em !important;
@@ -4296,148 +4259,143 @@ export default function AuftragseingangPage() {
           font-weight: 850 !important;
         }
 
-        .inboxHero h1 {
+        .commandTop h1 {
           margin: 5px 0 0 !important;
           color: #061f1b !important;
-          font-size: 30px !important;
+          font-size: 31px !important;
           line-height: 1.05 !important;
-          font-weight: 880 !important;
-          letter-spacing: -0.055em !important;
+          font-weight: 900 !important;
+          letter-spacing: -0.06em !important;
         }
 
-        .inboxHero p {
+        .commandTop p {
           margin: 7px 0 0 !important;
           color: #64748b !important;
           font-size: 14px !important;
           font-weight: 560 !important;
         }
 
-        .heroActions {
-          display: inline-flex !important;
+        .commandActions {
+          display: flex !important;
+          gap: 9px !important;
           align-items: center !important;
           justify-content: flex-end !important;
-          gap: 9px !important;
-          flex-wrap: nowrap !important;
+          flex-wrap: wrap !important;
         }
 
-        .liveInfo {
-          margin: 0 0 10px !important;
+        .commandMeta {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          gap: 10px !important;
+          margin-top: 14px !important;
+          padding-top: 14px !important;
+          border-top: 1px solid #eef3f1 !important;
           color: #64748b !important;
           font-size: 12.5px !important;
           font-weight: 650 !important;
         }
 
-        /* STATUSNAVIGATION: verbindet oberen und unteren Bereich */
-        .compactStats {
+        .statusRail {
           display: flex !important;
           flex-wrap: wrap !important;
           gap: 8px !important;
-          margin: 0 0 16px !important;
-          padding: 10px !important;
-          background: #ffffff !important;
-          border: 1px solid #dbe7e2 !important;
-          border-radius: 18px !important;
-          box-shadow: 0 10px 24px rgba(15, 23, 42, .035) !important;
+          margin-top: 14px !important;
         }
 
-        .statCard {
-          height: 36px !important;
+        .statusTab,
+        .mailTab {
           min-height: 36px !important;
           border-radius: 999px !important;
           padding: 0 10px 0 13px !important;
           background: #f8fafc !important;
           border: 1px solid #dbe7e2 !important;
           color: #0f172a !important;
-          box-shadow: none !important;
           display: inline-flex !important;
           align-items: center !important;
           gap: 8px !important;
           text-decoration: none !important;
+          box-shadow: none !important;
         }
 
-        .statCard.active {
+        .statusTab.active,
+        .mailTab.active {
           background: #0f9f7a !important;
           border-color: #0f9f7a !important;
           color: #ffffff !important;
         }
 
-        .statCard span {
+        .statusTab span,
+        .mailTab span {
           font-size: 12.5px !important;
-          font-weight: 820 !important;
+          font-weight: 850 !important;
         }
 
-        .statCard strong {
-          order: 2 !important;
+        .statusTab strong,
+        .mailTab strong {
           min-width: 22px !important;
           height: 22px !important;
-          padding: 0 7px !important;
           border-radius: 999px !important;
+          padding: 0 7px !important;
           background: #ffffff !important;
           color: #0f172a !important;
           display: inline-flex !important;
           align-items: center !important;
           justify-content: center !important;
           font-size: 11px !important;
-          font-weight: 900 !important;
-          letter-spacing: 0 !important;
           line-height: 1 !important;
+          font-weight: 900 !important;
         }
 
-        .statCard.active strong {
+        .statusTab.active strong,
+        .mailTab.active strong {
           background: rgba(255,255,255,.22) !important;
           color: #ffffff !important;
         }
 
-        .statCard small {
-          display: none !important;
-        }
-
-        /* E-MAIL COMMAND BAR */
-        .inboxPanel {
+        .mailWorkbench {
           background: #ffffff !important;
           border: 1px solid #dbe7e2 !important;
-          border-radius: 20px !important;
-          padding: 16px !important;
-          box-shadow: 0 12px 28px rgba(15, 23, 42, .045) !important;
-          margin-bottom: 20px !important;
+          border-radius: 22px !important;
+          padding: 18px !important;
+          box-shadow: 0 14px 32px rgba(15, 23, 42, .045) !important;
+          margin-bottom: 22px !important;
         }
 
-        .panelTop {
+        .mailWorkbenchTop {
           display: grid !important;
           grid-template-columns: minmax(240px, 1fr) minmax(520px, 660px) !important;
-          gap: 16px !important;
+          gap: 18px !important;
           align-items: end !important;
           margin-bottom: 14px !important;
         }
 
-        .panelTop h2 {
+        .mailWorkbenchTop h2 {
           margin: 4px 0 0 !important;
           color: #061f1b !important;
-          font-size: 22px !important;
+          font-size: 23px !important;
           line-height: 1.08 !important;
-          font-weight: 880 !important;
-          letter-spacing: -0.05em !important;
+          font-weight: 900 !important;
+          letter-spacing: -0.055em !important;
         }
 
-        .panelTop p {
+        .mailWorkbenchTop p {
           margin: 6px 0 0 !important;
           color: #64748b !important;
           font-size: 13px !important;
           font-weight: 560 !important;
         }
 
-        .filterBar {
+        .mailSearchBar {
           display: grid !important;
           grid-template-columns: minmax(220px, 1fr) 185px auto auto !important;
-          gap: 7px !important;
+          gap: 8px !important;
           padding: 8px !important;
-          border-radius: 15px !important;
+          border-radius: 16px !important;
           border: 1px solid #dbe7e2 !important;
           background: #f8fafc !important;
-          box-shadow: none !important;
         }
 
-        .filterBar label {
+        .mailSearchBar label {
           display: grid !important;
           gap: 4px !important;
           color: #64748b !important;
@@ -4447,8 +4405,8 @@ export default function AuftragseingangPage() {
           text-transform: uppercase !important;
         }
 
-        .filterBar input,
-        .filterBar select {
+        .mailSearchBar input,
+        .mailSearchBar select {
           height: 35px !important;
           min-height: 35px !important;
           border-radius: 10px !important;
@@ -4459,68 +4417,16 @@ export default function AuftragseingangPage() {
           font-weight: 560 !important;
         }
 
-        .bucketNav {
+        .mailTabs {
           display: flex !important;
           flex-wrap: wrap !important;
           gap: 7px !important;
-          margin: 0 !important;
+          margin-bottom: 12px !important;
         }
 
-        .bucket {
-          height: 34px !important;
-          min-height: 34px !important;
-          border-radius: 999px !important;
-          padding: 0 8px 0 12px !important;
-          border: 1px solid #dbe7e2 !important;
-          background: #ffffff !important;
-          color: #0f172a !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          gap: 8px !important;
-          text-decoration: none !important;
-          box-shadow: none !important;
-        }
-
-        .bucket.active {
-          background: #0f9f7a !important;
-          border-color: #0f9f7a !important;
-          color: #ffffff !important;
-        }
-
-        .bucket strong {
-          font-size: 12.5px !important;
-          font-weight: 840 !important;
-          white-space: nowrap !important;
-        }
-
-        .bucket small {
-          display: none !important;
-        }
-
-        .bucket b {
-          position: static !important;
-          min-width: 20px !important;
-          height: 20px !important;
-          border-radius: 999px !important;
-          padding: 0 6px !important;
-          background: #f1f5f9 !important;
-          color: #0f172a !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          font-size: 10.5px !important;
-          font-weight: 900 !important;
-        }
-
-        .bucket.active b {
-          background: rgba(255,255,255,.22) !important;
-          color: #ffffff !important;
-        }
-
-        .emptyState {
-          margin-top: 12px !important;
-          padding: 11px 13px !important;
-          border-radius: 13px !important;
+        .mailEmpty {
+          padding: 12px 14px !important;
+          border-radius: 14px !important;
           border: 1px dashed #cbd5e1 !important;
           background: #f8fafc !important;
           color: #64748b !important;
@@ -4528,270 +4434,61 @@ export default function AuftragseingangPage() {
           font-weight: 650 !important;
         }
 
-        /* UNTEN: Navigation und Liste wirken zusammen */
-        .orderReviewPanel {
-          background: transparent !important;
-          border: 0 !important;
-          padding: 0 !important;
-          margin: 0 !important;
-          box-shadow: none !important;
-        }
-
-        .orderReviewHeader {
-          display: flex !important;
-          justify-content: space-between !important;
-          align-items: flex-end !important;
-          gap: 18px !important;
-          margin-bottom: 12px !important;
-          padding: 0 0 14px !important;
-          border-bottom: 1px solid #cfded9 !important;
-        }
-
-        .orderReviewHeader h2 {
-          margin: 4px 0 0 !important;
-          color: #061f1b !important;
-          font-size: 27px !important;
-          line-height: 1.04 !important;
-          font-weight: 900 !important;
-          letter-spacing: -0.06em !important;
-        }
-
-        .orderReviewHeader p {
-          margin: 6px 0 0 !important;
-          color: #64748b !important;
-          font-size: 13.5px !important;
-          font-weight: 600 !important;
-        }
-
-        .orderReviewSummary {
-          background: transparent !important;
-          border: 0 !important;
-          box-shadow: none !important;
-          padding: 0 !important;
-          text-align: right !important;
-          min-width: 0 !important;
-        }
-
-        .orderReviewSummary strong {
-          color: #061f1b !important;
-          font-size: 23px !important;
-          font-weight: 900 !important;
-          line-height: 1 !important;
-        }
-
-        .orderReviewSummary span {
-          display: inline !important;
-          margin-left: 7px !important;
-          color: #64748b !important;
-          font-size: 13px !important;
-          font-weight: 720 !important;
-        }
-
-        .ordersTable {
-          display: none !important;
-        }
-
-        .orderCards {
+        .mailQueue {
           display: grid !important;
           gap: 8px !important;
         }
 
-        .orderCard {
-          position: relative !important;
-          background: #ffffff !important;
-          border: 1px solid #dbe7e2 !important;
-          border-radius: 18px !important;
-          padding: 14px 16px 14px 18px !important;
-          box-shadow: 0 10px 24px rgba(15, 23, 42, .04) !important;
-          overflow: hidden !important;
-        }
-
-        .orderCard::before {
-          content: "" !important;
-          position: absolute !important;
-          left: 0 !important;
-          top: 0 !important;
-          bottom: 0 !important;
-          width: 5px !important;
-          background: #0f9f7a !important;
-        }
-
-        .orderCardTop {
+        .mailQueueRow {
           display: grid !important;
-          grid-template-columns: minmax(240px, 1fr) auto !important;
-          gap: 16px !important;
-          align-items: start !important;
-          margin-bottom: 10px !important;
+          grid-template-columns: minmax(0, 1fr) auto !important;
+          gap: 14px !important;
+          align-items: center !important;
+          padding: 12px 14px !important;
+          border-radius: 15px !important;
+          border: 1px solid #e2e8f0 !important;
+          background: #ffffff !important;
         }
 
-        .orderCardNumber {
-          color: #64748b !important;
-          font-size: 10.5px !important;
-          font-weight: 900 !important;
-          letter-spacing: .08em !important;
-          text-transform: uppercase !important;
-          margin-bottom: 5px !important;
-        }
-
-        .orderCardIdentity h3 {
-          margin: 0 !important;
-          color: #061f1b !important;
-          font-size: 22px !important;
-          line-height: 1.08 !important;
-          font-weight: 900 !important;
-          letter-spacing: -0.055em !important;
-        }
-
-        .orderCardContact {
-          margin-top: 5px !important;
-          color: #64748b !important;
-          font-size: 13px !important;
-          font-weight: 650 !important;
-        }
-
-        .orderCardDate {
-          min-width: 132px !important;
-          padding: 8px 11px !important;
-          border: 1px solid #dbe7e2 !important;
-          border-radius: 14px !important;
-          background: #f8fafc !important;
-          text-align: right !important;
-        }
-
-        .orderCardDate strong {
+        .mailQueueRow strong {
           display: block !important;
-          color: #061f1b !important;
-          font-size: 13px !important;
-          font-weight: 900 !important;
-          white-space: nowrap !important;
+          color: #0f172a !important;
+          font-size: 14px !important;
+          font-weight: 850 !important;
         }
 
-        .orderCardDate span {
+        .mailQueueRow span {
           display: block !important;
           margin-top: 3px !important;
           color: #64748b !important;
           font-size: 12px !important;
-          font-weight: 720 !important;
+          font-weight: 600 !important;
         }
 
-        .orderCardBody {
-          display: grid !important;
-          grid-template-columns: minmax(0, 1fr) 250px !important;
-          gap: 16px !important;
-          align-items: start !important;
-        }
-
-        .orderCardLabel {
-          color: #047857 !important;
-          font-size: 10.5px !important;
-          font-weight: 900 !important;
-          letter-spacing: .08em !important;
-          text-transform: uppercase !important;
-          margin-bottom: 7px !important;
-        }
-
-        .orderCardItems ul {
-          margin: 0 !important;
-          padding: 0 !important;
-          list-style: none !important;
-          display: grid !important;
-          gap: 5px !important;
-        }
-
-        .orderCardItems li {
+        .mailQueueActions {
           display: flex !important;
           gap: 8px !important;
-          align-items: baseline !important;
-          color: #1e293b !important;
-          font-size: 13px !important;
-          line-height: 1.32 !important;
-          font-weight: 560 !important;
+          align-items: center !important;
+          justify-content: flex-end !important;
         }
 
-        .orderCardItems li strong {
-          min-width: 30px !important;
-          color: #047857 !important;
-          font-weight: 900 !important;
-        }
-
-        .orderCardMore {
-          margin-top: 7px !important;
+        .mailMore {
           color: #64748b !important;
           font-size: 12.5px !important;
-          font-weight: 720 !important;
+          font-weight: 700 !important;
+          padding: 4px 2px !important;
         }
 
-        .orderCardSide {
-          display: grid !important;
-          gap: 8px !important;
-        }
-
-        .orderCardPrice {
-          padding: 10px 12px !important;
-          border: 1px solid #fed7aa !important;
-          border-radius: 15px !important;
-          background: #fff7ed !important;
-        }
-
-        .orderCardPrice strong {
-          display: block !important;
-          color: #061f1b !important;
-          font-size: 22px !important;
-          line-height: 1 !important;
-          font-weight: 900 !important;
-          letter-spacing: -0.055em !important;
-        }
-
-        .orderCardPrice span,
-        .orderCardPrice small {
-          display: block !important;
-          margin-top: 5px !important;
-          color: #9a3412 !important;
-          font-size: 10px !important;
-          font-weight: 850 !important;
-          text-transform: uppercase !important;
-          letter-spacing: .07em !important;
-        }
-
-        .orderCardBadges {
-          display: flex !important;
-          flex-wrap: wrap !important;
-          gap: 6px !important;
-        }
-
-        .statusBadge,
-        .sourceBadge {
-          display: inline-flex !important;
-          align-items: center !important;
-          min-height: 26px !important;
-          padding: 0 9px !important;
-          border-radius: 999px !important;
-          font-size: 11.5px !important;
-          font-weight: 850 !important;
-        }
-
-        .sourceBadge {
-          background: #ffffff !important;
-          color: #475569 !important;
-          border: 1px solid #dbe7e2 !important;
-        }
-
-        .orderCardActions {
-          display: flex !important;
-          justify-content: flex-end !important;
-          gap: 8px !important;
-          margin-top: 12px !important;
-          padding-top: 12px !important;
-          border-top: 1px solid #edf2f7 !important;
-        }
-
+        .commandPrimary,
+        .commandGhost,
+        .commandDanger,
         .primaryBtn,
         .secondaryBtn,
         .dangerBtn,
         .statusPill,
         .btnPrimary,
         .btnDanger {
-          min-height: 35px !important;
+          min-height: 36px !important;
           border-radius: 11px !important;
           padding: 0 13px !important;
           font-size: 12.5px !important;
@@ -4806,6 +4503,7 @@ export default function AuftragseingangPage() {
           white-space: nowrap !important;
         }
 
+        .commandPrimary,
         .primaryBtn,
         .btnPrimary {
           background: #0f9f7a !important;
@@ -4813,6 +4511,7 @@ export default function AuftragseingangPage() {
           color: #ffffff !important;
         }
 
+        .commandGhost,
         .secondaryBtn,
         .statusPill {
           background: #ffffff !important;
@@ -4820,6 +4519,14 @@ export default function AuftragseingangPage() {
           color: #0f172a !important;
         }
 
+        .commandGhost.isLive,
+        .statusPill.isLive {
+          background: #ecfdf5 !important;
+          border-color: #bbf7d0 !important;
+          color: #047857 !important;
+        }
+
+        .commandDanger,
         .dangerBtn,
         .btnDanger {
           background: #fff7f7 !important;
@@ -4827,27 +4534,39 @@ export default function AuftragseingangPage() {
           color: #b91c1c !important;
         }
 
+        .small {
+          min-height: 34px !important;
+          border-radius: 10px !important;
+          padding: 0 11px !important;
+          font-size: 12px !important;
+        }
+
+        .inboxHero,
+        .liveInfo,
+        .compactStats,
+        .inboxPanel {
+          display: none !important;
+        }
+
         @media (max-width: 1000px) {
-          .inboxHero,
-          .panelTop,
-          .filterBar,
-          .orderCardTop,
-          .orderCardBody {
+          .commandTop,
+          .mailWorkbenchTop,
+          .mailSearchBar,
+          .mailQueueRow {
             grid-template-columns: 1fr !important;
-            display: grid !important;
           }
 
-          .heroActions {
+          .commandActions,
+          .mailQueueActions {
             justify-content: flex-start !important;
-          }
-
-          .orderCardDate {
-            text-align: left !important;
           }
         }
       `}</style></AppLayout>
   );
 }
+
+
+
 
 
 
