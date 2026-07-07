@@ -285,6 +285,13 @@ Labeldaten speichern</h2>
                 Nur passende A4-Labelbögen verwenden. Die Erstellung stoppt, wenn Anzahl oder Labeldaten nicht sicher erkannt werden.
               </span>
             </label>
+            <div className="heycaterCustomerField">
+              <label>
+                Kunde für diese Labels
+                <input name="customerName" type="text" placeholder="z. B. Parloa, NinjaOne GmbH, Kunde XYZ" required />
+              </label>
+            </div>
+
 <div className="heycaterSettingsGrid">
               <label>
                 Raster
@@ -542,6 +549,29 @@ Labeldaten speichern</h2>
           font-size: 13px;
           line-height: 1.45;
           color: #64748b;
+        }
+
+        .heycaterCustomerField {
+          margin: 14px 0 12px;
+        }
+
+        .heycaterCustomerField label {
+          display: grid;
+          gap: 6px;
+          font-size: 12px;
+          line-height: 1.2;
+          font-weight: 800;
+          color: #334155;
+        }
+
+        .heycaterCustomerField input {
+          height: 42px;
+          border: 1px solid #d6e2e8;
+          border-radius: 12px;
+          padding: 0 13px;
+          background: #ffffff;
+          color: #0f172a;
+          font-weight: 750;
         }
 
         .heycaterSettingsGrid {
