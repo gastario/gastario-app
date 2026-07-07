@@ -497,11 +497,19 @@ Labeldaten speichern</h2>
         }
 
         .heycaterDropzone input[type="file"] {
-          position: absolute;
-          width: 1px;
-          height: 1px;
-          opacity: 0;
-          pointer-events: none;
+          position: static;
+          width: auto;
+          height: auto;
+          opacity: 1;
+          pointer-events: auto;
+          display: block;
+          margin: 0 auto 12px;
+          padding: 8px 10px;
+          border: 1px solid #cbd5e1;
+          border-radius: 10px;
+          background: #ffffff;
+          color: #0f172a;
+          font-weight: 700;
         }
 
         .heycaterDropzone strong {
@@ -989,6 +997,8 @@ const orderShortcutMetaStyle: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 700,
 };
+
+
 
 
 
