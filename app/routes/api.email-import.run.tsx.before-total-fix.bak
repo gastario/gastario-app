@@ -350,14 +350,8 @@ async function createReviewOrderFromExtracted(params: {
   brandId?: string | null;
   incomingEmailId: string;
   extractedOrder: any;
-  bestText?: string;
 }) {
-  const { tenantId, brandId, incomingEmailId, extractedOrder, bestText } = params;
-
-  const finalItems = getItemsWithHeycaterSumCorrection(extractedOrder, String(bestText || ""));
-  const orderTotalCents = finalItems.reduce((sum: number, item: any) => {
-    return sum + Number(item?.totalCents || 0);
-  }, 0);
+  const { tenantId, brandId, incomingEmailId, extractedOrder } = params;
 
   const order = await prisma.order.create({
     data: {
@@ -382,9 +376,9 @@ async function createReviewOrderFromExtracted(params: {
       platformName: extractedOrder.source || "E-Mail",
       confidenceScore: 70,
       reviewReason: "Automatisch aus E-Mail erstellt. Bitte pruefen.",
-      totalCents: orderTotalCents,
       items: {
-        create: finalItems.length > 0 ? finalItems.map((item: any) => ({              name: String(item.name || "Position"),
+        create: Array.isArray(extractedOrder.items)
+          ? extractedOrder.items.map((item: any) => ({              name: String(item.name || "Position"),
               quantity: Number(item.quantity || 1),
               unit: "Stueck",
               unitCents: Number(item.unitCents || 0),
@@ -592,7 +586,6 @@ export async function loader({ request }: { request: Request }) {
                 brandId: account.brandId,
                 incomingEmailId: existing.id,
                 extractedOrder,
-                bestText,
               });
 
               await prisma.incomingEmail.update({
@@ -696,7 +689,6 @@ export async function loader({ request }: { request: Request }) {
               brandId: account.brandId,
               incomingEmailId: incomingEmail.id,
               extractedOrder,
-              bestText,
             });
 
             await prisma.incomingEmail.update({
@@ -738,15 +730,6 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
-
-
-
-
-
-
-
-
-
 
 
 
