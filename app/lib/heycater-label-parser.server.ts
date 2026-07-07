@@ -766,13 +766,40 @@ function pushDeliveryOverviewLabels(labels: HeycaterLabelData[], input: {
       meal,
       details,
       caterer: "Caterer: Let Me Bowl heykantine",
-      customer: "Customer: NinjaOne GmbH",
+      customer: customer ? "Customer: " + customer : "",
       address: input.address,
     });
   }
 }
 
-function parseDeliveryOverviewLabelsFromText(rawText: string, dishDetailsMap: Record<string, string> = DELIVERY_OVERVIEW_DISH_DETAILS): HeycaterLabelData[] {
+function extractDeliveryOverviewCustomer(rawText: string, sourceFileName = "") {
+  const fileText = cleanLine(
+    decodeURIComponent(String(sourceFileName || ""))
+      .replace(/\.pdf$/i, "")
+      .replace(/[_]+/g, " ")
+      .replace(/\s*-\s*/g, " - ")
+  );
+
+  const fileMatch = fileText.match(/\b\d{2}-\d{2}-\d{4}\b\s*-\s*(.*?)\s*-\s*let\s*me\s*bowl/i);
+  if (fileMatch?.[1]) {
+    return cleanLine(fileMatch[1]);
+  }
+
+  const raw = String(rawText || "");
+  const customerLine = raw.match(/Customer(?:\s+Name)?\s*[:\-]\s*(.+)/i);
+  if (customerLine?.[1]) {
+    const value = cleanLine(customerLine[1]);
+    if (
+      value &&
+      !/dish|quantity|delivery|address|customer name dish/i.test(value)
+    ) {
+      return value;
+    }
+  }
+
+  return "";
+}
+function parseDeliveryOverviewLabelsFromText(rawText: string, dishDetailsMap: Record<string, string> = DELIVERY_OVERVIEW_DISH_DETAILS, sourceFileName = ""): HeycaterLabelData[] {
   const lines = String(rawText || "")
     .split(/\r?\n/)
     .map(cleanLine)
@@ -780,6 +807,7 @@ function parseDeliveryOverviewLabelsFromText(rawText: string, dishDetailsMap: Re
 
   const date = extractDeliveryOverviewDate(rawText);
   const address = extractDeliveryOverviewAddress(lines);
+  const customer = extractDeliveryOverviewCustomer(rawText, sourceFileName);
   const labels: HeycaterLabelData[] = [];
   const pendingNameParts: string[] = [];
   let pendingQuantityName: { name: string; quantity: number } | null = null;
@@ -854,9 +882,9 @@ function parseDeliveryOverviewLabelsFromText(rawText: string, dishDetailsMap: Re
   return labels;
 }
 
-export function parseHeycaterLabelsFromText(rawText: string, deliveryDishDetails?: Record<string, string>): HeycaterLabelData[] {
+export function parseHeycaterLabelsFromText(rawText: string, deliveryDishDetails?: Record<string, string>, sourceFileName = ""): HeycaterLabelData[] {
   if (/Delivery Overview/i.test(String(rawText || ""))) {
-    return parseDeliveryOverviewLabelsFromText(rawText, deliveryDishDetails || DELIVERY_OVERVIEW_DISH_DETAILS);
+    return parseDeliveryOverviewLabelsFromText(rawText, deliveryDishDetails || DELIVERY_OVERVIEW_DISH_DETAILS, sourceFileName);
   }
 
   const lines = String(rawText || "")
@@ -882,6 +910,9 @@ export function parseHeycaterLabelsFromText(rawText: string, deliveryDishDetails
 
   return labels;
 }
+
+
+
 
 
 

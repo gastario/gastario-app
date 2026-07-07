@@ -93,7 +93,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const { getDeliveryDishDetailsMap } = await import("../lib/foodlabel-dish-allergens.server");
 
     const deliveryDishDetails = await getDeliveryDishDetailsMap(prisma, access.tenantId);
-    const labels = parseHeycaterLabelsFromText(text, deliveryDishDetails);
+    const labels = parseHeycaterLabelsFromText(text, deliveryDishDetails, file.name);
     const expectedCount = getExpectedLabelCountFromFilename(file.name);
 
     if (labels.length === 0) {
@@ -155,4 +155,5 @@ export async function action({ request }: ActionFunctionArgs) {
 export async function loader() {
   return new Response("Nur Upload per Formular erlaubt.", { status: 405 });
 }
+
 

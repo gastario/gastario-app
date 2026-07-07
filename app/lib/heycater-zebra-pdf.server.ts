@@ -170,15 +170,19 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
 
     let y = height - 42;
 
-    for (const line of wrapText(label.meal, 36).slice(0, 2)) {
+    const mealLines = wrapText(label.meal, 28).slice(0, 3);
+    const mealSize = mealLines.length >= 3 ? 9.1 : 10.8;
+    const mealLineGap = mealLines.length >= 3 ? 10.2 : 11.8;
+
+    for (const line of mealLines) {
       page.drawText(line, {
         x: left,
         y,
-        size: 11.2,
+        size: mealSize,
         font: bold,
         color: black,
       });
-      y -= 12.2;
+      y -= mealLineGap;
     }
 
     y -= 2;
@@ -232,13 +236,20 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
       color: black,
     });
 
-    page.drawText(safeText(label.customer || "NinjaOne GmbH").replace(/^Customer:\s*/i, "").replace(/Delivery Overview/gi, "NinjaOne GmbH").slice(0, 42), {
-      x: left,
-      y: 16,
-      size: 7.0,
-      font: regular,
-      color: black,
-    });
+    const customerText = safeText(label.customer || "")
+      .replace(/^Customer:\s*/i, "")
+      .replace(/Delivery Overview/gi, "")
+      .trim();
+
+    if (customerText) {
+      page.drawText(customerText.slice(0, 42), {
+        x: left,
+        y: 16,
+        size: 7.0,
+        font: regular,
+        color: black,
+      });
+    }
 
     page.drawText(safeText(label.address || "Alexanderstrasse 5, Berlin, 10178").slice(0, 44), {
       x: left,
@@ -251,6 +262,10 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
 
   return await pdf.save();
 }
+
+
+
+
 
 
 
