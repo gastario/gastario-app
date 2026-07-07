@@ -60,6 +60,24 @@ async function extractPdfText(inputBuffer: Buffer) {
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
+    const { getUserId } = await import("../lib/session.server");
+    const { prisma } = await import("../lib/prisma.server");
+
+    const userId = await getUserId(request);
+
+    if (!userId) {
+      return new Response("Nicht angemeldet.", { status: 401 });
+    }
+
+    const access = await prisma.tenantUser.findFirst({
+      where: { userId },
+      include: { tenant: true },
+    });
+
+    if (!access?.tenant) {
+      return new Response("Kein Betrieb gefunden.", { status: 403 });
+    }
+
     const formData = await request.formData();
     const file = formData.get("pdf");
 
@@ -72,8 +90,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const { parseHeycaterLabelsFromText } = await import("../lib/heycater-label-parser.server");
     const { renderHeycaterZebraPdf } = await import("../lib/heycater-zebra-pdf.server");
+    const { getDeliveryDishDetailsMap } = await import("../lib/foodlabel-dish-allergens.server");
 
-    const labels = parseHeycaterLabelsFromText(text);
+    const deliveryDishDetails = await getDeliveryDishDetailsMap(prisma, access.tenantId);
+    const labels = parseHeycaterLabelsFromText(text, deliveryDishDetails);
     const expectedCount = getExpectedLabelCountFromFilename(file.name);
 
     if (labels.length === 0) {
@@ -135,3 +155,4 @@ export async function action({ request }: ActionFunctionArgs) {
 export async function loader() {
   return new Response("Nur Upload per Formular erlaubt.", { status: 405 });
 }
+

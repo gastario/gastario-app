@@ -550,10 +550,10 @@ function extractDeliveryOverviewAddress(lines: string[]) {
   return addressLine || "Adresse nicht erkannt";
 }
 
-function parseDeliveryOverviewOrderLine(line: string, pendingNameParts: string[]) {
+function parseDeliveryOverviewOrderLine(line: string, pendingNameParts: string[], deliveryOverviewDishes: string[]) {
   const clean = cleanLine(line);
 
-  for (const dish of DELIVERY_OVERVIEW_DISHES) {
+  for (const dish of deliveryOverviewDishes) {
     const dishPattern = escapeRegExp(dish);
 
     // Variante 1:
@@ -666,7 +666,7 @@ function isDeliveryOverviewMetaLine(line: string) {
   );
 }
 
-function parseDeliveryOverviewLabelsFromText(rawText: string): HeycaterLabelData[] {
+function parseDeliveryOverviewLabelsFromText(rawText: string, dishDetailsMap: Record<string, string> = DELIVERY_OVERVIEW_DISH_DETAILS): HeycaterLabelData[] {
   const lines = String(rawText || "")
     .split(/\r?\n/)
     .map(cleanLine)
@@ -674,6 +674,7 @@ function parseDeliveryOverviewLabelsFromText(rawText: string): HeycaterLabelData
 
   const date = extractDeliveryOverviewDate(rawText);
   const address = extractDeliveryOverviewAddress(lines);
+  const deliveryOverviewDishes = Object.keys(dishDetailsMap).sort((a, b) => b.length - a.length);
   const labels: HeycaterLabelData[] = [];
   const pendingNameParts: string[] = [];
   const unknownLines: string[] = [];
@@ -681,7 +682,7 @@ function parseDeliveryOverviewLabelsFromText(rawText: string): HeycaterLabelData
   for (const line of lines) {
     if (isDeliveryOverviewMetaLine(line)) continue;
 
-    const parsed = parseDeliveryOverviewOrderLine(line, pendingNameParts);
+    const parsed = parseDeliveryOverviewOrderLine(line, pendingNameParts, deliveryOverviewDishes);
 
     if (parsed) {
       if (!parsed.name || parsed.name === "Name nicht erkannt") {
@@ -690,7 +691,7 @@ function parseDeliveryOverviewLabelsFromText(rawText: string): HeycaterLabelData
         continue;
       }
 
-      if (!parsed.meal || !DELIVERY_OVERVIEW_DISH_DETAILS[parsed.meal]) {
+      if (!parsed.meal || !dishDetailsMap[parsed.meal]) {
         unknownLines.push(line);
         pendingNameParts.length = 0;
         continue;
@@ -707,7 +708,7 @@ function parseDeliveryOverviewLabelsFromText(rawText: string): HeycaterLabelData
           name: parsed.name,
           date,
           meal: parsed.meal,
-          details: DELIVERY_OVERVIEW_DISH_DETAILS[parsed.meal],
+          details: dishDetailsMap[parsed.meal],
           caterer: "Caterer: Let Me Bowl heykantine",
           customer: "Customer: NinjaOne GmbH",
           address,
@@ -740,9 +741,9 @@ function parseDeliveryOverviewLabelsFromText(rawText: string): HeycaterLabelData
   return labels;
 }
 
-export function parseHeycaterLabelsFromText(rawText: string): HeycaterLabelData[] {
+export function parseHeycaterLabelsFromText(rawText: string, deliveryDishDetails?: Record<string, string>): HeycaterLabelData[] {
   if (/Delivery Overview/i.test(String(rawText || ""))) {
-    return parseDeliveryOverviewLabelsFromText(rawText);
+    return parseDeliveryOverviewLabelsFromText(rawText, deliveryDishDetails || DELIVERY_OVERVIEW_DISH_DETAILS);
   }
 
   const lines = String(rawText || "")
@@ -768,6 +769,7 @@ export function parseHeycaterLabelsFromText(rawText: string): HeycaterLabelData[
 
   return labels;
 }
+
 
 
 
