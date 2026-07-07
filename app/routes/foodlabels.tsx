@@ -203,7 +203,6 @@ export async function action({ request }: { request: Request }) {
 export default function FoodLabelsPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as any;
-  const recentOrders = Array.isArray((data as any).recentOrders) ? (data as any).recentOrders : [];
   const url = new URL(typeof window !== "undefined" ? window.location.href : "http://localhost");
   const selectedId = url.searchParams.get("print");
   const selected = selectedId ? data.labels.find((label: any) => label.id === selectedId) : data.labels[0];
@@ -219,44 +218,6 @@ export default function FoodLabelsPage() {
         {actionData?.error ? <div style={errorStyle}>{actionData.error}</div> : null}
         {actionData?.success ? <div style={successStyle}>{actionData.success}</div> : null}
 
-        <div style={editorCardStyle}>
-          <div style={cardHeaderStyle}>
-            <div>
-              <p style={smallLabelStyle}>Schnellstart</p>
-              <h2 style={sectionTitleStyle}>Aus Auftrag erstellen</h2>
-              <p style={helperTextStyle}>
-                Gerichte und Mengen direkt aus einem Auftrag übernehmen. Allergene werden automatisch aus dem Gerichtsnamen vorgeschlagen.
-              </p>
-            </div>
-
-            <Link to="/auftragseingang" style={secondaryButtonStyle}>
-              Auftrag importieren
-            </Link>
-          </div>
-
-          {recentOrders.length > 0 ? (
-            <div style={orderShortcutGridStyle}>
-              {recentOrders.map((order: any) => (
-                <Link key={order.id} to={"/auftraege/" + order.id + "/foodlabels"} style={orderShortcutStyle}>
-                  <div style={orderShortcutTitleStyle}>
-                    <strong>{order.customerName || order.orderNumber}</strong>
-                    <span>{order.orderNumber}</span>
-                  </div>
-
-                  <div style={orderShortcutMetaStyle}>
-                    <span>{formatDate(order.deliveryDate)}</span>
-                    <span>{order.deliveryTimeText || "-"}</span>
-                    <span>{order.items?.length || 0} Positionen</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div style={emptyStyle}>
-              Noch keine Aufträge gefunden. Importiere zuerst einen Auftrag oder erstelle Foodlabels weiter unten manuell.
-            </div>
-          )}
-        </div>
         <div style={editorCardStyle}>
           <div style={cardHeaderStyle}>
             <div>
@@ -1028,6 +989,7 @@ const orderShortcutMetaStyle: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 700,
 };
+
 
 
 
