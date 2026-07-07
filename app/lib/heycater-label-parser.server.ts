@@ -509,7 +509,178 @@ function parseOneHeycaterLabel(date: string, block: string[]) {
   };
 }
 
+const DELIVERY_OVERVIEW_DISH_DETAILS: Record<string, string> = {
+  "Chicken Shawarma Grill Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Lemon Chicken Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Crispy Chicken Salad": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Falafel Wrap": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Mediterranean Halloumi Crunch Wrap": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Ebi Tempura Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Mediterranean Grill Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Veggie Oriental Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Planted Chicken Power Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Crispy Tofu Wrap": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Vegan Beetroot Salad": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Asian Greens with Sesame Salmon": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Vegan Tuna Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Green Tofu Fitness Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Garden Halloumi Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Fennel Citrus Sea Bream Salad": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Trout Herb Salad": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Oriental Salad": "Allergene: bitte nach Rezeptdaten pruefen",
+};
+
+const DELIVERY_OVERVIEW_DISHES = Object.keys(DELIVERY_OVERVIEW_DISH_DETAILS).sort((a, b) => b.length - a.length);
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function extractDeliveryOverviewDate(rawText: string) {
+  const text = String(rawText || "");
+  const titleDate = text.match(/Delivery Overview\s+(\d{2}-\d{2}-\d{4})/i);
+  if (titleDate) return titleDate[1];
+
+  const anyDate = text.match(/\b\d{2}-\d{2}-\d{4}\b/);
+  return anyDate ? anyDate[0] : "";
+}
+
+function extractDeliveryOverviewAddress(lines: string[]) {
+  const addressLine = lines.find((line) => /\b\d{5}\b/.test(line) && /Berlin/i.test(line));
+  return addressLine || "Adresse nicht erkannt";
+}
+
+function parseDeliveryOverviewOrderLine(line: string, pendingNameParts: string[]) {
+  const clean = cleanLine(line);
+
+  for (const dish of DELIVERY_OVERVIEW_DISHES) {
+    const dishPattern = escapeRegExp(dish);
+
+    const fullLineMatch = clean.match(new RegExp("^(.*?)\\s+(" + dishPattern + ")\\s+(\\d+)x$", "i"));
+    if (fullLineMatch) {
+      const inlineName = cleanLine(fullLineMatch[1]);
+      const quantity = Number(fullLineMatch[3]);
+
+      return {
+        name: cleanLine([...pendingNameParts, inlineName].filter(Boolean).join(" ")),
+        meal: dish,
+        quantity,
+      };
+    }
+
+    const dishOnlyMatch = clean.match(new RegExp("^(" + dishPattern + ")\\s+(\\d+)x$", "i"));
+    if (dishOnlyMatch && pendingNameParts.length > 0) {
+      const quantity = Number(dishOnlyMatch[2]);
+
+      return {
+        name: cleanLine(pendingNameParts.join(" ")),
+        meal: dish,
+        quantity,
+      };
+    }
+  }
+
+  return null;
+}
+
+function isDeliveryOverviewMetaLine(line: string) {
+  const lower = normalize(line);
+
+  return (
+    !line ||
+    lower.includes("delivery overview") ||
+    lower === "delivery date: delivery time:" ||
+    lower === "address:" ||
+    lower === "delivery comment:" ||
+    lower.includes("fahrstuhl:") ||
+    lower.includes("parkplatz:") ||
+    lower.includes("kontaktperson") ||
+    lower.includes("customer name dish type dish name quantity") ||
+    lower.includes("powered by pdf generator") ||
+    /^\d{2}-\d{2}-\d{4}\s+\d{1,2}:\d{2}$/.test(line) ||
+    (/\b\d{5}\b/.test(line) && lower.includes("berlin"))
+  );
+}
+
+function parseDeliveryOverviewLabelsFromText(rawText: string): HeycaterLabelData[] {
+  const lines = String(rawText || "")
+    .split(/\r?\n/)
+    .map(cleanLine)
+    .filter(Boolean);
+
+  const date = extractDeliveryOverviewDate(rawText);
+  const address = extractDeliveryOverviewAddress(lines);
+  const labels: HeycaterLabelData[] = [];
+  const pendingNameParts: string[] = [];
+  const unknownLines: string[] = [];
+
+  for (const line of lines) {
+    if (isDeliveryOverviewMetaLine(line)) continue;
+
+    const parsed = parseDeliveryOverviewOrderLine(line, pendingNameParts);
+
+    if (parsed) {
+      if (!parsed.name || parsed.name === "Name nicht erkannt") {
+        unknownLines.push(line);
+        pendingNameParts.length = 0;
+        continue;
+      }
+
+      if (!parsed.meal || !DELIVERY_OVERVIEW_DISH_DETAILS[parsed.meal]) {
+        unknownLines.push(line);
+        pendingNameParts.length = 0;
+        continue;
+      }
+
+      if (!Number.isFinite(parsed.quantity) || parsed.quantity < 1 || parsed.quantity > 50) {
+        unknownLines.push(line);
+        pendingNameParts.length = 0;
+        continue;
+      }
+
+      for (let copy = 0; copy < parsed.quantity; copy++) {
+        labels.push({
+          name: parsed.name,
+          date,
+          meal: parsed.meal,
+          details: DELIVERY_OVERVIEW_DISH_DETAILS[parsed.meal],
+          caterer: "Caterer: Let Me Bowl heykantine",
+          customer: "Customer: Delivery Overview",
+          address,
+        });
+      }
+
+      pendingNameParts.length = 0;
+      continue;
+    }
+
+    if (looksLikeNamePart(line)) {
+      pendingNameParts.push(line);
+      continue;
+    }
+
+    unknownLines.push(line);
+  }
+
+  if (unknownLines.length > 0) {
+    throw new Error(
+      [
+        "SICHERHEITSSTOPP: Delivery Overview konnte nicht sicher gelesen werden.",
+        "",
+        "Nicht erkannte Zeilen:",
+        ...unknownLines.slice(0, 40),
+      ].join("\n")
+    );
+  }
+
+  return labels;
+}
+
 export function parseHeycaterLabelsFromText(rawText: string): HeycaterLabelData[] {
+  if (/Delivery Overview/i.test(String(rawText || ""))) {
+    return parseDeliveryOverviewLabelsFromText(rawText);
+  }
+
   const lines = String(rawText || "")
     .split(/\r?\n/)
     .map(cleanLine)
@@ -533,3 +704,5 @@ export function parseHeycaterLabelsFromText(rawText: string): HeycaterLabelData[
 
   return labels;
 }
+
+
