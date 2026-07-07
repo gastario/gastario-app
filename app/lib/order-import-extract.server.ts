@@ -389,7 +389,7 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
     eventStart,
     deliveryAddress,
     presentation,
-    items: items.slice(0, 20),
+    items: items,
   };
 }
 
@@ -439,3 +439,260 @@ function isInvalidImportedItem(name: string, description?: string, rawLine?: str
   return false;
 }
 
+
+
+
+function extractFirstGenericValue(text: string, patterns: RegExp[]) {
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    const value = match?.[1]?.trim();
+    if (value) return value.replace(/\s+/g, " ").trim();
+  }
+
+  return "";
+}
+
+function detectOrderSource(text: string) {
+  const lower = String(text || "").toLowerCase();
+
+  if (lower.includes("heycater") || lower.includes("hey cater")) return "Heycater";
+  if (lower.includes("feedr")) return "Feedr";
+  if (lower.includes("egora")) return "Egora";
+  if (lower.includes("lexware")) return "Lexware";
+  if (lower.includes("auftragsbestätigung") || lower.includes("auftragsbestaetigung")) return "Auftragsbestätigung";
+  if (lower.includes("angebotsbestätigung") || lower.includes("angebotsbestaetigung")) return "Angebotsbestätigung";
+  if (lower.includes("bestellbestätigung") || lower.includes("bestellbestaetigung")) return "Bestellbestätigung";
+  if (lower.includes("order confirmation")) return "Order Confirmation";
+  if (lower.includes("booking confirmation")) return "Booking Confirmation";
+  if (lower.includes("angebot")) return "Angebot";
+  if (lower.includes("bestellung")) return "Bestellung";
+
+  return "PDF/E-Mail";
+}
+
+function parseAnyDateToGerman(value: string) {
+  const text = String(value || "").trim();
+
+  let match = text.match(/\b([0-9]{2})\.([0-9]{2})\.([0-9]{4})\b/);
+  if (match) return `${match[1]}.${match[2]}.${match[3]}`;
+
+  match = text.match(/\b([0-9]{4})-([0-9]{2})-([0-9]{2})\b/);
+  if (match) return `${match[3]}.${match[2]}.${match[1]}`;
+
+  match = text.match(/\b([0-9]{2})\/([0-9]{2})\/([0-9]{4})\b/);
+  if (match) return `${match[1]}.${match[2]}.${match[3]}`;
+
+  return "";
+}
+
+function parseGenericMoneyToCents(value: string) {
+  const raw = String(value || "").replace(/[^\d,.-]/g, "").trim();
+  if (!raw) return 0;
+
+  const normalized = raw.includes(",")
+    ? raw.replace(/\./g, "").replace(",", ".")
+    : raw;
+
+  const number = Number(normalized);
+  return Number.isFinite(number) ? Math.round(number * 100) : 0;
+}
+
+function looksLikeGenericItemLine(line: string) {
+  const text = String(line || "").trim();
+  if (!text) return false;
+
+  const lower = text.toLowerCase();
+
+  if (
+    lower.includes("gesamt") ||
+    lower.includes("summe") ||
+    lower.includes("netto") ||
+    lower.includes("brutto") ||
+    lower.includes("ust") ||
+    lower.includes("mwst") ||
+    lower.includes("zahlungs") ||
+    lower.includes("iban") ||
+    lower.includes("bic")
+  ) {
+    return false;
+  }
+
+  if (/\b\d+\s*(x|stk|st\.|stück|portionen|personen|pax)\b/i.test(text)) return true;
+  if (/\b\d+[,.]\d{2}\s*€/.test(text) && /[a-zäöüß]/i.test(text)) return true;
+  if (/^\d+\s+.+\s+\d+[,.]\d{2}/.test(text)) return true;
+
+  return false;
+}
+
+function extractGenericItems(lines: string[]) {
+  const items: ExtractedOrderItem[] = [];
+
+  for (const rawLine of lines) {
+    const line = rawLine.replace(/\s+/g, " ").trim();
+    if (!looksLikeGenericItemLine(line)) continue;
+
+    let quantity = 1;
+    let name = line;
+    let unitCents = 0;
+    let totalCents = 0;
+
+    const qtyMatch =
+      line.match(/\b([0-9]+)\s*x\s+(.+)/i) ||
+      line.match(/\b([0-9]+)\s*(stk|st\.|stück|portionen|personen|pax)\s+(.+)/i);
+
+    if (qtyMatch) {
+      quantity = Number(qtyMatch[1]) || 1;
+      name = qtyMatch[3] || qtyMatch[2] || line;
+    }
+
+    const euroValues = [...line.matchAll(/([0-9]{1,6}(?:\.[0-9]{3})*(?:,[0-9]{2})|[0-9]{1,6}\.[0-9]{2})\s*€/g)]
+      .map((match) => parseGenericMoneyToCents(match[1]))
+      .filter((value) => value > 0);
+
+    if (euroValues.length >= 2) {
+      unitCents = euroValues[0];
+      totalCents = euroValues[euroValues.length - 1];
+    } else if (euroValues.length === 1) {
+      totalCents = euroValues[0];
+      unitCents = quantity > 0 ? Math.round(totalCents / quantity) : totalCents;
+    }
+
+    name = name
+      .replace(/\b[0-9]+\s*(x|stk|st\.|stück|portionen|personen|pax)\b/gi, "")
+      .replace(/([0-9]{1,6}(?:\.[0-9]{3})*(?:,[0-9]{2})|[0-9]{1,6}\.[0-9]{2})\s*€/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!name || name.length < 3) continue;
+
+    items.push({
+      name,
+      description: "",
+      rawLine: line,
+      quantity: quantity > 0 ? quantity : 1,
+      unitCents,
+      totalCents,
+    });
+  }
+
+  return items;
+}
+
+function extractGenericOrder(text: string): ExtractedOrder {
+  const normalizedText = String(text || "").replace(/\r/g, "");
+  const lines = normalizedText
+    .split(/\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const source = detectOrderSource(normalizedText);
+
+  const customerName = extractFirstGenericValue(normalizedText, [
+    /(?:Kunde|Firma|Unternehmen|Company|Customer)\s*[:\-]\s*(.+)/i,
+    /(?:Auftraggeber|Besteller|Rechnungsempfänger|Rechnungsempfaenger)\s*[:\-]\s*(.+)/i,
+  ]);
+
+  const contactName = extractFirstGenericValue(normalizedText, [
+    /(?:Ansprechpartner|Kontakt|Contact|Contact person)\s*[:\-]\s*(.+)/i,
+  ]);
+
+  const contactPhone = extractFirstGenericValue(normalizedText, [
+    /(?:Telefon|Tel\.?|Phone|Mobile|Handy)\s*[:\-]\s*([+0-9][0-9\s\/().-]+)/i,
+  ]);
+
+  const deliveryDate =
+    parseAnyDateToGerman(extractFirstGenericValue(normalizedText, [
+      /(?:Lieferdatum|Lieferung am|Delivery date|Delivery)\s*[:\-]\s*([0-9.\/-]+)/i,
+      /(?:Eventdatum|Event date|Veranstaltungsdatum)\s*[:\-]\s*([0-9.\/-]+)/i,
+      /(?:Datum)\s*[:\-]\s*([0-9.\/-]+)/i,
+    ])) ||
+    parseAnyDateToGerman(normalizedText);
+
+  const deliveryTime = extractFirstGenericValue(normalizedText, [
+    /(?:Lieferzeit|Uhrzeit|Delivery time|Time)\s*[:\-]\s*([0-9]{1,2}:[0-9]{2})/i,
+    /\b([0-9]{1,2}:[0-9]{2})\s*(?:Uhr)?\b/i,
+  ]);
+
+  const eventDate = parseAnyDateToGerman(extractFirstGenericValue(normalizedText, [
+    /(?:Eventdatum|Event date|Veranstaltungsdatum)\s*[:\-]\s*([0-9.\/-]+)/i,
+  ]));
+
+  const eventStart = extractFirstGenericValue(normalizedText, [
+    /(?:Eventbeginn|Beginn|Start)\s*[:\-]\s*([0-9]{1,2}:[0-9]{2})/i,
+  ]);
+
+  const presentation = extractFirstGenericValue(normalizedText, [
+    /(?:Event|Veranstaltung|Anlass|Betreff|Subject)\s*[:\-]\s*(.+)/i,
+  ]);
+
+  const deliveryAddress =
+    extractFirstGenericValue(normalizedText, [
+      /(?:Lieferadresse|Adresse|Delivery address|Location|Ort)\s*[:\-]\s*(.+)/i,
+    ]) ||
+    (() => {
+      const zipLineIndex = lines.findIndex((line) => /\b\d{5}\s+[A-Za-zÄÖÜäöüß-]+/.test(line));
+      if (zipLineIndex < 0) return "";
+
+      const cityLine = lines[zipLineIndex];
+      const streetLine = [...lines.slice(Math.max(0, zipLineIndex - 5), zipLineIndex)]
+        .reverse()
+        .find((line) => /straße|strasse|str\.|allee|weg|platz|damm|ufer|ring|chaussee/i.test(line)) || "";
+
+      return [streetLine, cityLine].filter(Boolean).join(", ");
+    })();
+
+  const items = extractGenericItems(lines);
+
+  return {
+    source,
+    customerName,
+    contactName,
+    contactPhone,
+    deliveryDate,
+    deliveryTime,
+    eventDate,
+    eventStart,
+    deliveryAddress,
+    presentation,
+    items,
+  };
+}
+
+function scoreExtractedOrder(order: ExtractedOrder) {
+  const items = Array.isArray(order.items) ? order.items : [];
+  const pricedItems = items.filter((item) => Number(item.totalCents || 0) > 0);
+
+  let score = 0;
+  if (order.customerName) score += 2;
+  if (order.deliveryDate) score += 2;
+  if (order.deliveryTime) score += 1;
+  if (order.deliveryAddress) score += 2;
+  if (items.length > 0) score += 2;
+  if (pricedItems.length > 0) score += 2;
+
+  return score;
+}
+
+export function extractUniversalOrder(text: string): ExtractedOrder {
+  const heycaterOrder = extractHeycaterOrder(text);
+  const genericOrder = extractGenericOrder(text);
+
+  const heycaterScore = scoreExtractedOrder(heycaterOrder);
+  const genericScore = scoreExtractedOrder(genericOrder);
+
+  if (genericScore > heycaterScore) {
+    return genericOrder;
+  }
+
+  if (
+    heycaterScore >= genericScore &&
+    (heycaterOrder.customerName ||
+      heycaterOrder.deliveryDate ||
+      heycaterOrder.deliveryAddress ||
+      heycaterOrder.items.length > 0)
+  ) {
+    return heycaterOrder;
+  }
+
+  return genericOrder;
+}

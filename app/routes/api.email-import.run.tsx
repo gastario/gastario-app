@@ -2,7 +2,7 @@
 import { createRequire } from "node:module";
 import { simpleParser } from "mailparser";
 import { prisma } from "../lib/prisma.server";
-import { extractHeycaterOrder } from "../lib/order-import-extract.server";
+import { extractUniversalOrder } from "../lib/order-import-extract.server";
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -578,7 +578,7 @@ export async function loader({ request }: { request: Request }) {
               }
             }
 
-            const extractedOrder = extractHeycaterOrder(bestText);
+            const extractedOrder = extractUniversalOrder(bestText);
 
             if (existing.orders.length === 0 && hasEnoughOrderData(extractedOrder)) {
               await createReviewOrderFromExtracted({
@@ -681,7 +681,7 @@ export async function loader({ request }: { request: Request }) {
             });
           }
 
-          const extractedOrder = extractHeycaterOrder(bestText);
+          const extractedOrder = extractUniversalOrder(bestText);
 
           if (hasEnoughOrderData(extractedOrder)) {
             const order = await createReviewOrderFromExtracted({
@@ -730,6 +730,7 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
 
 
 

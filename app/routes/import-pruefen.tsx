@@ -53,7 +53,7 @@ const FIELD_LABELS: Record<string, string> = {
 export async function action({ request }: { request: Request }) {
   const { prisma } = await import("../lib/prisma.server");
   const { getTenantAccess } = await import("../lib/features.server");
-  const { extractHeycaterOrder } = await import("../lib/order-import-extract.server");
+  const { extractUniversalOrder } = await import("../lib/order-import-extract.server");
 
   const access = await getTenantAccess(request);
 
@@ -224,7 +224,7 @@ export async function action({ request }: { request: Request }) {
       })
       .filter((match) => match.hits.length > 0);
 
-    const extractedOrder = extractHeycaterOrder(text);
+    const extractedOrder = extractUniversalOrder(text);
 
     return {
       success: "PDF wurde gelesen und gegen Import-Regeln geprueft.",
@@ -794,5 +794,6 @@ const compactItemRowStyle: React.CSSProperties = {
   padding: "10px 12px",
   fontSize: 13,
 };
+
 
 
