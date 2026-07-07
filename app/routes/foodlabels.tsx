@@ -203,6 +203,7 @@ export async function action({ request }: { request: Request }) {
 export default function FoodLabelsPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as any;
+  const recentOrders = Array.isArray((data as any).recentOrders) ? (data as any).recentOrders : [];
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const [pdfFileName, setPdfFileName] = useState("");
   const url = new URL(typeof window !== "undefined" ? window.location.href : "http://localhost");
@@ -235,9 +236,9 @@ export default function FoodLabelsPage() {
             </Link>
           </div>
 
-          {data.recentOrders && data.recentOrders.length > 0 ? (
+          {data.recentOrders && recentOrders.length > 0 ? (
             <div style={orderShortcutGridStyle}>
-              {data.recentOrders.map((order: any) => (
+              {recentOrders.map((order: any) => (
                 <Link key={order.id} to={"/auftraege/" + order.id + "/foodlabels"} style={orderShortcutStyle}>
                   <div style={orderShortcutTitleStyle}>
                     <strong>{order.customerName || order.orderNumber}</strong>
@@ -1071,5 +1072,6 @@ const orderShortcutMetaStyle: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 700,
 };
+
 
 
