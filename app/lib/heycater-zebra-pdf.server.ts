@@ -131,12 +131,20 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
     const left = 9;
     const right = width - 9;
 
-    drawDashedLine(page, left, right, height - 8);
+    page.drawRectangle({
+      x: 5,
+      y: 5,
+      width: width - 10,
+      height: height - 10,
+      borderColor: rgb(0.82, 0.88, 0.86),
+      borderWidth: 0.7,
+      color: rgb(1, 1, 1),
+    });
 
-    page.drawText(safeText(label.name || "-").slice(0, 34), {
+    page.drawText(safeText(label.name || "-").slice(0, 36), {
       x: left,
-      y: height - 22,
-      size: 10.5,
+      y: height - 20,
+      size: 11.4,
       font: bold,
       color: black,
     });
@@ -144,91 +152,106 @@ export async function renderHeycaterZebraPdf(labels: HeycaterLabelData[]) {
     const date = formatDate(label.date);
 
     if (date) {
-      page.drawText(date, {
+      page.drawText(safeText(date), {
         x: width - 55,
-        y: height - 19,
-        size: 7.6,
+        y: height - 18,
+        size: 7.2,
         font: regular,
         color: black,
       });
     }
+
+    page.drawLine({
+      start: { x: left, y: height - 27 },
+      end: { x: right, y: height - 27 },
+      thickness: 0.6,
+      color: rgb(0.82, 0.88, 0.86),
+    });
 
     let y = height - 42;
 
-    for (const line of wrapText(label.meal, 42).slice(0, 2)) {
+    for (const line of wrapText(label.meal, 36).slice(0, 2)) {
       page.drawText(line, {
         x: left,
         y,
-        size: 9.8,
-        font: regular,
+        size: 10.7,
+        font: bold,
         color: black,
       });
-      y -= 11.8;
+      y -= 12.2;
     }
 
     y -= 2;
-page.drawText("Info", {
-      x: left,
-      y: y + 1,
-      size: 5.8,
-      font: bold,
-      color: black,
-    });
 
-    y -= 6.2;
+    const detailLines = wrapText(label.details, 48).slice(0, 3);
 
-    for (const line of wrapText(label.details, 40).slice(0, 3)) {
-      page.drawText(line, {
-        x: left + 2,
+    if (detailLines.length > 0) {
+      page.drawText("Allergene / Hinweis", {
+        x: left,
         y,
-        size: 7.4,
-        font: italic,
-        color: black,
+        size: 6.2,
+        font: bold,
+        color: rgb(0.25, 0.32, 0.36),
       });
-      y -= 8.1;
+
+      y -= 7.4;
+
+      for (const line of detailLines) {
+        page.drawText(line, {
+          x: left,
+          y,
+          size: 7.1,
+          font: regular,
+          color: black,
+        });
+        y -= 8.1;
+      }
     }
 
-    y -= 5;
+    const qrSize = 16;
 
-    page.drawText(safeText(label.caterer || "Caterer: Let Me Bowl heykantine").slice(0, 54), {
-      x: left + 3,
-      y,
-      size: 7.1,
-      font: italic,
-      color: black,
-    });
-
-    y -= 9.7;
-
-    page.drawText(safeText(label.customer || "Customer: NinjaOne GmbH").slice(0, 54), {
-      x: left,
-      y,
-      size: 7.4,
-      font: bold,
-      color: black,
-    });
-
-    const qrSize = 21;
     page.drawImage(qrImage, {
       x: width - qrSize - 9,
-      y: 11,
+      y: 12,
       width: qrSize,
       height: qrSize,
     });
 
-    page.drawText(safeText(label.address || "Alexanderstrasse 5, Berlin, 10178").slice(0, 42), {
+    page.drawLine({
+      start: { x: left, y: 32 },
+      end: { x: width - qrSize - 14, y: 32 },
+      thickness: 0.5,
+      color: rgb(0.82, 0.88, 0.86),
+    });
+
+    page.drawText(safeText(label.caterer || "Let Me Bowl heykantine").replace(/^Caterer:\s*/i, "").slice(0, 42), {
       x: left,
-      y: 17,
-      size: 7.3,
+      y: 24,
+      size: 6.7,
+      font: bold,
+      color: black,
+    });
+
+    page.drawText(safeText(label.customer || "Delivery Overview").replace(/^Customer:\s*/i, "").slice(0, 42), {
+      x: left,
+      y: 16,
+      size: 6.7,
       font: regular,
       color: black,
     });
 
-    drawDashedLine(page, left, width - qrSize - 13, 5);
+    page.drawText(safeText(label.address || "Alexanderstrasse 5, Berlin, 10178").slice(0, 44), {
+      x: left,
+      y: 8,
+      size: 6.4,
+      font: regular,
+      color: rgb(0.25, 0.32, 0.36),
+    });
   }
 
   return await pdf.save();
 }
+
 
 
 
