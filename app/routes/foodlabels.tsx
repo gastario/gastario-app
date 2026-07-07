@@ -1,4 +1,4 @@
-﻿import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
+﻿import { Form, Link, redirect, useActionData, useLoaderData, useSearchParams } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import AppLayout from "../components/AppLayout";
@@ -1071,3 +1071,5 @@ const orderShortcutMetaStyle: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 700,
 };
+
+
