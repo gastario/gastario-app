@@ -1,4 +1,4 @@
-﻿import { redirect, useActionData } from "react-router";
+import { redirect, useActionData } from "react-router";
 import { useState } from "react";
 import AppLayout from "../components/AppLayout";
 
@@ -155,27 +155,13 @@ export async function action({ request }: { request: Request }) {
     const require = createRequire(import.meta.url);
     const pdfParseModule = require("pdf-parse");
 
-    const pagerender = async (pageData: any) => {
-      const textContent = await pageData.getTextContent({
-        normalizeWhitespace: true,
-        disableCombineTextItems: false,
-      });
-
-      const items = Array.isArray(textContent?.items) ? textContent.items : [];
-
-      return items
-        .map((item: any) => String(item?.str || "").trim())
-        .filter(Boolean)
-        .join(" ") + "\n\n";
-    };
-
     let text = "";
 
     if (typeof pdfParseModule === "function") {
-      const result = await pdfParseModule(buffer, { pagerender });
+      const result = await pdfParseModule(buffer);
       text = String(result.text || "").trim();
     } else if (typeof pdfParseModule.default === "function") {
-      const result = await pdfParseModule.default(buffer, { pagerender });
+      const result = await pdfParseModule.default(buffer);
       text = String(result.text || "").trim();
     } else if (pdfParseModule.PDFParse) {
       const parser = new pdfParseModule.PDFParse({ data: uint8 });
@@ -188,13 +174,6 @@ export async function action({ request }: { request: Request }) {
     } else {
       throw new Error("pdf-parse Export wurde nicht erkannt: " + Object.keys(pdfParseModule).join(", "));
     }
-
-    text = text
-      .replace(/\u0000/g, "")
-      .replace(/\r/g, "")
-      .replace(/[ \t]+\n/g, "\n")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
 
     if (!text) {
       return { error: "Aus dem PDF konnte kein Text gelesen werden. Eventuell ist es ein Scan/Bild-PDF." };
@@ -794,5 +773,3 @@ const compactItemRowStyle: React.CSSProperties = {
   padding: "10px 12px",
   fontSize: 13,
 };
-
-
