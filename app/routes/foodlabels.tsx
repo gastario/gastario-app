@@ -1,5 +1,5 @@
 ﻿import { Form, Link, redirect, useActionData, useLoaderData, useSearchParams } from "react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import AppLayout from "../components/AppLayout";
 
@@ -204,8 +204,6 @@ export default function FoodLabelsPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as any;
   const recentOrders = Array.isArray((data as any).recentOrders) ? (data as any).recentOrders : [];
-  const pdfInputRef = useRef<HTMLInputElement | null>(null);
-  const [pdfFileName, setPdfFileName] = useState("");
   const url = new URL(typeof window !== "undefined" ? window.location.href : "http://localhost");
   const selectedId = url.searchParams.get("print");
   const selected = selectedId ? data.labels.find((label: any) => label.id === selectedId) : data.labels[0];
@@ -236,7 +234,7 @@ export default function FoodLabelsPage() {
             </Link>
           </div>
 
-          {data.recentOrders && recentOrders.length > 0 ? (
+          {recentOrders.length > 0 ? (
             <div style={orderShortcutGridStyle}>
               {recentOrders.map((order: any) => (
                 <Link key={order.id} to={"/auftraege/" + order.id + "/foodlabels"} style={orderShortcutStyle}>
@@ -319,56 +317,14 @@ Labeldaten speichern</h2>
           </div>
 
           <form action="/foodlabels/heycater-pdf" method="post" encType="multipart/form-data" className="heycaterUploadForm">
-            <div
-              className="heycaterDropzone"
-              role="button"
-              tabIndex={0}
-              onClick={() => pdfInputRef.current?.click()}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  pdfInputRef.current?.click();
-                }
-              }}
-              onDragOver={(event) => {
-                event.preventDefault();
-              }}
-              onDrop={(event) => {
-                event.preventDefault();
-                const file = event.dataTransfer.files?.[0];
-
-                if (!file) return;
-                if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-                  alert("Bitte nur PDF-Dateien hochladen.");
-                  return;
-                }
-
-                const input = pdfInputRef.current;
-                if (!input) return;
-
-                const transfer = new DataTransfer();
-                transfer.items.add(file);
-                input.files = transfer.files;
-                setPdfFileName(file.name);
-              }}
-            >
-              <input
-                ref={pdfInputRef}
-                type="file"
-                name="pdf"
-                accept="application/pdf"
-                required
-                onChange={(event) => {
-                  setPdfFileName(event.currentTarget.files?.[0]?.name || "");
-                }}
-              />
-              <strong>{pdfFileName || "PDF hier reinziehen oder auswählen"}</strong>
+            <label className="heycaterDropzone">
+              <input type="file" name="pdf" accept="application/pdf" required />
+              <strong>PDF hier auswählen</strong>
               <span>
                 Nur passende A4-Labelbögen verwenden. Die Erstellung stoppt, wenn Anzahl oder Labeldaten nicht sicher erkannt werden.
               </span>
-            </div>
-
-            <div className="heycaterSettingsGrid">
+            </label>
+<div className="heycaterSettingsGrid">
               <label>
                 Raster
                 <select name="columns" defaultValue="3">
@@ -1072,6 +1028,10 @@ const orderShortcutMetaStyle: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 700,
 };
+
+
+
+
 
 
 
