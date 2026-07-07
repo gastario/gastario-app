@@ -666,6 +666,112 @@ function isDeliveryOverviewMetaLine(line: string) {
   );
 }
 
+function normalizeRuleText(value: string) {
+  return cleanLine(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parseAllergenDetails(value: string) {
+  const text = cleanLine(value);
+  const allergensMatch = text.match(/Allergens:\s*([^|]+)/i);
+  const noteMatch = text.match(/Note:\s*(.+)$/i);
+
+  const allergens = allergensMatch
+    ? allergensMatch[1].split(",").map((item) => cleanLine(item)).filter(Boolean)
+    : [];
+
+  const notes = noteMatch
+    ? noteMatch[1].split(",").map((item) => cleanLine(item)).filter(Boolean)
+    : [];
+
+  return { allergens, notes };
+}
+
+function buildAutomaticDetailsForMeal(meal: string, dishDetailsMap: Record<string, string>) {
+  const normalizedMeal = normalizeRuleText(meal);
+
+  // Exakte Gericht-Regel gewinnt. Wichtig z. B. Lemon Chicken Bowl,
+  // damit nicht automatisch die allgemeine Chicken-Regel greift.
+  for (const [keyword, details] of Object.entries(dishDetailsMap)) {
+    if (normalizeRuleText(keyword) === normalizedMeal) {
+      return details;
+    }
+  }
+
+  const allergens = new Set<string>();
+  const notes = new Set<string>();
+
+  const sortedRules = Object.entries(dishDetailsMap).sort((a, b) => b[0].length - a[0].length);
+
+  for (const [keyword, details] of sortedRules) {
+    const normalizedKeyword = normalizeRuleText(keyword);
+    if (!normalizedKeyword) continue;
+
+    if (normalizedMeal.includes(normalizedKeyword)) {
+      const parsed = parseAllergenDetails(details);
+
+      for (const allergen of parsed.allergens) {
+        if (!/^no declared allergens$/i.test(allergen)) allergens.add(allergen);
+      }
+
+      for (const note of parsed.notes) {
+        notes.add(note);
+      }
+    }
+  }
+
+  const allergenList = Array.from(allergens);
+  const noteList = Array.from(notes);
+
+  if (allergenList.length > 0 && noteList.length > 0) {
+    return `Allergens: ${allergenList.join(", ")} | Note: ${noteList.join(", ")}`;
+  }
+
+  if (allergenList.length > 0) {
+    return `Allergens: ${allergenList.join(", ")}`;
+  }
+
+  if (noteList.length > 0) {
+    return `No declared allergens | Note: ${noteList.join(", ")}`;
+  }
+
+  return "No declared allergens | Note: Please check recipe";
+}
+
+function pushDeliveryOverviewLabels(labels: HeycaterLabelData[], input: {
+  name: string;
+  meal: string;
+  quantity: number;
+  date: string;
+  address: string;
+  dishDetailsMap: Record<string, string>;
+}) {
+  const name = cleanLine(input.name);
+  const meal = cleanLine(input.meal);
+  const quantity = Number(input.quantity);
+
+  if (!name || !meal || !Number.isFinite(quantity) || quantity < 1 || quantity > 50) {
+    return;
+  }
+
+  const details = buildAutomaticDetailsForMeal(meal, input.dishDetailsMap);
+
+  for (let copy = 0; copy < quantity; copy++) {
+    labels.push({
+      name,
+      date: input.date,
+      meal,
+      details,
+      caterer: "Caterer: Let Me Bowl heykantine",
+      customer: "Customer: NinjaOne GmbH",
+      address: input.address,
+    });
+  }
+}
+
 function parseDeliveryOverviewLabelsFromText(rawText: string, dishDetailsMap: Record<string, string> = DELIVERY_OVERVIEW_DISH_DETAILS): HeycaterLabelData[] {
   const lines = String(rawText || "")
     .split(/\r?\n/)
@@ -674,48 +780,57 @@ function parseDeliveryOverviewLabelsFromText(rawText: string, dishDetailsMap: Re
 
   const date = extractDeliveryOverviewDate(rawText);
   const address = extractDeliveryOverviewAddress(lines);
-  const deliveryOverviewDishes = Object.keys(dishDetailsMap).sort((a, b) => b.length - a.length);
   const labels: HeycaterLabelData[] = [];
   const pendingNameParts: string[] = [];
-  const unknownLines: string[] = [];
+  let pendingQuantityName: { name: string; quantity: number } | null = null;
 
   for (const line of lines) {
     if (isDeliveryOverviewMetaLine(line)) continue;
 
-    const parsed = parseDeliveryOverviewOrderLine(line, pendingNameParts, deliveryOverviewDishes);
+    // Variante: Akash Gupta 1x Vegan Vegetable Paella with Side Salad
+    const quantityBeforeDishMatch = line.match(/^(.*?)\s+(\d+)x\s+(.+)$/i);
+    if (quantityBeforeDishMatch) {
+      const inlineName = cleanLine(quantityBeforeDishMatch[1]);
+      const quantity = Number(quantityBeforeDishMatch[2]);
+      const meal = cleanLine(quantityBeforeDishMatch[3]);
 
-    if (parsed) {
-      if (!parsed.name || parsed.name === "Name nicht erkannt") {
-        unknownLines.push(line);
-        pendingNameParts.length = 0;
-        continue;
-      }
-
-      if (!parsed.meal || !dishDetailsMap[parsed.meal]) {
-        unknownLines.push(line);
-        pendingNameParts.length = 0;
-        continue;
-      }
-
-      if (!Number.isFinite(parsed.quantity) || parsed.quantity < 1 || parsed.quantity > 50) {
-        unknownLines.push(line);
-        pendingNameParts.length = 0;
-        continue;
-      }
-
-      for (let copy = 0; copy < parsed.quantity; copy++) {
-        labels.push({
-          name: parsed.name,
-          date,
-          meal: parsed.meal,
-          details: dishDetailsMap[parsed.meal],
-          caterer: "Caterer: Let Me Bowl heykantine",
-          customer: "Customer: NinjaOne GmbH",
-          address,
-        });
-      }
+      pushDeliveryOverviewLabels(labels, {
+        name: cleanLine([...pendingNameParts, inlineName].filter(Boolean).join(" ")),
+        meal,
+        quantity,
+        date,
+        address,
+        dishDetailsMap,
+      });
 
       pendingNameParts.length = 0;
+      pendingQuantityName = null;
+      continue;
+    }
+
+    // Variante: Andrea De Maio 1x
+    // nächste Zeile: Vegan Harissa Bowl
+    const quantityOnlyMatch = line.match(/^(.*?)\s+(\d+)x$/i);
+    if (quantityOnlyMatch) {
+      pendingQuantityName = {
+        name: cleanLine([...pendingNameParts, quantityOnlyMatch[1]].filter(Boolean).join(" ")),
+        quantity: Number(quantityOnlyMatch[2]),
+      };
+      pendingNameParts.length = 0;
+      continue;
+    }
+
+    if (pendingQuantityName) {
+      pushDeliveryOverviewLabels(labels, {
+        name: pendingQuantityName.name,
+        meal: line,
+        quantity: pendingQuantityName.quantity,
+        date,
+        address,
+        dishDetailsMap,
+      });
+
+      pendingQuantityName = null;
       continue;
     }
 
@@ -723,19 +838,17 @@ function parseDeliveryOverviewLabelsFromText(rawText: string, dishDetailsMap: Re
       pendingNameParts.push(line);
       continue;
     }
-
-    unknownLines.push(line);
   }
 
-  if (unknownLines.length > 0) {
-    throw new Error(
-      [
-        "SICHERHEITSSTOPP: Delivery Overview konnte nicht sicher gelesen werden.",
-        "",
-        "Nicht erkannte Zeilen:",
-        ...unknownLines.slice(0, 40),
-      ].join("\n")
-    );
+  if (pendingQuantityName) {
+    pushDeliveryOverviewLabels(labels, {
+      name: pendingQuantityName.name,
+      meal: "Gericht nicht erkannt",
+      quantity: pendingQuantityName.quantity,
+      date,
+      address,
+      dishDetailsMap,
+    });
   }
 
   return labels;
@@ -769,6 +882,7 @@ export function parseHeycaterLabelsFromText(rawText: string, deliveryDishDetails
 
   return labels;
 }
+
 
 
 

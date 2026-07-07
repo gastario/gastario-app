@@ -61,7 +61,7 @@ export async function action({ request }: { request: Request }) {
   }
 
   if (!dishName) {
-    return { error: "Gerichtname fehlt." };
+    return { error: "Suchwort / Zutat fehlt." };
   }
 
   if (!allergens && !note) {
@@ -115,7 +115,7 @@ export default function FoodlabelAllergenePage() {
           <h1>Allergen-Erkennung</h1>
           <p className="subline">
             Diese Tabelle nutzt Gastario automatisch für Delivery-Overview-PDFs.
-            Gericht erkannt → Allergene/Hinweise werden auf das Zebra-Label gesetzt.
+            Suchwort im Gericht erkannt → Allergene/Hinweise werden automatisch auf das Zebra-Label gesetzt.
           </p>
         </div>
         <Link to="/foodlabels" className="backLink">Zurück zu Foodlabels</Link>
@@ -125,9 +125,9 @@ export default function FoodlabelAllergenePage() {
       {actionData?.error ? <div className="notice error">{actionData.error}</div> : null}
 
       <section className="card">
-        <h2>Neues Gericht anlegen</h2>
+        <h2>Neues Suchwort / Zutat anlegen</h2>
         <Form method="post" className="gridForm">
-          <input name="dishName" placeholder="z. B. Lemon Chicken Bowl" />
+          <input name="dishName" placeholder="z. B. Chicken, Salmon, Halloumi, Tempura" />
           <input name="allergens" placeholder="z. B. Egg, Soy, Gluten" />
           <input name="note" placeholder="z. B. Chicken, spices" />
           <button type="submit">Speichern</button>
@@ -135,7 +135,7 @@ export default function FoodlabelAllergenePage() {
       </section>
 
       <section className="card">
-        <h2>Gespeicherte Gerichte</h2>
+        <h2>Gespeicherte Suchwörter & Zutaten</h2>
 
         <div className="table">
           {data.rules.map((rule: any) => (
@@ -283,3 +283,4 @@ export default function FoodlabelAllergenePage() {
     </main>
   );
 }
+

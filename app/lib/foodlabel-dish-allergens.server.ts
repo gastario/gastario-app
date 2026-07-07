@@ -6,24 +6,32 @@
 };
 
 export const DEFAULT_DELIVERY_DISH_ALLERGENS: Array<Omit<DeliveryDishAllergenRule, "id">> = [
-  { dishName: "Chicken Shawarma Grill Bowl", allergens: "Egg, Soy, Gluten, Sesame, Mustard", note: "Chicken" },
-  { dishName: "Lemon Chicken Bowl", allergens: "No declared allergens", note: "Chicken, spices" },
-  { dishName: "Crispy Chicken Salad", allergens: "Gluten, Egg, Soy, Milk, Mustard", note: "Chicken" },
-  { dishName: "Falafel Wrap", allergens: "Gluten, Sesame", note: "Vegan" },
-  { dishName: "Mediterranean Halloumi Crunch Wrap", allergens: "Gluten, Milk, Sesame", note: "Vegetarian" },
-  { dishName: "Ebi Tempura Bowl", allergens: "Gluten, Crustaceans, Egg, Soy", note: "Ebi/Shrimp" },
-  { dishName: "Mediterranean Grill Bowl", allergens: "Sesame, Mustard", note: "Vegan/Vegetarian check" },
-  { dishName: "Veggie Oriental Bowl", allergens: "Sesame, Mustard", note: "Vegetarian" },
-  { dishName: "Planted Chicken Power Bowl", allergens: "Soy, Gluten", note: "Planted Chicken" },
-  { dishName: "Crispy Tofu Wrap", allergens: "Gluten, Soy, Sesame", note: "Vegan" },
-  { dishName: "Vegan Beetroot Salad", allergens: "Mustard", note: "Vegan" },
-  { dishName: "Asian Greens with Sesame Salmon", allergens: "Fish, Sesame, Soy, Gluten", note: "Salmon" },
-  { dishName: "Vegan Tuna Bowl", allergens: "Soy, Gluten", note: "Vegan" },
-  { dishName: "Green Tofu Fitness Bowl", allergens: "Soy, Sesame", note: "Vegan" },
-  { dishName: "Garden Halloumi Bowl", allergens: "Milk, Sesame, Mustard", note: "Vegetarian" },
-  { dishName: "Fennel Citrus Sea Bream Salad", allergens: "Fish, Mustard", note: "Sea Bream" },
-  { dishName: "Trout Herb Salad", allergens: "Fish, Mustard", note: "Trout" },
-  { dishName: "Oriental Salad", allergens: "Sesame, Mustard", note: "Vegan/Vegetarian check" },
+  { dishName: "Chicken", allergens: "Egg, Soy, Gluten", note: "Chicken marinade" },
+  { dishName: "Salmon", allergens: "Fish", note: "Salmon" },
+  { dishName: "Raw Salmon", allergens: "Fish", note: "Raw salmon" },
+  { dishName: "Sea Bream", allergens: "Fish", note: "Sea bream" },
+  { dishName: "Trout", allergens: "Fish", note: "Trout" },
+  { dishName: "Ebi", allergens: "Crustaceans, Gluten, Egg", note: "Shrimp tempura" },
+  { dishName: "Shrimp", allergens: "Crustaceans", note: "Shrimp" },
+  { dishName: "Tempura", allergens: "Gluten, Egg", note: "Tempura batter" },
+  { dishName: "Tofu", allergens: "Soy", note: "Tofu" },
+  { dishName: "Planted Chicken", allergens: "Soy, Gluten", note: "Planted Chicken" },
+  { dishName: "Vegan Tuna", allergens: "Soy, Gluten", note: "Vegan tuna" },
+  { dishName: "Halloumi", allergens: "Milk", note: "Halloumi" },
+  { dishName: "Creamy Tomato Sauce", allergens: "Milk", note: "Creamy sauce" },
+  { dishName: "Creamy", allergens: "Milk", note: "Creamy sauce" },
+  { dishName: "Gnocchi", allergens: "Gluten, Egg", note: "Gnocchi" },
+  { dishName: "Wrap", allergens: "Gluten", note: "Wrap" },
+  { dishName: "Crispy", allergens: "Gluten, Egg", note: "Crispy coating" },
+  { dishName: "Sesame", allergens: "Sesame", note: "Sesame" },
+  { dishName: "Soy", allergens: "Soy", note: "Soy" },
+  { dishName: "Falafel", allergens: "Sesame", note: "Falafel" },
+  { dishName: "Mustard", allergens: "Mustard", note: "Mustard" },
+  { dishName: "Vegan", allergens: "", note: "Vegan" },
+  { dishName: "Vegetarian", allergens: "", note: "Vegetarian" },
+
+  // Exact overrides
+  { dishName: "Lemon Chicken Bowl", allergens: "No declared allergens", note: "Chicken, spices" }
 ];
 
 export async function ensureFoodLabelDishAllergenTable(prisma: any) {
