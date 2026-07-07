@@ -75,6 +75,8 @@ export async function loader({ request, params }: { request: Request; params: { 
     throw new Response("Auftrag nicht gefunden", { status: 404 });
   }
 
+  const { guessAllergensFromLabelText } = await import("../lib/label-allergen-rules.server");
+
   const items = order.items
     .filter((item: any) => !isPlaceholderOrderItem(item))
     .map((item: any) => ({
@@ -83,7 +85,7 @@ export async function loader({ request, params }: { request: Request; params: { 
       quantity: item.quantity || 1,
       unit: item.unit || "Stueck",
       notes: item.notes || "",
-      allergens: getDefaultAllergens(order.allergens, item.notes),
+      allergens: guessAllergensFromLabelText(item.name, item.notes) || getDefaultAllergens(order.allergens, item.notes),
     }));
 
   return {
@@ -346,3 +348,4 @@ const hintBoxStyle: React.CSSProperties = {
   lineHeight: 1.45,
   background: "#f0fdf8",
 };
+
