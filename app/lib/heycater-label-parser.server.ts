@@ -510,24 +510,24 @@ function parseOneHeycaterLabel(date: string, block: string[]) {
 }
 
 const DELIVERY_OVERVIEW_DISH_DETAILS: Record<string, string> = {
-  "Chicken Shawarma Grill Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Lemon Chicken Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Crispy Chicken Salad": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Falafel Wrap": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Mediterranean Halloumi Crunch Wrap": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Ebi Tempura Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Mediterranean Grill Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Veggie Oriental Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Planted Chicken Power Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Crispy Tofu Wrap": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Vegan Beetroot Salad": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Asian Greens with Sesame Salmon": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Vegan Tuna Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Green Tofu Fitness Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Garden Halloumi Bowl": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Fennel Citrus Sea Bream Salad": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Trout Herb Salad": "Allergene: bitte nach Rezeptdaten pruefen",
-  "Oriental Salad": "Allergene: bitte nach Rezeptdaten pruefen",
+  "Chicken Shawarma Grill Bowl": "Allergene: Gluten, Milch, Sesam, Senf | Hinweis: Chicken",
+  "Lemon Chicken Bowl": "Allergene: Milch, Senf | Hinweis: Chicken",
+  "Crispy Chicken Salad": "Allergene: Gluten, Ei, Milch, Senf | Hinweis: Chicken",
+  "Falafel Wrap": "Allergene: Gluten, Sesam | Hinweis: Vegan",
+  "Mediterranean Halloumi Crunch Wrap": "Allergene: Gluten, Milch, Sesam | Hinweis: Vegetarisch",
+  "Ebi Tempura Bowl": "Allergene: Gluten, Krebstiere, Ei, Soja | Hinweis: Ebi/Shrimp",
+  "Mediterranean Grill Bowl": "Allergene: Sesam, Senf | Hinweis: Vegan/Vegetarisch pruefen",
+  "Veggie Oriental Bowl": "Allergene: Sesam, Senf | Hinweis: Vegetarisch",
+  "Planted Chicken Power Bowl": "Allergene: Soja, Gluten | Hinweis: Planted Chicken",
+  "Crispy Tofu Wrap": "Allergene: Gluten, Soja, Sesam | Hinweis: Vegan",
+  "Vegan Beetroot Salad": "Allergene: Senf | Hinweis: Vegan",
+  "Asian Greens with Sesame Salmon": "Allergene: Fisch, Sesam, Soja, Gluten | Hinweis: Salmon",
+  "Vegan Tuna Bowl": "Allergene: Soja, Gluten | Hinweis: Vegan",
+  "Green Tofu Fitness Bowl": "Allergene: Soja, Sesam | Hinweis: Vegan",
+  "Garden Halloumi Bowl": "Allergene: Milch, Sesam, Senf | Hinweis: Vegetarisch",
+  "Fennel Citrus Sea Bream Salad": "Allergene: Fisch, Senf | Hinweis: Sea Bream",
+  "Trout Herb Salad": "Allergene: Fisch, Senf | Hinweis: Trout",
+  "Oriental Salad": "Allergene: Sesam, Senf | Hinweis: Vegan/Vegetarisch pruefen",
 };
 
 const DELIVERY_OVERVIEW_DISHES = Object.keys(DELIVERY_OVERVIEW_DISH_DETAILS).sort((a, b) => b.length - a.length);
@@ -704,5 +704,6 @@ export function parseHeycaterLabelsFromText(rawText: string): HeycaterLabelData[
 
   return labels;
 }
+
 
 
