@@ -9,6 +9,8 @@ function mmToPt(mm: number) {
 
 function safeText(value: string) {
   return String(value || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/ä/g, "ae")
     .replace(/Ä/g, "Ae")
     .replace(/ö/g, "oe")
@@ -20,15 +22,17 @@ function safeText(value: string) {
     .replace(/Ł/g, "L")
     .replace(/Œ/g, "OE")
     .replace(/œ/g, "oe")
-    .replace(/Š/g, "S")
-    .replace(/š/g, "s")
-    .replace(/Ž/g, "Z")
-    .replace(/ž/g, "z")
-    .replace(/Ÿ/g, "Y")
-    .replace(/ƒ/g, "f")
+    .replace(/Æ/g, "AE")
+    .replace(/æ/g, "ae")
+    .replace(/Ð/g, "D")
+    .replace(/ð/g, "d")
+    .replace(/Þ/g, "Th")
+    .replace(/þ/g, "th")
+    .replace(/Ø/g, "O")
+    .replace(/ø/g, "o")
     .replace(/[’‘‚‛]/g, "'")
     .replace(/[“”„‟]/g, '"')
-    .replace(/–|—|−/g, "-")
+    .replace(/[–—−]/g, "-")
     .replace(/\u00a0/g, " ")
     .replace(/[^\x20-\x7E]/g, "")
     .replace(/\s+/g, " ")
@@ -225,4 +229,6 @@ page.drawText("Info", {
 
   return await pdf.save();
 }
+
+
 
