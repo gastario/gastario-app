@@ -340,6 +340,19 @@ Labeldaten speichern</h2>
           <div className="heycaterSafetyHint">
             Sicherheitsregel: Es darf kein Label fehlen und kein falsches Gericht gedruckt werden. Bei unsicherer Erkennung wird keine Druckdatei erstellt.
           </div>
+
+          <div className="allergenManagerTeaser">
+            <div>
+              <p>Automatische Erkennung</p>
+              <h3>Allergen-Erkennung bearbeiten</h3>
+              <span>
+                Lege hier fest, welche Allergene und Hinweise Gastario automatisch auf die Zebra-Labels schreibt,
+                wenn ein Gericht aus einer Delivery-Overview-PDF erkannt wird.
+              </span>
+            </div>
+
+            <a href="/foodlabels/allergene">Gerichte & Allergene bearbeiten</a>
+          </div>
         </section>
 
         <div style={contentGridStyle}>
@@ -574,6 +587,66 @@ Labeldaten speichern</h2>
 
         .heycaterSettingsGrid button:hover {
           background: #047857;
+        }
+
+        .allergenManagerTeaser {
+          margin-top: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 18px;
+          padding: 16px 18px;
+          border: 1px solid #cdeee3;
+          border-radius: 18px;
+          background: #f8fffc;
+        }
+
+        .allergenManagerTeaser p {
+          margin: 0 0 4px;
+          color: #047857;
+          font-size: 11px;
+          font-weight: 850;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .allergenManagerTeaser h3 {
+          margin: 0 0 4px;
+          font-size: 18px;
+          letter-spacing: -0.03em;
+          color: #0f172a;
+        }
+
+        .allergenManagerTeaser span {
+          display: block;
+          max-width: 760px;
+          color: #64748b;
+          font-size: 13px;
+          line-height: 1.45;
+        }
+
+        .allergenManagerTeaser a {
+          flex: 0 0 auto;
+          text-decoration: none;
+          border: 1px solid #047857;
+          border-radius: 999px;
+          background: #059669;
+          color: #ffffff;
+          padding: 10px 16px;
+          font-size: 13px;
+          font-weight: 850;
+          box-shadow: 0 10px 22px rgba(5, 150, 105, 0.16);
+        }
+
+        @media (max-width: 900px) {
+          .allergenManagerTeaser {
+            align-items: stretch;
+            flex-direction: column;
+          }
+
+          .allergenManagerTeaser a {
+            text-align: center;
+          }
         }
 
         .heycaterSafetyHint {
@@ -997,6 +1070,8 @@ const orderShortcutMetaStyle: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 700,
 };
+
+
 
 
 
