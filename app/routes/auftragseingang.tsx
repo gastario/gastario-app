@@ -1870,10 +1870,237 @@ export default function AuftragseingangPage() {
             flex-direction: column;
           }
         }
-      `}</style>
+      
+        /* gastario-sales-ready-final-20260708 */
+
+        .inboxPage {
+          max-width: 1380px !important;
+          padding: 0 28px 56px !important;
+        }
+
+        .inboxHero {
+          min-height: 150px !important;
+          border-radius: 30px !important;
+          border: 1px solid rgba(15, 159, 122, .22) !important;
+          background:
+            radial-gradient(circle at 0% 0%, rgba(16, 163, 127, .17), transparent 34%),
+            radial-gradient(circle at 100% 0%, rgba(245, 158, 11, .08), transparent 28%),
+            linear-gradient(135deg, #ffffff 0%, #f7fffc 100%) !important;
+          box-shadow: 0 28px 70px rgba(15, 23, 42, .09) !important;
+        }
+
+        .inboxHero h1 {
+          font-size: 40px !important;
+          font-weight: 950 !important;
+          letter-spacing: -1.8px !important;
+        }
+
+        .inboxHero p {
+          font-size: 15px !important;
+          max-width: 760px !important;
+          color: #536579 !important;
+        }
+
+        .heroActions button {
+          height: 46px !important;
+          border-radius: 15px !important;
+          font-size: 14px !important;
+        }
+
+        .compactStats {
+          grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+          gap: 14px !important;
+          margin-bottom: 22px !important;
+        }
+
+        .statCard {
+          min-height: 104px !important;
+          border-radius: 24px !important;
+          padding: 20px !important;
+          background: #ffffff !important;
+          border: 1px solid #dbe7e2 !important;
+          box-shadow: 0 18px 44px rgba(15, 23, 42, .065) !important;
+        }
+
+        .statCard.active {
+          background: linear-gradient(135deg, #10a37f 0%, #08765d 100%) !important;
+          border-color: #10a37f !important;
+          box-shadow: 0 20px 48px rgba(16, 163, 127, .28) !important;
+        }
+
+        .statCard span {
+          font-size: 13px !important;
+          font-weight: 950 !important;
+        }
+
+        .statCard strong {
+          font-size: 31px !important;
+          font-weight: 950 !important;
+        }
+
+        .statCard small {
+          font-size: 12px !important;
+          font-weight: 850 !important;
+        }
+
+        .inboxPanel {
+          border-radius: 30px !important;
+          padding: 26px !important;
+          border: 1px solid #dbe7e2 !important;
+          box-shadow: 0 26px 64px rgba(15, 23, 42, .085) !important;
+        }
+
+        .panelTop h2 {
+          font-size: 30px !important;
+          font-weight: 950 !important;
+        }
+
+        .filterBar {
+          border-radius: 22px !important;
+          background: #f8fbfa !important;
+          box-shadow: inset 0 0 0 1px rgba(255,255,255,.7) !important;
+        }
+
+        .bucketNav {
+          margin-top: 4px !important;
+          margin-bottom: 18px !important;
+        }
+
+        .bucket {
+          min-height: 46px !important;
+          padding: 0 16px !important;
+          border-radius: 999px !important;
+          font-weight: 950 !important;
+        }
+
+        .orderReviewHeader {
+          margin-top: 8px !important;
+          margin-bottom: 18px !important;
+        }
+
+        .orderReviewHeader h2 {
+          font-size: 34px !important;
+          font-weight: 950 !important;
+        }
+
+        .orderCard {
+          border-radius: 28px !important;
+          padding: 22px !important;
+          border: 1px solid #dbe7e2 !important;
+          box-shadow: 0 26px 64px rgba(15, 23, 42, .085) !important;
+        }
+
+        .orderCard h3 {
+          font-size: 25px !important;
+          font-weight: 950 !important;
+        }
+
+        .orderCardDate {
+          border-radius: 20px !important;
+          background: #f8fbfa !important;
+        }
+
+        .orderCardPrice {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: flex-start !important;
+          gap: 7px !important;
+          padding: 18px !important;
+          border: 1px solid #fed7aa !important;
+          border-radius: 22px !important;
+          background: #fff7ed !important;
+          color: #9a3412 !important;
+          min-width: 230px !important;
+        }
+
+        .orderCardPrice strong {
+          display: block !important;
+          color: #06251f !important;
+          font-size: 30px !important;
+          line-height: 1 !important;
+          font-weight: 950 !important;
+          letter-spacing: -.9px !important;
+          white-space: nowrap !important;
+        }
+
+        .orderCardPrice span {
+          display: block !important;
+          color: #b45309 !important;
+          font-size: 11px !important;
+          line-height: 1.2 !important;
+          font-weight: 950 !important;
+          letter-spacing: .08em !important;
+          text-transform: uppercase !important;
+        }
+
+        .orderCardPrice small {
+          display: block !important;
+          color: #b45309 !important;
+          font-size: 11px !important;
+          line-height: 1.25 !important;
+          font-weight: 900 !important;
+          text-transform: uppercase !important;
+        }
+
+        .orderCardActions a,
+        .orderCardActions button,
+        .emailRow a,
+        .emailRow button {
+          min-height: 40px !important;
+          border-radius: 14px !important;
+          font-weight: 950 !important;
+        }
+
+        .orderCardActions a:first-child,
+        .emailRow a {
+          background: #10a37f !important;
+          border-color: #10a37f !important;
+          color: #ffffff !important;
+          box-shadow: 0 12px 24px rgba(16, 163, 127, .24) !important;
+        }
+
+        .emptyState,
+        .mailEmpty,
+        .ordersEmpty {
+          border-radius: 20px !important;
+          padding: 18px !important;
+          background: #f8fbfa !important;
+          border: 1px dashed #c9ded7 !important;
+          color: #64748b !important;
+          font-weight: 850 !important;
+        }
+
+        @media (max-width: 1100px) {
+          .compactStats {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          .panelTop,
+          .filterBar,
+          .orderCardTop,
+          .orderCardBody {
+            grid-template-columns: 1fr !important;
+          }
+        }
+
+        @media (max-width: 720px) {
+          .inboxPage {
+            padding: 0 14px 36px !important;
+          }
+
+          .compactStats {
+            grid-template-columns: 1fr !important;
+          }
+
+          .inboxHero h1 {
+            font-size: 31px !important;
+          }
+        }
+`}</style>
 </AppLayout>
   );
 }
+
 
 
 
