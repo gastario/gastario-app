@@ -743,1032 +743,6 @@ export default function AuftragseingangPage() {
           </div>
         </div>
       
-      <style>{`
-        /* inbox-lexoffice-polish-final */
-
-        /* Seite insgesamt ruhiger */
-        h1 {
-          font-size: 32px !important;
-          font-weight: 600 !important;
-          letter-spacing: -0.04em !important;
-        }
-
-        h2 {
-          font-size: 22px !important;
-          font-weight: 600 !important;
-          letter-spacing: -0.03em !important;
-        }
-
-        /* Header-Karte */
-        div[style*="Arbeitsbereich"],
-        header {
-          box-shadow: 0 8px 22px rgba(15, 23, 42, 0.035) !important;
-        }
-
-        /* Live Badge */
-        a[href*="email-import"],
-        button,
-        .ghostButton,
-        .primaryGhostButton {
-          font-weight: 600 !important;
-          border-radius: 10px !important;
-          box-shadow: none !important;
-        }
-
-        /* KPI Karten oben */
-        .metricCard,
-        article {
-          box-shadow: 0 8px 22px rgba(15, 23, 42, 0.035) !important;
-          border-radius: 18px !important;
-        }
-
-        .metricCard strong,
-        article strong {
-          font-weight: 600 !important;
-          letter-spacing: -0.035em !important;
-        }
-
-        /* Auftragseingang Box */
-        .emailInboxCard,
-        section {
-          box-shadow: 0 8px 22px rgba(15, 23, 42, 0.035) !important;
-          border-radius: 18px !important;
-        }
-
-        /* Such-/Filterleiste ruhiger */
-        form[method="get"] {
-          border-radius: 14px !important;
-          box-shadow: none !important;
-        }
-
-        form[method="get"] label {
-          font-size: 11px !important;
-          font-weight: 650 !important;
-          color: #64748b !important;
-          letter-spacing: .06em !important;
-        }
-
-        form[method="get"] input,
-        form[method="get"] select {
-          min-height: 38px !important;
-          border-radius: 9px !important;
-          font-size: 14px !important;
-          font-weight: 450 !important;
-        }
-
-        /* Kategorie-Karten kompakter */
-        a[href*="emailCategory"] {
-          border-radius: 14px !important;
-          box-shadow: none !important;
-          font-weight: 600 !important;
-        }
-
-        a[href*="emailCategory"] strong,
-        a[href*="emailCategory"] span,
-        a[href*="emailCategory"] div {
-          font-weight: 600 !important;
-        }
-
-        /* Aktive Kategorie weniger massiv */
-        a[href*="emailCategory"][style*="rgb(15, 159, 122)"],
-        a[href*="emailCategory"][style*="#0f9f7a"] {
-          box-shadow: none !important;
-        }
-
-        /* Kleine Zähler-Badges */
-        a[href*="emailCategory"] small,
-        a[href*="emailCategory"] em {
-          font-weight: 600 !important;
-        }
-
-        /* Leere Box unten */
-        div[style*="Keine ungeprüften"] {
-          font-weight: 500 !important;
-        }
-
-        /* Tabellen / Listen */
-        table th {
-          font-weight: 650 !important;
-          color: #64748b !important;
-        }
-
-        table td {
-          font-weight: 450 !important;
-        }
-
-        /* Buttonfarben dezenter */
-        button[type="submit"],
-        a[href*="api/email-import/run"] {
-          background: #0f9f7a !important;
-          border-color: #0f9f7a !important;
-          color: white !important;
-          box-shadow: 0 6px 14px rgba(15, 159, 122, 0.10) !important;
-        }
-
-        /* Filterbutton nicht so fett */
-        form[method="get"] button {
-          height: 38px !important;
-          padding: 0 14px !important;
-          font-size: 14px !important;
-          font-weight: 600 !important;
-        }
-
-        /* Zurücksetzen Button */
-        form[method="get"] a {
-          height: 38px !important;
-          padding: 0 14px !important;
-          font-size: 14px !important;
-          font-weight: 600 !important;
-        }
-
-        /* Handy / kleinere Breite */
-        @media (max-width: 1100px) {
-          form[method="get"] {
-            width: 100% !important;
-          }
-
-          form[method="get"] input,
-          form[method="get"] select {
-            min-width: 100% !important;
-          }
-        }
-      `}</style>
-
-    
-      <style>{`
-        /* inbox-compact-backoffice-v2 */
-
-        /* Seite dichter und professioneller */
-        h1 {
-          font-size: 30px !important;
-          font-weight: 600 !important;
-          letter-spacing: -0.035em !important;
-        }
-
-        h2 {
-          font-size: 21px !important;
-          font-weight: 600 !important;
-        }
-
-        p {
-          font-weight: 450 !important;
-        }
-
-        /* obere Headline-Karte kompakter */
-        header,
-        section:first-of-type {
-          padding-top: 22px !important;
-          padding-bottom: 22px !important;
-        }
-
-        /* KPI-Karten kleiner und weniger dominant */
-        article {
-          min-height: 78px !important;
-          padding: 18px 18px !important;
-          border-radius: 16px !important;
-          box-shadow: 0 6px 16px rgba(15, 23, 42, 0.03) !important;
-        }
-
-        article strong {
-          font-size: 25px !important;
-          font-weight: 600 !important;
-          letter-spacing: -0.035em !important;
-        }
-
-        article p,
-        article span,
-        article small {
-          font-size: 13px !important;
-          font-weight: 500 !important;
-        }
-
-        /* aktive große grüne KPI weniger laut */
-        article[style*="#0f9f7a"],
-        article[style*="rgb(15, 159, 122)"] {
-          box-shadow: none !important;
-        }
-
-        /* E-Mail-Karte kompakter */
-        section {
-          padding: 16px !important;
-          border-radius: 17px !important;
-        }
-
-        /* Header in der E-Mail-Karte */
-        section h2 {
-          margin-bottom: 4px !important;
-        }
-
-        section h2 + p {
-          margin-top: 0 !important;
-          font-size: 14px !important;
-          color: #64748b !important;
-        }
-
-        /* Suchleiste als flache Toolbar */
-        form[method="get"] {
-          background: #ffffff !important;
-          border: 1px solid #e2e8f0 !important;
-          border-radius: 13px !important;
-          padding: 8px !important;
-          gap: 8px !important;
-        }
-
-        form[method="get"] label {
-          gap: 4px !important;
-          font-size: 10.5px !important;
-          font-weight: 650 !important;
-          letter-spacing: .07em !important;
-        }
-
-        form[method="get"] input,
-        form[method="get"] select {
-          height: 36px !important;
-          min-height: 36px !important;
-          border-radius: 8px !important;
-          font-size: 13px !important;
-          font-weight: 450 !important;
-          padding: 0 11px !important;
-        }
-
-        form[method="get"] button,
-        form[method="get"] a {
-          height: 36px !important;
-          min-height: 36px !important;
-          border-radius: 8px !important;
-          padding: 0 12px !important;
-          font-size: 13px !important;
-          font-weight: 600 !important;
-        }
-
-        /* Kategorie-Karten deutlich kompakter */
-        a[href*="emailCategory"] {
-          min-height: 68px !important;
-          padding: 14px 15px !important;
-          border-radius: 14px !important;
-          box-shadow: none !important;
-          background: #f8fafc !important;
-          border: 1px solid #dbe5ec !important;
-        }
-
-        a[href*="emailCategory"]:hover {
-          background: #f5faf8 !important;
-          border-color: #bfded6 !important;
-        }
-
-        a[href*="emailCategory"] strong,
-        a[href*="emailCategory"] b {
-          font-size: 15px !important;
-          font-weight: 600 !important;
-          letter-spacing: -0.01em !important;
-        }
-
-        a[href*="emailCategory"] span,
-        a[href*="emailCategory"] p,
-        a[href*="emailCategory"] div {
-          font-size: 12.5px !important;
-          font-weight: 450 !important;
-          line-height: 1.35 !important;
-        }
-
-        /* aktive Kategorie ruhiger, nicht so klobig */
-        a[href*="emailCategory"][style*="#0f9f7a"],
-        a[href*="emailCategory"][style*="rgb(15, 159, 122)"] {
-          background: #0f8f70 !important;
-          border-color: #0f8f70 !important;
-          box-shadow: none !important;
-        }
-
-        a[href*="emailCategory"][style*="#0f9f7a"] *,
-        a[href*="emailCategory"][style*="rgb(15, 159, 122)"] * {
-          font-weight: 600 !important;
-        }
-
-        /* kleine Count-Badges */
-        a[href*="emailCategory"] small,
-        a[href*="emailCategory"] em {
-          min-width: 22px !important;
-          height: 22px !important;
-          font-size: 12px !important;
-          font-weight: 600 !important;
-          box-shadow: none !important;
-        }
-
-        /* Empty-State weniger schwer */
-        div[style*="Keine ungeprüften"],
-        div[style*="Keine E-Mails"] {
-          min-height: 52px !important;
-          border-radius: 13px !important;
-          font-size: 14px !important;
-          font-weight: 500 !important;
-          color: #475569 !important;
-          background: #f8fafc !important;
-        }
-
-        /* Auftragstabelle unten näher dran, weniger massiv */
-        section + section {
-          margin-top: 18px !important;
-        }
-
-        table th {
-          height: 40px !important;
-          font-size: 11.5px !important;
-          font-weight: 700 !important;
-        }
-
-        table td {
-          padding-top: 14px !important;
-          padding-bottom: 14px !important;
-          font-size: 14px !important;
-        }
-
-        /* globale Button-Beruhigung auf dieser Seite */
-        button,
-        a {
-          box-shadow: none !important;
-        }
-
-        /* Header Button rechts weniger hoch */
-        a[href*="email-import"],
-        button[type="submit"] {
-          min-height: 38px !important;
-          border-radius: 9px !important;
-          font-size: 13.5px !important;
-          font-weight: 600 !important;
-        }
-
-        @media (max-width: 1100px) {
-          form[method="get"] {
-            display: grid !important;
-            grid-template-columns: 1fr !important;
-          }
-
-          a[href*="emailCategory"] {
-            min-height: 62px !important;
-          }
-        }
-      `}</style>
-
-    
-      <style>{`
-        /* inbox-density-hard-compact */
-
-        /* komplette Arbeitsfläche kompakter */
-        main,
-        .appShell {
-          font-size: 14px !important;
-        }
-
-        /* Header-Karte kleiner */
-        header {
-          padding: 18px 22px !important;
-          border-radius: 14px !important;
-          margin-bottom: 14px !important;
-        }
-
-        header h1 {
-          font-size: 28px !important;
-          line-height: 1.05 !important;
-          margin: 4px 0 0 !important;
-        }
-
-        header p {
-          font-size: 14px !important;
-          margin-top: 8px !important;
-        }
-
-        /* Live Text kompakter */
-        header + p,
-        div[style*="Live-Abruf"] {
-          font-size: 13px !important;
-          margin: 8px 0 12px !important;
-        }
-
-        /* obere KPI-Karten deutlich kleiner */
-        article {
-          min-height: 62px !important;
-          padding: 13px 16px !important;
-          border-radius: 13px !important;
-        }
-
-        article strong {
-          font-size: 23px !important;
-          line-height: 1 !important;
-        }
-
-        article p,
-        article span,
-        article small {
-          font-size: 12px !important;
-          line-height: 1.25 !important;
-        }
-
-        /* grid-Abstände der KPI-Karten reduzieren */
-        div[style*="grid-template-columns"][style*="repeat"] {
-          gap: 12px !important;
-        }
-
-        /* große Karten / Sections kompakter */
-        section {
-          padding: 18px 20px !important;
-          border-radius: 14px !important;
-          margin-top: 14px !important;
-        }
-
-        section h2 {
-          font-size: 20px !important;
-          line-height: 1.1 !important;
-          margin: 0 0 4px !important;
-        }
-
-        section p {
-          font-size: 13px !important;
-          line-height: 1.35 !important;
-        }
-
-        /* Filterleiste kleiner */
-        form[method="get"] {
-          padding: 6px !important;
-          border-radius: 10px !important;
-          gap: 6px !important;
-        }
-
-        form[method="get"] label {
-          font-size: 10px !important;
-          gap: 3px !important;
-        }
-
-        form[method="get"] input,
-        form[method="get"] select {
-          height: 32px !important;
-          min-height: 32px !important;
-          border-radius: 7px !important;
-          font-size: 13px !important;
-          padding: 0 10px !important;
-        }
-
-        form[method="get"] button,
-        form[method="get"] a {
-          height: 32px !important;
-          min-height: 32px !important;
-          border-radius: 7px !important;
-          padding: 0 11px !important;
-          font-size: 13px !important;
-        }
-
-        /* Kategorie-Karten wirklich kleiner */
-        a[href*="emailCategory"] {
-          min-height: 54px !important;
-          padding: 10px 12px !important;
-          border-radius: 11px !important;
-        }
-
-        a[href*="emailCategory"] strong,
-        a[href*="emailCategory"] b {
-          font-size: 14px !important;
-          line-height: 1.1 !important;
-        }
-
-        a[href*="emailCategory"] span,
-        a[href*="emailCategory"] p,
-        a[href*="emailCategory"] div {
-          font-size: 11.5px !important;
-          line-height: 1.25 !important;
-        }
-
-        a[href*="emailCategory"] small,
-        a[href*="emailCategory"] em {
-          min-width: 18px !important;
-          height: 18px !important;
-          font-size: 11px !important;
-          padding: 0 5px !important;
-        }
-
-        /* Empty-State kleiner */
-        div[style*="Keine ungeprüften"],
-        div[style*="Keine E-Mails"] {
-          min-height: 42px !important;
-          padding: 12px 14px !important;
-          border-radius: 10px !important;
-          font-size: 13px !important;
-        }
-
-        /* Buttons allgemein kleiner */
-        button,
-        a {
-          font-size: 13px !important;
-        }
-
-        a[href*="email-import"],
-        button[type="submit"] {
-          min-height: 34px !important;
-          height: 34px !important;
-          border-radius: 8px !important;
-          padding: 0 12px !important;
-          font-size: 13px !important;
-        }
-
-        /* Auftragstabelle unten kompakter */
-        table th {
-          height: 34px !important;
-          font-size: 11px !important;
-          padding-top: 8px !important;
-          padding-bottom: 8px !important;
-        }
-
-        table td {
-          padding-top: 10px !important;
-          padding-bottom: 10px !important;
-          font-size: 13px !important;
-        }
-
-        /* große Abstände zwischen Bereichen reduzieren */
-        section + section,
-        article + article {
-          margin-top: 12px !important;
-        }
-
-        /* Inhalt nicht so breit-luftig wirken lassen */
-        div[style*="max-width: 1180"],
-        div[style*="maxWidth: 1180"] {
-          max-width: 1120px !important;
-        }
-      `}</style>
-
-    
-      <style>{`
-        /* inbox-layout-clean-v5 */
-
-        .inboxPage {
-          max-width: 1160px !important;
-        }
-
-        .inboxHero {
-          border-radius: 10px !important;
-          padding: 16px 18px !important;
-          margin-bottom: 10px !important;
-        }
-
-        .inboxHero h1 {
-          font-size: 26px !important;
-          font-weight: 600 !important;
-        }
-
-        .heroActions {
-          gap: 6px !important;
-        }
-
-        .primaryBtn,
-        .secondaryBtn,
-        .softBtn,
-        .dangerBtn,
-        .statusPill {
-          min-height: 31px !important;
-          height: 31px !important;
-          border-radius: 7px !important;
-          padding: 0 10px !important;
-          font-size: 12.5px !important;
-          font-weight: 600 !important;
-          box-shadow: none !important;
-        }
-
-        .compactStats {
-          grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-          gap: 8px !important;
-          margin-bottom: 12px !important;
-        }
-
-        .statCard {
-          min-height: 48px !important;
-          padding: 9px 12px !important;
-          border-radius: 8px !important;
-        }
-
-        .statCard strong {
-          font-size: 21px !important;
-        }
-
-        .statCard span {
-          font-size: 11.5px !important;
-        }
-
-        .inboxPanel {
-          padding: 14px !important;
-          border-radius: 10px !important;
-        }
-
-        .panelTop {
-          display: grid !important;
-          grid-template-columns: minmax(260px, 1fr) minmax(520px, 640px) !important;
-          align-items: start !important;
-          gap: 14px !important;
-          margin-bottom: 12px !important;
-        }
-
-        .panelTop h2 {
-          font-size: 20px !important;
-          margin-top: 3px !important;
-        }
-
-        .panelTop p {
-          font-size: 13px !important;
-        }
-
-        .filterBar {
-          width: 100% !important;
-          display: grid !important;
-          grid-template-columns: minmax(190px, 1.2fr) minmax(170px, .8fr) auto auto !important;
-          gap: 7px !important;
-          align-items: end !important;
-          padding: 7px !important;
-          border-radius: 9px !important;
-          background: #f8fafc !important;
-        }
-
-        .filterBar input,
-        .filterBar select {
-          width: 100% !important;
-          min-width: 0 !important;
-          height: 32px !important;
-          min-height: 32px !important;
-          font-size: 12.5px !important;
-          border-radius: 7px !important;
-        }
-
-        .filterBar label {
-          font-size: 9.8px !important;
-          gap: 3px !important;
-          min-width: 0 !important;
-        }
-
-        .bucketNav {
-          display: grid !important;
-          grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
-          gap: 7px !important;
-          margin-bottom: 10px !important;
-        }
-
-        .bucket {
-          position: relative !important;
-          overflow: hidden !important;
-          min-height: 48px !important;
-          padding: 9px 34px 9px 10px !important;
-          border-radius: 8px !important;
-          align-items: flex-start !important;
-        }
-
-        .bucket strong {
-          font-size: 12.8px !important;
-          line-height: 1.1 !important;
-          white-space: normal !important;
-        }
-
-        .bucket small {
-          font-size: 10.7px !important;
-          line-height: 1.15 !important;
-          margin-top: 3px !important;
-          max-height: 25px !important;
-          overflow: hidden !important;
-        }
-
-        .bucket b {
-          position: absolute !important;
-          right: 8px !important;
-          top: 8px !important;
-          min-width: 20px !important;
-          height: 18px !important;
-          padding: 0 5px !important;
-          font-size: 10.5px !important;
-          z-index: 2 !important;
-        }
-
-        .emptyState {
-          padding: 11px 12px !important;
-          font-size: 12.8px !important;
-          border-radius: 8px !important;
-        }
-
-        .ordersPanel {
-          padding: 14px !important;
-          border-radius: 10px !important;
-        }
-
-        .ordersHead,
-        .ordersRow {
-          grid-template-columns: 1.15fr 1.25fr .85fr 1.35fr .75fr .75fr auto !important;
-          gap: 10px !important;
-        }
-
-        .ordersHead {
-          padding: 8px 10px !important;
-          font-size: 10px !important;
-        }
-
-        .ordersRow {
-          padding: 10px !important;
-          font-size: 12.8px !important;
-        }
-
-        .ordersRow strong {
-          font-weight: 600 !important;
-        }
-
-        .ordersRow small {
-          font-size: 11.5px !important;
-        }
-
-        .statusBadge {
-          font-size: 11.5px !important;
-          padding: 3px 8px !important;
-        }
-
-        @media (max-width: 1250px) {
-          .bucketNav {
-            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-          }
-
-          .panelTop {
-            grid-template-columns: 1fr !important;
-          }
-
-          .filterBar {
-            grid-template-columns: 1fr 1fr auto auto !important;
-          }
-        }
-
-        @media (max-width: 800px) {
-          .compactStats {
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-          }
-
-          .bucketNav {
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-          }
-
-          .filterBar {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
-
-    
-      <style>{`
-        /* inbox-real-redesign-v6 */
-
-        .inboxPage {
-          max-width: 1140px !important;
-          padding: 0 20px 36px !important;
-        }
-
-        .inboxHero {
-          padding: 14px 18px !important;
-          border-radius: 9px !important;
-          margin-bottom: 8px !important;
-        }
-
-        .inboxHero h1 {
-          font-size: 25px !important;
-          font-weight: 600 !important;
-          letter-spacing: -0.03em !important;
-        }
-
-        .inboxHero p {
-          font-size: 13px !important;
-          margin-top: 5px !important;
-        }
-
-        .liveInfo {
-          font-size: 12px !important;
-          margin-bottom: 8px !important;
-        }
-
-        .compactStats {
-          display: flex !important;
-          gap: 8px !important;
-          margin-bottom: 10px !important;
-        }
-
-        .statCard {
-          flex: 1 !important;
-          min-height: 44px !important;
-          padding: 8px 11px !important;
-          border-radius: 8px !important;
-          box-shadow: none !important;
-        }
-
-        .statCard.active {
-          background: #0f8f70 !important;
-        }
-
-        .statCard span {
-          font-size: 11px !important;
-          font-weight: 600 !important;
-        }
-
-        .statCard strong {
-          font-size: 19px !important;
-          margin-top: 2px !important;
-          font-weight: 600 !important;
-        }
-
-        .inboxPanel {
-          padding: 13px 14px !important;
-          border-radius: 9px !important;
-          margin-bottom: 12px !important;
-        }
-
-        .panelTop {
-          display: grid !important;
-          grid-template-columns: 1fr !important;
-          gap: 10px !important;
-          margin-bottom: 10px !important;
-        }
-
-        .panelTop h2 {
-          font-size: 19px !important;
-          margin: 3px 0 0 !important;
-        }
-
-        .panelTop p {
-          font-size: 12.5px !important;
-          margin-top: 4px !important;
-        }
-
-        .filterBar {
-          display: grid !important;
-          grid-template-columns: minmax(260px, 1fr) 190px auto auto !important;
-          width: 100% !important;
-          padding: 6px !important;
-          gap: 6px !important;
-          border-radius: 8px !important;
-          background: #f8fafc !important;
-          border: 1px solid #e2e8f0 !important;
-        }
-
-        .filterBar label {
-          font-size: 9.5px !important;
-          letter-spacing: .06em !important;
-          gap: 3px !important;
-        }
-
-        .filterBar input,
-        .filterBar select {
-          height: 31px !important;
-          min-height: 31px !important;
-          border-radius: 6px !important;
-          font-size: 12.5px !important;
-          padding: 0 9px !important;
-        }
-
-        .filterBar .primaryBtn,
-        .filterBar .secondaryBtn {
-          height: 31px !important;
-          min-height: 31px !important;
-          border-radius: 6px !important;
-          padding: 0 10px !important;
-          font-size: 12px !important;
-        }
-
-        /* Kategorien ab jetzt wie kleine Segment-Pills, keine großen Karten */
-        .bucketNav {
-          display: flex !important;
-          flex-wrap: wrap !important;
-          gap: 6px !important;
-          margin: 8px 0 10px !important;
-        }
-
-        .bucket {
-          width: auto !important;
-          min-width: 0 !important;
-          min-height: 0 !important;
-          height: 34px !important;
-          padding: 0 9px 0 11px !important;
-          border-radius: 999px !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          gap: 7px !important;
-          background: #ffffff !important;
-          border: 1px solid #dbe5ec !important;
-          overflow: visible !important;
-        }
-
-        .bucket.active {
-          background: #0f8f70 !important;
-          border-color: #0f8f70 !important;
-          color: #ffffff !important;
-        }
-
-        .bucket span {
-          display: inline-flex !important;
-          align-items: center !important;
-          gap: 0 !important;
-        }
-
-        .bucket strong {
-          font-size: 12.5px !important;
-          line-height: 1 !important;
-          font-weight: 600 !important;
-          white-space: nowrap !important;
-        }
-
-        .bucket small {
-          display: none !important;
-        }
-
-        .bucket b {
-          position: static !important;
-          min-width: 18px !important;
-          height: 18px !important;
-          padding: 0 6px !important;
-          border-radius: 999px !important;
-          background: #f1f5f9 !important;
-          color: #0f172a !important;
-          font-size: 10.5px !important;
-          font-weight: 650 !important;
-        }
-
-        .bucket.active b {
-          background: rgba(255,255,255,.22) !important;
-          color: #ffffff !important;
-        }
-
-        .emptyState {
-          padding: 10px 12px !important;
-          border-radius: 8px !important;
-          font-size: 12.5px !important;
-          margin-top: 6px !important;
-        }
-
-        .ordersPanel {
-          padding: 13px 14px !important;
-          border-radius: 9px !important;
-        }
-
-        .ordersPanel .panelTop h2 {
-          font-size: 19px !important;
-        }
-
-        .ordersHead,
-        .ordersRow {
-          grid-template-columns: 1.15fr 1.25fr .85fr 1.45fr .75fr .7fr auto !important;
-          gap: 9px !important;
-        }
-
-        .ordersHead {
-          padding: 8px 10px !important;
-          font-size: 9.8px !important;
-        }
-
-        .ordersRow {
-          padding: 9px 10px !important;
-          font-size: 12.5px !important;
-          min-height: 54px !important;
-        }
-
-        .ordersRow strong {
-          font-size: 12.8px !important;
-          font-weight: 600 !important;
-        }
-
-        .ordersRow small {
-          font-size: 11px !important;
-          margin-top: 2px !important;
-        }
-
-        .orderActions {
-          gap: 5px !important;
-        }
-
-        .orderActions .primaryBtn,
-        .orderActions .dangerBtn {
-          height: 30px !important;
-          min-height: 30px !important;
-          padding: 0 9px !important;
-          font-size: 12px !important;
-          border-radius: 6px !important;
-        }
-
-        .statusBadge {
-          font-size: 11px !important;
-          padding: 3px 7px !important;
-        }
-
-        @media (max-width: 900px) {
-          .compactStats {
-            display: grid !important;
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-          }
-
-          .filterBar {
-            grid-template-columns: 1fr !important;
-          }
-
-          .bucket {
-            height: 32px !important;
-          }
-        }
-      `}</style>
-      
       
 
     </AppLayout>
@@ -2165,2689 +1139,742 @@ export default function AuftragseingangPage() {
           ) : null}
         </section>
       </div>
-
       <style>{`
+        /* gastario-auftragseingang-full-redesign-20260708 */
+
         .inboxPage {
-          max-width: 1180px;
+          width: 100%;
+          max-width: 1360px;
           margin: 0 auto;
-          padding: 0 22px 40px;
-          color: #111827;
+          padding: 0 24px 48px;
+          color: #0f172a;
         }
 
-        .inboxHero,
-        .inboxPanel,
-        .ordersPanel {
-          background: #ffffff;
-          border: 1px solid #dbe5ec;
-          border-radius: 12px;
-          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.035);
-        }
-
-        .inboxHero {
-          padding: 18px 20px;
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 16px;
-          margin-bottom: 10px;
+        .inboxPage * {
+          box-sizing: border-box;
         }
 
         .inboxOverline {
-          color: #047857;
+          margin-bottom: 6px;
+          color: #0f9f7a;
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: .12em;
           text-transform: uppercase;
-          letter-spacing: .09em;
-          font-size: 10px;
-          font-weight: 700;
+        }
+
+        /* HERO */
+        .inboxHero {
+          position: relative;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          align-items: center;
+          gap: 28px;
+          padding: 30px 34px;
+          margin-bottom: 14px;
+          border: 1px solid rgba(15, 159, 122, .18);
+          border-radius: 28px;
+          background:
+            radial-gradient(circle at left top, rgba(15, 159, 122, .15), transparent 34%),
+            linear-gradient(135deg, #ffffff 0%, #f7fffb 100%);
+          box-shadow: 0 24px 60px rgba(15, 23, 42, .08);
+          overflow: hidden;
+        }
+
+        .inboxHero::before {
+          content: "";
+          position: absolute;
+          inset: 0 auto 0 0;
+          width: 7px;
+          background: linear-gradient(180deg, #10a37f, #f59e0b);
         }
 
         .inboxHero h1 {
-          margin: 5px 0 0;
-          font-size: 28px !important;
-          line-height: 1.08;
-          font-weight: 600 !important;
-          letter-spacing: -0.035em;
+          margin: 0;
+          color: #06251f;
+          font-size: 38px;
+          line-height: 1;
+          font-weight: 950;
+          letter-spacing: -1.6px;
         }
 
-        .inboxHero p,
-        .panelTop p {
-          margin: 7px 0 0;
-          color: #64748b;
-          font-size: 14px;
-          font-weight: 450;
+        .inboxHero p {
+          max-width: 780px;
+          margin: 9px 0 0;
+          color: #536579;
+          font-size: 15px;
+          line-height: 1.5;
+          font-weight: 700;
         }
 
         .heroActions {
           display: flex;
-          gap: 8px;
           align-items: center;
+          justify-content: flex-end;
+          gap: 10px;
           flex-wrap: wrap;
+        }
+
+        .heroActions button {
+          min-height: 44px;
+          padding: 0 18px;
+          border-radius: 14px;
+          border: 1px solid #d6e5df;
+          background: #ffffff;
+          color: #0f172a;
+          font-weight: 900;
+          cursor: pointer;
+          box-shadow: 0 8px 18px rgba(15, 23, 42, .06);
+        }
+
+        .heroActions button:last-child {
+          border-color: #10a37f;
+          background: #10a37f;
+          color: #ffffff;
+          box-shadow: 0 12px 26px rgba(16, 163, 127, .28);
         }
 
         .liveInfo {
           display: flex;
-          gap: 12px;
-          flex-wrap: wrap;
-          color: #64748b;
-          font-size: 12px;
-          font-weight: 500;
-          margin: 0 0 10px;
+          align-items: center;
+          gap: 10px;
+          margin: 0 0 12px;
+          padding: 0 2px;
+          color: #526579;
+          font-size: 13px;
+          font-weight: 800;
         }
 
+        .liveInfo::before {
+          content: "";
+          width: 8px;
+          height: 8px;
+          border-radius: 999px;
+          background: #10a37f;
+          box-shadow: 0 0 0 4px rgba(16, 163, 127, .12);
+        }
+
+        /* STATUS */
         .compactStats {
           display: grid;
           grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 10px;
-          margin-bottom: 14px;
+          gap: 12px;
+          margin: 0 0 18px;
         }
 
         .statCard {
-          min-height: 58px;
-          padding: 12px 14px;
-          border-radius: 10px;
-          border: 1px solid #dbe5ec;
-          background: #ffffff;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          min-height: 92px;
+          padding: 18px 18px 16px;
+          border: 1px solid #dbe7e2;
+          border-radius: 22px;
+          background: rgba(255, 255, 255, .92);
+          color: #172033;
           text-decoration: none;
-          color: #111827;
-          display: grid;
-          align-content: center;
-          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.025);
+          box-shadow: 0 16px 36px rgba(15, 23, 42, .055);
+          transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
         }
 
-        .statCard.active {
-          background: #0f8f70;
-          border-color: #0f8f70;
-          color: white;
+        .statCard:hover {
+          transform: translateY(-1px);
+          border-color: rgba(16, 163, 127, .35);
+          box-shadow: 0 20px 42px rgba(15, 23, 42, .075);
         }
 
         .statCard span {
-          font-size: 12px;
-          color: inherit;
-          opacity: .84;
-          font-weight: 600;
+          color: #526579;
+          font-size: 13px;
+          font-weight: 900;
         }
 
         .statCard strong {
-          font-size: 24px;
+          color: #061f1b;
+          font-size: 27px;
           line-height: 1;
-          margin-top: 3px;
-          font-weight: 600;
-          letter-spacing: -0.035em;
+          font-weight: 950;
+          letter-spacing: -.6px;
         }
 
-        .inboxPanel,
-        .ordersPanel {
-          padding: 16px;
-          margin-bottom: 14px;
+        .statCard small {
+          color: #7a8a9d;
+          font-size: 12px;
+          font-weight: 800;
+        }
+
+        .statCard.active {
+          border-color: #10a37f;
+          background:
+            radial-gradient(circle at right top, rgba(255,255,255,.22), transparent 34%),
+            linear-gradient(135deg, #10a37f 0%, #0b8769 100%);
+          color: #ffffff;
+          box-shadow: 0 18px 42px rgba(16, 163, 127, .26);
+        }
+
+        .statCard.active span,
+        .statCard.active strong,
+        .statCard.active small {
+          color: #ffffff;
+        }
+
+        /* ALERTS */
+        .alertBox {
+          margin: 0 0 14px;
+          padding: 13px 15px;
+          border-radius: 16px;
+          font-weight: 800;
+        }
+
+        .alertBox.error {
+          border: 1px solid #fecaca;
+          background: #fff1f2;
+          color: #991b1b;
+        }
+
+        .alertBox.success {
+          border: 1px solid #bbf7d0;
+          background: #f0fdf4;
+          color: #166534;
+        }
+
+        /* EMAIL WORKBENCH */
+        .inboxPanel {
+          margin-bottom: 26px;
+          padding: 24px;
+          border: 1px solid #dbe7e2;
+          border-radius: 28px;
+          background: #ffffff;
+          box-shadow: 0 24px 60px rgba(15, 23, 42, .075);
         }
 
         .panelTop {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 14px;
-          margin-bottom: 14px;
-        }
-
-        .panelTop.slim {
-          margin-bottom: 10px;
+          display: grid;
+          grid-template-columns: minmax(280px, 1fr) minmax(560px, 720px);
+          align-items: start;
+          gap: 22px;
+          margin-bottom: 18px;
         }
 
         .panelTop h2 {
-          margin: 4px 0 0;
-          font-size: 21px !important;
-          font-weight: 600 !important;
-          letter-spacing: -0.03em;
+          margin: 0;
+          color: #06251f;
+          font-size: 29px;
+          line-height: 1.05;
+          font-weight: 950;
+          letter-spacing: -1px;
+        }
+
+        .panelTop p {
+          margin: 8px 0 0;
+          color: #536579;
+          font-size: 14px;
+          line-height: 1.45;
+          font-weight: 700;
         }
 
         .filterBar {
-          display: flex;
-          align-items: end;
-          gap: 8px;
-          padding: 8px;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
-          background: #f8fafc;
-          flex-wrap: wrap;
+          display: grid;
+          grid-template-columns: minmax(220px, 1fr) 190px auto auto;
+          gap: 10px;
+          padding: 10px;
+          border: 1px solid #dbe7e2;
+          border-radius: 20px;
+          background: #f8fbfa;
         }
 
         .filterBar label {
-          display: grid;
-          gap: 4px;
-          font-size: 10px;
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
           color: #64748b;
+          font-size: 10.5px;
+          font-weight: 950;
+          letter-spacing: .08em;
           text-transform: uppercase;
-          letter-spacing: .065em;
-          font-weight: 700;
         }
 
         .filterBar input,
         .filterBar select {
-          height: 34px !important;
-          min-height: 34px !important;
-          border-radius: 8px !important;
-          font-size: 13px !important;
-          min-width: 190px;
+          width: 100%;
+          height: 42px;
+          padding: 0 12px;
+          border: 1px solid #d6e5df;
+          border-radius: 13px;
+          background: #ffffff;
+          color: #0f172a;
+          font-weight: 750;
+          outline: none;
         }
 
-        .filterBar input {
-          min-width: 260px;
+        .filterBar input:focus,
+        .filterBar select:focus {
+          border-color: #10a37f;
+          box-shadow: 0 0 0 4px rgba(16, 163, 127, .11);
         }
 
-        .bucketNav {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-          gap: 8px;
-          margin-bottom: 12px;
-        }
-
-        .bucket {
-          min-height: 52px;
-          padding: 10px 12px;
-          border: 1px solid #dbe5ec;
-          border-radius: 10px;
-          background: #f8fafc;
-          text-decoration: none;
-          color: #111827;
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 10px;
-        }
-
-        .bucket.active {
-          background: #0f8f70;
-          border-color: #0f8f70;
-          color: #ffffff;
-        }
-
-        .bucket strong {
-          display: block;
-          font-size: 14px;
-          line-height: 1.15;
-          font-weight: 600;
-        }
-
-        .bucket small {
-          display: block;
-          margin-top: 4px;
-          font-size: 11.5px;
-          line-height: 1.25;
-          color: inherit;
-          opacity: .76;
-          font-weight: 450;
-        }
-
-        .bucket b {
-          min-width: 22px;
-          height: 20px;
-          padding: 0 7px;
-          border-radius: 999px;
-          background: rgba(255,255,255,.85);
-          color: #111827;
+        .filterBar button,
+        .filterBar a {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          font-size: 11px;
-          font-weight: 650;
+          min-height: 42px;
+          padding: 0 15px;
+          border-radius: 13px;
+          border: 1px solid #d6e5df;
+          background: #ffffff;
+          color: #0f172a;
+          font-weight: 950;
+          text-decoration: none;
+          cursor: pointer;
         }
 
-        .bucket.active b {
-          background: rgba(255,255,255,.2);
+        .filterBar button {
+          border-color: #10a37f;
+          background: #10a37f;
+          color: #ffffff;
+          box-shadow: 0 10px 20px rgba(16, 163, 127, .22);
+        }
+
+        .bucketNav {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-bottom: 16px;
+        }
+
+        .bucket {
+          display: inline-flex;
+          align-items: center;
+          gap: 9px;
+          min-height: 43px;
+          padding: 0 14px;
+          border: 1px solid #dbe7e2;
+          border-radius: 999px;
+          background: #ffffff;
+          color: #172033;
+          text-decoration: none;
+          font-weight: 950;
+          box-shadow: 0 8px 18px rgba(15, 23, 42, .045);
+        }
+
+        .bucket small {
+          display: none;
+        }
+
+        .bucket em,
+        .bucket b,
+        .bucket strong + span,
+        .bucket span:last-child {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 24px;
+          height: 24px;
+          padding: 0 7px;
+          border-radius: 999px;
+          background: #eef6f4;
+          color: #0f766e;
+          font-size: 12px;
+          font-weight: 950;
+          font-style: normal;
+        }
+
+        .bucket.active {
+          border-color: #10a37f;
+          background: #10a37f;
+          color: #ffffff;
+          box-shadow: 0 12px 24px rgba(16, 163, 127, .24);
+        }
+
+        .bucket.active span:last-child {
+          background: rgba(255,255,255,.18);
           color: #ffffff;
         }
 
         .emptyState,
-        .ordersEmpty {
-          padding: 14px;
-          border: 1px dashed #cbd5e1;
-          border-radius: 10px;
-          background: #f8fafc;
-          color: #475569;
-          font-size: 13px;
-          font-weight: 500;
+        .mailEmpty {
+          padding: 16px;
+          border: 1px dashed #cbded8;
+          border-radius: 18px;
+          background: #f8fbfa;
+          color: #64748b;
+          font-weight: 800;
         }
 
-        .mailList {
+        .emailRow {
           display: grid;
-          gap: 9px;
-        }
-
-        .mailRow {
-          padding: 12px;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
-          background: #ffffff;
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
+          grid-template-columns: minmax(260px, 1.1fr) minmax(220px, .9fr) 140px auto;
           gap: 14px;
           align-items: center;
-        }
-
-        .mailMeta,
-        .mailSub {
-          display: flex;
-          gap: 10px;
-          flex-wrap: wrap;
-          color: #64748b;
-          font-size: 12px;
-          font-weight: 500;
-        }
-
-        .mailMeta span {
-          color: #047857;
-          background: #ecfdf5;
-          border-radius: 999px;
-          padding: 3px 8px;
-          font-size: 11px;
-          font-weight: 650;
-        }
-
-        .mailRow h3 {
-          margin: 7px 0 5px;
-          font-size: 15px;
-          line-height: 1.25;
-          font-weight: 600;
-          letter-spacing: -0.01em;
-        }
-
-        .mailHint {
-          margin: 8px 0 0;
-          color: #9a3412;
-          font-size: 12px;
-          font-weight: 500;
-        }
-
-        .mailActions,
-        .orderActions {
-          display: flex;
-          gap: 7px;
-          align-items: center;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-        }
-
-        .primaryBtn,
-        .secondaryBtn,
-        .softBtn,
-        .dangerBtn,
-        .statusPill {
-          min-height: 34px;
-          border-radius: 8px;
-          padding: 0 12px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          text-decoration: none;
-          font-size: 13px;
-          font-weight: 600;
-          border: 1px solid transparent;
-          cursor: pointer;
-          white-space: nowrap;
-        }
-
-        .primaryBtn {
-          background: #0f9f7a;
-          border-color: #0f9f7a;
-          color: #ffffff;
-        }
-
-        .secondaryBtn,
-        .statusPill {
+          padding: 14px;
+          border: 1px solid #e2ebe7;
+          border-radius: 18px;
           background: #ffffff;
-          border-color: #d6e1ea;
-          color: #111827;
+          box-shadow: 0 10px 24px rgba(15, 23, 42, .045);
         }
 
-        .statusPill.isLive,
-        .softBtn {
-          background: #ecfdf5;
-          border-color: #bbf7d0;
-          color: #047857;
+        .emailRow + .emailRow {
+          margin-top: 10px;
         }
 
-        .dangerBtn {
-          background: #fffafa;
-          border-color: #fecaca;
-          color: #b91c1c;
+        .emailRow strong {
+          color: #10231f;
+          font-weight: 900;
         }
 
-        .small {
-          min-height: 32px;
-          padding: 0 10px;
-          font-size: 12.5px;
-        }
-
-        .ordersTable {
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
-          overflow: hidden;
-          background: #ffffff;
-        }
-
-        .ordersHead,
-        .ordersRow {
-          display: grid;
-          grid-template-columns: 1.1fr 1.25fr .9fr 1.25fr .75fr .75fr auto;
-          gap: 12px;
-          align-items: center;
-        }
-
-        .ordersHead {
-          padding: 10px 12px;
-          background: #f8fafc;
-          color: #64748b;
-          font-size: 10.5px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: .06em;
-          border-bottom: 1px solid #e2e8f0;
-        }
-
-        .ordersRow {
-          padding: 12px;
-          border-bottom: 1px solid #edf2f7;
-          font-size: 13px;
-        }
-
-        .ordersRow:last-child {
-          border-bottom: 0;
-        }
-
-        .ordersRow strong {
-          display: block;
-          font-weight: 600;
-          line-height: 1.25;
-        }
-
-        .ordersRow small {
+        .emailRow small {
           display: block;
           margin-top: 3px;
           color: #64748b;
-          font-size: 12px;
-          line-height: 1.25;
-          font-weight: 450;
+          font-weight: 750;
         }
 
-        .statusBadge {
-          width: fit-content;
-          border-radius: 999px;
-          padding: 4px 9px;
-          background: #ecfdf5;
-          color: #047857;
-          border: 1px solid #bbf7d0;
-          font-size: 12px;
-          font-weight: 600;
+        /* REVIEW ORDERS */
+        .orderReviewPanel {
+          margin: 0;
+          padding: 0;
+          border: 0;
+          background: transparent;
+          box-shadow: none;
         }
 
-        .alertBox {
-          padding: 11px 13px;
-          border-radius: 9px;
-          margin-bottom: 12px;
+        .orderReviewHeader {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 20px;
+          margin-bottom: 16px;
+          padding-bottom: 14px;
+          border-bottom: 1px solid #dbe7e2;
+        }
+
+        .orderReviewHeader h2 {
+          margin: 0;
+          color: #06251f;
+          font-size: 32px;
+          line-height: 1.05;
+          font-weight: 950;
+          letter-spacing: -1.2px;
+        }
+
+        .orderReviewHeader p {
+          margin: 8px 0 0;
+          color: #536579;
+          font-size: 14px;
+          font-weight: 700;
+        }
+
+        .orderReviewSummary {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+          color: #536579;
+          font-weight: 850;
+        }
+
+        .orderReviewSummary strong {
+          color: #06251f;
+          font-size: 28px;
+          line-height: 1;
+          font-weight: 950;
+        }
+
+        .orderCards {
+          display: grid;
+          gap: 16px;
+        }
+
+        .orderCard {
+          position: relative;
+          overflow: hidden;
+          padding: 20px;
+          border: 1px solid #dbe7e2;
+          border-radius: 26px;
+          background: #ffffff;
+          box-shadow: 0 22px 52px rgba(15, 23, 42, .075);
+        }
+
+        .orderCard::before {
+          content: "";
+          position: absolute;
+          inset: 0 auto 0 0;
+          width: 6px;
+          background: #10a37f;
+        }
+
+        .orderCardTop {
+          display: grid;
+          grid-template-columns: minmax(300px, 1fr) auto;
+          gap: 18px;
+          align-items: start;
+          margin-bottom: 16px;
+        }
+
+        .orderCardNumber {
+          color: #64748b;
+          font-size: 12px;
+          font-weight: 950;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+
+        .orderCard h3 {
+          margin: 5px 0 4px;
+          color: #06251f;
+          font-size: 24px;
+          line-height: 1.05;
+          font-weight: 950;
+          letter-spacing: -.7px;
+        }
+
+        .orderCardContact {
+          color: #536579;
+          font-size: 14px;
+          font-weight: 800;
+        }
+
+        .orderCardDate {
+          min-width: 132px;
+          padding: 14px;
+          border: 1px solid #dbe7e2;
+          border-radius: 18px;
+          background: #f8fbfa;
+          text-align: right;
+        }
+
+        .orderCardDate strong {
+          display: block;
+          color: #06251f;
+          font-size: 17px;
+          font-weight: 950;
+        }
+
+        .orderCardDate span {
+          display: block;
+          margin-top: 4px;
+          color: #536579;
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 850;
         }
 
-        .alertBox.error {
+        .orderCardBody {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 250px;
+          gap: 22px;
+          align-items: stretch;
+        }
+
+        .orderCardItems {
+          padding: 14px 0 0;
+          border-top: 1px solid #eef3f1;
+        }
+
+        .orderCardItemsTitle {
+          margin-bottom: 8px;
+          color: #0f9f7a;
+          font-size: 12px;
+          font-weight: 950;
+          letter-spacing: .1em;
+          text-transform: uppercase;
+        }
+
+        .orderCardItems ul {
+          display: grid;
+          gap: 7px;
+          margin: 0;
+          padding: 0;
+          list-style: none;
+        }
+
+        .orderCardItems li {
+          display: flex;
+          gap: 10px;
+          color: #0f172a;
+          font-size: 14px;
+          font-weight: 750;
+        }
+
+        .orderCardItems li strong {
+          min-width: 34px;
+          color: #0f9f7a;
+          font-weight: 950;
+        }
+
+        .orderCardMore {
+          margin-top: 8px;
+          color: #64748b;
+          font-size: 13px;
+          font-weight: 850;
+        }
+
+        .orderCardSide {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          align-items: stretch;
+        }
+
+        .orderCardTotal {
+          padding: 16px;
+          border: 1px solid #fed7aa;
+          border-radius: 20px;
           background: #fff7ed;
-          border: 1px solid #fdba74;
           color: #9a3412;
         }
 
-        .alertBox.success {
-          background: #ecfdf5;
-          border: 1px solid #bbf7d0;
-          color: #047857;
+        .orderCardTotal strong {
+          display: block;
+          color: #06251f;
+          font-size: 28px;
+          line-height: 1;
+          font-weight: 950;
+          letter-spacing: -.8px;
+        }
+
+        .orderCardTotal span {
+          display: block;
+          margin-top: 7px;
+          color: #b45309;
+          font-size: 11px;
+          font-weight: 950;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+
+        .orderCardTotal small {
+          display: block;
+          margin-top: 4px;
+          color: #b45309;
+          font-size: 11px;
+          line-height: 1.25;
+          font-weight: 900;
+          text-transform: uppercase;
+        }
+
+        .orderCardBadges {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 7px;
+        }
+
+        .orderCardBadges span {
+          display: inline-flex;
+          align-items: center;
+          min-height: 28px;
+          padding: 0 10px;
+          border: 1px solid #dbe7e2;
+          border-radius: 999px;
+          background: #f8fbfa;
+          color: #36534b;
+          font-size: 12px;
+          font-weight: 900;
+        }
+
+        .orderCardActions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 8px;
+          margin-top: 16px;
+          padding-top: 14px;
+          border-top: 1px solid #eef3f1;
+        }
+
+        .orderCardActions a,
+        .orderCardActions button,
+        .emailRow a,
+        .emailRow button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 38px;
+          padding: 0 14px;
+          border: 1px solid #d6e5df;
+          border-radius: 13px;
+          background: #ffffff;
+          color: #0f172a;
+          font-weight: 950;
+          text-decoration: none;
+          cursor: pointer;
+        }
+
+        .orderCardActions a:first-child,
+        .emailRow a {
+          border-color: #10a37f;
+          background: #10a37f;
+          color: #ffffff;
+          box-shadow: 0 10px 20px rgba(16, 163, 127, .22);
+        }
+
+        .orderCardActions button,
+        .emailRow button {
+          color: #991b1b;
+          border-color: #fecaca;
+          background: #fff1f2;
         }
 
         @media (max-width: 1100px) {
           .inboxHero,
           .panelTop,
-          .mailRow {
+          .orderCardTop,
+          .orderCardBody {
             grid-template-columns: 1fr;
-            display: grid;
+          }
+
+          .filterBar {
+            grid-template-columns: 1fr 1fr;
           }
 
           .compactStats {
             grid-template-columns: repeat(2, minmax(0, 1fr));
           }
 
-          .ordersHead {
-            display: none;
+          .orderCardDate {
+            text-align: left;
+          }
+        }
+
+        @media (max-width: 720px) {
+          .inboxPage {
+            padding: 0 14px 34px;
           }
 
-          .ordersRow {
+          .inboxHero,
+          .inboxPanel,
+          .orderCard {
+            border-radius: 20px;
+            padding: 18px;
+          }
+
+          .inboxHero h1 {
+            font-size: 30px;
+          }
+
+          .compactStats,
+          .filterBar {
             grid-template-columns: 1fr;
           }
 
-          .filterBar,
-          .filterBar input,
-          .filterBar select {
-            width: 100%;
-            min-width: 0;
+          .orderReviewHeader {
+            align-items: flex-start;
+            flex-direction: column;
           }
 
-          .mailActions,
-          .orderActions {
-            justify-content: flex-start;
-          }
-        }
-      `}</style>
-    
-      <style>{`
-        /* inbox-final-clean-override-v7 */
-
-        .inboxPage {
-          max-width: 1120px !important;
-          padding: 0 18px 34px !important;
-        }
-
-        .inboxHero {
-          padding: 14px 17px !important;
-          border-radius: 8px !important;
-          box-shadow: 0 3px 10px rgba(15, 23, 42, 0.025) !important;
-        }
-
-        .inboxHero h1 {
-          font-size: 24px !important;
-          font-weight: 600 !important;
-        }
-
-        .inboxHero p {
-          font-size: 13px !important;
-          font-weight: 450 !important;
-        }
-
-        .compactStats {
-          display: grid !important;
-          grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-          gap: 7px !important;
-          margin: 8px 0 10px !important;
-        }
-
-        .statCard {
-          min-height: 42px !important;
-          padding: 8px 11px !important;
-          border-radius: 7px !important;
-          box-shadow: none !important;
-        }
-
-        .statCard span {
-          font-size: 11px !important;
-          font-weight: 600 !important;
-        }
-
-        .statCard strong {
-          font-size: 18px !important;
-          font-weight: 600 !important;
-        }
-
-        .inboxPanel,
-        .ordersPanel {
-          padding: 12px 14px !important;
-          border-radius: 8px !important;
-          box-shadow: 0 3px 10px rgba(15, 23, 42, 0.025) !important;
-        }
-
-        .panelTop {
-          display: grid !important;
-          grid-template-columns: 1fr minmax(520px, 620px) !important;
-          gap: 12px !important;
-          align-items: start !important;
-          margin-bottom: 9px !important;
-        }
-
-        .panelTop h2 {
-          font-size: 18px !important;
-          font-weight: 600 !important;
-          margin: 2px 0 0 !important;
-        }
-
-        .panelTop p {
-          font-size: 12.5px !important;
-          margin-top: 4px !important;
-        }
-
-        .filterBar {
-          display: grid !important;
-          grid-template-columns: minmax(220px, 1fr) 178px auto auto !important;
-          gap: 6px !important;
-          padding: 6px !important;
-          border-radius: 8px !important;
-          background: #f8fafc !important;
-          border: 1px solid #e2e8f0 !important;
-        }
-
-        .filterBar label {
-          font-size: 9.5px !important;
-          font-weight: 700 !important;
-          gap: 3px !important;
-        }
-
-        .filterBar input,
-        .filterBar select {
-          min-width: 0 !important;
-          width: 100% !important;
-          height: 30px !important;
-          min-height: 30px !important;
-          border-radius: 6px !important;
-          font-size: 12px !important;
-        }
-
-        .filterBar .primaryBtn,
-        .filterBar .secondaryBtn {
-          height: 30px !important;
-          min-height: 30px !important;
-          border-radius: 6px !important;
-          padding: 0 9px !important;
-          font-size: 12px !important;
-        }
-
-        /* Kategorien endgültig als kleine Pills */
-        .bucketNav {
-          display: flex !important;
-          flex-wrap: wrap !important;
-          gap: 5px !important;
-          margin: 8px 0 9px !important;
-        }
-
-        .bucket {
-          flex: 0 0 auto !important;
-          width: auto !important;
-          min-width: 0 !important;
-          max-width: none !important;
-          min-height: 0 !important;
-          height: 30px !important;
-          padding: 0 8px 0 10px !important;
-          border-radius: 999px !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          justify-content: flex-start !important;
-          gap: 6px !important;
-          background: #ffffff !important;
-          border: 1px solid #dbe5ec !important;
-          color: #111827 !important;
-          overflow: visible !important;
-          box-shadow: none !important;
-        }
-
-        .bucket.active {
-          background: #0f8f70 !important;
-          border-color: #0f8f70 !important;
-          color: #ffffff !important;
-        }
-
-        .bucket span {
-          display: inline-flex !important;
-          align-items: center !important;
-          gap: 0 !important;
-        }
-
-        .bucket strong {
-          font-size: 12px !important;
-          line-height: 1 !important;
-          font-weight: 600 !important;
-          white-space: nowrap !important;
-        }
-
-        .bucket small {
-          display: none !important;
-        }
-
-        .bucket b {
-          position: static !important;
-          min-width: 17px !important;
-          height: 17px !important;
-          padding: 0 5px !important;
-          border-radius: 999px !important;
-          background: #f1f5f9 !important;
-          color: #0f172a !important;
-          font-size: 10px !important;
-          font-weight: 650 !important;
-          z-index: auto !important;
-        }
-
-        .bucket.active b {
-          background: rgba(255, 255, 255, .22) !important;
-          color: #ffffff !important;
-        }
-
-        .emptyState {
-          padding: 9px 11px !important;
-          border-radius: 7px !important;
-          font-size: 12.5px !important;
-        }
-
-        .ordersHead,
-        .ordersRow {
-          grid-template-columns: 1.15fr 1.2fr .85fr 1.45fr .7fr .7fr auto !important;
-          gap: 8px !important;
-        }
-
-        .ordersHead {
-          padding: 7px 9px !important;
-          font-size: 9.5px !important;
-        }
-
-        .ordersRow {
-          padding: 8px 9px !important;
-          font-size: 12.3px !important;
-          min-height: 50px !important;
-        }
-
-        .ordersRow strong {
-          font-size: 12.5px !important;
-          font-weight: 600 !important;
-        }
-
-        .ordersRow small {
-          font-size: 10.8px !important;
-          margin-top: 2px !important;
-        }
-
-        .primaryBtn,
-        .secondaryBtn,
-        .softBtn,
-        .dangerBtn,
-        .statusPill {
-          min-height: 29px !important;
-          height: 29px !important;
-          border-radius: 6px !important;
-          padding: 0 9px !important;
-          font-size: 12px !important;
-          font-weight: 600 !important;
-          box-shadow: none !important;
-        }
-
-        .statusBadge {
-          font-size: 10.8px !important;
-          padding: 3px 7px !important;
-        }
-
-        @media (max-width: 1000px) {
-          .panelTop {
-            grid-template-columns: 1fr !important;
+          .emailRow {
+            grid-template-columns: 1fr;
           }
 
-          .filterBar {
-            grid-template-columns: 1fr !important;
-          }
-
-          .compactStats {
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          .orderCardActions {
+            justify-content: stretch;
+            flex-direction: column;
           }
         }
       `}</style>
-
-    
-      <style>{`
-        /* inbox-actual-compact-final-v8 */
-
-        .inboxPage {
-          max-width: 1080px !important;
-          padding: 0 16px 32px !important;
-        }
-
-        .inboxHero {
-          padding: 12px 16px !important;
-          border-radius: 8px !important;
-          margin-bottom: 8px !important;
-        }
-
-        .inboxHero h1 {
-          font-size: 23px !important;
-          line-height: 1.08 !important;
-          font-weight: 600 !important;
-        }
-
-        .inboxHero p {
-          font-size: 12.5px !important;
-          margin-top: 5px !important;
-        }
-
-        .liveInfo {
-          font-size: 11.5px !important;
-          margin-bottom: 7px !important;
-        }
-
-        .compactStats {
-          display: grid !important;
-          grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-          gap: 7px !important;
-          margin-bottom: 10px !important;
-        }
-
-        .statCard {
-          min-height: 38px !important;
-          padding: 7px 10px !important;
-          border-radius: 7px !important;
-        }
-
-        .statCard span {
-          font-size: 10.8px !important;
-        }
-
-        .statCard strong {
-          font-size: 17px !important;
-          margin-top: 1px !important;
-        }
-
-        .inboxPanel,
-        .ordersPanel {
-          padding: 11px 12px !important;
-          border-radius: 8px !important;
-          margin-bottom: 10px !important;
-        }
-
-        .panelTop {
-          display: grid !important;
-          grid-template-columns: 1fr minmax(500px, 600px) !important;
-          gap: 10px !important;
-          margin-bottom: 8px !important;
-        }
-
-        .panelTop h2 {
-          font-size: 17px !important;
-          margin: 2px 0 0 !important;
-        }
-
-        .panelTop p {
-          font-size: 12px !important;
-          margin-top: 3px !important;
-        }
-
-        .filterBar {
-          display: grid !important;
-          grid-template-columns: minmax(210px, 1fr) 165px auto auto !important;
-          gap: 5px !important;
-          padding: 5px !important;
-          border-radius: 7px !important;
-        }
-
-        .filterBar input,
-        .filterBar select {
-          height: 28px !important;
-          min-height: 28px !important;
-          font-size: 11.8px !important;
-          border-radius: 6px !important;
-        }
-
-        .filterBar label {
-          font-size: 9px !important;
-        }
-
-        .bucketNav {
-          display: flex !important;
-          flex-wrap: wrap !important;
-          gap: 5px !important;
-          margin: 7px 0 8px !important;
-        }
-
-        .bucket {
-          height: 28px !important;
-          min-height: 0 !important;
-          padding: 0 8px !important;
-          border-radius: 999px !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          width: auto !important;
-          flex: 0 0 auto !important;
-          background: #ffffff !important;
-        }
-
-        .bucket.active {
-          background: #0f8f70 !important;
-          color: #ffffff !important;
-        }
-
-        .bucket strong {
-          font-size: 11.5px !important;
-          line-height: 1 !important;
-          white-space: nowrap !important;
-        }
-
-        .bucket small {
-          display: none !important;
-        }
-
-        .bucket b {
-          position: static !important;
-          height: 16px !important;
-          min-width: 16px !important;
-          font-size: 9.5px !important;
-          padding: 0 5px !important;
-        }
-
-        .emptyState {
-          padding: 8px 10px !important;
-          font-size: 12px !important;
-        }
-
-        .ordersHead,
-        .ordersRow {
-          grid-template-columns: 1.1fr 1.15fr .8fr 1.35fr .7fr .65fr auto !important;
-          gap: 8px !important;
-        }
-
-        .ordersHead {
-          padding: 7px 9px !important;
-          font-size: 9.2px !important;
-        }
-
-        .ordersRow {
-          padding: 8px 9px !important;
-          min-height: 46px !important;
-          font-size: 12px !important;
-        }
-
-        .ordersRow strong {
-          font-size: 12px !important;
-        }
-
-        .ordersRow small {
-          font-size: 10.5px !important;
-        }
-
-        .primaryBtn,
-        .secondaryBtn,
-        .softBtn,
-        .dangerBtn,
-        .statusPill {
-          height: 28px !important;
-          min-height: 28px !important;
-          border-radius: 6px !important;
-          padding: 0 8px !important;
-          font-size: 11.8px !important;
-        }
-
-        @media (max-width: 1000px) {
-          .panelTop {
-            grid-template-columns: 1fr !important;
-          }
-
-          .filterBar {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
-
-    
-      <style>{`
-        /* inbox-unified-tables-and-select-fix-v9 */
-
-        /* Filter oben: Select nicht abschneiden */
-        .filterBar {
-          align-items: end !important;
-          overflow: visible !important;
-        }
-
-        .filterBar select,
-        .filterBar input {
-          height: 36px !important;
-          min-height: 36px !important;
-          line-height: 36px !important;
-          padding: 0 12px !important;
-          font-size: 13px !important;
-          border-radius: 8px !important;
-          box-sizing: border-box !important;
-        }
-
-        .filterBar select {
-          appearance: auto !important;
-          -webkit-appearance: menulist !important;
-          padding-right: 28px !important;
-          background-color: #ffffff !important;
-        }
-
-        .filterBar .primaryBtn,
-        .filterBar .secondaryBtn {
-          height: 36px !important;
-          min-height: 36px !important;
-          line-height: 36px !important;
-          border-radius: 8px !important;
-          padding: 0 12px !important;
-          font-size: 13px !important;
-        }
-
-        /* Beide unteren Bereiche gleich breit und gleich ruhig */
-        .inboxPanel,
-        .ordersPanel {
-          border-radius: 10px !important;
-          padding: 14px !important;
-          margin-bottom: 12px !important;
-        }
-
-        .panelTop {
-          margin-bottom: 12px !important;
-        }
-
-        /* E-Mail-Liste wie Tabelle darstellen */
-        .mailList {
-          display: grid !important;
-          gap: 0 !important;
-          border: 1px solid #e2e8f0 !important;
-          border-radius: 10px !important;
-          overflow: hidden !important;
-          background: #ffffff !important;
-        }
-
-        .mailRow {
-          display: grid !important;
-          grid-template-columns: minmax(0, 1fr) auto !important;
-          gap: 12px !important;
-          align-items: center !important;
-          border: 0 !important;
-          border-bottom: 1px solid #edf2f7 !important;
-          border-radius: 0 !important;
-          padding: 11px 12px !important;
-          box-shadow: none !important;
-          background: #ffffff !important;
-          min-height: 62px !important;
-        }
-
-        .mailRow:last-child {
-          border-bottom: 0 !important;
-        }
-
-        .mailRow h3 {
-          font-size: 14px !important;
-          font-weight: 600 !important;
-          line-height: 1.25 !important;
-          margin: 5px 0 4px !important;
-        }
-
-        .mailMeta,
-        .mailSub {
-          font-size: 11.5px !important;
-          line-height: 1.25 !important;
-          gap: 8px !important;
-        }
-
-        .mailMeta span {
-          font-size: 10.5px !important;
-          padding: 2px 7px !important;
-          border-radius: 999px !important;
-        }
-
-        .mailHint {
-          font-size: 11.5px !important;
-          margin-top: 5px !important;
-          line-height: 1.3 !important;
-        }
-
-        .mailActions {
-          display: flex !important;
-          align-items: center !important;
-          justify-content: flex-end !important;
-          gap: 6px !important;
-          flex-wrap: nowrap !important;
-        }
-
-        /* Auftragsliste optisch passend zur Mail-Liste */
-        .ordersTable {
-          border-radius: 10px !important;
-          border: 1px solid #e2e8f0 !important;
-          overflow: hidden !important;
-          background: #ffffff !important;
-        }
-
-        .ordersHead {
-          padding: 9px 12px !important;
-          background: #f8fafc !important;
-          border-bottom: 1px solid #e2e8f0 !important;
-          color: #64748b !important;
-          font-size: 10.5px !important;
-          font-weight: 700 !important;
-          letter-spacing: .055em !important;
-        }
-
-        .ordersRow {
-          padding: 11px 12px !important;
-          min-height: 62px !important;
-          border-bottom: 1px solid #edf2f7 !important;
-          background: #ffffff !important;
-          font-size: 12.8px !important;
-        }
-
-        .ordersRow:last-child {
-          border-bottom: 0 !important;
-        }
-
-        .ordersRow strong {
-          font-size: 12.8px !important;
-          line-height: 1.25 !important;
-          font-weight: 600 !important;
-        }
-
-        .ordersRow small {
-          font-size: 11.4px !important;
-          line-height: 1.25 !important;
-          color: #64748b !important;
-        }
-
-        .ordersHead,
-        .ordersRow {
-          grid-template-columns: 1.15fr 1.15fr .85fr 1.35fr .72fr .72fr auto !important;
-          gap: 10px !important;
-        }
-
-        /* Buttons überall gleich */
-        .mailActions .primaryBtn,
-        .mailActions .secondaryBtn,
-        .mailActions .softBtn,
-        .mailActions .dangerBtn,
-        .orderActions .primaryBtn,
-        .orderActions .secondaryBtn,
-        .orderActions .softBtn,
-        .orderActions .dangerBtn {
-          height: 32px !important;
-          min-height: 32px !important;
-          border-radius: 7px !important;
-          padding: 0 10px !important;
-          font-size: 12.3px !important;
-          font-weight: 600 !important;
-          white-space: nowrap !important;
-        }
-
-        .orderActions {
-          display: flex !important;
-          align-items: center !important;
-          justify-content: flex-end !important;
-          gap: 6px !important;
-          flex-wrap: nowrap !important;
-        }
-
-        .statusBadge {
-          font-size: 11.5px !important;
-          height: 24px !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 0 8px !important;
-          border-radius: 999px !important;
-          white-space: nowrap !important;
-        }
-
-        /* Kategorie-Pills oben nicht mehr wie Karten */
-        .bucketNav {
-          display: flex !important;
-          flex-wrap: wrap !important;
-          gap: 6px !important;
-          margin: 10px 0 11px !important;
-        }
-
-        .bucket {
-          height: 31px !important;
-          min-height: 31px !important;
-          border-radius: 999px !important;
-          padding: 0 9px 0 11px !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          gap: 7px !important;
-          width: auto !important;
-          flex: 0 0 auto !important;
-          background: #ffffff !important;
-        }
-
-        .bucket strong {
-          font-size: 12.2px !important;
-          font-weight: 600 !important;
-          white-space: nowrap !important;
-        }
-
-        .bucket small {
-          display: none !important;
-        }
-
-        .bucket b {
-          position: static !important;
-          height: 17px !important;
-          min-width: 17px !important;
-          font-size: 10px !important;
-          padding: 0 5px !important;
-        }
-
-        @media (max-width: 1050px) {
-          .mailRow,
-          .ordersRow {
-            grid-template-columns: 1fr !important;
-          }
-
-          .mailActions,
-          .orderActions {
-            justify-content: flex-start !important;
-            flex-wrap: wrap !important;
-          }
-
-          .ordersHead {
-            display: none !important;
-          }
-
-          .filterBar {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
-
-    
-      <style>{`
-        /* inbox-wide-readable-v10 */
-
-        .inboxPage {
-          max-width: 1320px !important;
-          width: 100% !important;
-          margin: 0 auto !important;
-          padding-left: 22px !important;
-          padding-right: 22px !important;
-        }
-
-        .inboxHero,
-        .inboxPanel,
-        .ordersPanel {
-          width: 100% !important;
-          box-sizing: border-box !important;
-        }
-
-        .panelTop {
-          grid-template-columns: minmax(260px, 1fr) minmax(620px, 760px) !important;
-        }
-
-        .filterBar {
-          grid-template-columns: minmax(280px, 1fr) 190px auto auto !important;
-        }
-
-        .ordersHead,
-        .ordersRow {
-          grid-template-columns: 1.1fr 1.25fr .85fr 1.65fr .75fr .72fr auto !important;
-          gap: 12px !important;
-        }
-
-        .ordersRow small {
-          max-width: 100% !important;
-        }
-
-        .mailRow {
-          grid-template-columns: minmax(0, 1fr) auto !important;
-        }
-
-        .mailMain {
-          min-width: 0 !important;
-        }
-
-        .mailActions,
-        .orderActions {
-          min-width: max-content !important;
-        }
-
-        @media (min-width: 1500px) {
-          .inboxPage {
-            max-width: 1380px !important;
-          }
-        }
-
-        @media (max-width: 1200px) {
-          .inboxPage {
-            max-width: 100% !important;
-            padding-left: 16px !important;
-            padding-right: 16px !important;
-          }
-
-          .panelTop {
-            grid-template-columns: 1fr !important;
-          }
-
-          .filterBar {
-            grid-template-columns: 1fr 190px auto auto !important;
-          }
-        }
-
-        @media (max-width: 900px) {
-          .filterBar {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
-
-    
-      <style>{`
-        /* inbox-nav-and-danger-final-v11 */
-
-        /* Kategorie-Navigation etwas größer und sauberer */
-        .bucketNav {
-          gap: 7px !important;
-          margin: 10px 0 11px !important;
-        }
-
-        .bucket {
-          height: 34px !important;
-          min-height: 34px !important;
-          padding: 0 10px 0 12px !important;
-          border-radius: 999px !important;
-          border: 1px solid #d4e0e8 !important;
-          background: #ffffff !important;
-          color: #111827 !important;
-        }
-
-        .bucket strong {
-          font-size: 12.8px !important;
-          font-weight: 600 !important;
-          letter-spacing: -0.01em !important;
-        }
-
-        .bucket b {
-          height: 18px !important;
-          min-width: 18px !important;
-          padding: 0 6px !important;
-          font-size: 10.5px !important;
-          font-weight: 650 !important;
-          background: #f1f5f9 !important;
-          color: #0f172a !important;
-        }
-
-        .bucket.active {
-          background: #0f8f70 !important;
-          border-color: #0f8f70 !important;
-          color: #ffffff !important;
-        }
-
-        .bucket.active b {
-          background: rgba(255,255,255,.22) !important;
-          color: #ffffff !important;
-        }
-
-        /* Löschen-Buttons klar rot */
-        .dangerBtn,
-        .mailActions .dangerBtn,
-        .orderActions .dangerBtn,
-        button.dangerBtn,
-        a.dangerBtn {
-          background: #fff5f5 !important;
-          border: 1px solid #fecaca !important;
-          color: #b91c1c !important;
-          box-shadow: none !important;
-        }
-
-        .dangerBtn:hover,
-        .mailActions .dangerBtn:hover,
-        .orderActions .dangerBtn:hover,
-        button.dangerBtn:hover,
-        a.dangerBtn:hover {
-          background: #fee2e2 !important;
-          border-color: #fca5a5 !important;
-          color: #991b1b !important;
-        }
-
-        /* Prüfen bleibt grün, aber nicht zu schwer */
-        .orderActions .primaryBtn,
-        .mailActions .primaryBtn {
-          background: #0f9f7a !important;
-          border-color: #0f9f7a !important;
-          color: #ffffff !important;
-        }
-
-        /* Buttons in Tabellen minimal besser lesbar */
-        .mailActions .primaryBtn,
-        .mailActions .secondaryBtn,
-        .mailActions .softBtn,
-        .mailActions .dangerBtn,
-        .orderActions .primaryBtn,
-        .orderActions .secondaryBtn,
-        .orderActions .softBtn,
-        .orderActions .dangerBtn {
-          height: 32px !important;
-          min-height: 32px !important;
-          border-radius: 7px !important;
-          padding: 0 11px !important;
-          font-size: 12.4px !important;
-          font-weight: 600 !important;
-        }
-      `}</style>
-
-    
-      <style>{`
-        /* inbox-mail-table-match-v12 */
-
-        /* E-Mail-Liste näher an Auftrags-Tabelle */
-        .mailList {
-          border: 1px solid #e2e8f0 !important;
-          border-radius: 9px !important;
-          overflow: hidden !important;
-          background: #ffffff !important;
-          gap: 0 !important;
-        }
-
-        .mailList::before {
-          content: "BETREFF / ABSENDER    STATUS    AKTION";
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
-          padding: 8px 12px;
-          background: #f8fafc;
-          border-bottom: 1px solid #e2e8f0;
-          color: #64748b;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: .055em;
-          white-space: pre;
-        }
-
-        .mailRow {
-          border: 0 !important;
-          border-bottom: 1px solid #edf2f7 !important;
-          border-radius: 0 !important;
-          box-shadow: none !important;
-          padding: 10px 12px !important;
-          min-height: 58px !important;
-          background: #ffffff !important;
-        }
-
-        .mailRow:last-child {
-          border-bottom: 0 !important;
-        }
-
-        .mailRow h3 {
-          font-size: 13.2px !important;
-          font-weight: 600 !important;
-          margin: 4px 0 3px !important;
-          line-height: 1.25 !important;
-        }
-
-        .mailMeta {
-          font-size: 11px !important;
-          gap: 8px !important;
-        }
-
-        .mailMeta span {
-          font-size: 10.5px !important;
-          padding: 2px 7px !important;
-        }
-
-        .mailSub {
-          font-size: 11.2px !important;
-          gap: 8px !important;
-        }
-
-        .mailHint {
-          font-size: 11.2px !important;
-          margin-top: 4px !important;
-          color: #9a3412 !important;
-        }
-
-        /* Alle Tabellen/Listen-Buttons gleich */
-        .mailActions,
-        .orderActions {
-          gap: 6px !important;
-          flex-wrap: nowrap !important;
-        }
-
-        .mailActions .primaryBtn,
-        .mailActions .secondaryBtn,
-        .mailActions .softBtn,
-        .mailActions .dangerBtn,
-        .orderActions .primaryBtn,
-        .orderActions .secondaryBtn,
-        .orderActions .softBtn,
-        .orderActions .dangerBtn {
-          height: 31px !important;
-          min-height: 31px !important;
-          border-radius: 6px !important;
-          padding: 0 10px !important;
-          font-size: 12px !important;
-          font-weight: 600 !important;
-          box-shadow: none !important;
-        }
-
-        .dangerBtn,
-        button.dangerBtn {
-          background: #fff5f5 !important;
-          border: 1px solid #fecaca !important;
-          color: #b91c1c !important;
-        }
-
-        .dangerBtn:hover,
-        button.dangerBtn:hover {
-          background: #fee2e2 !important;
-          border-color: #fca5a5 !important;
-          color: #991b1b !important;
-        }
-
-        /* Kategorie Navigation stabiler, damit nichts springt */
-        .bucketNav {
-          min-height: 34px !important;
-          align-items: center !important;
-        }
-
-        .bucket {
-          transition: none !important;
-        }
-
-        .statCard,
-        .bucket,
-        .primaryBtn,
-        .secondaryBtn,
-        .softBtn,
-        .dangerBtn {
-          transition: none !important;
-        }
-      `}</style>
-
-    
-      <style>{`
-        /* inbox-emails-like-orders-v13 */
-
-        /* E-Mail/Anfragen-Liste exakt ruhiger wie die Auftragstabelle */
-        .mailList {
-          display: grid !important;
-          gap: 0 !important;
-          border: 1px solid #e2e8f0 !important;
-          border-radius: 10px !important;
-          overflow: hidden !important;
-          background: #ffffff !important;
-        }
-
-        .mailList::before {
-          content: "";
-          display: grid !important;
-          grid-template-columns: 1.45fr 1.05fr .7fr auto !important;
-          gap: 12px !important;
-          padding: 9px 12px !important;
-          background: #f8fafc !important;
-          border-bottom: 1px solid #e2e8f0 !important;
-        }
-
-        .mailList::before {
-          content: "BETREFF    ABSENDER    ANHANG    AKTION";
-          color: #64748b !important;
-          font-size: 10.5px !important;
-          font-weight: 700 !important;
-          letter-spacing: .055em !important;
-          white-space: pre !important;
-        }
-
-        .mailRow {
-          display: grid !important;
-          grid-template-columns: 1.45fr 1.05fr .7fr auto !important;
-          gap: 12px !important;
-          align-items: center !important;
-          border: 0 !important;
-          border-bottom: 1px solid #edf2f7 !important;
-          border-radius: 0 !important;
-          padding: 11px 12px !important;
-          min-height: 62px !important;
-          background: #ffffff !important;
-          box-shadow: none !important;
-        }
-
-        .mailRow:last-child {
-          border-bottom: 0 !important;
-        }
-
-        .mailMain {
-          display: grid !important;
-          grid-template-columns: minmax(0, 1fr) 1fr .45fr !important;
-          gap: 12px !important;
-          align-items: center !important;
-          min-width: 0 !important;
-        }
-
-        .mailMeta {
-          grid-column: 1 / 2 !important;
-          display: flex !important;
-          gap: 8px !important;
-          align-items: center !important;
-          margin-bottom: 4px !important;
-        }
-
-        .mailMeta time {
-          font-size: 11px !important;
-          color: #64748b !important;
-          font-weight: 500 !important;
-        }
-
-        .mailMeta span {
-          font-size: 10.5px !important;
-          padding: 2px 7px !important;
-          border-radius: 999px !important;
-          background: #ecfdf5 !important;
-          color: #047857 !important;
-          font-weight: 650 !important;
-        }
-
-        .mailRow h3 {
-          grid-column: 1 / 2 !important;
-          margin: 0 !important;
-          font-size: 13px !important;
-          line-height: 1.25 !important;
-          font-weight: 600 !important;
-          letter-spacing: -0.01em !important;
-        }
-
-        .mailSub {
-          display: contents !important;
-        }
-
-        .mailSub span {
-          font-size: 11.5px !important;
-          line-height: 1.25 !important;
-          color: #64748b !important;
-          font-weight: 450 !important;
-        }
-
-        .mailSub span:nth-child(1) {
-          grid-column: 2 / 3 !important;
-        }
-
-        .mailSub span:nth-child(2) {
-          display: none !important;
-        }
-
-        .mailSub span:nth-child(3) {
-          grid-column: 3 / 4 !important;
-        }
-
-        .mailHint {
-          grid-column: 1 / 4 !important;
-          margin: 5px 0 0 !important;
-          color: #9a3412 !important;
-          font-size: 11.2px !important;
-          line-height: 1.25 !important;
-          font-weight: 500 !important;
-        }
-
-        .mailActions {
-          display: flex !important;
-          align-items: center !important;
-          justify-content: flex-end !important;
-          gap: 6px !important;
-          flex-wrap: nowrap !important;
-        }
-
-        .mailActions .primaryBtn,
-        .mailActions .secondaryBtn,
-        .mailActions .softBtn,
-        .mailActions .dangerBtn,
-        .orderActions .primaryBtn,
-        .orderActions .secondaryBtn,
-        .orderActions .softBtn,
-        .orderActions .dangerBtn {
-          height: 32px !important;
-          min-height: 32px !important;
-          border-radius: 7px !important;
-          padding: 0 10px !important;
-          font-size: 12px !important;
-          font-weight: 600 !important;
-          box-shadow: none !important;
-        }
-
-        .dangerBtn,
-        button.dangerBtn,
-        a.dangerBtn {
-          background: #fff5f5 !important;
-          border: 1px solid #fecaca !important;
-          color: #b91c1c !important;
-        }
-
-        .dangerBtn:hover,
-        button.dangerBtn:hover,
-        a.dangerBtn:hover {
-          background: #fee2e2 !important;
-          border-color: #fca5a5 !important;
-          color: #991b1b !important;
-        }
-
-        /* Status/Öffnen bei übernommenen Aufträgen ruhiger */
-        .orderActions .secondaryBtn {
-          background: #ffffff !important;
-          border: 1px solid #d6e1ea !important;
-          color: #0f172a !important;
-        }
-
-        /* Tabellen nicht springen */
-        .mailRow,
-        .ordersRow {
-          transition: none !important;
-        }
-
-        @media (max-width: 1100px) {
-          .mailList::before {
-            display: none !important;
-          }
-
-          .mailRow,
-          .mailMain {
-            grid-template-columns: 1fr !important;
-          }
-
-          .mailSub {
-            display: flex !important;
-            flex-wrap: wrap !important;
-          }
-
-          .mailSub span:nth-child(2) {
-            display: inline !important;
-          }
-
-          .mailHint {
-            grid-column: auto !important;
-          }
-
-          .mailActions {
-            justify-content: flex-start !important;
-            flex-wrap: wrap !important;
-          }
-        }
-      `}</style>
-
-    
-      <style>{`
-        /* past-orders-hidden-hint-v1 */
-
-        .pastOrdersHint {
-          margin-top: 8px;
-          padding: 8px 10px;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          background: #f8fafc;
-          color: #64748b;
-          font-size: 12px;
-          font-weight: 500;
-        }
-
-        .pastOrdersHint a {
-          color: #047857;
-          font-weight: 600;
-          text-decoration: none;
-        }
-      `}</style>
-
-    
-      <style>{`
-        /* inbox-mail-real-table-v14 */
-
-        .mailList {
-          display: grid !important;
-          gap: 0 !important;
-          border: 1px solid #e2e8f0 !important;
-          border-radius: 10px !important;
-          overflow: hidden !important;
-          background: #ffffff !important;
-        }
-
-        .mailList::before {
-          content: "BETREFF    DATUM    ABSENDER    ANHANG    AKTION";
-          display: grid !important;
-          grid-template-columns: 1.35fr .75fr 1.15fr .55fr auto !important;
-          gap: 12px !important;
-          padding: 9px 12px !important;
-          background: #f8fafc !important;
-          border-bottom: 1px solid #e2e8f0 !important;
-          color: #64748b !important;
-          font-size: 10.5px !important;
-          font-weight: 700 !important;
-          letter-spacing: .055em !important;
-          white-space: pre !important;
-        }
-
-        .mailRow {
-          display: grid !important;
-          grid-template-columns: 1.35fr .75fr 1.15fr .55fr auto !important;
-          gap: 12px !important;
-          align-items: center !important;
-          border: 0 !important;
-          border-bottom: 1px solid #edf2f7 !important;
-          border-radius: 0 !important;
-          padding: 11px 12px !important;
-          min-height: 62px !important;
-          background: #ffffff !important;
-          box-shadow: none !important;
-        }
-
-        .mailRow:last-child {
-          border-bottom: 0 !important;
-        }
-
-        .mailMain {
-          display: contents !important;
-        }
-
-        .mailMeta {
-          display: contents !important;
-        }
-
-        .mailMeta span {
-          grid-column: 1 !important;
-          width: fit-content !important;
-          font-size: 10.5px !important;
-          padding: 2px 7px !important;
-          border-radius: 999px !important;
-          background: #ecfdf5 !important;
-          color: #047857 !important;
-          font-weight: 650 !important;
-        }
-
-        .mailMeta time {
-          grid-column: 2 !important;
-          grid-row: 1 / span 2 !important;
-          align-self: center !important;
-          font-size: 11.5px !important;
-          color: #64748b !important;
-          font-weight: 500 !important;
-        }
-
-        .mailRow h3 {
-          grid-column: 1 !important;
-          margin: 5px 0 0 !important;
-          font-size: 13px !important;
-          line-height: 1.25 !important;
-          font-weight: 600 !important;
-          letter-spacing: -0.01em !important;
-        }
-
-        .mailSub {
-          display: contents !important;
-        }
-
-        .mailSub span {
-          font-size: 11.5px !important;
-          line-height: 1.25 !important;
-          color: #64748b !important;
-          font-weight: 450 !important;
-        }
-
-        .mailSub span:nth-child(1) {
-          grid-column: 3 !important;
-          grid-row: 1 / span 2 !important;
-          align-self: center !important;
-        }
-
-        .mailSub span:nth-child(2) {
-          display: none !important;
-        }
-
-        .mailSub span:nth-child(3) {
-          grid-column: 4 !important;
-          grid-row: 1 / span 2 !important;
-          align-self: center !important;
-        }
-
-        .mailHint {
-          display: none !important;
-        }
-
-        .mailActions {
-          grid-column: 5 !important;
-          grid-row: 1 / span 2 !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: flex-end !important;
-          gap: 6px !important;
-          flex-wrap: nowrap !important;
-        }
-
-        .mailActions .primaryBtn,
-        .mailActions .secondaryBtn,
-        .mailActions .softBtn,
-        .mailActions .dangerBtn,
-        .orderActions .primaryBtn,
-        .orderActions .secondaryBtn,
-        .orderActions .softBtn,
-        .orderActions .dangerBtn {
-          height: 32px !important;
-          min-height: 32px !important;
-          border-radius: 7px !important;
-          padding: 0 10px !important;
-          font-size: 12px !important;
-          font-weight: 600 !important;
-          box-shadow: none !important;
-          white-space: nowrap !important;
-        }
-
-        .dangerBtn,
-        button.dangerBtn,
-        a.dangerBtn {
-          background: #fff5f5 !important;
-          border: 1px solid #fecaca !important;
-          color: #b91c1c !important;
-        }
-
-        .dangerBtn:hover,
-        button.dangerBtn:hover,
-        a.dangerBtn:hover {
-          background: #fee2e2 !important;
-          border-color: #fca5a5 !important;
-          color: #991b1b !important;
-        }
-
-        @media (max-width: 1150px) {
-          .mailList::before {
-            display: none !important;
-          }
-
-          .mailRow {
-            grid-template-columns: 1fr !important;
-          }
-
-          .mailMain,
-          .mailMeta,
-          .mailSub {
-            display: block !important;
-          }
-
-          .mailSub span:nth-child(2) {
-            display: inline !important;
-          }
-
-          .mailHint {
-            display: block !important;
-          }
-
-          .mailActions {
-            grid-column: auto !important;
-            grid-row: auto !important;
-            justify-content: flex-start !important;
-            flex-wrap: wrap !important;
-          }
-        }
-      `}</style>
-
-    
-      <style>{`
-        /* email-table-uses-orders-table-v15 */
-
-        .emailTable .ordersHead,
-        .emailTable .ordersRow {
-          grid-template-columns: 1.35fr 1.35fr .75fr 1fr .45fr .7fr auto !important;
-        }
-
-        .emailTable .ordersRow {
-          min-height: 62px !important;
-        }
-
-        .emailTable .orderActions {
-          justify-content: flex-end !important;
-          flex-wrap: nowrap !important;
-          gap: 6px !important;
-        }
-
-        .emailTable .softBtn {
-          background: #ecfdf5 !important;
-          border: 1px solid #bbf7d0 !important;
-          color: #047857 !important;
-        }
-
-        .emailErrorText {
-          color: #9a3412 !important;
-          font-size: 11px !important;
-          line-height: 1.25 !important;
-          margin-top: 3px !important;
-          max-width: 360px !important;
-        }
-
-        .emailTable .statusBadge {
-          justify-self: start !important;
-        }
-
-        @media (max-width: 1150px) {
-          .emailTable .ordersHead {
-            display: none !important;
-          }
-
-          .emailTable .ordersRow {
-            grid-template-columns: 1fr !important;
-          }
-
-          .emailTable .orderActions {
-            justify-content: flex-start !important;
-            flex-wrap: wrap !important;
-          }
-        }
-      `}</style>
-
-    
-      <style>{`
-        /* email-table-identical-to-orders-v16 */
-
-        .emailTable .ordersHead,
-        .emailTable .ordersRow {
-          grid-template-columns: 1.15fr 1.25fr .85fr 1.45fr .75fr .7fr auto !important;
-          gap: 9px !important;
-        }
-
-        .emailTable .ordersRow {
-          min-height: 50px !important;
-          padding: 8px 9px !important;
-        }
-
-        .emailTable .ordersRow strong {
-          font-size: 12.5px !important;
-          font-weight: 600 !important;
-          line-height: 1.2 !important;
-        }
-
-        .emailTable .ordersRow small {
-          font-size: 10.8px !important;
-          margin-top: 2px !important;
-          line-height: 1.2 !important;
-          color: #64748b !important;
-        }
-
-        .emailTable .orderActions {
-          display: flex !important;
-          justify-content: flex-end !important;
-          align-items: center !important;
-          flex-wrap: nowrap !important;
-          gap: 6px !important;
-        }
-
-        .emailTable .primaryBtn,
-        .emailTable .dangerBtn,
-        .ordersTable .primaryBtn,
-        .ordersTable .dangerBtn {
-          height: 30px !important;
-          min-height: 30px !important;
-          border-radius: 7px !important;
-          padding: 0 10px !important;
-          font-size: 12px !important;
-          font-weight: 600 !important;
-          box-shadow: none !important;
-          white-space: nowrap !important;
-        }
-
-        .emailTable .dangerBtn,
-        .ordersTable .dangerBtn {
-          background: #fff5f5 !important;
-          border: 1px solid #fecaca !important;
-          color: #b91c1c !important;
-        }
-
-        .emailTable .dangerBtn:hover,
-        .ordersTable .dangerBtn:hover {
-          background: #fee2e2 !important;
-          border-color: #fca5a5 !important;
-          color: #991b1b !important;
-        }
-      `}</style>
-
-    
-      <style>{`
-        /* inbox-stats-current-and-wide-v17 */
-
-        .inboxPage {
-          max-width: 1360px !important;
-          width: 100% !important;
-          padding-left: 22px !important;
-          padding-right: 22px !important;
-        }
-
-        .compactStats,
-        section[style*="repeat(4"] {
-          display: grid !important;
-          grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-          gap: 8px !important;
-          margin-bottom: 10px !important;
-        }
-
-        .statCard,
-        section[style*="repeat(4"] a {
-          min-height: 52px !important;
-          height: auto !important;
-          padding: 9px 12px !important;
-          border-radius: 8px !important;
-          box-shadow: none !important;
-        }
-
-        .statCard strong,
-        section[style*="repeat(4"] a strong {
-          font-size: 22px !important;
-          font-weight: 650 !important;
-          line-height: 1.05 !important;
-        }
-
-        .ordersPanel,
-        .inboxPanel,
-        .inboxHero {
-          max-width: none !important;
-          width: 100% !important;
-        }
-
-        .ordersHead,
-        .ordersRow {
-          grid-template-columns: 1.15fr 1.25fr .85fr 1.55fr .72fr .72fr auto !important;
-          gap: 12px !important;
-        }
-
-        @media (min-width: 1500px) {
-          .inboxPage {
-            max-width: 1420px !important;
-          }
-        }
-      `}</style>
-
-    
-      <style>{`
-        /* stat-card-info-lines-v18 */
-
-        .statCard small {
-          display: block !important;
-          margin-top: 3px !important;
-          font-size: 10.8px !important;
-          line-height: 1.2 !important;
-          font-weight: 500 !important;
-          color: inherit !important;
-          opacity: .72 !important;
-        }
-
-        .statCard {
-          align-content: center !important;
-          gap: 1px !important;
-        }
-
-        .statCard strong {
-          font-weight: 600 !important;
-          letter-spacing: -0.02em !important;
-        }
-      `}</style>
-      
-
-    
-      
-      
-      
-      
-      
-      
-      <style>{`
-        /* gastario-command-center-nav-20260707 */
-
-        .inboxPage {
-          max-width: 1160px !important;
-          padding: 0 24px 46px !important;
-          color: #0f172a !important;
-          user-select: auto !important;
-        }
-
-        .inboxPage ::selection {
-          background: rgba(15, 159, 122, .16) !important;
-          color: #052e2b !important;
-        }
-
-        /* HEADER: Command-Center statt großer Marketing-Box */
-        .inboxHero {
-          background: #ffffff !important;
-          border: 1px solid #dbe7e2 !important;
-          border-radius: 20px !important;
-          padding: 20px 22px !important;
-          box-shadow: 0 12px 30px rgba(15, 23, 42, .045) !important;
-          margin-bottom: 12px !important;
-          display: grid !important;
-          grid-template-columns: minmax(0, 1fr) auto !important;
-          align-items: center !important;
-          gap: 18px !important;
-        }
-
-        .inboxHero::before,
-        .inboxHero::after {
-          display: none !important;
-        }
-
-        .inboxOverline {
-          color: #0f9f7a !important;
-          text-transform: uppercase !important;
-          letter-spacing: .115em !important;
-          font-size: 10.5px !important;
-          font-weight: 850 !important;
-        }
-
-        .inboxHero h1 {
-          margin: 5px 0 0 !important;
-          color: #061f1b !important;
-          font-size: 30px !important;
-          line-height: 1.05 !important;
-          font-weight: 880 !important;
-          letter-spacing: -0.055em !important;
-        }
-
-        .inboxHero p {
-          margin: 7px 0 0 !important;
-          color: #64748b !important;
-          font-size: 14px !important;
-          font-weight: 560 !important;
-        }
-
-        .heroActions {
-          display: inline-flex !important;
-          align-items: center !important;
-          justify-content: flex-end !important;
-          gap: 9px !important;
-          flex-wrap: nowrap !important;
-        }
-
-        .liveInfo {
-          margin: 0 0 10px !important;
-          color: #64748b !important;
-          font-size: 12.5px !important;
-          font-weight: 650 !important;
-        }
-
-        /* STATUSNAVIGATION: verbindet oberen und unteren Bereich */
-        .compactStats {
-          display: flex !important;
-          flex-wrap: wrap !important;
-          gap: 8px !important;
-          margin: 0 0 16px !important;
-          padding: 10px !important;
-          background: #ffffff !important;
-          border: 1px solid #dbe7e2 !important;
-          border-radius: 18px !important;
-          box-shadow: 0 10px 24px rgba(15, 23, 42, .035) !important;
-        }
-
-        .statCard {
-          height: 36px !important;
-          min-height: 36px !important;
-          border-radius: 999px !important;
-          padding: 0 10px 0 13px !important;
-          background: #f8fafc !important;
-          border: 1px solid #dbe7e2 !important;
-          color: #0f172a !important;
-          box-shadow: none !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          gap: 8px !important;
-          text-decoration: none !important;
-        }
-
-        .statCard.active {
-          background: #0f9f7a !important;
-          border-color: #0f9f7a !important;
-          color: #ffffff !important;
-        }
-
-        .statCard span {
-          font-size: 12.5px !important;
-          font-weight: 820 !important;
-        }
-
-        .statCard strong {
-          order: 2 !important;
-          min-width: 22px !important;
-          height: 22px !important;
-          padding: 0 7px !important;
-          border-radius: 999px !important;
-          background: #ffffff !important;
-          color: #0f172a !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          font-size: 11px !important;
-          font-weight: 900 !important;
-          letter-spacing: 0 !important;
-          line-height: 1 !important;
-        }
-
-        .statCard.active strong {
-          background: rgba(255,255,255,.22) !important;
-          color: #ffffff !important;
-        }
-
-        .statCard small {
-          display: none !important;
-        }
-
-        /* E-MAIL COMMAND BAR */
-        .inboxPanel {
-          background: #ffffff !important;
-          border: 1px solid #dbe7e2 !important;
-          border-radius: 20px !important;
-          padding: 16px !important;
-          box-shadow: 0 12px 28px rgba(15, 23, 42, .045) !important;
-          margin-bottom: 20px !important;
-        }
-
-        .panelTop {
-          display: grid !important;
-          grid-template-columns: minmax(240px, 1fr) minmax(520px, 660px) !important;
-          gap: 16px !important;
-          align-items: end !important;
-          margin-bottom: 14px !important;
-        }
-
-        .panelTop h2 {
-          margin: 4px 0 0 !important;
-          color: #061f1b !important;
-          font-size: 22px !important;
-          line-height: 1.08 !important;
-          font-weight: 880 !important;
-          letter-spacing: -0.05em !important;
-        }
-
-        .panelTop p {
-          margin: 6px 0 0 !important;
-          color: #64748b !important;
-          font-size: 13px !important;
-          font-weight: 560 !important;
-        }
-
-        .filterBar {
-          display: grid !important;
-          grid-template-columns: minmax(220px, 1fr) 185px auto auto !important;
-          gap: 7px !important;
-          padding: 8px !important;
-          border-radius: 15px !important;
-          border: 1px solid #dbe7e2 !important;
-          background: #f8fafc !important;
-          box-shadow: none !important;
-        }
-
-        .filterBar label {
-          display: grid !important;
-          gap: 4px !important;
-          color: #64748b !important;
-          font-size: 9.5px !important;
-          font-weight: 850 !important;
-          letter-spacing: .075em !important;
-          text-transform: uppercase !important;
-        }
-
-        .filterBar input,
-        .filterBar select {
-          height: 35px !important;
-          min-height: 35px !important;
-          border-radius: 10px !important;
-          border: 1px solid #d6e1ea !important;
-          background: #ffffff !important;
-          color: #0f172a !important;
-          font-size: 13px !important;
-          font-weight: 560 !important;
-        }
-
-        .bucketNav {
-          display: flex !important;
-          flex-wrap: wrap !important;
-          gap: 7px !important;
-          margin: 0 !important;
-        }
-
-        .bucket {
-          height: 34px !important;
-          min-height: 34px !important;
-          border-radius: 999px !important;
-          padding: 0 8px 0 12px !important;
-          border: 1px solid #dbe7e2 !important;
-          background: #ffffff !important;
-          color: #0f172a !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          gap: 8px !important;
-          text-decoration: none !important;
-          box-shadow: none !important;
-        }
-
-        .bucket.active {
-          background: #0f9f7a !important;
-          border-color: #0f9f7a !important;
-          color: #ffffff !important;
-        }
-
-        .bucket strong {
-          font-size: 12.5px !important;
-          font-weight: 840 !important;
-          white-space: nowrap !important;
-        }
-
-        .bucket small {
-          display: none !important;
-        }
-
-        .bucket b {
-          position: static !important;
-          min-width: 20px !important;
-          height: 20px !important;
-          border-radius: 999px !important;
-          padding: 0 6px !important;
-          background: #f1f5f9 !important;
-          color: #0f172a !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          font-size: 10.5px !important;
-          font-weight: 900 !important;
-        }
-
-        .bucket.active b {
-          background: rgba(255,255,255,.22) !important;
-          color: #ffffff !important;
-        }
-
-        .emptyState {
-          margin-top: 12px !important;
-          padding: 11px 13px !important;
-          border-radius: 13px !important;
-          border: 1px dashed #cbd5e1 !important;
-          background: #f8fafc !important;
-          color: #64748b !important;
-          font-size: 13px !important;
-          font-weight: 650 !important;
-        }
-
-        /* UNTEN: Navigation und Liste wirken zusammen */
-        .orderReviewPanel {
-          background: transparent !important;
-          border: 0 !important;
-          padding: 0 !important;
-          margin: 0 !important;
-          box-shadow: none !important;
-        }
-
-        .orderReviewHeader {
-          display: flex !important;
-          justify-content: space-between !important;
-          align-items: flex-end !important;
-          gap: 18px !important;
-          margin-bottom: 12px !important;
-          padding: 0 0 14px !important;
-          border-bottom: 1px solid #cfded9 !important;
-        }
-
-        .orderReviewHeader h2 {
-          margin: 4px 0 0 !important;
-          color: #061f1b !important;
-          font-size: 27px !important;
-          line-height: 1.04 !important;
-          font-weight: 900 !important;
-          letter-spacing: -0.06em !important;
-        }
-
-        .orderReviewHeader p {
-          margin: 6px 0 0 !important;
-          color: #64748b !important;
-          font-size: 13.5px !important;
-          font-weight: 600 !important;
-        }
-
-        .orderReviewSummary {
-          background: transparent !important;
-          border: 0 !important;
-          box-shadow: none !important;
-          padding: 0 !important;
-          text-align: right !important;
-          min-width: 0 !important;
-        }
-
-        .orderReviewSummary strong {
-          color: #061f1b !important;
-          font-size: 23px !important;
-          font-weight: 900 !important;
-          line-height: 1 !important;
-        }
-
-        .orderReviewSummary span {
-          display: inline !important;
-          margin-left: 7px !important;
-          color: #64748b !important;
-          font-size: 13px !important;
-          font-weight: 720 !important;
-        }
-
-        .ordersTable {
-          display: none !important;
-        }
-
-        .orderCards {
-          display: grid !important;
-          gap: 8px !important;
-        }
-
-        .orderCard {
-          position: relative !important;
-          background: #ffffff !important;
-          border: 1px solid #dbe7e2 !important;
-          border-radius: 18px !important;
-          padding: 14px 16px 14px 18px !important;
-          box-shadow: 0 10px 24px rgba(15, 23, 42, .04) !important;
-          overflow: hidden !important;
-        }
-
-        .orderCard::before {
-          content: "" !important;
-          position: absolute !important;
-          left: 0 !important;
-          top: 0 !important;
-          bottom: 0 !important;
-          width: 5px !important;
-          background: #0f9f7a !important;
-        }
-
-        .orderCardTop {
-          display: grid !important;
-          grid-template-columns: minmax(240px, 1fr) auto !important;
-          gap: 16px !important;
-          align-items: start !important;
-          margin-bottom: 10px !important;
-        }
-
-        .orderCardNumber {
-          color: #64748b !important;
-          font-size: 10.5px !important;
-          font-weight: 900 !important;
-          letter-spacing: .08em !important;
-          text-transform: uppercase !important;
-          margin-bottom: 5px !important;
-        }
-
-        .orderCardIdentity h3 {
-          margin: 0 !important;
-          color: #061f1b !important;
-          font-size: 22px !important;
-          line-height: 1.08 !important;
-          font-weight: 900 !important;
-          letter-spacing: -0.055em !important;
-        }
-
-        .orderCardContact {
-          margin-top: 5px !important;
-          color: #64748b !important;
-          font-size: 13px !important;
-          font-weight: 650 !important;
-        }
-
-        .orderCardDate {
-          min-width: 132px !important;
-          padding: 8px 11px !important;
-          border: 1px solid #dbe7e2 !important;
-          border-radius: 14px !important;
-          background: #f8fafc !important;
-          text-align: right !important;
-        }
-
-        .orderCardDate strong {
-          display: block !important;
-          color: #061f1b !important;
-          font-size: 13px !important;
-          font-weight: 900 !important;
-          white-space: nowrap !important;
-        }
-
-        .orderCardDate span {
-          display: block !important;
-          margin-top: 3px !important;
-          color: #64748b !important;
-          font-size: 12px !important;
-          font-weight: 720 !important;
-        }
-
-        .orderCardBody {
-          display: grid !important;
-          grid-template-columns: minmax(0, 1fr) 250px !important;
-          gap: 16px !important;
-          align-items: start !important;
-        }
-
-        .orderCardLabel {
-          color: #047857 !important;
-          font-size: 10.5px !important;
-          font-weight: 900 !important;
-          letter-spacing: .08em !important;
-          text-transform: uppercase !important;
-          margin-bottom: 7px !important;
-        }
-
-        .orderCardItems ul {
-          margin: 0 !important;
-          padding: 0 !important;
-          list-style: none !important;
-          display: grid !important;
-          gap: 5px !important;
-        }
-
-        .orderCardItems li {
-          display: flex !important;
-          gap: 8px !important;
-          align-items: baseline !important;
-          color: #1e293b !important;
-          font-size: 13px !important;
-          line-height: 1.32 !important;
-          font-weight: 560 !important;
-        }
-
-        .orderCardItems li strong {
-          min-width: 30px !important;
-          color: #047857 !important;
-          font-weight: 900 !important;
-        }
-
-        .orderCardMore {
-          margin-top: 7px !important;
-          color: #64748b !important;
-          font-size: 12.5px !important;
-          font-weight: 720 !important;
-        }
-
-        .orderCardSide {
-          display: grid !important;
-          gap: 8px !important;
-        }
-
-        .orderCardPrice {
-          padding: 10px 12px !important;
-          border: 1px solid #fed7aa !important;
-          border-radius: 15px !important;
-          background: #fff7ed !important;
-        }
-
-        .orderCardPrice strong {
-          display: block !important;
-          color: #061f1b !important;
-          font-size: 22px !important;
-          line-height: 1 !important;
-          font-weight: 900 !important;
-          letter-spacing: -0.055em !important;
-        }
-
-        .orderCardPrice span,
-        .orderCardPrice small {
-          display: block !important;
-          margin-top: 5px !important;
-          color: #9a3412 !important;
-          font-size: 10px !important;
-          font-weight: 850 !important;
-          text-transform: uppercase !important;
-          letter-spacing: .07em !important;
-        }
-
-        .orderCardBadges {
-          display: flex !important;
-          flex-wrap: wrap !important;
-          gap: 6px !important;
-        }
-
-        .statusBadge,
-        .sourceBadge {
-          display: inline-flex !important;
-          align-items: center !important;
-          min-height: 26px !important;
-          padding: 0 9px !important;
-          border-radius: 999px !important;
-          font-size: 11.5px !important;
-          font-weight: 850 !important;
-        }
-
-        .sourceBadge {
-          background: #ffffff !important;
-          color: #475569 !important;
-          border: 1px solid #dbe7e2 !important;
-        }
-
-        .orderCardActions {
-          display: flex !important;
-          justify-content: flex-end !important;
-          gap: 8px !important;
-          margin-top: 12px !important;
-          padding-top: 12px !important;
-          border-top: 1px solid #edf2f7 !important;
-        }
-
-        .primaryBtn,
-        .secondaryBtn,
-        .dangerBtn,
-        .statusPill,
-        .btnPrimary,
-        .btnDanger {
-          min-height: 35px !important;
-          border-radius: 11px !important;
-          padding: 0 13px !important;
-          font-size: 12.5px !important;
-          font-weight: 850 !important;
-          border: 1px solid transparent !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          box-shadow: none !important;
-          text-decoration: none !important;
-          cursor: pointer !important;
-          white-space: nowrap !important;
-        }
-
-        .primaryBtn,
-        .btnPrimary {
-          background: #0f9f7a !important;
-          border-color: #0f9f7a !important;
-          color: #ffffff !important;
-        }
-
-        .secondaryBtn,
-        .statusPill {
-          background: #ffffff !important;
-          border-color: #d6e1ea !important;
-          color: #0f172a !important;
-        }
-
-        .dangerBtn,
-        .btnDanger {
-          background: #fff7f7 !important;
-          border-color: #fecaca !important;
-          color: #b91c1c !important;
-        }
-
-        @media (max-width: 1000px) {
-          .inboxHero,
-          .panelTop,
-          .filterBar,
-          .orderCardTop,
-          .orderCardBody {
-            grid-template-columns: 1fr !important;
-            display: grid !important;
-          }
-
-          .heroActions {
-            justify-content: flex-start !important;
-          }
-
-          .orderCardDate {
-            text-align: left !important;
-          }
-        }
-      `}</style></AppLayout>
+</AppLayout>
   );
 }
+
 
 
 
