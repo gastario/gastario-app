@@ -1551,10 +1551,171 @@ export default function AuftragseingangPage() {
             text-align: left;
           }
         }
-      `}</style>
+      
+        /* gastario-email-panel-polish-20260708 */
+
+        .simpleMailBox {
+          padding: 0 !important;
+          overflow: hidden !important;
+          border-radius: 18px !important;
+          border: 1px solid #dbe7e2 !important;
+          background: #ffffff !important;
+          box-shadow: 0 10px 26px rgba(15, 23, 42, .045) !important;
+        }
+
+        .simpleSectionHead {
+          display: grid !important;
+          grid-template-columns: minmax(260px, 1fr) minmax(520px, 640px) !important;
+          gap: 18px !important;
+          align-items: start !important;
+          padding: 18px 18px 14px !important;
+          margin: 0 !important;
+          border-bottom: 1px solid #edf3f1 !important;
+          background: linear-gradient(180deg, #ffffff 0%, #fbfdfc 100%) !important;
+        }
+
+        .simpleSectionHead h2 {
+          margin: 4px 0 0 !important;
+          font-size: 25px !important;
+          line-height: 1.1 !important;
+          font-weight: 900 !important;
+          letter-spacing: -.7px !important;
+          color: #061f1b !important;
+        }
+
+        .simpleSectionHead p {
+          margin: 5px 0 0 !important;
+          color: #64748b !important;
+          font-size: 13px !important;
+          font-weight: 650 !important;
+        }
+
+        .simpleFilter {
+          display: grid !important;
+          grid-template-columns: minmax(180px, 1fr) 160px auto auto !important;
+          gap: 8px !important;
+          padding: 8px !important;
+          border-radius: 14px !important;
+          border: 1px solid #dbe7e2 !important;
+          background: #f8fbfa !important;
+        }
+
+        .simpleFilter input,
+        .simpleFilter select {
+          height: 38px !important;
+          border-radius: 10px !important;
+          border: 1px solid #d6e5df !important;
+          background: #ffffff !important;
+          font-size: 13px !important;
+          font-weight: 700 !important;
+        }
+
+        .simpleFilter button,
+        .simpleFilter a {
+          min-height: 38px !important;
+          border-radius: 10px !important;
+          font-size: 13px !important;
+          font-weight: 850 !important;
+          box-shadow: none !important;
+        }
+
+        .simpleMailTabs {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          gap: 8px !important;
+          padding: 14px 18px 12px !important;
+          margin: 0 !important;
+          border-bottom: 1px solid #edf3f1 !important;
+        }
+
+        .simpleMailTab {
+          min-height: 35px !important;
+          padding: 0 12px !important;
+          border-radius: 999px !important;
+          border: 1px solid #dbe7e2 !important;
+          background: #ffffff !important;
+          color: #172033 !important;
+          font-size: 13px !important;
+          font-weight: 850 !important;
+          box-shadow: none !important;
+        }
+
+        .simpleMailTab strong {
+          min-width: 23px !important;
+          height: 23px !important;
+          padding: 0 7px !important;
+          border-radius: 999px !important;
+          background: #eef6f4 !important;
+          color: #0f766e !important;
+          font-size: 12px !important;
+          font-weight: 900 !important;
+        }
+
+        .simpleMailTab.active {
+          background: #10a37f !important;
+          border-color: #10a37f !important;
+          color: #ffffff !important;
+        }
+
+        .simpleMailTab.active strong {
+          background: rgba(255,255,255,.22) !important;
+          color: #ffffff !important;
+        }
+
+        .simpleEmpty {
+          margin: 14px 18px 18px !important;
+          padding: 16px 18px !important;
+          border-radius: 14px !important;
+          border: 1px dashed #c9ded7 !important;
+          background: #fbfdfc !important;
+          color: #64748b !important;
+          font-size: 14px !important;
+          font-weight: 800 !important;
+        }
+
+        .simpleMailList {
+          display: grid !important;
+          gap: 8px !important;
+          padding: 14px 18px 18px !important;
+        }
+
+        .simpleMailRow {
+          display: grid !important;
+          grid-template-columns: minmax(0, 1fr) auto !important;
+          gap: 12px !important;
+          align-items: center !important;
+          padding: 12px 14px !important;
+          border: 1px solid #e2ebe7 !important;
+          border-radius: 14px !important;
+          background: #ffffff !important;
+          box-shadow: none !important;
+        }
+
+        .simpleMailRow strong {
+          color: #0f172a !important;
+          font-size: 14px !important;
+          font-weight: 850 !important;
+        }
+
+        .simpleMailRow span {
+          display: block !important;
+          margin-top: 3px !important;
+          color: #64748b !important;
+          font-size: 12px !important;
+          font-weight: 700 !important;
+        }
+
+        @media (max-width: 1000px) {
+          .simpleSectionHead,
+          .simpleFilter {
+            grid-template-columns: 1fr !important;
+          }
+        }
+`}</style>
 </AppLayout>
   );
 }
+
 
 
 
