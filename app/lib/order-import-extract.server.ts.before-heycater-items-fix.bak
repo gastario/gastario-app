@@ -348,9 +348,7 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
         return;
       }
 
-      const hasPrice = totalCents > 0 || unitCents > 0;
-
-      if (!hasPrice && isInvalidImportedItem(name, description, rowLines.join(" | "))) {
+      if (isInvalidImportedItem(name, description, rowLines.join(" | "))) {
         return;
       }
 
@@ -698,4 +696,3 @@ export function extractUniversalOrder(text: string): ExtractedOrder {
 
   return genericOrder;
 }
-
