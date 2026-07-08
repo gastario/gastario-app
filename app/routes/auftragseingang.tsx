@@ -1870,10 +1870,288 @@ export default function AuftragseingangPage() {
             flex-direction: column;
           }
         }
-      `}</style>
+      
+        /* gastario-simple-ops-final-20260708 */
+
+        .inboxPage {
+          max-width: 1220px !important;
+          padding: 0 24px 44px !important;
+        }
+
+        .inboxHero {
+          min-height: auto !important;
+          padding: 18px 22px !important;
+          margin-bottom: 12px !important;
+          border-radius: 18px !important;
+          border: 1px solid #dbe7e2 !important;
+          background: #ffffff !important;
+          box-shadow: 0 10px 28px rgba(15, 23, 42, .045) !important;
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          gap: 16px !important;
+        }
+
+        .inboxHero::before,
+        .inboxHero::after {
+          display: none !important;
+        }
+
+        .inboxHero h1 {
+          margin: 0 !important;
+          font-size: 28px !important;
+          line-height: 1.1 !important;
+          letter-spacing: -1px !important;
+          font-weight: 900 !important;
+          color: #071f1b !important;
+        }
+
+        .inboxHero p {
+          margin: 5px 0 0 !important;
+          font-size: 14px !important;
+          color: #64748b !important;
+          font-weight: 650 !important;
+        }
+
+        .inboxOverline {
+          font-size: 11px !important;
+          letter-spacing: .12em !important;
+          color: #0f9f7a !important;
+          font-weight: 900 !important;
+          text-transform: uppercase !important;
+        }
+
+        .heroActions {
+          display: flex !important;
+          gap: 8px !important;
+        }
+
+        .heroActions button {
+          min-height: 38px !important;
+          padding: 0 14px !important;
+          border-radius: 11px !important;
+          font-size: 13px !important;
+          font-weight: 850 !important;
+          box-shadow: none !important;
+        }
+
+        .liveInfo {
+          margin: 0 0 10px !important;
+          padding-left: 2px !important;
+          font-size: 12.5px !important;
+          color: #64748b !important;
+          font-weight: 700 !important;
+        }
+
+        .compactStats {
+          display: flex !important;
+          gap: 8px !important;
+          margin: 0 0 14px !important;
+        }
+
+        .statCard {
+          flex: 1 !important;
+          min-height: 58px !important;
+          padding: 10px 13px !important;
+          border-radius: 14px !important;
+          border: 1px solid #dbe7e2 !important;
+          background: #ffffff !important;
+          box-shadow: 0 8px 20px rgba(15, 23, 42, .035) !important;
+        }
+
+        .statCard.active {
+          background: #10a37f !important;
+          border-color: #10a37f !important;
+          box-shadow: none !important;
+        }
+
+        .statCard span {
+          font-size: 12px !important;
+          font-weight: 850 !important;
+        }
+
+        .statCard strong {
+          font-size: 21px !important;
+          line-height: 1 !important;
+          font-weight: 900 !important;
+        }
+
+        .statCard small {
+          font-size: 11px !important;
+          font-weight: 700 !important;
+        }
+
+        .inboxPanel {
+          padding: 18px !important;
+          margin-bottom: 24px !important;
+          border-radius: 18px !important;
+          border: 1px solid #dbe7e2 !important;
+          background: #ffffff !important;
+          box-shadow: 0 10px 28px rgba(15, 23, 42, .045) !important;
+        }
+
+        .panelTop {
+          display: grid !important;
+          grid-template-columns: 1fr minmax(520px, 620px) !important;
+          gap: 16px !important;
+          align-items: start !important;
+          margin-bottom: 14px !important;
+        }
+
+        .panelTop h2 {
+          margin: 0 !important;
+          font-size: 24px !important;
+          line-height: 1.1 !important;
+          font-weight: 900 !important;
+          letter-spacing: -.7px !important;
+        }
+
+        .panelTop p {
+          margin: 5px 0 0 !important;
+          font-size: 13px !important;
+          color: #64748b !important;
+          font-weight: 650 !important;
+        }
+
+        .filterBar {
+          display: grid !important;
+          grid-template-columns: 1fr 170px auto auto !important;
+          gap: 8px !important;
+          padding: 8px !important;
+          border-radius: 14px !important;
+          border: 1px solid #dbe7e2 !important;
+          background: #f8fbfa !important;
+        }
+
+        .filterBar input,
+        .filterBar select {
+          height: 38px !important;
+          border-radius: 10px !important;
+        }
+
+        .filterBar button,
+        .filterBar a {
+          min-height: 38px !important;
+          border-radius: 10px !important;
+          font-weight: 850 !important;
+        }
+
+        .bucketNav {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          gap: 8px !important;
+          margin-bottom: 12px !important;
+        }
+
+        .bucket {
+          min-height: 36px !important;
+          padding: 0 12px !important;
+          border-radius: 999px !important;
+          font-size: 13px !important;
+          box-shadow: none !important;
+        }
+
+        .bucket small {
+          display: none !important;
+        }
+
+        .orderReviewPanel {
+          background: transparent !important;
+          border: 0 !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          box-shadow: none !important;
+        }
+
+        .orderReviewHeader {
+          margin-bottom: 12px !important;
+          padding-bottom: 10px !important;
+          border-bottom: 1px solid #dbe7e2 !important;
+        }
+
+        .orderReviewHeader h2 {
+          margin: 0 !important;
+          font-size: 27px !important;
+          line-height: 1.1 !important;
+          font-weight: 900 !important;
+          letter-spacing: -.8px !important;
+        }
+
+        .orderReviewHeader p {
+          margin-top: 5px !important;
+          font-size: 13px !important;
+          color: #64748b !important;
+          font-weight: 650 !important;
+        }
+
+        .orderCard {
+          padding: 18px !important;
+          border-radius: 18px !important;
+          border: 1px solid #dbe7e2 !important;
+          background: #ffffff !important;
+          box-shadow: 0 10px 28px rgba(15, 23, 42, .045) !important;
+        }
+
+        .orderCard h3 {
+          font-size: 21px !important;
+          font-weight: 900 !important;
+          letter-spacing: -.5px !important;
+        }
+
+        .orderCardBody {
+          grid-template-columns: minmax(0, 1fr) 220px !important;
+          gap: 16px !important;
+        }
+
+        .orderCardPrice {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 5px !important;
+          padding: 14px !important;
+          border-radius: 15px !important;
+          border: 1px solid #fed7aa !important;
+          background: #fff7ed !important;
+          min-width: 210px !important;
+        }
+
+        .orderCardPrice strong {
+          display: block !important;
+          font-size: 25px !important;
+          line-height: 1 !important;
+          font-weight: 900 !important;
+          color: #071f1b !important;
+          white-space: nowrap !important;
+        }
+
+        .orderCardPrice span,
+        .orderCardPrice small {
+          display: block !important;
+          font-size: 11px !important;
+          line-height: 1.25 !important;
+          font-weight: 850 !important;
+          color: #b45309 !important;
+          text-transform: uppercase !important;
+        }
+
+        @media (max-width: 1000px) {
+          .inboxHero,
+          .panelTop,
+          .filterBar,
+          .orderCardBody {
+            grid-template-columns: 1fr !important;
+            display: grid !important;
+          }
+
+          .compactStats {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+        }
+`}</style>
 </AppLayout>
   );
 }
+
 
 
 
