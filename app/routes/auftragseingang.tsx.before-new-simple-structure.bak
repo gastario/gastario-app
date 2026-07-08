@@ -827,17 +827,17 @@ export default function AuftragseingangPage() {
   return (
     <AppLayout>
       <div className="inboxPage">
-        <section className="simpleTopbar">
+        <header className="inboxHero">
           <div>
-            <div className="simpleEyebrow">Auftragseingang</div>
-            <h1>Prüfen & übernehmen</h1>
-            <p>E-Mails abrufen, Aufträge kontrollieren und sauber in die Produktion übernehmen.</p>
+            <div className="inboxOverline">Arbeitsbereich</div>
+            <h1>Auftragseingang</h1>
+            <p>E-Mails abrufen, Anfragen vorbereiten, Aufträge prüfen und Lieferscheine trennen.</p>
           </div>
 
-          <div className="simpleTopActions">
+          <div className="heroActions">
             <button
               type="button"
-              className={liveEnabled ? "simpleGhost active" : "simpleGhost"}
+              className={liveEnabled ? "statusPill isLive" : "statusPill"}
               onClick={() => setLiveEnabled((value) => !value)}
               title={lastAutoImportAt ? "Letzter Auto-Abruf: " + lastAutoImportAt : "Automatischer Abruf"}
             >
@@ -846,18 +846,23 @@ export default function AuftragseingangPage() {
 
             <button
               type="button"
-              className="simplePrimary"
+              className="primaryBtn"
               onClick={runEmailImportAndReload}
               disabled={isImportingNow}
             >
-              {isImportingNow ? "Abruf läuft..." : "E-Mails abrufen"}
+              {isImportingNow ? "Abrufen..." : "E-Mails abrufen"}
             </button>
           </div>
-        </section>
+        </header>
 
-        <nav className="simpleStatusTabs" aria-label="Auftragsstatus">
+        <div className="liveInfo">
+          {liveEnabled ? "Live-Abruf aktiv: neue E-Mails werden automatisch geprüft." : "Live-Abruf ist aus."}
+          {lastAutoImportAt ? <span>Letzter Abruf: {lastAutoImportAt}</span> : null}
+        </div>
+
+        <section className="compactStats">
           {[
-            ["Alle", currentOrderStats.all, ""],
+            ["Alle Aufträge", currentOrderStats.all, ""],
             ["Zu prüfen", currentOrderStats.review, "AUTO_CREATED"],
             ["Übernommen", currentOrderStats.confirmed, "CONFIRMED"],
             ["Abgelehnt", currentOrderStats.rejected, "REJECTED"],
@@ -874,52 +879,66 @@ export default function AuftragseingangPage() {
             const href = "/auftragseingang" + (params.toString() ? "?" + params.toString() : "");
 
             return (
-              <a key={String(label)} href={href} className={active ? "simpleStatusTab active" : "simpleStatusTab"}>
+              <a key={String(label)} href={href} className={active ? "statCard active" : "statCard"}>
                 <span>{label}</span>
                 <strong>{count}</strong>
+                <small>
+                  {status === "AUTO_CREATED"
+                    ? "aktuell offen"
+                    : status === "CONFIRMED"
+                      ? "bevorstehend"
+                      : status === "REJECTED"
+                        ? "nicht übernommen"
+                        : "aktuell / kommend"}
+                </small>
               </a>
             );
           })}
-        </nav>
+        </section>
 
         {actionData?.error ? (
-          <div className="simpleAlert error">{actionData.error}</div>
+          <div className="alertBox error">{actionData.error}</div>
         ) : null}
 
         {actionData?.success ? (
-          <div className="simpleAlert success">{actionData.success}</div>
+          <div className="alertBox success">{actionData.success}</div>
         ) : null}
 
-        <section className="simpleMailBox">
-          <div className="simpleSectionHead">
+        <section className="inboxPanel">
+          <div className="panelTop">
             <div>
-              <div className="simpleEyebrow">E-Mail Eingang</div>
+              <div className="inboxOverline">E-Mail Eingang</div>
               <h2>{emailCategoryLabel(data.selectedEmailCategory)}</h2>
               <p>{currentBucket.help}</p>
             </div>
 
-            <Form method="get" className="simpleFilter">
+            <Form method="get" className="filterBar">
               <input type="hidden" name="emailCategory" value={data.selectedEmailCategory} />
-              {data.activeStatus ? <input type="hidden" name="status" value={data.activeStatus} /> : null}
 
-              <input
-                name="q"
-                defaultValue={data.searchQuery || ""}
-                placeholder="Betreff, Absender, Kunde"
-              />
+              <label>
+                Suche
+                <input
+                  name="q"
+                  defaultValue={data.searchQuery || ""}
+                  placeholder="Betreff, Absender, Kunde"
+                />
+              </label>
 
-              <select name="dateRange" defaultValue={data.dateRange || "last7"}>
-                <option value="last7">Letzte 7 Tage</option>
-                <option value="today">Heute</option>
-                <option value="yesterday">Gestern</option>
-              </select>
+              <label>
+                Postfach-Zeitraum
+                <select name="dateRange" defaultValue={data.dateRange || "last7"}>
+                  <option value="last7">Letzte 7 Tage</option>
+                  <option value="today">Heute</option>
+                  <option value="yesterday">Gestern</option>
+                </select>
+              </label>
 
-              <button type="submit">Filtern</button>
-              <a href={emailResetHref}>Zurücksetzen</a>
+              <button type="submit" className="primaryBtn small">Filtern</button>
+              <a href={emailResetHref} className="secondaryBtn small">Zurücksetzen</a>
             </Form>
           </div>
 
-          <div className="simpleMailTabs">
+          <div className="bucketNav">
             {EMAIL_BUCKETS.map((bucket) => {
               const count = data.emailBuckets[bucket.key as keyof typeof data.emailBuckets] ?? 0;
               const params = new URLSearchParams();
@@ -936,40 +955,75 @@ export default function AuftragseingangPage() {
                 <a
                   key={bucket.key}
                   href={"/auftragseingang?" + params.toString()}
-                  className={active ? "simpleMailTab active" : "simpleMailTab"}
+                  className={active ? "bucket active" : "bucket"}
                 >
-                  <span>{bucket.label}</span>
-                  <strong>{count}</strong>
+                  <span>
+                    <strong>{bucket.label}</strong>
+                    <small>{bucket.help}</small>
+                  </span>
+                  <b>{count}</b>
                 </a>
               );
             })}
           </div>
 
           {data.emailInbox.length === 0 ? (
-            <div className="simpleEmpty">Keine ungeprüften E-Mails in dieser Kategorie.</div>
+            <div className="emptyState">Keine ungeprüften E-Mails in dieser Kategorie.</div>
           ) : (
-            <div className="simpleMailList">
+            <div className="ordersTable emailTable">
+              <div className="ordersHead">
+                <span>Betreff</span>
+                <span>Absender</span>
+                <span>Eingang</span>
+                <span>Typ</span>
+                <span></span>
+                <span>Status</span>
+                <span>Aktion</span>
+              </div>
+
               {sortedEmails.map((mail: any) => {
                 const category = classifyIncomingEmail(mail);
                 const receivedDate = new Date(mail.receivedAt || mail.createdAt);
                 const isInquiry = category === "inquiries";
 
                 return (
-                  <div className="simpleMailRow" key={mail.id}>
+                  <div className="ordersRow emailRow" key={mail.id}>
                     <div>
                       <strong>{mail.subject || "Ohne Betreff"}</strong>
-                      <span>{mail.sender || "-"} · {receivedDate.toLocaleDateString("de-DE")}</span>
+                      <small>{emailCategoryLabel(category)}</small>
                     </div>
 
-                    <div className="simpleRowActions">
-                      <a href={(isInquiry ? "/angebot-vorbereiten/" : "/email-pruefung/") + mail.id}>
+                    <div>
+                      <strong>{mail.sender || "-"}</strong>
+                      <small>{mail.account?.email || mail.accountEmail || "-"}</small>
+                    </div>
+
+                    <div>
+                      <strong>{receivedDate.toLocaleDateString("de-DE")}</strong>
+                      <small>{receivedDate.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}</small>
+                    </div>
+
+                    <div>
+                      <strong>{isInquiry ? "Anfrage" : "E-Mail"}</strong>
+                      <small>{mail.attachments?.length || 0} Anhänge</small>
+                    </div>
+
+                    <strong>-</strong>
+
+                    <span className="statusBadge">{mail.status === "IGNORED" ? "Ausgeblendet" : "Ungeprüft"}</span>
+
+                    <div className="orderActions">
+                      <a
+                        href={(isInquiry ? "/angebot-vorbereiten/" : "/email-pruefung/") + mail.id}
+                        className="primaryBtn small"
+                      >
                         {isInquiry ? "Angebot" : "Prüfen"}
                       </a>
 
                       <Form method="post">
                         <input type="hidden" name="intent" value="deleteIncomingEmail" />
                         <input type="hidden" name="emailId" value={mail.id} />
-                        <button type="submit">Löschen</button>
+                        <button type="submit" className="dangerBtn small">Löschen</button>
                       </Form>
                     </div>
                   </div>
@@ -978,80 +1032,99 @@ export default function AuftragseingangPage() {
             </div>
           )}
         </section>
-
-        <section className="simpleOrders">
-          <div className="simpleOrdersHead">
+        <section className="ordersPanel orderReviewPanel">
+          <div className="orderReviewHeader">
             <div>
-              <div className="simpleEyebrow">Aufträge</div>
-              <h2>Zu prüfen</h2>
-              <p>Nur Aufträge, die noch kontrolliert und übernommen werden müssen.</p>
+              <div className="inboxOverline">Aufträge</div>
+              <h2>Zu prüfende Aufträge</h2>
+              <p>Automatisch erkannte Aufträge werden hier zuerst geprüft, bevor sie endgültig übernommen werden.</p>
             </div>
 
-            <div className="simpleOrderCount">
+            <div className="orderReviewSummary">
               <strong>{visibleOrders.length}</strong>
-              <span>offen</span>
+              <span>offene Prüfaufträge</span>
             </div>
           </div>
 
           {visibleOrders.length === 0 ? (
-            <div className="simpleEmpty">Keine ungeprüften aktuellen Aufträge.</div>
+            <div className="ordersEmpty">Keine ungeprüften aktuellen Aufträge. Übernommene Aufträge findest du unter „Bevorstehende Aufträge“, vergangene unter „Vergangene Aufträge“.</div>
           ) : (
-            <div className="simpleOrderList">
+            <div className="orderCards">
               {visibleOrders.map((order: any) => {
                 const items = Array.isArray(order.items) ? order.items : [];
                 const totalInfo = getDisplayedOrderTotal(order);
-                const previewItems = items.slice(0, 4);
+                const previewItems = items.slice(0, 3);
 
                 return (
-                  <article className="simpleOrderCard" key={order.id}>
-                    <div className="simpleOrderMain">
-                      <div className="simpleOrderMeta">{order.orderNumber}</div>
-                      <h3>{order.customerName || order.customer?.name || "Kunde unbekannt"}</h3>
-                      <p>{order.contactName || "Keine Kontaktperson erkannt"}</p>
-
-                      <div className="simpleItems">
-                        {previewItems.map((item: any) => (
-                          <div key={item.id || item.name}>
-                            <strong>{item.quantity || 1}x</strong>
-                            <span>{item.name || "Position"}</span>
-                          </div>
-                        ))}
-
-                        {items.length > previewItems.length ? (
-                          <small>+ {items.length - previewItems.length} weitere Positionen</small>
-                        ) : null}
+                  <article className="orderCard" key={order.id}>
+                    <div className="orderCardTop">
+                      <div className="orderCardIdentity">
+                        <div className="orderCardNumber">{order.orderNumber}</div>
+                        <h3>{order.customerName || order.customer?.name || "Kunde unbekannt"}</h3>
+                        <div className="orderCardContact">
+                          {order.contactName || "Keine Kontaktperson erkannt"}
+                        </div>
                       </div>
-                    </div>
 
-                    <aside className="simpleOrderSide">
-                      <div className="simpleDateBox">
+                      <div className="orderCardDate">
                         <strong>{formatDate(order.deliveryDate)}</strong>
                         <span>{order.deliveryTimeText || "Uhrzeit offen"}</span>
                       </div>
+                    </div>
 
-                      <div className="simplePriceBox">
-                        <strong>{formatImportCurrencyFromCents(totalInfo.cents)}</strong>
-                        <span>{totalInfo.source}</span>
-                        {totalInfo.source === "vorläufig" ? (
-                          <small>bitte prüfen</small>
+                    <div className="orderCardBody">
+                      <div className="orderCardItems">
+                        <div className="orderCardLabel">Positionen</div>
+
+                        {previewItems.length > 0 ? (
+                          <ul>
+                            {previewItems.map((item: any, index: number) => (
+                              <li key={index}>
+                                <strong>{Number(item.quantity || 1)}x</strong>
+                                <span>{item.name || "Position"}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <div className="orderCardEmpty">Keine Positionen erkannt</div>
+                        )}
+
+                        {items.length > 3 ? (
+                          <div className="orderCardMore">+ {items.length - 3} weitere Positionen</div>
                         ) : null}
                       </div>
 
-                      <div className="simpleBadges">
-                        <span>{statusLabel(order.status)}</span>
-                        <span>{sourceLabel(order.source)}</span>
-                      </div>
+                      <div className="orderCardSide">
+                        <div className="orderCardPrice">
+                          <strong>{formatImportCurrencyFromCents(totalInfo.cents)}</strong>
+                          <span>{totalInfo.source}</span>
+                          {totalInfo.source === "vorläufig" ? (
+                            <small>aus erkannten Positionen berechnet — bitte prüfen</small>
+                          ) : null}
 
-                      <div className="simpleOrderActions">
-                        <a href={"/auftrag-pruefung/" + order.id}>Prüfen</a>
+                          {totalInfo.source === "Dokumentsumme" && totalInfo.positionsCents > 0 ? (
+                            <small>Positionen: {formatImportCurrencyFromCents(totalInfo.positionsCents)}</small>
+                          ) : null}
+                        </div>
 
-                        <Form method="post">
-                          <input type="hidden" name="intent" value="deleteOrder" />
-                          <input type="hidden" name="orderId" value={order.id} />
-                          <button type="submit">Löschen</button>
-                        </Form>
+                        <div className="orderCardBadges">
+                          <span className="statusBadge">{statusLabel(order.status)}</span>
+                          <span className="sourceBadge">{sourceLabel(order.source)}</span>
+                        </div>
                       </div>
-                    </aside>
+                    </div>
+
+                    <div className="orderCardActions">
+                      <a href={"/auftrag-pruefung/" + order.id} className="btnPrimary">
+                        Prüfen
+                      </a>
+
+                      <Form method="post">
+                        <input type="hidden" name="intent" value="deleteOrder" />
+                        <input type="hidden" name="orderId" value={order.id} />
+                        <button type="submit" className="btnDanger">Löschen</button>
+                      </Form>
+                    </div>
                   </article>
                 );
               })}
@@ -1059,21 +1132,21 @@ export default function AuftragseingangPage() {
           )}
 
           {hiddenPastOrderCount > 0 ? (
-            <div className="simpleHint">
+            <div className="pastOrdersHint">
               {hiddenPastOrderCount} vergangene Auftrag{hiddenPastOrderCount === 1 ? "" : "e"} ausgeblendet.{" "}
               <a href="/auftraege?view=past">Vergangene Aufträge öffnen</a>
             </div>
           ) : null}
         </section>
       </div>
-
       <style>{`
-        /* gastario-simple-new-structure-20260708 */
+        /* gastario-auftragseingang-full-redesign-20260708 */
 
         .inboxPage {
-          max-width: 1180px;
+          width: 100%;
+          max-width: 1360px;
           margin: 0 auto;
-          padding: 0 22px 46px;
+          padding: 0 24px 48px;
           color: #0f172a;
         }
 
@@ -1081,25 +1154,8 @@ export default function AuftragseingangPage() {
           box-sizing: border-box;
         }
 
-        .simpleTopbar,
-        .simpleMailBox,
-        .simpleOrderCard {
-          background: #ffffff;
-          border: 1px solid #dbe7e2;
-          border-radius: 18px;
-          box-shadow: 0 10px 26px rgba(15, 23, 42, .045);
-        }
-
-        .simpleTopbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          padding: 18px 20px;
-          margin-bottom: 12px;
-        }
-
-        .simpleEyebrow {
+        .inboxOverline {
+          margin-bottom: 6px;
           color: #0f9f7a;
           font-size: 11px;
           font-weight: 900;
@@ -1107,98 +1163,310 @@ export default function AuftragseingangPage() {
           text-transform: uppercase;
         }
 
-        .simpleTopbar h1,
-        .simpleSectionHead h2,
-        .simpleOrdersHead h2 {
-          margin: 4px 0 0;
-          color: #061f1b;
-          font-weight: 900;
-          letter-spacing: -.8px;
-        }
-
-        .simpleTopbar h1 {
-          font-size: 28px;
-          line-height: 1.1;
-        }
-
-        .simpleTopbar p,
-        .simpleSectionHead p,
-        .simpleOrdersHead p {
-          margin: 5px 0 0;
-          color: #64748b;
-          font-size: 13px;
-          font-weight: 650;
-        }
-
-        .simpleTopActions {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-        }
-
-        .simplePrimary,
-        .simpleGhost,
-        .simpleFilter button,
-        .simpleFilter a,
-        .simpleRowActions a,
-        .simpleRowActions button,
-        .simpleOrderActions a,
-        .simpleOrderActions button {
-          display: inline-flex;
+        /* HERO */
+        .inboxHero {
+          position: relative;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
           align-items: center;
-          justify-content: center;
-          min-height: 38px;
-          padding: 0 13px;
-          border-radius: 10px;
+          gap: 28px;
+          padding: 30px 34px;
+          margin-bottom: 14px;
+          border: 1px solid rgba(15, 159, 122, .18);
+          border-radius: 28px;
+          background:
+            radial-gradient(circle at left top, rgba(15, 159, 122, .15), transparent 34%),
+            linear-gradient(135deg, #ffffff 0%, #f7fffb 100%);
+          box-shadow: 0 24px 60px rgba(15, 23, 42, .08);
+          overflow: hidden;
+        }
+
+        .inboxHero::before {
+          content: "";
+          position: absolute;
+          inset: 0 auto 0 0;
+          width: 7px;
+          background: linear-gradient(180deg, #10a37f, #f59e0b);
+        }
+
+        .inboxHero h1 {
+          margin: 0;
+          color: #06251f;
+          font-size: 38px;
+          line-height: 1;
+          font-weight: 950;
+          letter-spacing: -1.6px;
+        }
+
+        .inboxHero p {
+          max-width: 780px;
+          margin: 9px 0 0;
+          color: #536579;
+          font-size: 15px;
+          line-height: 1.5;
+          font-weight: 700;
+        }
+
+        .heroActions {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+
+        .heroActions button {
+          min-height: 44px;
+          padding: 0 18px;
+          border-radius: 14px;
           border: 1px solid #d6e5df;
           background: #ffffff;
           color: #0f172a;
-          font-weight: 850;
+          font-weight: 900;
+          cursor: pointer;
+          box-shadow: 0 8px 18px rgba(15, 23, 42, .06);
+        }
+
+        .heroActions button:last-child {
+          border-color: #10a37f;
+          background: #10a37f;
+          color: #ffffff;
+          box-shadow: 0 12px 26px rgba(16, 163, 127, .28);
+        }
+
+        .liveInfo {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin: 0 0 12px;
+          padding: 0 2px;
+          color: #526579;
+          font-size: 13px;
+          font-weight: 800;
+        }
+
+        .liveInfo::before {
+          content: "";
+          width: 8px;
+          height: 8px;
+          border-radius: 999px;
+          background: #10a37f;
+          box-shadow: 0 0 0 4px rgba(16, 163, 127, .12);
+        }
+
+        /* STATUS */
+        .compactStats {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 12px;
+          margin: 0 0 18px;
+        }
+
+        .statCard {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          min-height: 92px;
+          padding: 18px 18px 16px;
+          border: 1px solid #dbe7e2;
+          border-radius: 22px;
+          background: rgba(255, 255, 255, .92);
+          color: #172033;
+          text-decoration: none;
+          box-shadow: 0 16px 36px rgba(15, 23, 42, .055);
+          transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+        }
+
+        .statCard:hover {
+          transform: translateY(-1px);
+          border-color: rgba(16, 163, 127, .35);
+          box-shadow: 0 20px 42px rgba(15, 23, 42, .075);
+        }
+
+        .statCard span {
+          color: #526579;
+          font-size: 13px;
+          font-weight: 900;
+        }
+
+        .statCard strong {
+          color: #061f1b;
+          font-size: 27px;
+          line-height: 1;
+          font-weight: 950;
+          letter-spacing: -.6px;
+        }
+
+        .statCard small {
+          color: #7a8a9d;
+          font-size: 12px;
+          font-weight: 800;
+        }
+
+        .statCard.active {
+          border-color: #10a37f;
+          background:
+            radial-gradient(circle at right top, rgba(255,255,255,.22), transparent 34%),
+            linear-gradient(135deg, #10a37f 0%, #0b8769 100%);
+          color: #ffffff;
+          box-shadow: 0 18px 42px rgba(16, 163, 127, .26);
+        }
+
+        .statCard.active span,
+        .statCard.active strong,
+        .statCard.active small {
+          color: #ffffff;
+        }
+
+        /* ALERTS */
+        .alertBox {
+          margin: 0 0 14px;
+          padding: 13px 15px;
+          border-radius: 16px;
+          font-weight: 800;
+        }
+
+        .alertBox.error {
+          border: 1px solid #fecaca;
+          background: #fff1f2;
+          color: #991b1b;
+        }
+
+        .alertBox.success {
+          border: 1px solid #bbf7d0;
+          background: #f0fdf4;
+          color: #166534;
+        }
+
+        /* EMAIL WORKBENCH */
+        .inboxPanel {
+          margin-bottom: 26px;
+          padding: 24px;
+          border: 1px solid #dbe7e2;
+          border-radius: 28px;
+          background: #ffffff;
+          box-shadow: 0 24px 60px rgba(15, 23, 42, .075);
+        }
+
+        .panelTop {
+          display: grid;
+          grid-template-columns: minmax(280px, 1fr) minmax(560px, 720px);
+          align-items: start;
+          gap: 22px;
+          margin-bottom: 18px;
+        }
+
+        .panelTop h2 {
+          margin: 0;
+          color: #06251f;
+          font-size: 29px;
+          line-height: 1.05;
+          font-weight: 950;
+          letter-spacing: -1px;
+        }
+
+        .panelTop p {
+          margin: 8px 0 0;
+          color: #536579;
+          font-size: 14px;
+          line-height: 1.45;
+          font-weight: 700;
+        }
+
+        .filterBar {
+          display: grid;
+          grid-template-columns: minmax(220px, 1fr) 190px auto auto;
+          gap: 10px;
+          padding: 10px;
+          border: 1px solid #dbe7e2;
+          border-radius: 20px;
+          background: #f8fbfa;
+        }
+
+        .filterBar label {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          color: #64748b;
+          font-size: 10.5px;
+          font-weight: 950;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+
+        .filterBar input,
+        .filterBar select {
+          width: 100%;
+          height: 42px;
+          padding: 0 12px;
+          border: 1px solid #d6e5df;
+          border-radius: 13px;
+          background: #ffffff;
+          color: #0f172a;
+          font-weight: 750;
+          outline: none;
+        }
+
+        .filterBar input:focus,
+        .filterBar select:focus {
+          border-color: #10a37f;
+          box-shadow: 0 0 0 4px rgba(16, 163, 127, .11);
+        }
+
+        .filterBar button,
+        .filterBar a {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 42px;
+          padding: 0 15px;
+          border-radius: 13px;
+          border: 1px solid #d6e5df;
+          background: #ffffff;
+          color: #0f172a;
+          font-weight: 950;
           text-decoration: none;
           cursor: pointer;
         }
 
-        .simplePrimary,
-        .simpleFilter button,
-        .simpleRowActions a,
-        .simpleOrderActions a {
-          background: #10a37f;
+        .filterBar button {
           border-color: #10a37f;
+          background: #10a37f;
           color: #ffffff;
+          box-shadow: 0 10px 20px rgba(16, 163, 127, .22);
         }
 
-        .simpleGhost.active {
-          color: #08765d;
-          border-color: #b7e4d6;
-          background: #f0fdf9;
-        }
-
-        .simpleStatusTabs {
+        .bucketNav {
           display: flex;
-          gap: 8px;
-          margin: 0 0 14px;
-          overflow-x: auto;
-          padding-bottom: 2px;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-bottom: 16px;
         }
 
-        .simpleStatusTab {
+        .bucket {
           display: inline-flex;
           align-items: center;
           gap: 9px;
-          min-height: 38px;
-          padding: 0 13px;
+          min-height: 43px;
+          padding: 0 14px;
           border: 1px solid #dbe7e2;
           border-radius: 999px;
           background: #ffffff;
           color: #172033;
           text-decoration: none;
-          font-weight: 850;
-          white-space: nowrap;
+          font-weight: 950;
+          box-shadow: 0 8px 18px rgba(15, 23, 42, .045);
         }
 
-        .simpleStatusTab strong,
-        .simpleMailTab strong {
+        .bucket small {
+          display: none;
+        }
+
+        .bucket em,
+        .bucket b,
+        .bucket strong + span,
+        .bucket span:last-child {
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -1209,353 +1477,680 @@ export default function AuftragseingangPage() {
           background: #eef6f4;
           color: #0f766e;
           font-size: 12px;
-          font-weight: 900;
+          font-weight: 950;
+          font-style: normal;
         }
 
-        .simpleStatusTab.active,
-        .simpleMailTab.active {
-          background: #10a37f;
+        .bucket.active {
           border-color: #10a37f;
+          background: #10a37f;
+          color: #ffffff;
+          box-shadow: 0 12px 24px rgba(16, 163, 127, .24);
+        }
+
+        .bucket.active span:last-child {
+          background: rgba(255,255,255,.18);
           color: #ffffff;
         }
 
-        .simpleStatusTab.active strong,
-        .simpleMailTab.active strong {
-          background: rgba(255,255,255,.22);
-          color: #ffffff;
-        }
-
-        .simpleAlert {
-          margin: 0 0 12px;
-          padding: 12px 14px;
-          border-radius: 12px;
+        .emptyState,
+        .mailEmpty {
+          padding: 16px;
+          border: 1px dashed #cbded8;
+          border-radius: 18px;
+          background: #f8fbfa;
+          color: #64748b;
           font-weight: 800;
         }
 
-        .simpleAlert.error {
-          background: #fff1f2;
-          color: #991b1b;
-          border: 1px solid #fecaca;
-        }
-
-        .simpleAlert.success {
-          background: #f0fdf4;
-          color: #166534;
-          border: 1px solid #bbf7d0;
-        }
-
-        .simpleMailBox {
-          padding: 18px;
-          margin-bottom: 26px;
-        }
-
-        .simpleSectionHead {
+        .emailRow {
           display: grid;
-          grid-template-columns: minmax(260px, 1fr) minmax(520px, 620px);
-          gap: 16px;
-          align-items: start;
-          margin-bottom: 14px;
-        }
-
-        .simpleSectionHead h2,
-        .simpleOrdersHead h2 {
-          font-size: 25px;
-          line-height: 1.1;
-        }
-
-        .simpleFilter {
-          display: grid;
-          grid-template-columns: 1fr 165px auto auto;
-          gap: 8px;
-          padding: 8px;
-          border: 1px solid #dbe7e2;
-          border-radius: 14px;
-          background: #f8fbfa;
-        }
-
-        .simpleFilter input,
-        .simpleFilter select {
-          width: 100%;
-          height: 38px;
-          padding: 0 11px;
-          border: 1px solid #d6e5df;
-          border-radius: 10px;
+          grid-template-columns: minmax(260px, 1.1fr) minmax(220px, .9fr) 140px auto;
+          gap: 14px;
+          align-items: center;
+          padding: 14px;
+          border: 1px solid #e2ebe7;
+          border-radius: 18px;
           background: #ffffff;
-          color: #0f172a;
+          box-shadow: 0 10px 24px rgba(15, 23, 42, .045);
+        }
+
+        .emailRow + .emailRow {
+          margin-top: 10px;
+        }
+
+        .emailRow strong {
+          color: #10231f;
+          font-weight: 900;
+        }
+
+        .emailRow small {
+          display: block;
+          margin-top: 3px;
+          color: #64748b;
+          font-weight: 750;
+        }
+
+        /* REVIEW ORDERS */
+        .orderReviewPanel {
+          margin: 0;
+          padding: 0;
+          border: 0;
+          background: transparent;
+          box-shadow: none;
+        }
+
+        .orderReviewHeader {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 20px;
+          margin-bottom: 16px;
+          padding-bottom: 14px;
+          border-bottom: 1px solid #dbe7e2;
+        }
+
+        .orderReviewHeader h2 {
+          margin: 0;
+          color: #06251f;
+          font-size: 32px;
+          line-height: 1.05;
+          font-weight: 950;
+          letter-spacing: -1.2px;
+        }
+
+        .orderReviewHeader p {
+          margin: 8px 0 0;
+          color: #536579;
+          font-size: 14px;
           font-weight: 700;
         }
 
-        .simpleMailTabs {
+        .orderReviewSummary {
           display: flex;
-          flex-wrap: wrap;
+          align-items: baseline;
           gap: 8px;
-          margin-bottom: 12px;
+          color: #536579;
+          font-weight: 850;
         }
 
-        .simpleMailTab {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          min-height: 36px;
-          padding: 0 12px;
+        .orderReviewSummary strong {
+          color: #06251f;
+          font-size: 28px;
+          line-height: 1;
+          font-weight: 950;
+        }
+
+        .orderCards {
+          display: grid;
+          gap: 16px;
+        }
+
+        .orderCard {
+          position: relative;
+          overflow: hidden;
+          padding: 20px;
           border: 1px solid #dbe7e2;
-          border-radius: 999px;
+          border-radius: 26px;
           background: #ffffff;
-          color: #172033;
-          text-decoration: none;
+          box-shadow: 0 22px 52px rgba(15, 23, 42, .075);
+        }
+
+        .orderCard::before {
+          content: "";
+          position: absolute;
+          inset: 0 auto 0 0;
+          width: 6px;
+          background: #10a37f;
+        }
+
+        .orderCardTop {
+          display: grid;
+          grid-template-columns: minmax(300px, 1fr) auto;
+          gap: 18px;
+          align-items: start;
+          margin-bottom: 16px;
+        }
+
+        .orderCardNumber {
+          color: #64748b;
+          font-size: 12px;
+          font-weight: 950;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+
+        .orderCard h3 {
+          margin: 5px 0 4px;
+          color: #06251f;
+          font-size: 24px;
+          line-height: 1.05;
+          font-weight: 950;
+          letter-spacing: -.7px;
+        }
+
+        .orderCardContact {
+          color: #536579;
+          font-size: 14px;
+          font-weight: 800;
+        }
+
+        .orderCardDate {
+          min-width: 132px;
+          padding: 14px;
+          border: 1px solid #dbe7e2;
+          border-radius: 18px;
+          background: #f8fbfa;
+          text-align: right;
+        }
+
+        .orderCardDate strong {
+          display: block;
+          color: #06251f;
+          font-size: 17px;
+          font-weight: 950;
+        }
+
+        .orderCardDate span {
+          display: block;
+          margin-top: 4px;
+          color: #536579;
           font-size: 13px;
           font-weight: 850;
         }
 
-        .simpleEmpty {
-          padding: 14px;
-          border: 1px dashed #c9ded7;
-          border-radius: 14px;
-          background: #f8fbfa;
-          color: #64748b;
-          font-weight: 800;
-        }
-
-        .simpleMailList {
+        .orderCardBody {
           display: grid;
-          gap: 8px;
+          grid-template-columns: minmax(0, 1fr) 250px;
+          gap: 22px;
+          align-items: stretch;
         }
 
-        .simpleMailRow {
+        .orderCardItems {
+          padding: 14px 0 0;
+          border-top: 1px solid #eef3f1;
+        }
+
+        .orderCardItemsTitle {
+          margin-bottom: 8px;
+          color: #0f9f7a;
+          font-size: 12px;
+          font-weight: 950;
+          letter-spacing: .1em;
+          text-transform: uppercase;
+        }
+
+        .orderCardItems ul {
           display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
-          gap: 12px;
-          align-items: center;
-          padding: 12px;
-          border: 1px solid #e2ebe7;
-          border-radius: 14px;
-          background: #ffffff;
+          gap: 7px;
+          margin: 0;
+          padding: 0;
+          list-style: none;
         }
 
-        .simpleMailRow strong {
-          display: block;
+        .orderCardItems li {
+          display: flex;
+          gap: 10px;
           color: #0f172a;
+          font-size: 14px;
+          font-weight: 750;
+        }
+
+        .orderCardItems li strong {
+          min-width: 34px;
+          color: #0f9f7a;
+          font-weight: 950;
+        }
+
+        .orderCardMore {
+          margin-top: 8px;
+          color: #64748b;
+          font-size: 13px;
           font-weight: 850;
         }
 
-        .simpleMailRow span {
-          display: block;
-          margin-top: 3px;
-          color: #64748b;
-          font-size: 12px;
-          font-weight: 700;
-        }
-
-        .simpleRowActions,
-        .simpleOrderActions {
+        .orderCardSide {
           display: flex;
-          gap: 7px;
-          align-items: center;
-          justify-content: flex-end;
+          flex-direction: column;
+          gap: 10px;
+          align-items: stretch;
         }
 
-        .simpleRowActions button,
-        .simpleOrderActions button {
+        .orderCardTotal {
+          padding: 16px;
+          border: 1px solid #fed7aa;
+          border-radius: 20px;
+          background: #fff7ed;
+          color: #9a3412;
+        }
+
+        .orderCardTotal strong {
+          display: block;
+          color: #06251f;
+          font-size: 28px;
+          line-height: 1;
+          font-weight: 950;
+          letter-spacing: -.8px;
+        }
+
+        .orderCardTotal span {
+          display: block;
+          margin-top: 7px;
+          color: #b45309;
+          font-size: 11px;
+          font-weight: 950;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+
+        .orderCardTotal small {
+          display: block;
+          margin-top: 4px;
+          color: #b45309;
+          font-size: 11px;
+          line-height: 1.25;
+          font-weight: 900;
+          text-transform: uppercase;
+        }
+
+        .orderCardBadges {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 7px;
+        }
+
+        .orderCardBadges span {
+          display: inline-flex;
+          align-items: center;
+          min-height: 28px;
+          padding: 0 10px;
+          border: 1px solid #dbe7e2;
+          border-radius: 999px;
+          background: #f8fbfa;
+          color: #36534b;
+          font-size: 12px;
+          font-weight: 900;
+        }
+
+        .orderCardActions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 8px;
+          margin-top: 16px;
+          padding-top: 14px;
+          border-top: 1px solid #eef3f1;
+        }
+
+        .orderCardActions a,
+        .orderCardActions button,
+        .emailRow a,
+        .emailRow button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 38px;
+          padding: 0 14px;
+          border: 1px solid #d6e5df;
+          border-radius: 13px;
+          background: #ffffff;
+          color: #0f172a;
+          font-weight: 950;
+          text-decoration: none;
+          cursor: pointer;
+        }
+
+        .orderCardActions a:first-child,
+        .emailRow a {
+          border-color: #10a37f;
+          background: #10a37f;
+          color: #ffffff;
+          box-shadow: 0 10px 20px rgba(16, 163, 127, .22);
+        }
+
+        .orderCardActions button,
+        .emailRow button {
           color: #991b1b;
           border-color: #fecaca;
           background: #fff1f2;
         }
 
-        .simpleOrdersHead {
-          display: flex;
-          align-items: flex-end;
-          justify-content: space-between;
-          gap: 16px;
-          margin-bottom: 12px;
-          padding-bottom: 10px;
-          border-bottom: 1px solid #dbe7e2;
-        }
-
-        .simpleOrderCount {
-          display: flex;
-          align-items: baseline;
-          gap: 6px;
-          color: #64748b;
-          font-weight: 850;
-        }
-
-        .simpleOrderCount strong {
-          color: #061f1b;
-          font-size: 24px;
-          font-weight: 900;
-        }
-
-        .simpleOrderList {
-          display: grid;
-          gap: 12px;
-        }
-
-        .simpleOrderCard {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) 230px;
-          gap: 16px;
-          padding: 16px;
-        }
-
-        .simpleOrderMeta {
-          color: #64748b;
-          font-size: 12px;
-          font-weight: 900;
-          letter-spacing: .08em;
-          text-transform: uppercase;
-        }
-
-        .simpleOrderCard h3 {
-          margin: 4px 0 2px;
-          color: #061f1b;
-          font-size: 22px;
-          line-height: 1.1;
-          font-weight: 900;
-          letter-spacing: -.5px;
-        }
-
-        .simpleOrderCard p {
-          margin: 0;
-          color: #64748b;
-          font-size: 13px;
-          font-weight: 700;
-        }
-
-        .simpleItems {
-          display: grid;
-          gap: 5px;
-          margin-top: 14px;
-          padding-top: 12px;
-          border-top: 1px solid #edf3f1;
-        }
-
-        .simpleItems div {
-          display: flex;
-          gap: 9px;
-          font-size: 13px;
-          font-weight: 750;
-        }
-
-        .simpleItems strong {
-          min-width: 28px;
-          color: #0f9f7a;
-          font-weight: 900;
-        }
-
-        .simpleItems small {
-          color: #64748b;
-          font-weight: 800;
-        }
-
-        .simpleOrderSide {
-          display: grid;
-          gap: 8px;
-          align-content: start;
-        }
-
-        .simpleDateBox,
-        .simplePriceBox {
-          padding: 12px;
-          border-radius: 14px;
-          border: 1px solid #dbe7e2;
-          background: #f8fbfa;
-        }
-
-        .simpleDateBox {
-          text-align: right;
-        }
-
-        .simpleDateBox strong {
-          display: block;
-          color: #061f1b;
-          font-size: 16px;
-          font-weight: 900;
-        }
-
-        .simpleDateBox span {
-          display: block;
-          margin-top: 3px;
-          color: #64748b;
-          font-size: 12px;
-          font-weight: 800;
-        }
-
-        .simplePriceBox {
-          border-color: #fed7aa;
-          background: #fff7ed;
-        }
-
-        .simplePriceBox strong {
-          display: block;
-          color: #061f1b;
-          font-size: 25px;
-          line-height: 1;
-          font-weight: 900;
-          white-space: nowrap;
-        }
-
-        .simplePriceBox span,
-        .simplePriceBox small {
-          display: block;
-          margin-top: 5px;
-          color: #b45309;
-          font-size: 11px;
-          line-height: 1.2;
-          font-weight: 850;
-          text-transform: uppercase;
-        }
-
-        .simpleBadges {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-        }
-
-        .simpleBadges span {
-          display: inline-flex;
-          align-items: center;
-          min-height: 25px;
-          padding: 0 9px;
-          border-radius: 999px;
-          background: #f1f5f4;
-          color: #36534b;
-          font-size: 12px;
-          font-weight: 800;
-        }
-
-        .simpleHint {
-          margin-top: 12px;
-          color: #64748b;
-          font-size: 13px;
-          font-weight: 750;
-        }
-
-        .simpleHint a {
-          color: #0f766e;
-          font-weight: 900;
-        }
-
-        @media (max-width: 980px) {
-          .simpleTopbar,
-          .simpleSectionHead,
-          .simpleOrderCard {
-            grid-template-columns: 1fr;
-            display: grid;
-          }
-
-          .simpleFilter {
+        @media (max-width: 1100px) {
+          .inboxHero,
+          .panelTop,
+          .orderCardTop,
+          .orderCardBody {
             grid-template-columns: 1fr;
           }
 
-          .simpleDateBox {
+          .filterBar {
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .compactStats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .orderCardDate {
             text-align: left;
           }
         }
-      `}</style>
+
+        @media (max-width: 720px) {
+          .inboxPage {
+            padding: 0 14px 34px;
+          }
+
+          .inboxHero,
+          .inboxPanel,
+          .orderCard {
+            border-radius: 20px;
+            padding: 18px;
+          }
+
+          .inboxHero h1 {
+            font-size: 30px;
+          }
+
+          .compactStats,
+          .filterBar {
+            grid-template-columns: 1fr;
+          }
+
+          .orderReviewHeader {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+
+          .emailRow {
+            grid-template-columns: 1fr;
+          }
+
+          .orderCardActions {
+            justify-content: stretch;
+            flex-direction: column;
+          }
+        }
+      
+        /* gastario-simple-ops-final-20260708 */
+
+        .inboxPage {
+          max-width: 1220px !important;
+          padding: 0 24px 44px !important;
+        }
+
+        .inboxHero {
+          min-height: auto !important;
+          padding: 18px 22px !important;
+          margin-bottom: 12px !important;
+          border-radius: 18px !important;
+          border: 1px solid #dbe7e2 !important;
+          background: #ffffff !important;
+          box-shadow: 0 10px 28px rgba(15, 23, 42, .045) !important;
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          gap: 16px !important;
+        }
+
+        .inboxHero::before,
+        .inboxHero::after {
+          display: none !important;
+        }
+
+        .inboxHero h1 {
+          margin: 0 !important;
+          font-size: 28px !important;
+          line-height: 1.1 !important;
+          letter-spacing: -1px !important;
+          font-weight: 900 !important;
+          color: #071f1b !important;
+        }
+
+        .inboxHero p {
+          margin: 5px 0 0 !important;
+          font-size: 14px !important;
+          color: #64748b !important;
+          font-weight: 650 !important;
+        }
+
+        .inboxOverline {
+          font-size: 11px !important;
+          letter-spacing: .12em !important;
+          color: #0f9f7a !important;
+          font-weight: 900 !important;
+          text-transform: uppercase !important;
+        }
+
+        .heroActions {
+          display: flex !important;
+          gap: 8px !important;
+        }
+
+        .heroActions button {
+          min-height: 38px !important;
+          padding: 0 14px !important;
+          border-radius: 11px !important;
+          font-size: 13px !important;
+          font-weight: 850 !important;
+          box-shadow: none !important;
+        }
+
+        .liveInfo {
+          margin: 0 0 10px !important;
+          padding-left: 2px !important;
+          font-size: 12.5px !important;
+          color: #64748b !important;
+          font-weight: 700 !important;
+        }
+
+        .compactStats {
+          display: flex !important;
+          gap: 8px !important;
+          margin: 0 0 14px !important;
+        }
+
+        .statCard {
+          flex: 1 !important;
+          min-height: 58px !important;
+          padding: 10px 13px !important;
+          border-radius: 14px !important;
+          border: 1px solid #dbe7e2 !important;
+          background: #ffffff !important;
+          box-shadow: 0 8px 20px rgba(15, 23, 42, .035) !important;
+        }
+
+        .statCard.active {
+          background: #10a37f !important;
+          border-color: #10a37f !important;
+          box-shadow: none !important;
+        }
+
+        .statCard span {
+          font-size: 12px !important;
+          font-weight: 850 !important;
+        }
+
+        .statCard strong {
+          font-size: 21px !important;
+          line-height: 1 !important;
+          font-weight: 900 !important;
+        }
+
+        .statCard small {
+          font-size: 11px !important;
+          font-weight: 700 !important;
+        }
+
+        .inboxPanel {
+          padding: 18px !important;
+          margin-bottom: 24px !important;
+          border-radius: 18px !important;
+          border: 1px solid #dbe7e2 !important;
+          background: #ffffff !important;
+          box-shadow: 0 10px 28px rgba(15, 23, 42, .045) !important;
+        }
+
+        .panelTop {
+          display: grid !important;
+          grid-template-columns: 1fr minmax(520px, 620px) !important;
+          gap: 16px !important;
+          align-items: start !important;
+          margin-bottom: 14px !important;
+        }
+
+        .panelTop h2 {
+          margin: 0 !important;
+          font-size: 24px !important;
+          line-height: 1.1 !important;
+          font-weight: 900 !important;
+          letter-spacing: -.7px !important;
+        }
+
+        .panelTop p {
+          margin: 5px 0 0 !important;
+          font-size: 13px !important;
+          color: #64748b !important;
+          font-weight: 650 !important;
+        }
+
+        .filterBar {
+          display: grid !important;
+          grid-template-columns: 1fr 170px auto auto !important;
+          gap: 8px !important;
+          padding: 8px !important;
+          border-radius: 14px !important;
+          border: 1px solid #dbe7e2 !important;
+          background: #f8fbfa !important;
+        }
+
+        .filterBar input,
+        .filterBar select {
+          height: 38px !important;
+          border-radius: 10px !important;
+        }
+
+        .filterBar button,
+        .filterBar a {
+          min-height: 38px !important;
+          border-radius: 10px !important;
+          font-weight: 850 !important;
+        }
+
+        .bucketNav {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          gap: 8px !important;
+          margin-bottom: 12px !important;
+        }
+
+        .bucket {
+          min-height: 36px !important;
+          padding: 0 12px !important;
+          border-radius: 999px !important;
+          font-size: 13px !important;
+          box-shadow: none !important;
+        }
+
+        .bucket small {
+          display: none !important;
+        }
+
+        .orderReviewPanel {
+          background: transparent !important;
+          border: 0 !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          box-shadow: none !important;
+        }
+
+        .orderReviewHeader {
+          margin-bottom: 12px !important;
+          padding-bottom: 10px !important;
+          border-bottom: 1px solid #dbe7e2 !important;
+        }
+
+        .orderReviewHeader h2 {
+          margin: 0 !important;
+          font-size: 27px !important;
+          line-height: 1.1 !important;
+          font-weight: 900 !important;
+          letter-spacing: -.8px !important;
+        }
+
+        .orderReviewHeader p {
+          margin-top: 5px !important;
+          font-size: 13px !important;
+          color: #64748b !important;
+          font-weight: 650 !important;
+        }
+
+        .orderCard {
+          padding: 18px !important;
+          border-radius: 18px !important;
+          border: 1px solid #dbe7e2 !important;
+          background: #ffffff !important;
+          box-shadow: 0 10px 28px rgba(15, 23, 42, .045) !important;
+        }
+
+        .orderCard h3 {
+          font-size: 21px !important;
+          font-weight: 900 !important;
+          letter-spacing: -.5px !important;
+        }
+
+        .orderCardBody {
+          grid-template-columns: minmax(0, 1fr) 220px !important;
+          gap: 16px !important;
+        }
+
+        .orderCardPrice {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 5px !important;
+          padding: 14px !important;
+          border-radius: 15px !important;
+          border: 1px solid #fed7aa !important;
+          background: #fff7ed !important;
+          min-width: 210px !important;
+        }
+
+        .orderCardPrice strong {
+          display: block !important;
+          font-size: 25px !important;
+          line-height: 1 !important;
+          font-weight: 900 !important;
+          color: #071f1b !important;
+          white-space: nowrap !important;
+        }
+
+        .orderCardPrice span,
+        .orderCardPrice small {
+          display: block !important;
+          font-size: 11px !important;
+          line-height: 1.25 !important;
+          font-weight: 850 !important;
+          color: #b45309 !important;
+          text-transform: uppercase !important;
+        }
+
+        @media (max-width: 1000px) {
+          .inboxHero,
+          .panelTop,
+          .filterBar,
+          .orderCardBody {
+            grid-template-columns: 1fr !important;
+            display: grid !important;
+          }
+
+          .compactStats {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+        }
+`}</style>
 </AppLayout>
   );
 }
-
 
 
 
