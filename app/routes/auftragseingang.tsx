@@ -795,6 +795,7 @@ export default function AuftragseingangPage() {
 
   const visibleOrders = sortedOrders.filter((order: any) => {
     if (order.status !== "AUTO_CREATED") return false;
+    if (isLikelyTrashImportOrder(order)) return false;
 
     if (!order.deliveryDate) return true;
 
@@ -802,19 +803,52 @@ export default function AuftragseingangPage() {
 
     if (Number.isNaN(deliveryDate.getTime())) return true;
 
-    const match = String(order.deliveryTimeText || "").match(/(\d{1,2})[:.](\d{2})/);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    if (match) {
-      deliveryDate.setHours(Number(match[1]), Number(match[2]), 0, 0);
-    } else {
-      deliveryDate.setHours(23, 59, 59, 999);
-    }
-
-    return deliveryDate.getTime() >= Date.now();
+    return deliveryDate >= today;
   });
 
 
   const hiddenPastOrderCount = sortedOrders.length - visibleOrders.length;
+  function isLikelyTrashImportOrder(order: any) {
+    const customerName = String(order?.customerName || "").trim().toLowerCase();
+    const contactName = String(order?.contactName || "").trim().toLowerCase();
+    const source = String(order?.source || "").trim().toUpperCase();
+    const totalInfo = getDisplayedOrderTotal(order);
+    const items = Array.isArray(order?.items) ? order.items : [];
+
+    const realItems = items.filter((item: any) => {
+      const name = String(item?.name || "").trim().toLowerCase();
+      const quantity = Number(item?.quantity || 0);
+      const totalCents = Number(item?.totalCents || 0);
+
+      if (!name) return false;
+      if (name.includes("fehlende position")) return false;
+      if (name.length < 4) return false;
+
+      return quantity > 0 || totalCents > 0;
+    });
+
+    const hasRealCustomer =
+      customerName &&
+      customerName !== "e-mail import" &&
+      customerName !== "email import" &&
+      customerName !== "kunde unbekannt";
+
+    const hasRealContact =
+      contactName &&
+      contactName !== "keine kontaktperson erkannt" &&
+      contactName !== "kontakt unbekannt";
+
+    return Boolean(
+      source === "EMAIL" &&
+      !hasRealCustomer &&
+      !hasRealContact &&
+      totalInfo.cents <= 0 &&
+      realItems.length === 0
+    );
+  }
 
   const currentOrderStats = {
     all: data.counts?.all || 0,
@@ -2698,10 +2732,64 @@ export default function AuftragseingangPage() {
           padding: 12px 16px 16px !important;
           border-top: 1px solid #eef3f1 !important;
         }
+
+        /* gastario-review-box-clean-empty-20260709 */
+
+        .finalOrdersShell {
+          background: #ffffff !important;
+          border: 1px solid #dbe7e2 !important;
+          border-radius: 22px !important;
+          overflow: hidden !important;
+          box-shadow: 0 18px 44px rgba(15, 23, 42, .055) !important;
+        }
+
+        .finalOrdersHeader {
+          padding: 22px 22px 16px !important;
+          border-bottom: 1px solid #eef3f1 !important;
+          background: linear-gradient(180deg, #ffffff, #fbfdfc) !important;
+        }
+
+        .finalOrdersGrid {
+          min-height: 340px !important;
+          background:
+            linear-gradient(180deg, #ffffff 0%, #ffffff 70%, #fbfdfc 100%) !important;
+        }
+
+        .finalOrderRows {
+          padding-bottom: 6px !important;
+        }
+
+        .finalOrderRow {
+          background: #ffffff !important;
+        }
+
+        .finalLoadMore {
+          margin-top: 8px !important;
+          color: #64748b !important;
+          font-weight: 850 !important;
+        }
+
+        .finalHint {
+          margin: 0 !important;
+          padding: 14px 18px !important;
+          border-top: 1px solid #eef3f1 !important;
+          background: #fbfdfc !important;
+          text-align: center !important;
+          border-radius: 0 !important;
+        }
+
+        .finalOrdersGrid:not(.selectedFocusMode)::after {
+          content: "";
+          display: block;
+          min-height: 22px;
+        }
 `}</style>
 </AppLayout>
   );
 }
+
+
+
 
 
 
