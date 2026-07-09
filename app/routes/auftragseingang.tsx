@@ -2483,10 +2483,110 @@ export default function AuftragseingangPage() {
             grid-template-columns: 1fr !important;
           }
         }
+
+        /* gastario-soft-focus-transition-20260709 */
+
+        .finalOrdersGrid {
+          position: relative !important;
+        }
+
+        .finalOrderRows {
+          transition:
+            opacity .28s ease,
+            transform .28s ease,
+            max-height .32s ease,
+            margin .28s ease !important;
+          max-height: 900px !important;
+          opacity: 1 !important;
+          transform: translateX(0) scale(1) !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode {
+          grid-template-columns: 1fr !important;
+          place-items: center !important;
+          min-height: 520px !important;
+          padding: 26px !important;
+          overflow: hidden !important;
+          background: #ffffff !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalOrderRows {
+          display: grid !important;
+          pointer-events: none !important;
+          max-height: 0 !important;
+          margin: 0 !important;
+          opacity: 0 !important;
+          transform: translateX(-36px) scale(.985) !important;
+          overflow: hidden !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel {
+          position: relative !important;
+          top: auto !important;
+          width: min(660px, 100%) !important;
+          max-width: 660px !important;
+          border: 1.5px solid #f59e0b !important;
+          box-shadow: 0 22px 54px rgba(15, 23, 42, .11) !important;
+          animation: gastarioSoftPanelIn .32s cubic-bezier(.2,.8,.2,1) both !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel::before {
+          height: 3px !important;
+          margin: -16px -16px 14px !important;
+          background: #f59e0b !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedKicker {
+          background: #fff7ed !important;
+          color: #b45309 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedTop h3 {
+          font-size: 26px !important;
+          letter-spacing: -.8px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts {
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions {
+          grid-template-columns: 150px 1fr 115px !important;
+        }
+
+        @keyframes gastarioSoftPanelIn {
+          0% {
+            opacity: 0;
+            transform: translateX(34px) scale(.965);
+          }
+
+          70% {
+            opacity: 1;
+            transform: translateX(-3px) scale(1.005);
+          }
+
+          100% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @media (max-width: 900px) {
+          .finalOrdersGrid.selectedFocusMode {
+            padding: 14px !important;
+            min-height: auto !important;
+          }
+
+          .finalOrdersGrid.selectedFocusMode .finalSelectedFacts,
+          .finalOrdersGrid.selectedFocusMode .finalSelectedActions {
+            grid-template-columns: 1fr !important;
+          }
+        }
 `}</style>
 </AppLayout>
   );
 }
+
 
 
 
