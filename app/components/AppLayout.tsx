@@ -609,7 +609,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                         : location.pathname === item.to || location.pathname.startsWith(item.to + "/");
 
                 return (
-                  <Link className={isActive ? "active" : undefined} to={item.to} key={item.to}>
+                  <Link preventScrollReset className={isActive ? "active" : undefined} to={item.to} key={item.to}>
                     {item.label}
                   </Link>
                 );
@@ -629,6 +629,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
     </main>
   );
 }
+
+
 
 
 
