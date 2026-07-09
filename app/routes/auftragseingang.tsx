@@ -2048,10 +2048,102 @@ export default function AuftragseingangPage() {
             transform: translateX(0) scale(1);
           }
         }
+
+        /* gastario-fix-selected-overlap-20260709 */
+
+        .finalOrdersGrid {
+          grid-template-columns: minmax(0, 1fr) 390px !important;
+          overflow: hidden !important;
+        }
+
+        .finalOrderRows {
+          min-width: 0 !important;
+          overflow: hidden !important;
+        }
+
+        .finalOrderRow {
+          position: relative !important;
+          z-index: 0 !important;
+          transform: none !important;
+          grid-template-columns: 40px minmax(145px, .85fr) minmax(170px, 1fr) 92px 128px !important;
+          max-width: 100% !important;
+          overflow: hidden !important;
+        }
+
+        .finalOrderRow:hover {
+          transform: none !important;
+          z-index: 0 !important;
+        }
+
+        .finalOrderRow.selected {
+          z-index: 0 !important;
+          transform: none !important;
+          box-shadow: inset 4px 0 0 #10a37f !important;
+        }
+
+        .finalOrderCustomer,
+        .finalOrderItems,
+        .finalOrderDate,
+        .finalOrderTotal {
+          min-width: 0 !important;
+        }
+
+        .finalOrderCustomer h3,
+        .finalOrderCustomer p,
+        .finalOrderItems span {
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+
+        .finalOrderItems div {
+          min-width: 0 !important;
+        }
+
+        .finalOrderTotal {
+          justify-self: end !important;
+          text-align: right !important;
+        }
+
+        .finalOrderTotal strong {
+          font-size: 19px !important;
+          white-space: nowrap !important;
+        }
+
+        .finalSelectedPanel {
+          position: sticky !important;
+          z-index: 3 !important;
+          background: #ffffff !important;
+        }
+
+        @media (max-width: 1320px) {
+          .finalOrdersGrid {
+            grid-template-columns: minmax(0, 1fr) 360px !important;
+          }
+
+          .finalOrderRow {
+            grid-template-columns: 38px minmax(135px, .8fr) minmax(150px, 1fr) 84px 116px !important;
+          }
+
+          .finalOrderTotal strong {
+            font-size: 18px !important;
+          }
+        }
+
+        @media (max-width: 1180px) {
+          .finalOrdersGrid {
+            grid-template-columns: 1fr !important;
+            overflow: visible !important;
+          }
+
+          .finalSelectedPanel {
+            position: static !important;
+          }
+        }
 `}</style>
 </AppLayout>
   );
 }
+
 
 
 
