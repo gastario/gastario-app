@@ -2638,10 +2638,71 @@ export default function AuftragseingangPage() {
             transform: translateY(0) translateX(0) scale(1);
           }
         }
+
+        /* gastario-focus-panel-scroll-polish-20260709 */
+
+        .finalOrdersShell {
+          min-height: auto !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode {
+          min-height: 500px !important;
+          padding: 22px !important;
+          align-items: start !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel {
+          width: min(690px, 100%) !important;
+          max-height: calc(100vh - 220px) !important;
+          overflow-y: auto !important;
+          scrollbar-width: thin !important;
+          border: 1px solid #f6c66f !important;
+          border-radius: 18px !important;
+          box-shadow: 0 24px 60px rgba(15, 23, 42, .10) !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel::-webkit-scrollbar {
+          width: 8px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel::-webkit-scrollbar-thumb {
+          background: #d9e4df !important;
+          border-radius: 999px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel::before {
+          display: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedTop {
+          position: sticky !important;
+          top: 0 !important;
+          z-index: 2 !important;
+          background: #ffffff !important;
+          margin: -16px -16px 12px !important;
+          padding: 16px !important;
+          border-bottom: 1px solid #eef3f1 !important;
+          border-radius: 18px 18px 0 0 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts {
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions {
+          position: sticky !important;
+          bottom: 0 !important;
+          z-index: 2 !important;
+          background: linear-gradient(180deg, rgba(255,255,255,.86), #ffffff 40%) !important;
+          margin: 12px -16px -16px !important;
+          padding: 12px 16px 16px !important;
+          border-top: 1px solid #eef3f1 !important;
+        }
 `}</style>
 </AppLayout>
   );
 }
+
 
 
 

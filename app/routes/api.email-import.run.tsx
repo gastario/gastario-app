@@ -174,22 +174,71 @@ async function findOrderImportRuleMatches(params: {
   }
 }
 
-function hasMinimumOrderSignal(extractedOrder: any, bestText: string) {
-  const realItems = Array.isArray(extractedOrder?.items)
-    ? extractedOrder.items.filter((item: any) => Number(item?.quantity || 0) > 0 || Number(item?.totalCents || 0) > 0)
-    : [];
-
+function hasStrongOrderKeyword(bestText: string) {
   const combined = normalizeImportText(bestText);
 
-  return Boolean(
-    extractedOrder?.customerName ||
-    extractedOrder?.deliveryDate ||
-    extractedOrder?.deliveryAddress ||
-    realItems.length > 0 ||
+  return (
     combined.includes("auftragsbest") ||
+    combined.includes("auftragsbestatigung") ||
+    combined.includes("auftragsbestaetigung") ||
     combined.includes("order confirmation") ||
     combined.includes("event confirmation") ||
-    combined.includes("catering")
+    combined.includes("booking confirmation") ||
+    combined.includes("catering confirmation") ||
+    combined.includes("bestellung bestatigt") ||
+    combined.includes("bestellung bestaetigt") ||
+    combined.includes("bestellung bestätigt") ||
+    combined.includes("auftrag bestatigt") ||
+    combined.includes("auftrag bestaetigt") ||
+    combined.includes("auftrag bestätigt")
+  );
+}
+
+function getMeaningfulImportRuleFields(importRuleMatches: any[]) {
+  return new Set(
+    (importRuleMatches || [])
+      .map((match: any) => String(match?.fieldKey || "").trim())
+      .filter((fieldKey: string) =>
+        [
+          "customerName",
+          "deliveryDate",
+          "deliveryTime",
+          "deliveryAddress",
+          "items",
+          "budget",
+          "contactName",
+          "contactPhone",
+        ].includes(fieldKey)
+      )
+  );
+}
+
+function hasMinimumOrderSignal(extractedOrder: any, bestText: string) {
+  const realItems = Array.isArray(extractedOrder?.items)
+    ? extractedOrder.items.filter((item: any) => {
+        const name = String(item?.name || "").trim();
+        const quantity = Number(item?.quantity || 0);
+        const totalCents = Number(item?.totalCents || 0);
+
+        return Boolean(name) && (quantity > 0 || totalCents > 0);
+      })
+    : [];
+
+  const totalCents = Array.isArray(extractedOrder?.items)
+    ? extractedOrder.items.reduce((sum: number, item: any) => sum + Number(item?.totalCents || 0), 0)
+    : 0;
+
+  return Boolean(
+    hasStrongOrderKeyword(bestText) ||
+    (
+      realItems.length > 0 &&
+      (
+        extractedOrder?.customerName ||
+        extractedOrder?.deliveryDate ||
+        extractedOrder?.deliveryAddress ||
+        totalCents > 0
+      )
+    )
   );
 }
 
@@ -197,6 +246,24 @@ function shouldCreateOrderFromImportRules(extractedOrder: any, bestText: string,
   if (hasEnoughOrderData(extractedOrder)) {
     return true;
   }
+
+  const meaningfulFields = getMeaningfulImportRuleFields(importRuleMatches);
+
+  const hasEnoughRuleStructure =
+    meaningfulFields.has("items") &&
+    (
+      meaningfulFields.has("deliveryDate") ||
+      meaningfulFields.has("customerName") ||
+      meaningfulFields.has("deliveryAddress") ||
+      meaningfulFields.has("budget")
+    );
+
+  return Boolean(
+    importRuleMatches.length > 0 &&
+    hasEnoughRuleStructure &&
+    hasMinimumOrderSignal(extractedOrder, bestText)
+  );
+}
 
   return importRuleMatches.length > 0 && hasMinimumOrderSignal(extractedOrder, bestText);
 }
@@ -820,6 +887,7 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
 
 
 
