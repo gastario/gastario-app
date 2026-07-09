@@ -98,6 +98,109 @@ function hasEnoughOrderData(order: any) {
 }
 
 
+
+async function ensureOrderImportRuleTableForEmailImport() {
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "OrderImportRule" (
+      "id" TEXT PRIMARY KEY,
+      "tenantId" TEXT NOT NULL,
+      "sourceName" TEXT,
+      "fieldKey" TEXT NOT NULL,
+      "keywords" TEXT NOT NULL,
+      "active" BOOLEAN NOT NULL DEFAULT true,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "OrderImportRule_tenantId_idx" ON "OrderImportRule" ("tenantId");`);
+  await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "OrderImportRule_fieldKey_idx" ON "OrderImportRule" ("fieldKey");`);
+}
+
+function splitImportRuleKeywords(value: unknown) {
+  return String(value || "")
+    .split(/[,\n;]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+async function findOrderImportRuleMatches(params: {
+  tenantId: string;
+  subject: string;
+  sender: string;
+  bestText: string;
+}) {
+  const { tenantId, subject, sender, bestText } = params;
+
+  try {
+    await ensureOrderImportRuleTableForEmailImport();
+
+    const rules = await prisma.$queryRawUnsafe<any[]>(
+      `SELECT * FROM "OrderImportRule"
+       WHERE "tenantId" = $1 AND "active" = true
+       ORDER BY "fieldKey" ASC`,
+      tenantId
+    );
+
+    const combined = normalizeImportText(subject + "\n" + sender + "\n" + bestText);
+
+    return rules
+      .map((rule) => {
+        const sourceName = normalizeImportText(rule.sourceName || "");
+
+        if (sourceName && sourceName !== "allgemein" && !combined.includes(sourceName)) {
+          return null;
+        }
+
+        const hits = splitImportRuleKeywords(rule.keywords).filter((keyword) =>
+          combined.includes(normalizeImportText(keyword))
+        );
+
+        if (hits.length === 0) {
+          return null;
+        }
+
+        return {
+          id: rule.id,
+          fieldKey: rule.fieldKey,
+          sourceName: rule.sourceName || "Allgemein",
+          keywords: hits,
+        };
+      })
+      .filter(Boolean);
+  } catch (error) {
+    console.error("OrderImportRule check failed", error);
+    return [];
+  }
+}
+
+function hasMinimumOrderSignal(extractedOrder: any, bestText: string) {
+  const realItems = Array.isArray(extractedOrder?.items)
+    ? extractedOrder.items.filter((item: any) => Number(item?.quantity || 0) > 0 || Number(item?.totalCents || 0) > 0)
+    : [];
+
+  const combined = normalizeImportText(bestText);
+
+  return Boolean(
+    extractedOrder?.customerName ||
+    extractedOrder?.deliveryDate ||
+    extractedOrder?.deliveryAddress ||
+    realItems.length > 0 ||
+    combined.includes("auftragsbest") ||
+    combined.includes("order confirmation") ||
+    combined.includes("event confirmation") ||
+    combined.includes("catering")
+  );
+}
+
+function shouldCreateOrderFromImportRules(extractedOrder: any, bestText: string, importRuleMatches: any[]) {
+  if (hasEnoughOrderData(extractedOrder)) {
+    return true;
+  }
+
+  return importRuleMatches.length > 0 && hasMinimumOrderSignal(extractedOrder, bestText);
+}
+
 function normalizeImportText(value: unknown) {
   return String(value || "")
     .toLowerCase()
@@ -550,8 +653,15 @@ export async function loader({ request }: { request: Request }) {
             }
 
             const extractedOrder = extractUniversalOrder(bestText);
+            const importRuleMatches = await findOrderImportRuleMatches({
+              tenantId: account.tenantId,
+              subject: String(parsed.subject || ""),
+              sender: String(parsed.from?.text || ""),
+              bestText,
+            });
+            const shouldCreateByRules = shouldCreateOrderFromImportRules(extractedOrder, bestText, importRuleMatches);
 
-            if (existing.orders.length === 0 && hasEnoughOrderData(extractedOrder)) {
+            if (existing.orders.length === 0 && shouldCreateByRules) {
               await createReviewOrderFromExtracted({
                 tenantId: account.tenantId,
                 brandId: account.brandId,
@@ -654,8 +764,15 @@ export async function loader({ request }: { request: Request }) {
           }
 
           const extractedOrder = extractUniversalOrder(bestText);
+          const importRuleMatches = await findOrderImportRuleMatches({
+            tenantId: account.tenantId,
+            subject: String(parsed.subject || ""),
+            sender: String(parsed.from?.text || ""),
+            bestText,
+          });
+          const shouldCreateByRules = shouldCreateOrderFromImportRules(extractedOrder, bestText, importRuleMatches);
 
-          if (hasEnoughOrderData(extractedOrder)) {
+          if (shouldCreateByRules) {
             const order = await createReviewOrderFromExtracted({
               tenantId: account.tenantId,
               brandId: account.brandId,
@@ -703,6 +820,10 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
+
+
+
 
 
 
