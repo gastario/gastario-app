@@ -823,12 +823,19 @@ export default function AuftragseingangPage() {
     rejected: data.counts?.rejected || 0,
   };
 
-  const selectedOrder: any = visibleOrders[0] || null;
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+
+  const selectedOrder: any =
+    visibleOrders.find((order: any) => order.id === selectedOrderId) ||
+    visibleOrders[0] ||
+    null;
+
   const selectedOrderItems = selectedOrder
     ? (Array.isArray(selectedOrder.items) ? selectedOrder.items : []).filter(
         (item: any) => !String(item.name || "").toLowerCase().includes("fehlende position")
       )
     : [];
+
   const selectedOrderTotal = selectedOrder ? getDisplayedOrderTotal(selectedOrder) : null;
 
 
@@ -976,7 +983,19 @@ export default function AuftragseingangPage() {
                     .slice(0, 3);
 
                   return (
-                    <article className={index === 0 ? "finalOrderRow selected" : "finalOrderRow"} key={order.id}>
+                    <article
+                      className={selectedOrder?.id === order.id ? "finalOrderRow selected" : "finalOrderRow"}
+                      key={order.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setSelectedOrderId(order.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setSelectedOrderId(order.id);
+                        }
+                      }}
+                    >
                       <div className="finalOrderIcon">✉</div>
 
                       <div className="finalOrderCustomer">
@@ -1016,7 +1035,7 @@ export default function AuftragseingangPage() {
               </div>
 
               {selectedOrder ? (
-                <aside className="finalSelectedPanel">
+                <aside className="finalSelectedPanel" key={selectedOrder.id}>
                   <div className="finalSelectedTop">
                     <div>
                       <div className="finalSelectedKicker">Ausgewählt</div>
@@ -1989,10 +2008,54 @@ export default function AuftragseingangPage() {
             position: static !important;
           }
         }
+
+        /* gastario-click-selected-slide-20260709 */
+
+        .finalOrderRow {
+          cursor: pointer !important;
+          transition:
+            transform .16s ease,
+            border-color .16s ease,
+            box-shadow .16s ease,
+            background .16s ease !important;
+        }
+
+        .finalOrderRow:hover {
+          transform: translateX(3px) !important;
+          border-color: rgba(16, 163, 127, .35) !important;
+          box-shadow: 0 10px 24px rgba(15, 23, 42, .045) !important;
+        }
+
+        .finalOrderRow.selected {
+          transform: translateX(0) !important;
+          position: relative !important;
+          z-index: 2 !important;
+        }
+
+        .finalSelectedPanel {
+          animation: gastarioSelectedSlideIn .22s ease both !important;
+          transform-origin: right center !important;
+        }
+
+        @keyframes gastarioSelectedSlideIn {
+          from {
+            opacity: 0;
+            transform: translateX(22px) scale(.985);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+        }
 `}</style>
 </AppLayout>
   );
 }
+
+
+
+
 
 
 
