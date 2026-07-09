@@ -2267,10 +2267,134 @@ export default function AuftragseingangPage() {
           border-radius: 18px 18px 0 0;
           background: linear-gradient(90deg, #f59e0b, #10a37f);
         }
+
+        /* gastario-selected-row-mini-animated-20260709 */
+
+        .finalOrderRow {
+          transition:
+            min-height .22s ease,
+            padding .22s ease,
+            transform .18s ease,
+            border-color .18s ease,
+            background .18s ease,
+            box-shadow .18s ease !important;
+        }
+
+        .finalOrderRow.selected {
+          grid-template-columns: 40px minmax(0, 1fr) !important;
+          min-height: 72px !important;
+          padding: 11px 13px !important;
+          align-items: center !important;
+          border-color: #f59e0b !important;
+          background: linear-gradient(90deg, rgba(245, 158, 11, .13), #ffffff 58%) !important;
+          box-shadow: inset 4px 0 0 #f59e0b, 0 8px 20px rgba(146, 64, 14, .055) !important;
+          animation: gastarioSelectedRowMini .22s ease both !important;
+        }
+
+        @keyframes gastarioSelectedRowMini {
+          from {
+            opacity: .88;
+            transform: translateX(8px) scale(.985);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        .finalOrderRow.selected .finalOrderIcon {
+          width: 34px !important;
+          height: 34px !important;
+          border-radius: 11px !important;
+          border-color: #facc15 !important;
+          background: #fffbeb !important;
+          color: #b45309 !important;
+        }
+
+        .finalOrderRow.selected .finalOrderCustomer {
+          min-width: 0 !important;
+          display: grid !important;
+          gap: 1px !important;
+        }
+
+        .finalOrderRow.selected .finalOrderNumber {
+          font-size: 11px !important;
+          line-height: 1.1 !important;
+        }
+
+        .finalOrderRow.selected .finalOrderCustomer h3 {
+          margin: 1px 0 0 !important;
+          font-size: 16px !important;
+          line-height: 1.05 !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+
+        .finalOrderRow.selected .finalOrderCustomer p {
+          font-size: 12px !important;
+          line-height: 1.15 !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+
+        .finalOrderRow.selected .finalSourceBadge {
+          min-height: 22px !important;
+          width: max-content !important;
+          max-width: 100% !important;
+          margin-top: 5px !important;
+          padding: 0 8px !important;
+          border-radius: 999px !important;
+          background: #fff7ed !important;
+          color: #b45309 !important;
+          border: 1px solid #fed7aa !important;
+          font-size: 11px !important;
+        }
+
+        .finalOrderRow.selected .finalSourceBadge::after {
+          content: " · geöffnet";
+          color: #b45309;
+          font-weight: 900;
+        }
+
+        .finalOrderRow.selected .finalOrderItems,
+        .finalOrderRow.selected .finalOrderDate,
+        .finalOrderRow.selected .finalOrderTotal {
+          display: none !important;
+        }
+
+        .finalSelectedPanel {
+          animation: gastarioSelectedPanelFocus .24s ease both !important;
+        }
+
+        @keyframes gastarioSelectedPanelFocus {
+          from {
+            opacity: .82;
+            transform: translateX(14px) scale(.99);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        .finalOrderRow:not(.selected):hover {
+          transform: translateX(3px) !important;
+        }
+
+        @media (max-width: 1180px) {
+          .finalOrderRow.selected {
+            min-height: 78px !important;
+          }
+        }
 `}</style>
 </AppLayout>
   );
 }
+
 
 
 
