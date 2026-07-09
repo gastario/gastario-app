@@ -243,6 +243,10 @@ function hasMinimumOrderSignal(extractedOrder: any, bestText: string) {
 }
 
 function shouldCreateOrderFromImportRules(extractedOrder: any, bestText: string, importRuleMatches: any[]) {
+  if (hasEnoughOrderData(extractedOrder)) {
+    return true;
+  }
+
   const customerName = String(extractedOrder?.customerName || "").trim().toLowerCase();
   const contactName = String(extractedOrder?.contactName || "").trim().toLowerCase();
 
@@ -279,10 +283,6 @@ function shouldCreateOrderFromImportRules(extractedOrder: any, bestText: string,
     return false;
   }
 
-  if (hasEnoughOrderData(extractedOrder)) {
-    return true;
-  }
-
   const meaningfulFields = getMeaningfulImportRuleFields(importRuleMatches);
 
   const hasEnoughRuleStructure =
@@ -299,9 +299,6 @@ function shouldCreateOrderFromImportRules(extractedOrder: any, bestText: string,
     hasEnoughRuleStructure &&
     hasMinimumOrderSignal(extractedOrder, bestText)
   );
-}
-
-  return importRuleMatches.length > 0 && hasMinimumOrderSignal(extractedOrder, bestText);
 }
 
 function normalizeImportText(value: unknown) {
@@ -923,6 +920,7 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
 
 
 
