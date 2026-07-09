@@ -814,20 +814,9 @@ export default function AuftragseingangPage() {
   function isLikelyTrashImportOrder(order: any) {
     const customerName = String(order?.customerName || "").trim().toLowerCase();
     const contactName = String(order?.contactName || "").trim().toLowerCase();
+    const eventName = String(order?.eventName || "").trim().toLowerCase();
     const totalInfo = getDisplayedOrderTotal(order);
     const items = Array.isArray(order?.items) ? order.items : [];
-
-    const realItems = items.filter((item: any) => {
-      const name = String(item?.name || "").trim().toLowerCase();
-      const quantity = Number(item?.quantity || 0);
-      const totalCents = Number(item?.totalCents || 0);
-
-      if (!name) return false;
-      if (name.includes("fehlende position")) return false;
-      if (name.length < 4) return false;
-
-      return quantity > 0 || totalCents > 0;
-    });
 
     const trashCustomer =
       !customerName ||
@@ -840,7 +829,36 @@ export default function AuftragseingangPage() {
       contactName === "keine kontaktperson erkannt" ||
       contactName === "kontakt unbekannt";
 
-    return trashCustomer && trashContact && totalInfo.cents <= 0 && realItems.length === 0;
+    const hasMoney = totalInfo.cents > 0;
+
+    const hasMeaningfulItemWithMoney = items.some((item: any) => {
+      const name = String(item?.name || "").trim().toLowerCase();
+      const totalCents = Number(item?.totalCents || 0);
+
+      if (!name) return false;
+      if (name.includes("fehlende position")) return false;
+
+      return totalCents > 0;
+    });
+
+    const weakMailText =
+      eventName.includes("e-mail import") ||
+      eventName.includes("email import") ||
+      eventName.includes("gas or electric grills") ||
+      eventName.includes("onsite") ||
+      eventName.includes("die woche") ||
+      eventName.includes("stattfinden");
+
+    return Boolean(
+      trashCustomer &&
+      trashContact &&
+      !hasMoney &&
+      !hasMeaningfulItemWithMoney
+    ) || Boolean(
+      trashCustomer &&
+      !hasMoney &&
+      weakMailText
+    );
   }
 
   const currentOrderStats = {
@@ -2964,10 +2982,36 @@ export default function AuftragseingangPage() {
           background: rgba(255,255,255,.22) !important;
           color: #ffffff !important;
         }
+
+        /* gastario-force-hide-email-workflow-card-20260709 */
+
+        .finalEmailCard,
+        .finalEmailPanel,
+        .emailInboxPanel,
+        .inboxPanel,
+        .mailWorkbench,
+        .finalCategoryTabs,
+        .finalEmailTabs,
+        .mailTabs,
+        .emailTabs,
+        .finalInboxTabs {
+          display: none !important;
+        }
+
+        .realOrderTabs {
+          margin-top: 20px !important;
+          margin-bottom: 16px !important;
+        }
+
+        .finalOrdersShell {
+          margin-top: 0 !important;
+        }
 `}</style>
 </AppLayout>
   );
 }
+
+
 
 
 
