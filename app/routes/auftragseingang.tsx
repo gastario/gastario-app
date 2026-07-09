@@ -826,9 +826,9 @@ export default function AuftragseingangPage() {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const selectedOrder: any =
-    visibleOrders.find((order: any) => order.id === selectedOrderId) ||
-    visibleOrders[0] ||
-    null;
+    selectedOrderId
+      ? visibleOrders.find((order: any) => order.id === selectedOrderId) || null
+      : null;
 
   const selectedOrderItems = selectedOrder
     ? (Array.isArray(selectedOrder.items) ? selectedOrder.items : []).filter(
@@ -973,7 +973,7 @@ export default function AuftragseingangPage() {
               Keine ungeprüften aktuellen Aufträge.
             </div>
           ) : (
-            <div className="finalOrdersGrid">
+            <div className={selectedOrder ? "finalOrdersGrid selectedFocusMode" : "finalOrdersGrid"}>
               <div className="finalOrderRows">
                 {visibleOrders.map((order: any, index: number) => {
                   const items = Array.isArray(order.items) ? order.items : [];
@@ -1091,6 +1091,10 @@ export default function AuftragseingangPage() {
                   ) : null}
 
                   <div className="finalSelectedActions">
+                    <button type="button" className="finalBackButton" onClick={() => setSelectedOrderId(null)}>
+                      Zurück zur Liste
+                    </button>
+
                     <Link to={"/auftrag-pruefung/" + selectedOrder.id} prefetch="intent">
                       Prüfen & übernehmen
                     </Link>
@@ -2390,10 +2394,103 @@ export default function AuftragseingangPage() {
             min-height: 78px !important;
           }
         }
+
+        /* gastario-selected-focus-mode-20260709 */
+
+        .finalOrdersGrid.selectedFocusMode {
+          display: grid !important;
+          grid-template-columns: 1fr !important;
+          place-items: center !important;
+          min-height: 560px !important;
+          padding: 26px !important;
+          background:
+            radial-gradient(circle at center, rgba(245, 158, 11, .08), transparent 42%),
+            #ffffff !important;
+          overflow: hidden !important;
+          animation: gastarioFocusBackground .22s ease both !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalOrderRows {
+          display: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel {
+          position: relative !important;
+          top: auto !important;
+          width: min(680px, 100%) !important;
+          max-width: 680px !important;
+          z-index: 10 !important;
+          border-color: #f59e0b !important;
+          box-shadow:
+            0 28px 70px rgba(15, 23, 42, .14),
+            0 0 0 8px rgba(245, 158, 11, .08) !important;
+          animation: gastarioSelectedCenterIn .28s cubic-bezier(.2,.8,.2,1) both !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel::before {
+          background: linear-gradient(90deg, #f59e0b, #10a37f) !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedTop h3 {
+          font-size: 28px !important;
+          letter-spacing: -1px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts {
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions {
+          grid-template-columns: 150px 1fr 120px !important;
+        }
+
+        .finalBackButton {
+          border-color: #d6e5df !important;
+          background: #ffffff !important;
+          color: #0f172a !important;
+        }
+
+        @keyframes gastarioSelectedCenterIn {
+          from {
+            opacity: 0;
+            transform: translateY(24px) scale(.96);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        @keyframes gastarioFocusBackground {
+          from {
+            background-color: #ffffff;
+          }
+
+          to {
+            background-color: #ffffff;
+          }
+        }
+
+        @media (max-width: 900px) {
+          .finalOrdersGrid.selectedFocusMode {
+            padding: 14px !important;
+            min-height: auto !important;
+          }
+
+          .finalOrdersGrid.selectedFocusMode .finalSelectedFacts,
+          .finalOrdersGrid.selectedFocusMode .finalSelectedActions {
+            grid-template-columns: 1fr !important;
+          }
+        }
 `}</style>
 </AppLayout>
   );
 }
+
+
+
+
 
 
 
