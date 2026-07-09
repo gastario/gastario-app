@@ -2139,10 +2139,73 @@ export default function AuftragseingangPage() {
             position: static !important;
           }
         }
+
+        /* gastario-selected-orange-clean-20260709 */
+
+        .finalMiniSummary {
+          display: none !important;
+        }
+
+        .finalHeader {
+          margin-bottom: 20px !important;
+        }
+
+        .finalOrderRow.selected {
+          border-color: #f59e0b !important;
+          background:
+            linear-gradient(90deg, rgba(245, 158, 11, .10), #ffffff 46%) !important;
+          box-shadow: inset 4px 0 0 #f59e0b, 0 10px 26px rgba(15, 23, 42, .045) !important;
+        }
+
+        .finalOrderRow.selected .finalOrderIcon {
+          border-color: #facc15 !important;
+          background: #fffbeb !important;
+          color: #b45309 !important;
+        }
+
+        .finalOrderRow.selected .finalSourceBadge {
+          background: #fff7ed !important;
+          color: #b45309 !important;
+          border: 1px solid #fed7aa !important;
+        }
+
+        .finalOrderRow.selected .finalOrderItems {
+          opacity: .35 !important;
+        }
+
+        .finalOrderRow.selected .finalOrderItems::before {
+          content: "Details rechts geöffnet";
+          display: inline-flex;
+          align-items: center;
+          width: max-content;
+          min-height: 26px;
+          padding: 0 9px;
+          border-radius: 999px;
+          background: #fff7ed;
+          color: #b45309;
+          font-size: 12px;
+          font-weight: 900;
+        }
+
+        .finalOrderRow.selected .finalOrderItems div,
+        .finalOrderRow.selected .finalOrderItems small {
+          display: none !important;
+        }
+
+        .finalSelectedPanel {
+          border-color: #f5c16c !important;
+          box-shadow: 0 14px 34px rgba(146, 64, 14, .08) !important;
+        }
+
+        .finalSelectedKicker {
+          background: #fff7ed !important;
+          color: #b45309 !important;
+        }
 `}</style>
 </AppLayout>
   );
 }
+
 
 
 
