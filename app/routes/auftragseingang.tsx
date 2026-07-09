@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
-import { Form, redirect, useActionData, useFetcher, useLoaderData } from "react-router";
+import { Form, Link, redirect, useActionData, useFetcher, useLoaderData } from "react-router";
 
 const EMAIL_BUCKETS = [
   { key: "orders", label: "Bestätigungen", help: "Sichere Auftragsbestätigungen" },
@@ -826,27 +826,43 @@ export default function AuftragseingangPage() {
 
   return (
     <AppLayout>
-      <div className="inboxPage">
-        <section className="simpleTopbar">
+      <div className="inboxPage inboxFinalPage">
+        <section className="finalHeader">
           <div>
-            <div className="simpleEyebrow">Auftragseingang</div>
-            <h1>Prüfen & übernehmen</h1>
+            <div className="finalEyebrow">Auftragseingang</div>
+            <h1>Auftragsbestätigungen</h1>
             <p>E-Mails abrufen, Aufträge kontrollieren und sauber in die Produktion übernehmen.</p>
+
+            <div className="finalMiniSummary">
+              <span>
+                <strong>{currentOrderStats.all}</strong>
+                gesamt
+              </span>
+              <span>
+                <strong>{currentOrderStats.review}</strong>
+                offen
+              </span>
+              <span>
+                <strong>{currentOrderStats.confirmed}</strong>
+                übernommen
+              </span>
+            </div>
           </div>
 
-          <div className="simpleTopActions">
+          <div className="finalHeaderActions">
             <button
               type="button"
-              className={liveEnabled ? "simpleGhost active" : "simpleGhost"}
+              className={liveEnabled ? "finalGhost isLive" : "finalGhost"}
               onClick={() => setLiveEnabled((value) => !value)}
               title={lastAutoImportAt ? "Letzter Auto-Abruf: " + lastAutoImportAt : "Automatischer Abruf"}
             >
+              <span></span>
               {liveEnabled ? "Live an" : "Live aus"}
             </button>
 
             <button
               type="button"
-              className="simplePrimary"
+              className="finalPrimary"
               onClick={runEmailImportAndReload}
               disabled={isImportingNow}
             >
@@ -855,350 +871,235 @@ export default function AuftragseingangPage() {
           </div>
         </section>
 
-        <nav className="simpleStatusTabs" aria-label="Auftragsstatus">
-          {[
-            ["Alle", currentOrderStats.all, ""],
-            ["Zu prüfen", currentOrderStats.review, "AUTO_CREATED"],
-            ["Übernommen", currentOrderStats.confirmed, "CONFIRMED"],
-            ["Abgelehnt", currentOrderStats.rejected, "REJECTED"],
-          ].map(([label, count, status]) => {
-            const active = data.activeStatus === status || (!data.activeStatus && !status);
-            const params = new URLSearchParams();
-
-            if (status) params.set("status", String(status));
-            if (data.selectedEmailCategory) params.set("emailCategory", data.selectedEmailCategory);
-            if (data.dateRange) params.set("dateRange", data.dateRange);
-            if (data.searchQuery) params.set("q", data.searchQuery);
-            if (data.selectedDate) params.set("date", data.selectedDate);
-
-            const href = "/auftragseingang" + (params.toString() ? "?" + params.toString() : "");
-
-            return (
-              <a key={String(label)} href={href} className={active ? "simpleStatusTab active" : "simpleStatusTab"}>
-                <span>{label}</span>
-                <strong>{count}</strong>
-              </a>
-            );
-          })}
-        </nav>
-
         {actionData?.error ? (
-          <div className="simpleAlert error">{actionData.error}</div>
+          <div className="finalAlert error">{actionData.error}</div>
         ) : null}
 
         {actionData?.success ? (
-          <div className="simpleAlert success">{actionData.success}</div>
+          <div className="finalAlert success">{actionData.success}</div>
         ) : null}
 
-        <section className="simpleMailBox">
-          <div className="simpleSectionHead">
-            <div>
-              <div className="simpleEyebrow">E-Mail Eingang</div>
-              <h2>{emailCategoryLabel(data.selectedEmailCategory)}</h2>
-              <p>{currentBucket.help}</p>
-            </div>
+        <section className="finalInboxShell">
+          <nav className="finalCategoryTabs" aria-label="E-Mail-Kategorien">
+            {[
+              ["all", "Alle", data.emailBuckets?.all || 0],
+              ["orders", "Bestätigungen", data.emailBuckets?.orders || 0],
+              ["possible", "Unklar", data.emailBuckets?.possible || 0],
+              ["inquiries", "Anfragen", data.emailBuckets?.inquiries || 0],
+              ["reminders", "Lieferscheine", data.emailBuckets?.reminders || 0],
+              ["other", "Sonstiges", data.emailBuckets?.other || 0],
+              ["hidden", "Ausgeblendet", data.emailBuckets?.hidden || 0],
+            ].map(([key, label, count]) => {
+              const params = new URLSearchParams();
 
-            <Form method="get" className="simpleFilter">
-              <input type="hidden" name="emailCategory" value={data.selectedEmailCategory} />
-              {data.activeStatus ? <input type="hidden" name="status" value={data.activeStatus} /> : null}
+              params.set("emailCategory", String(key));
+              if (data.dateRange) params.set("dateRange", data.dateRange);
+              if (data.searchQuery) params.set("q", data.searchQuery);
+              if (data.selectedDate) params.set("date", data.selectedDate);
 
+              const active = data.selectedEmailCategory === key;
+
+              return (
+                <Link
+                  key={String(key)}
+                  to={"/auftragseingang?" + params.toString()}
+                  className={active ? "finalCategoryTab active" : "finalCategoryTab"}
+                  prefetch="intent"
+                >
+                  <span>{label}</span>
+                  <strong>{count}</strong>
+                </Link>
+              );
+            })}
+          </nav>
+
+          <Form method="get" className="finalToolbar">
+            <input type="hidden" name="emailCategory" value={data.selectedEmailCategory} />
+
+            <label className="finalSearch">
+              <span>Suche</span>
               <input
                 name="q"
                 defaultValue={data.searchQuery || ""}
-                placeholder="Betreff, Absender, Kunde"
+                placeholder="Absender, Kunde oder Betreff suchen ..."
               />
+            </label>
 
+            <label className="finalSelect">
+              <span>Zeitraum</span>
               <select name="dateRange" defaultValue={data.dateRange || "last7"}>
                 <option value="last7">Letzte 7 Tage</option>
                 <option value="today">Heute</option>
                 <option value="yesterday">Gestern</option>
               </select>
+            </label>
 
-              <button type="submit">Filtern</button>
-              <a href={emailResetHref}>Zurücksetzen</a>
-            </Form>
-          </div>
-
-          <div className="simpleMailTabs">
-            {EMAIL_BUCKETS.map((bucket) => {
-              const count = data.emailBuckets[bucket.key as keyof typeof data.emailBuckets] ?? 0;
-              const params = new URLSearchParams();
-
-              if (data.searchQuery) params.set("q", data.searchQuery);
-              if (data.dateRange) params.set("dateRange", data.dateRange);
-              if (data.selectedDate) params.set("date", data.selectedDate);
-              if (data.activeStatus) params.set("status", data.activeStatus);
-              params.set("emailCategory", bucket.key);
-
-              const active = data.selectedEmailCategory === bucket.key;
-
-              return (
-                <a
-                  key={bucket.key}
-                  href={"/auftragseingang?" + params.toString()}
-                  className={active ? "simpleMailTab active" : "simpleMailTab"}
-                >
-                  <span>{bucket.label}</span>
-                  <strong>{count}</strong>
-                </a>
-              );
-            })}
-          </div>
-
-          {data.emailInbox.length === 0 ? (
-            <div className="simpleEmpty">Keine ungeprüften E-Mails in dieser Kategorie.</div>
-          ) : (
-            <div className="simpleMailList">
-              {sortedEmails.map((mail: any) => {
-                const category = classifyIncomingEmail(mail);
-                const receivedDate = new Date(mail.receivedAt || mail.createdAt);
-                const isInquiry = category === "inquiries";
-
-                return (
-                  <div className="simpleMailRow" key={mail.id}>
-                    <div>
-                      <strong>{mail.subject || "Ohne Betreff"}</strong>
-                      <span>{mail.sender || "-"} · {receivedDate.toLocaleDateString("de-DE")}</span>
-                    </div>
-
-                    <div className="simpleRowActions">
-                      <a href={(isInquiry ? "/angebot-vorbereiten/" : "/email-pruefung/") + mail.id}>
-                        {isInquiry ? "Angebot" : "Prüfen"}
-                      </a>
-
-                      <Form method="post">
-                        <input type="hidden" name="intent" value="deleteIncomingEmail" />
-                        <input type="hidden" name="emailId" value={mail.id} />
-                        <button type="submit">Löschen</button>
-                      </Form>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+            <button type="submit" className="finalFilterButton">Weitere Filter</button>
+            <Link to={"/auftragseingang?emailCategory=" + data.selectedEmailCategory + "&dateRange=last7"} className="finalResetButton">
+              Zurücksetzen
+            </Link>
+          </Form>
         </section>
 
-        <section className="simpleOrders">
-          <div className="simpleOrdersHead">
+        <section className="finalOrdersShell">
+          <div className="finalOrdersHead">
             <div>
-              <div className="simpleEyebrow">Aufträge</div>
               <h2>Zu prüfen</h2>
               <p>Nur Aufträge, die noch kontrolliert und übernommen werden müssen.</p>
             </div>
 
-            <div className="simpleOrderCount">
+            <div className="finalOrdersRight">
               <strong>{visibleOrders.length}</strong>
               <span>offen</span>
             </div>
           </div>
 
           {visibleOrders.length === 0 ? (
-            <div className="simpleEmpty">Keine ungeprüften aktuellen Aufträge.</div>
+            <div className="finalEmpty">
+              Keine ungeprüften aktuellen Aufträge.
+            </div>
           ) : (
-            <div className="simpleOrderList">
-              {visibleOrders.map((order: any) => {
+            <div className="finalOrderList">
+              {visibleOrders.map((order: any, index: number) => {
                 const items = Array.isArray(order.items) ? order.items : [];
                 const totalInfo = getDisplayedOrderTotal(order);
-                const previewItems = items.slice(0, 4);
+                const previewItems = items
+                  .filter((item: any) => !String(item.name || "").toLowerCase().includes("fehlende position"))
+                  .slice(0, 3);
 
                 return (
-                  <article className="simpleOrderCard" key={order.id}>
-                    <div className="simpleOrderMain">
-                      <div className="simpleOrderMeta">{order.orderNumber}</div>
+                  <article className={index === 0 ? "finalOrderCard selected" : "finalOrderCard"} key={order.id}>
+                    <div className="finalOrderIcon">✉</div>
+
+                    <div className="finalOrderCustomer">
+                      <div className="finalOrderNumber">{order.orderNumber}</div>
                       <h3>{order.customerName || order.customer?.name || "Kunde unbekannt"}</h3>
                       <p>{order.contactName || "Keine Kontaktperson erkannt"}</p>
-
-                      <div className="simpleItems">
-                        {previewItems.map((item: any) => (
-                          <div key={item.id || item.name}>
-                            <strong>{item.quantity || 1}x</strong>
-                            <span>{item.name || "Position"}</span>
-                          </div>
-                        ))}
-
-                        {items.length > previewItems.length ? (
-                          <small>+ {items.length - previewItems.length} weitere Positionen</small>
-                        ) : null}
-                      </div>
+                      <span className="finalSourceBadge">{sourceLabel(order.source)}</span>
                     </div>
 
-                    <aside className="simpleOrderSide">
-                      <div className="simpleDateBox">
-                        <strong>{formatDate(order.deliveryDate)}</strong>
-                        <span>{order.deliveryTimeText || "Uhrzeit offen"}</span>
-                      </div>
+                    <div className="finalOrderItems">
+                      {previewItems.map((item: any) => (
+                        <div key={item.id || item.name}>
+                          <strong>{item.quantity || 1}x</strong>
+                          <span>{item.name || "Position"}</span>
+                        </div>
+                      ))}
 
-                      <div className="simplePriceBox">
-                        <strong>{formatImportCurrencyFromCents(totalInfo.cents)}</strong>
-                        <span>{totalInfo.source}</span>
-                        {totalInfo.source === "vorläufig" ? (
-                          <small>bitte prüfen</small>
-                        ) : null}
-                      </div>
+                      {items.length > previewItems.length ? (
+                        <small>+ {items.length - previewItems.length} weitere Position</small>
+                      ) : null}
+                    </div>
 
-                      <div className="simpleBadges">
-                        <span>{statusLabel(order.status)}</span>
-                        <span>{sourceLabel(order.source)}</span>
-                      </div>
+                    <div className="finalOrderDate">
+                      <strong>{formatDate(order.deliveryDate)}</strong>
+                      <span>{order.deliveryTimeText || "Uhrzeit offen"}</span>
+                    </div>
 
-                      <div className="simpleOrderActions">
-                        <a href={"/auftrag-pruefung/" + order.id}>Prüfen</a>
+                    <div className="finalOrderTotal">
+                      <strong>{formatImportCurrencyFromCents(totalInfo.cents)}</strong>
+                      <span>{totalInfo.source}</span>
+                    </div>
 
-                        <Form method="post">
-                          <input type="hidden" name="intent" value="deleteOrder" />
-                          <input type="hidden" name="orderId" value={order.id} />
-                          <button type="submit">Löschen</button>
-                        </Form>
-                      </div>
-                    </aside>
+                    <div className="finalOrderActions">
+                      <Link to={"/auftrag-pruefung/" + order.id} prefetch="intent">
+                        Prüfen
+                      </Link>
+
+                      <Form method="post">
+                        <input type="hidden" name="intent" value="deleteOrder" />
+                        <input type="hidden" name="orderId" value={order.id} />
+                        <button type="submit">Löschen</button>
+                      </Form>
+                    </div>
                   </article>
                 );
               })}
+
+              <div className="finalLoadMore">Weitere Ergebnisse laden</div>
             </div>
           )}
 
           {hiddenPastOrderCount > 0 ? (
-            <div className="simpleHint">
+            <div className="finalHint">
               {hiddenPastOrderCount} vergangene Auftrag{hiddenPastOrderCount === 1 ? "" : "e"} ausgeblendet.{" "}
-              <a href="/auftraege?view=past">Vergangene Aufträge öffnen</a>
+              <Link to="/auftraege?view=past">Vergangene Aufträge öffnen</Link>
             </div>
           ) : null}
         </section>
       </div>
 
       <style>{`
-        /* gastario-simple-new-structure-20260708 */
+        /* gastario-final-auftragseingang-selected-ux-20260709 */
 
-        .inboxPage {
-          max-width: 1180px;
+        .inboxFinalPage {
+          max-width: 1220px;
           margin: 0 auto;
-          padding: 0 22px 46px;
+          padding: 0 24px 52px;
           color: #0f172a;
         }
 
-        .inboxPage * {
+        .inboxFinalPage * {
           box-sizing: border-box;
         }
 
-        .simpleTopbar,
-        .simpleMailBox,
-        .simpleOrderCard {
-          background: #ffffff;
-          border: 1px solid #dbe7e2;
-          border-radius: 18px;
-          box-shadow: 0 10px 26px rgba(15, 23, 42, .045);
-        }
-
-        .simpleTopbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          padding: 18px 20px;
-          margin-bottom: 12px;
-        }
-
-        .simpleEyebrow {
+        .finalEyebrow {
           color: #0f9f7a;
           font-size: 11px;
-          font-weight: 900;
+          font-weight: 950;
           letter-spacing: .12em;
           text-transform: uppercase;
         }
 
-        .simpleTopbar h1,
-        .simpleSectionHead h2,
-        .simpleOrdersHead h2 {
-          margin: 4px 0 0;
+        .finalHeader {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 24px;
+          margin-bottom: 18px;
+        }
+
+        .finalHeader h1 {
+          margin: 6px 0 0;
           color: #061f1b;
-          font-weight: 900;
-          letter-spacing: -.8px;
+          font-size: 34px;
+          line-height: 1.05;
+          font-weight: 950;
+          letter-spacing: -1.25px;
         }
 
-        .simpleTopbar h1 {
-          font-size: 28px;
-          line-height: 1.1;
+        .finalHeader p {
+          margin: 8px 0 0;
+          max-width: 720px;
+          color: #526579;
+          font-size: 14px;
+          line-height: 1.5;
+          font-weight: 700;
         }
 
-        .simpleTopbar p,
-        .simpleSectionHead p,
-        .simpleOrdersHead p {
-          margin: 5px 0 0;
-          color: #64748b;
-          font-size: 13px;
-          font-weight: 650;
-        }
-
-        .simpleTopActions {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-        }
-
-        .simplePrimary,
-        .simpleGhost,
-        .simpleFilter button,
-        .simpleFilter a,
-        .simpleRowActions a,
-        .simpleRowActions button,
-        .simpleOrderActions a,
-        .simpleOrderActions button {
+        .finalMiniSummary {
           display: inline-flex;
           align-items: center;
-          justify-content: center;
-          min-height: 38px;
-          padding: 0 13px;
-          border-radius: 10px;
-          border: 1px solid #d6e5df;
-          background: #ffffff;
-          color: #0f172a;
-          font-weight: 850;
-          text-decoration: none;
-          cursor: pointer;
-        }
-
-        .simplePrimary,
-        .simpleFilter button,
-        .simpleRowActions a,
-        .simpleOrderActions a {
-          background: #10a37f;
-          border-color: #10a37f;
-          color: #ffffff;
-        }
-
-        .simpleGhost.active {
-          color: #08765d;
-          border-color: #b7e4d6;
-          background: #f0fdf9;
-        }
-
-        .simpleStatusTabs {
-          display: flex;
-          gap: 8px;
-          margin: 0 0 14px;
-          overflow-x: auto;
-          padding-bottom: 2px;
-        }
-
-        .simpleStatusTab {
-          display: inline-flex;
-          align-items: center;
-          gap: 9px;
-          min-height: 38px;
-          padding: 0 13px;
+          gap: 14px;
+          margin-top: 16px;
+          padding: 8px 12px;
           border: 1px solid #dbe7e2;
           border-radius: 999px;
           background: #ffffff;
-          color: #172033;
-          text-decoration: none;
+          box-shadow: 0 8px 22px rgba(15, 23, 42, .035);
+        }
+
+        .finalMiniSummary span {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          color: #536579;
+          font-size: 13px;
           font-weight: 850;
           white-space: nowrap;
         }
 
-        .simpleStatusTab strong,
-        .simpleMailTab strong {
+        .finalMiniSummary strong {
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -1209,512 +1110,472 @@ export default function AuftragseingangPage() {
           background: #eef6f4;
           color: #0f766e;
           font-size: 12px;
-          font-weight: 900;
+          font-weight: 950;
         }
 
-        .simpleStatusTab.active,
-        .simpleMailTab.active {
-          background: #10a37f;
-          border-color: #10a37f;
-          color: #ffffff;
+        .finalHeaderActions {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          justify-content: flex-end;
+          flex-wrap: wrap;
         }
 
-        .simpleStatusTab.active strong,
-        .simpleMailTab.active strong {
-          background: rgba(255,255,255,.22);
-          color: #ffffff;
-        }
-
-        .simpleAlert {
-          margin: 0 0 12px;
-          padding: 12px 14px;
+        .finalGhost,
+        .finalPrimary {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 42px;
+          padding: 0 16px;
           border-radius: 12px;
-          font-weight: 800;
+          border: 1px solid #d6e5df;
+          background: #ffffff;
+          color: #0f172a;
+          font-weight: 900;
+          cursor: pointer;
+          text-decoration: none;
         }
 
-        .simpleAlert.error {
+        .finalGhost span {
+          width: 8px;
+          height: 8px;
+          margin-right: 8px;
+          border-radius: 999px;
+          background: #22c55e;
+        }
+
+        .finalGhost.isLive {
+          color: #08765d;
+          background: #f0fdf9;
+          border-color: #b7e4d6;
+        }
+
+        .finalPrimary {
+          border-color: #10a37f;
+          background: #10a37f;
+          color: #ffffff;
+          box-shadow: 0 10px 24px rgba(16, 163, 127, .22);
+        }
+
+        .finalAlert {
+          margin-bottom: 12px;
+          padding: 12px 14px;
+          border-radius: 13px;
+          font-weight: 850;
+        }
+
+        .finalAlert.error {
           background: #fff1f2;
           color: #991b1b;
           border: 1px solid #fecaca;
         }
 
-        .simpleAlert.success {
+        .finalAlert.success {
           background: #f0fdf4;
           color: #166534;
           border: 1px solid #bbf7d0;
         }
 
-        .simpleMailBox {
-          padding: 18px;
-          margin-bottom: 26px;
-        }
-
-        .simpleSectionHead {
-          display: grid;
-          grid-template-columns: minmax(260px, 1fr) minmax(520px, 620px);
-          gap: 16px;
-          align-items: start;
-          margin-bottom: 14px;
-        }
-
-        .simpleSectionHead h2,
-        .simpleOrdersHead h2 {
-          font-size: 25px;
-          line-height: 1.1;
-        }
-
-        .simpleFilter {
-          display: grid;
-          grid-template-columns: 1fr 165px auto auto;
-          gap: 8px;
-          padding: 8px;
+        .finalInboxShell {
+          overflow: hidden;
+          margin-bottom: 22px;
           border: 1px solid #dbe7e2;
-          border-radius: 14px;
-          background: #f8fbfa;
-        }
-
-        .simpleFilter input,
-        .simpleFilter select {
-          width: 100%;
-          height: 38px;
-          padding: 0 11px;
-          border: 1px solid #d6e5df;
-          border-radius: 10px;
+          border-radius: 18px;
           background: #ffffff;
-          color: #0f172a;
-          font-weight: 700;
+          box-shadow: 0 12px 30px rgba(15, 23, 42, .045);
         }
 
-        .simpleMailTabs {
-          display: flex;
-          flex-wrap: wrap;
+        .finalCategoryTabs {
+          display: grid;
+          grid-template-columns: repeat(7, minmax(0, 1fr));
           gap: 8px;
-          margin-bottom: 12px;
+          padding: 16px;
+          border-bottom: 1px solid #edf3f1;
         }
 
-        .simpleMailTab {
+        .finalCategoryTab {
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           gap: 8px;
-          min-height: 36px;
+          min-height: 42px;
           padding: 0 12px;
-          border: 1px solid #dbe7e2;
+          border: 1px solid transparent;
           border-radius: 999px;
-          background: #ffffff;
           color: #172033;
+          background: transparent;
           text-decoration: none;
-          font-size: 13px;
-          font-weight: 850;
+          font-size: 14px;
+          font-weight: 900;
+          white-space: nowrap;
         }
 
-        .simpleEmpty {
-          padding: 14px;
-          border: 1px dashed #c9ded7;
-          border-radius: 14px;
-          background: #f8fbfa;
-          color: #64748b;
-          font-weight: 800;
-        }
-
-        .simpleMailList {
-          display: grid;
-          gap: 8px;
-        }
-
-        .simpleMailRow {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
-          gap: 12px;
+        .finalCategoryTab strong {
+          display: inline-flex;
           align-items: center;
-          padding: 12px;
-          border: 1px solid #e2ebe7;
-          border-radius: 14px;
-          background: #ffffff;
-        }
-
-        .simpleMailRow strong {
-          display: block;
-          color: #0f172a;
-          font-weight: 850;
-        }
-
-        .simpleMailRow span {
-          display: block;
-          margin-top: 3px;
-          color: #64748b;
+          justify-content: center;
+          min-width: 24px;
+          height: 24px;
+          padding: 0 7px;
+          border-radius: 999px;
+          background: #eef2f7;
+          color: #475569;
           font-size: 12px;
+          font-weight: 950;
+        }
+
+        .finalCategoryTab.active {
+          background: #10a37f;
+          border-color: #10a37f;
+          color: #ffffff;
+          box-shadow: 0 10px 24px rgba(16, 163, 127, .22);
+        }
+
+        .finalCategoryTab.active strong {
+          background: rgba(255,255,255,.2);
+          color: #ffffff;
+        }
+
+        .finalToolbar {
+          display: grid;
+          grid-template-columns: minmax(260px, 1fr) 180px auto auto;
+          gap: 10px;
+          align-items: end;
+          padding: 16px;
+        }
+
+        .finalSearch,
+        .finalSelect {
+          display: grid;
+          gap: 6px;
+        }
+
+        .finalSearch span,
+        .finalSelect span {
+          color: #64748b;
+          font-size: 10px;
+          font-weight: 950;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+
+        .finalSearch input,
+        .finalSelect select {
+          width: 100%;
+          height: 42px;
+          padding: 0 13px;
+          border: 1px solid #d6e5df;
+          border-radius: 12px;
+          background: #ffffff;
+          color: #0f172a;
+          font-size: 14px;
           font-weight: 700;
+          outline: none;
         }
 
-        .simpleRowActions,
-        .simpleOrderActions {
-          display: flex;
-          gap: 7px;
+        .finalSearch input:focus,
+        .finalSelect select:focus {
+          border-color: #10a37f;
+          box-shadow: 0 0 0 4px rgba(16, 163, 127, .10);
+        }
+
+        .finalFilterButton,
+        .finalResetButton {
+          display: inline-flex;
           align-items: center;
-          justify-content: flex-end;
+          justify-content: center;
+          min-height: 42px;
+          padding: 0 15px;
+          border-radius: 12px;
+          border: 1px solid #d6e5df;
+          background: #ffffff;
+          color: #0f172a;
+          font-size: 14px;
+          font-weight: 900;
+          text-decoration: none;
+          cursor: pointer;
         }
 
-        .simpleRowActions button,
-        .simpleOrderActions button {
-          color: #991b1b;
-          border-color: #fecaca;
-          background: #fff1f2;
+        .finalFilterButton {
+          border-color: #10a37f;
+          background: #10a37f;
+          color: #ffffff;
         }
 
-        .simpleOrdersHead {
+        .finalOrdersShell {
+          border: 1px solid #dbe7e2;
+          border-radius: 18px;
+          background: #ffffff;
+          box-shadow: 0 12px 30px rgba(15, 23, 42, .045);
+          overflow: hidden;
+        }
+
+        .finalOrdersHead {
           display: flex;
           align-items: flex-end;
           justify-content: space-between;
           gap: 16px;
-          margin-bottom: 12px;
-          padding-bottom: 10px;
-          border-bottom: 1px solid #dbe7e2;
+          padding: 18px 18px 14px;
+          border-bottom: 1px solid #edf3f1;
         }
 
-        .simpleOrderCount {
-          display: flex;
+        .finalOrdersHead h2 {
+          margin: 0;
+          color: #061f1b;
+          font-size: 22px;
+          line-height: 1.1;
+          font-weight: 950;
+          letter-spacing: -.6px;
+        }
+
+        .finalOrdersHead p {
+          margin: 5px 0 0;
+          color: #64748b;
+          font-size: 13px;
+          font-weight: 700;
+        }
+
+        .finalOrdersRight {
+          display: inline-flex;
           align-items: baseline;
           gap: 6px;
           color: #64748b;
           font-weight: 850;
         }
 
-        .simpleOrderCount strong {
+        .finalOrdersRight strong {
           color: #061f1b;
           font-size: 24px;
-          font-weight: 900;
+          font-weight: 950;
         }
 
-        .simpleOrderList {
+        .finalOrderList {
           display: grid;
-          gap: 12px;
+          gap: 10px;
+          padding: 14px;
         }
 
-        .simpleOrderCard {
+        .finalOrderCard {
           display: grid;
-          grid-template-columns: minmax(0, 1fr) 230px;
-          gap: 16px;
+          grid-template-columns: 48px minmax(210px, 1.15fr) minmax(220px, 1fr) 135px 125px 150px;
+          gap: 14px;
+          align-items: center;
           padding: 16px;
+          border: 1px solid #e2ebe7;
+          border-radius: 16px;
+          background: #ffffff;
         }
 
-        .simpleOrderMeta {
+        .finalOrderCard.selected {
+          border-color: rgba(16, 163, 127, .55);
+          background: linear-gradient(90deg, rgba(16, 163, 127, .06), #ffffff 42%);
+          box-shadow: inset 4px 0 0 #10a37f;
+        }
+
+        .finalOrderIcon {
+          width: 38px;
+          height: 38px;
+          border-radius: 12px;
+          border: 1px solid #cde9de;
+          background: #f0fdf9;
+          color: #0f9f7a;
+          display: grid;
+          place-items: center;
+          font-weight: 950;
+        }
+
+        .finalOrderNumber {
           color: #64748b;
           font-size: 12px;
-          font-weight: 900;
+          font-weight: 950;
           letter-spacing: .08em;
           text-transform: uppercase;
         }
 
-        .simpleOrderCard h3 {
-          margin: 4px 0 2px;
+        .finalOrderCustomer h3 {
+          margin: 4px 0 3px;
           color: #061f1b;
-          font-size: 22px;
+          font-size: 18px;
           line-height: 1.1;
-          font-weight: 900;
-          letter-spacing: -.5px;
+          font-weight: 950;
         }
 
-        .simpleOrderCard p {
+        .finalOrderCustomer p {
           margin: 0;
           color: #64748b;
-          font-size: 13px;
+          font-size: 12.5px;
           font-weight: 700;
         }
 
-        .simpleItems {
-          display: grid;
-          gap: 5px;
-          margin-top: 14px;
-          padding-top: 12px;
-          border-top: 1px solid #edf3f1;
-        }
-
-        .simpleItems div {
-          display: flex;
-          gap: 9px;
-          font-size: 13px;
-          font-weight: 750;
-        }
-
-        .simpleItems strong {
-          min-width: 28px;
-          color: #0f9f7a;
-          font-weight: 900;
-        }
-
-        .simpleItems small {
-          color: #64748b;
-          font-weight: 800;
-        }
-
-        .simpleOrderSide {
-          display: grid;
-          gap: 8px;
-          align-content: start;
-        }
-
-        .simpleDateBox,
-        .simplePriceBox {
-          padding: 12px;
-          border-radius: 14px;
-          border: 1px solid #dbe7e2;
-          background: #f8fbfa;
-        }
-
-        .simpleDateBox {
-          text-align: right;
-        }
-
-        .simpleDateBox strong {
-          display: block;
-          color: #061f1b;
-          font-size: 16px;
-          font-weight: 900;
-        }
-
-        .simpleDateBox span {
-          display: block;
-          margin-top: 3px;
-          color: #64748b;
-          font-size: 12px;
-          font-weight: 800;
-        }
-
-        .simplePriceBox {
-          border-color: #fed7aa;
-          background: #fff7ed;
-        }
-
-        .simplePriceBox strong {
-          display: block;
-          color: #061f1b;
-          font-size: 25px;
-          line-height: 1;
-          font-weight: 900;
-          white-space: nowrap;
-        }
-
-        .simplePriceBox span,
-        .simplePriceBox small {
-          display: block;
-          margin-top: 5px;
-          color: #b45309;
-          font-size: 11px;
-          line-height: 1.2;
-          font-weight: 850;
-          text-transform: uppercase;
-        }
-
-        .simpleBadges {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-        }
-
-        .simpleBadges span {
+        .finalSourceBadge {
           display: inline-flex;
           align-items: center;
-          min-height: 25px;
+          min-height: 24px;
+          margin-top: 8px;
           padding: 0 9px;
           border-radius: 999px;
           background: #f1f5f4;
           color: #36534b;
-          font-size: 12px;
-          font-weight: 800;
+          font-size: 11.5px;
+          font-weight: 850;
         }
 
-        .simpleHint {
-          margin-top: 12px;
-          color: #64748b;
+        .finalOrderItems {
+          display: grid;
+          gap: 5px;
+          color: #0f172a;
           font-size: 13px;
           font-weight: 750;
         }
 
-        .simpleHint a {
-          color: #0f766e;
-          font-weight: 900;
+        .finalOrderItems div {
+          display: flex;
+          gap: 8px;
         }
 
-        @media (max-width: 980px) {
-          .simpleTopbar,
-          .simpleSectionHead,
-          .simpleOrderCard {
-            grid-template-columns: 1fr;
+        .finalOrderItems strong {
+          min-width: 28px;
+          color: #0f9f7a;
+          font-weight: 950;
+        }
+
+        .finalOrderItems small {
+          color: #64748b;
+          font-weight: 850;
+        }
+
+        .finalOrderDate strong,
+        .finalOrderTotal strong {
+          display: block;
+          color: #061f1b;
+          font-size: 15px;
+          font-weight: 950;
+          white-space: nowrap;
+        }
+
+        .finalOrderDate span,
+        .finalOrderTotal span {
+          display: block;
+          margin-top: 4px;
+          color: #64748b;
+          font-size: 12px;
+          font-weight: 800;
+        }
+
+        .finalOrderTotal strong {
+          font-size: 21px;
+        }
+
+        .finalOrderTotal span {
+          display: inline-flex;
+          min-height: 23px;
+          padding: 0 8px;
+          align-items: center;
+          border-radius: 7px;
+          background: #fff7ed;
+          color: #ea580c;
+          font-weight: 950;
+          text-transform: uppercase;
+        }
+
+        .finalOrderActions {
+          display: grid;
+          gap: 8px;
+        }
+
+        .finalOrderActions a,
+        .finalOrderActions button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          min-height: 38px;
+          border-radius: 11px;
+          border: 1px solid #b7e4d6;
+          background: #ffffff;
+          color: #08765d;
+          font-weight: 950;
+          text-decoration: none;
+          cursor: pointer;
+        }
+
+        .finalOrderActions button {
+          color: #dc2626;
+          border-color: #fecaca;
+          background: #fffafa;
+        }
+
+        .finalEmpty {
+          margin: 14px;
+          padding: 16px;
+          border: 1px dashed #c9ded7;
+          border-radius: 14px;
+          background: #fbfdfc;
+          color: #64748b;
+          font-weight: 850;
+        }
+
+        .finalLoadMore,
+        .finalHint {
+          padding: 12px;
+          text-align: center;
+          color: #64748b;
+          font-size: 13px;
+          font-weight: 850;
+        }
+
+        .finalHint a {
+          color: #0f766e;
+          font-weight: 950;
+        }
+
+        @media (max-width: 1180px) {
+          .finalCategoryTabs {
+            overflow-x: auto;
+            display: flex;
+          }
+
+          .finalToolbar {
+            grid-template-columns: 1fr 180px;
+          }
+
+          .finalOrderCard {
+            grid-template-columns: 42px minmax(0, 1fr);
+          }
+
+          .finalOrderItems,
+          .finalOrderDate,
+          .finalOrderTotal,
+          .finalOrderActions {
+            grid-column: 2;
+          }
+        }
+
+        @media (max-width: 720px) {
+          .inboxFinalPage {
+            padding: 0 14px 36px;
+          }
+
+          .finalHeader {
             display: grid;
           }
 
-          .simpleFilter {
+          .finalToolbar {
             grid-template-columns: 1fr;
           }
 
-          .simpleDateBox {
-            text-align: left;
+          .finalMiniSummary {
+            flex-wrap: wrap;
+            border-radius: 14px;
           }
         }
-      
-        /* gastario-email-panel-polish-20260708 */
-
-        .simpleMailBox {
-          padding: 0 !important;
-          overflow: hidden !important;
-          border-radius: 18px !important;
-          border: 1px solid #dbe7e2 !important;
-          background: #ffffff !important;
-          box-shadow: 0 10px 26px rgba(15, 23, 42, .045) !important;
-        }
-
-        .simpleSectionHead {
-          display: grid !important;
-          grid-template-columns: minmax(260px, 1fr) minmax(520px, 640px) !important;
-          gap: 18px !important;
-          align-items: start !important;
-          padding: 18px 18px 14px !important;
-          margin: 0 !important;
-          border-bottom: 1px solid #edf3f1 !important;
-          background: linear-gradient(180deg, #ffffff 0%, #fbfdfc 100%) !important;
-        }
-
-        .simpleSectionHead h2 {
-          margin: 4px 0 0 !important;
-          font-size: 25px !important;
-          line-height: 1.1 !important;
-          font-weight: 900 !important;
-          letter-spacing: -.7px !important;
-          color: #061f1b !important;
-        }
-
-        .simpleSectionHead p {
-          margin: 5px 0 0 !important;
-          color: #64748b !important;
-          font-size: 13px !important;
-          font-weight: 650 !important;
-        }
-
-        .simpleFilter {
-          display: grid !important;
-          grid-template-columns: minmax(180px, 1fr) 160px auto auto !important;
-          gap: 8px !important;
-          padding: 8px !important;
-          border-radius: 14px !important;
-          border: 1px solid #dbe7e2 !important;
-          background: #f8fbfa !important;
-        }
-
-        .simpleFilter input,
-        .simpleFilter select {
-          height: 38px !important;
-          border-radius: 10px !important;
-          border: 1px solid #d6e5df !important;
-          background: #ffffff !important;
-          font-size: 13px !important;
-          font-weight: 700 !important;
-        }
-
-        .simpleFilter button,
-        .simpleFilter a {
-          min-height: 38px !important;
-          border-radius: 10px !important;
-          font-size: 13px !important;
-          font-weight: 850 !important;
-          box-shadow: none !important;
-        }
-
-        .simpleMailTabs {
-          display: flex !important;
-          flex-wrap: wrap !important;
-          gap: 8px !important;
-          padding: 14px 18px 12px !important;
-          margin: 0 !important;
-          border-bottom: 1px solid #edf3f1 !important;
-        }
-
-        .simpleMailTab {
-          min-height: 35px !important;
-          padding: 0 12px !important;
-          border-radius: 999px !important;
-          border: 1px solid #dbe7e2 !important;
-          background: #ffffff !important;
-          color: #172033 !important;
-          font-size: 13px !important;
-          font-weight: 850 !important;
-          box-shadow: none !important;
-        }
-
-        .simpleMailTab strong {
-          min-width: 23px !important;
-          height: 23px !important;
-          padding: 0 7px !important;
-          border-radius: 999px !important;
-          background: #eef6f4 !important;
-          color: #0f766e !important;
-          font-size: 12px !important;
-          font-weight: 900 !important;
-        }
-
-        .simpleMailTab.active {
-          background: #10a37f !important;
-          border-color: #10a37f !important;
-          color: #ffffff !important;
-        }
-
-        .simpleMailTab.active strong {
-          background: rgba(255,255,255,.22) !important;
-          color: #ffffff !important;
-        }
-
-        .simpleEmpty {
-          margin: 14px 18px 18px !important;
-          padding: 16px 18px !important;
-          border-radius: 14px !important;
-          border: 1px dashed #c9ded7 !important;
-          background: #fbfdfc !important;
-          color: #64748b !important;
-          font-size: 14px !important;
-          font-weight: 800 !important;
-        }
-
-        .simpleMailList {
-          display: grid !important;
-          gap: 8px !important;
-          padding: 14px 18px 18px !important;
-        }
-
-        .simpleMailRow {
-          display: grid !important;
-          grid-template-columns: minmax(0, 1fr) auto !important;
-          gap: 12px !important;
-          align-items: center !important;
-          padding: 12px 14px !important;
-          border: 1px solid #e2ebe7 !important;
-          border-radius: 14px !important;
-          background: #ffffff !important;
-          box-shadow: none !important;
-        }
-
-        .simpleMailRow strong {
-          color: #0f172a !important;
-          font-size: 14px !important;
-          font-weight: 850 !important;
-        }
-
-        .simpleMailRow span {
-          display: block !important;
-          margin-top: 3px !important;
-          color: #64748b !important;
-          font-size: 12px !important;
-          font-weight: 700 !important;
-        }
-
-        @media (max-width: 1000px) {
-          .simpleSectionHead,
-          .simpleFilter {
-            grid-template-columns: 1fr !important;
-          }
-        }
-`}</style>
+      `}</style>
 </AppLayout>
   );
 }
+
+
 
 
 
