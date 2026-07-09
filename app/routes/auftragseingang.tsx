@@ -982,7 +982,29 @@ export default function AuftragseingangPage() {
             </Link>
           </Form>
         </section>
-        <section className="finalOrdersShell finalOrdersSplitShell">
+                <nav className="realOrderTabs" aria-label="Auftragsfilter">
+          {[
+            ["Alle Aufträge", currentOrderStats.all, ""],
+            ["Zu prüfen", currentOrderStats.review, "AUTO_CREATED"],
+            ["Übernommen", currentOrderStats.confirmed, "CONFIRMED"],
+            ["Abgelehnt", currentOrderStats.rejected, "REJECTED"],
+          ].map(([label, count, status]) => {
+            const active = data.activeStatus === status || (!data.activeStatus && !status);
+            const params = new URLSearchParams();
+
+            if (status) params.set("status", String(status));
+
+            const href = "/auftragseingang" + (params.toString() ? "?" + params.toString() : "");
+
+            return (
+              <a key={String(label)} href={href} className={active ? "realOrderTab active" : "realOrderTab"}>
+                <span>{label}</span>
+                <strong>{count}</strong>
+              </a>
+            );
+          })}
+        </nav>
+<section className="finalOrdersShell finalOrdersSplitShell">
           <div className="finalOrdersHead">
             <div>
               <h2>Zu prüfen</h2>
@@ -2872,10 +2894,84 @@ export default function AuftragseingangPage() {
             width: 100% !important;
           }
         }
+
+        /* gastario-remove-confusing-email-tabs-20260709 */
+
+        .finalEmailTabs,
+        .mailTabs,
+        .emailTabs,
+        .finalInboxTabs {
+          display: none !important;
+        }
+
+        .finalEmailPanel {
+          display: none !important;
+        }
+
+        .finalOrdersShell {
+          margin-top: 18px !important;
+        }
+
+        /* gastario-real-order-tabs-20260709 */
+
+        .realOrderTabs {
+          display: flex !important;
+          gap: 10px !important;
+          flex-wrap: wrap !important;
+          margin: 18px 0 14px !important;
+          padding: 8px !important;
+          width: max-content !important;
+          max-width: 100% !important;
+          background: #ffffff !important;
+          border: 1px solid #dbe7e2 !important;
+          border-radius: 18px !important;
+          box-shadow: 0 12px 30px rgba(15, 23, 42, .045) !important;
+        }
+
+        .realOrderTab {
+          min-height: 42px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 10px !important;
+          padding: 0 15px !important;
+          border-radius: 13px !important;
+          color: #0f172a !important;
+          text-decoration: none !important;
+          font-weight: 900 !important;
+          border: 1px solid transparent !important;
+          background: transparent !important;
+        }
+
+        .realOrderTab strong {
+          min-width: 24px !important;
+          height: 24px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          border-radius: 999px !important;
+          background: #edf6f4 !important;
+          color: #057a67 !important;
+          font-size: 12px !important;
+        }
+
+        .realOrderTab.active {
+          background: #10a37f !important;
+          color: #ffffff !important;
+          box-shadow: 0 12px 26px rgba(16, 163, 127, .22) !important;
+        }
+
+        .realOrderTab.active strong {
+          background: rgba(255,255,255,.22) !important;
+          color: #ffffff !important;
+        }
 `}</style>
 </AppLayout>
   );
 }
+
+
+
+
 
 
 
