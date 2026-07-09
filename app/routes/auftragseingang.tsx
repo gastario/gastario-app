@@ -1873,10 +1873,127 @@ export default function AuftragseingangPage() {
             grid-column: 2;
           }
         }
+
+        /* gastario-selected-panel-polish-20260709 */
+
+        .inboxFinalPage {
+          max-width: 1320px !important;
+        }
+
+        .finalOrdersGrid {
+          grid-template-columns: minmax(0, 1fr) 390px !important;
+          gap: 16px !important;
+          padding: 14px !important;
+        }
+
+        .finalOrderRows {
+          min-width: 0 !important;
+        }
+
+        .finalOrderRow {
+          grid-template-columns: 44px minmax(180px, .9fr) minmax(220px, 1fr) 110px 118px !important;
+          gap: 12px !important;
+          min-height: 112px !important;
+          padding: 14px 15px !important;
+          border-radius: 16px !important;
+        }
+
+        .finalOrderCustomer h3 {
+          font-size: 17px !important;
+        }
+
+        .finalOrderItems {
+          font-size: 13px !important;
+        }
+
+        .finalOrderItems div {
+          line-height: 1.25 !important;
+        }
+
+        .finalOrderDate strong {
+          font-size: 15px !important;
+        }
+
+        .finalOrderTotal strong {
+          font-size: 20px !important;
+        }
+
+        .finalSelectedPanel {
+          top: 16px !important;
+          padding: 16px !important;
+          border-radius: 18px !important;
+          box-shadow: 0 12px 30px rgba(15, 23, 42, .055) !important;
+        }
+
+        .finalSelectedTop {
+          padding-bottom: 12px !important;
+        }
+
+        .finalSelectedTop h3 {
+          font-size: 21px !important;
+        }
+
+        .finalSelectedFacts {
+          gap: 8px !important;
+          padding: 12px 0 !important;
+        }
+
+        .finalSelectedFacts div {
+          padding: 10px 11px !important;
+          border-radius: 13px !important;
+        }
+
+        .finalSelectedItems {
+          padding: 12px 0 !important;
+        }
+
+        .finalSelectedItem {
+          padding: 7px 0 !important;
+          font-size: 12.5px !important;
+        }
+
+        .finalSelectedActions {
+          grid-template-columns: 1fr 105px !important;
+          gap: 8px !important;
+        }
+
+        .finalSelectedActions a,
+        .finalSelectedActions button {
+          min-height: 40px !important;
+          border-radius: 11px !important;
+          font-size: 13px !important;
+        }
+
+        .finalLoadMore {
+          padding: 10px !important;
+          border-radius: 14px !important;
+          background: transparent !important;
+        }
+
+        @media (max-width: 1320px) {
+          .finalOrdersGrid {
+            grid-template-columns: minmax(0, 1fr) 360px !important;
+          }
+
+          .finalOrderRow {
+            grid-template-columns: 40px minmax(160px, .9fr) minmax(190px, 1fr) 100px 110px !important;
+          }
+        }
+
+        @media (max-width: 1180px) {
+          .finalOrdersGrid {
+            grid-template-columns: 1fr !important;
+          }
+
+          .finalSelectedPanel {
+            position: static !important;
+          }
+        }
 `}</style>
 </AppLayout>
   );
 }
+
 
 
 
