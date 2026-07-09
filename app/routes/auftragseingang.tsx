@@ -2582,10 +2582,67 @@ export default function AuftragseingangPage() {
             grid-template-columns: 1fr !important;
           }
         }
+
+        /* gastario-soft-focus-polish-no-topline-20260709 */
+
+        .finalOrdersGrid.selectedFocusMode {
+          min-height: 560px !important;
+          background:
+            radial-gradient(circle at center, rgba(245, 158, 11, .055), transparent 45%),
+            #ffffff !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel {
+          border: 1px solid #f6c66f !important;
+          border-radius: 20px !important;
+          box-shadow:
+            0 30px 80px rgba(15, 23, 42, .11),
+            0 0 0 1px rgba(245, 158, 11, .08) !important;
+          animation: gastarioSofterPanelIn .44s cubic-bezier(.16,1,.3,1) both !important;
+        }
+
+        .finalSelectedPanel::before,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel::before {
+          display: none !important;
+          content: none !important;
+        }
+
+        .finalSelectedKicker {
+          border: 1px solid #fed7aa !important;
+          background: #fff7ed !important;
+          color: #b45309 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalOrderRows {
+          transition:
+            opacity .42s ease,
+            transform .42s cubic-bezier(.16,1,.3,1),
+            max-height .46s ease !important;
+          opacity: 0 !important;
+          transform: translateX(-44px) scale(.975) !important;
+        }
+
+        @keyframes gastarioSofterPanelIn {
+          0% {
+            opacity: 0;
+            transform: translateY(18px) translateX(28px) scale(.965);
+          }
+
+          55% {
+            opacity: 1;
+            transform: translateY(0) translateX(-4px) scale(1.006);
+          }
+
+          100% {
+            opacity: 1;
+            transform: translateY(0) translateX(0) scale(1);
+          }
+        }
 `}</style>
 </AppLayout>
   );
 }
+
 
 
 

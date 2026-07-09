@@ -82,9 +82,40 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
   const customerName = customerBlock[0] || "";
   const contactName = customerBlock.find((line) => !line.toLowerCase().startsWith("telefon:") && line !== customerName) || "";
   const contactPhone = extractValue(customerBlock.join("\n"), /Telefon:\s*(.+)/i);
+  function looksLikeAddressLine(line: string) {
+    const value = String(line || "").trim();
+    const lower = value.toLowerCase();
 
-  const deliveryStreet = deliveryBlock.find((line) => /stra?e|strasse|str\.|allee|weg|platz|damm|ufer|ring/i.test(line)) || "";
+    if (!value) return false;
+    if (/goerzallee|edis gastrobetriebe|hey group|gormann|qonto|iban|bic/i.test(lower)) return false;
+    if (/^\d{5}\s+/.test(value)) return false;
+    if (/telefon|ansprechpartner|kontakt|kunde|lieferadresse|stockwerk|aufzug|park/i.test(value)) return false;
+    if (/gesamtbetrag|netto|brutto|ust|iban|bic|qonto|registergericht/i.test(lower)) return false;
+
+    return (
+      /straße|strasse|str\.|allee|weg|platz|damm|ufer|ring|chaussee|markt|gasse|hof|promenade|tor|kai|wall/i.test(value) ||
+      /\d+[a-z]?\b/i.test(value)
+    );
+  }
+
   const deliveryZipCity = deliveryBlock.find((line) => /^\d{5}\s+/.test(line)) || "";
+  const zipIndexInDeliveryBlock = deliveryZipCity ? deliveryBlock.indexOf(deliveryZipCity) : -1;
+
+  const deliveryStreet =
+    deliveryBlock.find((line) => looksLikeAddressLine(line)) ||
+    (zipIndexInDeliveryBlock > 0
+      ? [...deliveryBlock.slice(Math.max(0, zipIndexInDeliveryBlock - 4), zipIndexInDeliveryBlock)]
+          .reverse()
+          .find((line) => {
+            const value = String(line || "").trim();
+            return (
+              value &&
+              !/goerzallee|edis gastrobetriebe|hey group|gormann|qonto|iban|bic/i.test(value.toLowerCase()) &&
+              !/kunde|lieferadresse|telefon|ansprechpartner|kontakt|stockwerk|aufzug|park/i.test(value)
+            );
+          }) || ""
+      : "");
+
   const deliveryAddressFromBlock = [deliveryStreet, deliveryZipCity].filter(Boolean).join(", ");
 
   const ownOrPlatformWords = [
@@ -117,16 +148,26 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
     "";
 
   const addressIndex = zipCityLine ? lines.indexOf(zipCityLine) : -1;
-
   const streetLine =
     addressIndex > 0
-      ? [...lines.slice(Math.max(0, addressIndex - 6), addressIndex)]
+      ? [...lines.slice(Math.max(0, addressIndex - 8), addressIndex)]
           .reverse()
           .find((line) =>
-            !isOwnOrPlatformLine(line) &&
-            !line.toLowerCase().includes("lieferadresse") &&
-            /stra?e|strasse|str\.|allee|weg|platz|damm|ufer|ring/i.test(line)
-          ) || ""
+            looksLikeAddressLine(line) &&
+            !line.toLowerCase().includes("lieferadresse")
+          ) ||
+        [...lines.slice(Math.max(0, addressIndex - 4), addressIndex)]
+          .reverse()
+          .find((line) => {
+            const value = String(line || "").trim();
+            return (
+              value &&
+              !isOwnOrPlatformLine(value) &&
+              !value.toLowerCase().includes("lieferadresse") &&
+              !/kunde|telefon|ansprechpartner|kontakt|stockwerk|aufzug|park/i.test(value)
+            );
+          }) ||
+        ""
       : "";
 
   const deliveryAddress = deliveryAddressFromBlock || [streetLine, zipCityLine].filter(Boolean).join(", ");
@@ -698,4 +739,12 @@ export function extractUniversalOrder(text: string): ExtractedOrder {
 
   return genericOrder;
 }
+
+
+
+
+
+
+
+
 
