@@ -814,7 +814,6 @@ export default function AuftragseingangPage() {
   function isLikelyTrashImportOrder(order: any) {
     const customerName = String(order?.customerName || "").trim().toLowerCase();
     const contactName = String(order?.contactName || "").trim().toLowerCase();
-    const source = String(order?.source || "").trim().toUpperCase();
     const totalInfo = getDisplayedOrderTotal(order);
     const items = Array.isArray(order?.items) ? order.items : [];
 
@@ -830,24 +829,18 @@ export default function AuftragseingangPage() {
       return quantity > 0 || totalCents > 0;
     });
 
-    const hasRealCustomer =
-      customerName &&
-      customerName !== "e-mail import" &&
-      customerName !== "email import" &&
-      customerName !== "kunde unbekannt";
+    const trashCustomer =
+      !customerName ||
+      customerName === "e-mail import" ||
+      customerName === "email import" ||
+      customerName === "kunde unbekannt";
 
-    const hasRealContact =
-      contactName &&
-      contactName !== "keine kontaktperson erkannt" &&
-      contactName !== "kontakt unbekannt";
+    const trashContact =
+      !contactName ||
+      contactName === "keine kontaktperson erkannt" ||
+      contactName === "kontakt unbekannt";
 
-    return Boolean(
-      source === "EMAIL" &&
-      !hasRealCustomer &&
-      !hasRealContact &&
-      totalInfo.cents <= 0 &&
-      realItems.length === 0
-    );
+    return trashCustomer && trashContact && totalInfo.cents <= 0 && realItems.length === 0;
   }
 
   const currentOrderStats = {
@@ -2783,10 +2776,108 @@ export default function AuftragseingangPage() {
           display: block;
           min-height: 22px;
         }
+
+        /* gastario-hide-email-tabs-from-order-workflow-20260709 */
+
+        .finalEmailTabs,
+        .mailTabs,
+        .emailTabs {
+          display: none !important;
+        }
+
+        .finalEmailPanel {
+          padding: 18px !important;
+        }
+
+        .finalEmailPanelHeader {
+          display: grid !important;
+          grid-template-columns: minmax(0, 1fr) minmax(420px, 620px) !important;
+          gap: 18px !important;
+          align-items: end !important;
+        }
+
+        .finalEmailPanel h2 {
+          margin-bottom: 4px !important;
+        }
+
+        .finalEmailPanel p {
+          margin-bottom: 0 !important;
+        }
+
+        .finalOrdersShell {
+          margin-top: 22px !important;
+        }
+
+        .finalOrdersHeader {
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: end !important;
+          gap: 18px !important;
+        }
+
+        .finalOrdersHeader h2 {
+          font-size: 30px !important;
+          letter-spacing: -1px !important;
+        }
+
+        .finalOrdersHeader strong,
+        .finalOrdersHeader .finalOpenCount {
+          font-size: 30px !important;
+        }
+
+        .finalOrdersGrid {
+          padding: 18px !important;
+        }
+
+        .finalOrderRows {
+          display: grid !important;
+          gap: 12px !important;
+        }
+
+        .finalOrderRow {
+          width: min(760px, 100%) !important;
+        }
+
+        .finalOrdersGrid:not(.selectedFocusMode) {
+          display: grid !important;
+          grid-template-columns: minmax(0, 760px) !important;
+          justify-content: start !important;
+        }
+
+        .finalOrdersGrid:not(.selectedFocusMode)::after {
+          content: "Auftrag anklicken, um die Prüfung zu öffnen.";
+          position: absolute;
+          right: 34px;
+          top: 34px;
+          width: 300px;
+          padding: 18px;
+          border: 1px dashed #cfe1dc;
+          border-radius: 18px;
+          background: #fbfdfc;
+          color: #64748b;
+          font-weight: 800;
+          line-height: 1.35;
+        }
+
+        @media (max-width: 1250px) {
+          .finalOrdersGrid:not(.selectedFocusMode)::after {
+            display: none !important;
+          }
+
+          .finalOrdersGrid:not(.selectedFocusMode) {
+            grid-template-columns: 1fr !important;
+          }
+
+          .finalOrderRow {
+            width: 100% !important;
+          }
+        }
 `}</style>
 </AppLayout>
   );
 }
+
+
 
 
 

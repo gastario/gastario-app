@@ -243,6 +243,42 @@ function hasMinimumOrderSignal(extractedOrder: any, bestText: string) {
 }
 
 function shouldCreateOrderFromImportRules(extractedOrder: any, bestText: string, importRuleMatches: any[]) {
+  const customerName = String(extractedOrder?.customerName || "").trim().toLowerCase();
+  const contactName = String(extractedOrder?.contactName || "").trim().toLowerCase();
+
+  const realItems = Array.isArray(extractedOrder?.items)
+    ? extractedOrder.items.filter((item: any) => {
+        const name = String(item?.name || "").trim().toLowerCase();
+        const quantity = Number(item?.quantity || 0);
+        const totalCents = Number(item?.totalCents || 0);
+
+        if (!name) return false;
+        if (name.includes("fehlende position")) return false;
+        if (name.length < 4) return false;
+
+        return quantity > 0 || totalCents > 0;
+      })
+    : [];
+
+  const totalCents = Array.isArray(extractedOrder?.items)
+    ? extractedOrder.items.reduce((sum: number, item: any) => sum + Number(item?.totalCents || 0), 0)
+    : 0;
+
+  const hasTrashCustomer =
+    !customerName ||
+    customerName === "e-mail import" ||
+    customerName === "email import" ||
+    customerName === "kunde unbekannt";
+
+  const hasTrashContact =
+    !contactName ||
+    contactName === "keine kontaktperson erkannt" ||
+    contactName === "kontakt unbekannt";
+
+  if (hasTrashCustomer && hasTrashContact && realItems.length === 0 && totalCents <= 0) {
+    return false;
+  }
+
   if (hasEnoughOrderData(extractedOrder)) {
     return true;
   }
@@ -887,6 +923,7 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
 
 
 
