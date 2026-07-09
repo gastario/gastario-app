@@ -2201,10 +2201,77 @@ export default function AuftragseingangPage() {
           background: #fff7ed !important;
           color: #b45309 !important;
         }
+
+        /* gastario-selected-row-compact-20260709 */
+
+        .finalOrderRow.selected {
+          grid-template-columns: 44px minmax(0, 1fr) !important;
+          min-height: 92px !important;
+          align-items: center !important;
+          border-color: #f59e0b !important;
+          background:
+            linear-gradient(90deg, rgba(245, 158, 11, .12), #ffffff 54%) !important;
+          box-shadow: inset 4px 0 0 #f59e0b, 0 10px 26px rgba(146, 64, 14, .06) !important;
+        }
+
+        .finalOrderRow.selected .finalOrderItems,
+        .finalOrderRow.selected .finalOrderDate,
+        .finalOrderRow.selected .finalOrderTotal {
+          display: none !important;
+        }
+
+        .finalOrderRow.selected .finalOrderCustomer {
+          display: grid !important;
+          gap: 3px !important;
+        }
+
+        .finalOrderRow.selected .finalOrderCustomer h3 {
+          font-size: 19px !important;
+          margin: 2px 0 0 !important;
+        }
+
+        .finalOrderRow.selected .finalOrderCustomer p {
+          color: #64748b !important;
+          font-size: 13px !important;
+        }
+
+        .finalOrderRow.selected .finalSourceBadge {
+          width: max-content !important;
+          margin-top: 7px !important;
+          background: #fff7ed !important;
+          color: #b45309 !important;
+          border: 1px solid #fed7aa !important;
+        }
+
+        .finalOrderRow.selected .finalSourceBadge::after {
+          content: " · Details rechts geöffnet";
+          color: #b45309;
+          font-weight: 900;
+        }
+
+        .finalSelectedPanel {
+          border-color: #f5c16c !important;
+          box-shadow: 0 16px 38px rgba(146, 64, 14, .09) !important;
+        }
+
+        .finalSelectedKicker {
+          background: #fff7ed !important;
+          color: #b45309 !important;
+        }
+
+        .finalSelectedPanel::before {
+          content: "";
+          display: block;
+          height: 4px;
+          margin: -18px -18px 14px;
+          border-radius: 18px 18px 0 0;
+          background: linear-gradient(90deg, #f59e0b, #10a37f);
+        }
 `}</style>
 </AppLayout>
   );
 }
+
 
 
 
