@@ -823,6 +823,14 @@ export default function AuftragseingangPage() {
     rejected: data.counts?.rejected || 0,
   };
 
+  const selectedOrder: any = visibleOrders[0] || null;
+  const selectedOrderItems = selectedOrder
+    ? (Array.isArray(selectedOrder.items) ? selectedOrder.items : []).filter(
+        (item: any) => !String(item.name || "").toLowerCase().includes("fehlende position")
+      )
+    : [];
+  const selectedOrderTotal = selectedOrder ? getDisplayedOrderTotal(selectedOrder) : null;
+
 
   return (
     <AppLayout>
@@ -940,8 +948,7 @@ export default function AuftragseingangPage() {
             </Link>
           </Form>
         </section>
-
-        <section className="finalOrdersShell">
+        <section className="finalOrdersShell finalOrdersSplitShell">
           <div className="finalOrdersHead">
             <div>
               <h2>Zu prüfen</h2>
@@ -959,64 +966,124 @@ export default function AuftragseingangPage() {
               Keine ungeprüften aktuellen Aufträge.
             </div>
           ) : (
-            <div className="finalOrderList">
-              {visibleOrders.map((order: any, index: number) => {
-                const items = Array.isArray(order.items) ? order.items : [];
-                const totalInfo = getDisplayedOrderTotal(order);
-                const previewItems = items
-                  .filter((item: any) => !String(item.name || "").toLowerCase().includes("fehlende position"))
-                  .slice(0, 3);
+            <div className="finalOrdersGrid">
+              <div className="finalOrderRows">
+                {visibleOrders.map((order: any, index: number) => {
+                  const items = Array.isArray(order.items) ? order.items : [];
+                  const totalInfo = getDisplayedOrderTotal(order);
+                  const previewItems = items
+                    .filter((item: any) => !String(item.name || "").toLowerCase().includes("fehlende position"))
+                    .slice(0, 3);
 
-                return (
-                  <article className={index === 0 ? "finalOrderCard selected" : "finalOrderCard"} key={order.id}>
-                    <div className="finalOrderIcon">✉</div>
+                  return (
+                    <article className={index === 0 ? "finalOrderRow selected" : "finalOrderRow"} key={order.id}>
+                      <div className="finalOrderIcon">✉</div>
 
-                    <div className="finalOrderCustomer">
-                      <div className="finalOrderNumber">{order.orderNumber}</div>
-                      <h3>{order.customerName || order.customer?.name || "Kunde unbekannt"}</h3>
-                      <p>{order.contactName || "Keine Kontaktperson erkannt"}</p>
-                      <span className="finalSourceBadge">{sourceLabel(order.source)}</span>
+                      <div className="finalOrderCustomer">
+                        <div className="finalOrderNumber">{order.orderNumber}</div>
+                        <h3>{order.customerName || order.customer?.name || "Kunde unbekannt"}</h3>
+                        <p>{order.contactName || "Keine Kontaktperson erkannt"}</p>
+                        <span className="finalSourceBadge">{sourceLabel(order.source)}</span>
+                      </div>
+
+                      <div className="finalOrderItems">
+                        {previewItems.map((item: any) => (
+                          <div key={item.id || item.name}>
+                            <strong>{item.quantity || 1}x</strong>
+                            <span>{item.name || "Position"}</span>
+                          </div>
+                        ))}
+
+                        {items.length > previewItems.length ? (
+                          <small>+ {items.length - previewItems.length} weitere Position</small>
+                        ) : null}
+                      </div>
+
+                      <div className="finalOrderDate">
+                        <strong>{formatDate(order.deliveryDate)}</strong>
+                        <span>{order.deliveryTimeText || "Uhrzeit offen"}</span>
+                      </div>
+
+                      <div className="finalOrderTotal">
+                        <strong>{formatImportCurrencyFromCents(totalInfo.cents)}</strong>
+                        <span>{totalInfo.source}</span>
+                      </div>
+                    </article>
+                  );
+                })}
+
+                <div className="finalLoadMore">Weitere Ergebnisse laden</div>
+              </div>
+
+              {selectedOrder ? (
+                <aside className="finalSelectedPanel">
+                  <div className="finalSelectedTop">
+                    <div>
+                      <div className="finalSelectedKicker">Ausgewählt</div>
+                      <div className="finalOrderNumber">{selectedOrder.orderNumber}</div>
+                      <h3>{selectedOrder.customerName || selectedOrder.customer?.name || "Kunde unbekannt"}</h3>
                     </div>
 
-                    <div className="finalOrderItems">
-                      {previewItems.map((item: any) => (
-                        <div key={item.id || item.name}>
+                    <span className="finalSourceBadge big">{sourceLabel(selectedOrder.source)}</span>
+                  </div>
+
+                  <div className="finalSelectedFacts">
+                    <div>
+                      <span>Lieferung</span>
+                      <strong>{formatDate(selectedOrder.deliveryDate)}</strong>
+                      <small>{selectedOrder.deliveryTimeText || "Uhrzeit offen"}</small>
+                    </div>
+
+                    <div>
+                      <span>Lieferadresse</span>
+                      <strong>{selectedOrder.customerName || selectedOrder.customer?.name || "Kunde unbekannt"}</strong>
+                      <small>{selectedOrder.deliveryAddress || "Adresse prüfen"}</small>
+                    </div>
+
+                    <div>
+                      <span>Gesamt</span>
+                      <strong>{selectedOrderTotal ? formatImportCurrencyFromCents(selectedOrderTotal.cents) : "-"}</strong>
+                      <small>{selectedOrderTotal?.source || "bitte prüfen"}</small>
+                    </div>
+                  </div>
+
+                  <div className="finalSelectedItems">
+                    <h4>Positionen</h4>
+
+                    {selectedOrderItems.slice(0, 6).map((item: any) => (
+                      <div className="finalSelectedItem" key={item.id || item.name}>
+                        <span>
                           <strong>{item.quantity || 1}x</strong>
-                          <span>{item.name || "Position"}</span>
-                        </div>
-                      ))}
+                          {item.name || "Position"}
+                        </span>
+                        <b>{formatImportCurrencyFromCents(Number(item.totalCents || 0))}</b>
+                      </div>
+                    ))}
 
-                      {items.length > previewItems.length ? (
-                        <small>+ {items.length - previewItems.length} weitere Position</small>
-                      ) : null}
+                    {selectedOrderItems.length > 6 ? (
+                      <div className="finalSelectedMore">+ {selectedOrderItems.length - 6} weitere Positionen</div>
+                    ) : null}
+                  </div>
+
+                  {selectedOrderTotal?.source === "vorläufig" ? (
+                    <div className="finalSelectedNotice">
+                      Der Betrag ist vorläufig und sollte vor Übernahme geprüft werden.
                     </div>
+                  ) : null}
 
-                    <div className="finalOrderDate">
-                      <strong>{formatDate(order.deliveryDate)}</strong>
-                      <span>{order.deliveryTimeText || "Uhrzeit offen"}</span>
-                    </div>
+                  <div className="finalSelectedActions">
+                    <Link to={"/auftrag-pruefung/" + selectedOrder.id} prefetch="intent">
+                      Prüfen & übernehmen
+                    </Link>
 
-                    <div className="finalOrderTotal">
-                      <strong>{formatImportCurrencyFromCents(totalInfo.cents)}</strong>
-                      <span>{totalInfo.source}</span>
-                    </div>
-
-                    <div className="finalOrderActions">
-                      <Link to={"/auftrag-pruefung/" + order.id} prefetch="intent">
-                        Prüfen
-                      </Link>
-
-                      <Form method="post">
-                        <input type="hidden" name="intent" value="deleteOrder" />
-                        <input type="hidden" name="orderId" value={order.id} />
-                        <button type="submit">Löschen</button>
-                      </Form>
-                    </div>
-                  </article>
-                );
-              })}
-
-              <div className="finalLoadMore">Weitere Ergebnisse laden</div>
+                    <Form method="post">
+                      <input type="hidden" name="intent" value="deleteOrder" />
+                      <input type="hidden" name="orderId" value={selectedOrder.id} />
+                      <button type="submit">Löschen</button>
+                    </Form>
+                  </div>
+                </aside>
+              ) : null}
             </div>
           )}
 
@@ -1027,7 +1094,7 @@ export default function AuftragseingangPage() {
             </div>
           ) : null}
         </section>
-      </div>
+</div>
 
       <style>{`
         /* gastario-final-auftragseingang-selected-ux-20260709 */
@@ -1570,10 +1637,250 @@ export default function AuftragseingangPage() {
             border-radius: 14px;
           }
         }
-      `}</style>
+      
+        /* gastario-selected-detail-panel-20260709 */
+
+        .finalOrdersSplitShell {
+          overflow: visible;
+        }
+
+        .finalOrdersGrid {
+          display: grid;
+          grid-template-columns: minmax(0, 1.08fr) 420px;
+          gap: 14px;
+          padding: 14px;
+          align-items: start;
+        }
+
+        .finalOrderRows {
+          display: grid;
+          gap: 10px;
+        }
+
+        .finalOrderRow {
+          display: grid;
+          grid-template-columns: 42px minmax(180px, .95fr) minmax(190px, 1fr) 118px 120px;
+          gap: 13px;
+          align-items: center;
+          padding: 15px;
+          border: 1px solid #e2ebe7;
+          border-radius: 16px;
+          background: #ffffff;
+        }
+
+        .finalOrderRow.selected {
+          border-color: rgba(16, 163, 127, .55);
+          background: linear-gradient(90deg, rgba(16, 163, 127, .07), #ffffff 48%);
+          box-shadow: inset 4px 0 0 #10a37f, 0 10px 26px rgba(15, 23, 42, .045);
+        }
+
+        .finalSelectedPanel {
+          position: sticky;
+          top: 18px;
+          padding: 18px;
+          border: 1px solid #dbe7e2;
+          border-radius: 18px;
+          background: #ffffff;
+          box-shadow: 0 14px 34px rgba(15, 23, 42, .06);
+        }
+
+        .finalSelectedTop {
+          display: flex;
+          justify-content: space-between;
+          gap: 14px;
+          align-items: flex-start;
+          padding-bottom: 14px;
+          border-bottom: 1px solid #edf3f1;
+        }
+
+        .finalSelectedKicker {
+          display: inline-flex;
+          align-items: center;
+          min-height: 24px;
+          padding: 0 9px;
+          margin-bottom: 8px;
+          border-radius: 999px;
+          background: #eaf8f3;
+          color: #0f766e;
+          font-size: 11px;
+          font-weight: 950;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+
+        .finalSelectedTop h3 {
+          margin: 5px 0 0;
+          color: #061f1b;
+          font-size: 22px;
+          line-height: 1.1;
+          font-weight: 950;
+          letter-spacing: -.6px;
+        }
+
+        .finalSourceBadge.big {
+          min-height: 32px;
+          padding: 0 12px;
+          background: #eaf8f3;
+          color: #0f766e;
+          border: 1px solid #cde9de;
+        }
+
+        .finalSelectedFacts {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 10px;
+          padding: 14px 0;
+          border-bottom: 1px solid #edf3f1;
+        }
+
+        .finalSelectedFacts div {
+          padding: 12px;
+          border: 1px solid #edf3f1;
+          border-radius: 14px;
+          background: #fbfdfc;
+        }
+
+        .finalSelectedFacts span {
+          display: block;
+          color: #64748b;
+          font-size: 11px;
+          font-weight: 950;
+          letter-spacing: .06em;
+          text-transform: uppercase;
+        }
+
+        .finalSelectedFacts strong {
+          display: block;
+          margin-top: 5px;
+          color: #061f1b;
+          font-size: 15px;
+          font-weight: 950;
+        }
+
+        .finalSelectedFacts small {
+          display: block;
+          margin-top: 3px;
+          color: #64748b;
+          font-size: 12px;
+          font-weight: 750;
+        }
+
+        .finalSelectedItems {
+          padding: 14px 0;
+        }
+
+        .finalSelectedItems h4 {
+          margin: 0 0 10px;
+          color: #061f1b;
+          font-size: 15px;
+          font-weight: 950;
+        }
+
+        .finalSelectedItem {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 8px 0;
+          border-bottom: 1px solid #f1f5f4;
+          color: #0f172a;
+          font-size: 13px;
+          font-weight: 750;
+        }
+
+        .finalSelectedItem span {
+          display: flex;
+          gap: 8px;
+          min-width: 0;
+        }
+
+        .finalSelectedItem span strong {
+          min-width: 28px;
+          color: #0f9f7a;
+          font-weight: 950;
+        }
+
+        .finalSelectedItem b {
+          white-space: nowrap;
+          color: #061f1b;
+          font-size: 13px;
+          font-weight: 950;
+        }
+
+        .finalSelectedMore {
+          margin-top: 8px;
+          color: #64748b;
+          font-size: 13px;
+          font-weight: 850;
+        }
+
+        .finalSelectedNotice {
+          margin-bottom: 14px;
+          padding: 11px 12px;
+          border-radius: 12px;
+          background: #f8fafc;
+          color: #64748b;
+          font-size: 12px;
+          font-weight: 800;
+        }
+
+        .finalSelectedActions {
+          display: grid;
+          grid-template-columns: 1fr 120px;
+          gap: 10px;
+        }
+
+        .finalSelectedActions a,
+        .finalSelectedActions button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          min-height: 42px;
+          border-radius: 12px;
+          border: 1px solid #10a37f;
+          background: #10a37f;
+          color: #ffffff;
+          font-weight: 950;
+          text-decoration: none;
+          cursor: pointer;
+        }
+
+        .finalSelectedActions button {
+          border-color: #fecaca;
+          background: #fffafa;
+          color: #dc2626;
+        }
+
+        @media (max-width: 1250px) {
+          .finalOrdersGrid {
+            grid-template-columns: 1fr;
+          }
+
+          .finalSelectedPanel {
+            position: static;
+          }
+        }
+
+        @media (max-width: 900px) {
+          .finalOrderRow {
+            grid-template-columns: 42px minmax(0, 1fr);
+          }
+
+          .finalOrderItems,
+          .finalOrderDate,
+          .finalOrderTotal {
+            grid-column: 2;
+          }
+        }
+`}</style>
 </AppLayout>
   );
 }
+
+
+
+
 
 
 
