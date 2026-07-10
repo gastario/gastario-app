@@ -925,18 +925,6 @@ export default function AuftragseingangPage() {
   return (
     <AppLayout>
       <div className="inboxPage inboxFinalPage">
-                <div style={{
-          margin: "0 0 12px",
-          padding: "10px 12px",
-          borderRadius: 12,
-          background: "#fff7ed",
-          border: "1px solid #fed7aa",
-          color: "#9a3412",
-          fontSize: 12,
-          fontWeight: 800,
-        }}>
-          Debug: Mandant {data.tenant?.name || "-"} · Orders geladen: {data.orders?.length || 0} · Counts: {data.counts?.all || 0}
-        </div>
 {data.setupError ? (
           <div style={{
             margin: "0 0 18px",
@@ -948,20 +936,6 @@ export default function AuftragseingangPage() {
             fontWeight: 800,
           }}>
             {data.setupError}
-          </div>
-        ) : null}
-                {data.debugInfo ? (
-          <div style={{
-            margin: "0 0 14px",
-            padding: "12px 14px",
-            borderRadius: 14,
-            background: "#fff7ed",
-            border: "1px solid #fed7aa",
-            color: "#9a3412",
-            fontSize: 12,
-            fontWeight: 800,
-          }}>
-            Debug · Mandant: {data.debugInfo.tenantName || "-"} · Tenant: {data.debugInfo.tenantId} · Geladen: {data.debugInfo.ordersLoaded} · Im Mandanten: {data.debugInfo.ordersInTenant} · Gesamt DB: {String(data.debugInfo.totalOrdersInDatabase ?? "-")} · E-Mails: {data.debugInfo.incomingTotal} · Ohne Auftrag: {data.debugInfo.incomingUnlinked} · Letzte Mails: {JSON.stringify(data.debugInfo.latestIncomingAnyTenant || [])}
           </div>
         ) : null}
 <section className="finalHeader">
@@ -3464,6 +3438,7 @@ export default function AuftragseingangPage() {
 </AppLayout>
   );
 }
+
 
 
 
