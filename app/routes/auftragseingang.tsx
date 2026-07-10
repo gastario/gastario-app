@@ -3279,10 +3279,50 @@ export default function AuftragseingangPage() {
             gap: 16px !important;
           }
         }
+
+        /* gastario-remove-load-more-polish-20260710 */
+
+        .finalLoadMore,
+        .loadMoreButton,
+        .loadMore,
+        button:has(+ .pastOrdersHint) {
+          display: none !important;
+        }
+
+        .finalOrdersGrid:not(.selectedFocusMode) {
+          padding-bottom: 8px !important;
+        }
+
+        .pastOrdersHint {
+          margin-top: 18px !important;
+          padding: 14px 18px !important;
+          border-top: 1px solid #e5eee9 !important;
+          background: #fbfdfc !important;
+          color: #64748b !important;
+          font-size: 13px !important;
+          font-weight: 800 !important;
+          text-align: center !important;
+        }
+
+        .pastOrdersHint a {
+          color: #047857 !important;
+          font-weight: 900 !important;
+          text-decoration: none !important;
+          border-bottom: 1px solid rgba(4, 120, 87, .35) !important;
+        }
+
+        .pastOrdersHint a:hover {
+          border-bottom-color: #047857 !important;
+        }
+
+        .finalOrdersShell {
+          overflow: hidden !important;
+        }
 `}</style>
 </AppLayout>
   );
 }
+
 
 
 
