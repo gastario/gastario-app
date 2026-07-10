@@ -249,6 +249,7 @@ function shouldCreateOrderFromImportRules(extractedOrder: any, bestText: string,
 
   const customerName = String(extractedOrder?.customerName || "").trim().toLowerCase();
   const contactName = String(extractedOrder?.contactName || "").trim().toLowerCase();
+  const sourceName = String(extractedOrder?.source || extractedOrder?.sourceName || "").trim().toLowerCase();
 
   const realItems = Array.isArray(extractedOrder?.items)
     ? extractedOrder.items.filter((item: any) => {
@@ -258,7 +259,8 @@ function shouldCreateOrderFromImportRules(extractedOrder: any, bestText: string,
 
         if (!name) return false;
         if (name.includes("fehlende position")) return false;
-        if (name.length < 4) return false;
+        if (name.includes("habe ") || name.includes("kosten für") || name.includes("servicepersonal")) return false;
+        if (name.includes("gas or electric grills") || name.includes("onsite")) return false;
 
         return quantity > 0 || totalCents > 0;
       })
@@ -279,25 +281,59 @@ function shouldCreateOrderFromImportRules(extractedOrder: any, bestText: string,
     contactName === "keine kontaktperson erkannt" ||
     contactName === "kontakt unbekannt";
 
-  if (hasTrashCustomer && hasTrashContact && realItems.length === 0 && totalCents <= 0) {
+  const meaningfulFields = getMeaningfulImportRuleFields(importRuleMatches);
+
+  const hasImportRuleMatch =
+    importRuleMatches.length > 0 &&
+    meaningfulFields.size > 0;
+
+  const hasStrongRuleMatch =
+    hasImportRuleMatch &&
+    (
+      meaningfulFields.has("customerName") ||
+      meaningfulFields.has("deliveryDate") ||
+      meaningfulFields.has("deliveryTime") ||
+      meaningfulFields.has("deliveryAddress") ||
+      meaningfulFields.has("items") ||
+      meaningfulFields.has("budget") ||
+      meaningfulFields.has("contactName") ||
+      meaningfulFields.has("orderNumber")
+    );
+
+  const normalizedText = normalizeImportText(bestText);
+  const hasPlatformOrderSignal =
+    normalizedText.includes("egora") ||
+    normalizedText.includes("heycater") ||
+    normalizedText.includes("hey cater") ||
+    normalizedText.includes("feedr") ||
+    normalizedText.includes("auftragsbest") ||
+    normalizedText.includes("bestellbest") ||
+    normalizedText.includes("order confirmation") ||
+    normalizedText.includes("booking confirmation");
+
+  const isPureTrash =
+    hasTrashCustomer &&
+    hasTrashContact &&
+    realItems.length === 0 &&
+    totalCents <= 0 &&
+    !hasPlatformOrderSignal &&
+    !hasStrongRuleMatch;
+
+  if (isPureTrash) {
     return false;
   }
 
-  const meaningfulFields = getMeaningfulImportRuleFields(importRuleMatches);
-
-  const hasEnoughRuleStructure =
-    meaningfulFields.has("items") &&
-    (
-      meaningfulFields.has("deliveryDate") ||
-      meaningfulFields.has("customerName") ||
-      meaningfulFields.has("deliveryAddress") ||
-      meaningfulFields.has("budget")
-    );
+  if (hasStrongRuleMatch) {
+    return true;
+  }
 
   return Boolean(
     importRuleMatches.length > 0 &&
-    hasEnoughRuleStructure &&
-    hasMinimumOrderSignal(extractedOrder, bestText)
+    (
+      hasMinimumOrderSignal(extractedOrder, bestText) ||
+      hasStrongOrderKeyword(bestText) ||
+      hasPlatformOrderSignal
+    )
   );
 }
 
@@ -920,6 +956,7 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
 
 
 
