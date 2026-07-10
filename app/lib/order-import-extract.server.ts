@@ -82,40 +82,53 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
   const customerName = customerBlock[0] || "";
   const contactName = customerBlock.find((line) => !line.toLowerCase().startsWith("telefon:") && line !== customerName) || "";
   const contactPhone = extractValue(customerBlock.join("\n"), /Telefon:\s*(.+)/i);
+  function looksLikeCompanyLine(line: string) {
+    const value = String(line || "").trim().toLowerCase();
+
+    if (!value) return false;
+
+    return (
+      /\b(gmbh|ug|ag|se|kg|ohg|gbr|e\.v\.|ev|inc|ltd|llc|company|catering|management|office|solutions|group|holding|studio)\b/i.test(value) ||
+      value.includes("@") ||
+      value.includes("www.") ||
+      value.includes("http") ||
+      value.includes("telefon") ||
+      value.includes("ansprechpartner") ||
+      value.includes("kontakt") ||
+      value.includes("kunde") ||
+      value.includes("lieferadresse")
+    );
+  }
+
   function looksLikeAddressLine(line: string) {
     const value = String(line || "").trim();
     const lower = value.toLowerCase();
 
     if (!value) return false;
     if (/goerzallee|edis gastrobetriebe|hey group|gormann|qonto|iban|bic/i.test(lower)) return false;
+    if (looksLikeCompanyLine(value)) return false;
     if (/^\d{5}\s+/.test(value)) return false;
     if (/telefon|ansprechpartner|kontakt|kunde|lieferadresse|stockwerk|aufzug|park/i.test(value)) return false;
     if (/gesamtbetrag|netto|brutto|ust|iban|bic|qonto|registergericht/i.test(lower)) return false;
 
-    return (
-      /straße|strasse|str\.|allee|weg|platz|damm|ufer|ring|chaussee|markt|gasse|hof|promenade|tor|kai|wall/i.test(value) ||
-      /\d+[a-z]?\b/i.test(value)
-    );
-  }
+    const hasStreetWord = /straße|strasse|str\.|allee|weg|platz|damm|ufer|ring|chaussee|markt|gasse|hof|promenade|tor|kai|wall/i.test(value);
+    const hasHouseNumber = /\b\d+[a-z]?\b/i.test(value);
 
+    return hasStreetWord && hasHouseNumber;
+  }
   const deliveryZipCity = deliveryBlock.find((line) => /^\d{5}\s+/.test(line)) || "";
   const zipIndexInDeliveryBlock = deliveryZipCity ? deliveryBlock.indexOf(deliveryZipCity) : -1;
 
   const deliveryStreet =
     deliveryBlock.find((line) => looksLikeAddressLine(line)) ||
     (zipIndexInDeliveryBlock > 0
-      ? [...deliveryBlock.slice(Math.max(0, zipIndexInDeliveryBlock - 4), zipIndexInDeliveryBlock)]
+      ? [...deliveryBlock.slice(Math.max(0, zipIndexInDeliveryBlock - 8), zipIndexInDeliveryBlock)]
           .reverse()
           .find((line) => {
             const value = String(line || "").trim();
-            return (
-              value &&
-              !/goerzallee|edis gastrobetriebe|hey group|gormann|qonto|iban|bic/i.test(value.toLowerCase()) &&
-              !/kunde|lieferadresse|telefon|ansprechpartner|kontakt|stockwerk|aufzug|park/i.test(value)
-            );
+            return looksLikeAddressLine(value);
           }) || ""
       : "");
-
   const deliveryAddressFromBlock = [deliveryStreet, deliveryZipCity].filter(Boolean).join(", ");
 
   const ownOrPlatformWords = [
@@ -679,7 +692,7 @@ function extractGenericOrder(text: string): ExtractedOrder {
       const cityLine = lines[zipLineIndex];
       const streetLine = [...lines.slice(Math.max(0, zipLineIndex - 5), zipLineIndex)]
         .reverse()
-        .find((line) => /straße|strasse|str\.|allee|weg|platz|damm|ufer|ring|chaussee/i.test(line)) || "";
+        .find((line) => /straße|strasse|str\.|allee|weg|platz|damm|ufer|ring|chaussee/i.test(line) && /\b\d+[a-z]?\b/i.test(line) && !/\b(gmbh|ug|ag|se|kg|ohg|gbr|e\.v\.|ev|catering|management|solutions|group|holding)\b/i.test(line)) || "";
 
       return [streetLine, cityLine].filter(Boolean).join(", ");
     })();
@@ -739,6 +752,9 @@ export function extractUniversalOrder(text: string): ExtractedOrder {
 
   return genericOrder;
 }
+
+
+
 
 
 
