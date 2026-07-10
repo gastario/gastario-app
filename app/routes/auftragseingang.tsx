@@ -842,52 +842,49 @@ export default function AuftragseingangPage() {
 
   const hiddenPastOrderCount = sortedOrders.length - visibleOrders.length;
   function isLikelyTrashImportOrder(order: any) {
-    const customerName = String(order?.customerName || "").trim().toLowerCase();
+    const customerName = String(order?.customerName || order?.customer?.name || "").trim().toLowerCase();
     const contactName = String(order?.contactName || "").trim().toLowerCase();
-    const eventName = String(order?.eventName || "").trim().toLowerCase();
     const source = String(order?.source || "").trim().toUpperCase();
     const totalInfo = getDisplayedOrderTotal(order);
     const items = Array.isArray(order?.items) ? order.items : [];
+
+    const itemNames = items
+      .map((item: any) => String(item?.name || "").trim().toLowerCase())
+      .filter(Boolean);
+
+    const hasRealCustomer =
+      customerName &&
+      customerName !== "e-mail import" &&
+      customerName !== "email import" &&
+      customerName !== "kunde unbekannt";
+
+    const hasRealItem = itemNames.some((name: string) => {
+      if (name.includes("fehlende position")) return false;
+      if (name.includes("habe lieferkosten")) return false;
+      if (name.includes("servicepersonal")) return false;
+      if (name.includes("gas or electric grills")) return false;
+      if (name.includes("onsite")) return false;
+      return name.length >= 4;
+    });
+
+    const hasMoney = totalInfo.cents > 0;
+
+    // Echte Plattform-Aufträge niemals nur wegen fehlender Kontaktperson ausblenden.
+    if (source === "HEYCATER" || source === "EGORA" || source === "FEEDR") {
+      return false;
+    }
+
+    // Echte Kunden oder echte Positionen bleiben sichtbar.
+    if (hasRealCustomer || hasRealItem || hasMoney) {
+      return false;
+    }
 
     const trashContact =
       !contactName ||
       contactName === "keine kontaktperson erkannt" ||
       contactName === "kontakt unbekannt";
 
-    const trashCustomer =
-      !customerName ||
-      customerName === "e-mail import" ||
-      customerName === "email import" ||
-      customerName === "kunde unbekannt";
-
-    const hasPaidRealItem = items.some((item: any) => {
-      const name = String(item?.name || "").trim().toLowerCase();
-      const totalCents = Number(item?.totalCents || 0);
-
-      if (!name) return false;
-      if (name.includes("fehlende position")) return false;
-      if (name.length < 4) return false;
-      if (name.includes("habe ") || name.includes("kosten für") || name.includes("servicepersonal")) return false;
-      if (name.includes("gas or electric grills") || name.includes("onsite")) return false;
-
-      return totalCents > 0;
-    });
-
-    const weakMailText =
-      eventName.includes("e-mail import") ||
-      eventName.includes("email import") ||
-      eventName.includes("habe lieferkosten") ||
-      eventName.includes("servicepersonal") ||
-      eventName.includes("gas or electric grills") ||
-      eventName.includes("onsite") ||
-      eventName.includes("stattfinden");
-
-    if (trashCustomer && trashContact) return true;
-    if (trashContact && totalInfo.cents <= 0 && !hasPaidRealItem) return true;
-    if (source === "EMAIL" && totalInfo.cents <= 0 && !hasPaidRealItem) return true;
-    if (weakMailText && !hasPaidRealItem) return true;
-
-    return false;
+    return Boolean(trashContact && !hasMoney && !hasRealItem);
   }
 
   const currentOrderStats = {
@@ -3416,6 +3413,7 @@ export default function AuftragseingangPage() {
 </AppLayout>
   );
 }
+
 
 
 
