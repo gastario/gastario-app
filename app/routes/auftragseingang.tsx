@@ -805,7 +805,7 @@ export default function AuftragseingangPage() {
     return dateB - dateA;
   });
 
-  const activeOrderStatus = String(data.activeStatus || "");
+  const activeOrderStatus = String(data.activeStatus || "AUTO_CREATED");
 
   const activeOrderViewTitle =
     activeOrderStatus === "CONFIRMED"
@@ -856,13 +856,9 @@ export default function AuftragseingangPage() {
   function isLikelyTrashImportOrder(order: any) {
     const customerName = String(order?.customerName || order?.customer?.name || "").trim().toLowerCase();
     const contactName = String(order?.contactName || "").trim().toLowerCase();
-    const source = String(order?.source || "").trim().toUpperCase();
+    const eventName = String(order?.eventName || "").trim().toLowerCase();
     const totalInfo = getDisplayedOrderTotal(order);
     const items = Array.isArray(order?.items) ? order.items : [];
-
-    const itemNames = items
-      .map((item: any) => String(item?.name || "").trim().toLowerCase())
-      .filter(Boolean);
 
     const hasRealCustomer =
       customerName &&
@@ -870,33 +866,52 @@ export default function AuftragseingangPage() {
       customerName !== "email import" &&
       customerName !== "kunde unbekannt";
 
-    const hasRealItem = itemNames.some((name: string) => {
+    const hasRealItem = items.some((item: any) => {
+      const name = String(item?.name || "").trim().toLowerCase();
+      const totalCents = Number(item?.totalCents || 0);
+      const quantity = Number(item?.quantity || 0);
+
+      if (!name) return false;
       if (name.includes("fehlende position")) return false;
       if (name.includes("habe lieferkosten")) return false;
+      if (name.includes("kosten für")) return false;
       if (name.includes("servicepersonal")) return false;
       if (name.includes("gas or electric grills")) return false;
       if (name.includes("onsite")) return false;
-      return name.length >= 4;
+      if (name.includes("stattfinden")) return false;
+
+      return name.length >= 4 && (quantity > 0 || totalCents > 0);
     });
 
     const hasMoney = totalInfo.cents > 0;
-
-    // Echte Plattform-Aufträge niemals nur wegen fehlender Kontaktperson ausblenden.
-    if (source === "HEYCATER" || source === "EGORA" || source === "FEEDR") {
-      return false;
-    }
-
-    // Echte Kunden oder echte Positionen bleiben sichtbar.
-    if (hasRealCustomer || hasRealItem || hasMoney) {
-      return false;
-    }
 
     const trashContact =
       !contactName ||
       contactName === "keine kontaktperson erkannt" ||
       contactName === "kontakt unbekannt";
 
-    return Boolean(trashContact && !hasMoney && !hasRealItem);
+    const trashCustomer =
+      !customerName ||
+      customerName === "e-mail import" ||
+      customerName === "email import" ||
+      customerName === "kunde unbekannt";
+
+    const weakText =
+      eventName.includes("e-mail import") ||
+      eventName.includes("email import") ||
+      eventName.includes("habe lieferkosten") ||
+      eventName.includes("servicepersonal") ||
+      eventName.includes("gas or electric grills") ||
+      eventName.includes("onsite") ||
+      eventName.includes("stattfinden");
+
+    if (hasRealCustomer && (hasRealItem || hasMoney)) return false;
+    if (hasRealItem || hasMoney) return false;
+
+    if (trashCustomer && trashContact) return true;
+    if (weakText && !hasRealItem && !hasMoney) return true;
+
+    return false;
   }
 
   const currentOrderStats = {
@@ -1058,7 +1073,7 @@ export default function AuftragseingangPage() {
             ["Übernommen", currentOrderStats.confirmed, "CONFIRMED"],
             ["Abgelehnt", currentOrderStats.rejected, "REJECTED"],
           ].map(([label, count, status]) => {
-            const active = data.activeStatus === status || (!data.activeStatus && !status);
+            const active = activeOrderStatus === status || (!activeOrderStatus && !status);
             const params = new URLSearchParams();
 
             if (status) params.set("status", String(status));
@@ -3438,6 +3453,9 @@ export default function AuftragseingangPage() {
 </AppLayout>
   );
 }
+
+
+
 
 
 
