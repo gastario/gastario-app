@@ -266,7 +266,7 @@ export async function loader({ request }: { request: Request }) {
   }
 
   try {
-    const [orders, emailInbox, counts] = await Promise.all([
+    const [orders, emailInbox, counts, totalOrdersInDatabase] = await Promise.all([
       prisma.order.findMany({
         where: {
           tenantId: tenantUser.tenantId,
@@ -369,6 +369,14 @@ export async function loader({ request }: { request: Request }) {
         rejected: counts[3],
       },
       setupError: null,
+      debugInfo: {
+        userId,
+        tenantId: tenantUser.tenantId,
+        tenantName: tenantUser.tenant?.name || "",
+        ordersLoaded: orders.length,
+        ordersInTenant: counts[0],
+        totalOrdersInDatabase,
+      },
     };
   } catch (error: any) {
     console.error("Auftragseingang loader failed:", error);
@@ -913,7 +921,19 @@ export default function AuftragseingangPage() {
   return (
     <AppLayout>
       <div className="inboxPage inboxFinalPage">
-        {data.setupError ? (
+                <div style={{
+          margin: "0 0 12px",
+          padding: "10px 12px",
+          borderRadius: 12,
+          background: "#fff7ed",
+          border: "1px solid #fed7aa",
+          color: "#9a3412",
+          fontSize: 12,
+          fontWeight: 800,
+        }}>
+          Debug: Mandant {data.tenant?.name || "-"} · Orders geladen: {data.orders?.length || 0} · Counts: {data.counts?.all || 0}
+        </div>
+{data.setupError ? (
           <div style={{
             margin: "0 0 18px",
             padding: "14px 16px",
@@ -926,7 +946,21 @@ export default function AuftragseingangPage() {
             {data.setupError}
           </div>
         ) : null}
-        <section className="finalHeader">
+                {data.debugInfo ? (
+          <div style={{
+            margin: "0 0 14px",
+            padding: "12px 14px",
+            borderRadius: 14,
+            background: "#fff7ed",
+            border: "1px solid #fed7aa",
+            color: "#9a3412",
+            fontSize: 12,
+            fontWeight: 800,
+          }}>
+            Debug · Mandant: {data.debugInfo.tenantName || "-"} · Tenant: {data.debugInfo.tenantId} · Geladen: {data.debugInfo.ordersLoaded} · Im Mandanten: {data.debugInfo.ordersInTenant} · Gesamt DB: {data.debugInfo.totalOrdersInDatabase}
+          </div>
+        ) : null}
+<section className="finalHeader">
           <div>
             <div className="finalEyebrow">Auftragseingang</div>
             <h1>Auftragsbestätigungen</h1>
@@ -3426,6 +3460,10 @@ export default function AuftragseingangPage() {
 </AppLayout>
   );
 }
+
+
+
+
 
 
 
