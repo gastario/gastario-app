@@ -3318,10 +3318,106 @@ export default function AuftragseingangPage() {
         .finalOrdersShell {
           overflow: hidden !important;
         }
+
+        /* gastario-wide-clean-orders-20260710 */
+
+        .workspace:has(.inboxFinalPage),
+        .workspace:has(.inboxPage) {
+          padding-left: 28px !important;
+          padding-right: 28px !important;
+        }
+
+        .inboxPage,
+        .inboxFinalPage {
+          width: 100% !important;
+          max-width: 1580px !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
+        }
+
+        .finalOrdersShell,
+        .finalOrdersGrid,
+        .finalOrderRows,
+        .finalOrderRow {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+
+        .finalOrdersGrid:not(.selectedFocusMode) {
+          display: block !important;
+          padding: 22px !important;
+          overflow: hidden !important;
+        }
+
+        .finalOrdersGrid:not(.selectedFocusMode)::after {
+          display: none !important;
+          content: none !important;
+        }
+
+        .finalOrderRows {
+          display: grid !important;
+          gap: 14px !important;
+        }
+
+        .finalOrderRow {
+          grid-template-columns: 52px minmax(280px, .85fr) minmax(420px, 1.25fr) 150px 165px !important;
+          gap: 22px !important;
+          padding: 18px 22px !important;
+          min-height: 112px !important;
+        }
+
+        .finalOrderCustomer h3 {
+          font-size: 20px !important;
+        }
+
+        .finalOrderItems {
+          font-size: 14.5px !important;
+        }
+
+        .finalOrderDate strong {
+          font-size: 17px !important;
+        }
+
+        .finalOrderTotal strong {
+          font-size: 25px !important;
+        }
+
+        .finalLoadMore,
+        .loadMoreButton,
+        .loadMore {
+          display: none !important;
+        }
+
+        .pastOrdersHint {
+          margin-top: 18px !important;
+          padding: 14px 18px !important;
+          border-top: 1px solid #e5eee9 !important;
+          background: #fbfdfc !important;
+          color: #64748b !important;
+          font-size: 13px !important;
+          font-weight: 800 !important;
+          text-align: center !important;
+        }
+
+        .pastOrdersHint a {
+          color: #047857 !important;
+          font-weight: 900 !important;
+          text-decoration: none !important;
+          border-bottom: 1px solid rgba(4, 120, 87, .35) !important;
+        }
+
+        @media (max-width: 1450px) {
+          .finalOrderRow {
+            grid-template-columns: 48px minmax(230px, .85fr) minmax(320px, 1.15fr) 130px 145px !important;
+            gap: 16px !important;
+          }
+        }
 `}</style>
 </AppLayout>
   );
 }
+
+
 
 
 
