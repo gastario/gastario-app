@@ -266,7 +266,7 @@ export async function loader({ request }: { request: Request }) {
   }
 
   try {
-    const [orders, emailInbox, counts, totalOrdersInDatabase] = await Promise.all([
+    const [orders, emailInbox, counts, totalOrdersInDatabase, latestOrdersAnyTenant] = await Promise.all([
       prisma.order.findMany({
         where: {
           tenantId: tenantUser.tenantId,
@@ -376,6 +376,7 @@ export async function loader({ request }: { request: Request }) {
         ordersLoaded: orders.length,
         ordersInTenant: counts[0],
         totalOrdersInDatabase,
+        latestOrdersAnyTenant,
       },
     };
   } catch (error: any) {
@@ -957,7 +958,7 @@ export default function AuftragseingangPage() {
             fontSize: 12,
             fontWeight: 800,
           }}>
-            Debug · Mandant: {data.debugInfo.tenantName || "-"} · Tenant: {data.debugInfo.tenantId} · Geladen: {data.debugInfo.ordersLoaded} · Im Mandanten: {data.debugInfo.ordersInTenant} · Gesamt DB: {data.debugInfo.totalOrdersInDatabase}
+            Debug · Mandant: {data.debugInfo.tenantName || "-"} · Tenant: {data.debugInfo.tenantId} · Geladen: {data.debugInfo.ordersLoaded} · Im Mandanten: {data.debugInfo.ordersInTenant} · Gesamt DB: {String(data.debugInfo.totalOrdersInDatabase ?? "-")} · Letzte Orders: {JSON.stringify(data.debugInfo.latestOrdersAnyTenant || [])}
           </div>
         ) : null}
 <section className="finalHeader">
@@ -3460,6 +3461,9 @@ export default function AuftragseingangPage() {
 </AppLayout>
   );
 }
+
+
+
 
 
 
