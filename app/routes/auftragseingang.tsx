@@ -199,7 +199,7 @@ export async function loader({ request }: { request: Request }) {
       searchQuery: "",
       dateRange: "last7",
       emailBuckets: { orders: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
-      activeStatus: "",
+      activeStatus: "ALL",
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
       setupError: "Nicht angemeldet. Bitte neu einloggen.",
     };
@@ -220,7 +220,7 @@ export async function loader({ request }: { request: Request }) {
       searchQuery: "",
       dateRange: "last7",
       emailBuckets: { orders: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
-      activeStatus: "",
+      activeStatus: "ALL",
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
       setupError: "Kein Mandant gefunden. Bitte diesen Benutzer im Super Admin einem Mandanten zuordnen.",
     };
@@ -805,32 +805,33 @@ export default function AuftragseingangPage() {
     return dateB - dateA;
   });
 
-  const activeOrderStatus = String(data.activeStatus || "AUTO_CREATED");
+  const activeOrderStatusRaw = String(data.activeStatus || "ALL");
+const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatusRaw;
 
   const activeOrderViewTitle =
-    activeOrderStatus === "CONFIRMED"
+    activeOrderStatusRaw === "CONFIRMED"
       ? "Übernommene Aufträge"
-      : activeOrderStatus === "REJECTED"
+      : activeOrderStatusRaw === "REJECTED"
         ? "Abgelehnte Aufträge"
-        : activeOrderStatus === "AUTO_CREATED"
+        : activeOrderStatusRaw === "AUTO_CREATED"
           ? "Zu prüfen"
           : "Alle Aufträge";
 
   const activeOrderViewSubtitle =
-    activeOrderStatus === "CONFIRMED"
+    activeOrderStatusRaw === "CONFIRMED"
       ? "Aufträge, die bereits übernommen wurden."
-      : activeOrderStatus === "REJECTED"
+      : activeOrderStatusRaw === "REJECTED"
         ? "Aufträge, die nicht übernommen wurden."
-        : activeOrderStatus === "AUTO_CREATED"
+        : activeOrderStatusRaw === "AUTO_CREATED"
           ? "Nur Aufträge, die noch kontrolliert und übernommen werden müssen."
           : "Alle aktuellen Aufträge im Auftragseingang.";
 
   const activeOrderViewCountLabel =
-    activeOrderStatus === "CONFIRMED"
+    activeOrderStatusRaw === "CONFIRMED"
       ? "übernommen"
-      : activeOrderStatus === "REJECTED"
+      : activeOrderStatusRaw === "REJECTED"
         ? "abgelehnt"
-        : activeOrderStatus === "AUTO_CREATED"
+        : activeOrderStatusRaw === "AUTO_CREATED"
           ? "offen"
           : "gesamt";
   const visibleOrders = sortedOrders.filter((order: any) => {
@@ -3762,6 +3763,8 @@ export default function AuftragseingangPage() {
 </AppLayout>
   );
 }
+
+
 
 
 
