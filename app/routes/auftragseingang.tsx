@@ -845,8 +845,14 @@ export default function AuftragseingangPage() {
     const customerName = String(order?.customerName || "").trim().toLowerCase();
     const contactName = String(order?.contactName || "").trim().toLowerCase();
     const eventName = String(order?.eventName || "").trim().toLowerCase();
+    const source = String(order?.source || "").trim().toUpperCase();
     const totalInfo = getDisplayedOrderTotal(order);
     const items = Array.isArray(order?.items) ? order.items : [];
+
+    const trashContact =
+      !contactName ||
+      contactName === "keine kontaktperson erkannt" ||
+      contactName === "kontakt unbekannt";
 
     const trashCustomer =
       !customerName ||
@@ -854,19 +860,15 @@ export default function AuftragseingangPage() {
       customerName === "email import" ||
       customerName === "kunde unbekannt";
 
-    const trashContact =
-      !contactName ||
-      contactName === "keine kontaktperson erkannt" ||
-      contactName === "kontakt unbekannt";
-
-    const hasMoney = totalInfo.cents > 0;
-
-    const hasMeaningfulItemWithMoney = items.some((item: any) => {
+    const hasPaidRealItem = items.some((item: any) => {
       const name = String(item?.name || "").trim().toLowerCase();
       const totalCents = Number(item?.totalCents || 0);
 
       if (!name) return false;
       if (name.includes("fehlende position")) return false;
+      if (name.length < 4) return false;
+      if (name.includes("habe ") || name.includes("kosten für") || name.includes("servicepersonal")) return false;
+      if (name.includes("gas or electric grills") || name.includes("onsite")) return false;
 
       return totalCents > 0;
     });
@@ -874,21 +876,18 @@ export default function AuftragseingangPage() {
     const weakMailText =
       eventName.includes("e-mail import") ||
       eventName.includes("email import") ||
+      eventName.includes("habe lieferkosten") ||
+      eventName.includes("servicepersonal") ||
       eventName.includes("gas or electric grills") ||
       eventName.includes("onsite") ||
-      eventName.includes("die woche") ||
       eventName.includes("stattfinden");
 
-    return Boolean(
-      trashCustomer &&
-      trashContact &&
-      !hasMoney &&
-      !hasMeaningfulItemWithMoney
-    ) || Boolean(
-      trashCustomer &&
-      !hasMoney &&
-      weakMailText
-    );
+    if (trashCustomer && trashContact) return true;
+    if (trashContact && totalInfo.cents <= 0 && !hasPaidRealItem) return true;
+    if (source === "EMAIL" && totalInfo.cents <= 0 && !hasPaidRealItem) return true;
+    if (weakMailText && !hasPaidRealItem) return true;
+
+    return false;
   }
 
   const currentOrderStats = {
@@ -3055,10 +3054,239 @@ export default function AuftragseingangPage() {
           width: 100% !important;
           max-width: 100% !important;
         }
+
+        /* gastario-selected-card-larger-20260710 */
+
+        .finalOrdersGrid.selectedFocusMode {
+          padding: 42px 24px 34px !important;
+          display: flex !important;
+          justify-content: center !important;
+          align-items: flex-start !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel {
+          width: min(820px, 100%) !important;
+          max-width: 820px !important;
+          padding: 28px !important;
+          border-radius: 24px !important;
+          border: 1.5px solid #f59e0b !important;
+          box-shadow: 0 28px 70px rgba(15, 23, 42, .13) !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedTop {
+          margin: -28px -28px 22px !important;
+          padding: 24px 28px 20px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedTop h3 {
+          font-size: 32px !important;
+          line-height: 1.05 !important;
+          letter-spacing: -1px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalOrderNumber {
+          font-size: 14px !important;
+          margin-top: 8px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedKicker {
+          font-size: 12px !important;
+          padding: 6px 12px !important;
+          border-radius: 999px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts {
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          gap: 12px !important;
+          padding: 0 0 18px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts div {
+          min-height: 88px !important;
+          padding: 16px !important;
+          border-radius: 18px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts span {
+          font-size: 12px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts strong {
+          font-size: 19px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems h4 {
+          font-size: 20px !important;
+          margin-bottom: 12px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItem {
+          padding: 12px 0 !important;
+          font-size: 15px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItem span {
+          gap: 12px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItem span strong {
+          font-size: 16px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItem > strong {
+          font-size: 15px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedNotice {
+          padding: 15px 16px !important;
+          border-radius: 16px !important;
+          font-size: 14px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions {
+          grid-template-columns: 160px 1fr 140px !important;
+          gap: 12px !important;
+          margin-top: 18px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions a,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions button {
+          min-height: 50px !important;
+          border-radius: 14px !important;
+          font-size: 15px !important;
+          font-weight: 900 !important;
+        }
+
+        /* gastario-wider-order-inbox-20260710 */
+
+        .inboxFinalPage {
+          max-width: 1520px !important;
+        }
+
+        .workspace {
+          padding-left: 42px !important;
+          padding-right: 42px !important;
+        }
+
+        .finalOrdersShell {
+          width: 100% !important;
+        }
+
+        .finalOrdersGrid:not(.selectedFocusMode) {
+          padding: 20px !important;
+        }
+
+        .finalOrderRow {
+          grid-template-columns: 48px minmax(250px, .9fr) minmax(360px, 1.2fr) 140px 150px !important;
+          gap: 18px !important;
+          min-height: 112px !important;
+          padding: 17px 18px !important;
+        }
+
+        .finalOrderCustomer h3 {
+          font-size: 19px !important;
+        }
+
+        .finalOrderItems {
+          font-size: 14px !important;
+        }
+
+        .finalOrderTotal strong {
+          font-size: 24px !important;
+        }
+
+        @media (max-width: 1350px) {
+          .finalOrderRow {
+            grid-template-columns: 44px minmax(210px, .9fr) minmax(260px, 1fr) 120px 130px !important;
+          }
+        }
+
+        /* gastario-force-wide-auftragseingang-20260710 */
+
+        .workspace:has(.inboxFinalPage),
+        .workspace:has(.inboxPage) {
+          padding-left: 28px !important;
+          padding-right: 28px !important;
+        }
+
+        .inboxPage,
+        .inboxFinalPage {
+          width: 100% !important;
+          max-width: 1580px !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
+        }
+
+        .finalEmailPanel,
+        .finalOrdersShell,
+        .realOrderTabs {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+
+        .realOrderTabs {
+          width: fit-content !important;
+        }
+
+        .finalOrdersGrid:not(.selectedFocusMode) {
+          display: block !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          padding: 22px !important;
+          overflow: hidden !important;
+        }
+
+        .finalOrderRows {
+          width: 100% !important;
+          max-width: 100% !important;
+          display: grid !important;
+          gap: 14px !important;
+        }
+
+        .finalOrderRow {
+          width: 100% !important;
+          max-width: 100% !important;
+          grid-template-columns: 52px minmax(270px, .85fr) minmax(420px, 1.25fr) 150px 165px !important;
+          gap: 22px !important;
+          padding: 18px 22px !important;
+          min-height: 112px !important;
+        }
+
+        .finalOrderCustomer h3 {
+          font-size: 20px !important;
+        }
+
+        .finalOrderItems {
+          font-size: 14.5px !important;
+        }
+
+        .finalOrderDate strong {
+          font-size: 17px !important;
+        }
+
+        .finalOrderTotal strong {
+          font-size: 25px !important;
+        }
+
+        .finalOrdersGrid:not(.selectedFocusMode)::after {
+          display: none !important;
+          content: none !important;
+        }
+
+        @media (max-width: 1450px) {
+          .finalOrderRow {
+            grid-template-columns: 48px minmax(230px, .85fr) minmax(320px, 1.15fr) 130px 145px !important;
+            gap: 16px !important;
+          }
+        }
 `}</style>
 </AppLayout>
   );
 }
+
+
+
+
 
 
 
