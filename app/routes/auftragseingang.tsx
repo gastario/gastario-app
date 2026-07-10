@@ -310,28 +310,28 @@ export async function loader({ request }: { request: Request }) {
         prisma.order.count({
           where: {
             tenantId: tenantUser.tenantId,
-            OR: [{ deliveryDate: null }, { deliveryDate: { gte: currentOrdersDateStart } }],
+
           },
         }),
         prisma.order.count({
           where: {
             tenantId: tenantUser.tenantId,
             status: "AUTO_CREATED" as any,
-            OR: [{ deliveryDate: null }, { deliveryDate: { gte: currentOrdersDateStart } }],
+
           },
         }),
         prisma.order.count({
           where: {
             tenantId: tenantUser.tenantId,
             status: "CONFIRMED" as any,
-            OR: [{ deliveryDate: null }, { deliveryDate: { gte: currentOrdersDateStart } }],
+
           },
         }),
         prisma.order.count({
           where: {
             tenantId: tenantUser.tenantId,
             status: "REJECTED" as any,
-            OR: [{ deliveryDate: null }, { deliveryDate: { gte: currentOrdersDateStart } }],
+
           },
         }),
       ]),
@@ -913,6 +913,19 @@ export default function AuftragseingangPage() {
   return (
     <AppLayout>
       <div className="inboxPage inboxFinalPage">
+        {data.setupError ? (
+          <div style={{
+            margin: "0 0 18px",
+            padding: "14px 16px",
+            borderRadius: 14,
+            border: "1px solid #fecaca",
+            background: "#fff1f2",
+            color: "#991b1b",
+            fontWeight: 800,
+          }}>
+            {data.setupError}
+          </div>
+        ) : null}
         <section className="finalHeader">
           <div>
             <div className="finalEyebrow">Auftragseingang</div>
@@ -1063,7 +1076,7 @@ export default function AuftragseingangPage() {
 
           {visibleOrders.length === 0 ? (
             <div className="finalEmpty">
-              Keine ungeprüften aktuellen Aufträge.
+              {data.setupError ? data.setupError : 'Keine Aufträge in dieser Ansicht.'}
             </div>
           ) : (
             <div className={selectedOrder ? "finalOrdersGrid selectedFocusMode" : "finalOrdersGrid"}>
@@ -3413,6 +3426,9 @@ export default function AuftragseingangPage() {
 </AppLayout>
   );
 }
+
+
+
 
 
 
