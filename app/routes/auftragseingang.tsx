@@ -793,9 +793,40 @@ export default function AuftragseingangPage() {
     return dateB - dateA;
   });
 
+  const activeOrderStatus = String(data.activeStatus || "");
+
+  const activeOrderViewTitle =
+    activeOrderStatus === "CONFIRMED"
+      ? "Übernommene Aufträge"
+      : activeOrderStatus === "REJECTED"
+        ? "Abgelehnte Aufträge"
+        : activeOrderStatus === "AUTO_CREATED"
+          ? "Zu prüfen"
+          : "Alle Aufträge";
+
+  const activeOrderViewSubtitle =
+    activeOrderStatus === "CONFIRMED"
+      ? "Aufträge, die bereits übernommen wurden."
+      : activeOrderStatus === "REJECTED"
+        ? "Aufträge, die nicht übernommen wurden."
+        : activeOrderStatus === "AUTO_CREATED"
+          ? "Nur Aufträge, die noch kontrolliert und übernommen werden müssen."
+          : "Alle aktuellen Aufträge im Auftragseingang.";
+
+  const activeOrderViewCountLabel =
+    activeOrderStatus === "CONFIRMED"
+      ? "übernommen"
+      : activeOrderStatus === "REJECTED"
+        ? "abgelehnt"
+        : activeOrderStatus === "AUTO_CREATED"
+          ? "offen"
+          : "gesamt";
   const visibleOrders = sortedOrders.filter((order: any) => {
-    if (order.status !== "AUTO_CREATED") return false;
     if (isLikelyTrashImportOrder(order)) return false;
+
+    if (activeOrderStatus && order.status !== activeOrderStatus) {
+      return false;
+    }
 
     if (!order.deliveryDate) return true;
 
@@ -808,7 +839,6 @@ export default function AuftragseingangPage() {
 
     return deliveryDate >= today;
   });
-
 
   const hiddenPastOrderCount = sortedOrders.length - visibleOrders.length;
   function isLikelyTrashImportOrder(order: any) {
@@ -1025,13 +1055,13 @@ export default function AuftragseingangPage() {
 <section className="finalOrdersShell finalOrdersSplitShell">
           <div className="finalOrdersHead">
             <div>
-              <h2>Zu prüfen</h2>
-              <p>Nur Aufträge, die noch kontrolliert und übernommen werden müssen.</p>
+              <h2>{activeOrderViewTitle}</h2>
+              <p>{activeOrderViewSubtitle}</p>
             </div>
 
             <div className="finalOrdersRight">
               <strong>{visibleOrders.length}</strong>
-              <span>offen</span>
+              <span>{activeOrderViewCountLabel}</span>
             </div>
           </div>
 
@@ -3006,10 +3036,32 @@ export default function AuftragseingangPage() {
         .finalOrdersShell {
           margin-top: 0 !important;
         }
+
+        /* gastario-remove-click-hint-final-20260710 */
+
+        .finalOrdersGrid:not(.selectedFocusMode)::after {
+          display: none !important;
+          content: none !important;
+        }
+
+        .finalOrdersGrid:not(.selectedFocusMode) {
+          display: block !important;
+          padding: 18px !important;
+          overflow: hidden !important;
+        }
+
+        .finalOrderRows,
+        .finalOrderRow {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
 `}</style>
 </AppLayout>
   );
 }
+
+
+
 
 
 
