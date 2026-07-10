@@ -415,6 +415,38 @@ function getItemsWithHeycaterSumCorrection(extractedOrder: any, bestText: string
   return Array.isArray(extractedOrder?.items) ? extractedOrder.items : [];
 }
 
+async function findImportIgnoreRuleMatch(params: {
+  tenantId: string;
+  subject: string;
+  sender: string;
+  bestText: string;
+}) {
+  const subject = normalizeImportText(params.subject);
+  const sender = normalizeImportText(params.sender);
+  const bestText = normalizeImportText(params.bestText);
+  const combined = normalizeImportText(params.subject + "\n" + params.sender + "\n" + params.bestText);
+
+  const rules = await prisma.importIgnoreRule.findMany({
+    where: {
+      tenantId: params.tenantId,
+      isActive: true,
+    },
+    orderBy: { createdAt: "desc" },
+    take: 200,
+  });
+
+  return rules.find((rule: any) => {
+    const senderContains = normalizeImportText(rule.senderContains || "");
+    const subjectContains = normalizeImportText(rule.subjectContains || "");
+    const textContains = normalizeImportText(rule.textContains || "");
+
+    const senderMatch = senderContains ? sender.includes(senderContains) || combined.includes(senderContains) : false;
+    const subjectMatch = subjectContains ? subject.includes(subjectContains) || combined.includes(subjectContains) : false;
+    const textMatch = textContains ? bestText.includes(textContains) || combined.includes(textContains) : false;
+
+    return senderMatch || subjectMatch || textMatch;
+  }) || null;
+}
 async function findExistingHeycaterOrderByExternalNumber(tenantId: string, heycaterOrderNumber: string) {
   const { prisma } = await import("../lib/prisma.server");
 
@@ -788,7 +820,28 @@ export async function loader({ request }: { request: Request }) {
               }
             }
 
-            const extractedOrder = extractUniversalOrder(bestText);
+            const ignoreRuleMatch = await findImportIgnoreRuleMatch({
+              tenantId: account.tenantId,
+              subject: String(parsed.subject || ""),
+              sender: String(parsed.from?.text || ""),
+              bestText,
+            });
+
+            if (ignoreRuleMatch) {
+              await prisma.incomingEmail.update({
+                where: { id: existing.id },
+                data: {
+                  status: "HIDDEN" as any,
+                  processedAt: new Date(),
+                  errorMessage: "Automatisch ausgeblendet: trifft auf gelernte Ignore-Regel.",
+                },
+              });
+
+              (result as any).ignoredByRules = ((result as any).ignoredByRules || 0) + 1;
+              continue;
+            }
+
+                      const extractedOrder = extractUniversalOrder(bestText);
             const importRuleMatches = await findOrderImportRuleMatches({
               tenantId: account.tenantId,
               subject: String(parsed.subject || ""),
@@ -899,6 +952,27 @@ export async function loader({ request }: { request: Request }) {
             });
           }
 
+          const ignoreRuleMatch = await findImportIgnoreRuleMatch({
+            tenantId: account.tenantId,
+            subject: String(parsed.subject || ""),
+            sender: String(parsed.from?.text || ""),
+            bestText,
+          });
+
+          if (ignoreRuleMatch) {
+            await prisma.incomingEmail.update({
+              where: { id: incomingEmail.id },
+              data: {
+                status: "HIDDEN" as any,
+                processedAt: new Date(),
+                errorMessage: "Automatisch ausgeblendet: trifft auf gelernte Ignore-Regel.",
+              },
+            });
+
+            (result as any).ignoredByRules = ((result as any).ignoredByRules || 0) + 1;
+            continue;
+          }
+
           const extractedOrder = extractUniversalOrder(bestText);
           const importRuleMatches = await findOrderImportRuleMatches({
             tenantId: account.tenantId,
@@ -956,6 +1030,11 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
+
+
+
+
 
 
 
