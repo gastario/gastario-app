@@ -841,19 +841,6 @@ export async function loader({ request }: { request: Request }) {
               (result as any).ignoredByRules = ((result as any).ignoredByRules || 0) + 1;
               continue;
             }
- aiDecision = await classifyIncomingMailWithAi({
-
-                        tenantName: null,
-
-                        subject: String(parsed.subject || ""),
-
-                        sender: String(parsed.from?.text || ""),
-
-                        text: bestText,
-
-                        source: "EMAIL",
-
-                      });
 
                       const aiDecision = await classifyIncomingMailWithAi({
                         tenantName: null,
@@ -994,19 +981,6 @@ export async function loader({ request }: { request: Request }) {
             (result as any).ignoredByRules = ((result as any).ignoredByRules || 0) + 1;
             continue;
           }
- aiDecision = await classifyIncomingMailWithAi({
-
-            tenantName: null,
-
-            subject: String(parsed.subject || ""),
-
-            sender: String(parsed.from?.text || ""),
-
-            text: bestText,
-
-            source: "EMAIL",
-
-          });
 
           const aiDecision = await classifyIncomingMailWithAi({
             tenantName: null,
