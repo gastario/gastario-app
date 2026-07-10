@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import { simpleParser } from "mailparser";
 import { prisma } from "../lib/prisma.server";
 import { extractUniversalOrder } from "../lib/order-import-extract.server";
+import { classifyIncomingMailWithAi } from "../lib/ai-import-classifier.server";
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -840,6 +841,27 @@ export async function loader({ request }: { request: Request }) {
               (result as any).ignoredByRules = ((result as any).ignoredByRules || 0) + 1;
               continue;
             }
+ aiDecision = await classifyIncomingMailWithAi({
+
+                        tenantName: null,
+
+                        subject: String(parsed.subject || ""),
+
+                        sender: String(parsed.from?.text || ""),
+
+                        text: bestText,
+
+                        source: "EMAIL",
+
+                      });
+
+                      const aiDecision = await classifyIncomingMailWithAi({
+                        tenantName: null,
+                        subject: String(parsed.subject || ""),
+                        sender: String(parsed.from?.text || ""),
+                        text: bestText,
+                        source: "EMAIL",
+                      });
 
                       const extractedOrder = extractUniversalOrder(bestText);
             const importRuleMatches = await findOrderImportRuleMatches({
@@ -864,7 +886,7 @@ export async function loader({ request }: { request: Request }) {
                 data: {
                   status: "ORDER_CREATED" as any,
                   processedAt: new Date(),
-                  extractedJson: extractedOrder,
+                  extractedJson: { ...extractedOrder, aiDecision },
                   errorMessage: null,
                 },
               });
@@ -876,7 +898,7 @@ export async function loader({ request }: { request: Request }) {
                 data: {
                   status: "REVIEW_NEEDED" as any,
                   processedAt: new Date(),
-                  extractedJson: extractedOrder || undefined,
+                  extractedJson: extractedOrder ? { ...extractedOrder, aiDecision } : { aiDecision },
                   errorMessage: "Nicht automatisch als Auftrag erstellt: Daten nicht eindeutig genug. Bitte im Auftragseingang pruefen.",
                 },
               });
@@ -972,6 +994,27 @@ export async function loader({ request }: { request: Request }) {
             (result as any).ignoredByRules = ((result as any).ignoredByRules || 0) + 1;
             continue;
           }
+ aiDecision = await classifyIncomingMailWithAi({
+
+            tenantName: null,
+
+            subject: String(parsed.subject || ""),
+
+            sender: String(parsed.from?.text || ""),
+
+            text: bestText,
+
+            source: "EMAIL",
+
+          });
+
+          const aiDecision = await classifyIncomingMailWithAi({
+            tenantName: null,
+            subject: String(parsed.subject || ""),
+            sender: String(parsed.from?.text || ""),
+            text: bestText,
+            source: "EMAIL",
+          });
 
           const extractedOrder = extractUniversalOrder(bestText);
           const importRuleMatches = await findOrderImportRuleMatches({
@@ -996,7 +1039,7 @@ export async function loader({ request }: { request: Request }) {
               data: {
                 status: "ORDER_CREATED" as any,
                 processedAt: new Date(),
-                extractedJson: extractedOrder,
+                extractedJson: { ...extractedOrder, aiDecision },
               },
             });
 
@@ -1030,6 +1073,11 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
+
+
+
+
 
 
 
