@@ -832,7 +832,7 @@ export async function loader({ request }: { request: Request }) {
               await prisma.incomingEmail.update({
                 where: { id: existing.id },
                 data: {
-                  status: "HIDDEN" as any,
+                  status: "IGNORED" as any,
                   processedAt: new Date(),
                   errorMessage: "Automatisch ausgeblendet: trifft auf gelernte Ignore-Regel.",
                 },
@@ -849,6 +849,51 @@ export async function loader({ request }: { request: Request }) {
                         text: bestText,
                         source: "EMAIL",
                       });
+
+                      if (
+                        aiDecision.confidence >= 0.85 &&
+                        ["TRASH", "INVOICE", "DELIVERY_NOTE"].includes(aiDecision.mailType)
+                      ) {
+                        await prisma.incomingEmail.update({
+                          where: { id: existing.id },
+                          data: {
+                            status: "IGNORED" as any,
+                            processedAt: new Date(),
+                            extractedJson: { aiDecision },
+                            errorMessage: "KI ignoriert: " + aiDecision.mailType + " - " + aiDecision.reason,
+                          },
+                        });
+                        (result as any).ignoredByAi = ((result as any).ignoredByAi || 0) + 1;
+                        continue;
+                      }
+
+                      if (aiDecision.mailType === "INQUIRY" && aiDecision.confidence >= 0.75) {
+                        await prisma.incomingEmail.update({
+                          where: { id: existing.id },
+                          data: {
+                            status: "REVIEW_NEEDED" as any,
+                            processedAt: new Date(),
+                            extractedJson: { aiDecision },
+                            errorMessage: "KI: Anfrage erkannt - " + aiDecision.reason,
+                          },
+                        });
+                        (result as any).inquiriesDetected = ((result as any).inquiriesDetected || 0) + 1;
+                        continue;
+                      }
+
+                      if (aiDecision.mailType === "UNKNOWN" && aiDecision.confidence >= 0.65) {
+                        await prisma.incomingEmail.update({
+                          where: { id: existing.id },
+                          data: {
+                            status: "REVIEW_NEEDED" as any,
+                            processedAt: new Date(),
+                            extractedJson: { aiDecision },
+                            errorMessage: "KI unsicher: " + aiDecision.reason,
+                          },
+                        });
+                        (result as any).reviewNeededByAi = ((result as any).reviewNeededByAi || 0) + 1;
+                        continue;
+                      }
 
                       const extractedOrder = extractUniversalOrder(bestText);
             const importRuleMatches = await findOrderImportRuleMatches({
@@ -972,7 +1017,7 @@ export async function loader({ request }: { request: Request }) {
             await prisma.incomingEmail.update({
               where: { id: incomingEmail.id },
               data: {
-                status: "HIDDEN" as any,
+                status: "IGNORED" as any,
                 processedAt: new Date(),
                 errorMessage: "Automatisch ausgeblendet: trifft auf gelernte Ignore-Regel.",
               },
@@ -989,6 +1034,51 @@ export async function loader({ request }: { request: Request }) {
             text: bestText,
             source: "EMAIL",
           });
+
+          if (
+            aiDecision.confidence >= 0.85 &&
+            ["TRASH", "INVOICE", "DELIVERY_NOTE"].includes(aiDecision.mailType)
+          ) {
+            await prisma.incomingEmail.update({
+              where: { id: incomingEmail.id },
+              data: {
+                status: "IGNORED" as any,
+                processedAt: new Date(),
+                extractedJson: { aiDecision },
+                errorMessage: "KI ignoriert: " + aiDecision.mailType + " - " + aiDecision.reason,
+              },
+            });
+            (result as any).ignoredByAi = ((result as any).ignoredByAi || 0) + 1;
+            continue;
+          }
+
+          if (aiDecision.mailType === "INQUIRY" && aiDecision.confidence >= 0.75) {
+            await prisma.incomingEmail.update({
+              where: { id: incomingEmail.id },
+              data: {
+                status: "REVIEW_NEEDED" as any,
+                processedAt: new Date(),
+                extractedJson: { aiDecision },
+                errorMessage: "KI: Anfrage erkannt - " + aiDecision.reason,
+              },
+            });
+            (result as any).inquiriesDetected = ((result as any).inquiriesDetected || 0) + 1;
+            continue;
+          }
+
+          if (aiDecision.mailType === "UNKNOWN" && aiDecision.confidence >= 0.65) {
+            await prisma.incomingEmail.update({
+              where: { id: incomingEmail.id },
+              data: {
+                status: "REVIEW_NEEDED" as any,
+                processedAt: new Date(),
+                extractedJson: { aiDecision },
+                errorMessage: "KI unsicher: " + aiDecision.reason,
+              },
+            });
+            (result as any).reviewNeededByAi = ((result as any).reviewNeededByAi || 0) + 1;
+            continue;
+          }
 
           const extractedOrder = extractUniversalOrder(bestText);
           const importRuleMatches = await findOrderImportRuleMatches({
@@ -1047,6 +1137,7 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
 
 
 
