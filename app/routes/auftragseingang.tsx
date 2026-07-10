@@ -3449,10 +3449,92 @@ export default function AuftragseingangPage() {
             gap: 16px !important;
           }
         }
+
+        /* gastario-selected-focus-center-fix-20260710 */
+
+        .finalOrdersGrid.selectedFocusMode {
+          display: flex !important;
+          justify-content: center !important;
+          align-items: flex-start !important;
+          padding: 34px 24px 38px !important;
+          min-height: 520px !important;
+          width: 100% !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalOrderRows {
+          display: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel {
+          position: relative !important;
+          left: auto !important;
+          right: auto !important;
+          top: auto !important;
+          width: min(760px, 100%) !important;
+          max-width: 760px !important;
+          margin: 0 auto !important;
+          border: 1.5px solid #f59e0b !important;
+          border-top: 1.5px solid #f59e0b !important;
+          border-radius: 22px !important;
+          box-shadow: 0 24px 70px rgba(15, 23, 42, .12) !important;
+          overflow: hidden !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedTop {
+          margin: 0 !important;
+          padding: 22px 24px 18px !important;
+          border-bottom: 1px solid #edf2f0 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts {
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          gap: 12px !important;
+          padding: 18px 24px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems {
+          padding: 0 24px 18px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedNotice {
+          margin: 0 24px 16px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions {
+          grid-template-columns: 170px minmax(0, 1fr) 140px !important;
+          gap: 12px !important;
+          padding: 0 24px 24px !important;
+          margin: 0 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions a,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions button {
+          min-height: 48px !important;
+          height: 48px !important;
+          border-radius: 14px !important;
+          font-size: 14px !important;
+          line-height: 1.1 !important;
+          white-space: normal !important;
+          text-align: center !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions a:first-child {
+          background: #ffffff !important;
+          color: #0f172a !important;
+          border: 1px solid #d9e5e1 !important;
+          box-shadow: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions a:not(:first-child) {
+          background: #10a37f !important;
+          color: #ffffff !important;
+          border-color: #10a37f !important;
+        }
 `}</style>
 </AppLayout>
   );
 }
+
 
 
 
