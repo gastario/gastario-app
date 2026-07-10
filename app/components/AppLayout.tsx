@@ -8,9 +8,18 @@ const navigationGroups = [
     ],
   },
   {
+    label: "Eingang",
+    items: [
+      { label: "Eingangszentrale", to: "/auftragseingang" },
+      { label: "Auftraege pruefen", to: "/auftragseingang?status=AUTO_CREATED" },
+      { label: "Anfragen / Leads", to: "/auftragseingang?emailCategory=inquiries" },
+      { label: "Unklare E-Mails", to: "/auftragseingang?emailCategory=review" },
+      { label: "Ignorierte E-Mails", to: "/auftragseingang?emailCategory=ignored" },
+    ],
+  },
+  {
     label: "Auftraege",
     items: [
-      { label: "Auftragseingang", to: "/auftragseingang" },
       { label: "Bevorstehende Auftraege", to: "/auftraege" },
       { label: "Vergangene Auftraege", to: "/auftraege?view=past" },
       { label: "Neuer Auftrag", to: "/neuer-auftrag" },
@@ -19,8 +28,8 @@ const navigationGroups = [
   {
     label: "Import",
     items: [
+      { label: "E-Mail-Konten", to: "/importe" },
       { label: "PDF importieren", to: "/import-pruefen" },
-      { label: "E-Mail-Import", to: "/importe" },
       { label: "Import-Regeln", to: "/import-regeln" },
     ],
   },
@@ -30,56 +39,32 @@ const navigationGroups = [
       { label: "Angebote", to: "/angebote" },
       { label: "Kunden", to: "/kunden" },
       { label: "Produkte", to: "/produkte" },
-      { label: "Produkt-Import", to: "/produkte/import" },
+      { label: "Produkt-Import", to: "/produkt-import" },
+    ],
+  },
+  {
+    label: "Betrieb",
+    items: [
+      { label: "Produktion", to: "/produktion" },
+      { label: "Packlisten", to: "/packlisten" },
+      { label: "Lieferungen", to: "/lieferungen" },
+      { label: "Lieferscheine", to: "/lieferscheine" },
     ],
   },
   {
     label: "Finanzen",
     items: [
       { label: "Rechnungen", to: "/rechnungen" },
-      { label: "Neue Rechnung", to: "/rechnungen/neu" },
-      { label: "Belege", to: "/belege" },
-      { label: "Steuerberater-Export", to: "/steuerberater-export" },
-      { label: "Rechnungsdaten", to: "/einstellungen/rechnungen" },
+      { label: "Abrechnung", to: "/abrechnung" },
     ],
   },
   {
-    label: "Produktion & Labels",
+    label: "Stammdaten",
     items: [
-      { label: "Produktion", to: "/produktion" },
-      { label: "MHD-Labels", to: "/mhd-labels" },
-      { label: "Foodlabel erstellen", to: "/foodlabels" },
-      { label: "Packlisten", to: "/packlisten" },
-    ],
-  },
-  {
-    label: "Lieferung",
-    items: [
-      { label: "Lieferscheine", to: "/lieferscheine" },
-      { label: "Fahrerzettel", to: "/fahrerzettel" },
-      { label: "Lieferungen", to: "/lieferungen" },
-    ],
-  },
-  {
-    label: "Einkauf & Lager",
-    items: [
-      { label: "Einkauf", to: "/einkauf" },
-      { label: "Lager", to: "/lager" },
       { label: "Lieferanten", to: "/lieferanten" },
+      { label: "Lager", to: "/lager" },
       { label: "Rezepte", to: "/rezepte" },
-    ],
-  },
-  {
-    label: "Konto",
-    items: [
-      { label: "Plan & Abo", to: "/konto/abo" },
-    ],
-  },
-  {
-    label: "System",
-    items: [
-      { label: "Auswertungen", to: "/auswertungen" },
-      { label: "Einstellungen", to: "/einstellungen" },
+      { label: "Konto & Abo", to: "/konto/abo" },
     ],
   },
 ];
@@ -599,14 +584,16 @@ export default function AppLayout({ children }: AppLayoutProps) {
             <div className="navGroup" key={group.label}>
               <p>{group.label}</p>
               {group.items.map((item) => {
+                const currentPathWithSearch = location.pathname + location.search;
+                const itemPath = item.to.split("?")[0];
+                const itemHasQuery = item.to.includes("?");
+
                 const isActive =
                   item.to === "/"
                     ? location.pathname === "/"
-                    : item.to === "/rechnungen"
-                      ? location.pathname === "/rechnungen"
-                      : item.to === "/einstellungen"
-                        ? location.pathname === "/einstellungen"
-                        : location.pathname === item.to || location.pathname.startsWith(item.to + "/");
+                    : itemHasQuery
+                      ? currentPathWithSearch === item.to
+                      : location.pathname === itemPath || location.pathname.startsWith(itemPath + "/");
 
                 return (
                   <Link preventScrollReset className={isActive ? "active" : undefined} to={item.to} key={item.to}>
@@ -629,6 +616,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
     </main>
   );
 }
+
+
+
+
 
 
 
