@@ -3530,10 +3530,239 @@ export default function AuftragseingangPage() {
           color: #ffffff !important;
           border-color: #10a37f !important;
         }
+
+        /* gastario-selected-panel-beautify-20260710 */
+
+        .finalOrdersGrid.selectedFocusMode {
+          display: flex !important;
+          justify-content: center !important;
+          align-items: flex-start !important;
+          padding: 34px 28px 42px !important;
+          min-height: 540px !important;
+          width: 100% !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalOrderRows {
+          display: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel {
+          width: min(920px, 100%) !important;
+          max-width: 920px !important;
+          margin: 0 auto !important;
+          border: 1.5px solid #f3b24d !important;
+          border-radius: 26px !important;
+          background:
+            linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(248,251,250,1) 100%) !important;
+          box-shadow:
+            0 18px 40px rgba(15, 23, 42, 0.08),
+            0 4px 10px rgba(15, 23, 42, 0.04) !important;
+          overflow: hidden !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel::before {
+          content: "" !important;
+          display: block !important;
+          height: 6px !important;
+          background: linear-gradient(90deg, #10a37f 0%, #36c29a 100%) !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedTop {
+          padding: 28px 30px 22px !important;
+          margin: 0 !important;
+          border-bottom: 1px solid #edf2f0 !important;
+          background: linear-gradient(180deg, rgba(240,248,245,0.75) 0%, rgba(255,255,255,0) 100%) !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedTop h2,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedTop h3 {
+          margin: 8px 0 0 !important;
+          font-size: 26px !important;
+          line-height: 1.12 !important;
+          font-weight: 800 !important;
+          letter-spacing: -0.03em !important;
+          color: #0f172a !important;
+        }
+
+        .finalSelectedKicker {
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+          padding: 8px 14px !important;
+          border: 1px solid #fed7aa !important;
+          border-radius: 999px !important;
+          background: #fff7ed !important;
+          color: #b45309 !important;
+          font-size: 12px !important;
+          font-weight: 800 !important;
+          letter-spacing: 0.06em !important;
+          text-transform: uppercase !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts {
+          display: grid !important;
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          gap: 14px !important;
+          padding: 22px 30px 20px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts > div,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts > article {
+          min-height: 108px !important;
+          padding: 16px 16px 14px !important;
+          border: 1px solid #e4ece8 !important;
+          border-radius: 18px !important;
+          background: #ffffff !important;
+          box-shadow: 0 8px 20px rgba(15, 23, 42, 0.03) !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts strong,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts b {
+          display: block !important;
+          margin: 0 0 8px !important;
+          font-size: 13px !important;
+          line-height: 1.2 !important;
+          font-weight: 800 !important;
+          letter-spacing: 0.04em !important;
+          text-transform: uppercase !important;
+          color: #64748b !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts span,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts p,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts div {
+          color: #0f172a !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts > div > :last-child,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts > article > :last-child {
+          font-size: 15px !important;
+          line-height: 1.4 !important;
+          font-weight: 700 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems {
+          padding: 0 30px 22px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems h4,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems h3 {
+          margin: 4px 0 14px !important;
+          font-size: 16px !important;
+          line-height: 1.2 !important;
+          font-weight: 800 !important;
+          color: #0f172a !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems > div,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems > li,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems table {
+          width: 100% !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems table {
+          border-collapse: separate !important;
+          border-spacing: 0 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems tr td,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems > div > div,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems > div > article {
+          padding-top: 14px !important;
+          padding-bottom: 14px !important;
+          border-top: 1px solid #edf2f0 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems tr:first-child td {
+          border-top: 1px solid #edf2f0 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems td:first-child,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems strong:first-child {
+          color: #10a37f !important;
+          font-weight: 800 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems td:last-child,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems strong:last-child {
+          text-align: right !important;
+          font-weight: 800 !important;
+          color: #0f172a !important;
+        }
+
+        .finalSelectedNotice {
+          margin: 0 30px 18px !important;
+          padding: 14px 16px !important;
+          border: 1px solid #dceee7 !important;
+          border-radius: 16px !important;
+          background: #f5fbf8 !important;
+          color: #36534b !important;
+          font-size: 14px !important;
+          line-height: 1.45 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions {
+          display: grid !important;
+          grid-template-columns: 180px minmax(0, 1fr) 150px !important;
+          gap: 12px !important;
+          padding: 0 30px 30px !important;
+          margin: 0 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions a,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions button {
+          min-height: 50px !important;
+          height: 50px !important;
+          border-radius: 15px !important;
+          font-size: 15px !important;
+          font-weight: 700 !important;
+          line-height: 1.1 !important;
+          box-shadow: 0 10px 22px rgba(16, 163, 127, 0.12) !important;
+          transition: transform .15s ease, box-shadow .15s ease !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions a:hover,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions button:hover {
+          transform: translateY(-1px) !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions a:first-child {
+          background: #ffffff !important;
+          color: #0f172a !important;
+          border: 1px solid #d8e6df !important;
+          box-shadow: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions a:not(:first-child),
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions button {
+          background: linear-gradient(180deg, #15ad87 0%, #0f9c79 100%) !important;
+          color: #ffffff !important;
+          border: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions > *:last-child {
+          background: linear-gradient(180deg, #18a97f 0%, #11946f 100%) !important;
+        }
+
+        @media (max-width: 980px) {
+          .finalOrdersGrid.selectedFocusMode .finalSelectedPanel {
+            width: 100% !important;
+            max-width: 100% !important;
+          }
+
+          .finalOrdersGrid.selectedFocusMode .finalSelectedFacts {
+            grid-template-columns: 1fr !important;
+          }
+
+          .finalOrdersGrid.selectedFocusMode .finalSelectedActions {
+            grid-template-columns: 1fr !important;
+          }
+        }
 `}</style>
 </AppLayout>
   );
 }
+
 
 
 
