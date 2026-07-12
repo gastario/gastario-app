@@ -134,9 +134,9 @@ export function classifyIncomingMailWithRules(params: {
   const lower = combined.toLowerCase();
 
   const hasOrderWords = hasAny(lower, [
-    "auftragsbestÃƒÆ’Ã‚Â¤tigung",
+    "auftragsbestÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤tigung",
     "auftragsbestaetigung",
-    "bestellbestÃƒÆ’Ã‚Â¤tigung",
+    "bestellbestÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¤tigung",
     "bestellbestaetigung",
     "order confirmation",
     "booking confirmation",
@@ -149,7 +149,7 @@ export function classifyIncomingMailWithRules(params: {
   const hasInquiryWords = hasAny(lower, [
     "angebot",
     "anfrage",
-    "kÃƒÆ’Ã‚Â¶nnten sie",
+    "kÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¶nnten sie",
     "koennten sie",
     "bitte ein angebot",
     "request",
@@ -163,11 +163,11 @@ export function classifyIncomingMailWithRules(params: {
     "transgourmet",
     "metro",
     "selgros",
-    "nicht liefern kÃƒÆ’Ã‚Â¶nnen",
+    "nicht liefern kÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¶nnen",
     "nicht lieferbar",
     "fehlartikel",
     "ersatzartikel",
-    "warenverfÃƒÆ’Ã‚Â¼gbarkeit",
+    "warenverfÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼gbarkeit",
     "bestellten artikel nicht liefern",
   ]);
 
@@ -182,7 +182,7 @@ export function classifyIncomingMailWithRules(params: {
     "kalendereinladung",
   ]);
 
-  const hasPrice = /\d{1,3}(?:[.\s]\d{3})*(?:,\d{2})?\s*ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬/.test(combined);
+  const hasPrice = /\d{1,3}(?:[.\s]\d{3})*(?:,\d{2})?\s*ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬/.test(combined);
   const hasDate = /\b\d{1,2}\.\d{1,2}\.\d{2,4}\b/.test(combined) || /\b20\d{2}-\d{2}-\d{2}\b/.test(combined);
   const hasQuantity = /\b\d+\s*x\b/i.test(combined) || /\bmenge\b/i.test(combined);
 
@@ -193,7 +193,7 @@ export function classifyIncomingMailWithRules(params: {
       confidence: 0.82,
       shouldCreateOrder: false,
       shouldCreateInquiry: false,
-      reason: "RegelprÃƒÆ’Ã‚Â¼fung: wirkt wie keine Bestellung.",
+      reason: "RegelprÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼fung: wirkt wie keine Bestellung.",
       source: params.source || null,
       items: [],
       warnings: [],
@@ -207,10 +207,10 @@ export function classifyIncomingMailWithRules(params: {
       confidence: 0.78,
       shouldCreateOrder: false,
       shouldCreateInquiry: false,
-      reason: "RegelprÃƒÆ’Ã‚Â¼fung: wahrscheinlich Auftrag, aber KI-PrÃƒÆ’Ã‚Â¼fung oder manuelle PrÃƒÆ’Ã‚Â¼fung empfohlen.",
+      reason: "RegelprÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼fung: wahrscheinlich Auftrag, aber KI-PrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼fung oder manuelle PrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼fung empfohlen.",
       source: params.source || null,
       items: [],
-      warnings: ["Nur RegelprÃƒÆ’Ã‚Â¼fung, noch keine KI-Antwort."],
+      warnings: ["Nur RegelprÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼fung, noch keine KI-Antwort."],
     };
   }
 
@@ -221,7 +221,7 @@ export function classifyIncomingMailWithRules(params: {
       confidence: 0.75,
       shouldCreateOrder: false,
       shouldCreateInquiry: true,
-      reason: "RegelprÃƒÆ’Ã‚Â¼fung: wahrscheinlich Angebotsanfrage.",
+      reason: "RegelprÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼fung: wahrscheinlich Angebotsanfrage.",
       source: params.source || null,
       items: [],
       warnings: [],
@@ -234,10 +234,10 @@ export function classifyIncomingMailWithRules(params: {
     confidence: 0.45,
     shouldCreateOrder: false,
     shouldCreateInquiry: false,
-    reason: "RegelprÃƒÆ’Ã‚Â¼fung: Mail konnte nicht sicher eingeordnet werden.",
+    reason: "Regelprüfung: Mail konnte nicht sicher eingeordnet werden.",
     source: params.source || null,
     items: [],
-    warnings: ["Unsicher. Bitte manuell prÃƒÆ’Ã‚Â¼fen."],
+    warnings: ["Unsicher. Bitte manuell prüfen."],
   };
 }
 
@@ -251,7 +251,7 @@ export async function classifyIncomingMailWithAi(params: {
   const fallback = classifyIncomingMailWithRules(params);
 
   const apiKey = process.env.OPENAI_API_KEY?.trim();
-  const model = (process.env.OPENAI_IMPORT_MODEL || "gpt-5-mini").trim();
+  const model = (process.env.OPENAI_IMPORT_MODEL || "gpt-5-nano").trim();
   const aiImportEnabled =
     String(process.env.AI_IMPORT_ENABLED || "").trim().toLowerCase() === "true";
 
@@ -259,27 +259,37 @@ export async function classifyIncomingMailWithAi(params: {
     return fallback;
   }
 
-  const text = normalize(params.text).slice(0, 24000);
+  const text = normalize(params.text)
+    .replace(/https?:\/\/\S+/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 7000);
 
   const prompt = `
-Du bist der Import-Assistent einer Catering-Betriebssoftware.
+Du klassifizierst E-Mails für eine Catering-Betriebssoftware.
 
-Mandant: ${normalize(params.tenantName) || "unbekannt"}
-Quelle: ${normalize(params.source) || "E-Mail"}
 Absender: ${normalize(params.sender)}
 Betreff: ${normalize(params.subject)}
+Quelle: ${normalize(params.source) || "E-Mail"}
 
-Aufgabe:
-Entscheide, ob diese Nachricht ein echter Catering-Auftrag, eine Angebotsanfrage, ein Lieferschein, eine Rechnung, MÃƒÆ’Ã‚Â¼ll oder unklar ist.
+Kategorien:
+ORDER_CONFIRMATION = verbindlich gebuchter Catering-Auftrag
+INQUIRY = Anfrage, Angebot, Rückfrage oder Angebotsfreigabe
+DELIVERY_NOTE = Erinnerung, Lieferschein oder Information zu bestehendem Auftrag
+INVOICE = Rechnung oder Zahlungsbeleg
+TRASH = Werbung, Newsletter, Lieferanteninfo oder nicht cateringrelevant
+UNKNOWN = nicht sicher einzuordnen
 
-Wichtig:
-- Erstelle nur dann shouldCreateOrder=true, wenn wirklich Lieferdatum, Kunde und konkrete Positionen oder klare BestÃƒÆ’Ã‚Â¤tigung vorhanden sind.
-- Normale RÃƒÆ’Ã‚Â¼ckfragen, Erinnerungen, Newsletter, Werbung, Zahlungsinfos und unklare Mails dÃƒÆ’Ã‚Â¼rfen keine AuftrÃƒÆ’Ã‚Â¤ge werden.
-- Wenn unsicher: UNKNOWN oder INQUIRY, aber nicht blind ORDER_CONFIRMATION.
-- Extrahiere Lieferadresse nicht aus dem Kundennamen. Adresse braucht StraÃƒÆ’Ã…Â¸e + PLZ/Ort, wenn vorhanden.
-- Gib ausschlieÃƒÆ’Ã…Â¸lich JSON zurÃƒÆ’Ã‚Â¼ck.
+Regeln:
+- shouldCreateOrder nur bei eindeutig verbindlicher Buchung.
+- Erinnerungen wie "morgiges Catering" erzeugen keinen Auftrag.
+- "Bitte Angebot freigeben" ist eine Anfrage, keine Buchung.
+- Keine Daten ergänzen oder erfinden.
+- Fehlende Werte als null oder leere Liste ausgeben.
+- Antworte ausschließlich als kompaktes JSON.
 
-JSON-Format:
+JSON:
 {
   "mailType": "ORDER_CONFIRMATION | INQUIRY | DELIVERY_NOTE | INVOICE | TRASH | UNKNOWN",
   "confidence": 0.0,
@@ -287,27 +297,19 @@ JSON-Format:
   "shouldCreateInquiry": false,
   "reason": "",
   "source": "",
-  "customerName": "",
-  "contactName": "",
-  "contactEmail": "",
-  "contactPhone": "",
-  "deliveryDate": "",
-  "deliveryTime": "",
-  "deliveryAddress": "",
+  "customerName": null,
+  "contactName": null,
+  "contactEmail": null,
+  "contactPhone": null,
+  "deliveryDate": null,
+  "deliveryTime": null,
+  "deliveryAddress": null,
   "totalCents": null,
-  "items": [
-    {
-      "name": "",
-      "quantity": null,
-      "unitPriceCents": null,
-      "totalCents": null,
-      "notes": ""
-    }
-  ],
+  "items": [],
   "warnings": []
 }
 
-Nachricht:
+E-Mail:
 ${text}
 `;
 
@@ -321,14 +323,14 @@ ${text}
       body: JSON.stringify({
         model,
         input: prompt,
-        temperature: 0.1,
+        max_output_tokens: 600,
       }),
     });
 
     if (!response.ok) {
       return {
         ...fallback,
-        warnings: [...fallback.warnings, `KI nicht verfÃƒÆ’Ã‚Â¼gbar: ${response.status}`],
+        warnings: [...fallback.warnings, `KI nicht verfügbar: ${response.status}`],
       };
     }
 
