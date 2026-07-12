@@ -1,4 +1,4 @@
-﻿import { Link, useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 
 const navigationGroups = [
   {
@@ -46,6 +46,8 @@ const navigationGroups = [
     label: "Betrieb",
     items: [
       { label: "Produktion", to: "/produktion" },
+      { label: "MHD-Labels", to: "/mhd-labels" },
+      { label: "Foodlabel erstellen", to: "/foodlabels" },
       { label: "Packlisten", to: "/packlisten" },
       { label: "Lieferungen", to: "/lieferungen" },
       { label: "Lieferscheine", to: "/lieferscheine" },
