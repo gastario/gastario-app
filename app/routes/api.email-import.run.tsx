@@ -1,4 +1,4 @@
-﻿import crypto from "node:crypto";
+import crypto from "node:crypto";
 import { createRequire } from "node:module";
 import { simpleParser } from "mailparser";
 import { prisma } from "../lib/prisma.server";
@@ -188,10 +188,10 @@ function hasStrongOrderKeyword(bestText: string) {
     combined.includes("catering confirmation") ||
     combined.includes("bestellung bestatigt") ||
     combined.includes("bestellung bestaetigt") ||
-    combined.includes("bestellung bestätigt") ||
+    combined.includes("bestellung bestÃ¤tigt") ||
     combined.includes("auftrag bestatigt") ||
     combined.includes("auftrag bestaetigt") ||
-    combined.includes("auftrag bestätigt")
+    combined.includes("auftrag bestÃ¤tigt")
   );
 }
 
@@ -260,7 +260,7 @@ function shouldCreateOrderFromImportRules(extractedOrder: any, bestText: string,
 
         if (!name) return false;
         if (name.includes("fehlende position")) return false;
-        if (name.includes("habe ") || name.includes("kosten für") || name.includes("servicepersonal")) return false;
+        if (name.includes("habe ") || name.includes("kosten fÃ¼r") || name.includes("servicepersonal")) return false;
         if (name.includes("gas or electric grills") || name.includes("onsite")) return false;
 
         return quantity > 0 || totalCents > 0;
@@ -338,6 +338,18 @@ function shouldCreateOrderFromImportRules(extractedOrder: any, bestText: string,
   );
 }
 
+function isHeycaterTomorrowReminder(subject: unknown) {
+  const normalizedSubject = String(subject || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return (
+    normalizedSubject.includes("dein morgiges catering mit heycater") ||
+    normalizedSubject.includes("dein morgiges heykantine! catering mit heycater") ||
+    normalizedSubject.includes("dein morgiges heykantine catering mit heycater")
+  );
+}
 function normalizeImportText(value: unknown) {
   return String(value || "")
     .toLowerCase()
@@ -397,7 +409,7 @@ function getHeycaterEmailKind(subject: string, text: string) {
 
 function parseImportMoneyToCents(value: unknown) {
   const raw = String(value || "")
-    .replace(/[€\s]/g, "")
+    .replace(/[â‚¬\s]/g, "")
     .replace(/\./g, "")
     .replace(",", ".");
 
@@ -408,7 +420,7 @@ function parseImportMoneyToCents(value: unknown) {
 }
 
 function extractHeycaterPdfNetCents(text: string) {
-  const match = String(text || "").match(/Gesamtbetrag\s+Netto\s+€\s*([0-9]+(?:[.,][0-9]+)?)/i);
+  const match = String(text || "").match(/Gesamtbetrag\s+Netto\s+â‚¬\s*([0-9]+(?:[.,][0-9]+)?)/i);
   return match ? parseImportMoneyToCents(match[1]) : 0;
 }
 
@@ -842,7 +854,25 @@ export async function loader({ request }: { request: Request }) {
               continue;
             }
 
-                      const aiDecision = await classifyIncomingMailWithAi({
+                      if (isHeycaterTomorrowReminder(parsed.subject)) {
+                        await prisma.incomingEmail.update({
+                          where: { id: existing.id },
+                          data: {
+                            status: "IGNORED" as any,
+                            processedAt: new Date(),
+                            errorMessage:
+                              "Automatisch ignoriert: Heycater-Erinnerung an ein bereits geplantes morgiges Catering.",
+                          },
+                        });
+
+                        (result as any).ignoredByRules =
+                          ((result as any).ignoredByRules || 0) + 1;
+
+                        continue;
+                      }
+
+
+          const aiDecision = await classifyIncomingMailWithAi({
                         tenantName: null,
                         subject: String(parsed.subject || ""),
                         sender: String(parsed.from?.text || ""),
@@ -1024,6 +1054,23 @@ export async function loader({ request }: { request: Request }) {
             });
 
             (result as any).ignoredByRules = ((result as any).ignoredByRules || 0) + 1;
+            continue;
+          }
+
+          if (isHeycaterTomorrowReminder(parsed.subject)) {
+            await prisma.incomingEmail.update({
+              where: { id: incomingEmail.id },
+              data: {
+                status: "IGNORED" as any,
+                processedAt: new Date(),
+                errorMessage:
+                  "Automatisch ignoriert: Heycater-Erinnerung an ein bereits geplantes morgiges Catering.",
+              },
+            });
+
+            (result as any).ignoredByRules =
+              ((result as any).ignoredByRules || 0) + 1;
+
             continue;
           }
 

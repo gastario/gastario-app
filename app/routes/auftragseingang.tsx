@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
 import { Form, Link, redirect, useActionData, useFetcher, useLoaderData } from "react-router";
 
@@ -763,6 +763,31 @@ export default function AuftragseingangPage() {
 
   const currentBucket = EMAIL_BUCKETS.find((bucket) => bucket.key === data.selectedEmailCategory) || EMAIL_BUCKETS[0];
 
+  const isInquiryView = data.selectedEmailCategory === "inquiries";
+  const isReviewMailView = data.selectedEmailCategory === "possible" || data.selectedEmailCategory === "review";
+  const isIgnoredMailView = data.selectedEmailCategory === "hidden" || data.selectedEmailCategory === "ignored";
+  const isEmailFocusedView = isInquiryView || isReviewMailView || isIgnoredMailView || data.selectedEmailCategory === "all";
+
+  const inboxHeadline = isInquiryView
+    ? "Anfragen / Leads"
+    : isReviewMailView
+      ? "Unklare E-Mails"
+      : isIgnoredMailView
+        ? "Ignorierte E-Mails"
+        : data.selectedEmailCategory === "all"
+          ? "Eingangszentrale"
+          : "Auftragsbestätigungen";
+
+  const inboxSubtitle = isInquiryView
+    ? "Neue Catering-Anfragen erkennen, prüfen und später direkt in Angebote umwandeln."
+    : isReviewMailView
+      ? "E-Mails, bei denen Gastario oder die KI noch keine sichere Entscheidung treffen konnte."
+      : isIgnoredMailView
+        ? "Mails, die ausgeblendet oder automatisch ignoriert wurden."
+        : data.selectedEmailCategory === "all"
+          ? "Alle aktuellen Eingänge: Aufträge, Anfragen, unklare Mails und ignorierte Vorgänge."
+          : "E-Mails abrufen, Aufträge kontrollieren und sauber in die Produktion übernehmen.";
+
   const emailResetHref = "/auftragseingang?emailCategory=" + data.selectedEmailCategory + "&dateRange=last7";
 
   const sortedOrders = [...data.orders].sort((a: any, b: any) => {
@@ -808,7 +833,7 @@ export default function AuftragseingangPage() {
   const activeOrderStatusRaw = String(data.activeStatus || "ALL");
 const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatusRaw;
 
-  const activeOrderViewTitle =
+  const activeOrderViewTitle = isEmailFocusedView ? inboxHeadline :
     activeOrderStatusRaw === "CONFIRMED"
       ? "Übernommene Aufträge"
       : activeOrderStatusRaw === "REJECTED"
@@ -817,7 +842,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
           ? "Zu prüfen"
           : "Alle Aufträge";
 
-  const activeOrderViewSubtitle =
+  const activeOrderViewSubtitle = isEmailFocusedView ? inboxSubtitle :
     activeOrderStatusRaw === "CONFIRMED"
       ? "Aufträge, die bereits übernommen wurden."
       : activeOrderStatusRaw === "REJECTED"
@@ -956,9 +981,9 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
         ) : null}
 <section className="finalHeader">
           <div>
-            <div className="finalEyebrow">Auftragseingang</div>
-            <h1>Auftragsbestätigungen</h1>
-            <p>E-Mails abrufen, Aufträge kontrollieren und sauber in die Produktion übernehmen.</p>
+            <div className="finalEyebrow">{isEmailFocusedView ? "Eingang" : "Auftragseingang"}</div>
+            <h1>{inboxHeadline}</h1>
+            <p>{inboxSubtitle}</p>
 
             <div className="finalMiniSummary">
               <span>
@@ -1006,7 +1031,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
           <div className="finalAlert success">{actionData.success}</div>
         ) : null}
 
-        <section className="finalInboxShell">
+        <section className={isEmailFocusedView ? "finalInboxShell emailFocusedView" : "finalInboxShell"}>
           <nav className="finalCategoryTabs" aria-label="E-Mail-Kategorien">
             {[
               ["all", "Alle", data.emailBuckets?.all || 0],
@@ -1067,7 +1092,70 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
             </Link>
           </Form>
         </section>
-                <nav className="realOrderTabs" aria-label="Auftragsfilter">
+                          {isEmailFocusedView ? (
+            <section className="leadEmailPanel">
+              <div className="leadEmailHeader">
+                <div>
+                  <p>{currentBucket.help}</p>
+                  <h2>{inboxHeadline}</h2>
+                </div>
+                <strong>{sortedEmails.length} Eingänge</strong>
+              </div>
+
+              {sortedEmails.length === 0 ? (
+                <div className="leadEmpty">
+                  Keine passenden E-Mails in dieser Ansicht.
+                </div>
+              ) : (
+                <div className="leadEmailGrid">
+                  {sortedEmails.map((mail: any) => {
+                    const extracted = mail.extractedJson || {};
+                    const aiDecision = extracted.aiDecision || {};
+                    const bodyPreview = String(mail.bodyText || "").replace(/\s+/g, " ").slice(0, 260);
+                    const receivedAt = mail.receivedAt ? new Date(mail.receivedAt) : null;
+
+                    return (
+                      <article className="leadEmailCard" key={mail.id}>
+                        <div className="leadEmailTop">
+                          <span className="leadTypePill">
+                            {isInquiryView ? "Anfrage" : isReviewMailView ? "Unklar" : isIgnoredMailView ? "Ignoriert" : emailCategoryLabel(classifyIncomingEmail(mail))}
+                          </span>
+                          <span>{receivedAt && !Number.isNaN(receivedAt.getTime()) ? receivedAt.toLocaleDateString("de-DE") : "-"}</span>
+                        </div>
+
+                        <h3>{mail.subject || "Ohne Betreff"}</h3>
+                        <p className="leadSender">{mail.sender || mail.mailbox || "Unbekannter Absender"}</p>
+
+                        {aiDecision?.mailType ? (
+                          <div className="leadAiBox">
+                            <strong>KI: {aiDecision.mailType}</strong>
+                            <span>{Math.round(Number(aiDecision.confidence || 0) * 100)} % · {aiDecision.reason || "Keine Begründung"}</span>
+                          </div>
+                        ) : null}
+
+                        <p className="leadPreview">{bodyPreview || "Kein Mailtext gespeichert."}</p>
+
+                        <div className="leadEmailActions">
+                          <Link to={"/email-pruefung/" + mail.id} className="leadPrimaryAction">
+                            Öffnen
+                          </Link>
+
+                          <Form method="post">
+                            <input type="hidden" name="intent" value="hideIncomingEmail" />
+                            <input type="hidden" name="emailId" value={mail.id} />
+                            <button type="submit" className="leadSecondaryAction">
+                              Ausblenden
+                            </button>
+                          </Form>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          ) : null}
+<nav className="realOrderTabs" aria-label="Auftragsfilter">
           {[
             ["Alle Aufträge", currentOrderStats.all, ""],
             ["Zu prüfen", currentOrderStats.review, "AUTO_CREATED"],
@@ -3759,10 +3847,195 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
             grid-template-columns: 1fr !important;
           }
         }
-`}</style>
+`}
+        {`
+        /* gastario-lead-email-view-20260710 */
+
+        .finalInboxShell.emailFocusedView .finalCategoryTabs,
+        .finalInboxShell.emailFocusedView .finalToolbar {
+          display: flex !important;
+        }
+
+        .finalInboxShell.emailFocusedView {
+          display: grid !important;
+          gap: 16px !important;
+        }
+
+        .finalInboxShell.emailFocusedView + .realOrderTabs,
+        .finalInboxShell.emailFocusedView + .realOrderTabs + .finalOrdersShell {
+          display: none !important;
+        }
+
+        .leadEmailPanel {
+          border: 1px solid #dbe7ec;
+          border-radius: 28px;
+          background: #ffffff;
+          box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+          overflow: hidden;
+        }
+
+        .leadEmailHeader {
+          display: flex;
+          justify-content: space-between;
+          gap: 18px;
+          align-items: center;
+          padding: 22px 24px;
+          border-bottom: 1px solid #e6eef3;
+          background: linear-gradient(180deg, #ffffff, #f8fbfc);
+        }
+
+        .leadEmailHeader p {
+          margin: 0 0 5px;
+          color: #0f766e;
+          font-size: 12px;
+          font-weight: 950;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+
+        .leadEmailHeader h2 {
+          margin: 0;
+          font-size: 25px;
+          letter-spacing: -0.04em;
+        }
+
+        .leadEmailHeader strong {
+          border-radius: 999px;
+          padding: 10px 14px;
+          background: #ecfdf5;
+          color: #047857;
+          font-size: 14px;
+          font-weight: 950;
+        }
+
+        .leadEmpty {
+          padding: 32px 24px;
+          color: #64748b;
+          font-weight: 800;
+        }
+
+        .leadEmailGrid {
+          display: grid;
+          gap: 14px;
+          padding: 18px;
+        }
+
+        .leadEmailCard {
+          border: 1px solid #dbe7ec;
+          border-radius: 22px;
+          padding: 18px;
+          background: #ffffff;
+          box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+        }
+
+        .leadEmailTop {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          align-items: center;
+          color: #64748b;
+          font-size: 12px;
+          font-weight: 850;
+          margin-bottom: 10px;
+        }
+
+        .leadTypePill {
+          display: inline-flex;
+          border-radius: 999px;
+          padding: 6px 10px;
+          background: #ecfdf5;
+          color: #047857;
+          font-size: 12px;
+          font-weight: 950;
+        }
+
+        .leadEmailCard h3 {
+          margin: 0;
+          font-size: 20px;
+          letter-spacing: -0.03em;
+          color: #07111f;
+        }
+
+        .leadSender {
+          margin: 5px 0 0;
+          color: #64748b;
+          font-size: 13px;
+          font-weight: 800;
+        }
+
+        .leadAiBox {
+          display: grid;
+          gap: 4px;
+          margin-top: 12px;
+          padding: 12px;
+          border-radius: 16px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+        }
+
+        .leadAiBox strong {
+          color: #0f172a;
+          font-size: 13px;
+          font-weight: 950;
+        }
+
+        .leadAiBox span {
+          color: #64748b;
+          font-size: 13px;
+          font-weight: 750;
+        }
+
+        .leadPreview {
+          margin: 12px 0 0;
+          color: #334155;
+          font-size: 14px;
+          line-height: 1.5;
+          font-weight: 650;
+        }
+
+        .leadEmailActions {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          align-items: center;
+          margin-top: 16px;
+        }
+
+        .leadPrimaryAction,
+        .leadSecondaryAction {
+          border-radius: 999px;
+          padding: 10px 14px;
+          font-size: 13px;
+          font-weight: 950;
+          text-decoration: none;
+          cursor: pointer;
+        }
+
+        .leadPrimaryAction {
+          border: 1px solid #059669;
+          background: #059669;
+          color: #ffffff;
+        }
+
+        .leadSecondaryAction {
+          border: 1px solid #dbe7ec;
+          background: #ffffff;
+          color: #0f172a;
+        }
+        `}
+
+      </style>
 </AppLayout>
   );
 }
+
+
+
+
+
+
+
+
 
 
 
