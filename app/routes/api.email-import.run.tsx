@@ -188,10 +188,10 @@ function hasStrongOrderKeyword(bestText: string) {
     combined.includes("catering confirmation") ||
     combined.includes("bestellung bestatigt") ||
     combined.includes("bestellung bestaetigt") ||
-    combined.includes("bestellung bestÃ¤tigt") ||
+    combined.includes("bestellung bestÃƒÂ¤tigt") ||
     combined.includes("auftrag bestatigt") ||
     combined.includes("auftrag bestaetigt") ||
-    combined.includes("auftrag bestÃ¤tigt")
+    combined.includes("auftrag bestÃƒÂ¤tigt")
   );
 }
 
@@ -260,7 +260,7 @@ function shouldCreateOrderFromImportRules(extractedOrder: any, bestText: string,
 
         if (!name) return false;
         if (name.includes("fehlende position")) return false;
-        if (name.includes("habe ") || name.includes("kosten fÃ¼r") || name.includes("servicepersonal")) return false;
+        if (name.includes("habe ") || name.includes("kosten fÃƒÂ¼r") || name.includes("servicepersonal")) return false;
         if (name.includes("gas or electric grills") || name.includes("onsite")) return false;
 
         return quantity > 0 || totalCents > 0;
@@ -409,7 +409,7 @@ function getHeycaterEmailKind(subject: string, text: string) {
 
 function parseImportMoneyToCents(value: unknown) {
   const raw = String(value || "")
-    .replace(/[â‚¬\s]/g, "")
+    .replace(/[Ã¢â€šÂ¬\s]/g, "")
     .replace(/\./g, "")
     .replace(",", ".");
 
@@ -420,7 +420,7 @@ function parseImportMoneyToCents(value: unknown) {
 }
 
 function extractHeycaterPdfNetCents(text: string) {
-  const match = String(text || "").match(/Gesamtbetrag\s+Netto\s+â‚¬\s*([0-9]+(?:[.,][0-9]+)?)/i);
+  const match = String(text || "").match(/Gesamtbetrag\s+Netto\s+Ã¢â€šÂ¬\s*([0-9]+(?:[.,][0-9]+)?)/i);
   return match ? parseImportMoneyToCents(match[1]) : 0;
 }
 
@@ -872,13 +872,39 @@ export async function loader({ request }: { request: Request }) {
                       }
 
 
-          const aiDecision = await classifyIncomingMailWithAi({
-                        tenantName: null,
-                        subject: String(parsed.subject || ""),
-                        sender: String(parsed.from?.text || ""),
-                        text: bestText,
-                        source: "EMAIL",
-                      });
+                      const existingExtractedJson =
+                        existing.extractedJson &&
+                        typeof existing.extractedJson === "object" &&
+                        !Array.isArray(existing.extractedJson)
+                          ? (existing.extractedJson as Record<string, any>)
+                          : {};
+
+                      const storedAiDecision =
+                        existingExtractedJson.aiDecision &&
+                        typeof existingExtractedJson.aiDecision === "object"
+                          ? (existingExtractedJson.aiDecision as any)
+                          : null;
+
+                      const canReuseStoredAiDecision =
+                        Boolean(storedAiDecision) &&
+                        (
+                          storedAiDecision.mode === "ai" ||
+                          (
+                            storedAiDecision.mode === "rules" &&
+                            storedAiDecision.mailType !== "UNKNOWN" &&
+                            Number(storedAiDecision.confidence || 0) >= 0.8
+                          )
+                        );
+
+                      const aiDecision = canReuseStoredAiDecision
+                        ? storedAiDecision
+                        : await classifyIncomingMailWithAi({
+                            tenantName: null,
+                            subject: String(parsed.subject || ""),
+                            sender: String(parsed.from?.text || ""),
+                            text: bestText,
+                            source: "EMAIL",
+                          });
 
                       if (
                         aiDecision.confidence >= 0.85 &&
