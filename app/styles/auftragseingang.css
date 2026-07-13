@@ -4306,3 +4306,154 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+/* gastario-prettier-incoming-buttons-20260713 */
+
+.inboxCombinedNavigation {
+  border-radius: 22px !important;
+  border: 1px solid #d9e5e0 !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdfc 100%) !important;
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.05) !important;
+  padding: 16px !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTabs {
+  gap: 14px !important;
+  padding: 0 0 16px 0 !important;
+  border-bottom: 1px solid #e8f0ed !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab {
+  min-height: 58px !important;
+  padding: 0 20px !important;
+  border-radius: 16px !important;
+  border: 1px solid #d6e4de !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbf9 100%) !important;
+  color: #1f3f37 !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.9) inset,
+    0 6px 14px rgba(15, 23, 42, .04) !important;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab:hover {
+  transform: translateY(-1px) !important;
+  border-color: #bfd7ce !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f2faf6 100%) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.92) inset,
+    0 10px 22px rgba(15, 23, 42, .07) !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab.active {
+  border-color: #0fa47e !important;
+  background: linear-gradient(180deg, #19af88 0%, #0fa47e 100%) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.18) inset,
+    0 14px 28px rgba(15, 164, 126, .22) !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab span {
+  font-weight: 800 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab strong {
+  min-width: 28px !important;
+  height: 28px !important;
+  padding: 0 9px !important;
+  border-radius: 999px !important;
+  background: #e9f5f0 !important;
+  color: #0d6a54 !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  box-shadow: inset 0 1px 1px rgba(255,255,255,.75) !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab.active strong {
+  background: rgba(255,255,255,.18) !important;
+  color: #ffffff !important;
+  box-shadow: inset 0 1px 1px rgba(255,255,255,.16) !important;
+}
+
+.orderStatusSubnav {
+  margin-top: 16px !important;
+  padding-top: 0 !important;
+  gap: 14px !important;
+}
+
+.orderStatusSubnavLabel {
+  min-height: 48px !important;
+  padding: 0 16px !important;
+  border-radius: 14px !important;
+  border: 1px solid #dbe7e2 !important;
+  background: linear-gradient(180deg, #fbfcfc 0%, #f3f8f6 100%) !important;
+  color: #658078 !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: .1em !important;
+}
+
+.orderStatusSubnav .realOrderTabs {
+  gap: 12px !important;
+}
+
+.orderStatusSubnav .realOrderTab {
+  min-height: 48px !important;
+  padding: 0 18px !important;
+  border-radius: 14px !important;
+  border: 1px solid #d6e4de !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbfa 100%) !important;
+  color: #304c45 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.95) inset,
+    0 5px 12px rgba(15,23,42,.035) !important;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease !important;
+}
+
+.orderStatusSubnav .realOrderTab:hover {
+  transform: translateY(-1px) !important;
+  border-color: #c0d8cf !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f2faf6 100%) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.95) inset,
+    0 10px 20px rgba(15,23,42,.06) !important;
+}
+
+.orderStatusSubnav .realOrderTab.active {
+  border-color: #97d6c3 !important;
+  background: linear-gradient(180deg, #eef9f5 0%, #e2f5ee 100%) !important;
+  color: #0d6c56 !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.9) inset,
+    0 10px 20px rgba(15, 164, 126, .08) !important;
+}
+
+.orderStatusSubnav .realOrderTab strong {
+  min-width: 26px !important;
+  height: 26px !important;
+  padding: 0 8px !important;
+  border-radius: 999px !important;
+  background: #e8f4ef !important;
+  color: #0d6a54 !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+.orderStatusSubnav .realOrderTab.active strong {
+  background: #cfeee2 !important;
+  color: #0b6a53 !important;
+}
+
+@media (max-width: 1100px) {
+  .inboxCombinedNavigation .finalCategoryTab,
+  .orderStatusSubnav .realOrderTab {
+    min-height: 52px !important;
+    font-size: 14px !important;
+  }
+}
