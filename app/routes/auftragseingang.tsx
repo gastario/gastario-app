@@ -1133,15 +1133,14 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
               const active = data.selectedEmailCategory === key;
 
               return (
-                <Link
+                <a
                   key={String(key)}
-                  to={"/auftragseingang?" + params.toString()}
+                  href={"/auftragseingang?" + params.toString()}
                   className={active ? "finalCategoryTab active" : "finalCategoryTab"}
-                  prefetch="intent"
                 >
                   <span>{label}</span>
                   <strong>{count}</strong>
-                </Link>
+                </a>
               );
             })}
           </nav>
