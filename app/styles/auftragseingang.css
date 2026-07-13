@@ -5822,3 +5822,57 @@
   background: #d9efe7 !important;
   color: #0b6d56 !important;
 }
+
+/* gastario-final-calm-button-balance-20260713 */
+
+.inboxCombinedNavigation .finalCategoryTab {
+  border-color: #d2ded9 !important;
+  background: #ffffff !important;
+  color: #354d46 !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab:hover {
+  border-color: #a9cabe !important;
+  background: #f5faf8 !important;
+  color: #08705a !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab.active {
+  border-color: #3eb092 !important;
+  background: #dff3ec !important;
+  color: #086c55 !important;
+  box-shadow: inset 0 0 0 1px rgba(15, 164, 126, 0.08) !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab.active strong {
+  background: #c7eadf !important;
+  color: #07634f !important;
+}
+
+.orderStatusSubnavLabel {
+  border-color: #d6e1dd !important;
+  background: #f2f6f4 !important;
+  color: #61766f !important;
+}
+
+.orderStatusSubnav .realOrderTab {
+  border-color: #d5e0dc !important;
+  background: #ffffff !important;
+  color: #3c514b !important;
+}
+
+.orderStatusSubnav .realOrderTab:hover {
+  border-color: #afcbc1 !important;
+  background: #f6faf8 !important;
+}
+
+.orderStatusSubnav .realOrderTab.active {
+  border-color: #68bfa7 !important;
+  background: #e4f4ee !important;
+  color: #08705a !important;
+}
+
+.orderStatusSubnav .realOrderTab.active strong {
+  background: #cae9df !important;
+  color: #07634f !important;
+}
