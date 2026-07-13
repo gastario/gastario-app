@@ -3842,3 +3842,234 @@
     width: 100% !important;
   }
 }
+
+/* gastario-premium-inbox-navigation-20260713 */
+
+.inboxCombinedNavigation {
+  display: inline-flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  width: auto !important;
+  max-width: 100% !important;
+  margin: 16px 0 !important;
+  padding: 7px !important;
+  border: 1px solid #dce8e4 !important;
+  border-radius: 17px !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.055),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  overflow: hidden !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTabs {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 5px !important;
+  width: auto !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.inboxCombinedNavigation .finalCategoryForm {
+  display: inline-flex !important;
+  margin: 0 !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  min-height: 42px !important;
+  padding: 0 14px !important;
+  border: 1px solid transparent !important;
+  border-radius: 11px !important;
+  background: transparent !important;
+  color: #475569 !important;
+  font-family: inherit !important;
+  font-size: 12.5px !important;
+  font-weight: 680 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.16s ease !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab:hover {
+  border-color: #d9e7e2 !important;
+  background: #f5faf8 !important;
+  color: #0b6f58 !important;
+  transform: translateY(-1px) !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab.active {
+  border-color: #0fa47e !important;
+  background: linear-gradient(135deg, #10aa83 0%, #07936f 100%) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 8px 18px rgba(15, 164, 126, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab strong {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 23px !important;
+  height: 23px !important;
+  padding: 0 6px !important;
+  border-radius: 999px !important;
+  background: #edf5f2 !important;
+  color: #4c766b !important;
+  font-size: 10.5px !important;
+  font-weight: 760 !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab.active strong {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.orderStatusSubnav {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: auto !important;
+  max-width: 100% !important;
+  margin: 7px 0 0 !important;
+  padding: 7px 8px !important;
+  border: 0 !important;
+  border-top: 1px solid #e8efed !important;
+  border-radius: 0 0 11px 11px !important;
+  background: linear-gradient(180deg, #f8fbfa 0%, #f4f8f6 100%) !important;
+}
+
+.orderStatusSubnavLabel {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 32px !important;
+  padding: 0 7px !important;
+  color: #83928d !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+}
+
+.inboxCombinedNavigation .orderStatusSubnav .realOrderTabs {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 4px !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.orderStatusSubnav .realOrderTab {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  min-height: 34px !important;
+  padding: 0 11px !important;
+  border: 1px solid transparent !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  color: #52615d !important;
+  font-size: 11.5px !important;
+  font-weight: 680 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease !important;
+}
+
+.orderStatusSubnav .realOrderTab:hover {
+  border-color: #d9e5e1 !important;
+  background: #ffffff !important;
+  color: #0b6f58 !important;
+}
+
+.orderStatusSubnav .realOrderTab.active {
+  border-color: #bfe1d7 !important;
+  background: #ffffff !important;
+  color: #07805f !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.07) !important;
+}
+
+.orderStatusSubnav .realOrderTab strong {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 21px !important;
+  height: 21px !important;
+  padding: 0 6px !important;
+  border-radius: 999px !important;
+  background: #e9f3ef !important;
+  color: #53756c !important;
+  font-size: 10px !important;
+  font-weight: 760 !important;
+}
+
+.orderStatusSubnav .realOrderTab.active strong {
+  background: #dff3ec !important;
+  color: #08775a !important;
+}
+
+@media (max-width: 900px) {
+  .inboxCombinedNavigation {
+    display: flex !important;
+    width: 100% !important;
+  }
+
+  .inboxCombinedNavigation .finalCategoryTabs,
+  .inboxCombinedNavigation .orderStatusSubnav {
+    width: 100% !important;
+  }
+
+  .orderStatusSubnav {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+}
+
+@media (max-width: 650px) {
+  .inboxCombinedNavigation .finalCategoryTabs {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .inboxCombinedNavigation .finalCategoryForm,
+  .inboxCombinedNavigation .finalCategoryTab {
+    width: 100% !important;
+  }
+
+  .orderStatusSubnav .realOrderTabs {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    width: 100% !important;
+  }
+
+  .orderStatusSubnav .realOrderTab {
+    width: 100% !important;
+  }
+}
