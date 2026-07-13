@@ -557,3 +557,29 @@
 .primaryGhostButton {
   min-height: 44px;
 }
+
+/* gastario-clean-order-actions-20260713 */
+
+.ordersPage .orderActions {
+  display: grid;
+  grid-template-columns:
+    72px
+    minmax(122px, 1fr)
+    40px;
+  gap: 8px;
+  align-items: center;
+}
+
+.ordersPage .orderActions
+.primaryGhostButton {
+  min-height: 39px;
+}
+
+.ordersPage .orderActions
+.deliveryDocumentButton {
+  min-height: 39px;
+}
+
+.ordersPage .deleteOrderButton {
+  border-radius: 10px !important;
+}

@@ -1,103 +1,73 @@
 ﻿.deliveryDocumentButton {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 7px;
   width: 100%;
-  min-height: 46px;
-  padding: 7px 11px 7px 8px;
-  border: 1px solid #b9d1df;
-  border-radius: 11px;
-  background:
-    linear-gradient(
-      180deg,
-      #f7fbfe 0%,
-      #edf5fa 100%
-    );
-  color: #285f7d;
+  min-height: 39px;
+  padding: 0 13px;
+  border: 1px solid #c8dad3;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #31544a;
+  font-size: 10px;
+  font-weight: 780;
+  line-height: 1;
   text-decoration: none;
-  box-shadow:
-    0 5px 13px rgba(52, 125, 167, .09);
+  white-space: nowrap;
+  box-shadow: none;
   transition:
-    transform .15s ease,
-    border-color .15s ease,
     background .15s ease,
-    box-shadow .15s ease;
+    border-color .15s ease,
+    color .15s ease,
+    transform .15s ease;
 }
 
 .deliveryDocumentButton:hover {
   transform: translateY(-1px);
-  border-color: #76a9c4;
-  background:
-    linear-gradient(
-      180deg,
-      #ffffff 0%,
-      #e8f3f9 100%
-    );
-  box-shadow:
-    0 8px 17px rgba(52, 125, 167, .15);
+  border-color: #87bba9;
+  background: #f1f8f5;
+  color: #08705a;
 }
 
-.deliveryDocumentButtonIcon {
+.deliveryDocumentIcon {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: 35px;
-  height: 38px;
-  border-radius: 8px;
-  background:
-    linear-gradient(
-      180deg,
-      #438db5 0%,
-      #31779f 100%
-    );
-  color: #ffffff;
-  font-size: 8px;
-  font-weight: 900;
-  letter-spacing: .05em;
-  box-shadow:
-    0 5px 11px rgba(52, 125, 167, .2);
-}
-
-.deliveryDocumentButtonText {
-  display: grid;
-  min-width: 0;
-  gap: 2px;
-  text-align: left;
-}
-
-.deliveryDocumentButtonText strong {
-  overflow: hidden;
-  color: #235c7b;
-  font-size: 10.5px;
-  font-weight: 830;
-  line-height: 1.2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.deliveryDocumentButtonText small {
-  color: #718892;
-  font-size: 8.5px;
-  font-weight: 650;
-  line-height: 1.2;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: #eaf5f1;
+  color: #08775c;
 }
 
 .deliveryDocumentButtonCompact {
   min-height: 39px;
-  padding: 5px 9px 5px 6px;
-  gap: 7px;
+  padding: 0 11px;
+  border-color: #cbdad5;
+  background: #ffffff;
+  color: #344f46;
 }
 
 .deliveryDocumentButtonCompact
-.deliveryDocumentButtonIcon {
-  width: 29px;
-  height: 29px;
-  border-radius: 7px;
-  font-size: 7px;
+.deliveryDocumentIcon {
+  width: 23px;
+  height: 23px;
 }
 
-.deliveryDocumentButtonCompact
-.deliveryDocumentButtonText strong {
-  font-size: 9.5px;
+.deliveryDocumentRefreshLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 27px;
+  color: #718079;
+  font-size: 9px;
+  font-weight: 720;
+  text-decoration: none;
+}
+
+.deliveryDocumentRefreshLink:hover {
+  color: #08705a;
+  text-decoration: underline;
 }

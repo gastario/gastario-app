@@ -419,3 +419,81 @@ p:not(.eyebrow) {
 .deliveryDocumentButton {
   width: 100%;
 }
+
+/* gastario-clean-delivery-actions-20260713 */
+
+.deliveryNotesPage
+.deliveryNoteArchiveActions {
+  display: grid;
+  gap: 3px;
+  min-width: 112px;
+}
+
+.deliveryNotesPage
+.deliveryNoteArchiveActions
+.deliveryDocumentButton {
+  min-height: 38px;
+  border-color: #0a7a5f;
+  background:
+    linear-gradient(
+      180deg,
+      #0b8968 0%,
+      #087158 100%
+    );
+  color: #ffffff;
+  box-shadow:
+    0 6px 14px rgba(8, 119, 92, .14);
+}
+
+.deliveryNotesPage
+.deliveryNoteArchiveActions
+.deliveryDocumentButton:hover {
+  border-color: #07654e;
+  background:
+    linear-gradient(
+      180deg,
+      #08795d 0%,
+      #066149 100%
+    );
+  color: #ffffff;
+}
+
+.deliveryNotesPage
+.deliveryNoteArchiveActions
+.deliveryDocumentIcon {
+  background: rgba(255, 255, 255, .15);
+  color: #ffffff;
+}
+
+.deliveryNotesPage
+.deliveryNoteArchiveRow {
+  min-height: 86px;
+}
+
+.deliveryNotesPage
+.deliveryNoteArchiveRow::before {
+  background: #19a27c;
+}
+
+.deliveryNotesPage
+.deliveryNoteArchiveHead {
+  background: #f4f7f6;
+}
+
+.deliveryNotesPage
+.deliveryNoteArchiveCount {
+  background: #f1f8f5;
+  border-color: #c9ded6;
+}
+
+.deliveryNotesPage
+.deliveryNoteArchiveCount strong {
+  color: #08705a;
+}
+
+.deliveryNotesPage
+.deliveryNotePdfButton,
+.deliveryNotesPage
+.deliveryNoteRefreshButton {
+  display: none !important;
+}
