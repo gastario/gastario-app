@@ -41,14 +41,17 @@ export async function loader({
 
   const note = await ensureDeliveryNoteForOrder(order.id);
 
-  return new Response(note.pdfData, {
+  const pdfBuffer = Buffer.from(note.pdfData);
+
+  return new Response(pdfBuffer, {
+    status: 200,
     headers: {
-      "Content-Type":
-        note.mimeType || "application/pdf",
+      "Content-Type": "application/pdf",
+      "Content-Length": String(pdfBuffer.byteLength),
       "Content-Disposition":
         'inline; filename="' + note.filename + '"',
-      "Cache-Control":
-        "private, max-age=0, must-revalidate",
+      "Cache-Control": "private, no-store",
+      "X-Content-Type-Options": "nosniff",
     },
   });
 }

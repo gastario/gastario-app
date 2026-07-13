@@ -233,7 +233,12 @@ export default function AuftragPruefungPage() {
         </Link>
 
         <div style={actionBarStyle}>
-          <Link to={deliveryHref} style={secondaryButtonStyle}>
+          <Link
+            to={deliveryHref}
+            style={secondaryButtonStyle}
+            reloadDocument
+            target="_blank"
+          >
             Lieferschein PDF öffnen
           </Link>
 
