@@ -1,6 +1,9 @@
-﻿import { useEffect, useState } from "react";
+﻿import {
+  useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
-import { Form, Link, redirect, useActionData, useFetcher, useLoaderData } from "react-router";
+import { Form, Link, redirect, useActionData, useFetcher, useLoaderData,
+  useSearchParams,
+} from "react-router";
 
 const EMAIL_BUCKETS = [
   { key: "orders", label: "Bestätigungen", help: "Sichere Auftragsbestätigungen" },
@@ -947,7 +950,27 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
     rejected: data.counts?.rejected || 0,
   };
 
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  /* gastario-url-selected-order-fix-20260713 */
+  const [selectedOrderSearchParams, setSelectedOrderSearchParams] =
+    useSearchParams();
+
+  const selectedOrderId =
+    selectedOrderSearchParams.get("selectedOrder") || null;
+
+  function updateSelectedOrder(nextOrderId: string | null) {
+    const nextParams = new URLSearchParams(selectedOrderSearchParams);
+
+    if (nextOrderId) {
+      nextParams.set("selectedOrder", nextOrderId);
+    } else {
+      nextParams.delete("selectedOrder");
+    }
+
+    setSelectedOrderSearchParams(nextParams, {
+      replace: true,
+      preventScrollReset: true,
+    });
+  }
 
   const selectedOrder: any =
     selectedOrderId
@@ -1147,11 +1170,11 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                       key={order.id}
                       role="button"
                       tabIndex={0}
-                      onClick={() => setSelectedOrderId(order.id)}
+                      onClick={() => updateSelectedOrder(order.id)}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" || event.key === " ") {
                           event.preventDefault();
-                          setSelectedOrderId(order.id);
+                          updateSelectedOrder(order.id);
                         }
                       }}
                     >
@@ -1250,7 +1273,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                   ) : null}
 
                   <div className="finalSelectedActions">
-                    <button type="button" className="finalBackButton" onClick={() => setSelectedOrderId(null)}>
+                    <button type="button" className="finalBackButton" onClick={() => updateSelectedOrder(null)}>
                       Zurück zur Liste
                     </button>
 
@@ -4491,6 +4514,253 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
         .finalOrdersShell {
           padding-bottom: 0 !important;
+        }
+        `}
+
+        {`
+        /* gastario-stable-selected-order-design-20260713 */
+
+        /*
+         * Kein sichtbares Einblenden oder Verschieben beim Neuladen.
+         * Die Auswahl steht bereits in der URL.
+         */
+        .finalOrdersGrid.selectedFocusMode,
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel,
+        .finalOrdersGrid.selectedFocusMode .finalOrderRows {
+          animation: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode {
+          display: flex !important;
+          align-items: flex-start !important;
+          justify-content: center !important;
+          min-height: auto !important;
+          padding: 14px 18px 20px !important;
+          background: #f8fbfa !important;
+          overflow: visible !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalOrderRows {
+          display: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel {
+          position: relative !important;
+          top: auto !important;
+          width: min(1020px, 100%) !important;
+          max-width: 1020px !important;
+          margin: 0 auto !important;
+          padding: 0 !important;
+          border: 1px solid #dbe6e2 !important;
+          border-radius: 18px !important;
+          background: #ffffff !important;
+          box-shadow: 0 12px 32px rgba(15, 23, 42, 0.065) !important;
+          overflow: hidden !important;
+          transform: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedPanel::before {
+          content: "" !important;
+          display: block !important;
+          height: 4px !important;
+          background: #109d7c !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedTop {
+          min-height: auto !important;
+          padding: 18px 24px 16px !important;
+          border-bottom: 1px solid #e7edeb !important;
+          background: #ffffff !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedTop h3 {
+          margin: 7px 0 0 !important;
+          font-size: 22px !important;
+          line-height: 1.2 !important;
+          font-weight: 680 !important;
+          letter-spacing: -0.025em !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalOrderNumber {
+          font-size: 12px !important;
+          font-weight: 620 !important;
+          letter-spacing: 0.04em !important;
+          color: #64748b !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedKicker {
+          display: inline-flex !important;
+          align-items: center !important;
+          min-height: 27px !important;
+          padding: 0 11px !important;
+          border: 1px solid #cce5dd !important;
+          border-radius: 999px !important;
+          background: #eef9f5 !important;
+          color: #176c59 !important;
+          font-size: 10px !important;
+          font-weight: 680 !important;
+          letter-spacing: 0.055em !important;
+          text-transform: uppercase !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSourceBadge.big {
+          padding: 7px 12px !important;
+          border: 1px solid #d2e7e0 !important;
+          background: #f1faf7 !important;
+          color: #407467 !important;
+          font-size: 11px !important;
+          font-weight: 580 !important;
+          box-shadow: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts {
+          display: grid !important;
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          gap: 12px !important;
+          padding: 16px 24px !important;
+          border-bottom: 1px solid #edf1ef !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedFacts > div {
+          min-height: 82px !important;
+          padding: 13px 15px !important;
+          border: 1px solid #dfe8e5 !important;
+          border-radius: 13px !important;
+          background: #fbfcfc !important;
+          box-shadow: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedFacts > div > span {
+          display: block !important;
+          margin-bottom: 5px !important;
+          color: #64748b !important;
+          font-size: 10px !important;
+          font-weight: 650 !important;
+          letter-spacing: 0.06em !important;
+          text-transform: uppercase !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedFacts strong {
+          display: block !important;
+          color: #334155 !important;
+          font-size: 14px !important;
+          font-weight: 620 !important;
+          line-height: 1.35 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedFacts small {
+          display: block !important;
+          margin-top: 4px !important;
+          color: #64748b !important;
+          font-size: 13px !important;
+          font-weight: 520 !important;
+          line-height: 1.35 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems {
+          padding: 2px 24px 14px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItems h4 {
+          margin: 0 0 8px !important;
+          padding-top: 0 !important;
+          font-size: 15px !important;
+          font-weight: 660 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedItem {
+          min-height: 38px !important;
+          padding: 9px 7px !important;
+          border-bottom: 1px solid #edf1ef !important;
+          color: #1e293b !important;
+          font-size: 14px !important;
+          font-weight: 480 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedItem strong,
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedItem b {
+          font-weight: 640 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedNotice {
+          margin: 0 20px 14px !important;
+          padding: 11px 14px !important;
+          border: 1px solid #d8e9e3 !important;
+          border-radius: 12px !important;
+          background: #f3faf7 !important;
+          color: #42665a !important;
+          font-size: 12.5px !important;
+          font-weight: 510 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedActions {
+          display: grid !important;
+          grid-template-columns: 160px minmax(260px, 1fr) 120px !important;
+          gap: 10px !important;
+          padding: 14px 20px 18px !important;
+          border-top: 1px solid #e7edeb !important;
+          background: #fbfcfc !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedActions > * {
+          width: 100% !important;
+          min-height: 42px !important;
+          border-radius: 11px !important;
+          font-size: 13px !important;
+          font-weight: 620 !important;
+          box-shadow: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedActions .finalBackButton {
+          border: 1px solid #d5dfdc !important;
+          background: #ffffff !important;
+          color: #334155 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedActions > a {
+          border: 1px solid #109d7c !important;
+          background: #109d7c !important;
+          color: #ffffff !important;
+          box-shadow: 0 7px 16px rgba(16, 157, 124, 0.14) !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedActions > form,
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedActions > form button {
+          width: 100% !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedActions > form button {
+          border: 1px solid #edc7c3 !important;
+          background: #ffffff !important;
+          background-image: none !important;
+          color: #b42318 !important;
+          box-shadow: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedActions > form button:hover {
+          border-color: #e4a8a2 !important;
+          background: #fff6f5 !important;
+          color: #991b1b !important;
+        }
+
+        @media (max-width: 900px) {
+          .finalOrdersGrid.selectedFocusMode .finalSelectedFacts,
+          .finalOrdersGrid.selectedFocusMode .finalSelectedActions {
+            grid-template-columns: 1fr !important;
+          }
         }
         `}
 </style>
