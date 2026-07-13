@@ -1071,13 +1071,26 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
         <section className="finalInboxShell">
           <nav className="finalCategoryTabs" aria-label="E-Mail-Kategorien">
             {[
-              ["all", "Alle", data.emailBuckets?.all || 0],
-              ["orders", "Bestätigungen", data.emailBuckets?.orders || 0],
-              ["possible", "Unklar", data.emailBuckets?.possible || 0],
-              ["inquiries", "Anfragen", data.emailBuckets?.inquiries || 0],
-              ["reminders", "Lieferscheine", data.emailBuckets?.reminders || 0],
-              ["other", "Sonstiges", data.emailBuckets?.other || 0],
-              ["hidden", "Ausgeblendet", data.emailBuckets?.hidden || 0],
+              [
+                "orders",
+                "Auftragsbestätigungen",
+                data.emailBuckets?.orders || 0,
+              ],
+              [
+                "inquiries",
+                "Anfragen / Leads",
+                data.emailBuckets?.inquiries || 0,
+              ],
+              [
+                "possible",
+                "Unklare E-Mails",
+                data.emailBuckets?.possible || 0,
+              ],
+              [
+                "hidden",
+                "Ignorierte E-Mails",
+                data.emailBuckets?.hidden || 0,
+              ],
             ].map(([key, label, count]) => {
               const params = new URLSearchParams();
 

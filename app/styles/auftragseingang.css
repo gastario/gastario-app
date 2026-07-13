@@ -2801,3 +2801,91 @@
   background: #7f1d1d !important;
   transform: translateY(0) !important;
 }
+
+
+/* gastario-inbox-section-tabs-20260713 */
+
+.finalCategoryTabs {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  margin: 0 0 14px !important;
+  padding: 6px !important;
+  border: 1px solid #dce8e4 !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.045) !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+}
+
+.finalCategoryTabs::-webkit-scrollbar {
+  display: none !important;
+}
+
+.finalCategoryTab {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  min-height: 42px !important;
+  padding: 0 15px !important;
+  border: 1px solid transparent !important;
+  border-radius: 11px !important;
+  background: transparent !important;
+  color: #334155 !important;
+  font-size: 13px !important;
+  font-weight: 620 !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease !important;
+}
+
+.finalCategoryTab strong {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 23px !important;
+  height: 23px !important;
+  padding: 0 6px !important;
+  border-radius: 999px !important;
+  background: #edf5f2 !important;
+  color: #397364 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+.finalCategoryTab:hover {
+  border-color: #d7e6e1 !important;
+  background: #f5faf8 !important;
+  color: #0f5e4d !important;
+}
+
+.finalCategoryTab.active {
+  border-color: #0fa47e !important;
+  background: #0fa47e !important;
+  color: #ffffff !important;
+  box-shadow: 0 7px 16px rgba(15, 164, 126, 0.17) !important;
+}
+
+.finalCategoryTab.active strong {
+  background: rgba(255, 255, 255, 0.19) !important;
+  color: #ffffff !important;
+}
+
+.realOrderTabs {
+  margin-top: 0 !important;
+}
+
+@media (max-width: 900px) {
+  .finalCategoryTabs {
+    width: 100% !important;
+  }
+}
