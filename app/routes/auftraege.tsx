@@ -272,20 +272,20 @@ export default function OrdersPage() {
 
         <article className="metricCard">
           <div>
-            <p>Prüfen</p>
-            <strong>{data.counts.review}</strong>
-            <span>im Auftragseingang</span>
+            <p>Bestätigt</p>
+            <strong>{data.counts.confirmed}</strong>
+            <span>für die Ausführung vorgesehen</span>
           </div>
-          <small data-trend="pruefen">offen</small>
+          <small data-trend="aktiv">aktiv</small>
         </article>
 
         <article className="metricCard">
           <div>
-            <p>Abgelehnt</p>
-            <strong>{data.counts.rejected}</strong>
-            <span>nicht uebernommen</span>
+            <p>Operative Aufträge</p>
+            <strong>{data.orders.length}</strong>
+            <span>aktuell in dieser Ansicht</span>
           </div>
-          <small data-trend="kritisch">Archiv</small>
+          <small data-trend="bereit">live</small>
         </article>
 
         <article className="metricCard">
@@ -431,7 +431,7 @@ export default function OrdersPage() {
 
                   <div className="orderActions">
                     <Link className="ghostButton primaryGhostButton" to={"/auftrag-pruefung/" + order.id}>
-                      Prüfen
+                      Öffnen
                     </Link>
 
                     <Link
@@ -1306,6 +1306,420 @@ export default function OrdersPage() {
 
           .orderActions {
             flex-direction: row !important;
+            grid-column: 1 / -1 !important;
+          }
+        }
+      `}</style>
+
+      <style>{`
+        /* gastario-orders-complete-view-v2-20260713 */
+
+        .topbar {
+          display: flex !important;
+          align-items: flex-start !important;
+          justify-content: space-between !important;
+          gap: 28px !important;
+          margin-bottom: 22px !important;
+          padding: 0 !important;
+          border: 0 !important;
+          background: transparent !important;
+          box-shadow: none !important;
+        }
+
+        .topbar h1 {
+          margin: 3px 0 6px !important;
+          color: #11231d !important;
+          font-size: 36px !important;
+          font-weight: 790 !important;
+          letter-spacing: -0.045em !important;
+        }
+
+        .topbar .eyebrow {
+          margin: 0 !important;
+          color: #08785e !important;
+          font-size: 10px !important;
+          font-weight: 850 !important;
+          letter-spacing: .12em !important;
+          text-transform: uppercase !important;
+        }
+
+        .pageSubline {
+          display: block !important;
+          max-width: 760px !important;
+          color: #647871 !important;
+          font-size: 13px !important;
+          font-weight: 560 !important;
+          line-height: 1.5 !important;
+        }
+
+        .topActions {
+          display: flex !important;
+          align-items: center !important;
+          gap: 10px !important;
+        }
+
+        .topActions .secondaryButton,
+        .topActions .primaryButton {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          min-height: 44px !important;
+          padding: 0 17px !important;
+          border-radius: 11px !important;
+          font-size: 12px !important;
+          font-weight: 750 !important;
+          text-decoration: none !important;
+        }
+
+        .topActions .secondaryButton {
+          border: 1px solid #d5e1dd !important;
+          background: #ffffff !important;
+          color: #344c45 !important;
+          box-shadow: 0 3px 8px rgba(15,23,42,.035) !important;
+        }
+
+        .topActions .primaryButton {
+          border: 1px solid #087c60 !important;
+          background: #087c60 !important;
+          color: #ffffff !important;
+          box-shadow: 0 8px 18px rgba(8,124,96,.17) !important;
+        }
+
+        .orderSummaryGrid {
+          display: grid !important;
+          grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+          gap: 14px !important;
+          margin-bottom: 22px !important;
+        }
+
+        .orderSummaryGrid .metricCard {
+          position: relative !important;
+          display: block !important;
+          min-height: 126px !important;
+          padding: 20px !important;
+          border: 1px solid #dce6e2 !important;
+          border-radius: 18px !important;
+          background: #ffffff !important;
+          box-shadow: 0 10px 26px rgba(15,23,42,.045) !important;
+        }
+
+        .metricCard p {
+          margin: 0 0 9px !important;
+          color: #536a62 !important;
+          font-size: 11px !important;
+          font-weight: 760 !important;
+        }
+
+        .metricCard strong {
+          display: block !important;
+          margin-bottom: 8px !important;
+          color: #10211c !important;
+          font-size: 28px !important;
+          font-weight: 820 !important;
+          line-height: 1 !important;
+          letter-spacing: -.04em !important;
+        }
+
+        .metricCard span {
+          color: #71827c !important;
+          font-size: 11px !important;
+          font-weight: 570 !important;
+        }
+
+        .metricCard small {
+          position: absolute !important;
+          top: 17px !important;
+          right: 17px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          min-height: 24px !important;
+          padding: 0 8px !important;
+          border: 1px solid #cce4da !important;
+          border-radius: 999px !important;
+          background: #eff8f4 !important;
+          color: #08705a !important;
+          font-size: 9px !important;
+          font-weight: 800 !important;
+          text-transform: uppercase !important;
+        }
+
+        .panel {
+          overflow: hidden !important;
+          border: 1px solid #dce6e2 !important;
+          border-radius: 20px !important;
+          background: #ffffff !important;
+          box-shadow: 0 14px 34px rgba(15,23,42,.045) !important;
+        }
+
+        .panelHeader {
+          display: block !important;
+          padding: 18px 18px 0 !important;
+          border: 0 !important;
+          background: #ffffff !important;
+        }
+
+        .panelHeader > div:first-child {
+          display: none !important;
+        }
+
+        .ordersFilterWrap {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: stretch !important;
+          gap: 13px !important;
+          width: 100% !important;
+          min-width: 0 !important;
+        }
+
+        .ordersFilterForm {
+          display: grid !important;
+          grid-template-columns:
+            minmax(270px, 1.25fr)
+            minmax(220px, .9fr)
+            150px
+            150px !important;
+          align-items: end !important;
+          gap: 10px !important;
+          width: 100% !important;
+          padding: 0 !important;
+          border: 0 !important;
+          background: transparent !important;
+        }
+
+        .filterLabel {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 5px !important;
+          color: #61756e !important;
+          font-size: 9px !important;
+          font-weight: 800 !important;
+          letter-spacing: .06em !important;
+          text-transform: uppercase !important;
+        }
+
+        .filterInput {
+          min-height: 46px !important;
+          padding: 0 14px !important;
+          border: 1px solid #d5e1dd !important;
+          border-radius: 11px !important;
+          background: #ffffff !important;
+          color: #283f38 !important;
+          font-family: inherit !important;
+          font-size: 12px !important;
+          outline: none !important;
+        }
+
+        .filterInput:focus {
+          border-color: #71bda8 !important;
+          box-shadow: 0 0 0 3px rgba(15,164,126,.08) !important;
+        }
+
+        .ordersFilterForm .ghostButton {
+          min-height: 46px !important;
+          padding: 0 15px !important;
+          border-radius: 11px !important;
+          font-size: 11px !important;
+        }
+
+        .ordersFilterForm .primaryGhostButton {
+          border-color: #087c60 !important;
+          background: #087c60 !important;
+          color: #ffffff !important;
+          box-shadow: 0 7px 16px rgba(8,124,96,.15) !important;
+        }
+
+        .statusFilterGroup {
+          display: flex !important;
+          align-items: center !important;
+          gap: 7px !important;
+          padding-bottom: 14px !important;
+          border-bottom: 1px solid #e8efec !important;
+        }
+
+        .statusFilterGroup .ghostButton {
+          min-height: 38px !important;
+          padding: 0 15px !important;
+          border: 1px solid transparent !important;
+          border-radius: 9px 9px 0 0 !important;
+          background: transparent !important;
+          color: #536861 !important;
+          font-size: 11px !important;
+          font-weight: 720 !important;
+          box-shadow: none !important;
+        }
+
+        .statusFilterGroup .ghostButton.activeFilter {
+          border-color: #b9dfd2 !important;
+          border-bottom-color: #087c60 !important;
+          background: #f1faf6 !important;
+          color: #08705a !important;
+        }
+
+        .ordersTable {
+          margin: 0 16px 16px !important;
+          overflow: hidden !important;
+          border: 1px solid #dce6e2 !important;
+          border-radius: 15px !important;
+          background: #ffffff !important;
+        }
+
+        .ordersHead {
+          display: none !important;
+        }
+
+        .ordersRow {
+          display: grid !important;
+          grid-template-columns:
+            minmax(155px, .9fr)
+            minmax(145px, .85fr)
+            110px
+            minmax(220px, 1.35fr)
+            105px
+            105px
+            285px !important;
+          align-items: center !important;
+          gap: 15px !important;
+          min-height: 98px !important;
+          padding: 16px 18px !important;
+          border-bottom: 1px solid #e7eeeb !important;
+          background: #ffffff !important;
+          transition:
+            background .15s ease,
+            box-shadow .15s ease !important;
+        }
+
+        .ordersRow:last-child {
+          border-bottom: 0 !important;
+        }
+
+        .ordersRow:hover {
+          background: #fafdfb !important;
+          box-shadow: inset 3px 0 0 #087c60 !important;
+        }
+
+        .ordersRow > div > strong,
+        .ordersRow > strong {
+          display: block !important;
+          color: #14241f !important;
+          font-size: 12.5px !important;
+          font-weight: 770 !important;
+          line-height: 1.3 !important;
+        }
+
+        .ordersRow > div > small {
+          display: block !important;
+          margin-top: 4px !important;
+          overflow: hidden !important;
+          color: #71827c !important;
+          font-size: 9.5px !important;
+          line-height: 1.35 !important;
+          text-overflow: ellipsis !important;
+        }
+
+        .orderStatus {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          width: fit-content !important;
+          min-height: 27px !important;
+          padding: 0 9px !important;
+          border-radius: 7px !important;
+          font-size: 9px !important;
+          font-weight: 800 !important;
+          white-space: nowrap !important;
+        }
+
+        .orderStatus.success {
+          border: 1px solid #b8e1d2 !important;
+          background: #edf9f4 !important;
+          color: #08705a !important;
+        }
+
+        .orderStatus.warning {
+          border: 1px solid #efd4a9 !important;
+          background: #fff8ed !important;
+          color: #a36208 !important;
+        }
+
+        .orderStatus.danger {
+          border: 1px solid #edc4c4 !important;
+          background: #fff4f4 !important;
+          color: #ae3f3f !important;
+        }
+
+        .orderActions {
+          display: grid !important;
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          gap: 7px !important;
+          width: 100% !important;
+        }
+
+        .orderActions form {
+          width: 100% !important;
+          margin: 0 !important;
+        }
+
+        .orderActions .ghostButton {
+          width: 100% !important;
+          min-height: 35px !important;
+          padding: 0 9px !important;
+          border-radius: 8px !important;
+          font-size: 10px !important;
+          font-weight: 750 !important;
+          box-shadow: none !important;
+        }
+
+        .orderActions .primaryGhostButton {
+          border-color: #087c60 !important;
+          background: #087c60 !important;
+          color: #ffffff !important;
+        }
+
+        .orderActions .ghostButton:not(.primaryGhostButton):not(.deleteOrderButton) {
+          border-color: #d5e1dd !important;
+          background: #ffffff !important;
+          color: #425850 !important;
+        }
+
+        .deleteOrderButton {
+          border: 1px solid #efc2c2 !important;
+          background: #fff6f6 !important;
+          color: #bc3f3f !important;
+        }
+
+        .deleteOrderButton:hover {
+          border-color: #dc9c9c !important;
+          background: #ffeded !important;
+          color: #9f2828 !important;
+        }
+
+        @media (max-width: 1350px) {
+          .ordersRow {
+            grid-template-columns:
+              minmax(135px, .85fr)
+              minmax(125px, .8fr)
+              95px
+              minmax(180px, 1.2fr)
+              100px
+              100px
+              245px !important;
+          }
+        }
+
+        @media (max-width: 1080px) {
+          .orderSummaryGrid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          .ordersFilterForm {
+            grid-template-columns: 1fr 1fr !important;
+          }
+
+          .ordersRow {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          .orderActions {
             grid-column: 1 / -1 !important;
           }
         }
