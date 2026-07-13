@@ -805,6 +805,80 @@ function extractDeliveryOverviewCustomer(rawText: string, sourceFileName = "", c
 
   return "";
 }
+/*
+ * gastario-delivery-overview-allergen-skip-20260713
+ * Verhindert, dass Allergenzeilen als Gericht übernommen werden.
+ */
+function isDeliveryOverviewAllergenOrDetailLine(
+  value: string
+) {
+  const line = cleanLine(value);
+  const lower = line.toLowerCase();
+
+  if (!line) return true;
+
+  const prefixes = [
+    "allergen",
+    "allergene",
+    "allergens",
+    "allergy",
+    "enthält",
+    "enthaelt",
+    "contains",
+    "hinweis",
+    "hinweise",
+    "zutaten",
+    "ingredients",
+  ];
+
+  if (
+    prefixes.some((prefix) =>
+      lower.startsWith(prefix)
+    )
+  ) {
+    return true;
+  }
+
+  const signals = [
+    "gluten",
+    "weizen",
+    "roggen",
+    "gerste",
+    "hafer",
+    "milch",
+    "laktose",
+    "ei",
+    "eier",
+    "erdnuss",
+    "erdnüsse",
+    "erdnuesse",
+    "sesam",
+    "soja",
+    "sellerie",
+    "senf",
+    "sulfite",
+    "schalenfrüchte",
+    "schalenfruechte",
+    "mandeln",
+    "cashew",
+    "walnuss",
+    "fisch",
+    "krebstiere",
+    "weichtiere",
+    "lupine",
+  ];
+
+  const matches = signals.filter((signal) =>
+    lower.includes(signal)
+  ).length;
+
+  const looksLikeList =
+    /[,;|]/.test(line) ||
+    /\([^)]{3,}\)/.test(line);
+
+  return matches >= 2 && looksLikeList;
+}
+
 function parseDeliveryOverviewLabelsFromText(rawText: string, dishDetailsMap: Record<string, string> = DELIVERY_OVERVIEW_DISH_DETAILS, sourceFileName = "", customerOverride = ""): HeycaterLabelData[] {
   const lines = String(rawText || "")
     .split(/\r?\n/)
@@ -856,6 +930,16 @@ function parseDeliveryOverviewLabelsFromText(rawText: string, dishDetailsMap: Re
     }
 
     if (pendingQuantityName) {
+      /*
+       * Allergen- oder Hinweiszeilen überspringen.
+       * Name und Menge bleiben gespeichert, bis das echte Gericht folgt.
+       */
+      if (
+        isDeliveryOverviewAllergenOrDetailLine(line)
+      ) {
+        continue;
+      }
+
       pushDeliveryOverviewLabels(labels, {
         name: pendingQuantityName.name,
         meal: line,
