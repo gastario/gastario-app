@@ -2729,3 +2729,49 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+/* gastario-delete-button-polish-20260713 */
+
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedActions > form button {
+  width: 100% !important;
+  min-height: 44px !important;
+  padding: 0 18px !important;
+  border: 1px solid #efb7b1 !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  color: #b42318 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.01em !important;
+  box-shadow: 0 4px 10px rgba(180, 35, 24, 0.06) !important;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.16s ease !important;
+}
+
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedActions > form button:hover {
+  border-color: #e8877d !important;
+  background: #fff5f4 !important;
+  color: #991b1b !important;
+  box-shadow: 0 6px 14px rgba(180, 35, 24, 0.10) !important;
+  transform: translateY(-1px) !important;
+}
+
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedActions > form button:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 3px 8px rgba(180, 35, 24, 0.08) !important;
+}
+
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedActions > form button:focus-visible {
+  outline: none !important;
+  box-shadow:
+    0 0 0 4px rgba(220, 38, 38, 0.12),
+    0 4px 10px rgba(180, 35, 24, 0.06) !important;
+}
