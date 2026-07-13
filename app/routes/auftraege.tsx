@@ -898,6 +898,165 @@ export default function OrdersPage() {
             grid-column: 1 / -1 !important;
           }
         }
+
+
+        /* gastario-orders-final-visual-polish-20260713 */
+
+        .ordersHead {
+          min-height: 39px !important;
+          padding: 0 16px !important;
+          border: 1px solid #dde7e3 !important;
+          border-radius: 11px !important;
+          background: #f1f5f3 !important;
+          color: #52665f !important;
+          font-size: 9px !important;
+          font-weight: 850 !important;
+        }
+
+        .ordersRow {
+          min-height: 104px !important;
+          padding: 17px 16px !important;
+          border-color: #d7e3de !important;
+          border-radius: 15px !important;
+          box-shadow: 0 3px 12px rgba(15, 23, 42, .032) !important;
+        }
+
+        .ordersRow:hover {
+          transform: translateY(-1px) !important;
+          border-color: #9fc9bc !important;
+          background: #fcfefd !important;
+          box-shadow:
+            inset 3px 0 0 #0a8a6a,
+            0 9px 22px rgba(15, 23, 42, .06) !important;
+        }
+
+        .ordersRow > div:first-child strong {
+          color: #12372c !important;
+          font-size: 13px !important;
+          font-weight: 820 !important;
+          letter-spacing: .01em !important;
+        }
+
+        .ordersRow > div:nth-child(2) strong {
+          color: #14241f !important;
+          font-size: 13px !important;
+          font-weight: 780 !important;
+        }
+
+        .ordersRow > div:nth-child(3) strong {
+          font-size: 12.5px !important;
+          font-weight: 780 !important;
+        }
+
+        .ordersRow > div:nth-child(4) strong {
+          margin-bottom: 3px !important;
+          font-size: 12.5px !important;
+          font-weight: 780 !important;
+        }
+
+        .ordersRow > div:nth-child(4) small {
+          display: -webkit-box !important;
+          overflow: hidden !important;
+          -webkit-box-orient: vertical !important;
+          -webkit-line-clamp: 2 !important;
+          color: #6b7d77 !important;
+          font-size: 9.5px !important;
+          line-height: 1.45 !important;
+        }
+
+        .ordersRow > strong {
+          color: #10211c !important;
+          font-size: 13.5px !important;
+          font-weight: 820 !important;
+          white-space: nowrap !important;
+        }
+
+        .orderStatus {
+          min-height: 29px !important;
+          padding: 0 10px !important;
+          border-radius: 8px !important;
+          font-size: 9px !important;
+          letter-spacing: .01em !important;
+        }
+
+        .orderActions {
+          grid-template-columns: 1fr 1.15fr 1fr !important;
+          gap: 7px !important;
+        }
+
+        .orderActions .ghostButton {
+          min-height: 37px !important;
+          border-radius: 9px !important;
+          font-size: 10px !important;
+          font-weight: 770 !important;
+          transition:
+            background .15s ease,
+            border-color .15s ease,
+            color .15s ease !important;
+        }
+
+        .orderActions .primaryGhostButton {
+          border: 1px solid #087c60 !important;
+          background: #087c60 !important;
+          color: #ffffff !important;
+        }
+
+        .orderActions .primaryGhostButton:hover {
+          border-color: #066b52 !important;
+          background: #066f56 !important;
+        }
+
+        .orderActions .ghostButton:not(.primaryGhostButton):not(.deleteOrderButton) {
+          border: 1px solid #cfdcd7 !important;
+          background: #ffffff !important;
+          color: #364d46 !important;
+        }
+
+        .orderActions .ghostButton:not(.primaryGhostButton):not(.deleteOrderButton):hover {
+          border-color: #a9c7bc !important;
+          background: #f4f9f7 !important;
+          color: #08705a !important;
+        }
+
+        .orderActions .deleteOrderButton,
+        .orderActions form .deleteOrderButton {
+          border: 1px solid #e8bcbc !important;
+          background: #fff5f5 !important;
+          color: #b32f2f !important;
+          box-shadow: none !important;
+        }
+
+        .orderActions .deleteOrderButton:hover,
+        .orderActions form .deleteOrderButton:hover {
+          border-color: #d98f8f !important;
+          background: #ffe9e9 !important;
+          color: #972020 !important;
+        }
+
+        .statusFilterGroup .ghostButton {
+          min-height: 39px !important;
+          padding: 0 17px !important;
+          border-radius: 10px !important;
+          font-size: 11px !important;
+        }
+
+        .statusFilterGroup .ghostButton.activeFilter {
+          border-color: #58b69c !important;
+          background: #dff2eb !important;
+          color: #076b54 !important;
+          box-shadow: inset 0 0 0 1px rgba(8, 124, 96, .05) !important;
+        }
+
+        .ordersFilterForm {
+          padding: 14px !important;
+          border-color: #d7e3de !important;
+          background: #f5f8f7 !important;
+        }
+
+        .filterInput {
+          border-color: #cfdcd7 !important;
+          background: #ffffff !important;
+        }
       `}</style>
 </AppLayout>
   );
