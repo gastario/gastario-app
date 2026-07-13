@@ -16,13 +16,13 @@ export function links() {
 }
 
 const EMAIL_BUCKETS = [
-  { key: "orders", label: "BestÃ¤tigungen", help: "Sichere AuftragsbestÃ¤tigungen" },
-  { key: "possible", label: "Unklar", help: "E-Mails prÃ¼fen" },
+  { key: "orders", label: "BestÃƒÆ’Ã‚Â¤tigungen", help: "Sichere AuftragsbestÃƒÆ’Ã‚Â¤tigungen" },
+  { key: "possible", label: "Unklar", help: "E-Mails prÃƒÆ’Ã‚Â¼fen" },
   { key: "inquiries", label: "Anfragen", help: "Angebote vorbereiten" },
   { key: "reminders", label: "Lieferscheine", help: "Morgen-/Lieferhinweise" },
   { key: "other", label: "Sonstiges", help: "Absagen, Werbung, Belege" },
   { key: "hidden", label: "Ausgeblendet", help: "Manuell ausgeblendet" },
-  { key: "all", label: "Alle", help: "Alle ungeprÃ¼ften E-Mails" },
+  { key: "all", label: "Alle", help: "Alle ungeprÃƒÆ’Ã‚Â¼ften E-Mails" },
 ];
 
 function normalizeEmailText(value: unknown) {
@@ -123,9 +123,9 @@ function classifyIncomingEmail(mail: any) {
     "chefs culinar",
     "briefing kw",
     "eure uebersicht",
-    "eure Ã¼bersicht",
+    "eure ÃƒÆ’Ã‚Â¼bersicht",
     "wochenuebersicht",
-    "wochenÃ¼bersicht",
+    "wochenÃƒÆ’Ã‚Â¼bersicht",
   ];
 
   if (cancellationSignals.some((signal) => combined.includes(signal))) return "other";
@@ -159,7 +159,7 @@ function classifyIncomingEmail(mail: any) {
 }
 
 function emailCategoryLabel(value: string) {
-  if (value === "orders") return "AuftragsbestÃ¤tigungen";
+  if (value === "orders") return "AuftragsbestÃƒÆ’Ã‚Â¤tigungen";
   if (value === "possible") return "Unklare Mails";
   if (value === "inquiries") return "Anfragen / Angebote";
   if (value === "reminders") return "Erinnerungen / Lieferscheine";
@@ -181,8 +181,8 @@ function formatDate(value: string | Date | null | undefined) {
 }
 
 function statusLabel(status: string) {
-  if (status === "AUTO_CREATED") return "PrÃ¼fen";
-  if (status === "CONFIRMED") return "Ãœbernommen";
+  if (status === "AUTO_CREATED") return "PrÃƒÆ’Ã‚Â¼fen";
+  if (status === "CONFIRMED") return "ÃƒÆ’Ã…“bernommen";
   if (status === "REJECTED") return "Abgelehnt";
   return status;
 }
@@ -489,7 +489,7 @@ export async function action({ request }: { request: Request }) {
     if (email.orders.length > 0) return { error: "Diese E-Mail ist bereits mit einem Auftrag verbunden." };
 
     await prisma.incomingEmail.delete({ where: { id: email.id } });
-    return { success: "E-Mail wurde gelÃ¶scht." };
+    return { success: "E-Mail wurde gelÃƒÆ’Ã‚Â¶scht." };
   }
 
   if (intent === "deleteOrder") {
@@ -500,7 +500,7 @@ export async function action({ request }: { request: Request }) {
     await prisma.orderItem.deleteMany({ where: { orderId } });
     await prisma.order.deleteMany({ where: { id: orderId, tenantId: tenantUser.tenantId } });
 
-    return { success: "Auftrag wurde gelÃ¶scht." };
+    return { success: "Auftrag wurde gelÃƒÆ’Ã‚Â¶scht." };
   }
 
   return { error: "Unbekannte Aktion." };
@@ -576,7 +576,7 @@ function getDisplayedOrderTotal(order: any) {
 
   return {
     cents: positionsTotal,
-    source: "vorlÃ¤ufig",
+    source: "vorlÃƒÆ’Ã‚Â¤ufig",
     positionsCents: positionsTotal,
   };
 }
@@ -791,17 +791,17 @@ export default function AuftragseingangPage() {
         ? "Ignorierte E-Mails"
         : data.selectedEmailCategory === "all"
           ? "Eingangszentrale"
-          : "AuftragsbestÃ¤tigungen";
+          : "AuftragsbestÃƒÆ’Ã‚Â¤tigungen";
 
   const inboxSubtitle = isInquiryView
-    ? "Neue Catering-Anfragen erkennen, prÃ¼fen und spÃ¤ter direkt in Angebote umwandeln."
+    ? "Neue Catering-Anfragen erkennen, prÃƒÆ’Ã‚Â¼fen und spÃƒÆ’Ã‚Â¤ter direkt in Angebote umwandeln."
     : isReviewMailView
       ? "E-Mails, bei denen Gastario oder die KI noch keine sichere Entscheidung treffen konnte."
       : isIgnoredMailView
         ? "Mails, die ausgeblendet oder automatisch ignoriert wurden."
         : data.selectedEmailCategory === "all"
-          ? "Alle aktuellen EingÃ¤nge: AuftrÃ¤ge, Anfragen, unklare Mails und ignorierte VorgÃ¤nge."
-          : "E-Mails abrufen, AuftrÃ¤ge kontrollieren und sauber in die Produktion Ã¼bernehmen.";
+          ? "Alle aktuellen EingÃƒÆ’Ã‚Â¤nge: AuftrÃƒÆ’Ã‚Â¤ge, Anfragen, unklare Mails und ignorierte VorgÃƒÆ’Ã‚Â¤nge."
+          : "E-Mails abrufen, AuftrÃƒÆ’Ã‚Â¤ge kontrollieren und sauber in die Produktion ÃƒÆ’Ã‚Â¼bernehmen.";
 
   const emailResetHref = "/auftragseingang?emailCategory=" + data.selectedEmailCategory + "&dateRange=last7";
 
@@ -850,25 +850,25 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
   const activeOrderViewTitle = isEmailFocusedView ? inboxHeadline :
     activeOrderStatusRaw === "CONFIRMED"
-      ? "Ãœbernommene AuftrÃ¤ge"
+      ? "ÃƒÆ’Ã…“bernommene AuftrÃƒÆ’Ã‚Â¤ge"
       : activeOrderStatusRaw === "REJECTED"
-        ? "Abgelehnte AuftrÃ¤ge"
+        ? "Abgelehnte AuftrÃƒÆ’Ã‚Â¤ge"
         : activeOrderStatusRaw === "AUTO_CREATED"
-          ? "Zu prÃ¼fen"
-          : "Alle AuftrÃ¤ge";
+          ? "Zu prÃƒÆ’Ã‚Â¼fen"
+          : "Alle AuftrÃƒÆ’Ã‚Â¤ge";
 
   const activeOrderViewSubtitle = isEmailFocusedView ? inboxSubtitle :
     activeOrderStatusRaw === "CONFIRMED"
-      ? "AuftrÃ¤ge, die bereits Ã¼bernommen wurden."
+      ? "AuftrÃƒÆ’Ã‚Â¤ge, die bereits ÃƒÆ’Ã‚Â¼bernommen wurden."
       : activeOrderStatusRaw === "REJECTED"
-        ? "AuftrÃ¤ge, die nicht Ã¼bernommen wurden."
+        ? "AuftrÃƒÆ’Ã‚Â¤ge, die nicht ÃƒÆ’Ã‚Â¼bernommen wurden."
         : activeOrderStatusRaw === "AUTO_CREATED"
-          ? "Nur AuftrÃ¤ge, die noch kontrolliert und Ã¼bernommen werden mÃ¼ssen."
-          : "Alle aktuellen AuftrÃ¤ge im Auftragseingang.";
+          ? "Nur AuftrÃƒÆ’Ã‚Â¤ge, die noch kontrolliert und ÃƒÆ’Ã‚Â¼bernommen werden mÃƒÆ’Ã‚Â¼ssen."
+          : "Alle aktuellen AuftrÃƒÆ’Ã‚Â¤ge im Auftragseingang.";
 
   const activeOrderViewCountLabel =
     activeOrderStatusRaw === "CONFIRMED"
-      ? "Ã¼bernommen"
+      ? "ÃƒÆ’Ã‚Â¼bernommen"
       : activeOrderStatusRaw === "REJECTED"
         ? "abgelehnt"
         : activeOrderStatusRaw === "AUTO_CREATED"
@@ -915,7 +915,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
       if (!name) return false;
       if (name.includes("fehlende position")) return false;
       if (name.includes("habe lieferkosten")) return false;
-      if (name.includes("kosten fÃ¼r")) return false;
+      if (name.includes("kosten fÃƒÆ’Ã‚Â¼r")) return false;
       if (name.includes("servicepersonal")) return false;
       if (name.includes("gas or electric grills")) return false;
       if (name.includes("onsite")) return false;
@@ -1033,7 +1033,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
               </span>
               <span>
                 <strong>{currentOrderStats.confirmed}</strong>
-                Ã¼bernommen
+                ÃƒÆ’Ã‚Â¼bernommen
               </span>
             </div>
           </div>
@@ -1055,7 +1055,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
               onClick={runEmailImportAndReload}
               disabled={isImportingNow}
             >
-              {isImportingNow ? "Abruf lÃ¤uft..." : "E-Mails abrufen"}
+              {isImportingNow ? "Abruf lÃƒÆ’Ã‚Â¤uft..." : "E-Mails abrufen"}
             </button>
           </div>
         </section>
@@ -1094,7 +1094,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
             <button type="submit" className="finalFilterButton">Weitere Filter</button>
             <Link to={"/auftragseingang?emailCategory=" + data.selectedEmailCategory + "&dateRange=last7"} className="finalResetButton">
-              ZurÃ¼cksetzen
+              ZurÃƒÆ’Ã‚Â¼cksetzen
             </Link>
           </Form>
         </section>
@@ -1104,8 +1104,8 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
             {[
               [
                 "orders",
-                "AuftragsbestÃ¤tigungen",
-                data.emailBuckets?.orders || 0,
+                "Aufträge",
+                currentOrderStats.all,
               ],
               [
                 "inquiries",
@@ -1176,16 +1176,18 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
             })}
           </nav>
 
-          <span
+          {!isEmailFocusedView ? (
+            <>
+              <span
             className="inboxNavigationDivider"
             aria-hidden="true"
           />
 
           <nav className="realOrderTabs" aria-label="Auftragsfilter">
           {[
-            ["Alle AuftrÃ¤ge", currentOrderStats.all, ""],
-            ["Zu prÃ¼fen", currentOrderStats.review, "AUTO_CREATED"],
-            ["Ãœbernommen", currentOrderStats.confirmed, "CONFIRMED"],
+            ["Alle AuftrÃƒÆ’Ã‚Â¤ge", currentOrderStats.all, ""],
+            ["Zu prÃƒÆ’Ã‚Â¼fen", currentOrderStats.review, "AUTO_CREATED"],
+            ["ÃƒÆ’Ã…“bernommen", currentOrderStats.confirmed, "CONFIRMED"],
             ["Abgelehnt", currentOrderStats.rejected, "REJECTED"],
           ].map(([label, count, status]) => {
             const active = !isEmailFocusedView && (activeOrderStatus === status || (!activeOrderStatus && !status));
@@ -1203,6 +1205,8 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
             );
           })}
         </nav>
+            </>
+          ) : null}
         </div>
 {/* gastario-restored-email-focused-view-20260713 */}
         {isEmailFocusedView ? (
@@ -1215,7 +1219,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
               <strong>
                 {sortedEmails.length}{" "}
-                {sortedEmails.length === 1 ? "Eingang" : "EingÃ¤nge"}
+                {sortedEmails.length === 1 ? "Eingang" : "EingÃƒÆ’Ã‚Â¤nge"}
               </strong>
             </div>
 
@@ -1282,9 +1286,9 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                             {Math.round(
                               Number(aiDecision.confidence || 0) * 100
                             )}{" "}
-                            % Â·{" "}
+                            % Ãƒ”šÃ‚·{" "}
                             {aiDecision.reason ||
-                              "Keine BegrÃ¼ndung gespeichert"}
+                              "Keine BegrÃƒÆ’Ã‚Â¼ndung gespeichert"}
                           </span>
                         </div>
                       ) : null}
@@ -1298,7 +1302,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                           to={"/email-pruefung/" + mail.id}
                           className="leadPrimaryAction"
                         >
-                          Ã–ffnen
+                          ÃƒÆ’Ã¢€“ffnen
                         </Link>
 
                         {!isIgnoredMailView ? (
@@ -1346,7 +1350,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
           {visibleOrders.length === 0 ? (
             <div className="finalEmpty">
-              {data.setupError ? data.setupError : 'Keine AuftrÃ¤ge in dieser Ansicht.'}
+              {data.setupError ? data.setupError : 'Keine AuftrÃƒÆ’Ã‚Â¤ge in dieser Ansicht.'}
             </div>
           ) : (
             <div className={selectedOrder ? "finalOrdersGrid selectedFocusMode" : "finalOrdersGrid"}>
@@ -1372,7 +1376,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                         }
                       }}
                     >
-                      <div className="finalOrderIcon">âœ‰</div>
+                      <div className="finalOrderIcon">ÃƒÂ¢Ã…“Ã¢€Â°</div>
 
                       <div className="finalOrderCustomer">
                         <div className="finalOrderNumber">{order.orderNumber}</div>
@@ -1414,7 +1418,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                 <aside className="finalSelectedPanel" key={selectedOrder.id}>
                   <div className="finalSelectedTop">
                     <div>
-                      <div className="finalSelectedKicker">AusgewÃ¤hlt</div>
+                      <div className="finalSelectedKicker">AusgewÃƒÆ’Ã‚Â¤hlt</div>
                       <div className="finalOrderNumber">{selectedOrder.orderNumber}</div>
                       <h3>{selectedOrder.customerName || selectedOrder.customer?.name || "Kunde unbekannt"}</h3>
                     </div>
@@ -1432,13 +1436,13 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                     <div>
                       <span>Lieferadresse</span>
                       <strong>{selectedOrder.customerName || selectedOrder.customer?.name || "Kunde unbekannt"}</strong>
-                      <small>{selectedOrder.deliveryAddress || "Adresse prÃ¼fen"}</small>
+                      <small>{selectedOrder.deliveryAddress || "Adresse prÃƒÆ’Ã‚Â¼fen"}</small>
                     </div>
 
                     <div>
                       <span>Gesamt</span>
                       <strong>{selectedOrderTotal ? formatImportCurrencyFromCents(selectedOrderTotal.cents) : "-"}</strong>
-                      <small>{selectedOrderTotal?.source || "bitte prÃ¼fen"}</small>
+                      <small>{selectedOrderTotal?.source || "bitte prÃƒÆ’Ã‚Â¼fen"}</small>
                     </div>
                   </div>
 
@@ -1460,25 +1464,25 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                     ) : null}
                   </div>
 
-                  {selectedOrderTotal?.source === "vorlÃ¤ufig" ? (
+                  {selectedOrderTotal?.source === "vorlÃƒÆ’Ã‚Â¤ufig" ? (
                     <div className="finalSelectedNotice">
-                      Der Betrag ist vorlÃ¤ufig und sollte vor Ãœbernahme geprÃ¼ft werden.
+                      Der Betrag ist vorlÃƒÆ’Ã‚Â¤ufig und sollte vor ÃƒÆ’Ã…“bernahme geprÃƒÆ’Ã‚Â¼ft werden.
                     </div>
                   ) : null}
 
                   <div className="finalSelectedActions">
                     <button type="button" className="finalBackButton" onClick={() => updateSelectedOrder(null)}>
-                      ZurÃ¼ck zur Liste
+                      ZurÃƒÆ’Ã‚Â¼ck zur Liste
                     </button>
 
                     <Link to={"/auftrag-pruefung/" + selectedOrder.id} prefetch="intent">
-                      PrÃ¼fen & Ã¼bernehmen
+                      PrÃƒÆ’Ã‚Â¼fen & ÃƒÆ’Ã‚Â¼bernehmen
                     </Link>
 
                     <Form method="post">
                       <input type="hidden" name="intent" value="deleteOrder" />
                       <input type="hidden" name="orderId" value={selectedOrder.id} />
-                      <button type="submit">LÃ¶schen</button>
+                      <button type="submit">LÃƒÆ’Ã‚Â¶schen</button>
                     </Form>
                   </div>
                 </aside>
@@ -1489,7 +1493,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
           {hiddenPastOrderCount > 0 ? (
             <div className="finalHint">
               {hiddenPastOrderCount} vergangene Auftrag{hiddenPastOrderCount === 1 ? "" : "e"} ausgeblendet.{" "}
-              <Link to="/auftraege?view=past">Vergangene AuftrÃ¤ge Ã¶ffnen</Link>
+              <Link to="/auftraege?view=past">Vergangene AuftrÃƒÆ’Ã‚Â¤ge ÃƒÆ’Ã‚Â¶ffnen</Link>
             </div>
           ) : null}
         </section>
