@@ -5694,3 +5694,131 @@
   background: #ffedcb !important;
   color: #854f00 !important;
 }
+
+/* gastario-calm-slightly-larger-navigation-20260713 */
+
+.inboxCombinedNavigation {
+  padding: 11px !important;
+  border: 1px solid #dce7e3 !important;
+  border-radius: 17px !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.03) !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTabs {
+  gap: 9px !important;
+  padding-bottom: 11px !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab {
+  min-height: 46px !important;
+  padding: 0 16px !important;
+  border: 1px solid #d4dfdb !important;
+  border-radius: 11px !important;
+  background: #f8faf9 !important;
+  color: #2f4942 !important;
+  font-size: 12.5px !important;
+  font-weight: 720 !important;
+  box-shadow: none !important;
+  transition:
+    background .15s ease,
+    border-color .15s ease,
+    color .15s ease !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab:hover {
+  transform: none !important;
+  border-color: #b9cec6 !important;
+  background: #f2f7f5 !important;
+  color: #0b6d56 !important;
+  box-shadow: none !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab.active {
+  border-color: #6abfa7 !important;
+  background: #e8f6f1 !important;
+  color: #0b6d56 !important;
+  box-shadow: inset 0 0 0 1px rgba(15, 164, 126, .04) !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab strong {
+  min-width: 24px !important;
+  height: 24px !important;
+  padding: 0 7px !important;
+  border: 0 !important;
+  background: #e9f1ee !important;
+  color: #496b62 !important;
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab.active strong {
+  background: #d4eee5 !important;
+  color: #0b6d56 !important;
+}
+
+.orderStatusSubnav {
+  gap: 9px !important;
+  margin-top: 10px !important;
+  padding-top: 10px !important;
+  border-top: 1px solid #edf2f0 !important;
+}
+
+.orderStatusSubnavLabel {
+  min-height: 39px !important;
+  padding: 0 13px !important;
+  border: 1px solid #dce5e2 !important;
+  border-radius: 9px !important;
+  background: #f6f8f7 !important;
+  color: #687b75 !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: .08em !important;
+}
+
+.orderStatusSubnav .realOrderTabs {
+  gap: 8px !important;
+}
+
+.orderStatusSubnav .realOrderTab {
+  min-height: 39px !important;
+  padding: 0 13px !important;
+  border: 1px solid #d6e0dc !important;
+  border-radius: 9px !important;
+  background: #ffffff !important;
+  color: #3c514b !important;
+  font-size: 11.5px !important;
+  font-weight: 690 !important;
+  box-shadow: none !important;
+}
+
+.orderStatusSubnav .realOrderTab:hover {
+  transform: none !important;
+  border-color: #b9cec6 !important;
+  background: #f5f9f7 !important;
+  color: #0b6d56 !important;
+  box-shadow: none !important;
+}
+
+.orderStatusSubnav .realOrderTab.active {
+  border-color: #86cbb8 !important;
+  background: #edf8f4 !important;
+  color: #0b6d56 !important;
+  box-shadow: inset 0 0 0 1px rgba(15, 164, 126, .035) !important;
+}
+
+.orderStatusSubnav .realOrderTab strong {
+  min-width: 22px !important;
+  height: 22px !important;
+  padding: 0 6px !important;
+  border: 0 !important;
+  background: #eaf2ef !important;
+  color: #496b62 !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+}
+
+.orderStatusSubnav .realOrderTab.active strong {
+  background: #d9efe7 !important;
+  color: #0b6d56 !important;
+}
