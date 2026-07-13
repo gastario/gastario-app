@@ -6,7 +6,7 @@
     "dev": "react-router dev",
     "typecheck": "react-router typegen && tsc",
     "build": "prisma generate --schema=./prisma/schema.prisma && react-router build",
-    "start": "prisma migrate resolve --applied 0_init --schema=./prisma/schema.prisma || true; prisma migrate deploy --schema=./prisma/schema.prisma && react-router-serve ./build/server/index.js"
+    "start": "prisma migrate deploy --schema=./prisma/schema.prisma && react-router-serve ./build/server/index.js"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
