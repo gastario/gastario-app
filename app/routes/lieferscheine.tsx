@@ -27,6 +27,7 @@ function emptyData(error: string | null = null) {
   return {
     tenantName: "Gastario",
     orders: [],
+    savedNotes: [],
     stats: {
       orders: 0,
       positions: 0,
@@ -57,6 +58,29 @@ export async function loader({ request }: { request: Request }) {
 
     const requestedOrderId =
       url.searchParams.get("orderId") || "";
+
+    const savedNotes = await prisma.deliveryNote.findMany({
+      where: {
+        tenantId: access.tenantId,
+      },
+      include: {
+        order: {
+          select: {
+            id: true,
+            orderNumber: true,
+            customerName: true,
+            deliveryDate: true,
+            deliveryTimeText: true,
+            deliveryAddress: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: {
+        generatedAt: "desc",
+      },
+      take: 500,
+    });
 
     const orders = await prisma.order.findMany({
       where: {
@@ -108,6 +132,7 @@ export async function loader({ request }: { request: Request }) {
         access.tenant?.name || "Gastario",
       selectedDate,
       orders: relevantOrders,
+      savedNotes,
       stats: {
         orders: relevantOrders.length,
         positions: relevantOrders.reduce(
@@ -195,6 +220,133 @@ export default function DeliveryNotesPage() {
           <small data-trend="bereit">Liste</small>
         </article>
       </section>
+
+
+      {/* gastario-delivery-note-archive-v3-20260713 */}
+      <section className="panel deliveryNoteArchivePanel">
+        <div className="deliveryNoteArchiveHeader">
+          <div>
+            <p className="eyebrow">PDF-Archiv</p>
+            <h2>Gespeicherte Lieferscheine</h2>
+            <p>
+              Dauerhaft archivierte Lieferscheine aus bevorstehenden
+              und vergangenen Aufträgen.
+            </p>
+          </div>
+
+          <div className="deliveryNoteArchiveCount">
+            <strong>{data.savedNotes.length}</strong>
+            <span>Dokumente</span>
+          </div>
+        </div>
+
+        {data.savedNotes.length === 0 ? (
+          <div className="deliveryNoteArchiveEmpty">
+            <strong>Noch keine PDF-Lieferscheine gespeichert.</strong>
+            <p>
+              Beim Übernehmen eines Auftrags wird der Lieferschein
+              automatisch erzeugt und hier angezeigt.
+            </p>
+          </div>
+        ) : (
+          <div className="deliveryNoteArchiveList">
+            <div className="deliveryNoteArchiveHead">
+              <span>Lieferschein</span>
+              <span>Kunde</span>
+              <span>Lieferung</span>
+              <span>Status</span>
+              <span>Erstellt</span>
+              <span>Aktion</span>
+            </div>
+
+            {data.savedNotes.map((note: any) => {
+              const status = String(note.order?.status || "");
+
+              const statusLabel =
+                status === "CONFIRMED"
+                  ? "Bestätigt"
+                  : status === "IN_PRODUCTION"
+                    ? "In Produktion"
+                    : status === "PACKING_OPEN"
+                      ? "Packen"
+                      : status === "DELIVERED"
+                        ? "Ausgeliefert"
+                        : status || "-";
+
+              return (
+                <article
+                  className="deliveryNoteArchiveRow"
+                  key={note.id}
+                >
+                  <div>
+                    <strong>{note.number}</strong>
+                    <small>
+                      Auftrag {note.order?.orderNumber || "-"}
+                    </small>
+                  </div>
+
+                  <div>
+                    <strong>
+                      {note.order?.customerName || "Ohne Kunde"}
+                    </strong>
+                    <small>
+                      {note.order?.deliveryAddress || "-"}
+                    </small>
+                  </div>
+
+                  <div>
+                    <strong>
+                      {formatDate(note.order?.deliveryDate)}
+                    </strong>
+                    <small>
+                      {note.order?.deliveryTimeText || "-"} Uhr
+                    </small>
+                  </div>
+
+                  <span
+                    className={
+                      "deliveryNoteArchiveStatus status-" +
+                      status.toLowerCase().replace(/_/g, "-")
+                    }
+                  >
+                    {statusLabel}
+                  </span>
+
+                  <div>
+                    <strong>
+                      {new Date(
+                        note.generatedAt
+                      ).toLocaleDateString("de-DE")}
+                    </strong>
+                    <small>
+                      {new Date(
+                        note.generatedAt
+                      ).toLocaleTimeString("de-DE", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })} Uhr
+                    </small>
+                  </div>
+
+                  <a
+                    className="deliveryNotePdfButton"
+                    href={
+                      "/lieferscheine/" +
+                      note.orderId +
+                      "/pdf"
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    PDF öffnen
+                  </a>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
 
       <section className="panel">
         <div className="panelHeader">
@@ -720,6 +872,215 @@ export default function DeliveryNotesPage() {
            */
           .deliveryNotesPrintRoot a::after {
             content: none !important;
+          }
+        }
+      `}</style>
+
+      <style>{`
+        .deliveryNoteArchivePanel {
+          margin: 22px 0;
+          padding: 24px;
+          border: 1px solid #d7e4df;
+          border-radius: 20px;
+          background: #ffffff;
+          box-shadow: 0 14px 34px rgba(15, 23, 42, .055);
+        }
+
+        .deliveryNoteArchiveHeader {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 22px;
+        }
+
+        .deliveryNoteArchiveHeader h2 {
+          margin: 3px 0 0;
+        }
+
+        .deliveryNoteArchiveHeader p:not(.eyebrow) {
+          max-width: 680px;
+          margin: 7px 0 0;
+          color: #687a73;
+          font-size: 13px;
+          font-weight: 650;
+          line-height: 1.5;
+        }
+
+        .deliveryNoteArchiveCount {
+          display: grid;
+          min-width: 105px;
+          padding: 13px 16px;
+          border: 1px solid #cae0d7;
+          border-radius: 14px;
+          background: linear-gradient(
+            180deg,
+            #f7fcfa 0%,
+            #eaf6f1 100%
+          );
+          text-align: right;
+        }
+
+        .deliveryNoteArchiveCount strong {
+          color: #076b54;
+          font-size: 25px;
+          line-height: 1;
+        }
+
+        .deliveryNoteArchiveCount span {
+          margin-top: 6px;
+          color: #64766f;
+          font-size: 9px;
+          font-weight: 850;
+          letter-spacing: .06em;
+          text-transform: uppercase;
+        }
+
+        .deliveryNoteArchiveEmpty {
+          margin-top: 20px;
+          padding: 30px;
+          border: 1px dashed #c8d9d2;
+          border-radius: 16px;
+          background: #f8fbfa;
+          text-align: center;
+        }
+
+        .deliveryNoteArchiveEmpty p {
+          margin: 7px 0 0;
+          color: #6c7d76;
+        }
+
+        .deliveryNoteArchiveList {
+          display: grid;
+          gap: 11px;
+          margin-top: 20px;
+        }
+
+        .deliveryNoteArchiveHead,
+        .deliveryNoteArchiveRow {
+          display: grid;
+          grid-template-columns:
+            minmax(160px, 1fr)
+            minmax(175px, 1.2fr)
+            minmax(110px, .72fr)
+            minmax(105px, .7fr)
+            minmax(105px, .72fr)
+            110px;
+          gap: 15px;
+          align-items: center;
+        }
+
+        .deliveryNoteArchiveHead {
+          min-height: 40px;
+          padding: 0 16px;
+          border: 1px solid #d7e3de;
+          border-radius: 11px;
+          background: #f2f7f5;
+          color: #60736b;
+          font-size: 9px;
+          font-weight: 850;
+          letter-spacing: .055em;
+          text-transform: uppercase;
+        }
+
+        .deliveryNoteArchiveRow {
+          position: relative;
+          min-height: 82px;
+          padding: 14px 16px;
+          border: 1px solid #d8e4df;
+          border-radius: 16px;
+          background: #ffffff;
+          box-shadow: 0 8px 22px rgba(15, 23, 42, .045);
+        }
+
+        .deliveryNoteArchiveRow::before {
+          content: "";
+          position: absolute;
+          top: 14px;
+          bottom: 14px;
+          left: 0;
+          width: 3px;
+          border-radius: 0 5px 5px 0;
+          background: #19a982;
+        }
+
+        .deliveryNoteArchiveRow > div {
+          display: grid;
+          gap: 4px;
+          min-width: 0;
+        }
+
+        .deliveryNoteArchiveRow strong,
+        .deliveryNoteArchiveRow small {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .deliveryNoteArchiveRow strong {
+          color: #10231c;
+          font-size: 12px;
+          font-weight: 850;
+        }
+
+        .deliveryNoteArchiveRow small {
+          color: #73827d;
+          font-size: 9px;
+          font-weight: 650;
+        }
+
+        .deliveryNoteArchiveStatus {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: fit-content;
+          min-height: 29px;
+          padding: 0 10px;
+          border: 1px solid #b8dfd0;
+          border-radius: 8px;
+          background: #edf9f4;
+          color: #08705a;
+          font-size: 9px;
+          font-weight: 850;
+        }
+
+        .deliveryNotePdfButton {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 40px;
+          padding: 0 13px;
+          border: 1px solid #087c60;
+          border-radius: 10px;
+          background: linear-gradient(
+            180deg,
+            #0b8968 0%,
+            #087458 100%
+          );
+          color: #ffffff;
+          font-size: 10px;
+          font-weight: 850;
+          text-decoration: none;
+          box-shadow: 0 7px 16px rgba(8, 124, 96, .17);
+        }
+
+        @media (max-width: 1100px) {
+          .deliveryNoteArchiveHead {
+            display: none;
+          }
+
+          .deliveryNoteArchiveRow {
+            grid-template-columns:
+              repeat(2, minmax(0, 1fr));
+          }
+
+          .deliveryNotePdfButton {
+            grid-column: 1 / -1;
+          }
+        }
+
+        @media print {
+          .deliveryNoteArchivePanel {
+            display: none !important;
           }
         }
       `}</style>
