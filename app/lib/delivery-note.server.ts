@@ -32,6 +32,25 @@ export async function ensureDeliveryNoteForOrder(
     throw new Error("Auftrag nicht gefunden.");
   }
 
+  /*
+   * gastario-complete-delivery-address-20260713
+   * Die vollständigere Adresse aus Auftrag oder Kundenstamm verwenden.
+   */
+  const orderDeliveryAddress =
+    String(order.deliveryAddress || "").trim();
+
+  const customerAddress =
+    String(order.customer?.address || "").trim();
+
+  const completeDeliveryAddress =
+    orderDeliveryAddress && customerAddress
+      ? (
+          orderDeliveryAddress.length >= customerAddress.length
+            ? orderDeliveryAddress
+            : customerAddress
+        )
+      : orderDeliveryAddress || customerAddress || null;
+
   const allowedStatuses = [
     "CONFIRMED",
     "IN_PRODUCTION",
@@ -54,12 +73,14 @@ export async function ensureDeliveryNoteForOrder(
     orderNumber: order.orderNumber,
     tenantName: order.tenant.name,
     customerName: order.customerName,
-    deliveryAddress: order.deliveryAddress,
+    deliveryAddress: completeDeliveryAddress,
     contactName: order.contactName,
     contactPhone:
-      order.contactPhone ||
-      order.customer?.phone ||
-      null,
+      String(
+        order.contactPhone ||
+        order.customer?.phone ||
+        ""
+      ).trim() || null,
     deliveryDate: order.deliveryDate,
     deliveryTimeText: order.deliveryTimeText,
     notes: order.notes,
