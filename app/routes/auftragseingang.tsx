@@ -1176,9 +1176,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
             })}
           </nav>
 
-          {!isEmailFocusedView ? (
-            <>
-              <span
+          <span
             className="inboxNavigationDivider"
             aria-hidden="true"
           />
@@ -1205,8 +1203,6 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
             );
           })}
         </nav>
-            </>
-          ) : null}
         </div>
 {/* gastario-restored-email-focused-view-20260713 */}
         {isEmailFocusedView ? (
@@ -1302,7 +1298,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                           to={"/email-pruefung/" + mail.id}
                           className="leadPrimaryAction"
                         >
-                          \u00d6ffnen
+                          Öffnen
                         </Link>
 
                         {!isIgnoredMailView ? (
