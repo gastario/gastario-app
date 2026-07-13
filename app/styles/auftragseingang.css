@@ -3155,3 +3155,30 @@
     display: none !important;
   }
 }
+
+/* gastario-category-form-navigation-20260713 */
+
+.inboxCombinedNavigation .finalCategoryForm {
+  display: inline-flex !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  position: relative !important;
+  z-index: 100 !important;
+  pointer-events: auto !important;
+}
+
+.inboxCombinedNavigation .finalCategoryForm .finalCategoryTab {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  font-family: inherit !important;
+  position: relative !important;
+  z-index: 101 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.inboxCombinedNavigation .finalCategoryForm .finalCategoryTab > * {
+  pointer-events: none !important;
+}

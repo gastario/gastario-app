@@ -1123,30 +1123,55 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                 data.emailBuckets?.hidden || 0,
               ],
             ].map(([key, label, count]) => {
-              const params = new URLSearchParams();
-
-              params.set("emailCategory", String(key));
-              if (data.dateRange) params.set("dateRange", data.dateRange);
-              if (data.searchQuery) params.set("q", data.searchQuery);
-              if (data.selectedDate) params.set("date", data.selectedDate);
-
               const active = data.selectedEmailCategory === key;
 
               return (
-                <a
+                <Form
                   key={String(key)}
-                  href={"/auftragseingang?" + params.toString()}
-                  className={active ? "finalCategoryTab active" : "finalCategoryTab"}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    window.location.assign(
-                      "/auftragseingang?" + params.toString()
-                    );
-                  }}
+                  method="get"
+                  action="/auftragseingang"
+                  className="finalCategoryForm"
                 >
-                  <span>{label}</span>
-                  <strong>{count}</strong>
-                </a>
+                  <input
+                    type="hidden"
+                    name="emailCategory"
+                    value={String(key)}
+                  />
+
+                  <input
+                    type="hidden"
+                    name="dateRange"
+                    value={data.dateRange || "last7"}
+                  />
+
+                  {data.searchQuery ? (
+                    <input
+                      type="hidden"
+                      name="q"
+                      value={data.searchQuery}
+                    />
+                  ) : null}
+
+                  {data.selectedDate ? (
+                    <input
+                      type="hidden"
+                      name="date"
+                      value={data.selectedDate}
+                    />
+                  ) : null}
+
+                  <button
+                    type="submit"
+                    className={
+                      active
+                        ? "finalCategoryTab active"
+                        : "finalCategoryTab"
+                    }
+                  >
+                    <span>{label}</span>
+                    <strong>{count}</strong>
+                  </button>
+                </Form>
               );
             })}
           </nav>
