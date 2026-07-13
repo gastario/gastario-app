@@ -1204,6 +1204,133 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
           })}
         </nav>
         </div>
+{/* gastario-restored-email-focused-view-20260713 */}
+        {isEmailFocusedView ? (
+          <section className="leadEmailPanel">
+            <div className="leadEmailHeader">
+              <div>
+                <p>{inboxSubtitle}</p>
+                <h2>{inboxHeadline}</h2>
+              </div>
+
+              <strong>
+                {sortedEmails.length}{" "}
+                {sortedEmails.length === 1 ? "Eingang" : "Eingänge"}
+              </strong>
+            </div>
+
+            {sortedEmails.length === 0 ? (
+              <div className="leadEmpty">
+                Keine passenden E-Mails in dieser Ansicht.
+              </div>
+            ) : (
+              <div className="leadEmailGrid">
+                {sortedEmails.map((mail: any) => {
+                  const extracted = mail.extractedJson || {};
+                  const aiDecision = extracted.aiDecision || {};
+
+                  const bodyPreview = String(mail.bodyText || "")
+                    .replace(/\s+/g, " ")
+                    .trim()
+                    .slice(0, 260);
+
+                  const receivedAt = mail.receivedAt
+                    ? new Date(mail.receivedAt)
+                    : null;
+
+                  const sender =
+                    mail.fromName ||
+                    mail.fromAddress ||
+                    mail.fromEmail ||
+                    mail.sender ||
+                    "Absender unbekannt";
+
+                  return (
+                    <article className="leadEmailCard" key={mail.id}>
+                      <div className="leadEmailTop">
+                        <span className="leadTypePill">
+                          {isInquiryView
+                            ? "Anfrage"
+                            : isReviewMailView
+                              ? "Unklar"
+                              : isIgnoredMailView
+                                ? "Ignoriert"
+                                : emailCategoryLabel(
+                                    classifyIncomingEmail(mail)
+                                  )}
+                        </span>
+
+                        <span>
+                          {receivedAt &&
+                          !Number.isNaN(receivedAt.getTime())
+                            ? receivedAt.toLocaleDateString("de-DE")
+                            : "-"}
+                        </span>
+                      </div>
+
+                      <h3>{mail.subject || "Ohne Betreff"}</h3>
+
+                      <div className="leadEmailSender">
+                        {String(sender)}
+                      </div>
+
+                      {aiDecision?.mailType ? (
+                        <div className="leadAiBox">
+                          <strong>KI: {aiDecision.mailType}</strong>
+
+                          <span>
+                            {Math.round(
+                              Number(aiDecision.confidence || 0) * 100
+                            )}{" "}
+                            % ·{" "}
+                            {aiDecision.reason ||
+                              "Keine Begründung gespeichert"}
+                          </span>
+                        </div>
+                      ) : null}
+
+                      <p className="leadPreview">
+                        {bodyPreview || "Kein Mailtext gespeichert."}
+                      </p>
+
+                      <div className="leadEmailActions">
+                        <Link
+                          to={"/email-pruefung/" + mail.id}
+                          className="leadPrimaryAction"
+                        >
+                          Öffnen
+                        </Link>
+
+                        {!isIgnoredMailView ? (
+                          <Form method="post">
+                            <input
+                              type="hidden"
+                              name="intent"
+                              value="hideIncomingEmail"
+                            />
+
+                            <input
+                              type="hidden"
+                              name="emailId"
+                              value={mail.id}
+                            />
+
+                            <button
+                              type="submit"
+                              className="leadSecondaryAction"
+                            >
+                              Ausblenden
+                            </button>
+                          </Form>
+                        ) : null}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        ) : (
 <section className="finalOrdersShell finalOrdersSplitShell">
           <div className="finalOrdersHead">
             <div>
@@ -1366,6 +1493,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
             </div>
           ) : null}
         </section>
+        )}
 </div>
 
 
