@@ -8,3 +8,6 @@
 
 *.bak
 debug-db.cjs
+
+*.bak
+debug-db.cjs
