@@ -133,6 +133,97 @@ export function classifyIncomingMailWithRules(params: {
   const combined = `${subject} ${sender} ${text}`;
   const lower = combined.toLowerCase();
 
+  /*
+   * gastario-strong-catering-inquiry-20260713
+   * Erkennt konkrete Catering-Anfragen auch ohne PDF.
+   */
+  const strongInquiryPhrases = [
+    "anfrage catering",
+    "catering-anfrage",
+    "catering anfrage",
+    "catering-partner",
+    "catering partner",
+    "bitte ein angebot",
+    "angebot erstellen",
+    "angebot zukommen",
+    "unverbindliches angebot",
+    "wir benötigen",
+    "wir benoetigen",
+    "wir suchen nach einem catering",
+    "suche nach einem catering",
+    "verpflegung unseres messeteams",
+    "verpflegung unseres teams",
+  ];
+
+  const cateringInquirySignals = [
+    "personen",
+    "pro person",
+    "budget",
+    "lieferung",
+    "mittagessen",
+    "frühstück",
+    "fruehstueck",
+    "wraps",
+    "bowls",
+    "salate",
+    "sandwiches",
+    "vegetarisch",
+    "vegan",
+    "messestand",
+    "messe",
+    "expo",
+    "event",
+    "speisekarte",
+    "cateringbroschüre",
+    "cateringbroschuere",
+  ];
+
+  const hasStrongInquiryPhrase =
+    strongInquiryPhrases.some((phrase) =>
+      lower.includes(phrase)
+    );
+
+  const cateringInquirySignalCount =
+    cateringInquirySignals.filter((signal) =>
+      lower.includes(signal)
+    ).length;
+
+  const hasExplicitOrderConfirmation = [
+    "auftragsbestätigung",
+    "auftragsbestaetigung",
+    "bestellbestätigung",
+    "bestellbestaetigung",
+    "order confirmation",
+    "booking confirmation",
+    "verbindliche buchung",
+    "verbindlich gebucht",
+  ].some((phrase) => lower.includes(phrase));
+
+  if (
+    !hasExplicitOrderConfirmation &&
+    (
+      hasStrongInquiryPhrase ||
+      (
+        lower.includes("anfrage") &&
+        cateringInquirySignalCount >= 2
+      ) ||
+      cateringInquirySignalCount >= 5
+    )
+  ) {
+    return {
+      mode: "rules",
+      mailType: "INQUIRY",
+      confidence: 0.98,
+      shouldCreateOrder: false,
+      shouldCreateInquiry: true,
+      reason:
+        "Regelprüfung: konkrete Catering-Anfrage mit Angaben zu Personen, Budget, Lieferung oder Speisen erkannt.",
+      source: params.source || null,
+      items: [],
+      warnings: [],
+    };
+  }
+
   const hasOrderWords = hasAny(lower, [
     "auftragsbestÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤tigung",
     "auftragsbestaetigung",
