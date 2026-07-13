@@ -146,6 +146,7 @@ export default function DeliveryNotesPage() {
 
   return (
     <AppLayout>
+      <div className="deliveryNotesPrintRoot">
       <style>{printCss}</style>
       <header className="topbar">
         <div>
@@ -539,6 +540,185 @@ export default function DeliveryNotesPage() {
            * Links nicht mit URL hinter dem Text drucken.
            */
           a::after {
+            content: none !important;
+          }
+        }
+      `}</style>
+      </div>
+
+      <style>{`
+        /* gastario-delivery-note-print-root-fix-20260713 */
+
+        @page {
+          size: A4 portrait;
+          margin: 8mm;
+        }
+
+        @media print {
+          html,
+          body {
+            width: auto !important;
+            min-width: 0 !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            print-color-adjust: exact !important;
+            -webkit-print-color-adjust: exact !important;
+          }
+
+          /*
+           * Zuerst alles unsichtbar machen und anschließend nur
+           * den echten Lieferschein wieder einblenden.
+           */
+          body * {
+            visibility: hidden !important;
+          }
+
+          .deliveryNotesPrintRoot,
+          .deliveryNotesPrintRoot * {
+            visibility: visible !important;
+          }
+
+          .deliveryNotesPrintRoot {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            display: block !important;
+            width: 100% !important;
+            max-width: none !important;
+            min-width: 0 !important;
+            height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            background: #ffffff !important;
+
+            /*
+             * Das Bildschirmdesign ist großzügig. Für A4 wird es
+             * proportional verkleinert, ohne Inhalte abzuschneiden.
+             */
+            zoom: 0.80 !important;
+          }
+
+          aside,
+          nav,
+          header,
+          .sidebar,
+          .appSidebar,
+          .layoutSidebar,
+          .mobileNavigation,
+          .mobileMenuButton,
+          .topbar,
+          .topActions {
+            display: none !important;
+          }
+
+          /*
+           * Bildschirm-Abstände des AppLayouts vollständig entfernen.
+           */
+          main,
+          [role="main"],
+          .appContent,
+          .layoutContent,
+          .content,
+          .pageContent {
+            position: static !important;
+            width: 100% !important;
+            max-width: none !important;
+            min-width: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            background: #ffffff !important;
+          }
+
+          /*
+           * Bedienknöpfe gehören nicht auf den Lieferschein.
+           */
+          button,
+          .ghostButton,
+          .primaryButton,
+          .secondaryButton,
+          .printButton,
+          .noPrint,
+          a[href^="/auftrag-pruefung"],
+          a[href^="/auftraege"],
+          a[href^="/lieferungen"] {
+            display: none !important;
+          }
+
+          /*
+           * Die alte Druckregel zwang fast jeden div-Block auf eine
+           * neue Seite. Das wird hier ausdrücklich zurückgesetzt.
+           */
+          .deliveryNotesPrintRoot div,
+          .deliveryNotesPrintRoot section,
+          .deliveryNotesPrintRoot article {
+            break-inside: auto !important;
+            page-break-inside: auto !important;
+          }
+
+          /*
+           * Nur sinnvolle Einheiten zusammenhalten.
+           */
+          .deliveryNotesPrintRoot table,
+          .deliveryNotesPrintRoot tr,
+          .deliveryNotesPrintRoot thead,
+          .deliveryNotesPrintRoot tbody {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+          }
+
+          .deliveryNotesPrintRoot table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+          }
+
+          .deliveryNotesPrintRoot thead {
+            display: table-header-group !important;
+          }
+
+          .deliveryNotesPrintRoot th,
+          .deliveryNotesPrintRoot td {
+            padding: 6px 8px !important;
+            border-color: #aeb8b4 !important;
+            color: #000000 !important;
+            font-size: 10px !important;
+            line-height: 1.25 !important;
+          }
+
+          .deliveryNotesPrintRoot th {
+            background: #eef2f0 !important;
+          }
+
+          .deliveryNotesPrintRoot h1,
+          .deliveryNotesPrintRoot h2,
+          .deliveryNotesPrintRoot h3,
+          .deliveryNotesPrintRoot p,
+          .deliveryNotesPrintRoot span,
+          .deliveryNotesPrintRoot strong {
+            color: #000000 !important;
+          }
+
+          .deliveryNotesPrintRoot h2 {
+            font-size: 21px !important;
+            line-height: 1.05 !important;
+          }
+
+          .deliveryNotesPrintRoot section,
+          .deliveryNotesPrintRoot article {
+            max-width: none !important;
+            box-shadow: none !important;
+            background: #ffffff !important;
+          }
+
+          /*
+           * Browser soll hinter Links keine URL ergänzen.
+           */
+          .deliveryNotesPrintRoot a::after {
             content: none !important;
           }
         }
