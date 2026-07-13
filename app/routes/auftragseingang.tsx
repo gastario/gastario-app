@@ -3784,7 +3784,239 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
             grid-template-columns: 1fr !important;
           }
         }
-`}</style>
+`}
+        {`
+        /* gastario-softer-order-design-20260713 */
+
+        .finalOrdersHeader h2,
+        .finalSelectedTop h2,
+        .finalSelectedTop h3,
+        .finalSelectedPanel h2,
+        .finalSelectedPanel h3 {
+          font-weight: 720 !important;
+          letter-spacing: -0.025em !important;
+        }
+
+        .finalOrdersHeader h2 {
+          font-size: 25px !important;
+        }
+
+        .finalOrdersHeader p,
+        .finalSelectedPanel p,
+        .finalSelectedPanel span,
+        .finalOrderRow span,
+        .finalOrderRow p {
+          font-weight: 500 !important;
+        }
+
+        .finalOrderRow {
+          min-height: 112px !important;
+          padding: 18px 20px !important;
+          border: 1px solid #dce6eb !important;
+          border-radius: 18px !important;
+          background: #ffffff !important;
+          box-shadow: 0 5px 18px rgba(15, 23, 42, 0.035) !important;
+          transition:
+            border-color 0.16s ease,
+            box-shadow 0.16s ease,
+            transform 0.16s ease !important;
+        }
+
+        .finalOrderRow:hover {
+          border-color: #b9d7cf !important;
+          box-shadow: 0 10px 26px rgba(15, 23, 42, 0.065) !important;
+          transform: translateY(-1px);
+        }
+
+        .finalOrderRow strong {
+          font-weight: 650 !important;
+        }
+
+        .finalOrderRow h3,
+        .finalOrderRow h4 {
+          font-weight: 720 !important;
+          letter-spacing: -0.02em !important;
+        }
+
+        .finalOrderCustomer,
+        .finalOrderCustomerName {
+          font-size: 18px !important;
+          font-weight: 720 !important;
+          line-height: 1.2 !important;
+        }
+
+        .finalOrderNumber {
+          font-size: 12px !important;
+          font-weight: 650 !important;
+          letter-spacing: 0.045em !important;
+          color: #64748b !important;
+        }
+
+        .finalOrderItems,
+        .finalOrderItems li,
+        .finalOrderItem {
+          font-size: 14px !important;
+          font-weight: 540 !important;
+          line-height: 1.45 !important;
+        }
+
+        .finalOrderItems strong,
+        .finalOrderItem strong {
+          font-weight: 680 !important;
+        }
+
+        .finalOrderAmount,
+        .finalOrderTotal {
+          font-size: 24px !important;
+          font-weight: 740 !important;
+          letter-spacing: -0.035em !important;
+        }
+
+        .finalOrderDate {
+          font-size: 16px !important;
+          font-weight: 680 !important;
+        }
+
+        .finalOrderStatus,
+        .finalOrderBadge {
+          font-size: 11px !important;
+          font-weight: 680 !important;
+          letter-spacing: 0.025em !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode {
+          padding: 30px 24px 38px !important;
+          background: #fbfcfd !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel {
+          width: min(860px, 100%) !important;
+          max-width: 860px !important;
+          padding: 0 !important;
+          border: 1px solid #d8e4e9 !important;
+          border-radius: 22px !important;
+          background: #ffffff !important;
+          box-shadow: 0 18px 46px rgba(15, 23, 42, 0.085) !important;
+          overflow: hidden !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel::before {
+          height: 4px !important;
+          background: #0e9f7b !important;
+        }
+
+        .finalSelectedTop {
+          margin: 0 !important;
+          padding: 24px 26px 20px !important;
+          background: linear-gradient(180deg, #ffffff 0%, #f8fbfa 100%) !important;
+          border-bottom: 1px solid #e2e9ed !important;
+        }
+
+        .finalSelectedTop h2,
+        .finalSelectedTop h3 {
+          margin-top: 8px !important;
+          font-size: 24px !important;
+          font-weight: 720 !important;
+        }
+
+        .finalSelectedFacts {
+          gap: 12px !important;
+          padding: 20px 26px !important;
+        }
+
+        .finalSelectedFact {
+          min-height: 94px !important;
+          padding: 16px 17px !important;
+          border: 1px solid #e0e8ec !important;
+          border-radius: 16px !important;
+          background: #fbfcfd !important;
+          box-shadow: none !important;
+        }
+
+        .finalSelectedFact strong {
+          font-size: 11px !important;
+          font-weight: 680 !important;
+          letter-spacing: 0.045em !important;
+        }
+
+        .finalSelectedFact span {
+          font-size: 14px !important;
+          font-weight: 560 !important;
+          line-height: 1.45 !important;
+        }
+
+        .finalSelectedPositions {
+          padding: 0 26px 18px !important;
+        }
+
+        .finalSelectedPositions h3 {
+          font-size: 15px !important;
+          font-weight: 700 !important;
+        }
+
+        .finalSelectedPosition {
+          padding: 12px 6px !important;
+          border-bottom: 1px solid #edf1f3 !important;
+          font-size: 14px !important;
+          font-weight: 540 !important;
+        }
+
+        .finalSelectedPosition strong {
+          font-weight: 680 !important;
+        }
+
+        .finalSelectedNotice {
+          margin: 0 26px 18px !important;
+          padding: 13px 15px !important;
+          border: 1px solid #d6e9e2 !important;
+          border-radius: 14px !important;
+          background: #f3faf7 !important;
+          font-size: 13px !important;
+          font-weight: 550 !important;
+        }
+
+        .finalSelectedActions {
+          gap: 10px !important;
+          padding: 18px 26px 24px !important;
+          background: #fbfcfd !important;
+          border-top: 1px solid #e8edef !important;
+        }
+
+        .finalSelectedActions a,
+        .finalSelectedActions button {
+          min-height: 44px !important;
+          border-radius: 12px !important;
+          font-size: 14px !important;
+          font-weight: 650 !important;
+          box-shadow: none !important;
+        }
+
+        .finalSelectedActions a:first-child {
+          background: #ffffff !important;
+          color: #334155 !important;
+          border: 1px solid #d3dde3 !important;
+        }
+
+        .finalSelectedActions a:not(:first-child),
+        .finalSelectedActions button:not(:last-child) {
+          background: #0e9f7b !important;
+          color: #ffffff !important;
+          border: 1px solid #0e9f7b !important;
+        }
+
+        .finalSelectedActions > *:last-child {
+          background: #ffffff !important;
+          color: #b42318 !important;
+          border: 1px solid #efc5c2 !important;
+        }
+
+        .finalSelectedBadge,
+        .finalSelectedSourceBadge {
+          font-weight: 650 !important;
+          box-shadow: none !important;
+        }
+        `}
+</style>
 </AppLayout>
   );
 }
