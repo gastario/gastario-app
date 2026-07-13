@@ -539,3 +539,21 @@
     flex-direction: column;
   }
 }
+
+.ordersPage .orderActions {
+  grid-template-columns:
+    minmax(75px, .75fr)
+    minmax(145px, 1.45fr)
+    40px;
+  align-items: stretch;
+}
+
+.ordersPage .orderActions
+.deliveryDocumentButton {
+  height: 100%;
+}
+
+.ordersPage .orderActions
+.primaryGhostButton {
+  min-height: 44px;
+}

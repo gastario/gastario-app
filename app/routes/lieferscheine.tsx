@@ -1,6 +1,8 @@
 ﻿import { Link, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
+import DeliveryNoteButton from "../components/DeliveryNoteButton";
 import lieferscheineStyles from "../styles/lieferscheine.css?url";
+import deliveryNoteDocumentStyles from "../styles/delivery-note-document.css?url";
 
 function todayInput() {
   return new Date().toISOString().slice(0, 10);
@@ -42,6 +44,10 @@ export function links() {
     {
       rel: "stylesheet",
       href: lieferscheineStyles,
+    },
+    {
+      rel: "stylesheet",
+      href: deliveryNoteDocumentStyles,
     },
   ];
 }
@@ -381,31 +387,15 @@ export default function DeliveryNotesPage() {
                   </div>
 
                   <div className="deliveryNoteArchiveActions">
-                    <a
-                      className="deliveryNotePdfButton"
-                      href={
-                        "/lieferscheine/" +
-                        note.orderId +
-                        "/pdf"
-                      }
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      PDF öffnen
-                    </a>
+                    <DeliveryNoteButton
+                      orderId={note.orderId}
+                    />
 
-                    <a
-                      className="deliveryNoteRefreshButton"
-                      href={
-                        "/lieferscheine/" +
-                        note.orderId +
-                        "/pdf?refresh=1"
-                      }
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Neu erzeugen
-                    </a>
+                    <DeliveryNoteButton
+                      orderId={note.orderId}
+                      refresh
+                      compact
+                    />
                   </div>
                 </article>
               );

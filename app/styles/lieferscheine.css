@@ -406,3 +406,16 @@ p:not(.eyebrow) {
     display: none !important;
   }
 }
+
+.deliveryNotesPage
+.deliveryNoteArchiveActions {
+  display: grid;
+  min-width: 145px;
+  gap: 7px;
+}
+
+.deliveryNotesPage
+.deliveryNoteArchiveActions
+.deliveryDocumentButton {
+  width: 100%;
+}

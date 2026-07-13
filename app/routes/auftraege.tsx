@@ -1,6 +1,8 @@
 ﻿import { Form, Link, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
+import DeliveryNoteButton from "../components/DeliveryNoteButton";
 import auftraegeStyles from "../styles/auftraege.css?url";
+import deliveryNoteDocumentStyles from "../styles/delivery-note-document.css?url";
 
 const STATUSES = [
   { value: "", label: "Alle" },
@@ -82,6 +84,10 @@ export function links() {
     {
       rel: "stylesheet",
       href: auftraegeStyles,
+    },
+    {
+      rel: "stylesheet",
+      href: deliveryNoteDocumentStyles,
     },
   ];
 }
@@ -681,14 +687,10 @@ export default function OrdersPage() {
                       Öffnen
                     </Link>
 
-                    <a
-                      className="ghostButton"
-                      href={"/lieferscheine/" + order.id + "/pdf"}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Lieferschein PDF
-                    </a>
+                    <DeliveryNoteButton
+                      orderId={order.id}
+                      compact
+                    />
 
                     <Form method="post">
                       <input type="hidden" name="intent" value="deleteOrder" />
