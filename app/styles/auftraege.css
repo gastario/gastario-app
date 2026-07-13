@@ -1,0 +1,541 @@
+﻿.ordersPage {
+  --order-green: #08775c;
+  --order-green-dark: #05634a;
+  --order-text: #14241e;
+  --order-muted: #718079;
+  --order-border: #d9e4df;
+  --order-surface: #ffffff;
+  --order-background: #f4f8f6;
+}
+
+.ordersPage .topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 26px;
+}
+
+.ordersPage .topbar .eyebrow {
+  margin: 0 0 7px;
+  color: var(--order-green);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.ordersPagePast .topbar .eyebrow {
+  color: #71807a;
+}
+
+.ordersPage .topbar h1 {
+  margin: 0;
+  color: var(--order-text);
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: -.045em;
+}
+
+.ordersPage .pageSubline {
+  display: block;
+  max-width: 720px;
+  margin-top: 9px;
+  color: var(--order-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.ordersPage .topActions {
+  display: flex;
+  gap: 10px;
+}
+
+.ordersPage .topActions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 17px;
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 780;
+  text-decoration: none;
+}
+
+.ordersPage .topActions .secondaryButton {
+  border: 1px solid var(--order-border);
+  background: #ffffff;
+  color: #40564e;
+}
+
+.ordersPage .topActions .primaryButton {
+  border: 1px solid var(--order-green);
+  background: linear-gradient(
+    180deg,
+    #0b8b69 0%,
+    #087158 100%
+  );
+  color: #ffffff;
+  box-shadow: 0 9px 20px rgba(8, 119, 92, .18);
+}
+
+.ordersPage .orderSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 24px;
+}
+
+.ordersPage .metricCard {
+  position: relative;
+  min-height: 132px;
+  padding: 21px;
+  overflow: hidden;
+  border: 1px solid var(--order-border);
+  border-radius: 19px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(16, 35, 28, .055);
+}
+
+.ordersPage .metricCard::after {
+  content: "";
+  position: absolute;
+  top: -38px;
+  right: -28px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(21, 166, 124, .1);
+}
+
+.ordersPage .metricCard:nth-child(2)::after {
+  background: rgba(50, 127, 170, .1);
+}
+
+.ordersPage .metricCard:nth-child(3)::after {
+  background: rgba(217, 162, 50, .12);
+}
+
+.ordersPage .metricCard:nth-child(4)::after {
+  background: rgba(118, 130, 124, .1);
+}
+
+.ordersPage .metricCard p {
+  margin: 0 0 11px;
+  color: #53675f;
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.ordersPage .metricCard strong {
+  display: block;
+  color: #10231b;
+  font-size: 31px;
+  line-height: 1;
+  letter-spacing: -.045em;
+}
+
+.ordersPage .metricCard span {
+  display: block;
+  margin-top: 9px;
+  color: #75847f;
+  font-size: 10.5px;
+}
+
+.ordersPage .metricCard small {
+  position: absolute;
+  top: 17px;
+  right: 17px;
+  z-index: 1;
+  padding: 5px 8px;
+  border: 1px solid #cee2da;
+  border-radius: 999px;
+  background: rgba(244, 251, 248, .94);
+  color: var(--order-green);
+  font-size: 8px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.ordersPage .panel {
+  overflow: hidden;
+  border: 1px solid var(--order-border);
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 16px 42px rgba(17, 34, 28, .065);
+}
+
+.ordersPage .panelHeader {
+  padding: 26px 26px 0;
+}
+
+.ordersPage .panelHeader > div:first-child {
+  margin-bottom: 20px;
+}
+
+.ordersPage .panelHeader .eyebrow {
+  margin: 0 0 6px;
+  color: var(--order-green);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.ordersPagePast .panelHeader .eyebrow {
+  color: #71807a;
+}
+
+.ordersPage .panelHeader h2 {
+  margin: 0;
+  color: var(--order-text);
+  font-size: 27px;
+  letter-spacing: -.035em;
+}
+
+.ordersPage .ordersFilterWrap {
+  display: grid;
+  gap: 14px;
+}
+
+.ordersPage .ordersFilterForm {
+  display: grid;
+  grid-template-columns:
+    minmax(260px, 1.5fr)
+    minmax(200px, .8fr)
+    125px
+    125px;
+  gap: 10px;
+  align-items: end;
+  padding: 14px;
+  border: 1px solid #dbe5e1;
+  border-radius: 15px;
+  background: #f5f8f7;
+}
+
+.ordersPage .filterLabel {
+  display: grid;
+  gap: 6px;
+  color: #687a72;
+  font-size: 9px;
+  font-weight: 820;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.ordersPage .filterInput {
+  width: 100%;
+  min-height: 45px;
+  padding: 0 14px;
+  border: 1px solid #cfdbd6;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #243a32;
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.ordersPage .filterInput:focus {
+  border-color: #62b59d;
+  box-shadow: 0 0 0 3px rgba(8, 119, 92, .09);
+}
+
+.ordersPage .ghostButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 39px;
+  padding: 0 13px;
+  border: 1px solid #d2ded9;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #40564e;
+  font-size: 10.5px;
+  font-weight: 760;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ordersPage .ordersFilterForm .ghostButton {
+  min-height: 45px;
+}
+
+.ordersPage .ordersFilterForm .primaryGhostButton {
+  border-color: var(--order-green);
+  background: var(--order-green);
+  color: #ffffff;
+}
+
+.ordersPage .statusFilterGroup {
+  display: inline-flex;
+  width: fit-content;
+  padding: 5px;
+  border: 1px solid #dce5e1;
+  border-radius: 13px;
+  background: #f2f6f4;
+}
+
+.ordersPage .statusFilterGroup .ghostButton {
+  min-width: 108px;
+  border-color: transparent;
+  background: transparent;
+}
+
+.ordersPage .statusFilterGroup .activeFilter {
+  border-color: #bad7cd;
+  background: #ffffff;
+  color: var(--order-green);
+  box-shadow:
+    0 4px 12px rgba(18, 38, 30, .06),
+    inset 0 -2px 0 #13a47f;
+}
+
+.ordersPagePast .statusFilterGroup .activeFilter {
+  border-color: #ccd5d1;
+  color: #52615b;
+  box-shadow:
+    0 4px 12px rgba(18, 38, 30, .05),
+    inset 0 -2px 0 #7d8a85;
+}
+
+.ordersPage .ordersTable {
+  display: grid;
+  gap: 13px;
+  padding: 20px 25px 25px;
+  background: var(--order-background);
+}
+
+.ordersPage .ordersHead,
+.ordersPage .ordersRow {
+  display: grid;
+  grid-template-columns:
+    minmax(155px, .9fr)
+    minmax(150px, .9fr)
+    105px
+    minmax(205px, 1.25fr)
+    105px
+    105px
+    255px;
+  gap: 15px;
+  align-items: center;
+}
+
+.ordersPage .ordersHead {
+  min-height: 41px;
+  padding: 0 18px;
+  border: 1px solid #dce5e1;
+  border-radius: 11px;
+  background: #ffffff;
+  color: #65766f;
+  font-size: 8.5px;
+  font-weight: 850;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.ordersPage .ordersRow {
+  position: relative;
+  min-height: 108px;
+  padding: 18px 18px 18px 23px;
+  overflow: hidden;
+  border: 1px solid #d8e3df;
+  border-radius: 17px;
+  background: #ffffff;
+  box-shadow: 0 7px 19px rgba(19, 35, 29, .045);
+  transition:
+    transform .16s ease,
+    border-color .16s ease,
+    box-shadow .16s ease;
+}
+
+.ordersPage .ordersRow::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 4px;
+  border-radius: 0 5px 5px 0;
+  background: #18a47c;
+}
+
+.ordersPage .ordersRowUpcoming:hover {
+  transform: translateY(-2px);
+  border-color: #9fcbbd;
+  box-shadow: 0 14px 29px rgba(18, 38, 30, .085);
+}
+
+.ordersPage .ordersRowPast {
+  background: linear-gradient(
+    90deg,
+    #f3f6f5 0%,
+    #ffffff 19%
+  );
+}
+
+.ordersPage .ordersRowPast::before {
+  background: #8d9994;
+}
+
+.ordersPage .ordersRowPast:hover {
+  border-color: #bdc9c4;
+  box-shadow: 0 11px 25px rgba(18, 38, 30, .06);
+}
+
+.ordersPage .ordersRow > div {
+  min-width: 0;
+}
+
+.ordersPage .ordersRow strong {
+  display: block;
+  overflow: hidden;
+  color: #13251e;
+  font-size: 12.5px;
+  font-weight: 790;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+}
+
+.ordersPage .ordersRow small {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 5px;
+  color: #75847f;
+  font-size: 9px;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.ordersPage .ordersRow > div:first-child strong {
+  color: #095f48;
+  font-size: 13px;
+}
+
+.ordersPagePast .ordersRow > div:first-child strong {
+  color: #45574f;
+}
+
+.ordersPage .ordersRow > strong {
+  padding: 9px 8px;
+  border-radius: 9px;
+  background: #eff5f2;
+  font-size: 13px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ordersPage .orderStatus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 840;
+}
+
+.ordersPage .orderStatus.success {
+  border: 1px solid #b9dfd1;
+  background: #edf9f4;
+  color: #08705a;
+}
+
+.ordersPage .orderStatus.production {
+  border: 1px solid #bfd8e9;
+  background: #eef6fb;
+  color: #39749b;
+}
+
+.ordersPage .orderStatus.packing {
+  border: 1px solid #ead6a4;
+  background: #fff7e4;
+  color: #916a18;
+}
+
+.ordersPage .orderStatus.neutral {
+  border: 1px solid #d3dcda;
+  background: #f3f5f4;
+  color: #63716c;
+}
+
+.ordersPage .orderActions {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr auto;
+  gap: 8px;
+}
+
+.ordersPage .orderActions form {
+  margin: 0;
+}
+
+.ordersPage .orderActions .ghostButton {
+  width: 100%;
+  min-height: 39px;
+}
+
+.ordersPage .orderActions .primaryGhostButton {
+  border-color: var(--order-green);
+  background: linear-gradient(
+    180deg,
+    #0b8867 0%,
+    #087158 100%
+  );
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(8, 120, 93, .16);
+}
+
+.ordersPagePast .orderActions .primaryGhostButton {
+  border-color: #56665f;
+  background: #56665f;
+  box-shadow: none;
+}
+
+.ordersPage .deleteOrderButton {
+  width: 40px !important;
+  min-width: 40px;
+  padding: 0 !important;
+  overflow: hidden;
+  border-color: #e4c3c3 !important;
+  background: #fff8f8 !important;
+  color: transparent !important;
+  font-size: 0 !important;
+}
+
+.ordersPage .deleteOrderButton::before {
+  content: "×";
+  color: #ad4646;
+  font-size: 19px;
+}
+
+@media (max-width: 1200px) {
+  .ordersPage .ordersHead {
+    display: none;
+  }
+
+  .ordersPage .ordersRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ordersPage .orderActions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 850px) {
+  .ordersPage .orderSummaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ordersPage .ordersFilterForm {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ordersPage .topbar {
+    flex-direction: column;
+  }
+}

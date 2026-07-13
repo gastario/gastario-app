@@ -1,0 +1,408 @@
+﻿.deliveryNotesPage {
+  --note-text: #14241e;
+  --note-muted: #718079;
+  --note-border: #d9e4df;
+  --note-green: #08775c;
+  --note-blue: #347da7;
+  --note-amber: #a9751a;
+  --note-gray: #74817c;
+}
+
+.deliveryNotesPage .topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 26px;
+}
+
+.deliveryNotesPage .topbar .eyebrow {
+  margin: 0 0 7px;
+  color: var(--note-green);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.deliveryNotesPage .topbar h1 {
+  margin: 0;
+  color: var(--note-text);
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: -.045em;
+}
+
+.deliveryNotesPage .pageSubline {
+  display: block;
+  max-width: 720px;
+  margin-top: 9px;
+  color: var(--note-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.deliveryNotesPage .topActions {
+  display: flex;
+  gap: 10px;
+}
+
+.deliveryNotesPage .topActions .primaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 17px;
+  border: 1px solid var(--note-green);
+  border-radius: 11px;
+  background: linear-gradient(
+    180deg,
+    #0b8968 0%,
+    #087158 100%
+  );
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 780;
+  text-decoration: none;
+  box-shadow: 0 9px 20px rgba(8, 119, 92, .18);
+}
+
+.deliveryNotesPage .orderSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+  max-width: 850px;
+  margin-bottom: 24px;
+}
+
+.deliveryNotesPage .metricCard {
+  position: relative;
+  min-height: 126px;
+  padding: 21px;
+  overflow: hidden;
+  border: 1px solid var(--note-border);
+  border-radius: 19px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(16, 35, 28, .055);
+}
+
+.deliveryNotesPage .metricCard:first-child {
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(52, 125, 167, .13),
+      transparent 42%
+    ),
+    #ffffff;
+}
+
+.deliveryNotesPage .metricCard:last-child {
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(213, 161, 55, .14),
+      transparent 42%
+    ),
+    #ffffff;
+}
+
+.deliveryNotesPage .metricCard p {
+  margin: 0 0 11px;
+  color: #53675f;
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.deliveryNotesPage .metricCard strong {
+  display: block;
+  color: #10231b;
+  font-size: 31px;
+  line-height: 1;
+}
+
+.deliveryNotesPage .metricCard span {
+  display: block;
+  margin-top: 9px;
+  color: #75847f;
+  font-size: 10.5px;
+}
+
+.deliveryNotesPage .metricCard small {
+  position: absolute;
+  top: 17px;
+  right: 17px;
+  padding: 5px 8px;
+  border: 1px solid #d0e1da;
+  border-radius: 999px;
+  background: #f4faf7;
+  color: var(--note-green);
+  font-size: 8px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.deliveryNotesPage .deliveryNoteArchivePanel {
+  padding: 27px;
+  border: 1px solid var(--note-border);
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 16px 42px rgba(17, 34, 28, .065);
+}
+
+.deliveryNotesPage .deliveryNoteArchiveHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.deliveryNotesPage .deliveryNoteArchiveHeader .eyebrow {
+  margin: 0 0 6px;
+  color: var(--note-green);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.deliveryNotesPage .deliveryNoteArchiveHeader h2 {
+  margin: 0;
+  color: var(--note-text);
+  font-size: 27px;
+  letter-spacing: -.035em;
+}
+
+.deliveryNotesPage
+.deliveryNoteArchiveHeader
+p:not(.eyebrow) {
+  max-width: 680px;
+  margin: 8px 0 0;
+  color: var(--note-muted);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.deliveryNotesPage .deliveryNoteArchiveCount {
+  display: grid;
+  justify-items: end;
+  min-width: 105px;
+  padding: 13px 16px;
+  border: 1px solid #cdded7;
+  border-radius: 14px;
+  background: #f3f8f6;
+}
+
+.deliveryNotesPage .deliveryNoteArchiveCount strong {
+  color: var(--note-text);
+  font-size: 25px;
+  line-height: 1;
+}
+
+.deliveryNotesPage .deliveryNoteArchiveCount span {
+  margin-top: 6px;
+  color: var(--note-muted);
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.deliveryNotesPage .deliveryNoteArchiveList {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.deliveryNotesPage .deliveryNoteArchiveHead,
+.deliveryNotesPage .deliveryNoteArchiveRow {
+  display: grid;
+  grid-template-columns:
+    minmax(210px, 1.15fr)
+    minmax(170px, 1fr)
+    115px
+    105px
+    110px
+    120px;
+  gap: 16px;
+  align-items: center;
+}
+
+.deliveryNotesPage .deliveryNoteArchiveHead {
+  min-height: 42px;
+  padding: 0 17px;
+  border: 1px solid #dce5e1;
+  border-radius: 11px;
+  background: #f3f6f5;
+  color: #687870;
+  font-size: 8.5px;
+  font-weight: 850;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.deliveryNotesPage .deliveryNoteArchiveRow {
+  position: relative;
+  min-height: 92px;
+  padding: 15px 17px;
+  overflow: hidden;
+  border: 1px solid #d9e3df;
+  border-radius: 17px;
+  background: #ffffff;
+  box-shadow: 0 7px 19px rgba(19, 35, 29, .045);
+  transition:
+    transform .16s ease,
+    border-color .16s ease,
+    box-shadow .16s ease;
+}
+
+.deliveryNotesPage .deliveryNoteArchiveRow::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 4px;
+  border-radius: 0 5px 5px 0;
+  background: var(--note-blue);
+}
+
+.deliveryNotesPage .deliveryNoteArchiveRow:hover {
+  transform: translateY(-2px);
+  border-color: #a5c8bc;
+  box-shadow: 0 14px 29px rgba(18, 38, 30, .08);
+}
+
+.deliveryNotesPage .deliveryNoteArchiveRow > div {
+  min-width: 0;
+}
+
+.deliveryNotesPage .deliveryNoteArchiveRow strong {
+  display: block;
+  overflow: hidden;
+  color: #14261f;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deliveryNotesPage .deliveryNoteArchiveRow small {
+  display: block;
+  overflow: hidden;
+  margin-top: 4px;
+  color: #75847f;
+  font-size: 9px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deliveryNotesPage .deliveryNoteArchiveStatus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 840;
+}
+
+.deliveryNotesPage .status-confirmed {
+  border: 1px solid #b9dfd1;
+  background: #edf9f4;
+  color: #08705a;
+}
+
+.deliveryNotesPage .status-in-production {
+  border: 1px solid #bfd8e9;
+  background: #eef6fb;
+  color: #39749b;
+}
+
+.deliveryNotesPage .status-packing-open {
+  border: 1px solid #ead6a4;
+  background: #fff7e4;
+  color: #916a18;
+}
+
+.deliveryNotesPage .status-delivered {
+  border: 1px solid #d3dcda;
+  background: #f3f5f4;
+  color: #63716c;
+}
+
+.deliveryNotesPage .deliveryNoteArchiveActions {
+  display: grid;
+  gap: 6px;
+}
+
+.deliveryNotesPage .deliveryNotePdfButton,
+.deliveryNotesPage .deliveryNoteRefreshButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 37px;
+  padding: 0 11px;
+  border-radius: 9px;
+  font-size: 9px;
+  font-weight: 820;
+  text-decoration: none;
+}
+
+.deliveryNotesPage .deliveryNotePdfButton {
+  border: 1px solid var(--note-blue);
+  background: linear-gradient(
+    180deg,
+    #3d89b2 0%,
+    #32779f 100%
+  );
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(52, 125, 167, .18);
+}
+
+.deliveryNotesPage .deliveryNoteRefreshButton {
+  border: 1px solid #d4ded9;
+  background: #ffffff;
+  color: #52655d;
+}
+
+.deliveryNotesPage .deliveryNoteRefreshButton:hover {
+  border-color: #9dcabb;
+  background: #f2f9f6;
+  color: var(--note-green);
+}
+
+.deliveryNotesPage .deliveryNoteArchiveEmpty {
+  margin-top: 22px;
+  padding: 32px;
+  border: 1px dashed #cbdad4;
+  border-radius: 16px;
+  background: #f7faf9;
+  text-align: center;
+}
+
+@media (max-width: 1050px) {
+  .deliveryNotesPage .deliveryNoteArchiveHead {
+    display: none;
+  }
+
+  .deliveryNotesPage .deliveryNoteArchiveRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .deliveryNotesPage .deliveryNoteArchiveActions {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media print {
+  .deliveryNotesPage .deliveryNoteArchivePanel,
+  .deliveryNotesPage .orderSummaryGrid,
+  .deliveryNotesPage .topbar {
+    display: none !important;
+  }
+}
