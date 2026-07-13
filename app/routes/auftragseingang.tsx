@@ -4217,6 +4217,148 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
           }
         }
         `}
+
+        {`
+        /* gastario-final-selected-card-refine-20260713 */
+
+        .finalOrdersGrid.selectedFocusMode {
+          padding: 22px 24px 32px !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel {
+          width: min(940px, 100%) !important;
+          border-radius: 20px !important;
+          border: 1px solid #dce7e3 !important;
+          box-shadow: 0 14px 38px rgba(15, 23, 42, 0.07) !important;
+        }
+
+        .finalSelectedTop {
+          padding: 22px 24px 18px !important;
+        }
+
+        .finalSelectedTop h2,
+        .finalSelectedTop h3 {
+          font-size: 21px !important;
+          font-weight: 680 !important;
+        }
+
+        .finalSelectedTop p,
+        .finalSelectedTop span {
+          font-weight: 520 !important;
+        }
+
+        .finalSelectedFacts {
+          gap: 12px !important;
+          padding: 18px 24px !important;
+        }
+
+        .finalSelectedFact {
+          min-height: 88px !important;
+          padding: 14px 15px !important;
+          border-radius: 14px !important;
+          background: #ffffff !important;
+          box-shadow: none !important;
+        }
+
+        .finalSelectedFact:nth-child(1) {
+          border-left: 3px solid #1aa17f !important;
+        }
+
+        .finalSelectedFact:nth-child(2) {
+          border-left: 3px solid #6b8afd !important;
+        }
+
+        .finalSelectedFact:nth-child(3) {
+          border-left: 3px solid #f59e0b !important;
+        }
+
+        .finalSelectedFact strong {
+          margin-bottom: 6px !important;
+          font-size: 10px !important;
+          font-weight: 650 !important;
+        }
+
+        .finalSelectedFact span,
+        .finalSelectedFact div {
+          font-size: 14px !important;
+          font-weight: 540 !important;
+        }
+
+        .finalSelectedPositions {
+          padding: 0 24px 16px !important;
+        }
+
+        .finalSelectedPositions h3 {
+          margin: 0 0 8px !important;
+          font-size: 15px !important;
+          font-weight: 660 !important;
+        }
+
+        .finalSelectedPosition {
+          padding: 11px 8px !important;
+          border-bottom: 1px solid #edf2f0 !important;
+          font-size: 14px !important;
+          font-weight: 500 !important;
+        }
+
+        .finalSelectedPosition:hover {
+          background: #f8fbfa !important;
+          border-radius: 10px !important;
+        }
+
+        .finalSelectedPosition strong {
+          font-weight: 650 !important;
+        }
+
+        .finalSelectedNotice {
+          margin: 0 24px 16px !important;
+          padding: 12px 14px !important;
+          border-radius: 12px !important;
+          font-size: 12.5px !important;
+          font-weight: 520 !important;
+        }
+
+        .finalSelectedActions {
+          grid-template-columns: 170px minmax(260px, 1fr) 130px !important;
+          gap: 10px !important;
+          padding: 16px 24px 22px !important;
+        }
+
+        .finalSelectedActions a,
+        .finalSelectedActions button {
+          min-height: 44px !important;
+          border-radius: 12px !important;
+          font-size: 13.5px !important;
+          font-weight: 620 !important;
+        }
+
+        .finalSelectedActions > *:nth-child(2) {
+          box-shadow: 0 8px 18px rgba(15, 157, 123, 0.14) !important;
+        }
+
+        .finalSelectedActions > *:last-child {
+          background: #ffffff !important;
+          color: #b42318 !important;
+          border: 1px solid #efc9c5 !important;
+        }
+
+        .finalSelectedActions > *:last-child:hover {
+          background: #fff5f4 !important;
+          border-color: #eaa9a2 !important;
+        }
+
+        .finalSelectedBadge {
+          background: #fff8ee !important;
+          color: #b45309 !important;
+          border: 1px solid #f4c98d !important;
+        }
+
+        .finalSelectedSourceBadge {
+          background: #edf9f5 !important;
+          color: #15745f !important;
+          border: 1px solid #cde8df !important;
+        }
+        `}
 </style>
 </AppLayout>
   );
