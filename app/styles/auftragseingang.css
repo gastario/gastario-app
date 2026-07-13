@@ -3086,3 +3086,72 @@
 .inboxCombinedNavigation .realOrderTab > * {
   pointer-events: none !important;
 }
+
+/* gastario-category-navigation-hard-fix-20260713 */
+
+.inboxCombinedNavigation {
+  position: relative !important;
+  z-index: 50 !important;
+  isolation: isolate !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  pointer-events: auto !important;
+}
+
+.inboxCombinedNavigation::before,
+.inboxCombinedNavigation::after {
+  pointer-events: none !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTabs,
+.inboxCombinedNavigation .realOrderTabs {
+  position: relative !important;
+  z-index: 51 !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 7px !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab,
+.inboxCombinedNavigation .realOrderTab {
+  position: relative !important;
+  z-index: 52 !important;
+  display: inline-flex !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab::before,
+.inboxCombinedNavigation .finalCategoryTab::after,
+.inboxCombinedNavigation .realOrderTab::before,
+.inboxCombinedNavigation .realOrderTab::after {
+  pointer-events: none !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab > *,
+.inboxCombinedNavigation .realOrderTab > * {
+  pointer-events: none !important;
+}
+
+@media (max-width: 1150px) {
+  .inboxCombinedNavigation .finalCategoryTabs,
+  .inboxCombinedNavigation .realOrderTabs {
+    width: 100% !important;
+  }
+
+  .inboxNavigationDivider {
+    display: none !important;
+  }
+}

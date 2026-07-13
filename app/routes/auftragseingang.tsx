@@ -1137,6 +1137,12 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                   key={String(key)}
                   href={"/auftragseingang?" + params.toString()}
                   className={active ? "finalCategoryTab active" : "finalCategoryTab"}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    window.location.assign(
+                      "/auftragseingang?" + params.toString()
+                    );
+                  }}
                 >
                   <span>{label}</span>
                   <strong>{count}</strong>
