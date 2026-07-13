@@ -11,10 +11,6 @@ const navigationGroups = [
     label: "Eingang",
     items: [
       { label: "Eingangszentrale", to: "/auftragseingang" },
-      { label: "Auftraege pruefen", to: "/auftragseingang?status=AUTO_CREATED" },
-      { label: "Anfragen / Leads", to: "/auftragseingang?emailCategory=inquiries" },
-      { label: "Unklare E-Mails", to: "/auftragseingang?emailCategory=review" },
-      { label: "Ignorierte E-Mails", to: "/auftragseingang?emailCategory=ignored" },
     ],
   },
   {
