@@ -255,7 +255,7 @@ export default function DeliveryNotesPage() {
 
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
                       <Link className="ghostButton" to={"/auftrag-pruefung/" + order.id}>
-                        Auftrag oeffnen
+                        Auftrag öffnen
                       </Link>
 
                       <button className="secondaryButton" type="button" onClick={() => window.print()}>
@@ -303,7 +303,7 @@ export default function DeliveryNotesPage() {
                     <div className="purchaseDemandRow" key={item.id || item.name}>
                       <strong>{item.name || "Position"}</strong>
                       <span>{item.quantity || 0}</span>
-                      <span>{item.unit || "Stueck"}</span>
+                      <span>{item.unit || "Stück"}</span>
                       <span></span>
                       <span></span>
                     </div>
@@ -311,17 +311,17 @@ export default function DeliveryNotesPage() {
                 </div>
 
                 <section style={deliveryCheckSectionStyle}>
-                  <h3 style={checkTitleStyle}>Vor der Lieferung pr?fen</h3>
+                  <h3 style={checkTitleStyle}>Vor der Lieferung prüfen</h3>
 
                   <div style={checkGridStyle}>
                     <CheckItem text="Alle Positionen laut Liste gepackt" />
                     <CheckItem text="Mengen kontrolliert" />
-                    <CheckItem text="Kalte Speisen gek?hlt" />
+                    <CheckItem text="Kalte Speisen gekühlt" />
                     <CheckItem text="Warme Speisen transportbereit" />
-                    <CheckItem text="Allergene / Hinweise gepr?ft" />
-                    <CheckItem text="Besteck / Servietten / Zubeh?r gepr?ft" />
-                    <CheckItem text="Lieferadresse gepr?ft" />
-                    <CheckItem text="Ansprechpartner / Telefonnummer gepr?ft" />
+                    <CheckItem text="Allergene / Hinweise geprüft" />
+                    <CheckItem text="Besteck / Servietten / Zubehör geprüft" />
+                    <CheckItem text="Lieferadresse geprüft" />
+                    <CheckItem text="Ansprechpartner / Telefonnummer geprüft" />
                   </div>
                 </section>
 
@@ -337,19 +337,19 @@ export default function DeliveryNotesPage() {
                 </section>
 
                 <section style={deliveryCheckSectionStyle}>
-                  <h3 style={checkTitleStyle}>?bergabe beim Kunden</h3>
+                  <h3 style={checkTitleStyle}>Übergabe beim Kunden</h3>
 
                   <div style={checkGridStyle}>
-                    <CheckItem text="Ware vollst?ndig ?bergeben" />
+                    <CheckItem text="Ware vollständig übergeben" />
                     <CheckItem text="Aufbau / Ablageort abgestimmt" />
                     <CheckItem text="Besonderheiten notiert" />
-                    <CheckItem text="Empfang best?tigt" />
+                    <CheckItem text="Empfang bestätigt" />
                   </div>
                 </section>
 
                 <div style={signatureGridStyle}>
                   <div style={signatureBoxStyle}>
-                    <span>Fahrer / ?bergabe</span>
+                    <span>Fahrer / Übergabe</span>
                   </div>
 
                   <div style={signatureBoxStyle}>
@@ -361,7 +361,189 @@ export default function DeliveryNotesPage() {
           )}
         </div>
       </section>
-    </AppLayout>
+    
+      <style>{`
+        /* gastario-delivery-note-print-layout-20260713 */
+
+        @page {
+          size: A4 portrait;
+          margin: 12mm 12mm 13mm;
+        }
+
+        @media print {
+          html,
+          body {
+            width: 210mm !important;
+            min-height: 297mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            font-size: 10pt !important;
+            print-color-adjust: exact !important;
+            -webkit-print-color-adjust: exact !important;
+          }
+
+          body * {
+            visibility: hidden !important;
+          }
+
+          /*
+           * Der eigentliche Inhaltsbereich bleibt sichtbar.
+           * AppLayout-Navigation und Sidebar werden ausgeblendet.
+           */
+          main,
+          main *,
+          [role="main"],
+          [role="main"] * {
+            visibility: visible !important;
+          }
+
+          aside,
+          nav,
+          .sidebar,
+          .appSidebar,
+          .layoutSidebar,
+          .mobileNavigation,
+          .mobileMenuButton {
+            display: none !important;
+          }
+
+          main,
+          [role="main"] {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            max-width: none !important;
+            min-width: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            overflow: visible !important;
+          }
+
+          main > *,
+          [role="main"] > * {
+            width: 100% !important;
+            max-width: none !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+          }
+
+          /*
+           * Aktionsbuttons werden auf dem Ausdruck nicht benötigt.
+           */
+          button,
+          a[href^="/auftrag-pruefung/"],
+          a[href^="/auftraege"],
+          .ghostButton,
+          .primaryButton,
+          .secondaryButton,
+          .printButton,
+          .noPrint {
+            display: none !important;
+          }
+
+          /*
+           * Kartenoptik für Papier vereinfachen.
+           */
+          section,
+          article,
+          .panel,
+          .card {
+            max-width: none !important;
+            box-shadow: none !important;
+          }
+
+          /*
+           * Der äußere Lieferscheinrahmen.
+           */
+          main section,
+          main article {
+            border-color: #9ca3af !important;
+            border-radius: 0 !important;
+            background: #ffffff !important;
+          }
+
+          h1,
+          h2,
+          h3,
+          p {
+            color: #000000 !important;
+          }
+
+          h2 {
+            font-size: 17pt !important;
+            line-height: 1.1 !important;
+          }
+
+          /*
+           * Tabellen im Ausdruck klar und kompakt darstellen.
+           */
+          table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            page-break-inside: auto !important;
+          }
+
+          thead {
+            display: table-header-group !important;
+          }
+
+          tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+
+          th,
+          td {
+            padding: 7px 8px !important;
+            border-color: #9ca3af !important;
+            color: #000000 !important;
+            font-size: 9.5pt !important;
+          }
+
+          th {
+            background: #eef1f3 !important;
+            font-weight: 800 !important;
+          }
+
+          /*
+           * Kontrollbereiche nicht mitten in zwei Seiten aufteilen.
+           */
+          main section > div,
+          main article > div {
+            break-inside: avoid-page !important;
+            page-break-inside: avoid !important;
+          }
+
+          /*
+           * Checklisten etwas kompakter für A4.
+           */
+          main section > div[style*="grid"],
+          main article > div[style*="grid"] {
+            gap: 5px !important;
+          }
+
+          /*
+           * Unterschriftenbereich zusammenhalten.
+           */
+          main hr,
+          main hr + div {
+            break-inside: avoid-page !important;
+            page-break-inside: avoid !important;
+          }
+
+          /*
+           * Links nicht mit URL hinter dem Text drucken.
+           */
+          a::after {
+            content: none !important;
+          }
+        }
+      `}</style>
+</AppLayout>
   );
 }
 
