@@ -24,6 +24,7 @@ export async function ensureDeliveryNoteForOrder(
     include: {
       items: true,
       tenant: true,
+      customer: true,
     },
   });
 
@@ -55,7 +56,10 @@ export async function ensureDeliveryNoteForOrder(
     customerName: order.customerName,
     deliveryAddress: order.deliveryAddress,
     contactName: order.contactName,
-    contactPhone: order.contactPhone,
+    contactPhone:
+      order.contactPhone ||
+      order.customer?.phone ||
+      null,
     deliveryDate: order.deliveryDate,
     deliveryTimeText: order.deliveryTimeText,
     notes: order.notes,

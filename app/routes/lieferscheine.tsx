@@ -59,6 +59,51 @@ export async function loader({ request }: { request: Request }) {
     const requestedOrderId =
       url.searchParams.get("orderId") || "";
 
+    /*
+     * gastario-auto-create-upcoming-delivery-notes-20260713
+     * Für alle bevorstehenden operativen Aufträge automatisch
+     * einen dauerhaft gespeicherten Lieferschein erzeugen.
+     */
+    const refreshSavedPdfs =
+      url.searchParams.get("refresh") === "1";
+
+    const now = new Date();
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const upcomingOrders =
+      await prisma.order.findMany({
+        where: {
+          tenantId: access.tenantId,
+          status: {
+            in: [
+              "CONFIRMED",
+              "IN_PRODUCTION",
+              "PACKING_OPEN",
+            ] as any,
+          },
+          deliveryDate: {
+            gte: startOfToday,
+          },
+        },
+        select: {
+          id: true,
+        },
+        take: 500,
+      });
+
+    const {
+      ensureDeliveryNoteForOrder,
+    } = await import("../lib/delivery-note.server");
+
+    await Promise.allSettled(
+      upcomingOrders.map((order) =>
+        ensureDeliveryNoteForOrder(order.id, {
+          force: refreshSavedPdfs,
+        })
+      )
+    );
+
     const savedNotes = await prisma.deliveryNote.findMany({
       where: {
         tenantId: access.tenantId,

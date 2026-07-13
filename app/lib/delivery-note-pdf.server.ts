@@ -385,6 +385,214 @@ export async function renderDeliveryNotePdf(
     y -= 16;
   }
 
+  /*
+   * gastario-delivery-note-checklists-20260713
+   */
+  const checklistGroups = [
+    {
+      title: "Auftrag und Lieferung",
+      items: [
+        "Lieferadresse kontrolliert",
+        "Lieferzeit kontrolliert",
+        "Ansprechpartner kontrolliert",
+        "Telefonnummer kontrolliert",
+        "Zufahrt und Aufbauort geprüft",
+      ],
+    },
+    {
+      title: "Speisen vollständig",
+      items: [
+        "Alle bestellten Positionen gepackt",
+        "Mengen kontrolliert",
+        "Soßen und Dressings eingepackt",
+        "Beilagen und Toppings eingepackt",
+        "Brot und Servietten eingepackt",
+        "Allergien und Sonderwünsche geprüft",
+        "Kalte Speisen gekühlt",
+        "Warme Speisen transportsicher",
+      ],
+    },
+    {
+      title: "Buffet und Equipment",
+      items: [
+        "Chafing Dishes eingepackt",
+        "Deckel und Einsätze eingepackt",
+        "Brennpaste eingepackt",
+        "Feuerzeug eingepackt",
+        "Servierzangen eingepackt",
+        "Schöpfkellen eingepackt",
+        "Buffetbesteck eingepackt",
+        "Teller, Bowls und Becher eingepackt",
+      ],
+    },
+    {
+      title: "Aufbau und Dekoration",
+      items: [
+        "Deko für den Aufbau eingepackt",
+        "Tischdecken oder Buffetläufer eingepackt",
+        "Speiseschilder eingepackt",
+        "Allergenschilder eingepackt",
+        "Klebeband, Schere und Kabelbinder eingepackt",
+        "Müllbeutel und Reinigungstücher eingepackt",
+      ],
+    },
+    {
+      title: "Übergabe beim Kunden",
+      items: [
+        "Kunde über Ankunft informiert",
+        "Aufbauort abgestimmt",
+        "Buffet vollständig aufgebaut",
+        "Soßen und Besteck bereitgestellt",
+        "Ware vollständig übergeben",
+        "Leihequipment dokumentiert",
+        "Empfang bestätigt",
+      ],
+    },
+  ];
+
+  function drawChecklistGroup(
+    title: string,
+    items: string[]
+  ) {
+    const columnGap = 18;
+    const columnWidth =
+      (A4_WIDTH - MARGIN * 2 - columnGap) / 2;
+
+    const rows = Math.ceil(items.length / 2);
+    const groupHeight = 32 + rows * 19 + 14;
+
+    if (y - groupHeight < 100) {
+      addPage();
+    }
+
+    page.drawRectangle({
+      x: MARGIN,
+      y: y - groupHeight,
+      width: A4_WIDTH - MARGIN * 2,
+      height: groupHeight,
+      borderColor: line,
+      borderWidth: 1,
+      color: rgb(0.985, 0.99, 0.988),
+    });
+
+    page.drawRectangle({
+      x: MARGIN,
+      y: y - 28,
+      width: A4_WIDTH - MARGIN * 2,
+      height: 28,
+      color: light,
+      borderColor: line,
+      borderWidth: 1,
+    });
+
+    page.drawText(title.toUpperCase(), {
+      x: MARGIN + 12,
+      y: y - 18,
+      size: 8,
+      font: bold,
+      color: green,
+    });
+
+    const left = items.slice(0, rows);
+    const right = items.slice(rows);
+
+    const drawColumn = (
+      values: string[],
+      x: number
+    ) => {
+      let rowY = y - 47;
+
+      for (const value of values) {
+        page.drawRectangle({
+          x,
+          y: rowY - 2,
+          width: 9,
+          height: 9,
+          borderColor: green,
+          borderWidth: 1,
+        });
+
+        drawTextLines({
+          page,
+          lines: wrapText(
+            value,
+            regular,
+            8.2,
+            columnWidth - 25
+          ),
+          x: x + 16,
+          y: rowY,
+          font: regular,
+          size: 8.2,
+          lineHeight: 10,
+          color: dark,
+        });
+
+        rowY -= 19;
+      }
+    };
+
+    drawColumn(left, MARGIN + 12);
+    drawColumn(
+      right,
+      MARGIN + columnWidth + columnGap
+    );
+
+    y -= groupHeight + 12;
+  }
+
+  y -= 12;
+
+  for (const group of checklistGroups) {
+    drawChecklistGroup(group.title, group.items);
+  }
+
+  if (y < 150) {
+    addPage();
+  }
+
+  page.drawText("FEHLENDE ODER NACHGELIEFERTE ARTIKEL", {
+    x: MARGIN,
+    y,
+    size: 8,
+    font: bold,
+    color: muted,
+  });
+
+  y -= 21;
+
+  for (let index = 0; index < 2; index += 1) {
+    page.drawLine({
+      start: { x: MARGIN, y },
+      end: { x: A4_WIDTH - MARGIN, y },
+      thickness: 0.6,
+      color: line,
+    });
+
+    y -= 21;
+  }
+
+  page.drawText("LEIHEQUIPMENT / RÜCKHOLUNG", {
+    x: MARGIN,
+    y,
+    size: 8,
+    font: bold,
+    color: muted,
+  });
+
+  y -= 21;
+
+  for (let index = 0; index < 2; index += 1) {
+    page.drawLine({
+      start: { x: MARGIN, y },
+      end: { x: A4_WIDTH - MARGIN, y },
+      thickness: 0.6,
+      color: line,
+    });
+
+    y -= 21;
+  }
+
   if (y < 115) addPage();
 
   const signatureY = Math.max(55, y - 45);
