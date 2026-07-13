@@ -1,0 +1,2 @@
+-- Baseline der bereits vorhandenen Gastario-Produktionsdatenbank.
+-- Diese Migration wird nur als angewendet markiert und nicht ausgeführt.
