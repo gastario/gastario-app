@@ -5366,3 +5366,216 @@
   font-size: 12px !important;
   font-weight: 650 !important;
 }
+
+/* gastario-inbox-hierarchy-and-actions-polish-20260713 */
+
+/* =========================
+   HAUPTNAVIGATION
+   ========================= */
+
+.inboxCombinedNavigation {
+  padding: 8px !important;
+  border: 1px solid #dce7e3 !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .035) !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTabs {
+  gap: 8px !important;
+  padding: 0 !important;
+  border-bottom: 0 !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab {
+  position: relative !important;
+  min-height: 42px !important;
+  padding: 0 14px !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: #4a5f58 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 14px !important;
+  right: 14px !important;
+  bottom: 0 !important;
+  height: 3px !important;
+  border-radius: 3px 3px 0 0 !important;
+  background: transparent !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab:hover {
+  border-color: #dce7e3 !important;
+  background: #f7faf9 !important;
+  color: #0d6f59 !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab.active {
+  border-color: #cfe5dd !important;
+  background: #f3faf7 !important;
+  color: #0b755b !important;
+  box-shadow: none !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab.active::after {
+  background: #10a37f !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab strong {
+  min-width: 22px !important;
+  height: 22px !important;
+  padding: 0 6px !important;
+  border: 0 !important;
+  background: #edf3f1 !important;
+  color: #58716a !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab.active strong {
+  background: #dff2eb !important;
+  color: #0b755b !important;
+}
+
+/* =========================
+   E-MAIL-LISTE HIERARCHIE
+   ========================= */
+
+.leadEmailPanel {
+  padding: 16px !important;
+  border: 1px solid #dce7e3 !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, .035) !important;
+}
+
+.leadEmailHeader {
+  margin-bottom: 14px !important;
+  padding: 0 0 12px !important;
+  border-bottom: 1px solid #edf2f0 !important;
+}
+
+.leadEmailHeader > strong {
+  min-height: 32px !important;
+  padding: 0 11px !important;
+  border: 1px solid #d9ebe4 !important;
+  background: #f2faf7 !important;
+  color: #0b755b !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+}
+
+.leadEmailGrid {
+  gap: 9px !important;
+}
+
+.leadEmailCard {
+  min-height: 94px !important;
+  padding: 14px 16px !important;
+  border: 1px solid #dce6e2 !important;
+  border-radius: 13px !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, .025) !important;
+}
+
+.leadEmailCard:hover {
+  border-color: #bcd5cc !important;
+  background: #fcfefd !important;
+  box-shadow: 0 7px 18px rgba(15, 23, 42, .05) !important;
+}
+
+.leadTypePill {
+  min-height: 21px !important;
+  padding: 0 7px !important;
+  background: #eaf7f2 !important;
+  color: #08745b !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+}
+
+.leadEmailCard h3 {
+  margin: 0 0 3px !important;
+  color: #10211c !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -.01em !important;
+}
+
+.leadEmailSender {
+  margin: 0 !important;
+  color: #71827c !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+}
+
+.leadPreview {
+  color: #536660 !important;
+  font-size: 11.5px !important;
+  line-height: 1.5 !important;
+}
+
+.leadEmailTop {
+  color: #7a8b85 !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+}
+
+/* =========================
+   AKTIONSBUTTONS
+   ========================= */
+
+.leadEmailActions {
+  gap: 7px !important;
+}
+
+.leadPrimaryAction,
+.leadSecondaryAction {
+  min-height: 31px !important;
+  padding: 0 12px !important;
+  border-radius: 8px !important;
+  font-size: 10.5px !important;
+  font-weight: 750 !important;
+  box-shadow: none !important;
+}
+
+.leadPrimaryAction {
+  border: 1px solid #0d9875 !important;
+  background: #10a37f !important;
+  color: #ffffff !important;
+}
+
+.leadPrimaryAction:hover {
+  border-color: #0a8465 !important;
+  background: #0d9270 !important;
+}
+
+.leadSecondaryAction {
+  border: 1px solid #d8e1de !important;
+  background: #f7f9f8 !important;
+  color: #5f716b !important;
+}
+
+.leadSecondaryAction:hover {
+  border-color: #e1b4b4 !important;
+  background: #fff5f5 !important;
+  color: #b03d3d !important;
+}
+
+@media (max-width: 1050px) {
+  .leadEmailCard {
+    min-height: auto !important;
+  }
+
+  .leadEmailActions {
+    flex-direction: row !important;
+  }
+}
