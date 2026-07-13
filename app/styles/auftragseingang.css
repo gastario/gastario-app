@@ -4997,3 +4997,75 @@
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
+
+/* gastario-clearer-navigation-buttons-20260713 */
+
+.inboxCombinedNavigation .finalCategoryTab {
+  border: 1px solid #cbdad4 !important;
+  background: #f7faf9 !important;
+  color: #29463e !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.035) !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab:hover {
+  border-color: #9fc6b9 !important;
+  background: #eef7f3 !important;
+  color: #086a53 !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab.active {
+  border-color: #078c6c !important;
+  background: #0fa47e !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 16px rgba(15, 164, 126, 0.2) !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab strong {
+  border: 1px solid #d3e2dc !important;
+  background: #e7f1ed !important;
+  color: #315e52 !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab.active strong {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.orderStatusSubnavLabel {
+  border: 1px solid #cfdcd7 !important;
+  background: #eef3f1 !important;
+  color: #49635c !important;
+}
+
+.orderStatusSubnav .realOrderTab {
+  border: 1px solid #cfdcd7 !important;
+  background: #ffffff !important;
+  color: #344b45 !important;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.03) !important;
+}
+
+.orderStatusSubnav .realOrderTab:hover {
+  border-color: #9fc6b9 !important;
+  background: #f1f8f5 !important;
+  color: #086a53 !important;
+}
+
+.orderStatusSubnav .realOrderTab.active {
+  border-color: #0fa47e !important;
+  background: #e2f4ed !important;
+  color: #086a53 !important;
+  box-shadow: inset 0 0 0 1px rgba(15, 164, 126, 0.08) !important;
+}
+
+.orderStatusSubnav .realOrderTab strong {
+  border: 1px solid #d3e2dc !important;
+  background: #e8f1ee !important;
+  color: #315e52 !important;
+}
+
+.orderStatusSubnav .realOrderTab.active strong {
+  border-color: #b9dfd2 !important;
+  background: #cfeade !important;
+  color: #086a53 !important;
+}
