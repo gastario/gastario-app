@@ -20,6 +20,45 @@ function formatDate(value: string | Date | null | undefined) {
   return new Date(value).toLocaleDateString("de-DE");
 }
 
+function getOrderDeliveryDateTime(order: any) {
+  if (!order?.deliveryDate) return null;
+
+  const result = new Date(order.deliveryDate);
+
+  if (Number.isNaN(result.getTime())) {
+    return null;
+  }
+
+  const timeMatch = String(order.deliveryTimeText || "").match(
+    /(\d{1,2})\s*[:.]\s*(\d{2})/
+  );
+
+  if (timeMatch) {
+    result.setHours(
+      Math.min(23, Number(timeMatch[1])),
+      Math.min(59, Number(timeMatch[2])),
+      0,
+      0
+    );
+  } else {
+    result.setHours(23, 59, 59, 999);
+  }
+
+  return result;
+}
+
+function startOfLocalDay(value = new Date()) {
+  const result = new Date(value);
+  result.setHours(0, 0, 0, 0);
+  return result;
+}
+
+function addLocalDays(value: Date, days: number) {
+  const result = new Date(value);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
 function statusLabel(status: string) {
   if (status === "CONFIRMED") return "Bestätigt";
   if (status === "IN_PRODUCTION") return "In Produktion";
@@ -46,12 +85,29 @@ export async function loader({ request }: { request: Request }) {
   const { getTenantAccess } = await import("../lib/features.server");
 
   const access = await getTenantAccess(request);
+  const url = new URL(request.url);
+
+  const activeStatus = url.searchParams.get("status") || "";
+  const view =
+    url.searchParams.get("view") === "past"
+      ? "past"
+      : "upcoming";
+
+  const searchQuery =
+    url.searchParams.get("q")?.trim() || "";
+
+  const dateRange =
+    url.searchParams.get("dateRange") || "";
 
   if (!access.tenantId || !access.tenant) {
     return {
       tenant: null,
-      setupError: access.setupError || "Kein Mandant gefunden.",
-      activeStatus: "",
+      setupError:
+        access.setupError || "Kein Mandant gefunden.",
+      activeStatus,
+      view,
+      searchQuery,
+      dateRange,
       orders: [],
       counts: {
         all: 0,
@@ -63,25 +119,24 @@ export async function loader({ request }: { request: Request }) {
     };
   }
 
-  const url = new URL(request.url);
-  const activeStatus = url.searchParams.get("status") || "";
-
   try {
-    const orders = await prisma.order.findMany({
+    const operationalStatuses = [
+      "CONFIRMED",
+      "IN_PRODUCTION",
+      "PACKING_OPEN",
+      "DELIVERED",
+    ];
+
+    const requestedStatuses = activeStatus
+      ? [activeStatus]
+      : operationalStatuses;
+
+    const loadedOrders = await prisma.order.findMany({
       where: {
         tenantId: access.tenantId,
-        ...(activeStatus
-          ? { status: activeStatus as any }
-          : {
-              status: {
-                in: [
-                  "CONFIRMED",
-                  "IN_PRODUCTION",
-                  "PACKING_OPEN",
-                  "DELIVERED",
-                ] as any,
-              },
-            }),
+        status: {
+          in: requestedStatuses as any,
+        },
       },
       include: {
         items: true,
@@ -92,33 +147,169 @@ export async function loader({ request }: { request: Request }) {
         { deliveryTimeText: "asc" },
         { createdAt: "desc" },
       ],
-      take: 300,
-    });
-
-    const allOrders = await prisma.order.findMany({
-      where: {
-        tenantId: access.tenantId,
-      },
-      include: {
-        items: true,
-      },
       take: 1000,
     });
 
-    const totalValueCents = allOrders.reduce((sum, order) => {
-      return sum + order.items.reduce((itemSum, item) => itemSum + (item.totalCents || item.totalPriceCents || 0), 0);
-    }, 0);
+    const now = new Date();
+    const todayStart = startOfLocalDay(now);
+    const tomorrowStart = addLocalDays(todayStart, 1);
+    const dayAfterTomorrowStart = addLocalDays(todayStart, 2);
+    const weekEnd = addLocalDays(todayStart, 7);
+
+    const orders = loadedOrders.filter((order: any) => {
+      const deliveryDateTime =
+        getOrderDeliveryDateTime(order);
+
+      const status =
+        String(order.status || "").toUpperCase();
+
+      const isPast =
+        status === "DELIVERED" ||
+        Boolean(
+          deliveryDateTime &&
+          deliveryDateTime.getTime() < now.getTime()
+        );
+
+      if (view === "past" && !isPast) {
+        return false;
+      }
+
+      if (view === "upcoming" && isPast) {
+        return false;
+      }
+
+      if (searchQuery) {
+        const haystack = [
+          order.orderNumber,
+          order.externalOrderNumber,
+          order.customerName,
+          order.customer?.email,
+          order.deliveryAddress,
+          order.eventName,
+          order.contactName,
+          order.platformName,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLocaleLowerCase("de-DE");
+
+        if (
+          !haystack.includes(
+            searchQuery.toLocaleLowerCase("de-DE")
+          )
+        ) {
+          return false;
+        }
+      }
+
+      if (dateRange) {
+        if (!deliveryDateTime) {
+          return false;
+        }
+
+        const timestamp = deliveryDateTime.getTime();
+
+        if (
+          dateRange === "today" &&
+          !(
+            timestamp >= todayStart.getTime() &&
+            timestamp < tomorrowStart.getTime()
+          )
+        ) {
+          return false;
+        }
+
+        if (
+          dateRange === "tomorrow" &&
+          !(
+            timestamp >= tomorrowStart.getTime() &&
+            timestamp < dayAfterTomorrowStart.getTime()
+          )
+        ) {
+          return false;
+        }
+
+        if (
+          dateRange === "week" &&
+          !(
+            timestamp >= todayStart.getTime() &&
+            timestamp < weekEnd.getTime()
+          )
+        ) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    const allOperationalOrders =
+      await prisma.order.findMany({
+        where: {
+          tenantId: access.tenantId,
+          status: {
+            in: operationalStatuses as any,
+          },
+        },
+        include: {
+          items: true,
+        },
+        take: 2000,
+      });
+
+    const ordersForCurrentView =
+      allOperationalOrders.filter((order: any) => {
+        const deliveryDateTime =
+          getOrderDeliveryDateTime(order);
+
+        const status =
+          String(order.status || "").toUpperCase();
+
+        const isPast =
+          status === "DELIVERED" ||
+          Boolean(
+            deliveryDateTime &&
+            deliveryDateTime.getTime() < now.getTime()
+          );
+
+        return view === "past" ? isPast : !isPast;
+      });
+
+    const totalValueCents =
+      ordersForCurrentView.reduce(
+        (sum: number, order: any) => {
+          const itemTotal = order.items.reduce(
+            (itemSum: number, item: any) =>
+              itemSum +
+              Number(
+                item.totalCents ||
+                  item.totalPriceCents ||
+                  0
+              ),
+            0
+          );
+
+          return sum + Number(order.totalCents || itemTotal);
+        },
+        0
+      );
 
     return {
       tenant: access.tenant,
       setupError: null,
       activeStatus,
+      view,
+      searchQuery,
+      dateRange,
       orders,
       counts: {
-        all: allOrders.length,
-        review: allOrders.filter((order) => order.status === "AUTO_CREATED").length,
-        confirmed: allOrders.filter((order) => order.status === "CONFIRMED").length,
-        rejected: allOrders.filter((order) => order.status === "REJECTED").length,
+        all: ordersForCurrentView.length,
+        review: 0,
+        confirmed: ordersForCurrentView.filter(
+          (order: any) =>
+            order.status === "CONFIRMED"
+        ).length,
+        rejected: 0,
         totalValueCents,
       },
     };
@@ -127,8 +318,12 @@ export async function loader({ request }: { request: Request }) {
 
     return {
       tenant: access.tenant,
-      setupError: "Aufträge konnten nicht geladen werden. Bitte Datenbank/Schema pruefen.",
+      setupError:
+        "Aufträge konnten nicht geladen werden. Bitte Datenbank/Schema prüfen.",
       activeStatus,
+      view,
+      searchQuery,
+      dateRange,
       orders: [],
       counts: {
         all: 0,
@@ -306,11 +501,22 @@ export default function OrdersPage() {
         <div className="panelHeader">
           <div>
             <p className="eyebrow">Auftragsübersicht</p>
-            <h2>Aktuelle Aufträge</h2>
+            <h2>
+              {data.view === "past"
+                ? "Vergangene Aufträge"
+                : "Bevorstehende Aufträge"}
+            </h2>
           </div>
 
           <div className="ordersFilterWrap">
             <Form method="get" className="ordersFilterForm">
+              {data.view === "past" ? (
+                <input
+                  type="hidden"
+                  name="view"
+                  value="past"
+                />
+              ) : null}
               {data.activeStatus ? (
                 <input type="hidden" name="status" value={data.activeStatus} />
               ) : null}
@@ -344,7 +550,14 @@ export default function OrdersPage() {
                 Filtern
               </button>
 
-              <Link className="ghostButton" to={data.activeStatus ? "/auftraege?status=" + data.activeStatus : "/auftraege"}>
+              <Link
+                className="ghostButton"
+                to={
+                  data.view === "past"
+                    ? "/auftraege?view=past"
+                    : "/auftraege"
+                }
+              >
                 Zurücksetzen
               </Link>
             </Form>
@@ -440,7 +653,7 @@ export default function OrdersPage() {
 
                     <Link
                       className="ghostButton"
-                      to={"/lieferscheine?date=" + String(order.deliveryDate || "").slice(0, 10)}
+                      to={"/lieferscheine?orderId=" + order.id}
                     >
                       Lieferschein
                     </Link>

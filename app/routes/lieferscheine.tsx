@@ -51,63 +51,86 @@ export async function loader({ request }: { request: Request }) {
     }
 
     const url = new URL(request.url);
-    const requestedDate = url.searchParams.get("date") || "";
+
+    const requestedDate =
+      url.searchParams.get("date") || "";
+
+    const requestedOrderId =
+      url.searchParams.get("orderId") || "";
 
     const orders = await prisma.order.findMany({
       where: {
         tenantId: access.tenantId,
+        ...(requestedOrderId
+          ? { id: requestedOrderId }
+          : {}),
+        status: {
+          in: [
+            "CONFIRMED",
+            "IN_PRODUCTION",
+            "PACKING_OPEN",
+            "DELIVERED",
+          ] as any,
+        },
       },
       include: {
         items: true,
       },
       orderBy: [
         { deliveryDate: "asc" },
+        { deliveryTimeText: "asc" },
         { createdAt: "desc" },
       ],
-      take: 300,
-    });
-
-    const allowedOrders = orders.filter((order: any) => {
-      const status = String(order.status || "").toUpperCase();
-
-      return (
-        status === "CONFIRMED" ||
-        status === "PAID" ||
-        status === "INVOICE_APPROVED" ||
-        status === "MANUAL" ||
-        status === "AUTO_CREATED" ||
-        status === "REVIEW_NEEDED" ||
-        status === "INCOMPLETE"
-      );
+      take: requestedOrderId ? 1 : 300,
     });
 
     const selectedDate =
       requestedDate ||
-      normalizeDate(allowedOrders.find((order: any) => normalizeDate(order.deliveryDate))?.deliveryDate) ||
+      normalizeDate(
+        orders.find(
+          (order: any) =>
+            normalizeDate(order.deliveryDate)
+        )?.deliveryDate
+      ) ||
       todayInput();
 
-    const relevantOrders = allowedOrders.filter((order: any) => {
-      const date = normalizeDate(order.deliveryDate);
-      return date === selectedDate;
-    });
+    const relevantOrders = requestedOrderId
+      ? orders
+      : orders.filter((order: any) => {
+          const date =
+            normalizeDate(order.deliveryDate);
+
+          return date === selectedDate;
+        });
 
     return {
-      tenantName: access.tenant?.name || "Gastario",
+      tenantName:
+        access.tenant?.name || "Gastario",
       selectedDate,
       orders: relevantOrders,
       stats: {
         orders: relevantOrders.length,
-        positions: relevantOrders.reduce((sum: number, order: any) => sum + Number((order.items || []).length), 0),
+        positions: relevantOrders.reduce(
+          (sum: number, order: any) =>
+            sum +
+            Number((order.items || []).length),
+          0
+        ),
       },
       error: null,
     };
   } catch (error: any) {
-    console.error("Lieferscheine loader error:", error);
-    return emptyData(error?.message || "Lieferscheine konnten nicht geladen werden.");
+    console.error(
+      "Lieferscheine loader error:",
+      error
+    );
+
+    return emptyData(
+      error?.message ||
+        "Lieferscheine konnten nicht geladen werden."
+    );
   }
 }
-
-
 
 function CheckItem({ text }: { text: string }) {
   return (
@@ -207,7 +230,7 @@ export default function DeliveryNotesPage() {
                     <p className="eyebrow">Lieferschein</p>
                     <h2 style={{ margin: 0 }}>{order.orderNumber || order.id}</h2>
                     <p style={{ margin: "6px 0 0", color: "#64748b", fontWeight: 800 }}>
-                      {formatDate(order.deliveryDate)} ? {order.deliveryTime || "-"} Uhr
+                      {formatDate(order.deliveryDate)} ? {order.deliveryTimeText || "-"} Uhr
                     </p>
 
                     {String(order.status || "").toUpperCase() === "AUTO_CREATED" ? (
