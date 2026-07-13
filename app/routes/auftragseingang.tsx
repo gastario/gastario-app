@@ -182,7 +182,7 @@ function formatDate(value: string | Date | null | undefined) {
 
 function statusLabel(status: string) {
   if (status === "AUTO_CREATED") return "Prüfen";
-  if (status === "CONFIRMED") return "ÃƒÆ’Ã…“bernommen";
+  if (status === "CONFIRMED") return "\u00dcbernommen";
   if (status === "REJECTED") return "Abgelehnt";
   return status;
 }
@@ -850,7 +850,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
   const activeOrderViewTitle = isEmailFocusedView ? inboxHeadline :
     activeOrderStatusRaw === "CONFIRMED"
-      ? "ÃƒÆ’Ã…“bernommene Aufträge"
+      ? "\u00dcbernommene Auftr\u00e4ge"
       : activeOrderStatusRaw === "REJECTED"
         ? "Abgelehnte Aufträge"
         : activeOrderStatusRaw === "AUTO_CREATED"
@@ -1187,7 +1187,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
           {[
             ["Alle Aufträge", currentOrderStats.all, ""],
             ["Zu prüfen", currentOrderStats.review, "AUTO_CREATED"],
-            ["ÃƒÆ’Ã…“bernommen", currentOrderStats.confirmed, "CONFIRMED"],
+            ["\u00dcbernommen", currentOrderStats.confirmed, "CONFIRMED"],
             ["Abgelehnt", currentOrderStats.rejected, "REJECTED"],
           ].map(([label, count, status]) => {
             const active = !isEmailFocusedView && (activeOrderStatus === status || (!activeOrderStatus && !status));
@@ -1286,7 +1286,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                             {Math.round(
                               Number(aiDecision.confidence || 0) * 100
                             )}{" "}
-                            % Ãƒ”šÃ‚·{" "}
+                            % {"\u00b7"}{" "}
                             {aiDecision.reason ||
                               "Keine Begründung gespeichert"}
                           </span>
@@ -1302,7 +1302,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                           to={"/email-pruefung/" + mail.id}
                           className="leadPrimaryAction"
                         >
-                          ÃƒÆ’Ã¢€“ffnen
+                          \u00d6ffnen
                         </Link>
 
                         {!isIgnoredMailView ? (
@@ -1376,7 +1376,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                         }
                       }}
                     >
-                      <div className="finalOrderIcon">ÃƒÂ¢Ã…“Ã¢€Â°</div>
+                      <div className="finalOrderIcon">{"\u2709"}</div>
 
                       <div className="finalOrderCustomer">
                         <div className="finalOrderNumber">{order.orderNumber}</div>
@@ -1466,7 +1466,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
                   {selectedOrderTotal?.source === "vorläufig" ? (
                     <div className="finalSelectedNotice">
-                      Der Betrag ist vorläufig und sollte vor ÃƒÆ’Ã…“bernahme geprüft werden.
+                      Der Betrag ist vorl\u00e4ufig und sollte vor \u00dcbernahme gepr\u00fcft werden.
                     </div>
                   ) : null}
 

@@ -3408,3 +3408,310 @@
     width: 100% !important;
   }
 }
+
+/* gastario-unified-incoming-list-view-20260713 */
+
+.leadEmailPanel {
+  width: 100% !important;
+}
+
+.leadEmailGrid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 11px !important;
+}
+
+.leadEmailCard {
+  display: grid !important;
+  grid-template-columns:
+    minmax(230px, 0.9fr)
+    minmax(320px, 1.5fr)
+    auto !important;
+  align-items: center !important;
+  gap: 22px !important;
+  min-height: 108px !important;
+  padding: 16px 18px !important;
+  border: 1px solid #dce7e3 !important;
+  border-radius: 15px !important;
+  background: #ffffff !important;
+}
+
+.leadEmailCard .leadEmailTop {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  align-self: start !important;
+  margin: 0 0 34px !important;
+}
+
+.leadEmailCard h3 {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  align-self: center !important;
+  margin: 4px 0 0 !important;
+}
+
+.leadEmailSender {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  align-self: end !important;
+  margin: 0 !important;
+}
+
+.leadPreview {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  min-height: auto !important;
+  margin: 0 !important;
+  -webkit-line-clamp: 3 !important;
+}
+
+.leadAiBox {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  margin: 0 !important;
+}
+
+.leadEmailActions {
+  grid-column: 3 !important;
+  grid-row: 1 / span 2 !important;
+  align-self: center !important;
+  flex-direction: column !important;
+  min-width: 112px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+.leadEmailActions form,
+.leadPrimaryAction,
+.leadSecondaryAction {
+  width: 100% !important;
+}
+
+@media (max-width: 1050px) {
+  .leadEmailCard {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .leadEmailCard .leadEmailTop,
+  .leadEmailCard h3,
+  .leadEmailSender,
+  .leadPreview,
+  .leadAiBox,
+  .leadEmailActions {
+    margin: 0 !important;
+  }
+
+  .leadEmailActions {
+    flex-direction: row !important;
+  }
+}
+
+/* gastario-unified-incoming-list-view-20260713 */
+
+.leadEmailPanel {
+  width: 100% !important;
+}
+
+.leadEmailGrid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 11px !important;
+}
+
+.leadEmailCard {
+  display: grid !important;
+  grid-template-columns:
+    minmax(230px, 0.9fr)
+    minmax(320px, 1.5fr)
+    auto !important;
+  align-items: center !important;
+  gap: 22px !important;
+  min-height: 108px !important;
+  padding: 16px 18px !important;
+  border: 1px solid #dce7e3 !important;
+  border-radius: 15px !important;
+  background: #ffffff !important;
+}
+
+.leadEmailCard .leadEmailTop {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  align-self: start !important;
+  margin: 0 0 34px !important;
+}
+
+.leadEmailCard h3 {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  align-self: center !important;
+  margin: 4px 0 0 !important;
+}
+
+.leadEmailSender {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  align-self: end !important;
+  margin: 0 !important;
+}
+
+.leadPreview {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  min-height: auto !important;
+  margin: 0 !important;
+  -webkit-line-clamp: 3 !important;
+}
+
+.leadAiBox {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  margin: 0 !important;
+}
+
+.leadEmailActions {
+  grid-column: 3 !important;
+  grid-row: 1 / span 2 !important;
+  align-self: center !important;
+  flex-direction: column !important;
+  min-width: 112px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+.leadEmailActions form,
+.leadPrimaryAction,
+.leadSecondaryAction {
+  width: 100% !important;
+}
+
+@media (max-width: 1050px) {
+  .leadEmailCard {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .leadEmailCard .leadEmailTop,
+  .leadEmailCard h3,
+  .leadEmailSender,
+  .leadPreview,
+  .leadAiBox,
+  .leadEmailActions {
+    margin: 0 !important;
+  }
+
+  .leadEmailActions {
+    flex-direction: row !important;
+  }
+}
+
+/* gastario-unified-email-row-layout-20260713 */
+
+.leadEmailPanel {
+  width: 100% !important;
+  padding: 18px !important;
+}
+
+.leadEmailGrid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 11px !important;
+  width: 100% !important;
+}
+
+.leadEmailCard {
+  display: grid !important;
+  grid-template-columns:
+    minmax(250px, 0.85fr)
+    minmax(320px, 1.5fr)
+    125px !important;
+  align-items: center !important;
+  gap: 22px !important;
+  width: 100% !important;
+  min-height: 112px !important;
+  padding: 16px 18px !important;
+  border: 1px solid #dce7e3 !important;
+  border-radius: 15px !important;
+  background: #ffffff !important;
+}
+
+.leadEmailTop {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  align-self: start !important;
+  margin: 0 !important;
+}
+
+.leadEmailCard h3 {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  align-self: center !important;
+  margin: 4px 0 0 !important;
+  padding-top: 13px !important;
+}
+
+.leadEmailSender {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  align-self: end !important;
+  margin: 0 !important;
+}
+
+.leadPreview {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  min-height: auto !important;
+  margin: 0 !important;
+  -webkit-line-clamp: 3 !important;
+}
+
+.leadAiBox {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  margin: 0 !important;
+}
+
+.leadEmailActions {
+  grid-column: 3 !important;
+  grid-row: 1 / span 2 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+.leadEmailActions form,
+.leadPrimaryAction,
+.leadSecondaryAction {
+  width: 100% !important;
+}
+
+@media (max-width: 1050px) {
+  .leadEmailCard {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .leadEmailTop,
+  .leadEmailCard h3,
+  .leadEmailSender,
+  .leadPreview,
+  .leadAiBox,
+  .leadEmailActions {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .leadEmailActions {
+    flex-direction: row !important;
+  }
+}
