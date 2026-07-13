@@ -3,7 +3,10 @@ import { createRequire } from "node:module";
 import { simpleParser } from "mailparser";
 import { prisma } from "../lib/prisma.server";
 import { extractUniversalOrder } from "../lib/order-import-extract.server";
-import { classifyIncomingMailWithAi } from "../lib/ai-import-classifier.server";
+import {
+  classifyIncomingMailWithAi,
+  classifyIncomingMailWithRules,
+} from "../lib/ai-import-classifier.server";
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -706,6 +709,53 @@ export async function loader({ request }: { request: Request }) {
     errors: [] as string[],
   };
 
+  const parsedMaxAiCalls = Number(
+    process.env.AI_IMPORT_MAX_CALLS_PER_RUN || "3"
+  );
+
+  const maxAiCallsPerRun =
+    Number.isFinite(parsedMaxAiCalls) && parsedMaxAiCalls >= 0
+      ? Math.floor(parsedMaxAiCalls)
+      : 3;
+
+  let aiCallsThisRun = 0;
+  let aiBudgetSkippedThisRun = 0;
+
+  async function classifyIncomingMailWithinBudget(params: {
+    tenantName?: string | null;
+    subject: string;
+    sender: string;
+    text: string;
+    source?: string | null;
+  }) {
+    const ruleDecision = classifyIncomingMailWithRules(params);
+
+    const canSkipAi =
+      (ruleDecision.mailType === "TRASH" && ruleDecision.confidence >= 0.8) ||
+      (ruleDecision.mailType === "DELIVERY_NOTE" && ruleDecision.confidence >= 0.85) ||
+      (ruleDecision.mailType === "ORDER_CONFIRMATION" && ruleDecision.confidence >= 0.95) ||
+      (ruleDecision.mailType === "INQUIRY" && ruleDecision.confidence >= 0.95);
+
+    if (canSkipAi) {
+      return ruleDecision;
+    }
+
+    if (aiCallsThisRun >= maxAiCallsPerRun) {
+      aiBudgetSkippedThisRun += 1;
+
+      return {
+        ...ruleDecision,
+        warnings: [
+          ...(ruleDecision.warnings || []),
+          `KI-Limit pro Abruf erreicht (${maxAiCallsPerRun}). Kostenlose Regelprüfung verwendet.`,
+        ],
+      };
+    }
+
+    aiCallsThisRun += 1;
+    return classifyIncomingMailWithAi(params);
+  }
+
   for (const account of accounts) {
     try {
       const password = decryptSecret(account.imapPasswordEncrypted || "");
@@ -898,7 +948,7 @@ export async function loader({ request }: { request: Request }) {
 
                       const aiDecision = canReuseStoredAiDecision
                         ? storedAiDecision
-                        : await classifyIncomingMailWithAi({
+                        : await classifyIncomingMailWithinBudget({
                             tenantName: null,
                             subject: String(parsed.subject || ""),
                             sender: String(parsed.from?.text || ""),
@@ -1100,7 +1150,7 @@ export async function loader({ request }: { request: Request }) {
             continue;
           }
 
-          const aiDecision = await classifyIncomingMailWithAi({
+          const aiDecision = await classifyIncomingMailWithinBudget({
             tenantName: null,
             subject: String(parsed.subject || ""),
             sender: String(parsed.from?.text || ""),
@@ -1207,6 +1257,10 @@ export async function loader({ request }: { request: Request }) {
       result.errors.push(account.email + ": " + String(error?.message || error));
     }
   }
+
+  (result as any).aiCallsThisRun = aiCallsThisRun;
+  (result as any).aiBudgetSkippedThisRun = aiBudgetSkippedThisRun;
+  (result as any).maxAiCallsPerRun = maxAiCallsPerRun;
 
   return json(result);
 }
