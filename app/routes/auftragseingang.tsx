@@ -4359,6 +4359,140 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
           border: 1px solid #cde8df !important;
         }
         `}
+
+        {`
+        /* gastario-final-action-buttons-20260713 */
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedPanel
+        .finalSelectedActions {
+          display: grid !important;
+          grid-template-columns: 170px minmax(280px, 1fr) 130px !important;
+          gap: 12px !important;
+          padding: 18px 24px 24px !important;
+          background: #fbfcfc !important;
+          border-top: 1px solid #e7eeeb !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedPanel
+        .finalSelectedActions > * {
+          min-height: 44px !important;
+          border-radius: 12px !important;
+          font-size: 13.5px !important;
+          font-weight: 620 !important;
+          box-shadow: none !important;
+          text-decoration: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedPanel
+        .finalSelectedActions > *:first-child {
+          background: #ffffff !important;
+          background-image: none !important;
+          color: #334155 !important;
+          border: 1px solid #d4dfdc !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedPanel
+        .finalSelectedActions > *:first-child:hover {
+          background: #f7faf9 !important;
+          border-color: #b9c9c4 !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedPanel
+        .finalSelectedActions > *:nth-child(2) {
+          background: linear-gradient(180deg, #18aa86 0%, #0f9d7b 100%) !important;
+          background-image: linear-gradient(180deg, #18aa86 0%, #0f9d7b 100%) !important;
+          color: #ffffff !important;
+          border: 1px solid #0f9d7b !important;
+          box-shadow: 0 8px 18px rgba(15, 157, 123, 0.16) !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedPanel
+        .finalSelectedActions > *:nth-child(2):hover {
+          background: #0b8f70 !important;
+          background-image: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedPanel
+        .finalSelectedActions > *:last-child {
+          background: #ffffff !important;
+          background-image: none !important;
+          color: #b42318 !important;
+          border: 1px solid #efc7c3 !important;
+          box-shadow: none !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode
+        .finalSelectedPanel
+        .finalSelectedActions > *:last-child:hover {
+          background: #fff5f4 !important;
+          background-image: none !important;
+          border-color: #e8a9a3 !important;
+          color: #991b1b !important;
+        }
+
+        @media (max-width: 900px) {
+          .finalOrdersGrid.selectedFocusMode
+          .finalSelectedPanel
+          .finalSelectedActions {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        `}
+
+        {`
+        /* gastario-reduce-selected-whitespace-20260713 */
+
+        .finalOrdersGrid.selectedFocusMode {
+          padding: 16px 18px 24px !important;
+          min-height: auto !important;
+        }
+
+        .finalOrdersGrid.selectedFocusMode .finalSelectedPanel {
+          width: min(1120px, 100%) !important;
+          max-width: 1120px !important;
+        }
+
+        .finalSelectedTop {
+          padding: 18px 22px 16px !important;
+        }
+
+        .finalSelectedFacts {
+          padding: 16px 22px !important;
+          gap: 10px !important;
+        }
+
+        .finalSelectedFact {
+          min-height: 80px !important;
+          padding: 12px 14px !important;
+        }
+
+        .finalSelectedPositions {
+          padding: 0 22px 14px !important;
+        }
+
+        .finalSelectedPosition {
+          padding: 9px 6px !important;
+        }
+
+        .finalSelectedNotice {
+          margin: 0 22px 14px !important;
+        }
+
+        .finalSelectedActions {
+          padding: 14px 22px 18px !important;
+        }
+
+        .finalOrdersShell {
+          padding-bottom: 0 !important;
+        }
+        `}
 </style>
 </AppLayout>
   );
