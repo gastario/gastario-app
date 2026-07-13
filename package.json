@@ -1,40 +1,40 @@
 {
-    "name": "gastario-app",
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "dev": "react-router dev",
-        "typecheck": "react-router typegen && tsc",
-        "build": "prisma generate --schema=./prisma/schema.prisma && react-router build",
-        "start": "react-router-serve ./build/server/index.js"
-    },
-    "dependencies": {
-        "@prisma/client": "^6.19.3",
-        "@react-router/node": "8.0.0",
-        "@react-router/serve": "8.0.0",
-        "bcryptjs": "^3.0.3",
-        "imapflow": "^1.4.3",
-        "isbot": "^5.1.36",
-        "mailparser": "^3.9.12",
-        "pdf-lib": "^1.17.1",
-        "pdf-parse": "^2.4.5",
-        "qrcode": "^1.5.4",
-        "react": "^19.2.7",
-        "react-dom": "^19.2.7",
-        "react-router": "8.0.0"
-    },
-    "devDependencies": {
-        "@react-router/dev": "8.0.0",
-        "@tailwindcss/vite": "^4.2.2",
-        "@types/bcryptjs": "^2.4.6",
-        "@types/mailparser": "^3.4.6",
-        "@types/node": "^22",
-        "@types/qrcode": "^1.5.6",
-        "@types/react": "^19.2.14",
-        "@types/react-dom": "^19.2.3",
-        "prisma": "^6.19.3",
-        "tailwindcss": "^4.2.2",
-        "typescript": "^5.9.3",
-        "vite": "^8.0.3"
-    }
+  "name": "gastario-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "react-router dev",
+    "typecheck": "react-router typegen && tsc",
+    "build": "prisma generate --schema=./prisma/schema.prisma && react-router build",
+    "start": "prisma migrate deploy --schema=./prisma/schema.prisma && react-router-serve ./build/server/index.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "@react-router/node": "8.0.0",
+    "@react-router/serve": "8.0.0",
+    "bcryptjs": "^3.0.3",
+    "imapflow": "^1.4.3",
+    "isbot": "^5.1.36",
+    "mailparser": "^3.9.12",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^2.4.5",
+    "qrcode": "^1.5.4",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router": "8.0.0"
+  },
+  "devDependencies": {
+    "@react-router/dev": "8.0.0",
+    "@tailwindcss/vite": "^4.2.2",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/mailparser": "^3.4.6",
+    "@types/node": "^22",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "prisma": "^6.19.3",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.3"
+  }
 }

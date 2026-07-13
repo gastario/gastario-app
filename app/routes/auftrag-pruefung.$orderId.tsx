@@ -197,6 +197,14 @@ export async function action({ request, params }: { request: Request; params: { 
       },
     });
 
+    const {
+      ensureDeliveryNoteForOrder,
+    } = await import("../lib/delivery-note.server");
+
+    await ensureDeliveryNoteForOrder(
+      String(params.orderId)
+    );
+
     return redirect("/auftraege");
   }
 
@@ -214,7 +222,8 @@ export default function AuftragPruefungPage() {
   const reviewState = getOrderReviewState(order);
   const missingChecks = reviewState.missing;
   const canConfirmOrder = missingChecks.length === 0;
-  const deliveryHref = "/lieferscheine" + (order.deliveryDate ? "?date=" + formatDateInput(order.deliveryDate) : "");
+  const deliveryHref =
+    "/lieferscheine/" + order.id + "/pdf";
 
   return (
     <main style={{ background: "linear-gradient(180deg, #eef6f8 0%, #f8fbfc 100%)", minHeight: "100vh", padding: 24 }}>
@@ -225,7 +234,7 @@ export default function AuftragPruefungPage() {
 
         <div style={actionBarStyle}>
           <Link to={deliveryHref} style={secondaryButtonStyle}>
-            Lieferschein oeffnen
+            Lieferschein PDF öffnen
           </Link>
 
 
@@ -663,5 +672,6 @@ const dangerHintBoxStyle: React.CSSProperties = {
   fontSize: 13,
   lineHeight: 1.55,
 };
+
 
 

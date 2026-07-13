@@ -31,6 +31,7 @@ export default [
   route("label/:publicToken", "routes/label.$publicToken.tsx"),
   route("packlisten", "routes/packlisten.tsx"),
   route("lieferscheine", "routes/lieferscheine.tsx"),
+  route("lieferscheine/:orderId/pdf", "routes/lieferschein-pdf.$orderId.tsx"),
   route("fahrerzettel", "routes/fahrerzettel.tsx"),
   route("lieferungen", "routes/lieferungen.tsx"),
   route("einkauf", "routes/einkauf.tsx"),

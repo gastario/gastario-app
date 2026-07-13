@@ -653,9 +653,9 @@ export default function OrdersPage() {
 
                     <Link
                       className="ghostButton"
-                      to={"/lieferscheine?orderId=" + order.id}
+                      to={"/lieferscheine/" + order.id + "/pdf"}
                     >
-                      Lieferschein
+                      Lieferschein PDF
                     </Link>
 
                     <Form method="post">
@@ -1565,5 +1565,6 @@ const selectStyle = {
   fontWeight: 850,
   background: "white",
 };
+
 
 

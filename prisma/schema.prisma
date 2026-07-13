@@ -152,6 +152,7 @@ model Tenant {
   customers       Customer[]
   products        Product[]
   orders          Order[]
+  deliveryNotes   DeliveryNote[]
   incomingEmails  IncomingEmail[]
   deliveryTours   DeliveryTour[]
   deliveryStops   DeliveryStop[]
@@ -221,7 +222,7 @@ model EmailAccount {
 
   imapHost              String?
   imapPort              Int?
-  imapSecure            Boolean @default(true)
+  imapSecure            Boolean   @default(true)
   imapUsername          String?
   imapPasswordEncrypted String?
   imapLastCheckedAt     DateTime?
@@ -410,6 +411,7 @@ model Order {
   incomingEmail   IncomingEmail? @relation(fields: [incomingEmailId], references: [id])
   items           OrderItem[]
   invoices        Invoice[]
+  deliveryNote    DeliveryNote?
   customerCountry String         @default("DE")
   customerVatId   String?
 
@@ -421,6 +423,26 @@ model Order {
   @@index([source])
   @@index([status])
   @@index([deliveryDate])
+}
+
+model DeliveryNote {
+  id       String @id @default(cuid())
+  tenantId String
+  orderId  String @unique
+
+  number   String
+  filename String
+  mimeType String @default("application/pdf")
+  pdfData  Bytes
+
+  generatedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  order  Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([generatedAt])
 }
 
 model OrderItem {
@@ -456,7 +478,7 @@ model FoodLabel {
   ingredients    String?
   quantityText   String?
 
-  labelCount Int    @default(1)
+  labelCount  Int     @default(1)
   labelSize   String  @default("76x51")
   publicToken String? @unique
   status      String  @default("CREATED")
@@ -743,24 +765,23 @@ enum TaxTreatment {
 }
 
 model ImportIgnoreRule {
-  id                 String   @id @default(cuid())
-  tenantId           String
+  id       String @id @default(cuid())
+  tenantId String
 
-  isActive           Boolean  @default(true)
+  isActive Boolean @default(true)
 
-  source             String?
-  senderContains     String?
-  subjectContains    String?
-  textContains       String?
+  source          String?
+  senderContains  String?
+  subjectContains String?
+  textContains    String?
 
   createdFromOrderId String?
   createdFromEmailId String?
 
-  reason             String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([tenantId, isActive])
 }
-
