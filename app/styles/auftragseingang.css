@@ -5579,3 +5579,118 @@
     flex-direction: row !important;
   }
 }
+
+/* gastario-solid-navigation-and-secondary-action-20260713 */
+
+/* Hauptnavigation: sichtbar als echte Buttons */
+.inboxCombinedNavigation .finalCategoryTab {
+  min-height: 42px !important;
+  padding: 0 15px !important;
+  border: 1px solid #cad9d3 !important;
+  border-radius: 11px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f1f6f4 100%) !important;
+  color: #29463e !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .95),
+    0 3px 7px rgba(15, 23, 42, .07) !important;
+  transition:
+    transform .15s ease,
+    border-color .15s ease,
+    background .15s ease,
+    box-shadow .15s ease !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab::after {
+  display: none !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab:hover {
+  transform: translateY(-1px) !important;
+  border-color: #9cc7b9 !important;
+  background: linear-gradient(180deg, #ffffff 0%, #e9f5f0 100%) !important;
+  color: #08705a !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .95),
+    0 6px 13px rgba(15, 23, 42, .09) !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab.active {
+  border-color: #078d6c !important;
+  background: linear-gradient(180deg, #17aa84 0%, #0b9875 100%) !important;
+  color: #ffffff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .18),
+    0 7px 15px rgba(15, 164, 126, .22) !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab strong {
+  min-width: 23px !important;
+  height: 23px !important;
+  border: 1px solid #d5e3de !important;
+  background: #e5efeb !important;
+  color: #315f53 !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab.active strong {
+  border-color: rgba(255, 255, 255, .18) !important;
+  background: rgba(255, 255, 255, .2) !important;
+  color: #ffffff !important;
+}
+
+/* Unterkategorien ebenfalls wie echte Buttons */
+.orderStatusSubnav .realOrderTab {
+  min-height: 36px !important;
+  border: 1px solid #cedcd7 !important;
+  border-radius: 9px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f3f7f5 100%) !important;
+  color: #344d46 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .95),
+    0 2px 5px rgba(15, 23, 42, .055) !important;
+}
+
+.orderStatusSubnav .realOrderTab:hover {
+  transform: translateY(-1px) !important;
+  border-color: #a8cbbf !important;
+  background: #edf7f3 !important;
+  color: #08705a !important;
+  box-shadow: 0 5px 10px rgba(15, 23, 42, .075) !important;
+}
+
+.orderStatusSubnav .realOrderTab.active {
+  border-color: #45af91 !important;
+  background: linear-gradient(180deg, #e9f8f2 0%, #dff2eb 100%) !important;
+  color: #076b54 !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(15, 164, 126, .07),
+    0 3px 7px rgba(15, 164, 126, .08) !important;
+}
+
+/* Öffnen bleibt primär */
+.leadPrimaryAction {
+  border: 1px solid #078d6c !important;
+  background: linear-gradient(180deg, #17aa84 0%, #0b9875 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 7px rgba(15, 164, 126, .18) !important;
+}
+
+.leadPrimaryAction:hover {
+  border-color: #07795e !important;
+  background: linear-gradient(180deg, #119c78 0%, #087f62 100%) !important;
+}
+
+/* Ausblenden als deutlich andere Sekundäraktion */
+.leadSecondaryAction {
+  border: 1px solid #e2b767 !important;
+  background: linear-gradient(180deg, #fffaf1 0%, #fff3dc 100%) !important;
+  color: #9a6205 !important;
+  box-shadow: 0 2px 5px rgba(146, 92, 8, .07) !important;
+}
+
+.leadSecondaryAction:hover {
+  border-color: #d99a2b !important;
+  background: #ffedcb !important;
+  color: #854f00 !important;
+}
