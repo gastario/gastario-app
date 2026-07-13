@@ -228,37 +228,61 @@ export default function AuftragPruefungPage() {
   return (
     <main style={{ background: "linear-gradient(180deg, #eef6f8 0%, #f8fbfc 100%)", minHeight: "100vh", padding: 24 }}>
       <div style={topbarStyle}>
-        <Link to="/auftragseingang" style={backLinkStyle}>
-          Zurueck zum Auftragseingang
-        </Link>
+        <div>
+          <Link to="/auftraege" style={secondaryButtonStyle}>
+            Zurück zu den Aufträgen
+          </Link>
+        </div>
 
         <div style={actionBarStyle}>
-          <Link
-            to={deliveryHref}
+          <a
+            href={deliveryHref}
             style={secondaryButtonStyle}
-            reloadDocument
             target="_blank"
+            rel="noreferrer"
           >
             Lieferschein PDF öffnen
-          </Link>
+          </a>
 
-
-          <Link to={"/auftraege/" + order.id + "/foodlabels"} style={primaryButtonStyle}>
+          <Link
+            to={"/auftraege/" + order.id + "/foodlabels"}
+            style={primaryButtonStyle}
+          >
             Foodlabels erstellen
           </Link>
+
           <Form method="post">
-            <input type="hidden" name="_intent" value="confirmOrder" />
+            <input
+              type="hidden"
+              name="_intent"
+              value="confirmOrder"
+            />
+
             <button
               type="submit"
               disabled={!canConfirmOrder}
-              style={canConfirmOrder ? primaryButtonStyle : disabledButtonStyle}
-              title={canConfirmOrder ? "Auftrag uebernehmen" : "Erst Daten ergaenzen"}
+              style={
+                canConfirmOrder
+                  ? primaryButtonStyle
+                  : disabledButtonStyle
+              }
+              title={
+                canConfirmOrder
+                  ? "Auftrag übernehmen"
+                  : "Erst Daten ergänzen"
+              }
             >
-              {canConfirmOrder ? "Auftrag uebernehmen" : "Erst Daten ergaenzen"}
+              {canConfirmOrder
+                ? "Auftrag übernehmen"
+                : "Erst Daten ergänzen"}
             </button>
           </Form>
 
-          <button type="button" onClick={() => window.print()} style={printButtonStyle}>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            style={printButtonStyle}
+          >
             Drucken / als PDF speichern
           </button>
         </div>

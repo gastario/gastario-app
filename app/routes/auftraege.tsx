@@ -651,12 +651,14 @@ export default function OrdersPage() {
                       Öffnen
                     </Link>
 
-                    <Link
+                    <a
                       className="ghostButton"
-                      to={"/lieferscheine/" + order.id + "/pdf"}
+                      href={"/lieferscheine/" + order.id + "/pdf"}
+                      target="_blank"
+                      rel="noreferrer"
                     >
                       Lieferschein PDF
-                    </Link>
+                    </a>
 
                     <Form method="post">
                       <input type="hidden" name="intent" value="deleteOrder" />
