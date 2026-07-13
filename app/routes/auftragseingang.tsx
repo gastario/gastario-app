@@ -748,6 +748,8 @@ export default function AuftragseingangPage() {
   if (data.setupError) {
     return (
       <AppLayout>
+
+
         <div style={pageStyle}>
           <div style={shellStyle}>
             <section style={{ ...cardStyle, padding: 20, maxWidth: 760 }}>
@@ -988,319 +990,6 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
   return (
     <AppLayout>
-      <div className="inboxPage inboxFinalPage">
-{data.setupError ? (
-          <div style={{
-            margin: "0 0 18px",
-            padding: "14px 16px",
-            borderRadius: 14,
-            border: "1px solid #fecaca",
-            background: "#fff1f2",
-            color: "#991b1b",
-            fontWeight: 800,
-          }}>
-            {data.setupError}
-          </div>
-        ) : null}
-<section className="finalHeader">
-          <div>
-            <div className="finalEyebrow">{isEmailFocusedView ? "Eingang" : "Auftragseingang"}</div>
-            <h1>{inboxHeadline}</h1>
-            <p>{inboxSubtitle}</p>
-
-            <div className="finalMiniSummary">
-              <span>
-                <strong>{currentOrderStats.all}</strong>
-                gesamt
-              </span>
-              <span>
-                <strong>{currentOrderStats.review}</strong>
-                offen
-              </span>
-              <span>
-                <strong>{currentOrderStats.confirmed}</strong>
-                übernommen
-              </span>
-            </div>
-          </div>
-
-          <div className="finalHeaderActions">
-            <button
-              type="button"
-              className={liveEnabled ? "finalGhost isLive" : "finalGhost"}
-              onClick={() => setLiveEnabled((value) => !value)}
-              title={lastAutoImportAt ? "Letzter Auto-Abruf: " + lastAutoImportAt : "Automatischer Abruf"}
-            >
-              <span></span>
-              {liveEnabled ? "Live an" : "Live aus"}
-            </button>
-
-            <button
-              type="button"
-              className="finalPrimary"
-              onClick={runEmailImportAndReload}
-              disabled={isImportingNow}
-            >
-              {isImportingNow ? "Abruf läuft..." : "E-Mails abrufen"}
-            </button>
-          </div>
-        </section>
-
-        {actionData?.error ? (
-          <div className="finalAlert error">{actionData.error}</div>
-        ) : null}
-
-        {actionData?.success ? (
-          <div className="finalAlert success">{actionData.success}</div>
-        ) : null}
-
-        <section className="finalInboxShell">
-          <nav className="finalCategoryTabs" aria-label="E-Mail-Kategorien">
-            {[
-              ["all", "Alle", data.emailBuckets?.all || 0],
-              ["orders", "Bestätigungen", data.emailBuckets?.orders || 0],
-              ["possible", "Unklar", data.emailBuckets?.possible || 0],
-              ["inquiries", "Anfragen", data.emailBuckets?.inquiries || 0],
-              ["reminders", "Lieferscheine", data.emailBuckets?.reminders || 0],
-              ["other", "Sonstiges", data.emailBuckets?.other || 0],
-              ["hidden", "Ausgeblendet", data.emailBuckets?.hidden || 0],
-            ].map(([key, label, count]) => {
-              const params = new URLSearchParams();
-
-              params.set("emailCategory", String(key));
-              if (data.dateRange) params.set("dateRange", data.dateRange);
-              if (data.searchQuery) params.set("q", data.searchQuery);
-              if (data.selectedDate) params.set("date", data.selectedDate);
-
-              const active = data.selectedEmailCategory === key;
-
-              return (
-                <Link
-                  key={String(key)}
-                  to={"/auftragseingang?" + params.toString()}
-                  className={active ? "finalCategoryTab active" : "finalCategoryTab"}
-                  prefetch="intent"
-                >
-                  <span>{label}</span>
-                  <strong>{count}</strong>
-                </Link>
-              );
-            })}
-          </nav>
-
-          <Form method="get" className="finalToolbar">
-            <input type="hidden" name="emailCategory" value={data.selectedEmailCategory} />
-
-            <label className="finalSearch">
-              <span>Suche</span>
-              <input
-                name="q"
-                defaultValue={data.searchQuery || ""}
-                placeholder="Absender, Kunde oder Betreff suchen ..."
-              />
-            </label>
-
-            <label className="finalSelect">
-              <span>Zeitraum</span>
-              <select name="dateRange" defaultValue={data.dateRange || "last7"}>
-                <option value="last7">Letzte 7 Tage</option>
-                <option value="today">Heute</option>
-                <option value="yesterday">Gestern</option>
-              </select>
-            </label>
-
-            <button type="submit" className="finalFilterButton">Weitere Filter</button>
-            <Link to={"/auftragseingang?emailCategory=" + data.selectedEmailCategory + "&dateRange=last7"} className="finalResetButton">
-              Zurücksetzen
-            </Link>
-          </Form>
-        </section>
-                <nav className="realOrderTabs" aria-label="Auftragsfilter">
-          {[
-            ["Alle Aufträge", currentOrderStats.all, ""],
-            ["Zu prüfen", currentOrderStats.review, "AUTO_CREATED"],
-            ["Übernommen", currentOrderStats.confirmed, "CONFIRMED"],
-            ["Abgelehnt", currentOrderStats.rejected, "REJECTED"],
-          ].map(([label, count, status]) => {
-            const active = activeOrderStatus === status || (!activeOrderStatus && !status);
-            const params = new URLSearchParams();
-
-            if (status) params.set("status", String(status));
-
-            const href = "/auftragseingang" + (params.toString() ? "?" + params.toString() : "");
-
-            return (
-              <a key={String(label)} href={href} className={active ? "realOrderTab active" : "realOrderTab"}>
-                <span>{label}</span>
-                <strong>{count}</strong>
-              </a>
-            );
-          })}
-        </nav>
-<section className="finalOrdersShell finalOrdersSplitShell">
-          <div className="finalOrdersHead">
-            <div>
-              <h2>{activeOrderViewTitle}</h2>
-              <p>{activeOrderViewSubtitle}</p>
-            </div>
-
-            <div className="finalOrdersRight">
-              <strong>{visibleOrders.length}</strong>
-              <span>{activeOrderViewCountLabel}</span>
-            </div>
-          </div>
-
-          {visibleOrders.length === 0 ? (
-            <div className="finalEmpty">
-              {data.setupError ? data.setupError : 'Keine Aufträge in dieser Ansicht.'}
-            </div>
-          ) : (
-            <div className={selectedOrder ? "finalOrdersGrid selectedFocusMode" : "finalOrdersGrid"}>
-              <div className="finalOrderRows">
-                {visibleOrders.map((order: any, index: number) => {
-                  const items = Array.isArray(order.items) ? order.items : [];
-                  const totalInfo = getDisplayedOrderTotal(order);
-                  const previewItems = items
-                    .filter((item: any) => !String(item.name || "").toLowerCase().includes("fehlende position"))
-                    .slice(0, 3);
-
-                  return (
-                    <article
-                      className={selectedOrder?.id === order.id ? "finalOrderRow selected" : "finalOrderRow"}
-                      key={order.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => updateSelectedOrder(order.id)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          updateSelectedOrder(order.id);
-                        }
-                      }}
-                    >
-                      <div className="finalOrderIcon">✉</div>
-
-                      <div className="finalOrderCustomer">
-                        <div className="finalOrderNumber">{order.orderNumber}</div>
-                        <h3>{order.customerName || order.customer?.name || "Kunde unbekannt"}</h3>
-                        <p>{order.contactName || "Keine Kontaktperson erkannt"}</p>
-                        <span className="finalSourceBadge">{sourceLabel(order.source)}</span>
-                      </div>
-
-                      <div className="finalOrderItems">
-                        {previewItems.map((item: any) => (
-                          <div key={item.id || item.name}>
-                            <strong>{item.quantity || 1}x</strong>
-                            <span>{item.name || "Position"}</span>
-                          </div>
-                        ))}
-
-                        {items.length > previewItems.length ? (
-                          <small>+ {items.length - previewItems.length} weitere Position</small>
-                        ) : null}
-                      </div>
-
-                      <div className="finalOrderDate">
-                        <strong>{formatDate(order.deliveryDate)}</strong>
-                        <span>{order.deliveryTimeText || "Uhrzeit offen"}</span>
-                      </div>
-
-                      <div className="finalOrderTotal">
-                        <strong>{formatImportCurrencyFromCents(totalInfo.cents)}</strong>
-                        <span>{totalInfo.source}</span>
-                      </div>
-                    </article>
-                  );
-                })}
-
-                <div className="finalLoadMore">Weitere Ergebnisse laden</div>
-              </div>
-
-              {selectedOrder ? (
-                <aside className="finalSelectedPanel" key={selectedOrder.id}>
-                  <div className="finalSelectedTop">
-                    <div>
-                      <div className="finalSelectedKicker">Ausgewählt</div>
-                      <div className="finalOrderNumber">{selectedOrder.orderNumber}</div>
-                      <h3>{selectedOrder.customerName || selectedOrder.customer?.name || "Kunde unbekannt"}</h3>
-                    </div>
-
-                    <span className="finalSourceBadge big">{sourceLabel(selectedOrder.source)}</span>
-                  </div>
-
-                  <div className="finalSelectedFacts">
-                    <div>
-                      <span>Lieferung</span>
-                      <strong>{formatDate(selectedOrder.deliveryDate)}</strong>
-                      <small>{selectedOrder.deliveryTimeText || "Uhrzeit offen"}</small>
-                    </div>
-
-                    <div>
-                      <span>Lieferadresse</span>
-                      <strong>{selectedOrder.customerName || selectedOrder.customer?.name || "Kunde unbekannt"}</strong>
-                      <small>{selectedOrder.deliveryAddress || "Adresse prüfen"}</small>
-                    </div>
-
-                    <div>
-                      <span>Gesamt</span>
-                      <strong>{selectedOrderTotal ? formatImportCurrencyFromCents(selectedOrderTotal.cents) : "-"}</strong>
-                      <small>{selectedOrderTotal?.source || "bitte prüfen"}</small>
-                    </div>
-                  </div>
-
-                  <div className="finalSelectedItems">
-                    <h4>Positionen</h4>
-
-                    {selectedOrderItems.slice(0, 6).map((item: any) => (
-                      <div className="finalSelectedItem" key={item.id || item.name}>
-                        <span>
-                          <strong>{item.quantity || 1}x</strong>
-                          {item.name || "Position"}
-                        </span>
-                        <b>{formatImportCurrencyFromCents(Number(item.totalCents || 0))}</b>
-                      </div>
-                    ))}
-
-                    {selectedOrderItems.length > 6 ? (
-                      <div className="finalSelectedMore">+ {selectedOrderItems.length - 6} weitere Positionen</div>
-                    ) : null}
-                  </div>
-
-                  {selectedOrderTotal?.source === "vorläufig" ? (
-                    <div className="finalSelectedNotice">
-                      Der Betrag ist vorläufig und sollte vor Übernahme geprüft werden.
-                    </div>
-                  ) : null}
-
-                  <div className="finalSelectedActions">
-                    <button type="button" className="finalBackButton" onClick={() => updateSelectedOrder(null)}>
-                      Zurück zur Liste
-                    </button>
-
-                    <Link to={"/auftrag-pruefung/" + selectedOrder.id} prefetch="intent">
-                      Prüfen & übernehmen
-                    </Link>
-
-                    <Form method="post">
-                      <input type="hidden" name="intent" value="deleteOrder" />
-                      <input type="hidden" name="orderId" value={selectedOrder.id} />
-                      <button type="submit">Löschen</button>
-                    </Form>
-                  </div>
-                </aside>
-              ) : null}
-            </div>
-          )}
-
-          {hiddenPastOrderCount > 0 ? (
-            <div className="finalHint">
-              {hiddenPastOrderCount} vergangene Auftrag{hiddenPastOrderCount === 1 ? "" : "e"} ausgeblendet.{" "}
-              <Link to="/auftraege?view=past">Vergangene Aufträge öffnen</Link>
-            </div>
-          ) : null}
-        </section>
-</div>
-
       <style>{`
         /* gastario-final-auftragseingang-selected-ux-20260709 */
 
@@ -4764,6 +4453,321 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
         }
         `}
 </style>
+
+      <div className="inboxPage inboxFinalPage">
+{data.setupError ? (
+          <div style={{
+            margin: "0 0 18px",
+            padding: "14px 16px",
+            borderRadius: 14,
+            border: "1px solid #fecaca",
+            background: "#fff1f2",
+            color: "#991b1b",
+            fontWeight: 800,
+          }}>
+            {data.setupError}
+          </div>
+        ) : null}
+<section className="finalHeader">
+          <div>
+            <div className="finalEyebrow">{isEmailFocusedView ? "Eingang" : "Auftragseingang"}</div>
+            <h1>{inboxHeadline}</h1>
+            <p>{inboxSubtitle}</p>
+
+            <div className="finalMiniSummary">
+              <span>
+                <strong>{currentOrderStats.all}</strong>
+                gesamt
+              </span>
+              <span>
+                <strong>{currentOrderStats.review}</strong>
+                offen
+              </span>
+              <span>
+                <strong>{currentOrderStats.confirmed}</strong>
+                übernommen
+              </span>
+            </div>
+          </div>
+
+          <div className="finalHeaderActions">
+            <button
+              type="button"
+              className={liveEnabled ? "finalGhost isLive" : "finalGhost"}
+              onClick={() => setLiveEnabled((value) => !value)}
+              title={lastAutoImportAt ? "Letzter Auto-Abruf: " + lastAutoImportAt : "Automatischer Abruf"}
+            >
+              <span></span>
+              {liveEnabled ? "Live an" : "Live aus"}
+            </button>
+
+            <button
+              type="button"
+              className="finalPrimary"
+              onClick={runEmailImportAndReload}
+              disabled={isImportingNow}
+            >
+              {isImportingNow ? "Abruf läuft..." : "E-Mails abrufen"}
+            </button>
+          </div>
+        </section>
+
+        {actionData?.error ? (
+          <div className="finalAlert error">{actionData.error}</div>
+        ) : null}
+
+        {actionData?.success ? (
+          <div className="finalAlert success">{actionData.success}</div>
+        ) : null}
+
+        <section className="finalInboxShell">
+          <nav className="finalCategoryTabs" aria-label="E-Mail-Kategorien">
+            {[
+              ["all", "Alle", data.emailBuckets?.all || 0],
+              ["orders", "Bestätigungen", data.emailBuckets?.orders || 0],
+              ["possible", "Unklar", data.emailBuckets?.possible || 0],
+              ["inquiries", "Anfragen", data.emailBuckets?.inquiries || 0],
+              ["reminders", "Lieferscheine", data.emailBuckets?.reminders || 0],
+              ["other", "Sonstiges", data.emailBuckets?.other || 0],
+              ["hidden", "Ausgeblendet", data.emailBuckets?.hidden || 0],
+            ].map(([key, label, count]) => {
+              const params = new URLSearchParams();
+
+              params.set("emailCategory", String(key));
+              if (data.dateRange) params.set("dateRange", data.dateRange);
+              if (data.searchQuery) params.set("q", data.searchQuery);
+              if (data.selectedDate) params.set("date", data.selectedDate);
+
+              const active = data.selectedEmailCategory === key;
+
+              return (
+                <Link
+                  key={String(key)}
+                  to={"/auftragseingang?" + params.toString()}
+                  className={active ? "finalCategoryTab active" : "finalCategoryTab"}
+                  prefetch="intent"
+                >
+                  <span>{label}</span>
+                  <strong>{count}</strong>
+                </Link>
+              );
+            })}
+          </nav>
+
+          <Form method="get" className="finalToolbar">
+            <input type="hidden" name="emailCategory" value={data.selectedEmailCategory} />
+
+            <label className="finalSearch">
+              <span>Suche</span>
+              <input
+                name="q"
+                defaultValue={data.searchQuery || ""}
+                placeholder="Absender, Kunde oder Betreff suchen ..."
+              />
+            </label>
+
+            <label className="finalSelect">
+              <span>Zeitraum</span>
+              <select name="dateRange" defaultValue={data.dateRange || "last7"}>
+                <option value="last7">Letzte 7 Tage</option>
+                <option value="today">Heute</option>
+                <option value="yesterday">Gestern</option>
+              </select>
+            </label>
+
+            <button type="submit" className="finalFilterButton">Weitere Filter</button>
+            <Link to={"/auftragseingang?emailCategory=" + data.selectedEmailCategory + "&dateRange=last7"} className="finalResetButton">
+              Zurücksetzen
+            </Link>
+          </Form>
+        </section>
+                <nav className="realOrderTabs" aria-label="Auftragsfilter">
+          {[
+            ["Alle Aufträge", currentOrderStats.all, ""],
+            ["Zu prüfen", currentOrderStats.review, "AUTO_CREATED"],
+            ["Übernommen", currentOrderStats.confirmed, "CONFIRMED"],
+            ["Abgelehnt", currentOrderStats.rejected, "REJECTED"],
+          ].map(([label, count, status]) => {
+            const active = activeOrderStatus === status || (!activeOrderStatus && !status);
+            const params = new URLSearchParams();
+
+            if (status) params.set("status", String(status));
+
+            const href = "/auftragseingang" + (params.toString() ? "?" + params.toString() : "");
+
+            return (
+              <a key={String(label)} href={href} className={active ? "realOrderTab active" : "realOrderTab"}>
+                <span>{label}</span>
+                <strong>{count}</strong>
+              </a>
+            );
+          })}
+        </nav>
+<section className="finalOrdersShell finalOrdersSplitShell">
+          <div className="finalOrdersHead">
+            <div>
+              <h2>{activeOrderViewTitle}</h2>
+              <p>{activeOrderViewSubtitle}</p>
+            </div>
+
+            <div className="finalOrdersRight">
+              <strong>{visibleOrders.length}</strong>
+              <span>{activeOrderViewCountLabel}</span>
+            </div>
+          </div>
+
+          {visibleOrders.length === 0 ? (
+            <div className="finalEmpty">
+              {data.setupError ? data.setupError : 'Keine Aufträge in dieser Ansicht.'}
+            </div>
+          ) : (
+            <div className={selectedOrder ? "finalOrdersGrid selectedFocusMode" : "finalOrdersGrid"}>
+              <div className="finalOrderRows">
+                {visibleOrders.map((order: any, index: number) => {
+                  const items = Array.isArray(order.items) ? order.items : [];
+                  const totalInfo = getDisplayedOrderTotal(order);
+                  const previewItems = items
+                    .filter((item: any) => !String(item.name || "").toLowerCase().includes("fehlende position"))
+                    .slice(0, 3);
+
+                  return (
+                    <article
+                      className={selectedOrder?.id === order.id ? "finalOrderRow selected" : "finalOrderRow"}
+                      key={order.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => updateSelectedOrder(order.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          updateSelectedOrder(order.id);
+                        }
+                      }}
+                    >
+                      <div className="finalOrderIcon">✉</div>
+
+                      <div className="finalOrderCustomer">
+                        <div className="finalOrderNumber">{order.orderNumber}</div>
+                        <h3>{order.customerName || order.customer?.name || "Kunde unbekannt"}</h3>
+                        <p>{order.contactName || "Keine Kontaktperson erkannt"}</p>
+                        <span className="finalSourceBadge">{sourceLabel(order.source)}</span>
+                      </div>
+
+                      <div className="finalOrderItems">
+                        {previewItems.map((item: any) => (
+                          <div key={item.id || item.name}>
+                            <strong>{item.quantity || 1}x</strong>
+                            <span>{item.name || "Position"}</span>
+                          </div>
+                        ))}
+
+                        {items.length > previewItems.length ? (
+                          <small>+ {items.length - previewItems.length} weitere Position</small>
+                        ) : null}
+                      </div>
+
+                      <div className="finalOrderDate">
+                        <strong>{formatDate(order.deliveryDate)}</strong>
+                        <span>{order.deliveryTimeText || "Uhrzeit offen"}</span>
+                      </div>
+
+                      <div className="finalOrderTotal">
+                        <strong>{formatImportCurrencyFromCents(totalInfo.cents)}</strong>
+                        <span>{totalInfo.source}</span>
+                      </div>
+                    </article>
+                  );
+                })}
+
+                <div className="finalLoadMore">Weitere Ergebnisse laden</div>
+              </div>
+
+              {selectedOrder ? (
+                <aside className="finalSelectedPanel" key={selectedOrder.id}>
+                  <div className="finalSelectedTop">
+                    <div>
+                      <div className="finalSelectedKicker">Ausgewählt</div>
+                      <div className="finalOrderNumber">{selectedOrder.orderNumber}</div>
+                      <h3>{selectedOrder.customerName || selectedOrder.customer?.name || "Kunde unbekannt"}</h3>
+                    </div>
+
+                    <span className="finalSourceBadge big">{sourceLabel(selectedOrder.source)}</span>
+                  </div>
+
+                  <div className="finalSelectedFacts">
+                    <div>
+                      <span>Lieferung</span>
+                      <strong>{formatDate(selectedOrder.deliveryDate)}</strong>
+                      <small>{selectedOrder.deliveryTimeText || "Uhrzeit offen"}</small>
+                    </div>
+
+                    <div>
+                      <span>Lieferadresse</span>
+                      <strong>{selectedOrder.customerName || selectedOrder.customer?.name || "Kunde unbekannt"}</strong>
+                      <small>{selectedOrder.deliveryAddress || "Adresse prüfen"}</small>
+                    </div>
+
+                    <div>
+                      <span>Gesamt</span>
+                      <strong>{selectedOrderTotal ? formatImportCurrencyFromCents(selectedOrderTotal.cents) : "-"}</strong>
+                      <small>{selectedOrderTotal?.source || "bitte prüfen"}</small>
+                    </div>
+                  </div>
+
+                  <div className="finalSelectedItems">
+                    <h4>Positionen</h4>
+
+                    {selectedOrderItems.slice(0, 6).map((item: any) => (
+                      <div className="finalSelectedItem" key={item.id || item.name}>
+                        <span>
+                          <strong>{item.quantity || 1}x</strong>
+                          {item.name || "Position"}
+                        </span>
+                        <b>{formatImportCurrencyFromCents(Number(item.totalCents || 0))}</b>
+                      </div>
+                    ))}
+
+                    {selectedOrderItems.length > 6 ? (
+                      <div className="finalSelectedMore">+ {selectedOrderItems.length - 6} weitere Positionen</div>
+                    ) : null}
+                  </div>
+
+                  {selectedOrderTotal?.source === "vorläufig" ? (
+                    <div className="finalSelectedNotice">
+                      Der Betrag ist vorläufig und sollte vor Übernahme geprüft werden.
+                    </div>
+                  ) : null}
+
+                  <div className="finalSelectedActions">
+                    <button type="button" className="finalBackButton" onClick={() => updateSelectedOrder(null)}>
+                      Zurück zur Liste
+                    </button>
+
+                    <Link to={"/auftrag-pruefung/" + selectedOrder.id} prefetch="intent">
+                      Prüfen & übernehmen
+                    </Link>
+
+                    <Form method="post">
+                      <input type="hidden" name="intent" value="deleteOrder" />
+                      <input type="hidden" name="orderId" value={selectedOrder.id} />
+                      <button type="submit">Löschen</button>
+                    </Form>
+                  </div>
+                </aside>
+              ) : null}
+            </div>
+          )}
+
+          {hiddenPastOrderCount > 0 ? (
+            <div className="finalHint">
+              {hiddenPastOrderCount} vergangene Auftrag{hiddenPastOrderCount === 1 ? "" : "e"} ausgeblendet.{" "}
+              <Link to="/auftraege?view=past">Vergangene Aufträge öffnen</Link>
+            </div>
+          ) : null}
+        </section>
+</div>
+
+
 </AppLayout>
   );
 }
