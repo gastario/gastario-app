@@ -429,7 +429,7 @@ export default function OrdersPage() {
 
                   <strong>{centsToEuro(total)}</strong>
 
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <div className="orderActions">
                     <Link className="ghostButton primaryGhostButton" to={"/auftrag-pruefung/" + order.id}>
                       Prüfen
                     </Link>
@@ -444,7 +444,7 @@ export default function OrdersPage() {
                     <Form method="post">
                       <input type="hidden" name="intent" value="deleteOrder" />
                       <input type="hidden" name="orderId" value={order.id} />
-                      <button className="ghostButton" type="submit" style={{ color: "#b91c1c" }}>
+                      <button className="ghostButton deleteOrderButton" type="submit">
                         Löschen
                       </button>
                     </Form>
@@ -829,7 +829,488 @@ export default function OrdersPage() {
         }
       `}</style>
 
-    </AppLayout>
+    
+      <style>{`
+        /* gastario-orders-page-redesign-20260713 */
+
+        .topbar {
+          display: flex !important;
+          align-items: flex-start !important;
+          justify-content: space-between !important;
+          gap: 32px !important;
+          margin-bottom: 20px !important;
+          padding: 4px 0 0 !important;
+          background: transparent !important;
+          border: 0 !important;
+          box-shadow: none !important;
+        }
+
+        .topbar h1 {
+          margin: 2px 0 5px !important;
+          color: #10211c !important;
+          font-size: 32px !important;
+          font-weight: 780 !important;
+          letter-spacing: -0.035em !important;
+        }
+
+        .topbar .eyebrow {
+          margin: 0 !important;
+          color: #078563 !important;
+          font-size: 10px !important;
+          font-weight: 850 !important;
+          letter-spacing: 0.12em !important;
+          text-transform: uppercase !important;
+        }
+
+        .pageSubline {
+          display: block !important;
+          max-width: 780px !important;
+          color: #647871 !important;
+          font-size: 13px !important;
+          font-weight: 560 !important;
+          line-height: 1.5 !important;
+        }
+
+        .topActions {
+          display: flex !important;
+          align-items: center !important;
+          gap: 9px !important;
+          flex: 0 0 auto !important;
+        }
+
+        .topActions .primaryButton,
+        .topActions .secondaryButton {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          min-height: 40px !important;
+          padding: 0 15px !important;
+          border-radius: 10px !important;
+          font-size: 12px !important;
+          font-weight: 750 !important;
+          text-decoration: none !important;
+          box-shadow: none !important;
+        }
+
+        .topActions .secondaryButton {
+          border: 1px solid #d5e1dd !important;
+          background: #ffffff !important;
+          color: #344c45 !important;
+        }
+
+        .topActions .secondaryButton:hover {
+          border-color: #afc9c0 !important;
+          background: #f7faf9 !important;
+          color: #08705a !important;
+        }
+
+        .topActions .primaryButton {
+          border: 1px solid #0b9472 !important;
+          background: #10a37f !important;
+          color: #ffffff !important;
+          box-shadow: 0 6px 14px rgba(15, 164, 126, 0.15) !important;
+        }
+
+        .orderSummaryGrid {
+          display: grid !important;
+          grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+          gap: 12px !important;
+          margin-bottom: 18px !important;
+        }
+
+        .orderSummaryGrid .metricCard {
+          display: flex !important;
+          align-items: flex-start !important;
+          justify-content: space-between !important;
+          min-height: 124px !important;
+          padding: 18px !important;
+          border: 1px solid #dce6e2 !important;
+          border-radius: 17px !important;
+          background: #ffffff !important;
+          box-shadow: 0 8px 22px rgba(15, 23, 42, 0.035) !important;
+        }
+
+        .metricCard p {
+          margin: 0 0 7px !important;
+          color: #61756e !important;
+          font-size: 11px !important;
+          font-weight: 750 !important;
+        }
+
+        .metricCard strong {
+          display: block !important;
+          margin-bottom: 6px !important;
+          color: #10211c !important;
+          font-size: 27px !important;
+          font-weight: 800 !important;
+          line-height: 1 !important;
+          letter-spacing: -0.035em !important;
+        }
+
+        .metricCard span {
+          color: #71827c !important;
+          font-size: 11px !important;
+          font-weight: 600 !important;
+        }
+
+        .metricCard small {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          min-height: 24px !important;
+          padding: 0 8px !important;
+          border: 1px solid #d8e7e2 !important;
+          border-radius: 999px !important;
+          background: #f3f8f6 !important;
+          color: #527067 !important;
+          font-size: 9px !important;
+          font-weight: 800 !important;
+          text-transform: uppercase !important;
+        }
+
+        .metricCard small[data-trend="aktiv"],
+        .metricCard small[data-trend="bereit"] {
+          border-color: #bde4d5 !important;
+          background: #edf9f4 !important;
+          color: #08705a !important;
+        }
+
+        .metricCard small[data-trend="pruefen"] {
+          border-color: #cfe1ee !important;
+          background: #eff7fc !important;
+          color: #376b91 !important;
+        }
+
+        .metricCard small[data-trend="kritisch"] {
+          border-color: #efc3c3 !important;
+          background: #fff5f5 !important;
+          color: #b04444 !important;
+        }
+
+        .panel {
+          overflow: hidden !important;
+          border: 1px solid #dce6e2 !important;
+          border-radius: 20px !important;
+          background: #ffffff !important;
+          box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04) !important;
+        }
+
+        .panelHeader {
+          display: flex !important;
+          align-items: flex-start !important;
+          justify-content: space-between !important;
+          gap: 24px !important;
+          padding: 18px !important;
+          border-bottom: 1px solid #e9f0ed !important;
+          background: linear-gradient(180deg, #ffffff 0%, #fbfcfc 100%) !important;
+        }
+
+        .panelHeader h2 {
+          margin: 2px 0 0 !important;
+          color: #10211c !important;
+          font-size: 23px !important;
+          font-weight: 780 !important;
+          letter-spacing: -0.025em !important;
+        }
+
+        .panelHeader .eyebrow {
+          margin: 0 !important;
+          color: #078563 !important;
+          font-size: 9px !important;
+          font-weight: 850 !important;
+          letter-spacing: 0.1em !important;
+          text-transform: uppercase !important;
+        }
+
+        .ordersFilterWrap {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: flex-end !important;
+          gap: 9px !important;
+          min-width: min(610px, 100%) !important;
+        }
+
+        .ordersFilterForm {
+          display: grid !important;
+          grid-template-columns: minmax(190px, 1fr) 180px auto auto !important;
+          align-items: end !important;
+          gap: 8px !important;
+          width: 100% !important;
+          padding: 10px !important;
+          border: 1px solid #dce6e2 !important;
+          border-radius: 14px !important;
+          background: #f8faf9 !important;
+        }
+
+        .filterLabel {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 5px !important;
+          color: #60736d !important;
+          font-size: 9px !important;
+          font-weight: 800 !important;
+          letter-spacing: 0.06em !important;
+          text-transform: uppercase !important;
+        }
+
+        .filterInput {
+          width: 100% !important;
+          min-height: 38px !important;
+          padding: 0 12px !important;
+          border: 1px solid #d4dfdb !important;
+          border-radius: 9px !important;
+          background: #ffffff !important;
+          color: #253c35 !important;
+          font-family: inherit !important;
+          font-size: 12px !important;
+          outline: none !important;
+        }
+
+        .filterInput:focus {
+          border-color: #7fc7b4 !important;
+          box-shadow: 0 0 0 3px rgba(15, 164, 126, 0.08) !important;
+        }
+
+        .ordersFilterForm .ghostButton {
+          min-height: 38px !important;
+          padding: 0 13px !important;
+          border-radius: 9px !important;
+          white-space: nowrap !important;
+        }
+
+        .statusFilterGroup {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: flex-end !important;
+          gap: 7px !important;
+        }
+
+        .statusFilterGroup .ghostButton {
+          min-height: 34px !important;
+          padding: 0 13px !important;
+          border: 1px solid #d6e1dd !important;
+          border-radius: 9px !important;
+          background: #ffffff !important;
+          color: #425850 !important;
+          font-size: 11px !important;
+          font-weight: 700 !important;
+          box-shadow: none !important;
+        }
+
+        .statusFilterGroup .ghostButton.activeFilter {
+          border-color: #65bda4 !important;
+          background: #e7f5f0 !important;
+          color: #08705a !important;
+        }
+
+        .ordersTable {
+          margin: 0 !important;
+          border: 0 !important;
+          border-radius: 0 !important;
+          overflow: hidden !important;
+        }
+
+        .ordersHead,
+        .ordersRow {
+          display: grid !important;
+          grid-template-columns:
+            minmax(95px, 0.72fr)
+            minmax(150px, 1fr)
+            minmax(95px, 0.72fr)
+            minmax(210px, 1.45fr)
+            105px
+            115px
+            132px !important;
+          align-items: center !important;
+          gap: 14px !important;
+        }
+
+        .ordersHead {
+          min-height: 42px !important;
+          padding: 0 16px !important;
+          border-bottom: 1px solid #dfe8e5 !important;
+          background: #f4f7f6 !important;
+          color: #61756e !important;
+          font-size: 9px !important;
+          font-weight: 850 !important;
+          letter-spacing: 0.06em !important;
+          text-transform: uppercase !important;
+        }
+
+        .ordersRow {
+          min-height: 112px !important;
+          padding: 16px !important;
+          border-bottom: 1px solid #e7eeeb !important;
+          background: #ffffff !important;
+          transition:
+            background 0.15s ease,
+            box-shadow 0.15s ease !important;
+        }
+
+        .ordersRow:last-child {
+          border-bottom: 0 !important;
+        }
+
+        .ordersRow:hover {
+          background: #fbfdfc !important;
+          box-shadow: inset 3px 0 0 #10a37f !important;
+        }
+
+        .ordersRow > div > strong,
+        .ordersRow > strong {
+          display: block !important;
+          color: #12221d !important;
+          font-size: 13px !important;
+          font-weight: 760 !important;
+          line-height: 1.3 !important;
+        }
+
+        .ordersRow > div > small {
+          display: block !important;
+          margin-top: 3px !important;
+          overflow: hidden !important;
+          color: #71827c !important;
+          font-size: 10px !important;
+          font-weight: 560 !important;
+          line-height: 1.35 !important;
+          text-overflow: ellipsis !important;
+        }
+
+        .orderStatus {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          width: fit-content !important;
+          min-height: 27px !important;
+          padding: 0 9px !important;
+          border-radius: 999px !important;
+          font-size: 9px !important;
+          font-weight: 800 !important;
+          white-space: nowrap !important;
+        }
+
+        .orderStatus.success {
+          border: 1px solid #b8e1d2 !important;
+          background: #edf9f4 !important;
+          color: #08705a !important;
+        }
+
+        .orderStatus.warning {
+          border: 1px solid #f1d4a8 !important;
+          background: #fff8ed !important;
+          color: #a36208 !important;
+        }
+
+        .orderStatus.danger {
+          border: 1px solid #edc4c4 !important;
+          background: #fff4f4 !important;
+          color: #ae3f3f !important;
+        }
+
+        .orderActions {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: stretch !important;
+          gap: 6px !important;
+          width: 100% !important;
+        }
+
+        .orderActions form {
+          display: block !important;
+          width: 100% !important;
+          margin: 0 !important;
+        }
+
+        .orderActions .ghostButton {
+          width: 100% !important;
+          min-height: 32px !important;
+          padding: 0 10px !important;
+          border-radius: 8px !important;
+          font-size: 10px !important;
+          font-weight: 750 !important;
+          box-shadow: none !important;
+        }
+
+        .orderActions .primaryGhostButton {
+          border-color: #0b9472 !important;
+          background: #10a37f !important;
+          color: #ffffff !important;
+        }
+
+        .orderActions .ghostButton:not(.primaryGhostButton):not(.deleteOrderButton) {
+          border-color: #d6e1dd !important;
+          background: #ffffff !important;
+          color: #40564f !important;
+        }
+
+        .deleteOrderButton {
+          border: 1px solid #edc9c9 !important;
+          background: #fff7f7 !important;
+          color: #b34242 !important;
+        }
+
+        .deleteOrderButton:hover {
+          border-color: #de9f9f !important;
+          background: #ffeded !important;
+          color: #9f2828 !important;
+        }
+
+        @media (max-width: 1250px) {
+          .orderSummaryGrid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          .panelHeader {
+            flex-direction: column !important;
+          }
+
+          .ordersFilterWrap {
+            align-items: stretch !important;
+            width: 100% !important;
+          }
+
+          .ordersHead,
+          .ordersRow {
+            grid-template-columns:
+              minmax(90px, .75fr)
+              minmax(130px, 1fr)
+              90px
+              minmax(170px, 1.3fr)
+              95px
+              105px
+              120px !important;
+            gap: 10px !important;
+          }
+        }
+
+        @media (max-width: 900px) {
+          .topbar {
+            flex-direction: column !important;
+          }
+
+          .orderSummaryGrid {
+            grid-template-columns: 1fr !important;
+          }
+
+          .ordersFilterForm {
+            grid-template-columns: 1fr 1fr !important;
+          }
+
+          .ordersHead {
+            display: none !important;
+          }
+
+          .ordersRow {
+            grid-template-columns: 1fr 1fr !important;
+          }
+
+          .orderActions {
+            flex-direction: row !important;
+            grid-column: 1 / -1 !important;
+          }
+        }
+      `}</style>
+</AppLayout>
   );
 }
 
