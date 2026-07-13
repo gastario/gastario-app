@@ -2775,3 +2775,29 @@
     0 0 0 4px rgba(220, 38, 38, 0.12),
     0 4px 10px rgba(180, 35, 24, 0.06) !important;
 }
+
+/* gastario-delete-button-solid-red-20260713 */
+
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedActions > form button {
+  border: 1px solid #b42318 !important;
+  background: #b42318 !important;
+  color: #ffffff !important;
+  box-shadow: 0 5px 12px rgba(180, 35, 24, 0.16) !important;
+}
+
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedActions > form button:hover {
+  border-color: #991b1b !important;
+  background: #991b1b !important;
+  color: #ffffff !important;
+  box-shadow: 0 7px 16px rgba(153, 27, 27, 0.22) !important;
+  transform: translateY(-1px) !important;
+}
+
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedActions > form button:active {
+  border-color: #7f1d1d !important;
+  background: #7f1d1d !important;
+  transform: translateY(0) !important;
+}
