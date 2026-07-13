@@ -3799,3 +3799,46 @@
     width: 100% !important;
   }
 }
+
+/* gastario-order-subnav-compact-polish-20260713 */
+
+.inboxCombinedNavigation {
+  width: fit-content !important;
+  max-width: 100% !important;
+  padding: 6px !important;
+}
+
+.orderStatusSubnav {
+  width: fit-content !important;
+  max-width: 100% !important;
+  margin-top: 6px !important;
+  padding: 6px 8px !important;
+  gap: 9px !important;
+  border-top: 1px solid #e5eeeb !important;
+  background: #f7faf9 !important;
+}
+
+.orderStatusSubnavLabel {
+  min-height: 32px !important;
+  padding: 0 6px !important;
+  font-size: 9.5px !important;
+  letter-spacing: 0.06em !important;
+}
+
+.orderStatusSubnav .realOrderTabs {
+  gap: 4px !important;
+}
+
+.orderStatusSubnav .realOrderTab {
+  min-height: 32px !important;
+  padding: 0 10px !important;
+  border-radius: 8px !important;
+  font-size: 11px !important;
+}
+
+@media (max-width: 900px) {
+  .inboxCombinedNavigation,
+  .orderStatusSubnav {
+    width: 100% !important;
+  }
+}
