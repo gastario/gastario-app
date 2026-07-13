@@ -1069,6 +1069,37 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
         ) : null}
 
         <section className="finalInboxShell">
+          
+
+          <Form method="get" className="finalToolbar">
+            <input type="hidden" name="emailCategory" value={data.selectedEmailCategory} />
+
+            <label className="finalSearch">
+              <span>Suche</span>
+              <input
+                name="q"
+                defaultValue={data.searchQuery || ""}
+                placeholder="Absender, Kunde oder Betreff suchen ..."
+              />
+            </label>
+
+            <label className="finalSelect">
+              <span>Zeitraum</span>
+              <select name="dateRange" defaultValue={data.dateRange || "last7"}>
+                <option value="last7">Letzte 7 Tage</option>
+                <option value="today">Heute</option>
+                <option value="yesterday">Gestern</option>
+              </select>
+            </label>
+
+            <button type="submit" className="finalFilterButton">Weitere Filter</button>
+            <Link to={"/auftragseingang?emailCategory=" + data.selectedEmailCategory + "&dateRange=last7"} className="finalResetButton">
+              Zurücksetzen
+            </Link>
+          </Form>
+        </section>
+                
+        <div className="inboxCombinedNavigation">
           <nav className="finalCategoryTabs" aria-label="E-Mail-Kategorien">
             {[
               [
@@ -1115,34 +1146,12 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
             })}
           </nav>
 
-          <Form method="get" className="finalToolbar">
-            <input type="hidden" name="emailCategory" value={data.selectedEmailCategory} />
+          <span
+            className="inboxNavigationDivider"
+            aria-hidden="true"
+          />
 
-            <label className="finalSearch">
-              <span>Suche</span>
-              <input
-                name="q"
-                defaultValue={data.searchQuery || ""}
-                placeholder="Absender, Kunde oder Betreff suchen ..."
-              />
-            </label>
-
-            <label className="finalSelect">
-              <span>Zeitraum</span>
-              <select name="dateRange" defaultValue={data.dateRange || "last7"}>
-                <option value="last7">Letzte 7 Tage</option>
-                <option value="today">Heute</option>
-                <option value="yesterday">Gestern</option>
-              </select>
-            </label>
-
-            <button type="submit" className="finalFilterButton">Weitere Filter</button>
-            <Link to={"/auftragseingang?emailCategory=" + data.selectedEmailCategory + "&dateRange=last7"} className="finalResetButton">
-              Zurücksetzen
-            </Link>
-          </Form>
-        </section>
-                <nav className="realOrderTabs" aria-label="Auftragsfilter">
+          <nav className="realOrderTabs" aria-label="Auftragsfilter">
           {[
             ["Alle Aufträge", currentOrderStats.all, ""],
             ["Zu prüfen", currentOrderStats.review, "AUTO_CREATED"],
@@ -1164,6 +1173,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
             );
           })}
         </nav>
+        </div>
 <section className="finalOrdersShell finalOrdersSplitShell">
           <div className="finalOrdersHead">
             <div>
