@@ -3715,3 +3715,87 @@
     flex-direction: row !important;
   }
 }
+
+/* gastario-nested-order-status-navigation-20260713 */
+
+.inboxCombinedNavigation {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 6px !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTabs {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 7px !important;
+  width: fit-content !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.inboxNavigationDivider {
+  display: none !important;
+}
+
+.orderStatusSubnav {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  margin-top: 7px !important;
+  padding: 8px 10px !important;
+  border-top: 1px solid #e4eeeb !important;
+  border-radius: 0 0 12px 12px !important;
+  background: #f7faf9 !important;
+}
+
+.orderStatusSubnavLabel {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 30px !important;
+  padding: 0 7px !important;
+  color: #64748b !important;
+  font-size: 10px !important;
+  font-weight: 750 !important;
+  letter-spacing: 0.07em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+}
+
+.inboxCombinedNavigation .orderStatusSubnav .realOrderTabs {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 5px !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.orderStatusSubnav .realOrderTab {
+  min-height: 34px !important;
+  padding: 0 11px !important;
+  border-radius: 9px !important;
+  font-size: 11.5px !important;
+}
+
+@media (max-width: 850px) {
+  .orderStatusSubnav {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  .inboxCombinedNavigation .orderStatusSubnav .realOrderTabs {
+    width: 100% !important;
+  }
+}

@@ -1181,7 +1181,13 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
             aria-hidden="true"
           />
 
-          <nav className="realOrderTabs" aria-label="Auftragsfilter">
+          {!isEmailFocusedView ? (
+            <div className="orderStatusSubnav">
+              <span className="orderStatusSubnavLabel">
+                Auftragsstatus
+              </span>
+
+              <nav className="realOrderTabs" aria-label="Auftragsfilter">
           {[
             ["Alle Aufträge", currentOrderStats.all, ""],
             ["Zu prüfen", currentOrderStats.review, "AUTO_CREATED"],
@@ -1203,6 +1209,8 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
             );
           })}
         </nav>
+            </div>
+          ) : null}
         </div>
 {/* gastario-restored-email-focused-view-20260713 */}
         {isEmailFocusedView ? (
