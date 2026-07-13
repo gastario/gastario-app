@@ -213,8 +213,8 @@ export default function OrdersPage() {
         </div>
 
         <div className="topActions">
-          <Link className="secondaryButton" to="/import-pruefen">Import pruefen</Link>
-          <Link className="primaryButton" to="/auftragseingang">Neuer Auftrag</Link>
+          <Link className="secondaryButton" to="/auftragseingang">Eingangszentrale</Link>
+          <Link className="primaryButton" to="/neuer-auftrag">+ Neuer Auftrag</Link>
         </div>
       </header>
 
