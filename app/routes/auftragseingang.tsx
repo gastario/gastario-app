@@ -33,93 +33,11 @@ function normalizeEmailText(value: unknown) {
 }
 
 function classifyIncomingEmail(mail: any) {
-  if (mail?.status === "IGNORED") {
-    return "hidden";
-  }
+  const subject = normalizeEmailText(mail?.subject || "");
+  const sender = normalizeEmailText(mail?.sender || "");
+  const combined = subject + " " + sender;
 
-  const extracted =
-    mail?.extractedJson &&
-    typeof mail.extractedJson === "object" &&
-    !Array.isArray(mail.extractedJson)
-      ? mail.extractedJson
-      : {};
-
-  const aiDecision =
-    extracted?.aiDecision &&
-    typeof extracted.aiDecision === "object"
-      ? extracted.aiDecision
-      : {};
-
-  const aiMailType = String(
-    aiDecision?.mailType || ""
-  ).toUpperCase();
-
-  const aiConfidence = Number(
-    aiDecision?.confidence || 0
-  );
-
-  /*
-   * Bereits getroffene Importentscheidung hat Vorrang.
-   */
-  if (
-    aiMailType === "INQUIRY" &&
-    aiConfidence >= 0.7
-  ) {
-    return "inquiries";
-  }
-
-  if (
-    aiMailType === "ORDER_CONFIRMATION" &&
-    aiConfidence >= 0.75
-  ) {
-    return "orders";
-  }
-
-  if (
-    aiMailType === "DELIVERY_NOTE" &&
-    aiConfidence >= 0.75
-  ) {
-    return "reminders";
-  }
-
-  if (
-    ["TRASH", "INVOICE"].includes(aiMailType) &&
-    aiConfidence >= 0.75
-  ) {
-    return "other";
-  }
-
-  if (
-    aiMailType === "UNKNOWN" &&
-    aiConfidence >= 0.6
-  ) {
-    return "possible";
-  }
-
-  const subject = normalizeEmailText(
-    mail?.subject || ""
-  );
-
-  const sender = normalizeEmailText(
-    mail?.sender || ""
-  );
-
-  const body = normalizeEmailText(
-    mail?.bodyText ||
-    mail?.textContent ||
-    ""
-  );
-
-  const errorMessage = normalizeEmailText(
-    mail?.errorMessage || ""
-  );
-
-  const combined = [
-    subject,
-    sender,
-    body,
-    errorMessage,
-  ].join(" ");
+  if (mail?.status === "IGNORED") return "hidden";
 
   const cancellationSignals = [
     "storniert",
@@ -133,114 +51,109 @@ function classifyIncomingEmail(mail: any) {
     "nicht statt",
   ];
 
-  if (
-    cancellationSignals.some((signal) =>
-      combined.includes(signal)
-    )
-  ) {
-    return "other";
-  }
-
-  const strongInquirySignals = [
-    "anfrage catering",
-    "catering anfrage",
-    "catering-anfrage",
-    "anfrage fur",
-    "anfrage fuer",
-    "catering partner",
-    "catering-partner",
-    "bitte ein angebot",
-    "angebot erstellen",
-    "angebot zukommen",
-    "unverbindliches angebot",
-    "konnten sie uns",
-    "koennten sie uns",
-    "wir benotigen",
-    "wir benoetigen",
-    "wir suchen",
-    "budget liegt",
-    "budget von",
-  ];
-
-  const cateringInquirySignals = [
-    "personen",
-    "pro person",
-    "budget",
-    "lieferung",
-    "mittagessen",
-    "fruhstuck",
-    "fruehstueck",
-    "wraps",
-    "bowls",
-    "salate",
-    "sandwiches",
-    "vegetarisch",
-    "vegan",
-    "messestand",
-    "messe",
-    "event",
-    "speisekarte",
-    "cateringbroschure",
-    "cateringbroschuere",
-  ];
-
-  const hasStrongInquirySignal =
-    strongInquirySignals.some((signal) =>
-      combined.includes(signal)
-    );
-
-  const inquirySignalCount =
-    cateringInquirySignals.filter((signal) =>
-      combined.includes(signal)
-    ).length;
-
-  if (
-    hasStrongInquirySignal ||
-    inquirySignalCount >= 4
-  ) {
-    return "inquiries";
-  }
-
   const orderSignals = [
     "fast track order bestatigt",
+    "fast track order bestaetigt",
     "order bestatigt",
+    "order bestaetigt",
     "auftrag bestatigt",
+    "auftrag bestaetigt",
     "auftragsbestatigung",
-    "bestellbestatigung",
+    "auftragsbestaetigung",
+    "angebotsbestatigung",
+    "angebotsbestaetigung",
+    "partner event confirmation",
+    "event confirmation",
     "order confirmation",
-    "booking confirmation",
   ];
-
-  if (
-    orderSignals.some((signal) =>
-      combined.includes(signal)
-    )
-  ) {
-    return "orders";
-  }
 
   const reminderSignals = [
     "dein morgiges catering",
-    "morgiges catering",
-    "lieferschein",
-    "lieferhinweis",
+    "dein morgiges heykantine",
+    "morgiges catering mit heycater",
+    "morgiges heykantine",
     "delivery note",
+    "lieferschein",
   ];
 
-  if (
-    reminderSignals.some((signal) =>
-      combined.includes(signal)
-    )
-  ) {
-    return "reminders";
-  }
+  const inquirySignals = [
+    "bitte auftrag bestatigen",
+    "bitte auftrag bestaetigen",
+    "angebot freigeben",
+    "bitte angebot freigeben",
+    "angebot erstellen",
+    "bitte angebot",
+    "angebotsanfrage",
+    "catering anfrage",
+    "neue anfrage",
+    "anfrage",
+    "catering am",
+    "catering fur",
+    "catering fuer",
+    "catering gesucht",
+    "catering nahe",
+    "catering naehe",
+    "nahe ludwigsfelde",
+    "naehe ludwigsfelde",
+    "fingerfood",
+    "buffet",
+    "personen",
+    "gaste",
+    "gaeste",
+    "hochzeit",
+    "sommerfest",
+    "firmenevent",
+    "veranstaltung",
+    "geburtstag",
+    "lunch",
+    "fruhstuck",
+    "fruehstueck",
+    "abendessen",
+    "catering",
+  ];
 
-  if (
-    mail?.status === "FAILED" ||
-    mail?.status === "REVIEW_NEEDED"
-  ) {
-    return "possible";
-  }
+  const otherSignals = [
+    "paypal",
+    "newsletter",
+    "kurz nachgehakt",
+    "guthaben",
+    "buust",
+    "werbung",
+    "logistikbeleg",
+    "chefs culinar",
+    "briefing kw",
+    "eure uebersicht",
+    "eure übersicht",
+    "wochenuebersicht",
+    "wochenübersicht",
+  ];
+
+  if (cancellationSignals.some((signal) => combined.includes(signal))) return "other";
+  if (orderSignals.some((signal) => subject.includes(signal))) return "orders";
+  if (reminderSignals.some((signal) => subject.includes(signal))) return "reminders";
+  if (inquirySignals.some((signal) => subject.includes(signal))) return "inquiries";
+  if (otherSignals.some((signal) => combined.includes(signal))) return "other";
+
+  const looksLikePlatform =
+    sender.includes("heycater") ||
+    subject.includes("heycater") ||
+    subject.includes("heykantine") ||
+    sender.includes("egora") ||
+    subject.includes("egora") ||
+    sender.includes("feedr") ||
+    subject.includes("feedr") ||
+    sender.includes("hey") ||
+    subject.includes("catering") ||
+    subject.includes("auftrag") ||
+    subject.includes("order");
+
+  const hasOrderNumber =
+    /\b\d{4}-\d{5,}\b/.test(subject) ||
+    /\b[a-z]{2,}-?\d{4,}\b/i.test(subject);
+
+  if (looksLikePlatform && hasOrderNumber) return "possible";
+
+  if (subject.includes("catering")) return "inquiries";
 
   return "other";
 }
