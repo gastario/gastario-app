@@ -1,4 +1,4 @@
-﻿import {
+import {
   useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
 import auftragseingangStyles from "../styles/auftragseingang.css?url";

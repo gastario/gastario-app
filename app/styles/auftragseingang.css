@@ -3008,3 +3008,29 @@
     width: 100% !important;
   }
 }
+
+/* gastario-category-tabs-click-fix-20260713 */
+
+.inboxCombinedNavigation {
+  position: relative !important;
+  z-index: 20 !important;
+  pointer-events: auto !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTabs,
+.inboxCombinedNavigation .realOrderTabs {
+  pointer-events: auto !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab,
+.inboxCombinedNavigation .realOrderTab {
+  position: relative !important;
+  z-index: 21 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.inboxCombinedNavigation .finalCategoryTab *,
+.inboxCombinedNavigation .realOrderTab * {
+  pointer-events: none !important;
+}
