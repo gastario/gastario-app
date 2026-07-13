@@ -3,9 +3,9 @@ import AppLayout from "../components/AppLayout";
 
 const STATUSES = [
   { value: "", label: "Alle" },
-  { value: "AUTO_CREATED", label: "Prüfen" },
   { value: "CONFIRMED", label: "Bestätigt" },
-  { value: "REJECTED", label: "Abgelehnt" },
+  { value: "IN_PRODUCTION", label: "In Produktion" },
+  { value: "PACKING_OPEN", label: "Packen" },
 ];
 
 function centsToEuro(value: number | null | undefined) {
@@ -21,16 +21,20 @@ function formatDate(value: string | Date | null | undefined) {
 }
 
 function statusLabel(status: string) {
-  if (status === "AUTO_CREATED") return "Prüfen";
   if (status === "CONFIRMED") return "Bestätigt";
+  if (status === "IN_PRODUCTION") return "In Produktion";
+  if (status === "PACKING_OPEN") return "Packen";
+  if (status === "DELIVERED") return "Ausgeliefert";
   if (status === "REJECTED") return "Abgelehnt";
   return status;
 }
 
 function statusClass(status: string) {
   if (status === "CONFIRMED") return "success";
+  if (status === "IN_PRODUCTION") return "production";
+  if (status === "PACKING_OPEN") return "packing";
   if (status === "REJECTED") return "danger";
-  return "warning";
+  return "neutral";
 }
 
 export function meta() {
@@ -1721,6 +1725,113 @@ export default function OrdersPage() {
 
           .orderActions {
             grid-column: 1 / -1 !important;
+          }
+        }
+      `}</style>
+
+      <style>{`
+        /* gastario-upcoming-orders-final-layout-20260713 */
+
+        .panelHeader {
+          display: grid !important;
+          grid-template-columns: 1fr !important;
+          gap: 16px !important;
+          padding: 20px 20px 0 !important;
+        }
+
+        .panelHeader > div:first-child {
+          display: block !important;
+        }
+
+        .panelHeader > div:first-child .eyebrow {
+          margin: 0 0 3px !important;
+          color: #08785e !important;
+          font-size: 9px !important;
+          font-weight: 850 !important;
+          letter-spacing: .1em !important;
+          text-transform: uppercase !important;
+        }
+
+        .panelHeader > div:first-child h2 {
+          margin: 0 !important;
+          color: #11231d !important;
+          font-size: 23px !important;
+          font-weight: 790 !important;
+          letter-spacing: -.025em !important;
+        }
+
+        .ordersFilterWrap {
+          width: 100% !important;
+          max-width: none !important;
+          min-width: 0 !important;
+        }
+
+        .ordersFilterForm {
+          grid-template-columns:
+            minmax(280px, 1.5fr)
+            minmax(210px, .8fr)
+            145px
+            145px !important;
+          width: 100% !important;
+          padding: 13px !important;
+          border: 1px solid #dce6e2 !important;
+          border-radius: 14px !important;
+          background: #f7faf8 !important;
+        }
+
+        .statusFilterGroup {
+          justify-content: flex-start !important;
+          gap: 8px !important;
+          padding: 0 0 14px !important;
+        }
+
+        .statusFilterGroup .ghostButton {
+          min-width: 110px !important;
+          border: 1px solid #d6e1dd !important;
+          border-radius: 9px !important;
+          background: #ffffff !important;
+        }
+
+        .statusFilterGroup .ghostButton.activeFilter {
+          border-color: #64bda4 !important;
+          background: #e8f5f0 !important;
+          color: #08705a !important;
+          box-shadow: inset 0 0 0 1px rgba(8,124,96,.04) !important;
+        }
+
+        .orderStatus.production {
+          border: 1px solid #c6dbef !important;
+          background: #eff7fd !important;
+          color: #356d98 !important;
+        }
+
+        .orderStatus.packing {
+          border: 1px solid #ead8a8 !important;
+          background: #fff8e7 !important;
+          color: #916b13 !important;
+        }
+
+        .orderActions .deleteOrderButton {
+          border: 1px solid #ecc5c5 !important;
+          background: #fff6f6 !important;
+          color: #b53b3b !important;
+        }
+
+        .orderActions .deleteOrderButton:hover {
+          border-color: #db9898 !important;
+          background: #ffeded !important;
+          color: #982626 !important;
+        }
+
+        .orderActions .ghostButton:not(.primaryGhostButton):not(.deleteOrderButton) {
+          border-color: #d5e1dd !important;
+          background: #ffffff !important;
+          color: #40564f !important;
+        }
+
+        @media (max-width: 1050px) {
+          .ordersFilterForm {
+            grid-template-columns: 1fr 1fr !important;
           }
         }
       `}</style>
