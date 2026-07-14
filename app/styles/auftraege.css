@@ -1776,3 +1776,80 @@
     grid-column: 2 / -1;
   }
 }
+
+/* gastario-fix-broken-operational-actions-20260714 */
+
+.ordersPage .operationalOrderActions {
+  grid-column: auto !important;
+  display: grid !important;
+  grid-template-columns:
+    72px
+    126px
+    38px !important;
+  justify-content: end !important;
+  align-items: center !important;
+  width: auto !important;
+  margin-top: 0 !important;
+  gap: 8px !important;
+}
+
+.ordersPage .operationalOrderActions form {
+  display: block !important;
+  width: 38px !important;
+  margin: 0 !important;
+}
+
+.ordersPage .operationalOpenButton {
+  width: 72px !important;
+  min-width: 72px !important;
+  min-height: 40px !important;
+  padding: 0 12px !important;
+}
+
+.ordersPage
+.operationalOrderActions
+.deliveryDocumentButton {
+  width: 126px !important;
+  min-width: 126px !important;
+  min-height: 40px !important;
+  padding: 0 12px !important;
+}
+
+.ordersPage .operationalDeleteButton {
+  width: 38px !important;
+  min-width: 38px !important;
+  min-height: 40px !important;
+}
+
+.ordersPage .finalOrderActions a,
+.ordersPage .finalOrderActions button {
+  width: auto !important;
+}
+
+.ordersPage .operationalOrderRow {
+  grid-template-columns:
+    44px
+    minmax(210px, .95fr)
+    minmax(320px, 1.35fr)
+    minmax(145px, .65fr)
+    100px
+    145px
+    252px !important;
+}
+
+@media (max-width: 1380px) {
+  .ordersPage .operationalOrderRow {
+    grid-template-columns:
+      42px
+      minmax(190px, 1fr)
+      minmax(260px, 1.25fr)
+      135px
+      95px
+      130px !important;
+  }
+
+  .ordersPage .operationalOrderActions {
+    grid-column: 2 / -1 !important;
+    justify-self: end !important;
+  }
+}
