@@ -1399,3 +1399,139 @@
   }
 }
 
+
+/* gastario-orders-inbox-proportions-20260714 */
+
+.ordersPage .panelHeader {
+  display: block;
+  padding: 28px 28px 18px;
+}
+
+.ordersPage .panelHeader > div:first-child {
+  margin: 0 0 20px;
+}
+
+.ordersPage .panelHeader h2 {
+  font-size: 30px;
+}
+
+.ordersPage .ordersFilterWrap {
+  width: 100%;
+}
+
+.ordersPage .ordersFilterForm {
+  grid-template-columns:
+    minmax(320px, 1.5fr)
+    minmax(220px, .65fr)
+    120px
+    120px;
+}
+
+.ordersPage .statusFilterGroup {
+  width: fit-content;
+}
+
+.ordersPage .ordersCardList {
+  gap: 12px;
+  padding: 22px 28px 30px;
+}
+
+.ordersPage .ordersListCard {
+  grid-template-columns:
+    38px
+    minmax(210px, 1.05fr)
+    minmax(300px, 1.45fr)
+    minmax(160px, .75fr)
+    105px
+    125px
+    230px;
+  min-height: 128px;
+  padding: 21px 18px;
+}
+
+.ordersPage .ordersListIcon span {
+  width: 32px;
+  height: 32px;
+}
+
+.ordersPage .ordersListNumber {
+  font-size: 10px;
+}
+
+.ordersPage .ordersListCustomer h3 {
+  font-size: 18px;
+}
+
+.ordersPage .ordersListCustomer p {
+  font-size: 10px;
+}
+
+.ordersPage .ordersListItems {
+  gap: 6px;
+}
+
+.ordersPage .ordersListItems > div {
+  grid-template-columns: 38px minmax(0, 1fr);
+}
+
+.ordersPage .ordersListItems strong {
+  font-size: 11px;
+}
+
+.ordersPage .ordersListItems span {
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.ordersPage .ordersListDelivery strong {
+  font-size: 12px;
+}
+
+.ordersPage .ordersListDelivery span {
+  font-size: 9px;
+}
+
+.ordersPage .ordersListDelivery small {
+  font-size: 8px;
+}
+
+.ordersPage .ordersListTotal strong {
+  font-size: 20px;
+}
+
+.ordersPage .ordersListActions {
+  grid-template-columns:
+    70px
+    minmax(125px, 1fr)
+    38px;
+}
+
+.ordersPage .ordersListMoreButton {
+  border-color: #d8dfdc;
+  background: #ffffff;
+  color: #78867f;
+}
+
+.ordersPage .ordersListMoreButton:hover {
+  border-color: #e2baba;
+  background: #fff7f7;
+  color: #b94d4d;
+}
+
+@media (max-width: 1380px) {
+  .ordersPage .ordersListCard {
+    grid-template-columns:
+      36px
+      minmax(190px, 1fr)
+      minmax(245px, 1.3fr)
+      145px
+      100px
+      115px;
+  }
+
+  .ordersPage .ordersListActions {
+    grid-column: 2 / -1;
+    justify-self: end;
+    width: 245px;
+  }
+}
