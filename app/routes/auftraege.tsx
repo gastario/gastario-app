@@ -612,78 +612,164 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        <div className="ordersTable">
-          <div className="ordersHead">
-            <span>Auftrag</span>
-            <span>Kunde</span>
-            <span>Lieferung</span>
-            <span>Positionen</span>
-            <span>Status</span>
-            <span>Betrag</span>
-            <span>Aktion</span>
-          </div>
-
+        <div className="ordersCardList">
           {data.orders.length === 0 ? (
-            <div className={
-                  "ordersRow " +
-                  (data.view === "past"
-                    ? "ordersRowPast"
-                    : "ordersRowUpcoming")
-                }>
-              <div>
-                <strong>Keine Aufträge vorhanden.</strong>
-                <small>{data.activeStatus ? "Filter aktiv" : "Noch leer"}</small>
-              </div>
-              <div>-</div>
-              <div>-</div>
-              <div>-</div>
-              <span className="orderStatus warning">Leer</span>
-              <strong>{centsToEuro(0)}</strong>
-              <span>-</span>
+            <div className="ordersCardEmpty">
+              <strong>Keine Aufträge vorhanden.</strong>
+
+              <span>
+                {data.activeStatus
+                  ? "Für diesen Filter wurden keine Aufträge gefunden."
+                  : data.view === "past"
+                    ? "Es sind noch keine vergangenen Aufträge vorhanden."
+                    : "Es stehen aktuell keine Lieferungen bevor."}
+              </span>
             </div>
           ) : (
             data.orders.map((order: any) => {
-              const total = order.items.reduce((sum: number, item: any) => {
-                return sum + (item.totalCents || item.totalPriceCents || 0);
-              }, 0);
+              const items = Array.isArray(order.items)
+                ? order.items
+                : [];
+
+              const visibleItems = items.filter(
+                (item: any) =>
+                  !String(item.name || "")
+                    .toLowerCase()
+                    .includes("fehlende position")
+              );
+
+              const previewItems = visibleItems.slice(0, 3);
+
+              const total = items.reduce(
+                (sum: number, item: any) =>
+                  sum +
+                  Number(
+                    item.totalCents ||
+                      item.totalPriceCents ||
+                      0
+                  ),
+                0
+              );
 
               return (
-                <div className={
-                  "ordersRow " +
-                  (data.view === "past"
-                    ? "ordersRowPast"
-                    : "ordersRowUpcoming")
-                } key={order.id}>
-                  <div>
-                    <strong>{order.orderNumber}</strong>
-                    <small>{order.source}</small>
+                <article
+                  className={
+                    "ordersListCard " +
+                    (data.view === "past"
+                      ? "ordersListCardPast"
+                      : "ordersListCardUpcoming")
+                  }
+                  key={order.id}
+                >
+                  <div className="ordersListIcon">
+                    <span aria-hidden="true">✉</span>
                   </div>
 
-                  <div>
-                    <strong>{order.customerName}</strong>
-                    <small>{order.customerEmail || "-"}</small>
+                  <div className="ordersListCustomer">
+                    <div className="ordersListNumber">
+                      {order.orderNumber}
+                    </div>
+
+                    <h3>
+                      {order.customerName ||
+                        order.customer?.name ||
+                        "Kunde unbekannt"}
+                    </h3>
+
+                    <p>
+                      {order.contactName ||
+                        order.customer?.email ||
+                        order.customerEmail ||
+                        "Keine Kontaktperson erkannt"}
+                    </p>
+
+                    <span className="ordersListSource">
+                      {String(order.source || "Direkt")}
+                    </span>
                   </div>
 
-                  <div>
-                    <strong>{formatDate(order.deliveryDate)}</strong>
-                    <small>{order.deliveryTimeText || "-"}</small>
+                  <div className="ordersListItems">
+                    {previewItems.map(
+                      (item: any, index: number) => (
+                        <div
+                          key={
+                            item.id ||
+                            item.name + "-" + index
+                          }
+                        >
+                          <strong>
+                            {Number(item.quantity || 1)}x
+                          </strong>
+
+                          <span>
+                            {item.name || "Position"}
+                          </span>
+                        </div>
+                      )
+                    )}
+
+                    {visibleItems.length >
+                    previewItems.length ? (
+                      <small>
+                        +{" "}
+                        {visibleItems.length -
+                          previewItems.length}{" "}
+                        weitere Position
+                        {visibleItems.length -
+                          previewItems.length ===
+                        1
+                          ? ""
+                          : "en"}
+                      </small>
+                    ) : null}
                   </div>
 
-                  <div>
-                    <strong>{order.items.length} Positionen</strong>
-                    <small>
-                      {order.items.slice(0, 2).map((item: any) => item.name).join(", ") || "-"}
-                    </small>
+                  <div className="ordersListDelivery">
+                    <strong>
+                      {formatDate(order.deliveryDate)}
+                    </strong>
+
+                    <span>
+                      {order.deliveryTimeText ||
+                        "Uhrzeit offen"}
+                    </span>
+
+                    {order.deliveryAddress ? (
+                      <small>
+                        {order.deliveryAddress}
+                      </small>
+                    ) : null}
                   </div>
 
-                  <span className={`orderStatus ${statusClass(order.status)}`}>
-                    {statusLabel(order.status)}
-                  </span>
+                  <div className="ordersListStatus">
+                    <span
+                      className={
+                        "orderStatus " +
+                        statusClass(order.status)
+                      }
+                    >
+                      {statusLabel(order.status)}
+                    </span>
+                  </div>
 
-                  <strong>{centsToEuro(total)}</strong>
+                  <div className="ordersListTotal">
+                    <strong>{centsToEuro(total)}</strong>
 
-                  <div className="orderActions">
-                    <Link className="ghostButton primaryGhostButton" to={"/auftrag-pruefung/" + order.id}>
+                    <span>
+                      {data.view === "past"
+                        ? "Auftragswert"
+                        : "Gesamt"}
+                    </span>
+                  </div>
+
+                  <div className="ordersListActions">
+                    <Link
+                      className="ordersListOpenButton"
+                      to={
+                        "/auftrag-pruefung/" +
+                        order.id
+                      }
+                    >
                       Öffnen
                     </Link>
 
@@ -693,14 +779,29 @@ export default function OrdersPage() {
                     />
 
                     <Form method="post">
-                      <input type="hidden" name="intent" value="deleteOrder" />
-                      <input type="hidden" name="orderId" value={order.id} />
-                      <button className="ghostButton deleteOrderButton" type="submit">
-                        Löschen
+                      <input
+                        type="hidden"
+                        name="intent"
+                        value="deleteOrder"
+                      />
+
+                      <input
+                        type="hidden"
+                        name="orderId"
+                        value={order.id}
+                      />
+
+                      <button
+                        className="ordersListMoreButton"
+                        type="submit"
+                        aria-label="Auftrag löschen"
+                        title="Auftrag löschen"
+                      >
+                        ×
                       </button>
                     </Form>
                   </div>
-                </div>
+                </article>
               );
             })
           )}
