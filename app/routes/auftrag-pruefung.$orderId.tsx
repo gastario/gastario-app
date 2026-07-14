@@ -249,6 +249,452 @@ export default function AuftragPruefungPage() {
         
       </div>
 
+      {/* gastario-selected-order-details-view-20260714 */}
+      {isAlreadyConfirmed ? (
+        <section
+          style={{
+            maxWidth: 1180,
+            margin: "0 auto",
+            overflow: "hidden",
+            border: "1px solid #d9e5e0",
+            borderRadius: 24,
+            background: "#ffffff",
+            boxShadow: "0 20px 50px rgba(20, 42, 33, 0.08)",
+          }}
+        >
+          <header
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 24,
+              alignItems: "flex-start",
+              padding: "28px 30px 24px",
+              borderBottom: "1px solid #e3ebe7",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  minHeight: 26,
+                  padding: "0 11px",
+                  border: "1px solid #bfe3d6",
+                  borderRadius: 999,
+                  background: "#eef9f5",
+                  color: "#087158",
+                  fontSize: 10,
+                  fontWeight: 900,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Auftragsdetails
+              </div>
+
+              <div
+                style={{
+                  marginTop: 17,
+                  color: "#557269",
+                  fontSize: 13,
+                  fontWeight: 900,
+                  letterSpacing: "0.045em",
+                }}
+              >
+                {order.orderNumber}
+              </div>
+
+              <h1
+                style={{
+                  margin: "5px 0 0",
+                  color: "#102019",
+                  fontSize: 34,
+                  lineHeight: 1.08,
+                  letterSpacing: "-0.045em",
+                }}
+              >
+                {order.customerName || "Kunde unbekannt"}
+              </h1>
+
+              <p
+                style={{
+                  margin: "7px 0 0",
+                  color: "#71817a",
+                  fontSize: 13,
+                  fontWeight: 700,
+                }}
+              >
+                {order.contactName || "Keine Kontaktperson eingetragen"}
+              </p>
+            </div>
+
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                minHeight: 30,
+                padding: "0 12px",
+                borderRadius: 999,
+                background: "#eaf6f1",
+                color: "#315c4f",
+                fontSize: 11,
+                fontWeight: 900,
+              }}
+            >
+              {order.platformName || String(order.source || "Direkt")}
+            </span>
+          </header>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1fr) 280px",
+              gap: 24,
+              padding: "24px 30px 28px",
+            }}
+          >
+            <section>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 16,
+                  marginBottom: 14,
+                }}
+              >
+                <h2
+                  style={{
+                    margin: 0,
+                    color: "#172820",
+                    fontSize: 21,
+                    letterSpacing: "-0.035em",
+                  }}
+                >
+                  Positionen
+                </h2>
+
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    minHeight: 27,
+                    padding: "0 10px",
+                    border: "1px solid #c5e7db",
+                    borderRadius: 999,
+                    background: "#eff9f5",
+                    color: "#087158",
+                    fontSize: 10,
+                    fontWeight: 900,
+                  }}
+                >
+                  {visibleItems.length} Positionen
+                </span>
+              </div>
+
+              <div
+                style={{
+                  overflow: "hidden",
+                  border: "1px solid #e0e8e4",
+                  borderRadius: 17,
+                  background: "#ffffff",
+                }}
+              >
+                {visibleItems.map((item, index) => (
+                  <div
+                    key={item.id}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "70px minmax(190px, .8fr) minmax(240px, 1.4fr) 100px",
+                      gap: 16,
+                      alignItems: "start",
+                      padding: "16px 17px",
+                      borderBottom:
+                        index === visibleItems.length - 1
+                          ? "none"
+                          : "1px solid #edf2ef",
+                    }}
+                  >
+                    <div>
+                      <strong
+                        style={{
+                          display: "block",
+                          color: "#102019",
+                          fontSize: 15,
+                        }}
+                      >
+                        {item.quantity}x
+                      </strong>
+
+                      <span
+                        style={{
+                          display: "block",
+                          marginTop: 3,
+                          color: "#829089",
+                          fontSize: 10,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {item.unit}
+                      </span>
+                    </div>
+
+                    <strong
+                      style={{
+                        color: "#1b3027",
+                        fontSize: 14,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {item.name}
+                    </strong>
+
+                    <p
+                      style={{
+                        margin: 0,
+                        color: "#65776f",
+                        fontSize: 11,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {item.notes
+                        ? String(item.notes).length > 160
+                          ? String(item.notes).slice(0, 160) + "…"
+                          : item.notes
+                        : "Keine weiteren Hinweise"}
+                    </p>
+
+                    <strong
+                      style={{
+                        color: "#172820",
+                        fontSize: 14,
+                        textAlign: "right",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {centsToEuro(item.totalCents)}
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <aside
+              style={{
+                display: "grid",
+                alignContent: "start",
+                gap: 10,
+              }}
+            >
+              <div
+                style={{
+                  padding: 17,
+                  border: "1px solid #dce7e2",
+                  borderRadius: 16,
+                  background: "#f8fbfa",
+                }}
+              >
+                <span
+                  style={{
+                    color: "#74877f",
+                    fontSize: 9,
+                    fontWeight: 900,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Lieferung
+                </span>
+
+                <strong
+                  style={{
+                    display: "block",
+                    marginTop: 7,
+                    color: "#172820",
+                    fontSize: 15,
+                  }}
+                >
+                  {formatDate(order.deliveryDate)}
+                </strong>
+
+                <small
+                  style={{
+                    display: "block",
+                    marginTop: 4,
+                    color: "#667970",
+                    fontSize: 12,
+                    fontWeight: 750,
+                  }}
+                >
+                  {order.deliveryTimeText || "Uhrzeit offen"}
+                </small>
+              </div>
+
+              <div
+                style={{
+                  padding: 17,
+                  border: "1px solid #dce7e2",
+                  borderRadius: 16,
+                  background: "#f8fbfa",
+                }}
+              >
+                <span
+                  style={{
+                    color: "#74877f",
+                    fontSize: 9,
+                    fontWeight: 900,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Lieferadresse
+                </span>
+
+                <strong
+                  style={{
+                    display: "block",
+                    marginTop: 7,
+                    color: "#172820",
+                    fontSize: 14,
+                  }}
+                >
+                  {order.customerName || "Kunde unbekannt"}
+                </strong>
+
+                <small
+                  style={{
+                    display: "block",
+                    marginTop: 5,
+                    color: "#667970",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    lineHeight: 1.45,
+                  }}
+                >
+                  {order.deliveryAddress || "Keine Lieferadresse eingetragen"}
+                </small>
+
+                {order.contactPhone ? (
+                  <small
+                    style={{
+                      display: "block",
+                      marginTop: 7,
+                      color: "#087158",
+                      fontSize: 11,
+                      fontWeight: 800,
+                    }}
+                  >
+                    Telefon: {order.contactPhone}
+                  </small>
+                ) : null}
+              </div>
+
+              <div
+                style={{
+                  padding: 17,
+                  border: "1px solid #c8e5da",
+                  borderRadius: 16,
+                  background: "#eef8f4",
+                }}
+              >
+                <span
+                  style={{
+                    color: "#548071",
+                    fontSize: 9,
+                    fontWeight: 900,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Gesamt
+                </span>
+
+                <strong
+                  style={{
+                    display: "block",
+                    marginTop: 7,
+                    color: "#0b664e",
+                    fontSize: 23,
+                    letterSpacing: "-0.035em",
+                  }}
+                >
+                  {centsToEuro(total)}
+                </strong>
+
+                <small
+                  style={{
+                    display: "block",
+                    marginTop: 4,
+                    color: "#5d786f",
+                    fontSize: 10,
+                    fontWeight: 800,
+                  }}
+                >
+                  Bestätigter Auftrag
+                </small>
+              </div>
+            </aside>
+          </div>
+
+          <footer
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "150px minmax(180px, 1fr) minmax(180px, 1fr) minmax(200px, 1fr)",
+              gap: 10,
+              padding: "16px 20px",
+              borderTop: "1px solid #e3ebe7",
+              background: "#f8fbfa",
+            }}
+          >
+            <Link
+              to="/auftraege"
+              style={{
+                ...secondaryButtonStyle,
+                justifyContent: "center",
+              }}
+            >
+              Zurück zur Liste
+            </Link>
+
+            <a
+              href={deliveryHref}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                ...secondaryButtonStyle,
+                justifyContent: "center",
+              }}
+            >
+              Lieferschein öffnen
+            </a>
+
+            <Link
+              to={"/auftraege/" + order.id + "/foodlabels"}
+              style={{
+                ...primaryButtonStyle,
+                justifyContent: "center",
+              }}
+            >
+              Foodlabels erstellen
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => window.print()}
+              style={{
+                ...primaryButtonStyle,
+                justifyContent: "center",
+                border: "1px solid #087158",
+                cursor: "pointer",
+              }}
+            >
+              Drucken / als PDF speichern
+            </button>
+          </footer>
+        </section>
+      ) : (
       <section style={{ maxWidth: 1180, margin: "0 auto", background: "#fff", borderRadius: 22, padding: 34, boxShadow: "0 18px 45px rgba(15, 23, 42, 0.08)", border: "1px solid #dbe7ec" }}>
         <p style={{ margin: 0, color: "#057a67", fontWeight: 900, textTransform: "uppercase", fontSize: 12 }}>
           {isAlreadyConfirmed
@@ -444,6 +890,7 @@ export default function AuftragPruefungPage() {
           )}
         </div>
       </section>
+      )}
     </main>
   );
 }
