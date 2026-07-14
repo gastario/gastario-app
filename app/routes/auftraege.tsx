@@ -2,6 +2,7 @@
 import AppLayout from "../components/AppLayout";
 import DeliveryNoteButton from "../components/DeliveryNoteButton";
 import auftraegeStyles from "../styles/auftraege.css?url";
+import auftragseingangStyles from "../styles/auftragseingang.css?url";
 import deliveryNoteDocumentStyles from "../styles/delivery-note-document.css?url";
 
 const STATUSES = [
@@ -84,6 +85,10 @@ export function links() {
     {
       rel: "stylesheet",
       href: auftraegeStyles,
+    },
+    {
+      rel: "stylesheet",
+      href: auftragseingangStyles,
     },
     {
       rel: "stylesheet",
@@ -612,7 +617,7 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        <div className="ordersCardList">
+        <div className="finalOrderRows operationalOrderRows">
           {data.orders.length === 0 ? (
             <div className="ordersCardEmpty">
               <strong>Keine Aufträge vorhanden.</strong>
@@ -654,19 +659,19 @@ export default function OrdersPage() {
               return (
                 <article
                   className={
-                    "ordersListCard " +
+                    "finalOrderRow operationalOrderRow " +
                     (data.view === "past"
-                      ? "ordersListCardPast"
-                      : "ordersListCardUpcoming")
+                      ? "operationalOrderRowPast"
+                      : "operationalOrderRowUpcoming")
                   }
                   key={order.id}
                 >
-                  <div className="ordersListIcon">
+                  <div className="finalOrderIcon">
                     <span aria-hidden="true">✉</span>
                   </div>
 
-                  <div className="ordersListCustomer">
-                    <div className="ordersListNumber">
+                  <div className="finalOrderCustomer">
+                    <div className="finalOrderNumber">
                       {order.orderNumber}
                     </div>
 
@@ -683,12 +688,12 @@ export default function OrdersPage() {
                         "Keine Kontaktperson erkannt"}
                     </p>
 
-                    <span className="ordersListSource">
+                    <span className="finalSourceBadge">
                       {String(order.source || "Direkt")}
                     </span>
                   </div>
 
-                  <div className="ordersListItems">
+                  <div className="finalOrderItems">
                     {previewItems.map(
                       (item: any, index: number) => (
                         <div
@@ -724,7 +729,7 @@ export default function OrdersPage() {
                     ) : null}
                   </div>
 
-                  <div className="ordersListDelivery">
+                  <div className="finalOrderDate operationalOrderDate">
                     <strong>
                       {formatDate(order.deliveryDate)}
                     </strong>
@@ -741,7 +746,7 @@ export default function OrdersPage() {
                     ) : null}
                   </div>
 
-                  <div className="ordersListStatus">
+                  <div className="operationalOrderStatus">
                     <span
                       className={
                         "orderStatus " +
@@ -752,7 +757,7 @@ export default function OrdersPage() {
                     </span>
                   </div>
 
-                  <div className="ordersListTotal">
+                  <div className="finalOrderTotal">
                     <strong>{centsToEuro(total)}</strong>
 
                     <span>
@@ -762,9 +767,9 @@ export default function OrdersPage() {
                     </span>
                   </div>
 
-                  <div className="ordersListActions">
+                  <div className="finalOrderActions operationalOrderActions">
                     <Link
-                      className="ordersListOpenButton"
+                      className="operationalOpenButton"
                       to={
                         "/auftrag-pruefung/" +
                         order.id
@@ -792,7 +797,7 @@ export default function OrdersPage() {
                       />
 
                       <button
-                        className="ordersListMoreButton"
+                        className="operationalDeleteButton"
                         type="submit"
                         aria-label="Auftrag löschen"
                         title="Auftrag löschen"

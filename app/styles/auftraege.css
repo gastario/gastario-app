@@ -1535,3 +1535,168 @@
     width: 245px;
   }
 }
+
+/* =========================================================
+   ECHTE EINGANGSZENTRALE-KARTEN FÜR AUFTRÄGE
+   ========================================================= */
+
+.ordersPage .operationalOrderRows {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.ordersPage .operationalOrderRow {
+  display: grid !important;
+  grid-template-columns:
+    52px
+    minmax(250px, .9fr)
+    minmax(350px, 1.25fr)
+    145px
+    105px
+    155px
+    235px !important;
+  gap: 18px !important;
+  align-items: center;
+  min-height: 112px !important;
+  padding: 18px 20px !important;
+  cursor: default;
+}
+
+.ordersPage .operationalOrderRowUpcoming {
+  box-shadow: inset 4px 0 0 #10a37f;
+}
+
+.ordersPage .operationalOrderRowPast {
+  box-shadow: inset 4px 0 0 #94a39d;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(148, 163, 157, .055),
+      #ffffff 35%
+    );
+}
+
+.ordersPage .operationalOrderDate small {
+  display: block;
+  overflow: hidden;
+  margin-top: 5px;
+  color: #819089;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ordersPage .operationalOrderStatus {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.ordersPage .operationalOrderActions {
+  display: grid;
+  grid-template-columns:
+    72px
+    minmax(125px, 1fr)
+    38px;
+  gap: 8px;
+  align-items: center;
+}
+
+.ordersPage .operationalOrderActions form {
+  margin: 0;
+}
+
+.ordersPage .operationalOpenButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  border: 1px solid #10a37f;
+  border-radius: 11px;
+  background: #10a37f;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 8px 18px rgba(16, 163, 127, .18);
+}
+
+.ordersPagePast .operationalOpenButton {
+  border-color: #63736c;
+  background: #63736c;
+  box-shadow: none;
+}
+
+.ordersPage
+.operationalOrderActions
+.deliveryDocumentButton {
+  min-height: 40px;
+  border: 1px solid #d6e5df;
+  border-radius: 11px;
+  background: #ffffff;
+  color: #36534b;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.ordersPage .operationalDeleteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  min-height: 40px;
+  border: 1px solid #e4d1d1;
+  border-radius: 11px;
+  background: #ffffff;
+  color: #9a6868;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.ordersPage .operationalDeleteButton:hover {
+  border-color: #efb9b9;
+  background: #fff5f5;
+  color: #c83e3e;
+}
+
+@media (max-width: 1380px) {
+  .ordersPage .operationalOrderRow {
+    grid-template-columns:
+      46px
+      minmax(220px, 1fr)
+      minmax(290px, 1.2fr)
+      135px
+      95px
+      140px !important;
+  }
+
+  .ordersPage .operationalOrderActions {
+    grid-column: 2 / -1;
+    width: 245px;
+    justify-self: end;
+  }
+}
+
+@media (max-width: 920px) {
+  .ordersPage .operationalOrderRow {
+    grid-template-columns:
+      42px
+      minmax(0, 1fr) !important;
+  }
+
+  .ordersPage .finalOrderItems,
+  .ordersPage .operationalOrderDate,
+  .ordersPage .operationalOrderStatus,
+  .ordersPage .finalOrderTotal,
+  .ordersPage .operationalOrderActions {
+    grid-column: 2;
+  }
+
+  .ordersPage .operationalOrderActions {
+    width: 100%;
+    justify-self: stretch;
+  }
+}
