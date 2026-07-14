@@ -893,6 +893,21 @@ export default function OrdersPage() {
                       : "operationalOrderRowUpcoming")
                   }
                   key={order.id}
+                  /* gastario-clickable-order-card-20260714 */
+                  role="button"
+                  tabIndex={0}
+                  onClick={() =>
+                    setSelectedOrderId(order.id)
+                  }
+                  onKeyDown={(event) => {
+                    if (
+                      event.key === "Enter" ||
+                      event.key === " "
+                    ) {
+                      event.preventDefault();
+                      setSelectedOrderId(order.id);
+                    }
+                  }}
                 >
                   <div className="finalOrderIcon">
                     <span aria-hidden="true">✉</span>
@@ -995,16 +1010,15 @@ export default function OrdersPage() {
                     </span>
                   </div>
 
-                  <div className="finalOrderActions operationalOrderActions">
-                    <button
-                      className="operationalOpenButton"
-                      type="button"
-                      onClick={() =>
-                        setSelectedOrderId(order.id)
-                      }
-                    >
-                      Öffnen
-                    </button>
+                  <div
+                    className="finalOrderActions operationalOrderActions"
+                    onClick={(event) =>
+                      event.stopPropagation()
+                    }
+                    onKeyDown={(event) =>
+                      event.stopPropagation()
+                    }
+                  >
 
                     <DeliveryNoteButton
                       orderId={order.id}

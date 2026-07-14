@@ -1853,3 +1853,30 @@
     justify-self: end !important;
   }
 }
+
+/* gastario-clickable-order-card-20260714 */
+
+.ordersPage .operationalOrderRow {
+  cursor: pointer;
+}
+
+.ordersPage .operationalOrderRow:hover {
+  transform: translateY(-2px);
+  border-color: #a9cfc2;
+  box-shadow:
+    0 15px 34px rgba(18, 49, 38, 0.08);
+}
+
+.ordersPage .operationalOrderRow:focus-visible {
+  outline: 3px solid rgba(16, 163, 127, 0.22);
+  outline-offset: 3px;
+}
+
+.ordersPagePast .operationalOrderRow:hover {
+  border-color: #becbc6;
+}
+
+.ordersPage .operationalOrderActions {
+  position: relative;
+  z-index: 2;
+}
