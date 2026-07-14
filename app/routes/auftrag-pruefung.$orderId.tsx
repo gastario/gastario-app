@@ -197,6 +197,20 @@ export async function action({ request, params }: { request: Request; params: { 
       },
     });
 
+    /*
+     * gastario-auto-products-on-confirm-20260714
+     * Fehlende Produkte automatisch anlegen,
+     * Mappings speichern und Auftragspositionen verbinden.
+     */
+    const {
+      ensureProductsForOrder,
+    } = await import("../lib/order-products.server");
+
+    await ensureProductsForOrder(
+      String(params.orderId),
+      tenantUser.tenantId
+    );
+
     const {
       ensureDeliveryNoteForOrder,
     } = await import("../lib/delivery-note.server");
@@ -1201,6 +1215,7 @@ const dangerHintBoxStyle: React.CSSProperties = {
   fontSize: 13,
   lineHeight: 1.55,
 };
+
 
 
 
