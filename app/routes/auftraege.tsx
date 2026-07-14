@@ -1,4 +1,5 @@
 ﻿import { Form, Link, useActionData, useLoaderData } from "react-router";
+import { useState } from "react";
 import AppLayout from "../components/AppLayout";
 import DeliveryNoteButton from "../components/DeliveryNoteButton";
 import auftraegeStyles from "../styles/auftraege.css?url";
@@ -421,6 +422,46 @@ export default function OrdersPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
+  /*
+   * gastario-inline-order-details-20260714
+   * Auftragsdetails bleiben direkt auf der Auftragsseite.
+   */
+  const [selectedOrderId, setSelectedOrderId] =
+    useState<string | null>(null);
+
+  const selectedOrder =
+    data.orders.find(
+      (order: any) => order.id === selectedOrderId
+    ) || null;
+
+  const selectedOrderItems = selectedOrder
+    ? (Array.isArray(selectedOrder.items)
+        ? selectedOrder.items
+        : []
+      ).filter(
+        (item: any) =>
+          !String(item.name || "")
+            .toLowerCase()
+            .includes("fehlende position")
+      )
+    : [];
+
+  const selectedOrderTotal = selectedOrder
+    ? (Array.isArray(selectedOrder.items)
+        ? selectedOrder.items
+        : []
+      ).reduce(
+        (sum: number, item: any) =>
+          sum +
+          Number(
+            item.totalCents ||
+              item.totalPriceCents ||
+              0
+          ),
+        0
+      )
+    : 0;
+
   return (
     <AppLayout>
       <div
@@ -617,7 +658,194 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        <div className="finalOrderRows operationalOrderRows">
+        {selectedOrder ? (
+          <div className="finalOrdersGrid selectedFocusMode">
+            <aside
+              className="finalSelectedPanel"
+              key={selectedOrder.id}
+            >
+              <div className="finalSelectedTop">
+                <div>
+                  <div className="finalSelectedKicker">
+                    Ausgewählt
+                  </div>
+
+                  <div className="finalOrderNumber">
+                    {selectedOrder.orderNumber}
+                  </div>
+
+                  <h3>
+                    {selectedOrder.customerName ||
+                      selectedOrder.customer?.name ||
+                      "Kunde unbekannt"}
+                  </h3>
+
+                  <p
+                    style={{
+                      margin: "6px 0 0",
+                      color: "#71817a",
+                      fontSize: 13,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {selectedOrder.contactName ||
+                      "Keine Kontaktperson eingetragen"}
+                  </p>
+                </div>
+
+                <span className="finalSourceBadge big">
+                  {String(
+                    selectedOrder.platformName ||
+                      selectedOrder.source ||
+                      "Direkt"
+                  )}
+                </span>
+              </div>
+
+              <div className="finalSelectedFacts">
+                <div>
+                  <span>Lieferung</span>
+
+                  <strong>
+                    {formatDate(
+                      selectedOrder.deliveryDate
+                    )}
+                  </strong>
+
+                  <small>
+                    {selectedOrder.deliveryTimeText ||
+                      "Uhrzeit offen"}
+                  </small>
+                </div>
+
+                <div>
+                  <span>Lieferadresse</span>
+
+                  <strong>
+                    {selectedOrder.customerName ||
+                      selectedOrder.customer?.name ||
+                      "Kunde unbekannt"}
+                  </strong>
+
+                  <small>
+                    {selectedOrder.deliveryAddress ||
+                      "Keine Lieferadresse eingetragen"}
+                  </small>
+
+                  {selectedOrder.contactPhone ? (
+                    <small
+                      style={{
+                        marginTop: 6,
+                        color: "#087158",
+                      }}
+                    >
+                      Telefon:{" "}
+                      {selectedOrder.contactPhone}
+                    </small>
+                  ) : null}
+                </div>
+
+                <div>
+                  <span>Gesamt</span>
+
+                  <strong>
+                    {centsToEuro(selectedOrderTotal)}
+                  </strong>
+
+                  <small>
+                    {data.view === "past"
+                      ? "Vergangener Auftrag"
+                      : "Bestätigter Auftrag"}
+                  </small>
+                </div>
+              </div>
+
+              <div className="finalSelectedItems">
+                <h4>Positionen</h4>
+
+                {selectedOrderItems
+                  .slice(0, 8)
+                  .map((item: any) => (
+                    <div
+                      className="finalSelectedItem"
+                      key={item.id || item.name}
+                    >
+                      <span>
+                        <strong>
+                          {item.quantity || 1}x
+                        </strong>
+
+                        {item.name || "Position"}
+                      </span>
+
+                      <b>
+                        {centsToEuro(
+                          Number(
+                            item.totalCents ||
+                              item.totalPriceCents ||
+                              0
+                          )
+                        )}
+                      </b>
+                    </div>
+                  ))}
+
+                {selectedOrderItems.length > 8 ? (
+                  <div className="finalSelectedMore">
+                    +{" "}
+                    {selectedOrderItems.length - 8}{" "}
+                    weitere Positionen
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="finalSelectedActions">
+                <button
+                  type="button"
+                  className="finalBackButton"
+                  onClick={() =>
+                    setSelectedOrderId(null)
+                  }
+                >
+                  Zurück zur Liste
+                </button>
+
+                <DeliveryNoteButton
+                  orderId={selectedOrder.id}
+                />
+
+                <Link
+                  to={
+                    "/auftraege/" +
+                    selectedOrder.id +
+                    "/foodlabels"
+                  }
+                >
+                  Foodlabels erstellen
+                </Link>
+
+                <Form method="post">
+                  <input
+                    type="hidden"
+                    name="intent"
+                    value="deleteOrder"
+                  />
+
+                  <input
+                    type="hidden"
+                    name="orderId"
+                    value={selectedOrder.id}
+                  />
+
+                  <button type="submit">
+                    Löschen
+                  </button>
+                </Form>
+              </div>
+            </aside>
+          </div>
+        ) : (
+          <div className="finalOrderRows operationalOrderRows">
           {data.orders.length === 0 ? (
             <div className="ordersCardEmpty">
               <strong>Keine Aufträge vorhanden.</strong>
@@ -768,15 +996,15 @@ export default function OrdersPage() {
                   </div>
 
                   <div className="finalOrderActions operationalOrderActions">
-                    <Link
+                    <button
                       className="operationalOpenButton"
-                      to={
-                        "/auftrag-pruefung/" +
-                        order.id
+                      type="button"
+                      onClick={() =>
+                        setSelectedOrderId(order.id)
                       }
                     >
                       Öffnen
-                    </Link>
+                    </button>
 
                     <DeliveryNoteButton
                       orderId={order.id}
@@ -811,6 +1039,8 @@ export default function OrdersPage() {
             })
           )}
         </div>
+
+        )}
       </section>
       </div>
 </AppLayout>
