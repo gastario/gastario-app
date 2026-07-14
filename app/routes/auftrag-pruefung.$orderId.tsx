@@ -246,64 +246,14 @@ export default function AuftragPruefungPage() {
           </Link>
         </div>
 
-        <div style={actionBarStyle}>
-          <a
-            href={deliveryHref}
-            style={secondaryButtonStyle}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Lieferschein PDF öffnen
-          </a>
-
-          <Link
-            to={"/auftraege/" + order.id + "/foodlabels"}
-            style={primaryButtonStyle}
-          >
-            Foodlabels erstellen
-          </Link>
-          {!isAlreadyConfirmed ? (
-            <Form method="post">
-            <input
-              type="hidden"
-              name="_intent"
-              value="confirmOrder"
-            />
-
-            <button
-              type="submit"
-              disabled={!canConfirmOrder}
-              style={
-                canConfirmOrder
-                  ? primaryButtonStyle
-                  : disabledButtonStyle
-              }
-              title={
-                canConfirmOrder
-                  ? "Auftrag übernehmen"
-                  : "Erst Daten ergänzen"
-              }
-            >
-              {canConfirmOrder
-                ? "Auftrag übernehmen"
-                : "Erst Daten ergänzen"}
-            </button>
-          </Form>
-          ) : null}
-
-          <button
-            type="button"
-            onClick={() => window.print()}
-            style={printButtonStyle}
-          >
-            Drucken / als PDF speichern
-          </button>
-        </div>
+        
       </div>
 
       <section style={{ maxWidth: 1180, margin: "0 auto", background: "#fff", borderRadius: 22, padding: 34, boxShadow: "0 18px 45px rgba(15, 23, 42, 0.08)", border: "1px solid #dbe7ec" }}>
         <p style={{ margin: 0, color: "#057a67", fontWeight: 900, textTransform: "uppercase", fontSize: 12 }}>
-          Auftragspruefung
+          {isAlreadyConfirmed
+            ? "Auftragsdetails"
+            : "Auftragsprüfung"}
         </p>
 
         <h1 style={{ margin: "6px 0 4px", fontSize: 42, letterSpacing: "-0.04em", color: "#071633" }}>{order.orderNumber}</h1>
@@ -489,29 +439,7 @@ export default function AuftragPruefungPage() {
                 </p>
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gap: 10,
-                  marginTop: 16,
-                }}
-              >
-                <a
-                  href={deliveryHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={secondaryButtonStyle}
-                >
-                  Lieferschein PDF öffnen
-                </a>
-
-                <Link
-                  to={"/auftraege/" + order.id + "/foodlabels"}
-                  style={primaryButtonStyle}
-                >
-                  Foodlabels erstellen
-                </Link>
-              </div>
+              
             </aside>
           )}
         </div>
@@ -826,6 +754,7 @@ const dangerHintBoxStyle: React.CSSProperties = {
   fontSize: 13,
   lineHeight: 1.55,
 };
+
 
 
 
