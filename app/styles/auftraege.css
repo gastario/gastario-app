@@ -914,3 +914,488 @@
     text-align: left;
   }
 }
+
+/* =========================================================
+   GASTARIO PREMIUM ORDER VIEW · 20260714
+   ========================================================= */
+
+.ordersPage {
+  --premium-ink: #102019;
+  --premium-text: #263a32;
+  --premium-muted: #75857e;
+  --premium-line: #dce6e2;
+  --premium-soft: #f4f8f6;
+  --premium-green: #08775c;
+  --premium-green-dark: #056047;
+  --premium-shadow:
+    0 18px 50px rgba(21, 42, 33, .065);
+}
+
+/* Kopfbereich ruhiger und hochwertiger */
+
+.ordersPage .topbar {
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.ordersPage .topbar h1 {
+  font-size: 38px;
+  font-weight: 760;
+  letter-spacing: -.05em;
+}
+
+.ordersPage .topbar .eyebrow {
+  margin-bottom: 6px;
+  font-size: 9px;
+  letter-spacing: .17em;
+}
+
+.ordersPage .pageSubline {
+  margin-top: 7px;
+  color: #65786f;
+  font-size: 12px;
+}
+
+.ordersPage .topActions {
+  gap: 9px;
+}
+
+.ordersPage .topActions a {
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 11px;
+}
+
+.ordersPage .topActions .secondaryButton {
+  border-color: #d4dfda;
+  box-shadow: 0 5px 15px rgba(24, 43, 35, .035);
+}
+
+.ordersPage .topActions .primaryButton {
+  background:
+    linear-gradient(
+      180deg,
+      #0a8968 0%,
+      #087158 100%
+    );
+  box-shadow:
+    0 9px 22px rgba(8, 119, 92, .17);
+}
+
+/* Kennzahlen weniger bunt und professioneller */
+
+.ordersPage .orderSummaryGrid {
+  gap: 13px;
+  margin-bottom: 22px;
+}
+
+.ordersPage .metricCard {
+  min-height: 116px;
+  padding: 19px 20px;
+  border-color: #dce5e1;
+  border-radius: 17px;
+  box-shadow:
+    0 12px 32px rgba(20, 40, 32, .045);
+}
+
+.ordersPage .metricCard::after {
+  top: -53px;
+  right: -45px;
+  width: 126px;
+  height: 126px;
+  opacity: .55;
+}
+
+.ordersPage .metricCard p {
+  margin-bottom: 10px;
+  color: #65766f;
+  font-size: 10px;
+  letter-spacing: .01em;
+}
+
+.ordersPage .metricCard strong {
+  font-size: 29px;
+  font-weight: 760;
+}
+
+.ordersPage .metricCard span {
+  margin-top: 8px;
+  font-size: 9.5px;
+}
+
+.ordersPage .metricCard small {
+  top: 15px;
+  right: 15px;
+  padding: 4px 7px;
+  font-size: 7px;
+}
+
+/* Hauptbereich */
+
+.ordersPage .panel {
+  border-color: #d8e3de;
+  border-radius: 24px;
+  box-shadow: var(--premium-shadow);
+}
+
+.ordersPage .panelHeader {
+  display: grid;
+  grid-template-columns:
+    minmax(260px, .8fr)
+    minmax(640px, 1.4fr);
+  gap: 32px;
+  align-items: start;
+  padding: 30px 30px 18px;
+}
+
+.ordersPage .panelHeader > div:first-child {
+  margin: 4px 0 0;
+}
+
+.ordersPage .panelHeader h2 {
+  font-size: 28px;
+  font-weight: 750;
+  letter-spacing: -.045em;
+}
+
+.ordersPage .panelHeader .eyebrow {
+  margin-bottom: 7px;
+  font-size: 8px;
+  letter-spacing: .16em;
+}
+
+/* Filter als ruhige Werkzeugleiste */
+
+.ordersPage .ordersFilterWrap {
+  gap: 12px;
+}
+
+.ordersPage .ordersFilterForm {
+  grid-template-columns:
+    minmax(260px, 1.45fr)
+    minmax(190px, .75fr)
+    108px
+    108px;
+  gap: 9px;
+  padding: 11px;
+  border-color: #d9e3df;
+  border-radius: 14px;
+  background: #f6f9f8;
+}
+
+.ordersPage .filterInput {
+  min-height: 42px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.ordersPage .ordersFilterForm .ghostButton {
+  min-height: 42px;
+}
+
+.ordersPage .statusFilterGroup {
+  padding: 4px;
+  border-radius: 12px;
+  background: #f2f6f4;
+}
+
+.ordersPage .statusFilterGroup .ghostButton {
+  min-width: 95px;
+  min-height: 34px;
+  font-size: 9.5px;
+}
+
+.ordersPage .statusFilterGroup .activeFilter {
+  color: var(--premium-green);
+  box-shadow:
+    0 5px 13px rgba(20, 40, 32, .055),
+    inset 0 -2px 0 #0fa47d;
+}
+
+/* Kartenbereich */
+
+.ordersPage .ordersCardList {
+  gap: 12px;
+  padding: 20px 30px 30px;
+  background:
+    linear-gradient(
+      180deg,
+      #f6f9f8 0%,
+      #f9fbfa 100%
+    );
+}
+
+/* Auftragskarte */
+
+.ordersPage .ordersListCard {
+  position: relative;
+  grid-template-columns:
+    34px
+    minmax(185px, 1fr)
+    minmax(270px, 1.42fr)
+    minmax(145px, .72fr)
+    92px
+    112px
+    222px;
+  gap: 17px;
+  min-height: 118px;
+  padding: 20px 18px;
+  overflow: hidden;
+  border-color: #d9e4df;
+  border-radius: 18px;
+  box-shadow:
+    0 7px 20px rgba(20, 39, 32, .038);
+}
+
+.ordersPage .ordersListCard::before {
+  content: "";
+  position: absolute;
+  top: 17px;
+  bottom: 17px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: #16a17b;
+}
+
+.ordersPage .ordersListCardUpcoming:hover {
+  transform: translateY(-2px);
+  border-color: #a6cbbf;
+  box-shadow:
+    0 16px 34px rgba(18, 38, 30, .075);
+}
+
+/* Vergangen deutlich ruhiger */
+
+.ordersPagePast .ordersListCard {
+  border-color: #e0e6e3;
+  background:
+    linear-gradient(
+      90deg,
+      #f5f7f6 0%,
+      #ffffff 17%
+    );
+}
+
+.ordersPagePast .ordersListCard::before {
+  background: #94a19b;
+}
+
+.ordersPagePast .ordersListCard:hover {
+  border-color: #c7d0cc;
+  box-shadow:
+    0 12px 27px rgba(18, 38, 30, .05);
+}
+
+/* Icon */
+
+.ordersPage .ordersListIcon span {
+  width: 29px;
+  height: 29px;
+  border-color: #c9ded6;
+  border-radius: 9px;
+  background: #eff8f4;
+  font-size: 12px;
+}
+
+.ordersPagePast .ordersListIcon span {
+  border-color: #d7dfdc;
+  background: #f3f5f4;
+  color: #74817b;
+}
+
+/* Kunde */
+
+.ordersPage .ordersListNumber {
+  margin-bottom: 3px;
+  color: #547067;
+  font-size: 9px;
+  font-weight: 820;
+  letter-spacing: .045em;
+}
+
+.ordersPage .ordersListCustomer h3 {
+  color: var(--premium-ink);
+  font-size: 16px;
+  font-weight: 760;
+  letter-spacing: -.025em;
+}
+
+.ordersPage .ordersListCustomer p {
+  margin: 4px 0 8px;
+  color: #708078;
+  font-size: 9px;
+}
+
+.ordersPage .ordersListSource {
+  min-height: 20px;
+  padding: 0 7px;
+  background: #edf4f1;
+  color: #466158;
+  font-size: 7px;
+  letter-spacing: .03em;
+}
+
+/* Positionen */
+
+.ordersPage .ordersListItems {
+  gap: 5px;
+}
+
+.ordersPage .ordersListItems > div {
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.ordersPage .ordersListItems strong {
+  color: #059473;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.ordersPage .ordersListItems span {
+  color: #263a32;
+  font-size: 10px;
+  font-weight: 680;
+}
+
+.ordersPage .ordersListItems small {
+  padding-left: 44px;
+  color: #71857c;
+  font-size: 8px;
+}
+
+/* Lieferdaten */
+
+.ordersPage .ordersListDelivery strong {
+  color: #172820;
+  font-size: 11px;
+  font-weight: 780;
+}
+
+.ordersPage .ordersListDelivery span {
+  margin-top: 3px;
+  font-size: 8.5px;
+}
+
+.ordersPage .ordersListDelivery small {
+  margin-top: 6px;
+  color: #87938e;
+  font-size: 7.5px;
+}
+
+/* Status */
+
+.ordersPage .orderStatus {
+  min-height: 27px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 8px;
+}
+
+/* Betrag */
+
+.ordersPage .ordersListTotal strong {
+  font-size: 18px;
+  font-weight: 780;
+}
+
+.ordersPage .ordersListTotal span {
+  margin-top: 6px;
+  padding: 3px 6px;
+  background: #fff4e3;
+  color: #b9751f;
+  font-size: 6.5px;
+}
+
+/* Aktionen zurückhaltender */
+
+.ordersPage .ordersListActions {
+  grid-template-columns:
+    66px
+    minmax(118px, 1fr)
+    36px;
+  gap: 7px;
+}
+
+.ordersPage .ordersListOpenButton {
+  min-height: 38px;
+  border-radius: 10px;
+  font-size: 9.5px;
+  box-shadow:
+    0 6px 15px rgba(8, 119, 92, .14);
+}
+
+.ordersPage
+.ordersListActions
+.deliveryDocumentButton {
+  min-height: 38px;
+  border-color: #d2dfda;
+  background: #ffffff;
+  color: #40584f;
+  font-size: 9px;
+}
+
+.ordersPage
+.ordersListActions
+.deliveryDocumentIcon {
+  width: 21px;
+  height: 21px;
+  background: #edf5f2;
+}
+
+.ordersPage .ordersListMoreButton {
+  width: 36px;
+  min-height: 38px;
+  border-color: #ead0d0;
+  border-radius: 10px;
+  background: #fffafa;
+  color: #bc5555;
+  font-size: 16px;
+}
+
+/* Vergangene Aufträge: Aktionen neutral */
+
+.ordersPagePast .ordersListOpenButton {
+  border-color: #596961;
+  background:
+    linear-gradient(
+      180deg,
+      #687871 0%,
+      #57675f 100%
+    );
+}
+
+.ordersPagePast
+.ordersListActions
+.deliveryDocumentButton {
+  border-color: #d8dfdc;
+  background: #fafbfb;
+  color: #586861;
+}
+
+/* Desktop-Anpassung */
+
+@media (max-width: 1320px) {
+  .ordersPage .panelHeader {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersPage .ordersListCard {
+    grid-template-columns:
+      32px
+      minmax(170px, 1fr)
+      minmax(220px, 1.25fr)
+      135px
+      90px
+      105px;
+  }
+
+  .ordersPage .ordersListActions {
+    grid-column: 2 / -1;
+    max-width: 255px;
+    justify-self: end;
+  }
+}
+
