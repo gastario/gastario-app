@@ -1700,3 +1700,79 @@
     justify-self: stretch;
   }
 }
+
+/* gastario-operational-orders-width-fix-20260714 */
+
+.ordersPage .operationalOrderRow {
+  grid-template-columns:
+    44px
+    minmax(210px, .9fr)
+    minmax(320px, 1.35fr)
+    minmax(145px, .65fr)
+    100px
+    145px !important;
+  gap: 16px !important;
+  padding: 18px 18px !important;
+}
+
+.ordersPage .operationalOrderActions {
+  grid-column: 2 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+  margin-top: -4px;
+}
+
+.ordersPage .operationalOrderActions form {
+  display: flex;
+}
+
+.ordersPage .operationalOpenButton {
+  min-width: 76px;
+}
+
+.ordersPage
+.operationalOrderActions
+.deliveryDocumentButton {
+  width: auto;
+  min-width: 132px;
+  padding: 0 14px;
+}
+
+.ordersPage .operationalDeleteButton {
+  width: 40px;
+}
+
+.ordersPage .finalOrderItems span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ordersPage .operationalOrderDate {
+  min-width: 0;
+}
+
+.ordersPage .operationalOrderDate small {
+  max-width: 145px;
+}
+
+@media (max-width: 1180px) {
+  .ordersPage .operationalOrderRow {
+    grid-template-columns:
+      42px
+      minmax(200px, 1fr)
+      minmax(240px, 1.2fr)
+      135px
+      95px !important;
+  }
+
+  .ordersPage .finalOrderTotal {
+    grid-column: 5;
+  }
+
+  .ordersPage .operationalOrderActions {
+    grid-column: 2 / -1;
+  }
+}
