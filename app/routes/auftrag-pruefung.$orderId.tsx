@@ -222,6 +222,18 @@ export default function AuftragPruefungPage() {
   const reviewState = getOrderReviewState(order);
   const missingChecks = reviewState.missing;
   const canConfirmOrder = missingChecks.length === 0;
+
+  /*
+   * gastario-confirmed-order-details-20260714
+   * Bereits übernommene Aufträge werden nur noch als
+   * Auftragsdetails angezeigt.
+   */
+  const isAlreadyConfirmed = [
+    "CONFIRMED",
+    "IN_PRODUCTION",
+    "PACKING_OPEN",
+    "DELIVERED",
+  ].includes(String(order.status));
   const deliveryHref =
     "/lieferscheine/" + order.id + "/pdf";
 
@@ -250,8 +262,8 @@ export default function AuftragPruefungPage() {
           >
             Foodlabels erstellen
           </Link>
-
-          <Form method="post">
+          {!isAlreadyConfirmed ? (
+            <Form method="post">
             <input
               type="hidden"
               name="_intent"
@@ -277,6 +289,7 @@ export default function AuftragPruefungPage() {
                 : "Erst Daten ergänzen"}
             </button>
           </Form>
+          ) : null}
 
           <button
             type="button"
@@ -296,11 +309,37 @@ export default function AuftragPruefungPage() {
         <h1 style={{ margin: "6px 0 4px", fontSize: 42, letterSpacing: "-0.04em", color: "#071633" }}>{order.orderNumber}</h1>
         <p style={{ margin: 0, color: "#64748b", fontWeight: 700 }}>{tenant?.name || "Gastario"}</p>
 
-        <div style={{ marginTop: 20, padding: "14px 16px", borderRadius: 14, background: "#fff7ed", color: "#9a3412", fontWeight: 850, border: "1px solid #fed7aa" }}>
-          Bitte vor Übernahme prüfen: Kunde, Lieferadresse, Datum, Uhrzeit und Positionen.
-        </div>
+        {isAlreadyConfirmed ? (
+          <div
+            style={{
+              marginTop: 20,
+              padding: "14px 16px",
+              borderRadius: 14,
+              background: "#eef9f5",
+              color: "#087158",
+              fontWeight: 850,
+              border: "1px solid #bfe6d8",
+            }}
+          >
+            Dieser Auftrag wurde bereits übernommen und ist für die Ausführung eingeplant.
+          </div>
+        ) : (
+          <div
+            style={{
+              marginTop: 20,
+              padding: "14px 16px",
+              borderRadius: 14,
+              background: "#fff7ed",
+              color: "#9a3412",
+              fontWeight: 850,
+              border: "1px solid #fed7aa",
+            }}
+          >
+            Bitte vor Übernahme prüfen: Kunde, Lieferadresse, Datum, Uhrzeit und Positionen.
+          </div>
+        )}
 
-        {!canConfirmOrder ? (
+        {!isAlreadyConfirmed && !canConfirmOrder ? (
           <div style={dangerBoxStyle}>
             <strong>Nicht übernehmen: Erst Daten ergänzen.</strong>
             <ul style={dangerListStyle}>
@@ -374,21 +413,107 @@ export default function AuftragPruefungPage() {
             </table>
           </section>
 
-          <aside style={checklistCardStyle}>
-            <h2 style={sectionTitleStyle}>Checkliste</h2>
+          {!isAlreadyConfirmed ? (
+            <aside style={checklistCardStyle}>
+              <h2 style={sectionTitleStyle}>Checkliste</h2>
 
-            <div style={checkListStyle}>
-              <div style={checkItemStyle}><span style={checkBoxStyle}></span><span>Kunde stimmt</span></div>
-              <div style={checkItemStyle}><span style={checkBoxStyle}></span><span>Lieferadresse stimmt</span></div>
-              <div style={checkItemStyle}><span style={checkBoxStyle}></span><span>Lieferdatum und Lieferzeit stimmen</span></div>
-              <div style={checkItemStyle}><span style={checkBoxStyle}></span><span>Positionen stimmen</span></div>
-              <div style={checkItemStyle}><span style={checkBoxStyle}></span><span>Hinweise / Allergene geprüft</span></div>
-            </div>
+              <div style={checkListStyle}>
+                <div style={checkItemStyle}>
+                  <span style={checkBoxStyle}></span>
+                  <span>Kunde stimmt</span>
+                </div>
 
-            <p style={checkHintStyle}>
-              Bitte alle Punkte prüfen, bevor der Auftrag übernommen wird.
-            </p>
-          </aside>
+                <div style={checkItemStyle}>
+                  <span style={checkBoxStyle}></span>
+                  <span>Lieferadresse stimmt</span>
+                </div>
+
+                <div style={checkItemStyle}>
+                  <span style={checkBoxStyle}></span>
+                  <span>Lieferdatum und Lieferzeit stimmen</span>
+                </div>
+
+                <div style={checkItemStyle}>
+                  <span style={checkBoxStyle}></span>
+                  <span>Positionen stimmen</span>
+                </div>
+
+                <div style={checkItemStyle}>
+                  <span style={checkBoxStyle}></span>
+                  <span>Hinweise / Allergene geprüft</span>
+                </div>
+              </div>
+
+              <p style={checkHintStyle}>
+                Bitte alle Punkte prüfen, bevor der Auftrag übernommen wird.
+              </p>
+            </aside>
+          ) : (
+            <aside style={checklistCardStyle}>
+              <h2 style={sectionTitleStyle}>
+                Auftragsstatus
+              </h2>
+
+              <div
+                style={{
+                  marginTop: 18,
+                  padding: 18,
+                  borderRadius: 16,
+                  border: "1px solid #bfe6d8",
+                  background: "#eef9f5",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#087158",
+                    fontSize: 13,
+                    fontWeight: 900,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                  }}
+                >
+                  Bestätigt
+                </div>
+
+                <p
+                  style={{
+                    margin: "8px 0 0",
+                    color: "#47675d",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    lineHeight: 1.55,
+                  }}
+                >
+                  Der Auftrag wurde übernommen. Änderungen können über
+                  die Auftragsdaten vorgenommen werden.
+                </p>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gap: 10,
+                  marginTop: 16,
+                }}
+              >
+                <a
+                  href={deliveryHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={secondaryButtonStyle}
+                >
+                  Lieferschein PDF öffnen
+                </a>
+
+                <Link
+                  to={"/auftraege/" + order.id + "/foodlabels"}
+                  style={primaryButtonStyle}
+                >
+                  Foodlabels erstellen
+                </Link>
+              </div>
+            </aside>
+          )}
         </div>
       </section>
     </main>
