@@ -583,3 +583,334 @@
 .ordersPage .deleteOrderButton {
   border-radius: 10px !important;
 }
+
+/* gastario-inbox-inspired-order-cards-20260714 */
+
+.ordersPage .ordersCardList {
+  display: grid;
+  gap: 10px;
+  padding: 20px 25px 25px;
+  background: #f6f9f8;
+}
+
+.ordersPage .ordersListCard {
+  display: grid;
+  grid-template-columns:
+    42px
+    minmax(190px, 1.05fr)
+    minmax(260px, 1.55fr)
+    minmax(135px, .72fr)
+    105px
+    115px
+    245px;
+  gap: 18px;
+  align-items: center;
+  min-height: 112px;
+  padding: 18px 17px;
+  border: 1px solid #d8e3df;
+  border-radius: 17px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(18, 35, 29, .035);
+  transition:
+    transform .15s ease,
+    border-color .15s ease,
+    box-shadow .15s ease;
+}
+
+.ordersPage .ordersListCardUpcoming:hover {
+  transform: translateY(-2px);
+  border-color: #a2ccbe;
+  box-shadow: 0 13px 27px rgba(18, 38, 30, .075);
+}
+
+.ordersPage .ordersListCardPast {
+  border-color: #dfe5e2;
+  background:
+    linear-gradient(
+      90deg,
+      #f5f7f6 0%,
+      #ffffff 18%
+    );
+}
+
+.ordersPage .ordersListCardPast:hover {
+  border-color: #c2ccc8;
+  box-shadow: 0 11px 23px rgba(18, 38, 30, .05);
+}
+
+.ordersPage .ordersListIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ordersPage .ordersListIcon span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 31px;
+  height: 31px;
+  border: 1px solid #c4dfd6;
+  border-radius: 9px;
+  background: #edf8f4;
+  color: #07916f;
+  font-size: 14px;
+}
+
+.ordersPagePast .ordersListIcon span {
+  border-color: #d3dcda;
+  background: #f1f4f3;
+  color: #687770;
+}
+
+.ordersPage .ordersListCustomer,
+.ordersPage .ordersListItems,
+.ordersPage .ordersListDelivery {
+  min-width: 0;
+}
+
+.ordersPage .ordersListNumber {
+  overflow: hidden;
+  margin-bottom: 2px;
+  color: #557169;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ordersPage .ordersListCustomer h3 {
+  overflow: hidden;
+  margin: 0;
+  color: #14241e;
+  font-size: 17px;
+  line-height: 1.15;
+  letter-spacing: -.025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ordersPage .ordersListCustomer p {
+  overflow: hidden;
+  margin: 4px 0 7px;
+  color: #64776f;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ordersPage .ordersListSource {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #edf4f1;
+  color: #35594e;
+  font-size: 8px;
+  font-weight: 820;
+  text-transform: capitalize;
+}
+
+.ordersPage .ordersListItems {
+  display: grid;
+  gap: 4px;
+}
+
+.ordersPage .ordersListItems > div {
+  display: grid;
+  grid-template-columns: 35px minmax(0, 1fr);
+  gap: 7px;
+  align-items: baseline;
+}
+
+.ordersPage .ordersListItems strong {
+  color: #009875;
+  font-size: 11px;
+  text-align: right;
+}
+
+.ordersPage .ordersListItems span {
+  overflow: hidden;
+  color: #172821;
+  font-size: 10.5px;
+  font-weight: 720;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ordersPage .ordersListItems small {
+  padding-left: 42px;
+  color: #5d7a70;
+  font-size: 8.5px;
+  font-weight: 750;
+}
+
+.ordersPage .ordersListDelivery strong {
+  display: block;
+  color: #172821;
+  font-size: 12.5px;
+}
+
+.ordersPage .ordersListDelivery span {
+  display: block;
+  margin-top: 3px;
+  color: #657970;
+  font-size: 9px;
+}
+
+.ordersPage .ordersListDelivery small {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 5px;
+  color: #819089;
+  font-size: 8px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.ordersPage .ordersListStatus {
+  display: flex;
+  align-items: center;
+}
+
+.ordersPage .ordersListTotal {
+  text-align: right;
+}
+
+.ordersPage .ordersListTotal strong {
+  display: block;
+  color: #10231b;
+  font-size: 19px;
+  line-height: 1;
+  letter-spacing: -.035em;
+  white-space: nowrap;
+}
+
+.ordersPage .ordersListTotal span {
+  display: inline-flex;
+  margin-top: 6px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #fff3df;
+  color: #bd7417;
+  font-size: 7px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.ordersPagePast .ordersListTotal span {
+  background: #eef2f0;
+  color: #697770;
+}
+
+.ordersPage .ordersListActions {
+  display: grid;
+  grid-template-columns:
+    72px
+    minmax(125px, 1fr)
+    39px;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.ordersPage .ordersListActions form {
+  margin: 0;
+}
+
+.ordersPage .ordersListOpenButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 39px;
+  border: 1px solid #08775c;
+  border-radius: 10px;
+  background:
+    linear-gradient(
+      180deg,
+      #0b8968,
+      #087158
+    );
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 790;
+  text-decoration: none;
+  box-shadow: 0 6px 14px rgba(8, 119, 92, .15);
+}
+
+.ordersPagePast .ordersListOpenButton {
+  border-color: #56665f;
+  background: #56665f;
+  box-shadow: none;
+}
+
+.ordersPage .ordersListMoreButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 39px;
+  min-height: 39px;
+  border: 1px solid #ebc6c6;
+  border-radius: 10px;
+  background: #fff8f8;
+  color: #b84b4b;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.ordersPage .ordersCardEmpty {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 45px 20px;
+  border: 1px dashed #cbdad4;
+  border-radius: 16px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.ordersPage .ordersCardEmpty strong {
+  color: #1c3028;
+  font-size: 15px;
+}
+
+.ordersPage .ordersCardEmpty span {
+  color: #72817b;
+  font-size: 11px;
+}
+
+@media (max-width: 1250px) {
+  .ordersPage .ordersListCard {
+    grid-template-columns:
+      38px
+      minmax(180px, 1fr)
+      minmax(210px, 1.3fr)
+      125px
+      100px
+      110px;
+  }
+
+  .ordersPage .ordersListActions {
+    grid-column: 2 / -1;
+  }
+}
+
+@media (max-width: 850px) {
+  .ordersPage .ordersListCard {
+    grid-template-columns: 35px minmax(0, 1fr);
+  }
+
+  .ordersPage .ordersListItems,
+  .ordersPage .ordersListDelivery,
+  .ordersPage .ordersListStatus,
+  .ordersPage .ordersListTotal,
+  .ordersPage .ordersListActions {
+    grid-column: 2;
+  }
+
+  .ordersPage .ordersListTotal {
+    text-align: left;
+  }
+}
