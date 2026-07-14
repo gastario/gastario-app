@@ -1880,3 +1880,63 @@
   position: relative;
   z-index: 2;
 }
+
+/* gastario-order-card-actions-cleanup-20260714 */
+
+.ordersPage .operationalOrderActions {
+  display: grid !important;
+  grid-template-columns: 126px 38px !important;
+  gap: 8px !important;
+  align-items: center !important;
+  justify-content: end !important;
+  width: 172px !important;
+  min-width: 172px !important;
+  overflow: visible !important;
+}
+
+.ordersPage .operationalOrderActions .deliveryDocumentButton {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 126px !important;
+  min-width: 126px !important;
+  max-width: 126px !important;
+  min-height: 40px !important;
+  padding: 0 12px !important;
+  overflow: visible !important;
+  border: 1px solid #d4e3dd !important;
+  border-radius: 11px !important;
+  background: #ffffff !important;
+  color: #36534b !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+}
+
+.ordersPage .operationalOrderActions form {
+  display: block !important;
+  width: 38px !important;
+  min-width: 38px !important;
+  margin: 0 !important;
+}
+
+.ordersPage .operationalDeleteButton {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  min-height: 40px !important;
+  padding: 0 !important;
+  border: 1px solid #efc2c2 !important;
+  border-radius: 11px !important;
+  background: #fff7f7 !important;
+  color: #c53e3e !important;
+  box-shadow: none !important;
+}
+
+.ordersPage .operationalDeleteButton:hover {
+  border-color: #e89595 !important;
+  background: #feecec !important;
+  color: #a81f1f !important;
+}
