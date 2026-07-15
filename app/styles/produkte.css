@@ -951,3 +951,128 @@
     grid-template-columns: 64px minmax(0, 1fr) auto;
   }
 }
+
+.productProcurementPanel {
+  border: 1px solid #dce7e9;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(19, 47, 54, 0.05);
+  overflow: hidden;
+  margin: 20px 20px 0;
+}
+
+.productProcurementBadge {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 7px 11px;
+  background: #eaf6f3;
+  color: #257064;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.productProcurementForm {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  padding: 20px;
+}
+
+.productProcurementHint {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #d9e8e5;
+  border-radius: 13px;
+  padding: 12px 14px;
+  background: #f3f9f7;
+}
+
+.productProcurementHint strong {
+  color: #285f57;
+  font-size: 12px;
+}
+
+.productProcurementHint span {
+  color: #66817c;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.productProcurementPreview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  border: 1px solid #dce7e9;
+  border-radius: 14px;
+  padding: 12px;
+  background: #f8fbfb;
+}
+
+.productProcurementPreview > div {
+  min-width: 0;
+  border-right: 1px solid #dde7e9;
+  padding: 3px 12px;
+}
+
+.productProcurementPreview > div:last-child {
+  border-right: 0;
+}
+
+.productProcurementPreview small,
+.productProcurementPreview strong {
+  display: block;
+}
+
+.productProcurementPreview small {
+  margin-bottom: 5px;
+  color: #819398;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.productProcurementPreview strong {
+  color: #294a51;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.productProcurementActions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 2px;
+}
+
+@media (max-width: 1180px) {
+  .productProcurementForm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .productProcurementPanel {
+    margin: 14px 14px 0;
+  }
+
+  .productProcurementForm,
+  .productProcurementPreview {
+    grid-template-columns: 1fr;
+  }
+
+  .productProcurementPreview > div {
+    border-right: 0;
+    border-bottom: 1px solid #dde7e9;
+    padding: 8px 4px;
+  }
+
+  .productProcurementPreview > div:last-child {
+    border-bottom: 0;
+  }
+
+  .productProcurementActions,
+  .productProcurementActions button {
+    width: 100%;
+  }
+}

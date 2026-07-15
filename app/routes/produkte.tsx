@@ -22,6 +22,27 @@ function toNumber(value: FormDataEntryValue | null, fallback = 0) {
   return Number.isFinite(number) ? number : fallback;
 }
 
+function toOptionalNumber(value: FormDataEntryValue | null) {
+  const raw = String(value || "").replace(",", ".").trim();
+
+  if (!raw) {
+    return null;
+  }
+
+  const number = Number(raw);
+  return Number.isFinite(number) ? number : null;
+}
+
+function optionalEuroToCents(value: FormDataEntryValue | null) {
+  const number = toOptionalNumber(value);
+
+  if (number === null) {
+    return null;
+  }
+
+  return Math.round(number * 100);
+}
+
 export function links() {
   return [
     {
@@ -211,6 +232,87 @@ export async function action({ request }: { request: Request }) {
     });
 
     return { success: "Produkt wurde gespeichert." };
+  }
+
+  if (intent === "updateProcurement") {
+    const allowedTypes = new Set([
+      "RECIPE",
+      "READY_MADE",
+      "BAKE_OFF",
+      "THAW",
+      "REHEAT",
+      "EXTERNAL",
+    ]);
+
+    const requestedType = String(
+      formData.get("procurementType") || "RECIPE"
+    );
+
+    const procurementType = allowedTypes.has(requestedType)
+      ? requestedType
+      : "RECIPE";
+
+    const supplierName = String(
+      formData.get("supplierName") || ""
+    ).trim();
+
+    const supplierArticleName = String(
+      formData.get("supplierArticleName") || ""
+    ).trim();
+
+    const supplierArticleNumber = String(
+      formData.get("supplierArticleNumber") || ""
+    ).trim();
+
+    const purchaseUnit = String(
+      formData.get("purchaseUnit") || ""
+    ).trim();
+
+    const packageUnit = String(
+      formData.get("packageUnit") || ""
+    ).trim();
+
+    const preparationNotes = String(
+      formData.get("preparationNotes") || ""
+    ).trim();
+
+    const purchaseQuantityPerUnit = toOptionalNumber(
+      formData.get("purchaseQuantityPerUnit")
+    );
+
+    const packageQuantity = toOptionalNumber(
+      formData.get("packageQuantity")
+    );
+
+    const purchasePriceCents = optionalEuroToCents(
+      formData.get("purchasePriceEuro")
+    );
+
+    await prisma.product.update({
+      where: {
+        id: product.id,
+      },
+      data: {
+        procurementType,
+        supplierName: supplierName || null,
+        supplierArticleName: supplierArticleName || null,
+        supplierArticleNumber:
+          supplierArticleNumber || null,
+        purchaseUnit: purchaseUnit || null,
+        purchaseQuantityPerUnit,
+        packageUnit: packageUnit || null,
+        packageQuantity,
+        purchasePriceCents,
+        preparationNotes: preparationNotes || null,
+      } as any,
+    });
+
+    return {
+      success:
+        procurementType === "RECIPE"
+          ? "Beschaffung wurde auf Eigenproduktion gestellt."
+          : "Beschaffungsdaten wurden gespeichert.",
+    };
   }
 
   if (intent === "toggleActive") {
@@ -626,6 +728,235 @@ export async function action({ request }: { request: Request }) {
                 </span>
               </div>
             </div>
+
+            <section className="productProcurementPanel">
+              <div className="productDetailSectionHeader">
+                <div>
+                  <p className="eyebrow">Herstellung und Beschaffung</p>
+                  <h3>Wie wird dieses Produkt bereitgestellt?</h3>
+                  <span>
+                    Lege fest, ob das Produkt selbst hergestellt,
+                    fertig eingekauft, aufgebacken oder nur vorbereitet wird.
+                  </span>
+                </div>
+
+                <div className="productProcurementBadge">
+                  {selectedProduct.procurementType === "READY_MADE"
+                    ? "Fertigprodukt"
+                    : selectedProduct.procurementType === "BAKE_OFF"
+                      ? "Aufbacken"
+                      : selectedProduct.procurementType === "THAW"
+                        ? "Auftauen"
+                        : selectedProduct.procurementType === "REHEAT"
+                          ? "Erwärmen"
+                          : selectedProduct.procurementType === "EXTERNAL"
+                            ? "Extern"
+                            : "Eigenproduktion"}
+                </div>
+              </div>
+
+              <Form method="post" className="productProcurementForm">
+                <input
+                  type="hidden"
+                  name="intent"
+                  value="updateProcurement"
+                />
+                <input
+                  type="hidden"
+                  name="productId"
+                  value={selectedProduct.id}
+                />
+
+                <label className="productsField productsFieldFull">
+                  <span>Beschaffungsart</span>
+                  <select
+                    name="procurementType"
+                    defaultValue={
+                      selectedProduct.procurementType || "RECIPE"
+                    }
+                  >
+                    <option value="RECIPE">
+                      Eigenproduktion mit Rezeptur
+                    </option>
+                    <option value="READY_MADE">
+                      Fertig einkaufen
+                    </option>
+                    <option value="BAKE_OFF">
+                      Fertig einkaufen und aufbacken
+                    </option>
+                    <option value="THAW">
+                      Fertig einkaufen und auftauen
+                    </option>
+                    <option value="REHEAT">
+                      Fertig einkaufen und erwärmen
+                    </option>
+                    <option value="EXTERNAL">
+                      Extern produzieren lassen
+                    </option>
+                  </select>
+                </label>
+
+                <div className="productProcurementHint productsFieldFull">
+                  <strong>Eigenproduktion</strong>
+                  <span>
+                    Nutzt die hinterlegte Rezeptur. Bei allen anderen
+                    Beschaffungsarten werden Lieferant, Einkaufsartikel
+                    und Gebinde für die Einkaufsliste verwendet.
+                  </span>
+                </div>
+
+                <label className="productsField">
+                  <span>Lieferant</span>
+                  <input
+                    name="supplierName"
+                    defaultValue={
+                      selectedProduct.supplierName || ""
+                    }
+                    placeholder="Zum Beispiel Transgourmet"
+                  />
+                </label>
+
+                <label className="productsField">
+                  <span>Einkaufsartikel</span>
+                  <input
+                    name="supplierArticleName"
+                    defaultValue={
+                      selectedProduct.supplierArticleName || ""
+                    }
+                    placeholder="Bezeichnung beim Lieferanten"
+                  />
+                </label>
+
+                <label className="productsField">
+                  <span>Artikelnummer</span>
+                  <input
+                    name="supplierArticleNumber"
+                    defaultValue={
+                      selectedProduct.supplierArticleNumber || ""
+                    }
+                    placeholder="Optional"
+                  />
+                </label>
+
+                <label className="productsField">
+                  <span>Einkaufseinheit</span>
+                  <input
+                    name="purchaseUnit"
+                    defaultValue={
+                      selectedProduct.purchaseUnit || "Stück"
+                    }
+                    placeholder="Stück, kg, Liter"
+                  />
+                </label>
+
+                <label className="productsField">
+                  <span>Bedarf je verkaufter Einheit</span>
+                  <input
+                    name="purchaseQuantityPerUnit"
+                    type="number"
+                    min="0"
+                    step="0.001"
+                    defaultValue={
+                      selectedProduct.purchaseQuantityPerUnit ?? ""
+                    }
+                    placeholder="1"
+                  />
+                </label>
+
+                <label className="productsField">
+                  <span>Gebindeart</span>
+                  <input
+                    name="packageUnit"
+                    defaultValue={
+                      selectedProduct.packageUnit || ""
+                    }
+                    placeholder="Karton, Beutel, Kiste"
+                  />
+                </label>
+
+                <label className="productsField">
+                  <span>Inhalt je Gebinde</span>
+                  <input
+                    name="packageQuantity"
+                    type="number"
+                    min="0"
+                    step="0.001"
+                    defaultValue={
+                      selectedProduct.packageQuantity ?? ""
+                    }
+                    placeholder="48"
+                  />
+                </label>
+
+                <label className="productsField">
+                  <span>Einkaufspreis je Gebinde</span>
+                  <div className="productsInputSuffix">
+                    <input
+                      name="purchasePriceEuro"
+                      inputMode="decimal"
+                      defaultValue={
+                        selectedProduct.purchasePriceCents == null
+                          ? ""
+                          : String(
+                              selectedProduct.purchasePriceCents / 100
+                            ).replace(".", ",")
+                      }
+                      placeholder="31,90"
+                    />
+                    <small>EUR</small>
+                  </div>
+                </label>
+
+                <label className="productsField productsFieldFull">
+                  <span>Vorbereitung und Verarbeitung</span>
+                  <textarea
+                    name="preparationNotes"
+                    rows={3}
+                    defaultValue={
+                      selectedProduct.preparationNotes || ""
+                    }
+                    placeholder="Zum Beispiel über Nacht auftauen und vor Ausgabe vier Minuten aufbacken"
+                  />
+                </label>
+
+                <div className="productProcurementPreview productsFieldFull">
+                  <div>
+                    <small>Einkaufsgrundlage</small>
+                    <strong>
+                      {selectedProduct.purchaseQuantityPerUnit
+                        ? `${selectedProduct.purchaseQuantityPerUnit} ${selectedProduct.purchaseUnit || "Stück"} je ${selectedProduct.unit || "Portion"}`
+                        : "Noch keine Bedarfsmenge hinterlegt"}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <small>Gebinde</small>
+                    <strong>
+                      {selectedProduct.packageQuantity
+                        ? `${selectedProduct.packageQuantity} ${selectedProduct.purchaseUnit || "Stück"} je ${selectedProduct.packageUnit || "Gebinde"}`
+                        : "Noch kein Gebinde hinterlegt"}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <small>Lieferant</small>
+                    <strong>
+                      {selectedProduct.supplierName ||
+                        "Noch nicht hinterlegt"}
+                    </strong>
+                  </div>
+                </div>
+
+                <div className="productProcurementActions">
+                  <button
+                    className="productsPrimaryButton"
+                    type="submit"
+                  >
+                    Beschaffungsdaten speichern
+                  </button>
+                </div>
+              </Form>
+            </section>
 
             <div className="productDetailGrid">
               <section className="productDetailSection">

@@ -278,17 +278,38 @@ model Customer {
   @@index([name])
 }
 
+enum ProductProcurementType {
+  RECIPE
+  READY_MADE
+  BAKE_OFF
+  THAW
+  REHEAT
+  EXTERNAL
+}
+
 model Product {
-  id         String   @id @default(cuid())
+  id         String  @id @default(cuid())
   tenantId   String
   name       String
   category   String?
-  unit       String   @default("Portion")
-  priceCents Int      @default(0)
-  taxRate    Int      @default(7)
-  active     Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  unit       String  @default("Portion")
+  priceCents Int     @default(0)
+  taxRate    Int     @default(7)
+  active     Boolean @default(true)
+
+  procurementType         ProductProcurementType @default(RECIPE)
+  supplierName            String?
+  supplierArticleName     String?
+  supplierArticleNumber   String?
+  purchaseUnit            String?
+  purchaseQuantityPerUnit Float?
+  packageUnit             String?
+  packageQuantity         Float?
+  purchasePriceCents      Int?
+  preparationNotes        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   orderItems      OrderItem[]
