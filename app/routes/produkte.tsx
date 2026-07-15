@@ -45,22 +45,55 @@ export async function loader({ request }: { request: Request }) {
   }
 
   try {
-    const products = await prisma.product.findMany({
-      where: {
-        tenantId: access.tenantId,
-      },
-      include: {
-        recipeItems: {
-          orderBy: {
-            ingredientName: "asc",
+    /*
+     * gastario-product-loader-recipe-fallback-20260715
+     * Produkte auch dann anzeigen, wenn die Rezeptur-Relation
+     * wegen eines Datenbank- oder Schemafehlers nicht geladen
+     * werden kann.
+     */
+    let products: any[] = [];
+
+    try {
+      products = await prisma.product.findMany({
+        where: {
+          tenantId: access.tenantId,
+        },
+        include: {
+          recipeItems: {
+            orderBy: {
+              ingredientName: "asc",
+            },
           },
         },
-      },
-      orderBy: [
-        { active: "desc" },
-        { name: "asc" },
-      ],
-    });
+        orderBy: [
+          { active: "desc" },
+          { name: "asc" },
+        ],
+      });
+    } catch (recipeError) {
+      console.error(
+        "Produkte wurden ohne Rezepturen geladen:",
+        recipeError
+      );
+
+      const productsWithoutRecipes =
+        await prisma.product.findMany({
+          where: {
+            tenantId: access.tenantId,
+          },
+          orderBy: [
+            { active: "desc" },
+            { name: "asc" },
+          ],
+        });
+
+      products = productsWithoutRecipes.map(
+        (product) => ({
+          ...product,
+          recipeItems: [],
+        })
+      );
+    }
 
     const categories = Array.from(
       new Set(products.map((product) => product.category).filter(Boolean))
