@@ -163,6 +163,12 @@ export async function loader({ request }: { request: Request }) {
       include: {
         items: true,
         customer: true,
+        invoices: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        },
       },
       orderBy: [
         { deliveryDate: "asc" },
@@ -385,6 +391,59 @@ export async function action({ request }: { request: Request }) {
 
   if (!order) {
     return { error: "Auftrag nicht gefunden." };
+  }
+
+  if (intent === "updateBillingMode") {
+    const requestedMode = String(
+      formData.get("billingMode") || "UNDECIDED"
+    );
+
+    const billingConfiguration: Record<
+      string,
+      {
+        billingMode: string;
+        billingStatus: string;
+      }
+    > = {
+      UNDECIDED: {
+        billingMode: "UNDECIDED",
+        billingStatus: "NOT_BILLED",
+      },
+      DIRECT_INVOICE: {
+        billingMode: "DIRECT_INVOICE",
+        billingStatus: "READY_TO_INVOICE",
+      },
+      EXTERNAL_INVOICE: {
+        billingMode: "EXTERNAL_INVOICE",
+        billingStatus: "INVOICED_EXTERNALLY",
+      },
+      PLATFORM_CREDIT: {
+        billingMode: "PLATFORM_CREDIT",
+        billingStatus: "WAITING_FOR_CREDIT",
+      },
+      NO_INVOICE: {
+        billingMode: "NO_INVOICE",
+        billingStatus: "NOT_RELEVANT",
+      },
+    };
+
+    const configuration =
+      billingConfiguration[requestedMode] ||
+      billingConfiguration.UNDECIDED;
+
+    await prisma.order.update({
+      where: {
+        id: order.id,
+      },
+      data: {
+        billingMode: configuration.billingMode as any,
+        billingStatus: configuration.billingStatus as any,
+      },
+    });
+
+    return {
+      success: "Abrechnungsart wurde gespeichert.",
+    };
   }
 
   if (intent === "updateStatus") {
@@ -798,6 +857,162 @@ export default function OrdersPage() {
                   </div>
                 ) : null}
               </div>
+
+              <section className="orderBillingPanel">
+                <div className="orderBillingHeader">
+                  <div>
+                    <p className="eyebrow">Abrechnung</p>
+                    <h4>Wie soll dieser Auftrag abgerechnet werden?</h4>
+                    <span>
+                      Gastario erstellt nur dann eine Rechnung, wenn du
+                      ausdrücklich „Eigene Gastario-Rechnung“ auswählst.
+                    </span>
+                  </div>
+
+                  <div className="orderBillingStatus">
+                    {selectedOrder.billingStatus === "READY_TO_INVOICE"
+                      ? "Rechnung vorbereiten"
+                      : selectedOrder.billingStatus ===
+                          "INVOICED_EXTERNALLY"
+                        ? "Extern abgerechnet"
+                        : selectedOrder.billingStatus ===
+                            "WAITING_FOR_CREDIT"
+                          ? "Gutschrift ausstehend"
+                          : selectedOrder.billingStatus ===
+                              "CREDIT_RECEIVED"
+                            ? "Gutschrift erhalten"
+                            : selectedOrder.billingStatus ===
+                                "NOT_RELEVANT"
+                              ? "Nicht erforderlich"
+                              : selectedOrder.billingStatus ===
+                                  "INVOICED"
+                                ? "Rechnung erstellt"
+                                : "Noch offen"}
+                  </div>
+                </div>
+
+                <Form method="post" className="orderBillingForm">
+                  <input
+                    type="hidden"
+                    name="intent"
+                    value="updateBillingMode"
+                  />
+                  <input
+                    type="hidden"
+                    name="orderId"
+                    value={selectedOrder.id}
+                  />
+
+                  <label>
+                    <span>Abrechnungsart</span>
+                    <select
+                      name="billingMode"
+                      defaultValue={
+                        selectedOrder.billingMode || "UNDECIDED"
+                      }
+                    >
+                      <option value="UNDECIDED">
+                        Noch nicht entschieden
+                      </option>
+                      <option value="DIRECT_INVOICE">
+                        Eigene Rechnung mit Gastario
+                      </option>
+                      <option value="EXTERNAL_INVOICE">
+                        Über anderes System abgerechnet
+                      </option>
+                      <option value="PLATFORM_CREDIT">
+                        Plattformgutschrift
+                      </option>
+                      <option value="NO_INVOICE">
+                        Keine Rechnung erforderlich
+                      </option>
+                    </select>
+                  </label>
+
+                  <button type="submit">
+                    Abrechnungsart speichern
+                  </button>
+                </Form>
+
+                {selectedOrder.billingMode === "DIRECT_INVOICE" ? (
+                  <div className="orderBillingInvoiceAction">
+                    {Array.isArray(selectedOrder.invoices) &&
+                    selectedOrder.invoices.length > 0 ? (
+                      <>
+                        <div>
+                          <strong>Rechnung bereits vorhanden</strong>
+                          <span>
+                            {selectedOrder.invoices[0]
+                              .externalInvoiceNumber ||
+                              "Rechnungsentwurf ohne Nummer"}
+                          </span>
+                        </div>
+
+                        <Link
+                          to={
+                            "/rechnungen/" +
+                            selectedOrder.invoices[0].id
+                          }
+                        >
+                          Rechnung öffnen
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <div>
+                          <strong>Rechnungsentwurf vorbereiten</strong>
+                          <span>
+                            Kunde, Auftragsdatum und Positionen werden
+                            im nächsten Schritt in den Rechnungseditor
+                            übernommen. Es wird noch keine endgültige
+                            Rechnung erzeugt.
+                          </span>
+                        </div>
+
+                        <Link
+                          to={
+                            "/rechnungen/neu?orderId=" +
+                            selectedOrder.id
+                          }
+                        >
+                          Rechnungsentwurf vorbereiten
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                ) : null}
+
+                {selectedOrder.billingMode === "PLATFORM_CREDIT" ? (
+                  <div className="orderBillingInformation">
+                    <strong>Plattformgutschrift</strong>
+                    <span>
+                      Für diesen Auftrag erzeugt Gastario keine eigene
+                      Rechnung. Die Abrechnung erfolgt über die
+                      Plattformgutschrift.
+                    </span>
+                  </div>
+                ) : null}
+
+                {selectedOrder.billingMode === "EXTERNAL_INVOICE" ? (
+                  <div className="orderBillingInformation">
+                    <strong>Extern abgerechnet</strong>
+                    <span>
+                      Der Auftrag wird in einem anderen System
+                      fakturiert. Gastario erzeugt dafür keine Rechnung.
+                    </span>
+                  </div>
+                ) : null}
+
+                {selectedOrder.billingMode === "NO_INVOICE" ? (
+                  <div className="orderBillingInformation">
+                    <strong>Keine Rechnung erforderlich</strong>
+                    <span>
+                      Dieser Auftrag wird nicht in die offene
+                      Rechnungsbearbeitung aufgenommen.
+                    </span>
+                  </div>
+                ) : null}
+              </section>
 
               <div className="finalSelectedActions">
                 <button

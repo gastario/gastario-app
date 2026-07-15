@@ -2027,3 +2027,160 @@
     grid-template-columns: 1fr 1fr !important;
   }
 }
+
+.orderBillingPanel {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+  border: 1px solid #dce7e9;
+  border-radius: 18px;
+  padding: 18px;
+  background:
+    linear-gradient(145deg, #f7fbfa 0%, #ffffff 75%);
+}
+
+.orderBillingHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.orderBillingHeader h4 {
+  margin: 0;
+  color: #17343c;
+  font-size: 18px;
+  letter-spacing: -0.025em;
+}
+
+.orderBillingHeader > div > span {
+  display: block;
+  max-width: 670px;
+  margin-top: 6px;
+  color: #6d8186;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.orderBillingStatus {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 7px 11px;
+  background: #eaf5f2;
+  color: #27695f;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.orderBillingForm {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.orderBillingForm label {
+  display: grid;
+  gap: 7px;
+  color: #526a70;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.orderBillingForm select {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  border: 1px solid #ccdadd;
+  border-radius: 12px;
+  padding: 0 12px;
+  background: #ffffff;
+  color: #1d363d;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.orderBillingForm select:focus {
+  border-color: #65918d;
+  box-shadow: 0 0 0 4px rgba(101, 145, 141, 0.12);
+}
+
+.orderBillingForm button,
+.orderBillingInvoiceAction a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 1px solid #193b43;
+  border-radius: 12px;
+  padding: 0 16px;
+  background: #193b43;
+  color: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 780;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.orderBillingInvoiceAction,
+.orderBillingInformation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid #d7e5e2;
+  border-radius: 14px;
+  padding: 14px;
+  background: #ffffff;
+}
+
+.orderBillingInvoiceAction strong,
+.orderBillingInvoiceAction span,
+.orderBillingInformation strong,
+.orderBillingInformation span {
+  display: block;
+}
+
+.orderBillingInvoiceAction strong,
+.orderBillingInformation strong {
+  color: #284b52;
+  font-size: 13px;
+}
+
+.orderBillingInvoiceAction span,
+.orderBillingInformation span {
+  max-width: 700px;
+  margin-top: 4px;
+  color: #71868b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.orderBillingInformation {
+  justify-content: flex-start;
+  background: #f8fbfb;
+}
+
+@media (max-width: 760px) {
+  .orderBillingHeader,
+  .orderBillingInvoiceAction {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .orderBillingForm {
+    grid-template-columns: 1fr;
+  }
+
+  .orderBillingForm button,
+  .orderBillingInvoiceAction a {
+    width: 100%;
+  }
+
+  .orderBillingStatus {
+    width: max-content;
+  }
+}

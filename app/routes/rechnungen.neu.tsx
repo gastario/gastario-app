@@ -59,6 +59,66 @@ function parseDateInput(value: FormDataEntryValue | null) {
   return date;
 }
 
+function splitInvoiceAddress(value: string | null | undefined) {
+  const lines = String(value || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  let street = "";
+  let zip = "";
+  let city = "";
+  let addressExtra = "";
+
+  const postalLineIndex = lines.findIndex((line) =>
+    /^\d{5}\s+.+/.test(line)
+  );
+
+  if (postalLineIndex >= 0) {
+    const match = lines[postalLineIndex].match(/^(\d{5})\s+(.+)$/);
+
+    if (match) {
+      zip = match[1];
+      city = match[2];
+    }
+
+    street =
+      postalLineIndex > 0
+        ? lines[postalLineIndex - 1]
+        : "";
+
+    addressExtra = lines
+      .filter(
+        (_, index) =>
+          index !== postalLineIndex &&
+          index !== postalLineIndex - 1
+      )
+      .join(", ");
+  } else {
+    street = lines[0] || "";
+    addressExtra = lines.slice(1).join(", ");
+  }
+
+  return {
+    addressExtra,
+    street,
+    zip,
+    city,
+  };
+}
+
+function formatDateInput(value: Date | string | null | undefined) {
+  if (!value) return "";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toISOString().slice(0, 10);
+}
+
 function calculateTotals(rows: PositionRow[], priceMode: "NET" | "GROSS", discountMode: "PERCENT" | "AMOUNT", globalDiscount: string) {
   let netTotalCents = 0;
   let taxTotalCents = 0;
@@ -129,10 +189,96 @@ export async function loader({ request }: { request: Request }) {
       tenant: null,
       invoiceSettingsComplete: false,
       today: todayInput(),
+      sourceOrder: null,
+      existingInvoice: null,
     };
   }
 
   const tenant = access.tenant as any;
+  const url = new URL(request.url);
+  const requestedOrderId =
+    url.searchParams.get("orderId")?.trim() || "";
+
+  let sourceOrder: any = null;
+  let existingInvoice: any = null;
+
+  if (requestedOrderId) {
+    sourceOrder = await prisma.order.findFirst({
+      where: {
+        id: requestedOrderId,
+        tenantId: access.tenantId,
+      },
+      include: {
+        customer: true,
+        items: {
+          include: {
+            product: true,
+          },
+          orderBy: {
+            createdAt: "asc",
+          },
+        },
+        invoices: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        },
+      },
+    });
+
+    existingInvoice =
+      sourceOrder?.invoices?.[0] || null;
+  }
+
+  const sourceAddress = splitInvoiceAddress(
+    sourceOrder?.customer?.address ||
+      sourceOrder?.deliveryAddress ||
+      ""
+  );
+
+  const sourceRows = Array.isArray(sourceOrder?.items)
+    ? sourceOrder.items
+        .filter(
+          (item: any) =>
+            String(item.name || "").trim() &&
+            !String(item.name || "")
+              .toLowerCase()
+              .includes("fehlende position")
+        )
+        .map((item: any, index: number) => {
+          const quantity = Math.max(
+            1,
+            Number(item.quantity || 1)
+          );
+
+          const lineTotalCents = Number(
+            item.totalCents || 0
+          );
+
+          const unitCents = Number(
+            item.unitCents ||
+              (lineTotalCents > 0
+                ? Math.round(lineTotalCents / quantity)
+                : 0)
+          );
+
+          return {
+            id: index + 1,
+            type: "item" as const,
+            name: String(item.name || ""),
+            quantity: String(quantity).replace(".", ","),
+            unit: String(item.unit || "Stück"),
+            price: (unitCents / 100)
+              .toFixed(2)
+              .replace(".", ","),
+            discount: "0",
+            taxRate: String(
+              item.product?.taxRate ?? 19
+            ),
+          };
+        })
+    : [];
 
   const invoiceSettingsComplete = Boolean(
     tenant.invoiceSellerName &&
@@ -147,6 +293,37 @@ export async function loader({ request }: { request: Request }) {
     tenant,
     invoiceSettingsComplete,
     today: todayInput(),
+    sourceOrder: sourceOrder
+      ? {
+          id: sourceOrder.id,
+          orderNumber: sourceOrder.orderNumber,
+          customerName:
+            sourceOrder.customerName ||
+            sourceOrder.customer?.name ||
+            "",
+          customerEmail:
+            sourceOrder.customer?.email || "",
+          customerCountry:
+            sourceOrder.customerCountry || "DE",
+          invoiceLanguage:
+            sourceOrder.invoiceLanguage || "DE",
+          deliveryDate:
+            formatDateInput(sourceOrder.deliveryDate),
+          addressExtra: sourceAddress.addressExtra,
+          street: sourceAddress.street,
+          zip: sourceAddress.zip,
+          city: sourceAddress.city,
+          rows: sourceRows,
+        }
+      : null,
+    existingInvoice: existingInvoice
+      ? {
+          id: existingInvoice.id,
+          number:
+            existingInvoice.externalInvoiceNumber ||
+            "Entwurf ohne Nummer",
+        }
+      : null,
   };
 }
 
@@ -188,6 +365,52 @@ export async function action({ request }: { request: Request }) {
 
   if (intent !== "createInvoiceDraft") {
     return { error: "Unbekannte Aktion." };
+  }
+
+  const orderId =
+    String(formData.get("orderId") || "").trim() || null;
+
+  let sourceOrder: any = null;
+
+  if (orderId) {
+    sourceOrder = await prisma.order.findFirst({
+      where: {
+        id: orderId,
+        tenantId: access.tenantId,
+      },
+      include: {
+        invoices: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        },
+      },
+    });
+
+    if (!sourceOrder) {
+      return {
+        error:
+          "Der zugehörige Auftrag wurde nicht gefunden.",
+      };
+    }
+
+    if (
+      Array.isArray(sourceOrder.invoices) &&
+      sourceOrder.invoices.length > 0
+    ) {
+      return {
+        error:
+          "Für diesen Auftrag existiert bereits eine Rechnung oder ein Rechnungsentwurf.",
+      };
+    }
+
+    if (sourceOrder.billingMode !== "DIRECT_INVOICE") {
+      return {
+        error:
+          "Für diesen Auftrag ist keine eigene Gastario-Rechnung ausgewählt.",
+      };
+    }
   }
 
   const invoiceNumber = String(formData.get("invoiceNumber") || "").trim();
@@ -335,6 +558,7 @@ export async function action({ request }: { request: Request }) {
   const invoice = await prisma.invoice.create({
     data: {
       tenantId: access.tenantId,
+      orderId,
       type: "DIRECT" as any,
       status: "DRAFT" as any,
       numberSource: "MANUAL" as any,
@@ -380,6 +604,18 @@ export async function action({ request }: { request: Request }) {
     })),
   });
 
+  if (orderId) {
+    await prisma.order.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        billingMode: "DIRECT_INVOICE" as any,
+        billingStatus: "READY_TO_INVOICE" as any,
+      },
+    });
+  }
+
   throw redirect(`/rechnungen/${invoice.id}`);
 }
 
@@ -388,8 +624,12 @@ export default function NeueRechnungPage() {
   const actionData = useActionData<typeof action>();
   const today = data.today;
   const tenant = data.tenant as any;
+  const sourceOrder = data.sourceOrder as any;
+  const existingInvoice = data.existingInvoice as any;
 
-  const [language, setLanguage] = useState<"DE" | "EN">("DE");
+  const [language, setLanguage] = useState<"DE" | "EN">(
+    sourceOrder?.invoiceLanguage === "EN" ? "EN" : "DE"
+  );
   const [serviceDateType, setServiceDateType] = useState("Leistungsdatum");
   const isEnglish = language === "EN";
   const isPeriod = serviceDateType.toLowerCase().includes("zeitraum");
@@ -399,18 +639,23 @@ export default function NeueRechnungPage() {
   const [discountMode, setDiscountMode] = useState<"PERCENT" | "AMOUNT">("PERCENT");
   const [globalDiscount, setGlobalDiscount] = useState("0");
 
-  const [rows, setRows] = useState<PositionRow[]>([
-    {
-      id: Date.now(),
-      type: "item",
-      name: "",
-      quantity: "1,00",
-      unit: "Stück",
-      price: "",
-      discount: "0",
-      taxRate: "19",
-    },
-  ]);
+  const [rows, setRows] = useState<PositionRow[]>(
+    Array.isArray(sourceOrder?.rows) &&
+      sourceOrder.rows.length > 0
+      ? sourceOrder.rows
+      : [
+          {
+            id: Date.now(),
+            type: "item",
+            name: "",
+            quantity: "1,00",
+            unit: "Stück",
+            price: "",
+            discount: "0",
+            taxRate: "19",
+          },
+        ]
+  );
 
   const totals = useMemo(
     () => calculateTotals(rows, priceMode, discountMode, globalDiscount),
@@ -480,10 +725,49 @@ export default function NeueRechnungPage() {
         </Link>
       </header>
 
+      {sourceOrder ? (
+        <section style={sourceOrderNoticeStyle}>
+          <div>
+            <span>Aus Auftrag übernommen</span>
+            <strong>{sourceOrder.orderNumber}</strong>
+            <small>
+              Kunde, Leistungsdatum und Positionen wurden
+              vorausgefüllt. Du kannst alle Angaben vor dem
+              Speichern noch ändern.
+            </small>
+          </div>
+
+          <Link
+            to="/auftraege"
+            style={secondaryButtonStyle}
+          >
+            Zurück zu den Aufträgen
+          </Link>
+        </section>
+      ) : null}
+
+      {existingInvoice ? (
+        <section style={existingInvoiceNoticeStyle}>
+          <div>
+            <strong>
+              Für diesen Auftrag existiert bereits eine Rechnung.
+            </strong>
+            <span>{existingInvoice.number}</span>
+          </div>
+
+          <Link
+            to={"/rechnungen/" + existingInvoice.id}
+            style={primaryButtonStyle}
+          >
+            Rechnung öffnen
+          </Link>
+        </section>
+      ) : null}
+
       {actionData && "error" in actionData ? <div style={errorStyle}>{actionData.error}</div> : null}
       {actionData && "success" in actionData ? <div style={successStyle}>{actionData.success}</div> : null}
 
-      {!data.invoiceSettingsComplete ? (
+      {existingInvoice ? null : !data.invoiceSettingsComplete ? (
         <div style={blockedPageStyle}>
           <div style={blockedIconStyle}>!</div>
           <div>
@@ -599,6 +883,11 @@ export default function NeueRechnungPage() {
           `}
         </style>
         <input type="hidden" name="intent" value="createInvoiceDraft" />
+        <input
+          type="hidden"
+          name="orderId"
+          value={sourceOrder?.id || ""}
+        />
         <input type="hidden" name="priceMode" value={priceMode} />
         <input type="hidden" name="globalDiscountMode" value={discountMode} />
         <input type="hidden" name="globalDiscountValue" value={globalDiscount} />
@@ -615,18 +904,32 @@ export default function NeueRechnungPage() {
         <section style={cardStyle}>
           <div style={twoColStyle}>
             <div style={gridStyle}>
-              <FloatingInput name="customerName" label={isEnglish ? "Customer" : "Kunde"} placeholder={isEnglish ? "Customer name" : "Name des Kunden"} required />
-              <FloatingInput name="addressExtra" label={isEnglish ? "Address line 2" : "Adresszusatz"} placeholder={isEnglish ? "Address line 2" : "Adresszusatz"} />
-              <FloatingInput name="street" label={isEnglish ? "Street" : "Straße"} placeholder={isEnglish ? "Street" : "Straße"} required />
+              <FloatingInput name="customerName" label={isEnglish ? "Customer" : "Kunde"} placeholder={isEnglish ? "Customer name" : "Name des Kunden"} defaultValue={sourceOrder?.customerName || ""} required />
+              <FloatingInput name="addressExtra" label={isEnglish ? "Address line 2" : "Adresszusatz"} placeholder={isEnglish ? "Address line 2" : "Adresszusatz"} defaultValue={sourceOrder?.addressExtra || ""} />
+              <FloatingInput name="street" label={isEnglish ? "Street" : "Straße"} placeholder={isEnglish ? "Street" : "Straße"} defaultValue={sourceOrder?.street || ""} required />
 
               <div style={twoColSmallStyle}>
-                <FloatingInput name="zip" label={isEnglish ? "ZIP" : "PLZ"} placeholder={isEnglish ? "ZIP" : "PLZ"} required />
-                <FloatingInput name="city" label={isEnglish ? "City" : "Ort"} placeholder={isEnglish ? "City" : "Ort"} required />
+                <FloatingInput name="zip" label={isEnglish ? "ZIP" : "PLZ"} placeholder={isEnglish ? "ZIP" : "PLZ"} defaultValue={sourceOrder?.zip || ""} required />
+                <FloatingInput name="city" label={isEnglish ? "City" : "Ort"} placeholder={isEnglish ? "City" : "Ort"} defaultValue={sourceOrder?.city || ""} required />
               </div>
 
               <label style={labelStyle}>
                 <span>{isEnglish ? "Country" : "Land"} *</span>
-                <select name="country" defaultValue="Deutschland" required style={inputStyle}>
+                <select
+                  name="country"
+                  defaultValue={
+                    sourceOrder?.customerCountry === "AT"
+                      ? "Österreich"
+                      : sourceOrder?.customerCountry === "CH"
+                        ? "Schweiz"
+                        : sourceOrder?.customerCountry &&
+                            sourceOrder.customerCountry !== "DE"
+                          ? "Andere"
+                          : "Deutschland"
+                  }
+                  required
+                  style={inputStyle}
+                >
                   <option>Deutschland</option>
                   <option>Österreich</option>
                   <option>Schweiz</option>
@@ -657,7 +960,7 @@ export default function NeueRechnungPage() {
                   </select>
                 </label>
 
-                <FloatingInput name="serviceDate" label={isPeriod ? "Von" : "Datum"} type="date" defaultValue={today} required />
+                <FloatingInput name="serviceDate" label={isPeriod ? "Von" : "Datum"} type="date" defaultValue={sourceOrder?.deliveryDate || today} required />
 
                 {isPeriod ? (
                   <FloatingInput name="serviceEndDate" label="Bis" type="date" defaultValue={today} required />
@@ -906,6 +1209,25 @@ function CleanInput({
     />
   );
 }
+
+const sourceOrderNoticeStyle: React.CSSProperties = {
+  maxWidth: 1480,
+  margin: "0 auto 20px",
+  border: "1px solid #b9ddd2",
+  borderRadius: 18,
+  padding: "16px 18px",
+  background: "#f1faf7",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 18,
+};
+
+const existingInvoiceNoticeStyle: React.CSSProperties = {
+  ...sourceOrderNoticeStyle,
+  border: "1px solid #fed7aa",
+  background: "#fff8ee",
+};
 
 const pageStyle: React.CSSProperties = { maxWidth: 1480, margin: "0 auto", display: "grid", gap: 20 };
 const cardStyle: React.CSSProperties = {
