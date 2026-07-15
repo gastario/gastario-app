@@ -1,5 +1,5 @@
 ﻿import { useMemo, useState } from "react";
-import { Form, useActionData, useLoaderData } from "react-router";
+import { Form, useActionData, useFetcher, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 import productsStyles from "../styles/produkte.css?url";
 
@@ -395,6 +395,7 @@ export async function action({ request }: { request: Request }) {
 ﻿export default function ProductsPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const procurementFetcher = useFetcher<typeof action>();
 
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
@@ -564,8 +565,10 @@ export async function action({ request }: { request: Request }) {
                 {
                   products.filter(
                     (product: any) =>
-                      !Array.isArray(product.recipeItems) ||
-                      product.recipeItems.length === 0
+                      (product.procurementType || "RECIPE") ===
+                        "RECIPE" &&
+                      (!Array.isArray(product.recipeItems) ||
+                        product.recipeItems.length === 0)
                   ).length
                 }
               </strong>
@@ -755,7 +758,10 @@ export async function action({ request }: { request: Request }) {
                 </div>
               </div>
 
-              <Form method="post" className="productProcurementForm">
+              <procurementFetcher.Form
+                method="post"
+                className="productProcurementForm"
+              >
                 <input
                   type="hidden"
                   name="intent"
@@ -947,15 +953,32 @@ export async function action({ request }: { request: Request }) {
                   </div>
                 </div>
 
+                {procurementFetcher.data?.success ? (
+                  <div className="productProcurementMessage productProcurementMessageSuccess">
+                    <strong>Gespeichert</strong>
+                    <span>{procurementFetcher.data.success}</span>
+                  </div>
+                ) : null}
+
+                {procurementFetcher.data?.error ? (
+                  <div className="productProcurementMessage productProcurementMessageError">
+                    <strong>Speichern nicht möglich</strong>
+                    <span>{procurementFetcher.data.error}</span>
+                  </div>
+                ) : null}
+
                 <div className="productProcurementActions">
                   <button
                     className="productsPrimaryButton"
                     type="submit"
+                    disabled={procurementFetcher.state !== "idle"}
                   >
-                    Beschaffungsdaten speichern
+                    {procurementFetcher.state !== "idle"
+                      ? "Wird gespeichert …"
+                      : "Beschaffungsdaten speichern"}
                   </button>
                 </div>
-              </Form>
+              </procurementFetcher.Form>
             </section>
 
             <div className="productDetailGrid">
@@ -1069,20 +1092,34 @@ export async function action({ request }: { request: Request }) {
 
                   <div
                     className={
-                      selectedRecipeItems.length > 0
-                        ? "productRecipeState productRecipeComplete"
-                        : "productRecipeState productRecipeMissing"
+                      selectedProduct.procurementType !== "RECIPE"
+                        ? "productRecipeState productRecipeNotNeeded"
+                        : selectedRecipeItems.length > 0
+                          ? "productRecipeState productRecipeComplete"
+                          : "productRecipeState productRecipeMissing"
                     }
                   >
-                    {selectedRecipeItems.length > 0
-                      ? `${selectedRecipeItems.length} Position${
-                          selectedRecipeItems.length === 1 ? "" : "en"
-                        }`
-                      : "Rezeptur fehlt"}
+                    {selectedProduct.procurementType !== "RECIPE"
+                      ? "Nicht erforderlich"
+                      : selectedRecipeItems.length > 0
+                        ? `${selectedRecipeItems.length} Position${
+                            selectedRecipeItems.length === 1 ? "" : "en"
+                          }`
+                        : "Rezeptur fehlt"}
                   </div>
                 </div>
 
-                {selectedRecipeItems.length > 0 ? (
+                {selectedProduct.procurementType !== "RECIPE" ? (
+                  <div className="productRecipeEmpty productRecipeNotRequired">
+                    <div>✓</div>
+                    <strong>Keine Rezeptur erforderlich</strong>
+                    <span>
+                      Dieses Produkt wird fertig beschafft. Für die
+                      Einkaufsliste verwendet Gastario stattdessen die
+                      Lieferanten-, Bedarfs- und Gebindedaten.
+                    </span>
+                  </div>
+                ) : selectedRecipeItems.length > 0 ? (
                   <div className="productRecipeList">
                     {selectedRecipeItems.map((item: any) => (
                       <div
@@ -1154,6 +1191,7 @@ export async function action({ request }: { request: Request }) {
                   </div>
                 )}
 
+                {selectedProduct.procurementType === "RECIPE" ? (
                 <Form method="post" className="productRecipeForm">
                   <input
                     type="hidden"
@@ -1222,6 +1260,7 @@ export async function action({ request }: { request: Request }) {
                     </button>
                   </div>
                 </Form>
+              ) : null}
               </section>
             </div>
 

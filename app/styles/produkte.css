@@ -1076,3 +1076,60 @@
     width: 100%;
   }
 }
+
+.productProcurementMessage {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 13px;
+  padding: 12px 14px;
+}
+
+.productProcurementMessage strong,
+.productProcurementMessage span {
+  display: block;
+}
+
+.productProcurementMessage strong {
+  flex: 0 0 auto;
+  font-size: 12px;
+}
+
+.productProcurementMessage span {
+  font-size: 12px;
+}
+
+.productProcurementMessageSuccess {
+  border: 1px solid #a7e3cb;
+  background: #ecf9f3;
+  color: #166447;
+}
+
+.productProcurementMessageError {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.productsPrimaryButton:disabled {
+  cursor: wait;
+  opacity: 0.7;
+  transform: none;
+}
+
+.productRecipeNotNeeded {
+  background: #e9f6f4;
+  color: #276a61;
+}
+
+.productRecipeNotRequired {
+  border-color: #a9d7cd;
+  background: #f1faf7;
+  color: #28685d;
+}
+
+.productRecipeNotRequired div {
+  background: #d9f1e9;
+  color: #21715e;
+}
