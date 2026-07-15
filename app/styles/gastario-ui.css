@@ -1,0 +1,342 @@
+﻿/*
+ * Gastario UI System
+ * Gemeinsame visuelle Grundlage für alle Mandanten-Seiten.
+ */
+
+:root {
+  --gastario-bg-page: #f4f8f7;
+  --gastario-bg-card: #ffffff;
+  --gastario-bg-soft: #f7faf9;
+
+  --gastario-text-main: #17343c;
+  --gastario-text-body: #526a70;
+  --gastario-text-muted: #75898e;
+
+  --gastario-brand: #087158;
+  --gastario-brand-hover: #065e49;
+  --gastario-brand-soft: #eaf6f1;
+
+  --gastario-border: #d9e5e3;
+  --gastario-border-strong: #c8d8d5;
+
+  --gastario-success-bg: #ecf8f3;
+  --gastario-success-border: #b8e0ce;
+  --gastario-success-text: #176247;
+
+  --gastario-warning-bg: #fff8eb;
+  --gastario-warning-border: #f4d89a;
+  --gastario-warning-text: #8a5915;
+
+  --gastario-danger-bg: #fff3f2;
+  --gastario-danger-border: #f2c6c2;
+  --gastario-danger-text: #a43c35;
+
+  --gastario-radius-small: 10px;
+  --gastario-radius-control: 12px;
+  --gastario-radius-card: 18px;
+  --gastario-radius-large: 24px;
+
+  --gastario-shadow-card: 0 10px 28px rgba(23, 52, 60, 0.055);
+
+  --gastario-control-height: 44px;
+  --gastario-page-width: 1480px;
+
+  --gastario-space-1: 4px;
+  --gastario-space-2: 8px;
+  --gastario-space-3: 12px;
+  --gastario-space-4: 16px;
+  --gastario-space-5: 20px;
+  --gastario-space-6: 24px;
+  --gastario-space-7: 28px;
+  --gastario-space-8: 32px;
+}
+
+.g-ui-page {
+  width: 100%;
+  max-width: var(--gastario-page-width);
+  margin: 0 auto;
+  display: grid;
+  gap: var(--gastario-space-5);
+}
+
+.g-ui-page-header {
+  min-height: 74px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gastario-space-6);
+}
+
+.g-ui-page-heading {
+  min-width: 0;
+}
+
+.g-ui-eyebrow {
+  margin: 0 0 5px;
+  color: var(--gastario-brand);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.075em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.g-ui-page-title {
+  margin: 0;
+  color: var(--gastario-text-main);
+  font-size: clamp(28px, 2.4vw, 34px);
+  font-weight: 760;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+}
+
+.g-ui-page-subtitle {
+  display: block;
+  max-width: 760px;
+  margin-top: 8px;
+  color: var(--gastario-text-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.g-ui-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.g-ui-card {
+  min-width: 0;
+  border: 1px solid var(--gastario-border);
+  border-radius: var(--gastario-radius-card);
+  padding: var(--gastario-space-6);
+  background: var(--gastario-bg-card);
+  box-shadow: var(--gastario-shadow-card);
+}
+
+.g-ui-card--flat {
+  box-shadow: none;
+}
+
+.g-ui-card--soft {
+  background:
+    linear-gradient(
+      145deg,
+      var(--gastario-bg-soft) 0%,
+      var(--gastario-bg-card) 78%
+    );
+}
+
+.g-ui-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gastario-space-5);
+  margin-bottom: var(--gastario-space-5);
+}
+
+.g-ui-section-title {
+  margin: 0;
+  color: var(--gastario-text-main);
+  font-size: 20px;
+  font-weight: 740;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.g-ui-section-hint {
+  max-width: 720px;
+  margin: 6px 0 0;
+  color: var(--gastario-text-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.g-ui-button {
+  min-height: var(--gastario-control-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: var(--gastario-radius-control);
+  padding: 0 16px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.g-ui-button:hover {
+  transform: translateY(-1px);
+}
+
+.g-ui-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.g-ui-button--primary {
+  border-color: var(--gastario-brand);
+  background: var(--gastario-brand);
+  color: #ffffff;
+}
+
+.g-ui-button--primary:hover {
+  border-color: var(--gastario-brand-hover);
+  background: var(--gastario-brand-hover);
+}
+
+.g-ui-button--secondary {
+  border-color: var(--gastario-border-strong);
+  background: #ffffff;
+  color: var(--gastario-text-main);
+}
+
+.g-ui-button--secondary:hover {
+  border-color: #aebfbc;
+  background: #f8fbfa;
+}
+
+.g-ui-button--danger {
+  border-color: var(--gastario-danger-border);
+  background: var(--gastario-danger-bg);
+  color: var(--gastario-danger-text);
+}
+
+.g-ui-field {
+  display: grid;
+  gap: 7px;
+}
+
+.g-ui-field-label {
+  color: var(--gastario-text-body);
+  font-size: 11px;
+  font-weight: 740;
+}
+
+.g-ui-input,
+.g-ui-select,
+.g-ui-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--gastario-border-strong);
+  border-radius: var(--gastario-radius-control);
+  background: #ffffff;
+  color: var(--gastario-text-main);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.g-ui-input,
+.g-ui-select {
+  min-height: var(--gastario-control-height);
+  padding: 0 12px;
+}
+
+.g-ui-textarea {
+  min-height: 104px;
+  resize: vertical;
+  padding: 12px;
+  line-height: 1.5;
+}
+
+.g-ui-input:focus,
+.g-ui-select:focus,
+.g-ui-textarea:focus {
+  border-color: #6d9a91;
+  box-shadow: 0 0 0 4px rgba(8, 113, 88, 0.1);
+}
+
+.g-ui-pill {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0 10px;
+  background: var(--gastario-brand-soft);
+  color: var(--gastario-brand);
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.g-ui-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border: 1px solid var(--gastario-border);
+  border-radius: 14px;
+  padding: 13px 14px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.g-ui-notice--success {
+  border-color: var(--gastario-success-border);
+  background: var(--gastario-success-bg);
+  color: var(--gastario-success-text);
+}
+
+.g-ui-notice--warning {
+  border-color: var(--gastario-warning-border);
+  background: var(--gastario-warning-bg);
+  color: var(--gastario-warning-text);
+}
+
+.g-ui-notice--danger {
+  border-color: var(--gastario-danger-border);
+  background: var(--gastario-danger-bg);
+  color: var(--gastario-danger-text);
+}
+
+.g-ui-empty {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--gastario-text-muted);
+}
+
+.g-ui-empty strong {
+  color: var(--gastario-text-main);
+  font-size: 15px;
+}
+
+@media (max-width: 760px) {
+  .g-ui-page-header,
+  .g-ui-section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .g-ui-header-actions {
+    justify-content: stretch;
+  }
+
+  .g-ui-header-actions .g-ui-button {
+    width: 100%;
+  }
+
+  .g-ui-card {
+    padding: 18px;
+  }
+}

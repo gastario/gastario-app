@@ -1,27 +1,32 @@
 import { Link, useLocation } from "react-router";
+import { useEffect, useMemo, useState } from "react";
 
 const navigationGroups = [
   {
-    label: "Uebersicht",
+    id: "overview",
+    label: "Übersicht",
     items: [
       { label: "Dashboard", to: "/" },
     ],
   },
   {
+    id: "inbox",
     label: "Eingang",
     items: [
       { label: "Eingangszentrale", to: "/auftragseingang" },
     ],
   },
   {
-    label: "Auftraege",
+    id: "orders",
+    label: "Aufträge",
     items: [
-      { label: "Bevorstehende Auftraege", to: "/auftraege" },
-      { label: "Vergangene Auftraege", to: "/auftraege?view=past" },
+      { label: "Bevorstehende Aufträge", to: "/auftraege" },
+      { label: "Vergangene Aufträge", to: "/auftraege?view=past" },
       { label: "Neuer Auftrag", to: "/neuer-auftrag" },
     ],
   },
   {
+    id: "import",
     label: "Import",
     items: [
       { label: "E-Mail-Konten", to: "/importe" },
@@ -30,6 +35,7 @@ const navigationGroups = [
     ],
   },
   {
+    id: "sales",
     label: "Verkauf",
     items: [
       { label: "Angebote", to: "/angebote" },
@@ -39,6 +45,7 @@ const navigationGroups = [
     ],
   },
   {
+    id: "operations",
     label: "Betrieb",
     items: [
       { label: "Produktion", to: "/produktion" },
@@ -50,6 +57,7 @@ const navigationGroups = [
     ],
   },
   {
+    id: "finance",
     label: "Finanzen",
     items: [
       { label: "Rechnungen", to: "/rechnungen" },
@@ -57,6 +65,7 @@ const navigationGroups = [
     ],
   },
   {
+    id: "masterdata",
     label: "Stammdaten",
     items: [
       { label: "Lieferanten", to: "/lieferanten" },
@@ -73,6 +82,98 @@ type AppLayoutProps = {
 
 export default function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
+
+  const currentPathWithSearch =
+    location.pathname + location.search;
+
+  const isNavigationItemActive = (to: string) => {
+    const itemPath = to.split("?")[0];
+    const itemHasQuery = to.includes("?");
+
+    if (to === "/") {
+      return location.pathname === "/";
+    }
+
+    if (itemHasQuery) {
+      return currentPathWithSearch === to;
+    }
+
+    return (
+      location.pathname === itemPath ||
+      location.pathname.startsWith(itemPath + "/")
+    );
+  };
+
+  const activeGroupId = useMemo(() => {
+    const activeGroup = navigationGroups.find((group) =>
+      group.items.some((item) =>
+        isNavigationItemActive(item.to)
+      )
+    );
+
+    return activeGroup?.id || "overview";
+  }, [currentPathWithSearch]);
+
+  const [openGroupId, setOpenGroupId] = useState<string>(
+    activeGroupId
+  );
+
+  useEffect(() => {
+    const storedGroup =
+      window.localStorage.getItem(
+        "gastario-open-navigation-group"
+      );
+
+    if (
+      activeGroupId &&
+      activeGroupId !== "overview"
+    ) {
+      setOpenGroupId(activeGroupId);
+      return;
+    }
+
+    if (
+      storedGroup &&
+      navigationGroups.some(
+        (group) => group.id === storedGroup
+      )
+    ) {
+      setOpenGroupId(storedGroup);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (
+      activeGroupId &&
+      activeGroupId !== "overview"
+    ) {
+      setOpenGroupId(activeGroupId);
+    }
+  }, [activeGroupId]);
+
+  const toggleNavigationGroup = (groupId: string) => {
+    if (groupId === "overview") {
+      return;
+    }
+
+    setOpenGroupId((currentGroupId) => {
+      const nextGroupId =
+        currentGroupId === groupId ? "" : groupId;
+
+      if (nextGroupId) {
+        window.localStorage.setItem(
+          "gastario-open-navigation-group",
+          nextGroupId
+        );
+      } else {
+        window.localStorage.removeItem(
+          "gastario-open-navigation-group"
+        );
+      }
+
+      return nextGroupId;
+    });
+  };
 
   return (
     <main className="appShell">
@@ -569,6 +670,134 @@ export default function AppLayout({ children }: AppLayoutProps) {
           letter-spacing: .09em !important;
           color: var(--g-green-dark) !important;
         }
+
+        /*
+         * Gastario Sidebar Accordion
+         */
+        .navGroups.navAccordion {
+          display: grid;
+          align-content: start;
+          gap: 8px !important;
+        }
+
+        .navAccordionGroup {
+          display: grid;
+          gap: 4px !important;
+          margin: 0 !important;
+        }
+
+        .navAccordionStaticLabel,
+        .navAccordionTrigger {
+          width: 100%;
+          min-height: 42px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          box-sizing: border-box;
+          border: 1px solid transparent;
+          border-radius: 11px;
+          padding: 0 10px;
+          background: transparent;
+          color: #718096;
+          font: inherit;
+          font-size: 11px;
+          font-weight: 750 !important;
+          letter-spacing: 0.085em;
+          line-height: 1;
+          text-align: left;
+          text-transform: uppercase;
+        }
+
+        .navAccordionTrigger {
+          cursor: pointer;
+          transition:
+            background 140ms ease,
+            border-color 140ms ease,
+            color 140ms ease;
+        }
+
+        .navAccordionTrigger:hover {
+          border-color: #e0e9e7;
+          background: #f4f8f7 !important;
+          color: #315c54 !important;
+        }
+
+        .navAccordionGroup.isOpen
+          .navAccordionTrigger,
+        .navAccordionGroup.hasActiveItem
+          .navAccordionTrigger {
+          border-color: #d9e9e5;
+          background: #f0f7f5 !important;
+          color: #17634f !important;
+        }
+
+        .navAccordionChevron {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: #81918f;
+          font-size: 19px;
+          font-weight: 500;
+          line-height: 1;
+          transform: rotate(0deg);
+          transition: transform 160ms ease;
+        }
+
+        .navAccordionGroup.isOpen
+          .navAccordionChevron {
+          transform: rotate(90deg);
+        }
+
+        .navAccordionItems {
+          display: grid;
+          gap: 3px;
+          padding: 2px 0 5px 8px;
+        }
+
+        .navAccordionItems[hidden] {
+          display: none !important;
+        }
+
+        .navAccordionItems a {
+          position: relative;
+          min-height: 38px !important;
+          padding: 0 11px 0 18px !important;
+          border-radius: 10px !important;
+          font-size: 13px !important;
+          font-weight: 560 !important;
+        }
+
+        .navAccordionItems a::before {
+          content: "";
+          position: absolute;
+          left: 7px;
+          width: 4px;
+          height: 4px;
+          border-radius: 999px;
+          background: #bdcbc8;
+        }
+
+        .navAccordionItems a.active::before {
+          background: #f59e0b;
+        }
+
+        .navAccordionItems a.active {
+          background: #edf8f4 !important;
+          border-color: #c9e4dc !important;
+          color: #064e42 !important;
+          box-shadow:
+            inset 3px 0 0 #f59e0b !important;
+          font-weight: 650 !important;
+        }
+
+        .sidebar {
+          gap: 10px !important;
+        }
+
+        .brand {
+          padding-bottom: 12px !important;
+        }
       `}</style>
 
 
@@ -577,30 +806,88 @@ export default function AppLayout({ children }: AppLayoutProps) {
           <img className="brandLogo" src="/brand/gastario-logo.png" alt="Gastario" />
         </div>
 
-        <nav className="navGroups" aria-label="Hauptnavigation">
-          {navigationGroups.map((group) => (
-            <div className="navGroup" key={group.label}>
-              <p>{group.label}</p>
-              {group.items.map((item) => {
-                const currentPathWithSearch = location.pathname + location.search;
-                const itemPath = item.to.split("?")[0];
-                const itemHasQuery = item.to.includes("?");
+        <nav
+          className="navGroups navAccordion"
+          aria-label="Hauptnavigation"
+        >
+          {navigationGroups.map((group) => {
+            const isOverview =
+              group.id === "overview";
 
-                const isActive =
-                  item.to === "/"
-                    ? location.pathname === "/"
-                    : itemHasQuery
-                      ? currentPathWithSearch === item.to
-                      : location.pathname === itemPath || location.pathname.startsWith(itemPath + "/");
+            const groupContainsActiveItem =
+              group.items.some((item) =>
+                isNavigationItemActive(item.to)
+              );
 
-                return (
-                  <Link preventScrollReset className={isActive ? "active" : undefined} to={item.to} key={item.to}>
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-          ))}
+            const isOpen =
+              isOverview ||
+              openGroupId === group.id ||
+              groupContainsActiveItem;
+
+            return (
+              <div
+                className={
+                  "navGroup navAccordionGroup" +
+                  (isOpen ? " isOpen" : "") +
+                  (groupContainsActiveItem
+                    ? " hasActiveItem"
+                    : "")
+                }
+                key={group.id}
+              >
+                {isOverview ? (
+                  <div className="navAccordionStaticLabel">
+                    {group.label}
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="navAccordionTrigger"
+                    onClick={() =>
+                      toggleNavigationGroup(group.id)
+                    }
+                    aria-expanded={isOpen}
+                    aria-controls={
+                      "navigation-group-" + group.id
+                    }
+                  >
+                    <span>{group.label}</span>
+
+                    <span
+                      className="navAccordionChevron"
+                      aria-hidden="true"
+                    >
+                      ›
+                    </span>
+                  </button>
+                )}
+
+                <div
+                  id={"navigation-group-" + group.id}
+                  className="navAccordionItems"
+                  hidden={!isOpen}
+                >
+                  {group.items.map((item) => {
+                    const isActive =
+                      isNavigationItemActive(item.to);
+
+                    return (
+                      <Link
+                        preventScrollReset
+                        className={
+                          isActive ? "active" : undefined
+                        }
+                        to={item.to}
+                        key={item.to}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </nav>
 
         <div className="sidebarFooter">
