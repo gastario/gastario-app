@@ -1,0 +1,953 @@
+﻿.productsPage {
+  display: grid;
+  gap: 22px;
+  padding-bottom: 48px;
+  color: #17252b;
+}
+
+.productsTopbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.productsTopbar h1,
+.productsWorkspaceHeader h2,
+.productsSectionHeader h2,
+.productDetailHeader h2,
+.productDetailSectionHeader h3 {
+  margin: 0;
+  color: #14262c;
+  letter-spacing: -0.035em;
+}
+
+.productsTopbar h1 {
+  font-size: clamp(30px, 4vw, 42px);
+  line-height: 1.05;
+}
+
+.productsTopActions,
+.productsCreateActions,
+.productEditActions,
+.productRecipeFormActions,
+.productDangerActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.productsPrimaryButton,
+.productsSecondaryButton,
+.productDeleteButton,
+.productBackButton {
+  min-height: 44px;
+  border-radius: 12px;
+  padding: 0 17px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.productsPrimaryButton {
+  border: 1px solid #193b43;
+  background: #193b43;
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(25, 59, 67, 0.16);
+}
+
+.productsPrimaryButton:hover {
+  transform: translateY(-1px);
+  background: #102f36;
+}
+
+.productsSecondaryButton,
+.productBackButton {
+  border: 1px solid #d5e1e4;
+  background: #ffffff;
+  color: #24444c;
+}
+
+.productsSecondaryButton:hover,
+.productBackButton:hover {
+  border-color: #9cb4ba;
+  background: #f7fafb;
+}
+
+.productDeleteButton {
+  border: 1px solid #fecaca;
+  background: #fffafa;
+  color: #b42318;
+}
+
+.productDeleteButton:hover {
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.productsNotice {
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.productsNoticeWarning {
+  border: 1px solid #fed7aa;
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.productsNoticeSuccess {
+  border: 1px solid #a7f3d0;
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.productsNoticeError {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.productsMetrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.productsMetricCard {
+  min-height: 128px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid #dce7e9;
+  border-radius: 18px;
+  padding: 18px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(19, 47, 54, 0.055);
+}
+
+.productsMetricCard p,
+.productsMetricCard strong,
+.productsMetricCard span,
+.productsMetricCard small {
+  display: block;
+}
+
+.productsMetricCard p {
+  margin: 0 0 8px;
+  color: #667c82;
+  font-size: 12px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.productsMetricCard strong {
+  margin-bottom: 4px;
+  color: #17343c;
+  font-size: 30px;
+  line-height: 1;
+}
+
+.productsMetricCard span {
+  color: #6b8085;
+  font-size: 13px;
+}
+
+.productsMetricCard small {
+  border-radius: 999px;
+  padding: 6px 9px;
+  background: #eef6f5;
+  color: #367068;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.productsMetricAttention small {
+  background: #fff4e5;
+  color: #b45309;
+}
+
+.productsCreatePanel,
+.productsWorkspace,
+.productDetailPanel {
+  border: 1px solid #dce7e9;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 18px 45px rgba(19, 47, 54, 0.065);
+  overflow: hidden;
+}
+
+.productsSectionHeader,
+.productsWorkspaceHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px;
+  border-bottom: 1px solid #e6edef;
+  background:
+    linear-gradient(135deg, rgba(238, 247, 246, 0.8), #ffffff);
+}
+
+.productsSectionHeader h2,
+.productsWorkspaceHeader h2 {
+  font-size: 24px;
+}
+
+.productsSectionHeader span,
+.productsWorkspaceHeader span,
+.productDetailSectionHeader span {
+  display: block;
+  margin-top: 6px;
+  color: #6b8085;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.productsWorkspaceCount {
+  min-width: 100px;
+  border: 1px solid #dce7e9;
+  border-radius: 14px;
+  padding: 10px 13px;
+  background: rgba(255, 255, 255, 0.86);
+  text-align: right;
+}
+
+.productsWorkspaceCount strong,
+.productsWorkspaceCount small {
+  display: block;
+}
+
+.productsWorkspaceCount strong {
+  color: #17343c;
+  font-size: 22px;
+}
+
+.productsWorkspaceCount small {
+  margin-top: 2px;
+  color: #71858a;
+  font-size: 11px;
+}
+
+.productsCreateForm,
+.productEditForm,
+.productRecipeForm {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  padding: 24px;
+}
+
+.productsField {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  color: #40575d;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.productsFieldWide {
+  grid-column: span 2;
+}
+
+.productsFieldFull {
+  grid-column: 1 / -1;
+}
+
+.productsField input,
+.productsField textarea,
+.productsField select,
+.productsSearchField input,
+.productsFilterField select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ccdadd;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #1e343a;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 550;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.productsField input,
+.productsField select,
+.productsSearchField input,
+.productsFilterField select {
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.productsField textarea {
+  min-height: 90px;
+  resize: vertical;
+  padding: 12px;
+}
+
+.productsField input:focus,
+.productsField textarea:focus,
+.productsSearchField input:focus,
+.productsFilterField select:focus {
+  border-color: #5f8d91;
+  box-shadow: 0 0 0 4px rgba(95, 141, 145, 0.12);
+}
+
+.productsInputSuffix {
+  position: relative;
+}
+
+.productsInputSuffix input {
+  padding-right: 48px;
+}
+
+.productsInputSuffix small {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: #789096;
+  font-size: 11px;
+}
+
+.productsCreateActions,
+.productEditActions,
+.productRecipeFormActions {
+  grid-column: 1 / -1;
+  padding-top: 4px;
+}
+
+.productsFilters {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.8fr) repeat(3, minmax(150px, 0.7fr));
+  gap: 12px;
+  padding: 18px 24px;
+  border-bottom: 1px solid #e7eef0;
+  background: #fbfcfc;
+}
+
+.productsSearchField,
+.productsFilterField {
+  display: grid;
+  gap: 6px;
+  color: #5d7379;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.productCardList {
+  display: grid;
+  gap: 12px;
+  padding: 20px 24px 24px;
+  background: #f7fafb;
+}
+
+.productCard {
+  border: 1px solid #dce7e9;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 7px 20px rgba(19, 47, 54, 0.045);
+  overflow: hidden;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.productCard:hover {
+  transform: translateY(-1px);
+  border-color: #a9bec3;
+  box-shadow: 0 14px 30px rgba(19, 47, 54, 0.08);
+}
+
+.productCardInactive {
+  opacity: 0.76;
+}
+
+.productCardTrigger {
+  width: 100%;
+  display: grid;
+  grid-template-columns:
+    52px minmax(220px, 1.6fr) minmax(135px, 0.55fr)
+    minmax(190px, 0.75fr) 28px;
+  align-items: center;
+  gap: 17px;
+  border: 0;
+  padding: 18px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.productCardIcon,
+.productDetailInitial {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 15px;
+  background: linear-gradient(145deg, #dff0ed, #eef7f5);
+  color: #28645f;
+  font-weight: 850;
+}
+
+.productCardIcon {
+  width: 52px;
+  height: 52px;
+  font-size: 19px;
+}
+
+.productCardTitleLine,
+.productDetailTitleLine {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.productCardIdentity h3 {
+  margin: 0;
+  color: #17343c;
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.productCardIdentity p {
+  max-width: 680px;
+  margin: 8px 0 0;
+  color: #697f84;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.productCardIdentity .productCardEmptyNote {
+  color: #9aabad;
+  font-style: italic;
+}
+
+.productCardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 13px;
+  margin-top: 6px;
+  color: #71868b;
+  font-size: 11px;
+}
+
+.productCardMeta span:not(:last-child)::after {
+  content: "·";
+  margin-left: 13px;
+  color: #a2b2b5;
+}
+
+.productStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 23px;
+  border-radius: 999px;
+  padding: 0 9px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.productStatusActive {
+  background: #e7f8ef;
+  color: #16734b;
+}
+
+.productStatusInactive {
+  background: #eef1f2;
+  color: #64777c;
+}
+
+.productCardPrice,
+.productCardRecipe,
+.productDetailPrice {
+  display: grid;
+  gap: 4px;
+}
+
+.productCardPrice small,
+.productCardRecipe small,
+.productDetailPrice small {
+  color: #829499;
+  font-size: 10px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.productCardPrice strong,
+.productDetailPrice strong {
+  color: #183940;
+  font-size: 17px;
+}
+
+.productCardPrice span,
+.productCardRecipe span,
+.productDetailPrice span {
+  color: #768b90;
+  font-size: 11px;
+}
+
+.productCardRecipe {
+  min-height: 68px;
+  align-content: center;
+  border-radius: 13px;
+  padding: 11px 13px;
+}
+
+.productCardRecipe strong {
+  font-size: 13px;
+}
+
+.productCardRecipeComplete {
+  background: #eef8f5;
+  color: #28685c;
+}
+
+.productCardRecipeMissing {
+  background: #fff7eb;
+  color: #a65a0a;
+}
+
+.productCardArrow {
+  color: #789096;
+  font-size: 21px;
+}
+
+.productIngredientsPreview {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 0 18px 15px 87px;
+}
+
+.productIngredientsPreview > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #dce7e9;
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: #f8fbfb;
+  color: #62787d;
+  font-size: 10px;
+}
+
+.productIngredientsPreview strong {
+  color: #31575e;
+}
+
+.productIngredientsPreview .productMoreIngredients {
+  border-style: dashed;
+}
+
+.productsEmptyState {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 55px 24px;
+  color: #6f858a;
+  text-align: center;
+}
+
+.productsEmptyState strong {
+  color: #2d4c53;
+  font-size: 17px;
+}
+
+.productsEmptyState span {
+  max-width: 500px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.productsEmptyIcon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+  border-radius: 16px;
+  background: #eaf4f2;
+  color: #397168;
+  font-size: 19px;
+  font-weight: 850;
+}
+
+.productDetailHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px;
+  padding: 22px 24px;
+  border-bottom: 1px solid #e2ebed;
+  background:
+    linear-gradient(135deg, rgba(232, 245, 242, 0.92), #ffffff);
+}
+
+.productBackButton {
+  grid-column: 1 / -1;
+  width: max-content;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 13px;
+}
+
+.productDetailHeading {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.productDetailInitial {
+  width: 58px;
+  height: 58px;
+  font-size: 22px;
+}
+
+.productDetailTitleLine h2 {
+  font-size: 26px;
+}
+
+.productDetailHeading p {
+  margin: 6px 0 0;
+  color: #6a8085;
+  font-size: 13px;
+}
+
+.productDetailPrice {
+  align-content: center;
+  min-width: 145px;
+  text-align: right;
+}
+
+.productDetailPrice strong {
+  font-size: 22px;
+}
+
+.productDetailGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 18px;
+  padding: 20px;
+  background: #f7fafb;
+}
+
+.productDetailSection {
+  align-self: start;
+  border: 1px solid #dce7e9;
+  border-radius: 18px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.productDetailSectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 19px 20px;
+  border-bottom: 1px solid #e7edef;
+}
+
+.productDetailSectionHeader h3 {
+  font-size: 19px;
+}
+
+.productEditForm,
+.productRecipeForm {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 20px;
+}
+
+.productRecipeState {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.productRecipeComplete {
+  background: #e9f8f1;
+  color: #19714f;
+}
+
+.productRecipeMissing {
+  background: #fff1db;
+  color: #a45508;
+}
+
+.productRecipeList {
+  display: grid;
+  gap: 8px;
+  padding: 16px 20px 4px;
+}
+
+.productRecipeRow {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #e0e9eb;
+  border-radius: 13px;
+  padding: 10px 11px;
+  background: #fbfdfd;
+}
+
+.productRecipeQuantity {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  color: #2e5c63;
+}
+
+.productRecipeQuantity strong {
+  font-size: 15px;
+}
+
+.productRecipeQuantity span {
+  font-size: 11px;
+}
+
+.productRecipeIdentity {
+  min-width: 0;
+}
+
+.productRecipeIdentity strong,
+.productRecipeIdentity span {
+  display: block;
+}
+
+.productRecipeIdentity strong {
+  color: #24454c;
+  font-size: 13px;
+}
+
+.productRecipeIdentity span {
+  margin-top: 3px;
+  color: #7a8f94;
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.productIconDeleteButton {
+  width: 31px;
+  height: 31px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #b42318;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.productIconDeleteButton:hover {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.productRecipeEmpty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  margin: 18px 20px 0;
+  border: 1px dashed #efc98e;
+  border-radius: 14px;
+  padding: 21px;
+  background: #fffaf1;
+  color: #8e621d;
+  text-align: center;
+}
+
+.productRecipeEmpty div {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fde8c3;
+  font-weight: 850;
+}
+
+.productRecipeEmpty strong {
+  font-size: 13px;
+}
+
+.productRecipeEmpty span {
+  max-width: 420px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.productRecipeForm {
+  margin-top: 16px;
+  border-top: 1px solid #e7edef;
+  background: #fbfcfc;
+}
+
+.productDangerZone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid #e5ecee;
+  padding: 18px 24px;
+  background: #ffffff;
+}
+
+.productDangerZone strong,
+.productDangerZone span {
+  display: block;
+}
+
+.productDangerZone strong {
+  color: #314c52;
+  font-size: 13px;
+}
+
+.productDangerZone span {
+  max-width: 620px;
+  margin-top: 4px;
+  color: #75898e;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+@media (max-width: 1180px) {
+  .productsMetrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .productsFilters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .productCardTrigger {
+    grid-template-columns: 50px minmax(0, 1fr) 140px 28px;
+  }
+
+  .productCardRecipe {
+    grid-column: 2 / 4;
+  }
+
+  .productDetailGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .productsTopbar,
+  .productDangerZone {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .productsTopActions,
+  .productDangerActions {
+    justify-content: stretch;
+  }
+
+  .productsTopActions > *,
+  .productDangerActions > *,
+  .productDangerActions form,
+  .productDangerActions button {
+    width: 100%;
+  }
+
+  .productsMetrics,
+  .productsFilters,
+  .productsCreateForm,
+  .productEditForm,
+  .productRecipeForm {
+    grid-template-columns: 1fr;
+  }
+
+  .productsFieldWide,
+  .productsFieldFull {
+    grid-column: auto;
+  }
+
+  .productsWorkspaceHeader,
+  .productsSectionHeader,
+  .productDetailHeader {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .productsWorkspaceCount {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+  }
+
+  .productCardTrigger {
+    grid-template-columns: 46px minmax(0, 1fr) 22px;
+    gap: 12px;
+  }
+
+  .productCardIcon {
+    width: 46px;
+    height: 46px;
+  }
+
+  .productCardPrice,
+  .productCardRecipe {
+    grid-column: 2 / 4;
+  }
+
+  .productCardArrow {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .productIngredientsPreview {
+    padding-left: 18px;
+  }
+
+  .productDetailHeader {
+    display: grid;
+  }
+
+  .productDetailPrice {
+    text-align: left;
+  }
+
+  .productDetailHeading {
+    align-items: flex-start;
+  }
+
+  .productRecipeRow {
+    grid-template-columns: 64px minmax(0, 1fr) auto;
+  }
+}

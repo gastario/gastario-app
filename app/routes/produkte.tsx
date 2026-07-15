@@ -1,5 +1,7 @@
-﻿import { Form, useActionData, useLoaderData } from "react-router";
+﻿import { useMemo, useState } from "react";
+import { Form, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
+import productsStyles from "../styles/produkte.css?url";
 
 function euroToCents(value: FormDataEntryValue | null) {
   const raw = String(value || "0").replace(",", ".").trim();
@@ -18,6 +20,15 @@ function centsToEuro(value: number | null | undefined) {
 function toNumber(value: FormDataEntryValue | null, fallback = 0) {
   const number = Number(String(value || "").replace(",", "."));
   return Number.isFinite(number) ? number : fallback;
+}
+
+export function links() {
+  return [
+    {
+      rel: "stylesheet",
+      href: productsStyles,
+    },
+  ];
 }
 
 export function meta() {
@@ -279,286 +290,924 @@ export async function action({ request }: { request: Request }) {
   return { error: "Unbekannte Aktion." };
 }
 
-const inputStyle = {
-  border: "1px solid #cbd5e1",
-  borderRadius: 12,
-  padding: "11px 12px",
-  fontWeight: 750,
-  width: "100%",
-};
-
-export default function ProductsPage() {
+﻿export default function ProductsPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null
+  );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [recipeFilter, setRecipeFilter] = useState("all");
+
+  const products = Array.isArray(data.products) ? data.products : [];
+
+  const categories = useMemo(() => {
+    return Array.from(
+      new Set(
+        products
+          .map((product: any) => String(product.category || "").trim())
+          .filter(Boolean)
+      )
+    ).sort((a, b) => a.localeCompare(b, "de"));
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLocaleLowerCase("de");
+
+    return products.filter((product: any) => {
+      const recipeItems = Array.isArray(product.recipeItems)
+        ? product.recipeItems
+        : [];
+
+      const matchesSearch =
+        !normalizedSearch ||
+        [
+          product.name,
+          product.category,
+          product.unit,
+          product.notes,
+          ...recipeItems.map((item: any) => item.ingredientName),
+        ]
+          .filter(Boolean)
+          .some((value) =>
+            String(value)
+              .toLocaleLowerCase("de")
+              .includes(normalizedSearch)
+          );
+
+      const matchesCategory =
+        categoryFilter === "all" ||
+        String(product.category || "") === categoryFilter;
+
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "active" && product.active) ||
+        (statusFilter === "inactive" && !product.active);
+
+      const matchesRecipe =
+        recipeFilter === "all" ||
+        (recipeFilter === "complete" && recipeItems.length > 0) ||
+        (recipeFilter === "missing" && recipeItems.length === 0);
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesStatus &&
+        matchesRecipe
+      );
+    });
+  }, [
+    products,
+    searchTerm,
+    categoryFilter,
+    statusFilter,
+    recipeFilter,
+  ]);
+
+  const selectedProduct = products.find(
+    (product: any) => product.id === selectedProductId
+  );
+
+  const selectedRecipeItems =
+    selectedProduct &&
+    Array.isArray(selectedProduct.recipeItems)
+      ? selectedProduct.recipeItems
+      : [];
+
   return (
     <AppLayout>
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">Verkauf</p>
-          <h1>Produkte</h1>
-          <span className="pageSubline">
-            {data.tenant?.name || "Kein Mandant"} · Produkte mit Preisen und Rezepturmengen fuer automatische Einkaufsliste.
-          </span>
-        </div>
-
-        <div className="topActions">
-          <a className="secondaryButton" href="/einkauf">Einkauf</a>
-          <button className="primaryButton" type="button">Neues Produkt</button>
-        </div>
-      </header>
-
-      {data.setupError ? (
-        <div style={{
-          background: "#fff7ed",
-          border: "1px solid #fed7aa",
-          color: "#9a3412",
-          padding: 16,
-          borderRadius: 16,
-          fontWeight: 900,
-          marginBottom: 16
-        }}>
-          {data.setupError}
-        </div>
-      ) : null}
-
-      {actionData?.success ? (
-        <div style={{
-          background: "#ecfdf5",
-          border: "1px solid #a7f3d0",
-          color: "#065f46",
-          padding: 16,
-          borderRadius: 16,
-          fontWeight: 900,
-          marginBottom: 16
-        }}>
-          {actionData.success}
-        </div>
-      ) : null}
-
-      {actionData?.error ? (
-        <div style={{
-          background: "#fef2f2",
-          border: "1px solid #fecaca",
-          color: "#991b1b",
-          padding: 16,
-          borderRadius: 16,
-          fontWeight: 900,
-          marginBottom: 16
-        }}>
-          {actionData.error}
-        </div>
-      ) : null}
-
-      <section className="orderSummaryGrid">
-        <article className="metricCard">
+      <div className="productsPage">
+        <header className="productsTopbar">
           <div>
-            <p>Produkte</p>
-            <strong>{data.stats.total}</strong>
-            <span>{data.stats.active} aktiv</span>
-          </div>
-          <small data-trend="aktiv">echt</small>
-        </article>
-
-        <article className="metricCard">
-          <div>
-            <p>Kategorien</p>
-            <strong>{data.stats.categories}</strong>
-            <span>Produktgruppen</span>
-          </div>
-          <small data-trend="bereit">Sortiment</small>
-        </article>
-
-        <article className="metricCard">
-          <div>
-            <p>Rezepturpositionen</p>
-            <strong>{data.stats.recipeItems}</strong>
-            <span>Zutaten / Material</span>
-          </div>
-          <small data-trend="pruefen">Einkauf</small>
-        </article>
-      </section>
-
-      <section className="panel">
-        <div className="panelHeader">
-          <div>
-            <p className="eyebrow">Neues Produkt</p>
-            <h2>Produkt anlegen</h2>
-          </div>
-        </div>
-
-        <Form method="post" style={{ display: "grid", gridTemplateColumns: "1.2fr .8fr .7fr .7fr .5fr", gap: 12, alignItems: "end" }}>
-          <input type="hidden" name="intent" value="createProduct" />
-
-          <label>
-            Produkt
-            <input name="name" placeholder="Chicken Bowl" style={inputStyle} required />
-          </label>
-
-          <label>
-            Kategorie
-            <input name="category" placeholder="Bowls" style={inputStyle} />
-          </label>
-
-          <label>
-            Einheit
-            <input name="unit" placeholder="Portion" defaultValue="Portion" style={inputStyle} />
-          </label>
-
-          <label>
-            Preis EUR
-            <input name="priceEuro" placeholder="10,90" style={inputStyle} />
-          </label>
-
-          <label>
-            MwSt %
-            <input name="taxRate" type="number" step="0.01" defaultValue="7" style={inputStyle} />
-          </label>
-
-          <label style={{ gridColumn: "1 / -2" }}>
-            Notiz / Produktion
-            <input name="notes" placeholder="Reis, Huhn, Gemuese, Sauce..." style={inputStyle} />
-          </label>
-
-          <button className="primaryButton" type="submit">
-            Anlegen
-          </button>
-        </Form>
-      </section>
-
-      <section className="panel">
-        <div className="panelHeader">
-          <div>
-            <p className="eyebrow">Produktuebersicht</p>
-            <h2>Produkte und Rezepturmengen</h2>
-          </div>
-        </div>
-
-        <div className="productsTable">
-          <div className="productsHead">
-            <span>Produkt</span>
-            <span>Kategorie</span>
-            <span>Preis</span>
-            <span>Einheit</span>
-            <span>Rezeptur</span>
-            <span>Status</span>
-            <span>Aktion</span>
+            <p className="eyebrow">Verkauf</p>
+            <h1>Produkte</h1>
+            <span className="pageSubline">
+              {data.tenant?.name || "Kein Mandant"} · Sortiment,
+              Verkaufspreise und Rezepturen zentral verwalten.
+            </span>
           </div>
 
-          {data.products.length === 0 ? (
-            <div className="productsRow">
-              <div>
-                <strong>Noch keine Produkte angelegt.</strong>
-                <small>-</small>
-              </div>
-              <span>-</span>
-              <strong>{centsToEuro(0)}</strong>
-              <span>-</span>
-              <span>-</span>
-              <em>Leer</em>
-              <span>-</span>
+          <div className="productsTopActions">
+            <a className="productsSecondaryButton" href="/einkauf">
+              Einkauf öffnen
+            </a>
+
+            <button
+              className="productsPrimaryButton"
+              type="button"
+              onClick={() => {
+                setSelectedProductId(null);
+                setShowCreateForm((current) => !current);
+              }}
+            >
+              {showCreateForm ? "Formular schließen" : "Neues Produkt"}
+            </button>
+          </div>
+        </header>
+
+        {data.setupError ? (
+          <div className="productsNotice productsNoticeWarning">
+            {data.setupError}
+          </div>
+        ) : null}
+
+        {actionData?.success ? (
+          <div className="productsNotice productsNoticeSuccess">
+            {actionData.success}
+          </div>
+        ) : null}
+
+        {actionData?.error ? (
+          <div className="productsNotice productsNoticeError">
+            {actionData.error}
+          </div>
+        ) : null}
+
+        <section className="productsMetrics">
+          <article className="productsMetricCard">
+            <div>
+              <p>Produkte</p>
+              <strong>{data.stats.total}</strong>
+              <span>{data.stats.active} aktiv</span>
             </div>
-          ) : (
-            data.products.map((product: any) => (
-              <div className="productsRow" key={product.id}>
-                <div>
-                  <strong>{product.name}</strong>
-                  <small>MwSt {product.taxRate ?? 7}%</small>
+            <small>Sortiment</small>
+          </article>
+
+          <article className="productsMetricCard">
+            <div>
+              <p>Kategorien</p>
+              <strong>{data.stats.categories}</strong>
+              <span>Produktgruppen</span>
+            </div>
+            <small>Übersicht</small>
+          </article>
+
+          <article className="productsMetricCard">
+            <div>
+              <p>Rezepturpositionen</p>
+              <strong>{data.stats.recipeItems}</strong>
+              <span>Zutaten und Material</span>
+            </div>
+            <small>Einkauf</small>
+          </article>
+
+          <article className="productsMetricCard productsMetricAttention">
+            <div>
+              <p>Ohne Rezeptur</p>
+              <strong>
+                {
+                  products.filter(
+                    (product: any) =>
+                      !Array.isArray(product.recipeItems) ||
+                      product.recipeItems.length === 0
+                  ).length
+                }
+              </strong>
+              <span>Noch zu vervollständigen</span>
+            </div>
+            <small>Prüfen</small>
+          </article>
+        </section>
+
+        {showCreateForm ? (
+          <section className="productsCreatePanel">
+            <div className="productsSectionHeader">
+              <div>
+                <p className="eyebrow">Neues Produkt</p>
+                <h2>Produkt manuell anlegen</h2>
+                <span>
+                  Produkte können zusätzlich automatisch aus übernommenen
+                  Aufträgen entstehen.
+                </span>
+              </div>
+            </div>
+
+            <Form method="post" className="productsCreateForm">
+              <input
+                type="hidden"
+                name="intent"
+                value="createProduct"
+              />
+
+              <label className="productsField productsFieldWide">
+                <span>Produktname</span>
+                <input
+                  name="name"
+                  placeholder="Zum Beispiel Chicken Bowl"
+                  required
+                />
+              </label>
+
+              <label className="productsField">
+                <span>Kategorie</span>
+                <input
+                  name="category"
+                  placeholder="Zum Beispiel Bowls"
+                />
+              </label>
+
+              <label className="productsField">
+                <span>Einheit</span>
+                <input
+                  name="unit"
+                  defaultValue="Portion"
+                  placeholder="Portion"
+                />
+              </label>
+
+              <label className="productsField">
+                <span>Verkaufspreis</span>
+                <div className="productsInputSuffix">
+                  <input
+                    name="priceEuro"
+                    inputMode="decimal"
+                    placeholder="10,90"
+                  />
+                  <small>EUR</small>
+                </div>
+              </label>
+
+              <label className="productsField">
+                <span>Mehrwertsteuer</span>
+                <div className="productsInputSuffix">
+                  <input
+                    name="taxRate"
+                    type="number"
+                    step="0.01"
+                    defaultValue="7"
+                  />
+                  <small>%</small>
+                </div>
+              </label>
+
+              <label className="productsField productsFieldFull">
+                <span>Produktionsnotiz</span>
+                <textarea
+                  name="notes"
+                  rows={3}
+                  placeholder="Hinweise für Produktion, Portionierung oder Ausgabe"
+                />
+              </label>
+
+              <div className="productsCreateActions">
+                <button
+                  className="productsSecondaryButton"
+                  type="button"
+                  onClick={() => setShowCreateForm(false)}
+                >
+                  Abbrechen
+                </button>
+
+                <button
+                  className="productsPrimaryButton"
+                  type="submit"
+                >
+                  Produkt anlegen
+                </button>
+              </div>
+            </Form>
+          </section>
+        ) : null}
+
+        {selectedProduct ? (
+          <section className="productDetailPanel">
+            <div className="productDetailHeader">
+              <button
+                className="productBackButton"
+                type="button"
+                onClick={() => setSelectedProductId(null)}
+              >
+                <span aria-hidden="true">←</span>
+                Zurück zur Produktübersicht
+              </button>
+
+              <div className="productDetailHeading">
+                <div className="productDetailInitial">
+                  {String(selectedProduct.name || "P")
+                    .trim()
+                    .slice(0, 1)
+                    .toUpperCase()}
                 </div>
 
-                <span>{product.category || "-"}</span>
-                <strong>{centsToEuro(product.priceCents)}</strong>
-                <span>{product.unit || "Portion"}</span>
+                <div>
+                  <div className="productDetailTitleLine">
+                    <h2>{selectedProduct.name}</h2>
 
+                    <span
+                      className={
+                        selectedProduct.active
+                          ? "productStatusBadge productStatusActive"
+                          : "productStatusBadge productStatusInactive"
+                      }
+                    >
+                      {selectedProduct.active ? "Aktiv" : "Inaktiv"}
+                    </span>
+                  </div>
+
+                  <p>
+                    {selectedProduct.category || "Ohne Kategorie"} ·{" "}
+                    {selectedProduct.unit || "Portion"} · MwSt.{" "}
+                    {selectedProduct.taxRate ?? 7} %
+                  </p>
+                </div>
+              </div>
+
+              <div className="productDetailPrice">
+                <small>Verkaufspreis</small>
+                <strong>
+                  {centsToEuro(selectedProduct.priceCents)}
+                </strong>
                 <span>
-                  {product.recipeItems.length === 0 ? (
-                    "Keine Rezeptur"
-                  ) : (
-                    product.recipeItems.map((item: any) => (
-                      <span key={item.id} style={{ display: "block" }}>
-                        {item.quantityPerUnit} {item.unit} {item.ingredientName}
-                        {item.supplierName ? ` · ${item.supplierName}` : ""}
-                      </span>
-                    ))
-                  )}
+                  je {selectedProduct.unit || "Portion"}
+                </span>
+              </div>
+            </div>
+
+            <div className="productDetailGrid">
+              <section className="productDetailSection">
+                <div className="productDetailSectionHeader">
+                  <div>
+                    <p className="eyebrow">Stammdaten</p>
+                    <h3>Produktdetails bearbeiten</h3>
+                  </div>
+                </div>
+
+                <Form method="post" className="productEditForm">
+                  <input
+                    type="hidden"
+                    name="intent"
+                    value="updateProduct"
+                  />
+                  <input
+                    type="hidden"
+                    name="productId"
+                    value={selectedProduct.id}
+                  />
+
+                  <label className="productsField productsFieldFull">
+                    <span>Produktname</span>
+                    <input
+                      name="name"
+                      defaultValue={selectedProduct.name}
+                      required
+                    />
+                  </label>
+
+                  <label className="productsField">
+                    <span>Kategorie</span>
+                    <input
+                      name="category"
+                      defaultValue={selectedProduct.category || ""}
+                    />
+                  </label>
+
+                  <label className="productsField">
+                    <span>Einheit</span>
+                    <input
+                      name="unit"
+                      defaultValue={
+                        selectedProduct.unit || "Portion"
+                      }
+                    />
+                  </label>
+
+                  <label className="productsField">
+                    <span>Verkaufspreis</span>
+                    <div className="productsInputSuffix">
+                      <input
+                        name="priceEuro"
+                        inputMode="decimal"
+                        defaultValue={String(
+                          (selectedProduct.priceCents || 0) / 100
+                        ).replace(".", ",")}
+                      />
+                      <small>EUR</small>
+                    </div>
+                  </label>
+
+                  <label className="productsField">
+                    <span>Mehrwertsteuer</span>
+                    <div className="productsInputSuffix">
+                      <input
+                        name="taxRate"
+                        type="number"
+                        step="0.01"
+                        defaultValue={
+                          selectedProduct.taxRate ?? 7
+                        }
+                      />
+                      <small>%</small>
+                    </div>
+                  </label>
+
+                  <label className="productsField productsFieldFull">
+                    <span>Produktionsnotiz</span>
+                    <textarea
+                      name="notes"
+                      rows={4}
+                      defaultValue={selectedProduct.notes || ""}
+                      placeholder="Hinweise für Produktion oder Ausgabe"
+                    />
+                  </label>
+
+                  <div className="productEditActions">
+                    <button
+                      className="productsPrimaryButton"
+                      type="submit"
+                    >
+                      Änderungen speichern
+                    </button>
+                  </div>
+                </Form>
+              </section>
+
+              <section className="productDetailSection">
+                <div className="productDetailSectionHeader">
+                  <div>
+                    <p className="eyebrow">Rezeptur</p>
+                    <h3>Rezeptur pro Verkaufseinheit</h3>
+                    <span>
+                      Grundlage für Produktion und automatische
+                      Einkaufsliste.
+                    </span>
+                  </div>
+
+                  <div
+                    className={
+                      selectedRecipeItems.length > 0
+                        ? "productRecipeState productRecipeComplete"
+                        : "productRecipeState productRecipeMissing"
+                    }
+                  >
+                    {selectedRecipeItems.length > 0
+                      ? `${selectedRecipeItems.length} Position${
+                          selectedRecipeItems.length === 1 ? "" : "en"
+                        }`
+                      : "Rezeptur fehlt"}
+                  </div>
+                </div>
+
+                {selectedRecipeItems.length > 0 ? (
+                  <div className="productRecipeList">
+                    {selectedRecipeItems.map((item: any) => (
+                      <div
+                        className="productRecipeRow"
+                        key={item.id}
+                      >
+                        <div className="productRecipeQuantity">
+                          <strong>{item.quantityPerUnit}</strong>
+                          <span>{item.unit}</span>
+                        </div>
+
+                        <div className="productRecipeIdentity">
+                          <strong>{item.ingredientName}</strong>
+                          <span>
+                            {item.supplierName ||
+                              "Kein Lieferant hinterlegt"}
+                            {item.notes ? ` · ${item.notes}` : ""}
+                          </span>
+                        </div>
+
+                        <Form
+                          method="post"
+                          onSubmit={(event) => {
+                            if (
+                              !window.confirm(
+                                "Diese Rezepturposition wirklich löschen?"
+                              )
+                            ) {
+                              event.preventDefault();
+                            }
+                          }}
+                        >
+                          <input
+                            type="hidden"
+                            name="intent"
+                            value="deleteRecipeItem"
+                          />
+                          <input
+                            type="hidden"
+                            name="productId"
+                            value={selectedProduct.id}
+                          />
+                          <input
+                            type="hidden"
+                            name="recipeItemId"
+                            value={item.id}
+                          />
+
+                          <button
+                            className="productIconDeleteButton"
+                            type="submit"
+                            aria-label={`${item.ingredientName} löschen`}
+                            title="Rezepturposition löschen"
+                          >
+                            ×
+                          </button>
+                        </Form>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="productRecipeEmpty">
+                    <div>!</div>
+                    <strong>Noch keine Rezeptur hinterlegt</strong>
+                    <span>
+                      Ohne Rezeptur kann Gastario den Bedarf für die
+                      Einkaufsliste nicht automatisch berechnen.
+                    </span>
+                  </div>
+                )}
+
+                <Form method="post" className="productRecipeForm">
+                  <input
+                    type="hidden"
+                    name="intent"
+                    value="addRecipeItem"
+                  />
+                  <input
+                    type="hidden"
+                    name="productId"
+                    value={selectedProduct.id}
+                  />
+
+                  <label className="productsField productsFieldWide">
+                    <span>Zutat oder Material</span>
+                    <input
+                      name="ingredientName"
+                      placeholder="Zum Beispiel Basmatireis"
+                      required
+                    />
+                  </label>
+
+                  <label className="productsField">
+                    <span>Menge pro Einheit</span>
+                    <input
+                      name="quantityPerUnit"
+                      type="number"
+                      min="0.001"
+                      step="0.001"
+                      placeholder="150"
+                      required
+                    />
+                  </label>
+
+                  <label className="productsField">
+                    <span>Einheit</span>
+                    <input
+                      name="ingredientUnit"
+                      defaultValue="g"
+                      placeholder="g"
+                      required
+                    />
+                  </label>
+
+                  <label className="productsField">
+                    <span>Lieferant</span>
+                    <input
+                      name="supplierName"
+                      placeholder="Optional"
+                    />
+                  </label>
+
+                  <label className="productsField productsFieldFull">
+                    <span>Notiz</span>
+                    <input
+                      name="recipeNotes"
+                      placeholder="Optionaler Hinweis zur Zutat"
+                    />
+                  </label>
+
+                  <div className="productRecipeFormActions">
+                    <button
+                      className="productsPrimaryButton"
+                      type="submit"
+                    >
+                      Rezepturposition hinzufügen
+                    </button>
+                  </div>
+                </Form>
+              </section>
+            </div>
+
+            <div className="productDangerZone">
+              <div>
+                <strong>Produktstatus und Löschen</strong>
+                <span>
+                  Inaktive Produkte bleiben erhalten, erscheinen aber
+                  nicht mehr als regulär verwendbares Sortiment.
+                </span>
+              </div>
+
+              <div className="productDangerActions">
+                <Form method="post">
+                  <input
+                    type="hidden"
+                    name="intent"
+                    value="toggleActive"
+                  />
+                  <input
+                    type="hidden"
+                    name="productId"
+                    value={selectedProduct.id}
+                  />
+                  <input
+                    type="hidden"
+                    name="active"
+                    value={
+                      selectedProduct.active ? "false" : "true"
+                    }
+                  />
+
+                  <button
+                    className="productsSecondaryButton"
+                    type="submit"
+                  >
+                    {selectedProduct.active
+                      ? "Produkt deaktivieren"
+                      : "Produkt aktivieren"}
+                  </button>
+                </Form>
+
+                <Form
+                  method="post"
+                  onSubmit={(event) => {
+                    if (
+                      !window.confirm(
+                        `Produkt „${selectedProduct.name}“ wirklich endgültig löschen?`
+                      )
+                    ) {
+                      event.preventDefault();
+                    }
+                  }}
+                >
+                  <input
+                    type="hidden"
+                    name="intent"
+                    value="deleteProduct"
+                  />
+                  <input
+                    type="hidden"
+                    name="productId"
+                    value={selectedProduct.id}
+                  />
+
+                  <button
+                    className="productDeleteButton"
+                    type="submit"
+                  >
+                    Produkt löschen
+                  </button>
+                </Form>
+              </div>
+            </div>
+          </section>
+        ) : (
+          <section className="productsWorkspace">
+            <div className="productsWorkspaceHeader">
+              <div>
+                <p className="eyebrow">Produktübersicht</p>
+                <h2>Produkte und Rezepturen</h2>
+                <span>
+                  Wähle ein Produkt aus, um Stammdaten und Rezeptur
+                  direkt auf dieser Seite zu bearbeiten.
+                </span>
+              </div>
+
+              <div className="productsWorkspaceCount">
+                <strong>{filteredProducts.length}</strong>
+                <small>
+                  von {products.length} Produkten
+                </small>
+              </div>
+            </div>
+
+            <div className="productsFilters">
+              <label className="productsSearchField">
+                <span>Produkte durchsuchen</span>
+                <input
+                  type="search"
+                  value={searchTerm}
+                  onChange={(event) =>
+                    setSearchTerm(event.target.value)
+                  }
+                  placeholder="Produkt, Kategorie, Zutat oder Notiz"
+                />
+              </label>
+
+              <label className="productsFilterField">
+                <span>Kategorie</span>
+                <select
+                  value={categoryFilter}
+                  onChange={(event) =>
+                    setCategoryFilter(event.target.value)
+                  }
+                >
+                  <option value="all">Alle Kategorien</option>
+                  {categories.map((category) => (
+                    <option value={category} key={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="productsFilterField">
+                <span>Status</span>
+                <select
+                  value={statusFilter}
+                  onChange={(event) =>
+                    setStatusFilter(event.target.value)
+                  }
+                >
+                  <option value="all">Alle Produkte</option>
+                  <option value="active">Nur aktive</option>
+                  <option value="inactive">Nur inaktive</option>
+                </select>
+              </label>
+
+              <label className="productsFilterField">
+                <span>Rezeptur</span>
+                <select
+                  value={recipeFilter}
+                  onChange={(event) =>
+                    setRecipeFilter(event.target.value)
+                  }
+                >
+                  <option value="all">Alle Rezepturen</option>
+                  <option value="complete">
+                    Rezeptur vorhanden
+                  </option>
+                  <option value="missing">Rezeptur fehlt</option>
+                </select>
+              </label>
+            </div>
+
+            {filteredProducts.length === 0 ? (
+              <div className="productsEmptyState">
+                <div className="productsEmptyIcon">P</div>
+                <strong>Keine passenden Produkte gefunden</strong>
+                <span>
+                  Suche oder Filter zurücksetzen oder ein neues Produkt
+                  anlegen.
                 </span>
 
-                <em>{product.active ? "Aktiv" : "Inaktiv"}</em>
-
-                <div style={{ display: "grid", gap: 8 }}>
-                  <details>
-                    <summary className="ghostButton" style={{ listStyle: "none", cursor: "pointer" }}>
-                      Rezeptur
-                    </summary>
-
-                    <Form method="post" style={{ display: "grid", gridTemplateColumns: "1fr 110px 90px 1fr auto", gap: 8, marginTop: 10 }}>
-                      <input type="hidden" name="intent" value="addRecipeItem" />
-                      <input type="hidden" name="productId" value={product.id} />
-
-                      <input name="ingredientName" placeholder="Zutat / Material" style={inputStyle} />
-                      <input name="quantityPerUnit" type="number" step="0.001" placeholder="Menge" style={inputStyle} />
-                      <input name="ingredientUnit" placeholder="g" defaultValue="g" style={inputStyle} />
-                      <input name="supplierName" placeholder="Lieferant optional" style={inputStyle} />
-
-                      <button className="primaryButton" type="submit">Hinzufuegen</button>
-                    </Form>
-
-                    {product.recipeItems.map((item: any) => (
-                      <Form method="post" key={item.id} style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                        <input type="hidden" name="intent" value="deleteRecipeItem" />
-                        <input type="hidden" name="productId" value={product.id} />
-                        <input type="hidden" name="recipeItemId" value={item.id} />
-                        <button className="ghostButton" type="submit" style={{ color: "#b91c1c" }}>
-                          {item.quantityPerUnit} {item.unit} {item.ingredientName} loeschen
-                        </button>
-                      </Form>
-                    ))}
-                  </details>
-
-                  <details>
-                    <summary className="ghostButton" style={{ listStyle: "none", cursor: "pointer" }}>
-                      Bearbeiten
-                    </summary>
-
-                    <Form method="post" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-                      <input type="hidden" name="intent" value="updateProduct" />
-                      <input type="hidden" name="productId" value={product.id} />
-
-                      <input name="name" defaultValue={product.name} style={inputStyle} />
-                      <input name="category" defaultValue={product.category || ""} style={inputStyle} />
-                      <input name="unit" defaultValue={product.unit || "Portion"} style={inputStyle} />
-                      <input name="priceEuro" defaultValue={String((product.priceCents || 0) / 100).replace(".", ",")} style={inputStyle} />
-                      <input name="taxRate" type="number" step="0.01" defaultValue={product.taxRate ?? 7} style={inputStyle} />
-                      <input name="notes" defaultValue={product.notes || ""} style={{ ...inputStyle, gridColumn: "1 / -1" }} />
-
-                      <button className="primaryButton" type="submit" style={{ gridColumn: "1 / -1" }}>
-                        Speichern
-                      </button>
-                    </Form>
-                  </details>
-
-                  <Form method="post">
-                    <input type="hidden" name="intent" value="toggleActive" />
-                    <input type="hidden" name="productId" value={product.id} />
-                    <input type="hidden" name="active" value={product.active ? "false" : "true"} />
-                    <button className="ghostButton" type="submit">
-                      {product.active ? "Deaktivieren" : "Aktivieren"}
-                    </button>
-                  </Form>
-
-                  <Form method="post">
-                    <input type="hidden" name="intent" value="deleteProduct" />
-                    <input type="hidden" name="productId" value={product.id} />
-                    <button className="ghostButton" type="submit" style={{ color: "#b91c1c" }}>
-                      Loeschen
-                    </button>
-                  </Form>
-                </div>
+                <button
+                  className="productsSecondaryButton"
+                  type="button"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setCategoryFilter("all");
+                    setStatusFilter("all");
+                    setRecipeFilter("all");
+                  }}
+                >
+                  Filter zurücksetzen
+                </button>
               </div>
-            ))
-          )}
-        </div>
-      </section>
+            ) : (
+              <div className="productCardList">
+                {filteredProducts.map((product: any) => {
+                  const recipeItems = Array.isArray(
+                    product.recipeItems
+                  )
+                    ? product.recipeItems
+                    : [];
+
+                  const hasRecipe = recipeItems.length > 0;
+
+                  return (
+                    <article
+                      className={
+                        product.active
+                          ? "productCard"
+                          : "productCard productCardInactive"
+                      }
+                      key={product.id}
+                    >
+                      <button
+                        className="productCardTrigger"
+                        type="button"
+                        onClick={() => {
+                          setShowCreateForm(false);
+                          setSelectedProductId(product.id);
+                        }}
+                      >
+                        <div className="productCardIcon">
+                          {String(product.name || "P")
+                            .trim()
+                            .slice(0, 1)
+                            .toUpperCase()}
+                        </div>
+
+                        <div className="productCardIdentity">
+                          <div className="productCardTitleLine">
+                            <h3>{product.name}</h3>
+
+                            <span
+                              className={
+                                product.active
+                                  ? "productStatusBadge productStatusActive"
+                                  : "productStatusBadge productStatusInactive"
+                              }
+                            >
+                              {product.active
+                                ? "Aktiv"
+                                : "Inaktiv"}
+                            </span>
+                          </div>
+
+                          <div className="productCardMeta">
+                            <span>
+                              {product.category ||
+                                "Ohne Kategorie"}
+                            </span>
+                            <span>
+                              {product.unit || "Portion"}
+                            </span>
+                            <span>
+                              MwSt. {product.taxRate ?? 7} %
+                            </span>
+                          </div>
+
+                          {product.notes ? (
+                            <p>{product.notes}</p>
+                          ) : (
+                            <p className="productCardEmptyNote">
+                              Keine Produktionsnotiz hinterlegt
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="productCardPrice">
+                          <small>Verkaufspreis</small>
+                          <strong>
+                            {centsToEuro(product.priceCents)}
+                          </strong>
+                          <span>
+                            je {product.unit || "Portion"}
+                          </span>
+                        </div>
+
+                        <div
+                          className={
+                            hasRecipe
+                              ? "productCardRecipe productCardRecipeComplete"
+                              : "productCardRecipe productCardRecipeMissing"
+                          }
+                        >
+                          <small>Rezeptur</small>
+                          <strong>
+                            {hasRecipe
+                              ? `${recipeItems.length} Position${
+                                  recipeItems.length === 1
+                                    ? ""
+                                    : "en"
+                                }`
+                              : "Rezeptur fehlt"}
+                          </strong>
+                          <span>
+                            {hasRecipe
+                              ? "Für Einkauf vorbereitet"
+                              : "Zutaten und Mengen ergänzen"}
+                          </span>
+                        </div>
+
+                        <span className="productCardArrow">→</span>
+                      </button>
+
+                      {hasRecipe ? (
+                        <div className="productIngredientsPreview">
+                          {recipeItems
+                            .slice(0, 4)
+                            .map((item: any) => (
+                              <span key={item.id}>
+                                <strong>
+                                  {item.quantityPerUnit} {item.unit}
+                                </strong>
+                                {item.ingredientName}
+                              </span>
+                            ))}
+
+                          {recipeItems.length > 4 ? (
+                            <span className="productMoreIngredients">
+                              + {recipeItems.length - 4} weitere
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+      </div>
     </AppLayout>
   );
 }
