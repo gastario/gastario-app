@@ -1,4 +1,4 @@
-﻿CREATE TYPE "ProductProcurementType" AS ENUM (
+CREATE TYPE "ProductProcurementType" AS ENUM (
   'RECIPE',
   'READY_MADE',
   'BAKE_OFF',
