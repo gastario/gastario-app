@@ -3122,3 +3122,789 @@
     margin-right: 16px;
   }
 }
+
+/*
+ * gastario-orders-reference-layout-20260716
+ *
+ * Referenzgestaltung für die operative Auftragsansicht.
+ * Die vorhandene Auftragslogik bleibt vollständig erhalten.
+ */
+
+/* =========================================================
+   Seitenrahmen und Kopf
+   ========================================================= */
+
+.ordersPage {
+  width: 100%;
+  max-width: 1540px;
+  margin: 0 auto;
+  padding: 28px 30px 48px;
+}
+
+.ordersPage .topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ordersPage .topbar > div:first-child {
+  min-width: 0;
+}
+
+.ordersPage .topbar h1 {
+  margin: 4px 0 6px;
+}
+
+.ordersPage .pageSubline {
+  display: block;
+  max-width: 760px;
+  line-height: 1.55;
+}
+
+.ordersPage .topActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.ordersPage .topActions .g-ui-button {
+  min-height: 42px;
+  padding-inline: 16px;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   Kennzahlen
+   ========================================================= */
+
+.ordersPage .orderSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.ordersPage .metricCard {
+  min-width: 0;
+  min-height: 118px;
+  padding: 17px 18px;
+  border: 1px solid #dce6e4;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.ordersPage .metricCard > div {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+}
+
+.ordersPage .metricCard p {
+  margin: 0;
+  color: #71847f;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.ordersPage .metricCard strong {
+  overflow: hidden;
+  color: #173f37;
+  font-size: clamp(23px, 2vw, 30px);
+  font-weight: 760;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+}
+
+.ordersPage .metricCard span {
+  color: #71817d;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   Hauptbereich
+   ========================================================= */
+
+.ordersPage .panel {
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid #dce6e4;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow:
+    0 12px 30px rgba(23, 63, 55, 0.045);
+}
+
+.ordersPage .panelHeader {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.65fr) minmax(620px, 1.8fr);
+  align-items: start;
+  gap: 22px;
+  padding: 20px;
+  border-bottom: 1px solid #e2eae8;
+  background:
+    linear-gradient(
+      145deg,
+      #f6faf9 0%,
+      #ffffff 72%
+    );
+}
+
+.ordersPage .panelHeader h2 {
+  margin: 4px 0 0;
+  color: #173f37;
+  font-size: 20px;
+  font-weight: 760;
+}
+
+/* =========================================================
+   Filter
+   ========================================================= */
+
+.ordersPage .ordersFilterWrap {
+  display: grid;
+  gap: 11px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ordersPage .ordersFilterForm {
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 1.5fr)
+    minmax(180px, 0.9fr)
+    auto
+    auto;
+  align-items: end;
+  gap: 9px;
+}
+
+.ordersPage .filterLabel {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: #61746f;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.ordersPage .filterInput {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid #cbd9d6;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #183d35;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: none;
+}
+
+.ordersPage .ordersFilterForm .g-ui-button {
+  min-height: 40px;
+  padding-inline: 14px;
+}
+
+.ordersPage .statusFilterGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 4px;
+  border: 1px solid #dce6e4;
+  border-radius: 11px;
+  background: #f7faf9;
+}
+
+.ordersPage .statusFilterGroup .g-ui-button {
+  min-height: 34px;
+  padding: 7px 12px;
+  border-color: transparent;
+  background: transparent;
+  font-size: 11px;
+}
+
+.ordersPage .statusFilterGroup .activeFilter {
+  border-color: #b9d7d0;
+  background: #e7f5f1;
+  color: #0c745d;
+  box-shadow: none;
+}
+
+/* =========================================================
+   Auftragsliste
+   ========================================================= */
+
+.ordersPage .finalOrderRows {
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+}
+
+.ordersPage .finalOrderRow {
+  min-width: 0;
+  display: grid;
+  grid-template-columns:
+    38px
+    minmax(190px, 1.1fr)
+    minmax(250px, 1.45fr)
+    minmax(145px, 0.8fr)
+    minmax(105px, 0.65fr)
+    minmax(100px, 0.65fr)
+    auto;
+  align-items: center;
+  gap: 13px;
+  min-height: 102px;
+  padding: 13px 14px;
+  border: 1px solid #dfe8e6;
+  border-radius: 13px;
+  background: #ffffff;
+  box-shadow: none;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.ordersPage .finalOrderRow:hover {
+  transform: translateY(-1px);
+  border-color: #afc8c2;
+  box-shadow:
+    0 8px 20px rgba(24, 67, 57, 0.06);
+}
+
+.ordersPage .finalOrderRow:focus-visible {
+  outline: 3px solid rgba(13, 155, 121, 0.18);
+  outline-offset: 2px;
+}
+
+.ordersPage .finalOrderIcon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #cfe1dd;
+  border-radius: 10px;
+  background: #eff8f5;
+  color: #11715d;
+  font-size: 15px;
+}
+
+.ordersPage .finalOrderCustomer {
+  min-width: 0;
+}
+
+.ordersPage .finalOrderNumber {
+  margin-bottom: 4px;
+  color: #0d8067;
+  font-size: 9.5px;
+  font-weight: 850;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.ordersPage .finalOrderCustomer h3 {
+  overflow: hidden;
+  margin: 0;
+  color: #213f39;
+  font-size: 14px;
+  font-weight: 760;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ordersPage .finalOrderCustomer p {
+  overflow: hidden;
+  margin: 4px 0 7px;
+  color: #71817d;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ordersPage .finalSourceBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 2px 7px;
+  border: 1px solid #d8e5e2;
+  border-radius: 999px;
+  background: #f7faf9;
+  color: #60736e;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.ordersPage .finalOrderItems {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.ordersPage .finalOrderItems > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px;
+  color: #425c56;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.ordersPage .finalOrderItems strong {
+  color: #1b5d4f;
+  font-weight: 800;
+}
+
+.ordersPage .finalOrderItems span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ordersPage .finalOrderItems small {
+  color: #7b8c88;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.ordersPage .finalOrderDate {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.ordersPage .finalOrderDate strong {
+  color: #294942;
+  font-size: 12.5px;
+  font-weight: 760;
+}
+
+.ordersPage .finalOrderDate span,
+.ordersPage .finalOrderDate small {
+  overflow: hidden;
+  color: #73837f;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ordersPage .operationalOrderStatus {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.ordersPage .orderStatus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 4px 9px;
+  border: 1px solid #d8e4e1;
+  border-radius: 999px;
+  background: #f7faf9;
+  color: #526963;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ordersPage .orderStatus.success {
+  border-color: #bde3d5;
+  background: #edf9f4;
+  color: #137056;
+}
+
+.ordersPage .orderStatus.production {
+  border-color: #c7d9ee;
+  background: #f0f6fc;
+  color: #315f8a;
+}
+
+.ordersPage .orderStatus.packing {
+  border-color: #ead6ad;
+  background: #fff9eb;
+  color: #8a641b;
+}
+
+.ordersPage .orderStatus.danger {
+  border-color: #efc5c1;
+  background: #fff5f4;
+  color: #b42318;
+}
+
+.ordersPage .finalOrderTotal {
+  min-width: 0;
+  text-align: right;
+}
+
+.ordersPage .finalOrderTotal strong {
+  display: block;
+  color: #183f37;
+  font-size: 13.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ordersPage .finalOrderTotal span {
+  display: block;
+  margin-top: 3px;
+  color: #7a8a86;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ordersPage .finalOrderActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.ordersPage .operationalDeleteButton {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #efc5c1;
+  border-radius: 9px;
+  background: #fff5f4;
+  color: #b42318;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ordersPage .operationalDeleteButton:hover {
+  border-color: #e7aaa4;
+  background: #feeceb;
+  color: #912018;
+}
+
+/* =========================================================
+   Leerer Zustand
+   ========================================================= */
+
+.ordersPage .ordersCardEmpty {
+  display: grid;
+  place-items: center;
+  gap: 7px;
+  min-height: 190px;
+  padding: 30px;
+  border: 1px dashed #cbdcd8;
+  border-radius: 13px;
+  background: #fafcfb;
+  text-align: center;
+}
+
+.ordersPage .ordersCardEmpty strong {
+  color: #294a43;
+  font-size: 14px;
+}
+
+.ordersPage .ordersCardEmpty span {
+  max-width: 520px;
+  color: #71837e;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   Geöffnete Detailansicht
+   ========================================================= */
+
+.ordersPage .selectedFocusMode {
+  padding: 14px;
+}
+
+.ordersPage .finalSelectedPanel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #dce6e4;
+  border-radius: 15px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.ordersPage .finalSelectedTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e2eae8;
+}
+
+.ordersPage .finalSelectedKicker {
+  margin-bottom: 5px;
+  color: #0f755f;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ordersPage .finalSelectedTop h3 {
+  margin: 0;
+  color: #183f37;
+  font-size: 22px;
+  font-weight: 760;
+}
+
+.ordersPage .finalSelectedFacts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ordersPage .finalSelectedFacts > div {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  min-height: 92px;
+  padding: 13px;
+  border: 1px solid #e0e9e7;
+  border-radius: 11px;
+  background: #f8faf9;
+}
+
+.ordersPage .finalSelectedFacts span {
+  color: #7a8b87;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ordersPage .finalSelectedFacts strong {
+  color: #294942;
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.ordersPage .finalSelectedFacts small {
+  color: #71817d;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.ordersPage .finalSelectedItems,
+.ordersPage .orderBillingPanel {
+  border: 1px solid #dfe8e6;
+  border-radius: 13px;
+  box-shadow: none;
+}
+
+.ordersPage .finalSelectedItems {
+  padding: 15px;
+}
+
+.ordersPage .finalSelectedItems h4 {
+  margin: 0 0 11px;
+  color: #24473f;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ordersPage .finalSelectedItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  min-height: 38px;
+  padding: 7px 0;
+  border-bottom: 1px solid #edf2f1;
+  color: #425b55;
+  font-size: 12px;
+}
+
+.ordersPage .finalSelectedItem:last-child {
+  border-bottom: 0;
+}
+
+.ordersPage .orderBillingPanel {
+  padding: 17px;
+}
+
+.ordersPage .finalSelectedActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  padding-top: 15px;
+  border-top: 1px solid #e2eae8;
+}
+
+.ordersPage .finalSelectedActions > a,
+.ordersPage .finalSelectedActions button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 13px;
+  border: 1px solid #cbd9d6;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #285247;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 750;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ordersPage .finalSelectedActions form:last-child button {
+  border-color: #efc5c1;
+  background: #fff5f4;
+  color: #b42318;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 1320px) {
+  .ordersPage .finalOrderRow {
+    grid-template-columns:
+      36px
+      minmax(180px, 1.05fr)
+      minmax(220px, 1.3fr)
+      minmax(135px, 0.8fr)
+      minmax(100px, 0.65fr)
+      auto;
+  }
+
+  .ordersPage .finalOrderTotal {
+    display: none;
+  }
+}
+
+@media (max-width: 1120px) {
+  .ordersPage {
+    padding-inline: 20px;
+  }
+
+  .ordersPage .orderSummaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ordersPage .panelHeader {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersPage .ordersFilterForm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ordersPage .finalOrderRow {
+    grid-template-columns:
+      36px
+      minmax(180px, 1fr)
+      minmax(210px, 1.25fr)
+      minmax(130px, 0.8fr)
+      auto;
+  }
+
+  .ordersPage .operationalOrderStatus {
+    display: none;
+  }
+}
+
+@media (max-width: 820px) {
+  .ordersPage {
+    padding: 20px 14px 36px;
+  }
+
+  .ordersPage .topbar {
+    display: grid;
+  }
+
+  .ordersPage .topActions {
+    justify-content: flex-start;
+  }
+
+  .ordersPage .ordersFilterForm {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersPage .finalOrderRow {
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .ordersPage .finalOrderItems,
+  .ordersPage .finalOrderDate {
+    grid-column: 2 / -1;
+  }
+
+  .ordersPage .finalOrderActions {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .ordersPage .finalSelectedFacts {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .ordersPage .orderSummaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersPage .topActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .ordersPage .topActions .g-ui-button {
+    width: 100%;
+  }
+
+  .ordersPage .finalOrderRow {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersPage .finalOrderIcon {
+    display: none;
+  }
+
+  .ordersPage .finalOrderItems,
+  .ordersPage .finalOrderDate,
+  .ordersPage .finalOrderActions {
+    grid-column: 1;
+  }
+
+  .ordersPage .finalOrderActions {
+    justify-content: flex-start;
+  }
+
+  .ordersPage .finalSelectedTop {
+    display: grid;
+  }
+}
