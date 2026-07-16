@@ -676,7 +676,7 @@
 .sidebar button,
 .sidebar a {
   font-family:
-    "Manrope",
+    "Plus Jakarta Sans",
     "Segoe UI Variable",
     "Segoe UI",
     sans-serif !important;
@@ -684,49 +684,72 @@
 
 .navAccordionStaticLabel,
 .navAccordionTrigger {
-  font-family: "Manrope", sans-serif !important;
-  font-size: 10.5px !important;
+  font-family:
+    "Plus Jakarta Sans",
+    sans-serif !important;
+  font-size: 12px !important;
   font-weight: 700 !important;
-  letter-spacing: 0.055em !important;
-  line-height: 1.2 !important;
+  letter-spacing: -0.015em !important;
+  line-height: 1.25 !important;
+  text-transform: none !important;
 }
 
-.navAccordionTrigger span:first-child {
-  transform: translateY(0.5px);
+.navAccordionStaticLabel {
+  color: #6a7d7a !important;
+}
+
+.navAccordionTrigger {
+  color: #536b67 !important;
+}
+
+.navAccordionGroup.isOpen
+  .navAccordionTrigger,
+.navAccordionGroup.hasActiveItem
+  .navAccordionTrigger {
+  color: #12604e !important;
+  font-weight: 750 !important;
 }
 
 .navAccordionItems a {
-  font-family: "Manrope", sans-serif !important;
-  font-size: 13px !important;
+  min-height: 40px !important;
+  font-family:
+    "Plus Jakarta Sans",
+    sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.3 !important;
+}
+
+.navAccordionItems a:hover {
   font-weight: 600 !important;
-  letter-spacing: -0.012em !important;
-  line-height: 1.25 !important;
 }
 
 .navAccordionItems a.active {
   font-weight: 700 !important;
-  letter-spacing: -0.015em !important;
+  letter-spacing: -0.025em !important;
 }
 
 .sidebarLogoutButton {
-  font-family: "Manrope", sans-serif !important;
+  font-family:
+    "Plus Jakarta Sans",
+    sans-serif !important;
   font-size: 12.5px !important;
   font-weight: 600 !important;
-  letter-spacing: -0.01em !important;
-}
-
-.brand {
-  margin-bottom: 6px !important;
+  letter-spacing: -0.015em !important;
 }
 
 .navGroups.navAccordion {
-  gap: 5px !important;
+  gap: 6px !important;
 }
 
 .navAccordionItems {
   gap: 2px !important;
 }
 
-.navAccordionItems a {
-  min-height: 39px !important;
+.navAccordionChevron {
+  font-family:
+    "Segoe UI",
+    sans-serif !important;
 }
+
