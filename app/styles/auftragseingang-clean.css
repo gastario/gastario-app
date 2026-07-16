@@ -182,3 +182,390 @@
     width: 100%;
   }
 }
+/*
+ * gastario-selected-order-lower-layout-20260716
+ *
+ * Ausgewählter Auftrag im gleichen ruhigen Kartenstil
+ * wie Kunden, Produkte und die Auftragsprüfung.
+ */
+
+.incomingReferenceSection
+.finalOrdersGrid.selectedFocusMode {
+  display: block !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.incomingReferenceSection
+.finalOrdersGrid.selectedFocusMode
+.finalOrderRows {
+  display: none !important;
+}
+
+/* =========================================================
+   Hauptkarte
+   ========================================================= */
+
+.incomingReferenceSection
+.finalSelectedPanel {
+  width: 100% !important;
+  max-width: none !important;
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 1fr)
+    280px !important;
+  gap: 0 18px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid #dce6e4 !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* =========================================================
+   Kopfbereich
+   ========================================================= */
+
+.incomingReferenceSection
+.finalSelectedTop {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+  margin: 0 !important;
+  padding: 20px 20px 17px !important;
+  border-bottom: 1px solid #e2eae8 !important;
+  background:
+    linear-gradient(
+      145deg,
+      #f6faf9 0%,
+      #ffffff 72%
+    ) !important;
+}
+
+.incomingReferenceSection
+.finalSelectedKicker {
+  margin: 0 0 5px !important;
+  color: #08715a !important;
+  font-size: 9px !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+
+.incomingReferenceSection
+.finalSelectedTop .finalOrderNumber {
+  margin: 0 0 5px !important;
+  color: #617771 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.055em !important;
+  text-transform: uppercase !important;
+}
+
+.incomingReferenceSection
+.finalSelectedTop h3 {
+  margin: 0 !important;
+  color: #173f37 !important;
+  font-size: 21px !important;
+  font-weight: 760 !important;
+  line-height: 1.25 !important;
+}
+
+.incomingReferenceSection
+.finalSourceBadge.big {
+  min-height: 28px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0 11px !important;
+  border: 1px solid #cfe2dd !important;
+  border-radius: 999px !important;
+  background: #edf8f5 !important;
+  color: #176c59 !important;
+  font-size: 9px !important;
+  font-weight: 820 !important;
+}
+
+/* =========================================================
+   Positionen links
+   ========================================================= */
+
+.incomingReferenceSection
+.finalSelectedItems {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  min-width: 0 !important;
+  margin: 18px 0 0 18px !important;
+  padding: 17px !important;
+  border: 1px solid #dfe8e6 !important;
+  border-radius: 13px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.incomingReferenceSection
+.finalSelectedItems h4 {
+  margin: 0 0 12px !important;
+  color: #24473f !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+}
+
+.incomingReferenceSection
+.finalSelectedItem {
+  min-height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  padding: 9px 4px !important;
+  border-bottom: 1px solid #e8efed !important;
+  color: #425b55 !important;
+  font-size: 12px !important;
+}
+
+.incomingReferenceSection
+.finalSelectedItem:last-child {
+  border-bottom: 0 !important;
+}
+
+.incomingReferenceSection
+.finalSelectedItem span {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.incomingReferenceSection
+.finalSelectedItem span strong {
+  min-width: 38px !important;
+  color: #173f37 !important;
+  font-weight: 820 !important;
+}
+
+.incomingReferenceSection
+.finalSelectedItem b {
+  color: #173f37 !important;
+  font-size: 12px !important;
+  font-weight: 820 !important;
+  white-space: nowrap !important;
+}
+
+/* =========================================================
+   Rechte Infospalte
+   ========================================================= */
+
+.incomingReferenceSection
+.finalSelectedFacts {
+  grid-column: 2 !important;
+  grid-row: 2 / span 2 !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  align-content: start !important;
+  gap: 10px !important;
+  margin: 18px 18px 0 0 !important;
+  padding: 0 !important;
+}
+
+.incomingReferenceSection
+.finalSelectedFacts > div {
+  min-width: 0 !important;
+  min-height: 88px !important;
+  display: grid !important;
+  align-content: center !important;
+  gap: 5px !important;
+  padding: 13px 14px !important;
+  border: 1px solid #dfe8e6 !important;
+  border-radius: 12px !important;
+  background: #f8faf9 !important;
+}
+
+.incomingReferenceSection
+.finalSelectedFacts span {
+  color: #7a8b87 !important;
+  font-size: 9px !important;
+  font-weight: 820 !important;
+  letter-spacing: 0.045em !important;
+  text-transform: uppercase !important;
+}
+
+.incomingReferenceSection
+.finalSelectedFacts strong {
+  overflow-wrap: anywhere !important;
+  color: #294942 !important;
+  font-size: 13px !important;
+  font-weight: 780 !important;
+  line-height: 1.35 !important;
+}
+
+.incomingReferenceSection
+.finalSelectedFacts small {
+  color: #6f817c !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+  line-height: 1.4 !important;
+}
+
+/* =========================================================
+   Hinweisbox
+   ========================================================= */
+
+.incomingReferenceSection
+.finalSelectedNotice {
+  grid-column: 1 !important;
+  grid-row: 3 !important;
+  min-height: 70px !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  margin: 14px 0 18px 18px !important;
+  padding: 14px 16px !important;
+  border: 1px solid #d3e5df !important;
+  border-radius: 12px !important;
+  background: #f2f8f6 !important;
+  color: #45635b !important;
+  font-size: 11.5px !important;
+  font-weight: 620 !important;
+  line-height: 1.55 !important;
+}
+
+/* =========================================================
+   Aktionsleiste
+   ========================================================= */
+
+.incomingReferenceSection
+.finalSelectedActions {
+  grid-column: 1 / -1 !important;
+  display: grid !important;
+  grid-template-columns:
+    auto
+    minmax(260px, 1fr)
+    auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 14px 18px 18px !important;
+  border-top: 1px solid #e2eae8 !important;
+  background: #fbfcfc !important;
+}
+
+.incomingReferenceSection
+.finalSelectedActions > a,
+.incomingReferenceSection
+.finalSelectedActions > button,
+.incomingReferenceSection
+.finalSelectedActions > form button {
+  min-height: 42px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 16px !important;
+  border-radius: 10px !important;
+  font: inherit !important;
+  font-size: 11.5px !important;
+  font-weight: 760 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+}
+
+.incomingReferenceSection
+.finalBackButton {
+  border: 1px solid #cbd9d6 !important;
+  background: #ffffff !important;
+  color: #36574f !important;
+}
+
+.incomingReferenceSection
+.finalSelectedActions > a {
+  width: 100% !important;
+  border: 1px solid #0d9875 !important;
+  background: #10a37f !important;
+  color: #ffffff !important;
+}
+
+.incomingReferenceSection
+.finalSelectedActions > a:hover {
+  border-color: #0a8465 !important;
+  background: #0d9270 !important;
+}
+
+.incomingReferenceSection
+.finalSelectedActions > form {
+  width: auto !important;
+  margin: 0 !important;
+}
+
+.incomingReferenceSection
+.finalSelectedActions > form button {
+  border: 1px solid #c3291d !important;
+  background: #c3291d !important;
+  color: #ffffff !important;
+}
+
+.incomingReferenceSection
+.finalSelectedActions > form button:hover {
+  border-color: #a92118 !important;
+  background: #a92118 !important;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 950px) {
+  .incomingReferenceSection
+  .finalSelectedPanel {
+    grid-template-columns: 1fr !important;
+  }
+
+  .incomingReferenceSection
+  .finalSelectedItems,
+  .incomingReferenceSection
+  .finalSelectedFacts,
+  .incomingReferenceSection
+  .finalSelectedNotice {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+    margin-left: 16px !important;
+    margin-right: 16px !important;
+  }
+
+  .incomingReferenceSection
+  .finalSelectedFacts {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 680px) {
+  .incomingReferenceSection
+  .finalSelectedTop {
+    display: grid !important;
+  }
+
+  .incomingReferenceSection
+  .finalSelectedFacts {
+    grid-template-columns: 1fr !important;
+  }
+
+  .incomingReferenceSection
+  .finalSelectedActions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .incomingReferenceSection
+  .finalSelectedActions > a,
+  .incomingReferenceSection
+  .finalSelectedActions > button,
+  .incomingReferenceSection
+  .finalSelectedActions > form,
+  .incomingReferenceSection
+  .finalSelectedActions > form button {
+    width: 100% !important;
+  }
+}
