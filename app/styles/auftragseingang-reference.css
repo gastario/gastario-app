@@ -653,3 +653,217 @@
     width: 100% !important;
   }
 }
+
+/*
+ * gastario-inbox-compact-navigation-final-20260716
+ *
+ * Eine kompakte Navigationsebene:
+ * Hauptbereiche oben, Auftragsstatus direkt darunter.
+ */
+
+.inboxFinalPage .inboxCombinedNavigation {
+  display: grid !important;
+  gap: 7px !important;
+  margin: 0 0 12px !important;
+  padding: 9px 11px !important;
+  border: 1px solid #dce6e4 !important;
+  border-radius: 13px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.inboxFinalPage .finalCategoryTabs {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 5px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.inboxFinalPage .finalCategoryTabs > form,
+.inboxFinalPage .finalCategoryForm {
+  width: auto !important;
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  margin: 0 !important;
+}
+
+.inboxFinalPage .finalCategoryTab {
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 32px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  padding: 0 10px !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: #61736e !important;
+  font-size: 10px !important;
+  font-weight: 730 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.inboxFinalPage .finalCategoryTab:hover {
+  border-color: #d3e1dd !important;
+  background: #f5f8f7 !important;
+  color: #176c59 !important;
+}
+
+.inboxFinalPage .finalCategoryTab.active {
+  border-color: #b9d9d1 !important;
+  background: #eaf6f2 !important;
+  color: #08715a !important;
+}
+
+.inboxFinalPage .finalCategoryTab strong {
+  min-width: 19px !important;
+  height: 19px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  padding: 0 4px !important;
+  border: 1px solid #d6e3e0 !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: #526a64 !important;
+  font-size: 8.5px !important;
+}
+
+.inboxFinalPage .finalCategoryTab.active strong {
+  border-color: #c4ddd7 !important;
+  color: #08715a !important;
+}
+
+/* Graue Überschrift vollständig entfernen */
+.inboxFinalPage .orderStatusSubnavTitle,
+.inboxFinalPage .orderStatusTitle,
+.inboxFinalPage .orderStatusLabel {
+  display: none !important;
+}
+
+/* Auftragsstatus direkt und kompakt unter den Haupttabs */
+.inboxFinalPage .orderStatusSubnav {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 5px !important;
+  margin: 0 !important;
+  padding: 7px 0 0 !important;
+  border-top: 1px solid #e7eeec !important;
+  background: transparent !important;
+}
+
+.inboxFinalPage .orderStatusSubnav > form {
+  width: auto !important;
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  margin: 0 !important;
+}
+
+.inboxFinalPage .orderStatusSubnav .realOrderTab {
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 29px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 0 9px !important;
+  border: 1px solid transparent !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  color: #71817d !important;
+  font-size: 9.5px !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.inboxFinalPage .orderStatusSubnav .realOrderTab:hover {
+  border-color: #d7e3e0 !important;
+  background: #f7faf9 !important;
+  color: #176c59 !important;
+}
+
+.inboxFinalPage .orderStatusSubnav .realOrderTab.active {
+  border-color: #c5ded8 !important;
+  background: #edf7f4 !important;
+  color: #08715a !important;
+}
+
+.inboxFinalPage .orderStatusSubnav .realOrderTab strong {
+  min-width: 18px !important;
+  height: 18px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  padding: 0 4px !important;
+  border: 1px solid #d9e4e1 !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: #60736d !important;
+  font-size: 8px !important;
+}
+
+/* Auftragsbereich näher an die Navigation ziehen */
+.inboxFinalPage .finalOrdersShell {
+  margin-top: 0 !important;
+}
+
+.inboxFinalPage .finalOrdersHeader {
+  padding: 14px 16px !important;
+}
+
+.inboxFinalPage .finalOrderRows {
+  padding: 10px 14px 13px !important;
+}
+
+.inboxFinalPage .finalOrderRow {
+  min-height: 92px !important;
+  padding: 11px 13px !important;
+}
+
+/* Vergangene Aufträge als ruhige Abschlusszeile */
+.inboxFinalPage .pastOrdersHint {
+  min-height: 38px !important;
+  margin: 0 !important;
+  padding: 9px 14px !important;
+  border-top: 1px solid #e7eeec !important;
+  background: #fbfcfc !important;
+  color: #71817d !important;
+  font-size: 10px !important;
+  font-weight: 620 !important;
+  text-align: center !important;
+}
+
+.inboxFinalPage .pastOrdersHint a {
+  color: #08715a !important;
+  font-weight: 760 !important;
+}
+
+@media (max-width: 700px) {
+  .inboxFinalPage .finalCategoryTabs,
+  .inboxFinalPage .orderStatusSubnav {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .inboxFinalPage .finalCategoryTabs > form,
+  .inboxFinalPage .orderStatusSubnav > form {
+    width: 100% !important;
+  }
+
+  .inboxFinalPage .finalCategoryTab,
+  .inboxFinalPage .orderStatusSubnav .realOrderTab {
+    width: 100% !important;
+  }
+}
