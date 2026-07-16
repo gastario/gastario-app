@@ -83,6 +83,15 @@ enum OrderStatus {
   REJECTED
 }
 
+enum QuoteStatus {
+  DRAFT
+  SENT
+  WAITING
+  CONFIRMED
+  REJECTED
+  EXPIRED
+}
+
 enum IncomingEmailStatus {
   RECEIVED
   PDF_FOUND
@@ -151,6 +160,7 @@ model Tenant {
   enabledFeatures TenantFeature[]
   customers       Customer[]
   products        Product[]
+  quotes          Quote[]
   orders          Order[]
   deliveryNotes   DeliveryNote[]
   incomingEmails  IncomingEmail[]
@@ -262,9 +272,8 @@ model EmailRule {
 }
 
 model Customer {
-  /*
+  /**
    * gastario-customer-master-data-20260716
-   *
    * Zentrale Kundenstammdaten für Aufträge,
    * Lieferungen und Rechnungen.
    */
@@ -305,6 +314,7 @@ model Customer {
 
   tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   orders Order[]
+  quotes Quote[]
 
   @@unique([tenantId, customerNumber])
   @@index([tenantId])
@@ -347,6 +357,7 @@ model Product {
 
   tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   orderItems      OrderItem[]
+  quoteItems      QuoteItem[]
   productMappings ProductMapping[]
   recipeItems     ProductRecipeItem[]
   suppliers       Supplier[]
@@ -419,6 +430,81 @@ model EmailAttachment {
   incomingEmail IncomingEmail @relation(fields: [incomingEmailId], references: [id], onDelete: Cascade)
 
   @@index([incomingEmailId])
+}
+
+/**
+ * gastario-live-quotes-20260716
+ * Echte, mandantenfähige Angebote mit Kunden,
+ * Positionen und späterer Auftragsübernahme.
+ */
+model Quote {
+  id         String  @id @default(cuid())
+  tenantId   String
+  customerId String?
+
+  quoteNumber String
+  status      QuoteStatus @default(DRAFT)
+
+  customerName String
+  eventName    String?
+
+  eventDate        DateTime?
+  deliveryTimeText String?
+  deliveryAddress  String?
+
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+
+  validUntil DateTime?
+  notes      String?
+
+  subtotalCents Int @default(0)
+  discountCents Int @default(0)
+  totalCents    Int @default(0)
+
+  convertedOrderId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant   Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer Customer?   @relation(fields: [customerId], references: [id])
+  items    QuoteItem[]
+
+  @@unique([tenantId, quoteNumber])
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([status])
+  @@index([eventDate])
+  @@index([createdAt])
+}
+
+model QuoteItem {
+  id      String @id @default(cuid())
+  quoteId String
+
+  productId String?
+  name      String
+
+  quantity   Int    @default(1)
+  unit       String @default("Portion")
+  unitCents  Int    @default(0)
+  totalCents Int    @default(0)
+
+  taxRate Int     @default(7)
+  notes   String?
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  quote   Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@index([quoteId])
+  @@index([productId])
 }
 
 model Order {
