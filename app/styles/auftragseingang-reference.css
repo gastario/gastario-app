@@ -559,3 +559,97 @@
     display: grid !important;
   }
 }
+/*
+ * gastario-inbox-horizontal-navigation-fix-20260716
+ *
+ * Alte Regeln der historischen CSS dürfen die Navigation
+ * nicht mehr auf volle Breite ziehen.
+ */
+
+.inboxFinalPage .inboxCombinedNavigation {
+  display: grid !important;
+  gap: 10px !important;
+}
+
+.inboxFinalPage .finalCategoryTabs {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 7px !important;
+}
+
+.inboxFinalPage .finalCategoryTabs > .finalCategoryForm,
+.inboxFinalPage .finalCategoryForm {
+  width: auto !important;
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.inboxFinalPage .finalCategoryForm .finalCategoryTab,
+.inboxFinalPage .finalCategoryTabs .finalCategoryTab {
+  width: auto !important;
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  padding: 0 13px !important;
+}
+
+.inboxFinalPage .orderStatusSubnav {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 7px !important;
+  padding-top: 10px !important;
+  border-top: 1px solid #e4ecea !important;
+}
+
+.inboxFinalPage .orderStatusSubnav > form {
+  width: auto !important;
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  margin: 0 !important;
+}
+
+.inboxFinalPage .orderStatusSubnav .realOrderTab {
+  width: auto !important;
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+  padding: 0 12px !important;
+}
+
+/*
+ * Überschriftenzeile für die Auftrags-Unterfilter kompakt halten.
+ */
+.inboxFinalPage .orderStatusSubnavTitle {
+  width: auto !important;
+  flex: 0 0 auto !important;
+  margin-right: 3px !important;
+}
+
+@media (max-width: 680px) {
+  .inboxFinalPage .finalCategoryTabs,
+  .inboxFinalPage .orderStatusSubnav {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .inboxFinalPage .finalCategoryTabs > .finalCategoryForm,
+  .inboxFinalPage .orderStatusSubnav > form {
+    width: 100% !important;
+  }
+
+  .inboxFinalPage .finalCategoryForm .finalCategoryTab,
+  .inboxFinalPage .orderStatusSubnav .realOrderTab {
+    width: 100% !important;
+  }
+}
