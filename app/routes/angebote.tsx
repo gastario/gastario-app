@@ -12,6 +12,7 @@ import {
   PageSection,
   PageShell,
 } from "../components/ui/PageShell";
+import "../styles/produkte.css";
 import "../styles/angebote.css";
 
 const STATUS_OPTIONS = [
@@ -217,7 +218,7 @@ export default function QuotesPage() {
 
   return (
     <AppLayout>
-      <PageShell className="quotesPage">
+      <PageShell className="productsPage quotesPage">
         <PageHeader
           eyebrow="Verkauf"
           title="Angebote"
@@ -231,7 +232,7 @@ export default function QuotesPage() {
           actions={
             <Link
               to="/angebote/neu"
-              className="quotePrimaryButton g-ui-button g-ui-button--primary"
+              className="productsPrimaryButton g-ui-button g-ui-button--primary"
             >
               Neues Angebot
             </Link>
@@ -275,7 +276,7 @@ export default function QuotesPage() {
         </MetricGrid>
 
         <PageSection
-          className="quotesListSection"
+          className="productsWorkspace quotesListSection"
           eyebrow="Angebotsübersicht"
           title="Aktuelle Angebote"
           description={
@@ -286,9 +287,9 @@ export default function QuotesPage() {
         >
           <Form
             method="get"
-            className="quotesFilterBar"
+            className="productsFilters quotesFilterBar"
           >
-            <label className="g-ui-field quotesSearchField">
+            <label className="productsSearchField quotesSearchField">
               <span>Suche</span>
               <input
                 type="search"
@@ -298,7 +299,7 @@ export default function QuotesPage() {
               />
             </label>
 
-            <label className="g-ui-field">
+            <label className="productsFilterField">
               <span>Status</span>
               <select
                 name="status"
@@ -317,23 +318,23 @@ export default function QuotesPage() {
 
             <button
               type="submit"
-              className="quotePrimaryButton g-ui-button g-ui-button--primary"
+              className="productsPrimaryButton g-ui-button g-ui-button--primary"
             >
               Anzeigen
             </button>
 
             <Link
               to="/angebote"
-              className="quoteSecondaryButton g-ui-button g-ui-button--secondary"
+              className="productsSecondaryButton g-ui-button g-ui-button--secondary"
             >
               Zurücksetzen
             </Link>
           </Form>
 
           {data.quotes.length === 0 ? (
-            <div className="g-ui-empty quotesEmptyState">
+            <div className="productsEmptyState quotesEmptyState">
               <div
-                className="quoteIcon"
+                className="productsEmptyIcon quoteIcon"
                 aria-hidden="true"
               >
                 A
@@ -350,7 +351,7 @@ export default function QuotesPage() {
 
               <Link
                 to="/angebote/neu"
-                className="quotePrimaryButton g-ui-button g-ui-button--primary"
+                className="productsPrimaryButton g-ui-button g-ui-button--primary"
               >
                 Erstes Angebot anlegen
               </Link>
@@ -364,7 +365,7 @@ export default function QuotesPage() {
                 >
                   <div className="quoteIdentity">
                     <div
-                      className="quoteIcon"
+                      className="productsEmptyIcon quoteIcon"
                       aria-hidden="true"
                     >
                       A
@@ -424,7 +425,7 @@ export default function QuotesPage() {
 
                     <Link
                       to={`/angebote/${quote.id}`}
-                      className="quoteSecondaryButton g-ui-button g-ui-button--secondary"
+                      className="productsSecondaryButton g-ui-button g-ui-button--secondary"
                     >
                       Öffnen
                     </Link>
