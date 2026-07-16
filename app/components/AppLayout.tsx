@@ -672,87 +672,151 @@ export default function AppLayout({ children }: AppLayoutProps) {
         }
 
         /*
-         * Gastario Sidebar Accordion
+         * gastario-sidebar-rebuild-final-20260716
+         *
+         * Einzige finale Gestaltung für die Hauptnavigation.
          */
+
+        .appShell {
+          grid-template-columns:
+            244px minmax(0, 1fr) !important;
+        }
+
+        .sidebar {
+          position: sticky !important;
+          top: 0;
+          height: 100vh !important;
+          display: flex;
+          flex-direction: column;
+          gap: 0 !important;
+          overflow-x: hidden;
+          overflow-y: auto;
+          padding: 18px 14px 16px !important;
+          border-right: 1px solid #dfe7e5 !important;
+          background: #fbfcfc !important;
+          box-shadow: none !important;
+          font-family:
+            Inter,
+            ui-sans-serif,
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif !important;
+        }
+
+        .brand {
+          min-height: 78px;
+          display: flex;
+          align-items: center;
+          margin: 0 0 14px !important;
+          padding: 2px 10px 16px !important;
+          border-bottom: 1px solid #e5ecea;
+        }
+
+        .brandLogo {
+          width: 136px !important;
+          height: auto;
+          display: block;
+        }
+
         .navGroups.navAccordion {
+          flex: 1;
           display: grid;
           align-content: start;
-          gap: 8px !important;
+          gap: 4px !important;
+          padding: 0 !important;
         }
 
         .navAccordionGroup {
           display: grid;
-          gap: 4px !important;
+          gap: 2px !important;
           margin: 0 !important;
         }
 
         .navAccordionStaticLabel,
         .navAccordionTrigger {
           width: 100%;
-          min-height: 42px;
+          min-height: 42px !important;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 12px;
-          box-sizing: border-box;
-          border: 1px solid transparent;
-          border-radius: 11px;
-          padding: 0 10px;
-          background: transparent;
-          color: #718096;
-          font: inherit;
-          font-size: 11px;
-          font-weight: 750 !important;
-          letter-spacing: 0.085em;
-          line-height: 1;
+          gap: 10px;
+          margin: 0;
+          padding: 0 11px !important;
+          border: 1px solid transparent !important;
+          border-radius: 9px !important;
+          background: transparent !important;
+          color: #394b48 !important;
+          font: inherit !important;
+          font-size: 13px !important;
+          font-weight: 650 !important;
+          letter-spacing: -0.012em !important;
+          line-height: 1.25 !important;
           text-align: left;
-          text-transform: uppercase;
+          text-transform: none !important;
+          box-shadow: none !important;
+        }
+
+        .navAccordionStaticLabel {
+          cursor: default;
         }
 
         .navAccordionTrigger {
           cursor: pointer;
           transition:
-            background 140ms ease,
-            border-color 140ms ease,
-            color 140ms ease;
+            background 130ms ease,
+            border-color 130ms ease,
+            color 130ms ease;
         }
 
         .navAccordionTrigger:hover {
-          border-color: #e0e9e7;
-          background: #f4f8f7 !important;
-          color: #315c54 !important;
+          border-color: #e0e8e6 !important;
+          background: #f5f8f7 !important;
+          color: #0d5e4b !important;
         }
 
         .navAccordionGroup.isOpen
           .navAccordionTrigger,
         .navAccordionGroup.hasActiveItem
           .navAccordionTrigger {
-          border-color: #d9e9e5;
-          background: #f0f7f5 !important;
-          color: #17634f !important;
+          border-color: transparent !important;
+          background: #f3f7f6 !important;
+          color: #075b48 !important;
+          font-weight: 700 !important;
+          box-shadow: none !important;
         }
 
         .navAccordionChevron {
+          width: 20px !important;
+          height: 20px !important;
+          flex: 0 0 auto;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          color: #81918f;
-          font-size: 19px;
-          font-weight: 500;
+          border-radius: 6px;
+          background: transparent !important;
+          color: #7c8d89 !important;
+          font-family: "Segoe UI", sans-serif !important;
+          font-size: 17px !important;
+          font-weight: 400 !important;
           line-height: 1;
           transform: rotate(0deg);
-          transition: transform 160ms ease;
+          transition: transform 150ms ease;
         }
 
         .navAccordionGroup.isOpen
           .navAccordionChevron {
+          color: #075b48 !important;
           transform: rotate(90deg);
         }
 
         .navAccordionItems {
           display: grid;
-          gap: 3px;
-          padding: 2px 0 5px 8px;
+          gap: 1px !important;
+          margin: 0 0 4px !important;
+          padding: 2px 0 3px 12px !important;
+          border-left: 1px solid #dfe8e5;
         }
 
         .navAccordionItems[hidden] {
@@ -761,188 +825,26 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
         .navAccordionItems a {
           position: relative;
-          min-height: 38px !important;
-          padding: 0 11px 0 18px !important;
-          border-radius: 10px !important;
-          font-size: 13px !important;
-          font-weight: 560 !important;
-        }
-
-        .navAccordionItems a::before {
-          content: "";
-          position: absolute;
-          left: 7px;
-          width: 4px;
-          height: 4px;
-          border-radius: 999px;
-          background: #bdcbc8;
-        }
-
-        .navAccordionItems a.active::before {
-          background: #f59e0b;
-        }
-
-        .navAccordionItems a.active {
-          background: #edf8f4 !important;
-          border-color: #c9e4dc !important;
-          color: #064e42 !important;
-          box-shadow:
-            inset 3px 0 0 #f59e0b !important;
-          font-weight: 650 !important;
-        }
-
-        .sidebar {
-          gap: 10px !important;
-        }
-
-        .brand {
-          padding-bottom: 12px !important;
-        }
-
-        /* gastario-sidebar-polish-20260715 */
-
-        .appShell {
-          grid-template-columns:
-            236px minmax(0, 1fr) !important;
-        }
-
-        .sidebar {
-          position: sticky !important;
-          top: 0;
-          height: 100vh !important;
-          overflow-x: hidden;
-          overflow-y: auto;
-          padding: 20px 14px 16px !important;
-          gap: 12px !important;
-          background:
-            linear-gradient(
-              180deg,
-              rgba(250, 252, 252, 0.99) 0%,
-              rgba(246, 250, 249, 0.99) 100%
-            ) !important;
-          border-right:
-            1px solid #d8e4e1 !important;
-          box-shadow:
-            12px 0 28px rgba(28, 65, 62, 0.035);
-        }
-
-        .brand {
-          min-height: 84px;
-          display: flex;
-          align-items: center;
-          padding: 4px 10px 15px !important;
-          margin-bottom: 2px;
-          border-bottom: 1px solid #e3ebe9;
-        }
-
-        .brandLogo {
-          width: 132px !important;
-          max-width: 100%;
-        }
-
-        .navGroups.navAccordion {
-          flex: 1;
-          display: grid;
-          align-content: start;
-          gap: 6px !important;
-          padding: 2px 0 12px;
-        }
-
-        .navAccordionGroup {
-          gap: 3px !important;
-        }
-
-        .navAccordionStaticLabel,
-        .navAccordionTrigger {
-          min-height: 42px !important;
-          padding: 0 11px !important;
-          border-radius: 11px !important;
-          color: #63777c !important;
-          font-size: 10px !important;
-          font-weight: 780 !important;
-          letter-spacing: 0.095em !important;
-          transition:
-            background 150ms ease,
-            border-color 150ms ease,
-            color 150ms ease,
-            box-shadow 150ms ease;
-        }
-
-        .navAccordionStaticLabel {
-          min-height: 32px !important;
-          padding-top: 4px !important;
-          align-items: flex-end !important;
-        }
-
-        .navAccordionTrigger {
-          border: 1px solid transparent !important;
-          background: transparent !important;
-        }
-
-        .navAccordionTrigger:hover {
-          border-color: #dce8e5 !important;
-          background: rgba(239, 247, 245, 0.8) !important;
-          color: #245c50 !important;
-        }
-
-        .navAccordionGroup.isOpen
-          .navAccordionTrigger,
-        .navAccordionGroup.hasActiveItem
-          .navAccordionTrigger {
-          border-color: #d4e6e1 !important;
-          background:
-            linear-gradient(
-              135deg,
-              #edf7f4 0%,
-              #f6faf9 100%
-            ) !important;
-          color: #17634f !important;
-          box-shadow:
-            0 5px 14px rgba(39, 105, 91, 0.055);
-        }
-
-        .navAccordionChevron {
-          width: 22px;
-          height: 22px;
-          border-radius: 7px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          background: rgba(255, 255, 255, 0.7);
-          color: #718985 !important;
-          font-size: 18px !important;
-          transform: rotate(0deg);
-        }
-
-        .navAccordionGroup.isOpen
-          .navAccordionChevron {
-          background: #ffffff;
-          color: #17634f !important;
-          transform: rotate(90deg);
-        }
-
-        .navAccordionItems {
-          display: grid;
-          gap: 3px !important;
-          margin: 2px 0 5px;
-          padding: 3px 0 3px 9px !important;
-          border-left: 1px solid #dce7e4;
-        }
-
-        .navAccordionItems a {
-          position: relative;
           min-height: 37px !important;
           display: flex;
           align-items: center;
+          margin: 0;
+          padding: 0 11px !important;
           border: 1px solid transparent !important;
-          border-radius: 10px !important;
-          padding: 0 10px 0 14px !important;
+          border-radius: 8px !important;
           background: transparent !important;
-          color: #33474d !important;
+          color: #455552 !important;
+          font: inherit !important;
           font-size: 12.5px !important;
-          font-weight: 570 !important;
-          letter-spacing: -0.006em;
+          font-weight: 500 !important;
+          letter-spacing: -0.01em !important;
+          line-height: 1.3 !important;
+          text-decoration: none;
           box-shadow: none !important;
+          transition:
+            background 130ms ease,
+            color 130ms ease,
+            border-color 130ms ease;
         }
 
         .navAccordionItems a::before {
@@ -950,52 +852,50 @@ export default function AppLayout({ children }: AppLayoutProps) {
         }
 
         .navAccordionItems a:hover {
-          border-color: #e0e9e7 !important;
-          background: rgba(255, 255, 255, 0.82) !important;
-          color: #145947 !important;
+          border-color: transparent !important;
+          background: #f5f8f7 !important;
+          color: #075b48 !important;
+          transform: none !important;
         }
 
         .navAccordionItems a.active {
-          border-color: #c8e1da !important;
-          background:
-            linear-gradient(
-              135deg,
-              #e7f5f0 0%,
-              #f4faf8 100%
-            ) !important;
+          border-color: #d6e6e1 !important;
+          background: #edf7f3 !important;
           color: #075b48 !important;
-          font-weight: 680 !important;
+          font-size: 12.5px !important;
+          font-weight: 700 !important;
           box-shadow:
-            inset 3px 0 0 #f2a900,
-            0 5px 14px rgba(28, 91, 74, 0.06)
-            !important;
+            inset 3px 0 0 #e5a400 !important;
         }
 
         .sidebarFooter {
           margin-top: auto;
           padding: 14px 2px 0 !important;
-          border-top: 1px solid #dfe9e6 !important;
+          border-top: 1px solid #e1e9e7 !important;
         }
 
         .sidebarLogoutButton {
-          min-height: 42px !important;
-          border: 1px solid #d3dfdc !important;
-          border-radius: 11px !important;
-          background: rgba(255, 255, 255, 0.86) !important;
-          color: #31474c !important;
+          width: 100%;
+          min-height: 40px !important;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid #d6e0de !important;
+          border-radius: 9px !important;
+          background: #ffffff !important;
+          color: #435350 !important;
+          font: inherit !important;
           font-size: 12px !important;
-          font-weight: 650 !important;
+          font-weight: 600 !important;
+          letter-spacing: -0.01em !important;
+          text-decoration: none;
           box-shadow: none !important;
-          transition:
-            border-color 140ms ease,
-            background 140ms ease,
-            color 140ms ease;
         }
 
         .sidebarLogoutButton:hover {
-          border-color: #b9cbc7 !important;
-          background: #ffffff !important;
-          color: #173f36 !important;
+          border-color: #bccbc7 !important;
+          background: #f8faf9 !important;
+          color: #153f35 !important;
         }
 
         @media (max-width: 980px) {
