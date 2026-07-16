@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Gastario UI System
  * Gemeinsame visuelle Grundlage für alle Mandanten-Seiten.
  */
@@ -666,4 +666,67 @@
   .g-ui-metric-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/*
+ * gastario-sidebar-typography-20260716
+ */
+
+.sidebar,
+.sidebar button,
+.sidebar a {
+  font-family:
+    "Manrope",
+    "Segoe UI Variable",
+    "Segoe UI",
+    sans-serif !important;
+}
+
+.navAccordionStaticLabel,
+.navAccordionTrigger {
+  font-family: "Manrope", sans-serif !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.055em !important;
+  line-height: 1.2 !important;
+}
+
+.navAccordionTrigger span:first-child {
+  transform: translateY(0.5px);
+}
+
+.navAccordionItems a {
+  font-family: "Manrope", sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.012em !important;
+  line-height: 1.25 !important;
+}
+
+.navAccordionItems a.active {
+  font-weight: 700 !important;
+  letter-spacing: -0.015em !important;
+}
+
+.sidebarLogoutButton {
+  font-family: "Manrope", sans-serif !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.brand {
+  margin-bottom: 6px !important;
+}
+
+.navGroups.navAccordion {
+  gap: 5px !important;
+}
+
+.navAccordionItems {
+  gap: 2px !important;
+}
+
+.navAccordionItems a {
+  min-height: 39px !important;
 }
