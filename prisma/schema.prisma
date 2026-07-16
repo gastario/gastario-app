@@ -264,10 +264,11 @@ model EmailRule {
 model Customer {
   id        String   @id @default(cuid())
   tenantId  String
-  name      String
-  email     String?
-  phone     String?
-  address   String?
+  name        String
+  contactName String?
+  email       String?
+  phone       String?
+  address     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
