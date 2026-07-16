@@ -458,10 +458,18 @@ export default function ProductsPage() {
         (statusFilter === "active" && product.active) ||
         (statusFilter === "inactive" && !product.active);
 
+      const requiresRecipe =
+        (product.procurementType || "RECIPE") ===
+        "RECIPE";
+
       const matchesRecipe =
         recipeFilter === "all" ||
-        (recipeFilter === "complete" && recipeItems.length > 0) ||
-        (recipeFilter === "missing" && recipeItems.length === 0);
+        (recipeFilter === "complete" &&
+          requiresRecipe &&
+          recipeItems.length > 0) ||
+        (recipeFilter === "missing" &&
+          requiresRecipe &&
+          recipeItems.length === 0);
 
       return (
         matchesSearch &&
@@ -1463,6 +1471,22 @@ export default function ProductsPage() {
 
                   const hasRecipe = recipeItems.length > 0;
 
+                  /*
+                   * gastario-product-list-recipe-status-robust-20260716
+                   *
+                   * Nur Eigenproduktionen benötigen eine Rezeptur.
+                   */
+                  const requiresRecipe =
+                    (product.procurementType || "RECIPE") ===
+                    "RECIPE";
+
+                  const recipeStatusClass =
+                    !requiresRecipe
+                      ? "productCardRecipe productCardRecipeNotRequired"
+                      : hasRecipe
+                        ? "productCardRecipe productCardRecipeComplete"
+                        : "productCardRecipe productCardRecipeMissing";
+
                   return (
                     <article
                       className={
@@ -1535,35 +1559,38 @@ export default function ProductsPage() {
                             je {product.unit || "Portion"}
                           </span>
                         </div>
+                        <div className={recipeStatusClass}>
+                          <small>
+                            {requiresRecipe
+                              ? "Rezeptur"
+                              : "Beschaffung"}
+                          </small>
 
-                        <div
-                          className={
-                            hasRecipe
-                              ? "productCardRecipe productCardRecipeComplete"
-                              : "productCardRecipe productCardRecipeMissing"
-                          }
-                        >
-                          <small>Rezeptur</small>
                           <strong>
-                            {hasRecipe
-                              ? `${recipeItems.length} Position${
-                                  recipeItems.length === 1
-                                    ? ""
-                                    : "en"
-                                }`
-                              : "Rezeptur fehlt"}
+                            {!requiresRecipe
+                              ? "Keine Rezeptur nötig"
+                              : hasRecipe
+                                ? `${recipeItems.length} Position${ 
+                                    recipeItems.length === 1
+                                      ? ""
+                                      : "en"
+                                  }`
+                                : "Rezeptur fehlt"}
                           </strong>
+
                           <span>
-                            {hasRecipe
-                              ? "Für Einkauf vorbereitet"
-                              : "Zutaten und Mengen ergänzen"}
+                            {!requiresRecipe
+                              ? "Einkaufsdaten verwenden"
+                              : hasRecipe
+                                ? "Für Einkauf vorbereitet"
+                                : "Zutaten und Mengen ergänzen"}
                           </span>
                         </div>
 
                         <span className="productCardArrow">→</span>
                       </button>
 
-                      {hasRecipe ? (
+                      {requiresRecipe && hasRecipe ? (
                         <div className="productIngredientsPreview">
                           {recipeItems
                             .slice(0, 4)
