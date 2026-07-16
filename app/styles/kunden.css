@@ -528,3 +528,173 @@
     width: 100%;
   }
 }
+/*
+ * gastario-customer-master-data-form-styles-20260716
+ */
+
+.customerCreateForm {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.customerFormGroup,
+.customerEditSection {
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid #dce6e4;
+  border-radius: 14px;
+  background: #fbfdfc;
+}
+
+.customerFormGroup legend {
+  padding: 0 7px;
+  color: #0f6655;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.customerEditSection h4 {
+  margin: 0 0 14px;
+  color: #163f37;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.customerFormGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.customerFormWide {
+  grid-column: span 2;
+}
+
+.customerAddressGrid {
+  grid-template-columns:
+    minmax(220px, 2fr)
+    minmax(90px, 0.7fr)
+    minmax(110px, 0.8fr)
+    minmax(180px, 1.3fr)
+    minmax(150px, 1fr);
+}
+
+.customerFormGroup select,
+.customerFormGroup textarea,
+.customerEditSection select,
+.customerEditSection textarea {
+  width: 100%;
+  border: 1px solid #cbd9d6;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #183d35;
+  font: inherit;
+}
+
+.customerFormGroup select,
+.customerEditSection select {
+  min-height: 40px;
+  padding: 0 11px;
+}
+
+.customerFormGroup textarea,
+.customerEditSection textarea {
+  min-height: 88px;
+  padding: 10px 11px;
+  resize: vertical;
+}
+
+.customerCheckboxField {
+  display: flex;
+  align-items: center;
+  align-self: end;
+  gap: 9px;
+  min-height: 40px;
+  color: #365650;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.customerCheckboxField input {
+  width: 17px;
+  height: 17px;
+  accent-color: #0d9b79;
+}
+
+.customerOptionalSection {
+  border: 1px solid #dce6e4;
+  border-radius: 14px;
+  background: #fbfdfc;
+}
+
+.customerOptionalSection > summary {
+  cursor: pointer;
+  padding: 15px 16px;
+  color: #16483e;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.customerOptionalContent {
+  display: grid;
+  gap: 14px;
+  padding: 0 16px 16px;
+}
+
+.customerEditForm {
+  grid-template-columns: 1fr;
+}
+
+.customerEditSection {
+  display: grid;
+  gap: 4px;
+}
+
+.customerTitleLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.customerNumberBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 2px 7px;
+  border: 1px solid #cfe2dd;
+  border-radius: 999px;
+  background: #edf8f5;
+  color: #176c59;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 1180px) {
+  .customerFormGrid,
+  .customerAddressGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .customerStreetField,
+  .customerFormWide {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 720px) {
+  .customerFormGrid,
+  .customerAddressGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .customerStreetField,
+  .customerFormWide {
+    grid-column: auto;
+  }
+}
