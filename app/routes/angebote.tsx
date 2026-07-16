@@ -5,11 +5,8 @@ import {
 } from "react-router";
 import AppLayout from "../components/AppLayout";
 import {
-  MetricCard,
-  MetricGrid,
   Notice,
   PageHeader,
-  PageSection,
   PageShell,
 } from "../components/ui/PageShell";
 import "../styles/produkte.css";
@@ -245,46 +242,63 @@ export default function QuotesPage() {
           </Notice>
         ) : null}
 
-        <MetricGrid>
-          <MetricCard
-            label="Angebote gesamt"
-            value={data.stats.total}
-            description="im Mandanten"
-            badge="Gesamt"
-          />
+        <section className="productsMetrics">
+          <article className="productsMetricCard">
+            <div>
+              <p>Angebote gesamt</p>
+              <strong>{data.stats.total}</strong>
+              <span>im Mandanten</span>
+            </div>
+            <small>Gesamt</small>
+          </article>
 
-          <MetricCard
-            label="Entwürfe"
-            value={data.stats.drafts}
-            description="noch nicht versendet"
-            badge="Offen"
-          />
+          <article className="productsMetricCard">
+            <div>
+              <p>Entwürfe</p>
+              <strong>{data.stats.drafts}</strong>
+              <span>noch nicht versendet</span>
+            </div>
+            <small>Offen</small>
+          </article>
 
-          <MetricCard
-            label="In Klärung"
-            value={data.stats.active}
-            description="versendet oder Rückmeldung offen"
-            badge="Aktiv"
-          />
+          <article className="productsMetricCard">
+            <div>
+              <p>In Klärung</p>
+              <strong>{data.stats.active}</strong>
+              <span>versendet oder Rückmeldung offen</span>
+            </div>
+            <small>Aktiv</small>
+          </article>
 
-          <MetricCard
-            label="Angebotswert"
-            value={centsToEuro(data.stats.totalValueCents)}
-            description={`${data.stats.confirmed} bestätigt`}
-            badge="EUR"
-          />
-        </MetricGrid>
+          <article className="productsMetricCard">
+            <div>
+              <p>Angebotswert</p>
+              <strong>{centsToEuro(data.stats.totalValueCents)}</strong>
+              <span>{data.stats.confirmed} bestätigt</span>
+            </div>
+            <small>EUR</small>
+          </article>
+        </section>
 
-        <PageSection
-          className="productsWorkspace quotesListSection"
-          eyebrow="Angebotsübersicht"
-          title="Aktuelle Angebote"
-          description={
-            data.quotes.length === 1
-              ? "1 Angebot in dieser Ansicht"
-              : `${data.quotes.length} Angebote in dieser Ansicht`
-          }
-        >
+        <section className="productsWorkspace quotesWorkspace">
+          <div className="productsWorkspaceHeader g-ui-section-header">
+            <div>
+              <p className="eyebrow">Angebotsübersicht</p>
+              <h2>Aktuelle Angebote</h2>
+              <span>
+                Angebote erstellen, prüfen und weiterbearbeiten.
+              </span>
+            </div>
+
+            <div className="productsWorkspaceCount">
+              <strong>{data.quotes.length}</strong>
+              <small>
+                {data.quotes.length === 1
+                  ? "von 1 Angebot"
+                  : `von ${data.quotes.length} Angeboten`}
+              </small>
+            </div>
+          </div>
           <Form
             method="get"
             className="productsFilters quotesFilterBar"
@@ -357,7 +371,7 @@ export default function QuotesPage() {
               </Link>
             </div>
           ) : (
-            <div className="quotesList">
+            <div className="productCardList quotesList">
               {data.quotes.map((quote: any) => (
                 <article
                   className="quoteCard"
@@ -434,7 +448,7 @@ export default function QuotesPage() {
               ))}
             </div>
           )}
-        </PageSection>
+        </section>
       </PageShell>
     </AppLayout>
   );
