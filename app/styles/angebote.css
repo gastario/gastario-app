@@ -339,3 +339,57 @@
     width: 100%;
   }
 }
+/*
+ * gastario-live-quotes-form-20260716
+ */
+
+.quotesEmptyState {
+  min-height: 260px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.quotesEmptyState > span {
+  color: #71817d;
+  font-size: 13px;
+}
+
+.quoteCreateForm {
+  display: grid;
+  gap: 18px;
+}
+
+.quoteFormGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.quoteFormFull {
+  grid-column: 1 / -1;
+}
+
+.quoteCreateForm textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.quoteCreateActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+@media (max-width: 900px) {
+  .quoteFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .quoteFormFull {
+    grid-column: auto;
+  }
+}

@@ -1,4 +1,4 @@
-﻿import { type RouteConfig, index, route } from "@react-router/dev/routes";
+import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
   index("routes/home.tsx"),
@@ -13,6 +13,8 @@ export default [
   route("import-pruefen", "routes/import-pruefen.tsx"),
   route("importe", "routes/importe.tsx"),
   route("angebote", "routes/angebote.tsx"),
+  route("angebote/neu", "routes/angebote.neu.tsx"),
+  route("angebote/:quoteId", "routes/angebote.$quoteId.tsx"),
   route("rechnungen", "routes/rechnungen.tsx"),
   route("rechnungen/neu", "routes/rechnungen.neu.tsx"),
   route("rechnungen/:invoiceId", "routes/rechnungen.$invoiceId.tsx"),

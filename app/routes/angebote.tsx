@@ -1,119 +1,219 @@
+import {
+  Form,
+  Link,
+  useLoaderData,
+} from "react-router";
 import AppLayout from "../components/AppLayout";
 import {
   MetricCard,
   MetricGrid,
+  Notice,
   PageHeader,
   PageSection,
   PageShell,
 } from "../components/ui/PageShell";
 import "../styles/angebote.css";
 
-type QuoteStatus =
-  | "Entwurf"
-  | "Versendet"
-  | "Bestätigt"
-  | "Wartet auf Rückmeldung";
-
-type Quote = {
-  number: string;
-  customer: string;
-  event: string;
-  date: string;
-  persons: string;
-  status: QuoteStatus;
-  valueCents: number;
-  nextStep: string;
-};
-
-const quotes: Quote[] = [
-  {
-    number: "AN-2026-0041",
-    customer: "Muster GmbH",
-    event: "Office Lunch",
-    date: "02.07.2026",
-    persons: "80 Personen",
-    status: "Versendet",
-    valueCents: 128000,
-    nextStep: "Rückmeldung abwarten",
-  },
-  {
-    number: "AN-2026-0042",
-    customer: "Eventagentur Berlin",
-    event: "Fingerfood-Empfang",
-    date: "05.07.2026",
-    persons: "120 Personen",
-    status: "Entwurf",
-    valueCents: 218000,
-    nextStep: "Positionen prüfen",
-  },
-  {
-    number: "AN-2026-0043",
-    customer: "ABC Consulting",
-    event: "Frühstück",
-    date: "08.07.2026",
-    persons: "45 Personen",
-    status: "Bestätigt",
-    valueCents: 76500,
-    nextStep: "Auftrag erstellen",
-  },
-  {
-    number: "AN-2026-0044",
-    customer: "Müller & Partner",
-    event: "Meeting-Catering",
-    date: "10.07.2026",
-    persons: "35 Personen",
-    status: "Wartet auf Rückmeldung",
-    valueCents: 94000,
-    nextStep: "Kundenentscheidung offen",
-  },
+const STATUS_OPTIONS = [
+  { value: "", label: "Alle Status" },
+  { value: "DRAFT", label: "Entwurf" },
+  { value: "SENT", label: "Versendet" },
+  { value: "WAITING", label: "Wartet auf Rückmeldung" },
+  { value: "CONFIRMED", label: "Bestätigt" },
+  { value: "REJECTED", label: "Abgelehnt" },
+  { value: "EXPIRED", label: "Abgelaufen" },
 ];
 
-function centsToEuro(value: number) {
-  return (value / 100).toLocaleString("de-DE", {
+function centsToEuro(value: number | null | undefined) {
+  return ((value || 0) / 100).toLocaleString("de-DE", {
     style: "currency",
     currency: "EUR",
   });
 }
 
-function statusClass(status: QuoteStatus) {
-  if (status === "Bestätigt") {
+function formatDate(value: string | Date | null | undefined) {
+  if (!value) return "Nicht festgelegt";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Nicht festgelegt";
+  }
+
+  return date.toLocaleDateString("de-DE");
+}
+
+function statusLabel(status: string) {
+  return (
+    STATUS_OPTIONS.find((option) => option.value === status)?.label ||
+    status
+  );
+}
+
+function statusClass(status: string) {
+  if (status === "CONFIRMED") {
     return "quoteStatus quoteStatus--confirmed";
   }
 
-  if (status === "Versendet") {
+  if (status === "SENT") {
     return "quoteStatus quoteStatus--sent";
   }
 
-  if (status === "Entwurf") {
+  if (status === "DRAFT") {
     return "quoteStatus quoteStatus--draft";
   }
 
+  if (status === "REJECTED" || status === "EXPIRED") {
+    return "quoteStatus quoteStatus--rejected";
+  }
+
   return "quoteStatus quoteStatus--waiting";
+}
+
+function nextStep(status: string) {
+  if (status === "DRAFT") return "Angebot prüfen und versenden";
+  if (status === "SENT") return "Rückmeldung abwarten";
+  if (status === "WAITING") return "Kundenentscheidung offen";
+  if (status === "CONFIRMED") return "In Auftrag übernehmen";
+  if (status === "REJECTED") return "Keine weitere Bearbeitung";
+  if (status === "EXPIRED") return "Gültigkeit prüfen";
+
+  return "Angebot bearbeiten";
 }
 
 export function meta() {
   return [{ title: "Angebote · Gastario" }];
 }
 
-export default function QuotesPage() {
-  const draftCount = quotes.filter(
-    (quote) => quote.status === "Entwurf"
-  ).length;
-
-  const sentCount = quotes.filter(
-    (quote) =>
-      quote.status === "Versendet" ||
-      quote.status === "Wartet auf Rückmeldung"
-  ).length;
-
-  const confirmedCount = quotes.filter(
-    (quote) => quote.status === "Bestätigt"
-  ).length;
-
-  const totalValueCents = quotes.reduce(
-    (total, quote) => total + quote.valueCents,
-    0
+export async function loader({ request }: { request: Request }) {
+  const { prisma } = await import("../lib/prisma.server");
+  const { getTenantAccess } = await import(
+    "../lib/features.server"
   );
+
+  const access = await getTenantAccess(request);
+  const url = new URL(request.url);
+
+  const searchQuery =
+    url.searchParams.get("q")?.trim() || "";
+
+  const activeStatus =
+    url.searchParams.get("status")?.trim() || "";
+
+  if (!access.tenantId || !access.tenant) {
+    return {
+      tenant: null,
+      setupError:
+        access.setupError || "Kein Mandant gefunden.",
+      quotes: [],
+      searchQuery,
+      activeStatus,
+      stats: {
+        total: 0,
+        drafts: 0,
+        active: 0,
+        confirmed: 0,
+        totalValueCents: 0,
+      },
+    };
+  }
+
+  const where: any = {
+    tenantId: access.tenantId,
+  };
+
+  if (activeStatus) {
+    where.status = activeStatus;
+  }
+
+  if (searchQuery) {
+    where.OR = [
+      {
+        quoteNumber: {
+          contains: searchQuery,
+          mode: "insensitive",
+        },
+      },
+      {
+        customerName: {
+          contains: searchQuery,
+          mode: "insensitive",
+        },
+      },
+      {
+        eventName: {
+          contains: searchQuery,
+          mode: "insensitive",
+        },
+      },
+      {
+        contactName: {
+          contains: searchQuery,
+          mode: "insensitive",
+        },
+      },
+    ];
+  }
+
+  const [quotes, allQuotes] = await Promise.all([
+    prisma.quote.findMany({
+      where,
+      include: {
+        customer: true,
+        items: {
+          orderBy: {
+            sortOrder: "asc",
+          },
+        },
+      },
+      orderBy: [
+        {
+          createdAt: "desc",
+        },
+      ],
+    }),
+
+    prisma.quote.findMany({
+      where: {
+        tenantId: access.tenantId,
+      },
+      select: {
+        status: true,
+        totalCents: true,
+      },
+    }),
+  ]);
+
+  const stats = {
+    total: allQuotes.length,
+    drafts: allQuotes.filter(
+      (quote: any) => quote.status === "DRAFT"
+    ).length,
+    active: allQuotes.filter((quote: any) =>
+      ["SENT", "WAITING"].includes(quote.status)
+    ).length,
+    confirmed: allQuotes.filter(
+      (quote: any) => quote.status === "CONFIRMED"
+    ).length,
+    totalValueCents: allQuotes.reduce(
+      (total: number, quote: any) =>
+        total + Number(quote.totalCents || 0),
+      0
+    ),
+  };
+
+  return {
+    tenant: access.tenant,
+    setupError: access.setupError,
+    quotes,
+    searchQuery,
+    activeStatus,
+    stats,
+  };
+}
+
+export default function QuotesPage() {
+  const data = useLoaderData<typeof loader>();
 
   return (
     <AppLayout>
@@ -123,55 +223,53 @@ export default function QuotesPage() {
           title="Angebote"
           subtitle={
             <>
-              Angebote erstellen, versenden, nachverfolgen und nach
-              Bestätigung in Aufträge überführen.
+              {data.tenant?.name || "Kein Mandant"} · Angebote
+              erstellen, versenden und nach Bestätigung in Aufträge
+              überführen.
             </>
           }
           actions={
-            <>
-              <button
-                type="button"
-                className="g-ui-button g-ui-button--secondary"
-              >
-                Vorlagen
-              </button>
-
-              <button
-                type="button"
-                className="g-ui-button g-ui-button--primary"
-              >
-                Neues Angebot
-              </button>
-            </>
+            <Link
+              to="/angebote/neu"
+              className="productsPrimaryButton g-ui-button g-ui-button--primary"
+            >
+              Neues Angebot
+            </Link>
           }
         />
+
+        {data.setupError ? (
+          <Notice type="warning">
+            {data.setupError}
+          </Notice>
+        ) : null}
 
         <MetricGrid>
           <MetricCard
             label="Angebote gesamt"
-            value={quotes.length}
-            description="in dieser Übersicht"
+            value={data.stats.total}
+            description="im Mandanten"
             badge="Gesamt"
           />
 
           <MetricCard
             label="Entwürfe"
-            value={draftCount}
+            value={data.stats.drafts}
             description="noch nicht versendet"
             badge="Offen"
           />
 
           <MetricCard
             label="In Klärung"
-            value={sentCount}
+            value={data.stats.active}
             description="versendet oder Rückmeldung offen"
             badge="Aktiv"
           />
 
           <MetricCard
             label="Angebotswert"
-            value={centsToEuro(totalValueCents)}
-            description={`${confirmedCount} bestätigt`}
+            value={centsToEuro(data.stats.totalValueCents)}
+            description={`${data.stats.confirmed} bestätigt`}
             badge="EUR"
           />
         </MetricGrid>
@@ -180,105 +278,161 @@ export default function QuotesPage() {
           className="quotesListSection"
           eyebrow="Angebotsübersicht"
           title="Aktuelle Angebote"
-          description={`${quotes.length} Angebote im System`}
+          description={
+            data.quotes.length === 1
+              ? "1 Angebot in dieser Ansicht"
+              : `${data.quotes.length} Angebote in dieser Ansicht`
+          }
         >
-          <div className="quotesFilterBar">
+          <Form
+            method="get"
+            className="quotesFilterBar"
+          >
             <label className="g-ui-field quotesSearchField">
               <span>Suche</span>
               <input
                 type="search"
+                name="q"
+                defaultValue={data.searchQuery}
                 placeholder="Nummer, Kunde oder Veranstaltung"
               />
             </label>
 
             <label className="g-ui-field">
               <span>Status</span>
-              <select defaultValue="">
-                <option value="">Alle Status</option>
-                <option value="DRAFT">Entwurf</option>
-                <option value="SENT">Versendet</option>
-                <option value="WAITING">
-                  Wartet auf Rückmeldung
-                </option>
-                <option value="CONFIRMED">Bestätigt</option>
+              <select
+                name="status"
+                defaultValue={data.activeStatus}
+              >
+                {STATUS_OPTIONS.map((option) => (
+                  <option
+                    key={option.value || "all"}
+                    value={option.value}
+                  >
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </label>
 
             <button
-              type="button"
+              type="submit"
               className="g-ui-button g-ui-button--primary"
             >
               Anzeigen
             </button>
 
-            <button
-              type="button"
+            <Link
+              to="/angebote"
               className="g-ui-button g-ui-button--secondary"
             >
               Zurücksetzen
-            </button>
-          </div>
+            </Link>
+          </Form>
 
-          <div className="quotesList">
-            {quotes.map((quote) => (
-              <article
-                className="quoteCard"
-                key={quote.number}
+          {data.quotes.length === 0 ? (
+            <div className="g-ui-empty quotesEmptyState">
+              <div
+                className="quoteIcon"
+                aria-hidden="true"
               >
-                <div className="quoteIdentity">
-                  <div className="quoteIcon" aria-hidden="true">
-                    A
-                  </div>
+                A
+              </div>
 
-                  <div className="quoteIdentityText">
-                    <div className="quoteNumber">
-                      {quote.number}
+              <strong>
+                Noch keine passenden Angebote vorhanden
+              </strong>
+
+              <span>
+                Lege ein neues Angebot an oder setze die Filter
+                zurück.
+              </span>
+
+              <Link
+                to="/angebote/neu"
+                className="g-ui-button g-ui-button--primary"
+              >
+                Erstes Angebot anlegen
+              </Link>
+            </div>
+          ) : (
+            <div className="quotesList">
+              {data.quotes.map((quote: any) => (
+                <article
+                  className="quoteCard"
+                  key={quote.id}
+                >
+                  <div className="quoteIdentity">
+                    <div
+                      className="quoteIcon"
+                      aria-hidden="true"
+                    >
+                      A
                     </div>
 
-                    <h3>{quote.customer}</h3>
+                    <div className="quoteIdentityText">
+                      <div className="quoteNumber">
+                        {quote.quoteNumber}
+                      </div>
 
-                    <p>{quote.event}</p>
+                      <h3>{quote.customerName}</h3>
 
-                    <span>{quote.persons}</span>
+                      <p>
+                        {quote.eventName ||
+                          "Keine Veranstaltung angegeben"}
+                      </p>
+
+                      <span>
+                        {quote.items.length === 1
+                          ? "1 Position"
+                          : `${quote.items.length} Positionen`}
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                <div className="quoteDetails">
-                  <div>
-                    <span>Veranstaltung</span>
-                    <strong>{quote.event}</strong>
+                  <div className="quoteDetails">
+                    <div>
+                      <span>Veranstaltung</span>
+                      <strong>
+                        {quote.eventName || "Nicht angegeben"}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>Datum</span>
+                      <strong>
+                        {formatDate(quote.eventDate)}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>Nächster Schritt</span>
+                      <strong>
+                        {nextStep(quote.status)}
+                      </strong>
+                    </div>
                   </div>
 
-                  <div>
-                    <span>Datum</span>
-                    <strong>{quote.date}</strong>
+                  <div className="quoteCommercial">
+                    <em className={statusClass(quote.status)}>
+                      {statusLabel(quote.status)}
+                    </em>
+
+                    <strong>
+                      {centsToEuro(quote.totalCents)}
+                    </strong>
+
+                    <Link
+                      to={`/angebote/${quote.id}`}
+                      className="g-ui-button g-ui-button--secondary"
+                    >
+                      Öffnen
+                    </Link>
                   </div>
-
-                  <div>
-                    <span>Nächster Schritt</span>
-                    <strong>{quote.nextStep}</strong>
-                  </div>
-                </div>
-
-                <div className="quoteCommercial">
-                  <em className={statusClass(quote.status)}>
-                    {quote.status}
-                  </em>
-
-                  <strong>
-                    {centsToEuro(quote.valueCents)}
-                  </strong>
-
-                  <button
-                    type="button"
-                    className="g-ui-button g-ui-button--secondary"
-                  >
-                    Öffnen
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
+                </article>
+              ))}
+            </div>
+          )}
         </PageSection>
       </PageShell>
     </AppLayout>
