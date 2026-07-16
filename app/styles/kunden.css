@@ -99,9 +99,9 @@
   min-width: 0;
   display: grid;
   grid-template-columns:
-    minmax(245px, 1.1fr)
-    minmax(340px, 1.4fr)
-    auto;
+    minmax(245px, 1.05fr)
+    minmax(340px, 1.55fr)
+    128px;
   align-items: stretch;
   overflow: hidden;
   border: 1px solid #dce6e4;
@@ -264,7 +264,7 @@
    ========================================================= */
 
 .customerCardActions {
-  min-width: 142px;
+  min-width: 128px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -294,11 +294,8 @@
 }
 
 .customerEditDetails[open] {
-  grid-column: 1 / -1;
-  width: auto;
-  margin:
-    0
-    calc(-1 * (245px + 340px + 168px));
+  width: 100%;
+  margin: 0;
 }
 
 /*
@@ -337,6 +334,83 @@
 
 .customerEditActions .g-ui-button {
   width: auto;
+}
+
+/*
+ * gastario-customer-edit-layout-fix-20260716
+ *
+ * Die geschlossene Kundenkarte bleibt kompakt.
+ * Beim Bearbeiten wird nur diese Karte sauber untereinander aufgebaut.
+ */
+
+.customerCard:has(.customerEditDetails[open]) {
+  grid-template-columns: 1fr;
+}
+
+.customerCard:has(.customerEditDetails[open])
+  .customerCardHeader {
+  grid-column: 1;
+  min-height: auto;
+  border-right: 0;
+  border-bottom: 1px solid #e2eae8;
+}
+
+.customerCard:has(.customerEditDetails[open])
+  .customerDetails {
+  grid-column: 1;
+  border-right: 0;
+  border-bottom: 1px solid #e2eae8;
+}
+
+.customerCard:has(.customerEditDetails[open])
+  .customerCardActions {
+  grid-column: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 10px;
+  padding: 14px;
+}
+
+.customerCard:has(.customerEditDetails[open])
+  .customerEditDetails {
+  width: 100%;
+}
+
+.customerCard:has(.customerEditDetails[open])
+  .customerEditDetails > summary {
+  width: max-content;
+  min-width: 118px;
+  margin-left: auto;
+}
+
+.customerCard:has(.customerEditDetails[open])
+  .customerEditForm {
+  width: 100%;
+}
+
+.customerCard:has(.customerEditDetails[open])
+  .customerCardActions > form {
+  width: auto;
+  align-self: start;
+  margin-top: 0;
+}
+
+/*
+ * Gefährliche Aktion nicht im Gastario-Grün darstellen.
+ */
+.customerCardActions .g-ui-button--danger {
+  border-color: #efc5c1 !important;
+  background: #fff5f4 !important;
+  color: #b42318 !important;
+  box-shadow: none !important;
+}
+
+.customerCardActions .g-ui-button--danger:hover {
+  border-color: #e7aaa4 !important;
+  background: #feeceb !important;
+  color: #912018 !important;
 }
 
 /* =========================================================
