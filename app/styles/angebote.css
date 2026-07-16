@@ -1,0 +1,341 @@
+/*
+ * gastario-quotes-reference-design-20260716
+ *
+ * Angebotsübersicht im gemeinsamen Gastario-Design
+ * von Kunden, Produkten und Auftragseingang.
+ */
+
+.quotesPage {
+  max-width: 1540px;
+}
+
+.quotesFilterBar {
+  display: grid;
+  grid-template-columns:
+    minmax(300px, 1.6fr)
+    minmax(190px, 0.7fr)
+    auto
+    auto;
+  align-items: end;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 1px solid #dce6e4;
+  border-radius: 13px;
+  background: #f8faf9;
+}
+
+.quotesFilterBar input,
+.quotesFilterBar select {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid #cbd9d6;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #183d35;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.quotesFilterBar input {
+  padding: 0 11px;
+}
+
+.quotesFilterBar select {
+  padding: 0 10px;
+}
+
+.quotesFilterBar input:focus,
+.quotesFilterBar select:focus {
+  border-color: #72b6a5;
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(13, 155, 121, 0.1);
+}
+
+.quotesFilterBar .g-ui-button {
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.quotesList {
+  display: grid;
+  gap: 10px;
+}
+
+.quoteCard {
+  min-width: 0;
+  display: grid;
+  grid-template-columns:
+    minmax(245px, 1fr)
+    minmax(420px, 1.65fr)
+    minmax(180px, 0.65fr);
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid #dce6e4;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: none;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.quoteCard:hover {
+  transform: translateY(-1px);
+  border-color: #afc7c1;
+  box-shadow:
+    0 8px 20px rgba(24, 67, 57, 0.06);
+}
+
+.quoteIdentity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-right: 1px solid #e2eae8;
+  background:
+    linear-gradient(
+      145deg,
+      #f4faf8 0%,
+      #ffffff 82%
+    );
+}
+
+.quoteIcon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid #cfe1dd;
+  border-radius: 11px;
+  background: #eaf7f3;
+  color: #0b8066;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.quoteIdentityText {
+  min-width: 0;
+}
+
+.quoteNumber {
+  margin-bottom: 4px;
+  color: #08715a;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.quoteIdentity h3 {
+  overflow: hidden;
+  margin: 0;
+  color: #203f38;
+  font-size: 14px;
+  font-weight: 780;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quoteIdentity p {
+  overflow: hidden;
+  margin: 4px 0;
+  color: #5c726c;
+  font-size: 11.5px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quoteIdentity span {
+  color: #7b8d89;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.quoteDetails {
+  min-width: 0;
+  display: grid;
+  grid-template-columns:
+    minmax(150px, 1fr)
+    minmax(105px, 0.65fr)
+    minmax(190px, 1.25fr);
+  gap: 8px;
+  padding: 13px;
+  border-right: 1px solid #e2eae8;
+}
+
+.quoteDetails > div {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding: 9px 10px;
+  border: 1px solid #e2eae8;
+  border-radius: 10px;
+  background: #f8faf9;
+}
+
+.quoteDetails span {
+  color: #7b8d89;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.quoteDetails strong {
+  overflow: hidden;
+  color: #314844;
+  font-size: 11px;
+  font-weight: 680;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+}
+
+.quoteCommercial {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  justify-items: stretch;
+  gap: 9px;
+  padding: 13px;
+}
+
+.quoteCommercial > strong {
+  color: #173f37;
+  font-size: 16px;
+  font-weight: 820;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.quoteStatus {
+  justify-self: end;
+  min-height: 23px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border: 1px solid #d8e4e1;
+  border-radius: 999px;
+  background: #f7faf9;
+  color: #526963;
+  font-size: 8.5px;
+  font-style: normal;
+  font-weight: 850;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.quoteStatus--confirmed {
+  border-color: #bde3d5;
+  background: #edf9f4;
+  color: #137056;
+}
+
+.quoteStatus--sent {
+  border-color: #c7d9ee;
+  background: #f0f6fc;
+  color: #315f8a;
+}
+
+.quoteStatus--draft {
+  border-color: #d8e1df;
+  background: #f7faf9;
+  color: #60736e;
+}
+
+.quoteStatus--waiting {
+  border-color: #ead6ad;
+  background: #fff9eb;
+  color: #8a641b;
+}
+
+.quoteCommercial .g-ui-button {
+  width: 100%;
+  min-height: 36px;
+}
+
+@media (max-width: 1120px) {
+  .quotesFilterBar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quotesSearchField {
+    grid-column: span 2;
+  }
+
+  .quoteCard {
+    grid-template-columns:
+      minmax(220px, 0.85fr)
+      minmax(380px, 1.45fr);
+  }
+
+  .quoteCommercial {
+    grid-column: 1 / -1;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    border-top: 1px solid #e2eae8;
+  }
+
+  .quoteCommercial > strong {
+    text-align: center;
+  }
+
+  .quoteCommercial .g-ui-button {
+    width: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .quotesFilterBar {
+    grid-template-columns: 1fr;
+  }
+
+  .quotesSearchField {
+    grid-column: auto;
+  }
+
+  .quotesFilterBar .g-ui-button {
+    width: 100%;
+  }
+
+  .quoteCard {
+    grid-template-columns: 1fr;
+  }
+
+  .quoteIdentity,
+  .quoteDetails {
+    border-right: 0;
+    border-bottom: 1px solid #e2eae8;
+  }
+
+  .quoteDetails {
+    grid-template-columns: 1fr;
+  }
+
+  .quoteCommercial {
+    grid-column: 1;
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+  }
+
+  .quoteStatus {
+    justify-self: start;
+  }
+
+  .quoteCommercial > strong {
+    text-align: left;
+  }
+
+  .quoteCommercial .g-ui-button {
+    width: 100%;
+  }
+}
