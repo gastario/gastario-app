@@ -999,52 +999,242 @@ function isDeliveryOverviewAllergenOrDetailLine(
   return matches >= 2 && looksLikeList;
 }
 
-function parseDeliveryOverviewLabelsFromText(rawText: string, dishDetailsMap: Record<string, string> = DELIVERY_OVERVIEW_DISH_DETAILS, sourceFileName = "", customerOverride = ""): HeycaterLabelData[] {
+/*
+ * gastario-delivery-overview-continuation-fix-20260716
+ *
+ * Erkennt umgebrochene Gerichtsbestandteile wie:
+ *
+ * Alex Butenko 1x Beef Meatballs with Cream Sauce, Butter
+ * Vegetables and Mashed Potatoes
+ *
+ * Die zweite Zeile wird an das vorherige Gericht angehängt und
+ * nicht mehr als Name der nächsten Person interpretiert.
+ */
+function isDeliveryOverviewMealContinuationLine(
+  value: string
+) {
+  const line = cleanLine(value);
+  const lower = normalize(line);
+
+  if (!line) return false;
+  if (/\b\d+x\b/i.test(line)) return false;
+  if (isDeliveryOverviewMetaLine(line)) return false;
+  if (isDeliveryOverviewAllergenOrDetailLine(line)) {
+    return false;
+  }
+
+  const continuationSignals = [
+    "vegetable",
+    "vegetables",
+    "gemuese",
+    "gemüse",
+    "mashed potato",
+    "mashed potatoes",
+    "potato",
+    "potatoes",
+    "kartoffel",
+    "kartoffeln",
+    "side salad",
+    "salad",
+    "salat",
+    "rice",
+    "reis",
+    "noodle",
+    "noodles",
+    "nudeln",
+    "sauce",
+    "cream sauce",
+    "tomato sauce",
+    "soße",
+    "sosse",
+    "dip",
+    "topping",
+    "with ",
+    "mit ",
+    "and ",
+    "und ",
+    "served with",
+    "dazu",
+    "beilage",
+  ];
+
+  return continuationSignals.some(
+    (signal) => lower.includes(signal)
+  );
+}
+
+function parseDeliveryOverviewLabelsFromText(
+  rawText: string,
+  dishDetailsMap: Record<string, string> =
+    DELIVERY_OVERVIEW_DISH_DETAILS,
+  sourceFileName = "",
+  customerOverride = ""
+): HeycaterLabelData[] {
   const lines = String(rawText || "")
     .split(/\r?\n/)
     .map(cleanLine)
     .filter(Boolean);
 
-  const date = extractDeliveryOverviewDate(rawText);
-  const address = extractDeliveryOverviewAddress(lines);
-  const customer = extractDeliveryOverviewCustomer(rawText, sourceFileName, customerOverride);
+  const date =
+    extractDeliveryOverviewDate(rawText);
+
+  const address =
+    extractDeliveryOverviewAddress(lines);
+
+  const customer =
+    extractDeliveryOverviewCustomer(
+      rawText,
+      sourceFileName,
+      customerOverride
+    );
+
   const labels: HeycaterLabelData[] = [];
   const pendingNameParts: string[] = [];
-  let pendingQuantityName: { name: string; quantity: number } | null = null;
 
-  for (const line of lines) {
-    if (isDeliveryOverviewMetaLine(line)) continue;
+  let pendingQuantityName: {
+    name: string;
+    quantity: number;
+  } | null = null;
 
-    // Variante: Akash Gupta 1x Vegan Vegetable Paella with Side Salad
-    const quantityBeforeDishMatch = line.match(/^(.*?)\s+(\d+)x\s+(.+)$/i);
+  let pendingOrder: {
+    name: string;
+    meal: string;
+    quantity: number;
+  } | null = null;
+
+  const flushPendingOrder = () => {
+    if (!pendingOrder) {
+      return;
+    }
+
+    pushDeliveryOverviewLabels(labels, {
+      name: pendingOrder.name,
+      meal: pendingOrder.meal,
+      quantity: pendingOrder.quantity,
+      date,
+      address,
+      customer,
+      dishDetailsMap,
+    });
+
+    pendingOrder = null;
+  };
+
+  for (const rawLine of lines) {
+    const line = cleanLine(rawLine);
+
+    if (isDeliveryOverviewMetaLine(line)) {
+      continue;
+    }
+
+    /*
+     * Eine reine Fortsetzungszeile gehört zum zuletzt
+     * erkannten, aber noch nicht gespeicherten Gericht.
+     */
+    if (
+      pendingOrder &&
+      isDeliveryOverviewMealContinuationLine(line)
+    ) {
+      pendingOrder.meal = cleanLine(
+        pendingOrder.meal + " " + line
+      );
+
+      continue;
+    }
+
+    /*
+     * Variante:
+     * Akash Gupta 1x Vegan Vegetable Paella
+     */
+    const quantityBeforeDishMatch =
+      line.match(/^(.*?)\s+(\d+)x\s+(.+)$/i);
+
     if (quantityBeforeDishMatch) {
-      const inlineName = cleanLine(quantityBeforeDishMatch[1]);
-      const quantity = Number(quantityBeforeDishMatch[2]);
-      const meal = cleanLine(quantityBeforeDishMatch[3]);
+      flushPendingOrder();
 
-      pushDeliveryOverviewLabels(labels, {
-        name: cleanLine([...pendingNameParts, inlineName].filter(Boolean).join(" ")),
+      const inlineName = cleanLine(
+        quantityBeforeDishMatch[1]
+      );
+
+      const quantity = Number(
+        quantityBeforeDishMatch[2]
+      );
+
+      const meal = cleanLine(
+        quantityBeforeDishMatch[3]
+      );
+
+      pendingOrder = {
+        name: cleanLine(
+          [
+            ...pendingNameParts,
+            inlineName,
+          ]
+            .filter(Boolean)
+            .join(" ")
+        ),
         meal,
         quantity,
-        date,
-        address,
-        customer,
-        dishDetailsMap,
-      });
+      };
 
       pendingNameParts.length = 0;
       pendingQuantityName = null;
       continue;
     }
 
-    // Variante: Andrea De Maio 1x
-    // nächste Zeile: Vegan Harissa Bowl
-    const quantityOnlyMatch = line.match(/^(.*?)\s+(\d+)x$/i);
-    if (quantityOnlyMatch) {
-      pendingQuantityName = {
-        name: cleanLine([...pendingNameParts, quantityOnlyMatch[1]].filter(Boolean).join(" ")),
-        quantity: Number(quantityOnlyMatch[2]),
+    /*
+     * Variante:
+     * Akhil Jacob Lemon Chicken Bowl 1x
+     *
+     * Hierfür nutzen wir die vorhandene Gerichtslogik.
+     */
+    const parsedKnownDish =
+      parseDeliveryOverviewOrderLine(
+        line,
+        pendingNameParts,
+        Object.keys(dishDetailsMap)
+          .sort((a, b) => b.length - a.length)
+      );
+
+    if (parsedKnownDish) {
+      flushPendingOrder();
+
+      pendingOrder = {
+        name: parsedKnownDish.name,
+        meal: parsedKnownDish.meal,
+        quantity: parsedKnownDish.quantity,
       };
+
+      pendingNameParts.length = 0;
+      pendingQuantityName = null;
+      continue;
+    }
+
+    /*
+     * Variante:
+     * Andrea De Maio 1x
+     * nächste Zeile: Vegan Harissa Bowl
+     */
+    const quantityOnlyMatch =
+      line.match(/^(.*?)\s+(\d+)x$/i);
+
+    if (quantityOnlyMatch) {
+      flushPendingOrder();
+
+      pendingQuantityName = {
+        name: cleanLine(
+          [
+            ...pendingNameParts,
+            quantityOnlyMatch[1],
+          ]
+            .filter(Boolean)
+            .join(" ")
+        ),
+        quantity: Number(
+          quantityOnlyMatch[2]
+        ),
+      };
+
       pendingNameParts.length = 0;
       continue;
     }
@@ -1052,33 +1242,47 @@ function parseDeliveryOverviewLabelsFromText(rawText: string, dishDetailsMap: Re
     if (pendingQuantityName) {
       /*
        * Allergen- oder Hinweiszeilen überspringen.
-       * Name und Menge bleiben gespeichert, bis das echte Gericht folgt.
+       * Name und Menge bleiben gespeichert, bis das
+       * tatsächliche Gericht folgt.
        */
       if (
-        isDeliveryOverviewAllergenOrDetailLine(line)
+        isDeliveryOverviewAllergenOrDetailLine(
+          line
+        )
       ) {
         continue;
       }
 
-      pushDeliveryOverviewLabels(labels, {
+      flushPendingOrder();
+
+      pendingOrder = {
         name: pendingQuantityName.name,
         meal: line,
         quantity: pendingQuantityName.quantity,
-        date,
-        address,
-        customer,
-        dishDetailsMap,
-      });
+      };
 
       pendingQuantityName = null;
       continue;
     }
 
+    /*
+     * Normale Namenszeilen nur dann vormerken, wenn
+     * sie keine Fortsetzung des letzten Gerichts sind.
+     */
     if (looksLikeNamePart(line)) {
+      flushPendingOrder();
       pendingNameParts.push(line);
       continue;
     }
+
+    /*
+     * Unbekannte Zeilen dürfen nicht als Name der
+     * nächsten Person weitergereicht werden.
+     */
+    flushPendingOrder();
   }
+
+  flushPendingOrder();
 
   if (pendingQuantityName) {
     pushDeliveryOverviewLabels(labels, {
