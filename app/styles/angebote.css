@@ -1,7 +1,7 @@
 /*
  * gastario-quotes-reference-design-20260716
  *
- * AngebotsÃ¼bersicht im gemeinsamen Gastario-Design
+ * AngebotsÃƒÂ¼bersicht im gemeinsamen Gastario-Design
  * von Kunden, Produkten und Auftragseingang.
  */
 
@@ -116,7 +116,7 @@
   background: #eaf7f3;
   color: #0b8066;
   font-size: 14px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .quoteIdentityText {
@@ -127,7 +127,7 @@
   margin-bottom: 4px;
   color: #08715a;
   font-size: 9px;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0.055em;
   text-transform: uppercase;
 }
@@ -185,7 +185,7 @@
 .quoteDetails span {
   color: #7b8d89;
   font-size: 8.5px;
-  font-weight: 800;
+  font-weight: 650;
   letter-spacing: 0.045em;
   text-transform: uppercase;
 }
@@ -211,7 +211,7 @@
 .quoteCommercial > strong {
   color: #173f37;
   font-size: 16px;
-  font-weight: 820;
+  font-weight: 700;
   text-align: right;
   white-space: nowrap;
 }
@@ -228,7 +228,7 @@
   color: #526963;
   font-size: 8.5px;
   font-style: normal;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0.035em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -342,7 +342,7 @@
 /*
  * gastario-quotes-product-reference-final-20260716
  *
- * Angebotsübersicht und Angebotsformular verwenden
+ * AngebotsÃ¼bersicht und Angebotsformular verwenden
  * exakt dieselbe Farb- und Formensprache wie Produkte.
  */
 
@@ -405,7 +405,7 @@
   background: #f7fafb !important;
 }
 
-/* Übersicht und Filter */
+/* Ãœbersicht und Filter */
 
 .quotesListSection {
   overflow: hidden;
@@ -505,7 +505,7 @@
 }
 
 /*
- * Browser-Fieldset vollständig neutralisieren.
+ * Browser-Fieldset vollstÃ¤ndig neutralisieren.
  * Dadurch verschwinden die grauen Standardrahmen.
  */
 
@@ -674,4 +674,85 @@
     align-items: stretch;
     flex-direction: column-reverse;
   }
+}
+/*
+ * gastario-quotes-typography-match-products-20260716
+ *
+ * Angebotsansichten erhalten dieselbe Schriftwirkung
+ * wie Produkte und Kunden.
+ */
+
+.quotesPage {
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.quotesPage .g-ui-page-header h1 {
+  font-size: 34px !important;
+  font-weight: 700 !important;
+  line-height: 1.08 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.quotesPage .g-ui-section-header h2 {
+  font-size: 23px !important;
+  font-weight: 700 !important;
+  line-height: 1.16 !important;
+  letter-spacing: -0.025em !important;
+}
+
+.quotesPage h3,
+.quotesPage .quoteIdentityText h3 {
+  font-weight: 650 !important;
+  letter-spacing: -0.015em !important;
+}
+
+.quotesPage .quoteNumber,
+.quotesPage .quoteStatus,
+.quotesPage .g-ui-eyebrow {
+  font-weight: 700 !important;
+}
+
+.quotesPage p,
+.quotesPage span,
+.quotesPage small {
+  font-weight: 400;
+}
+
+.quotesPage strong {
+  font-weight: 650;
+}
+
+.quotesPage button,
+.quotesPage a.g-ui-button,
+.quotesPage .quotePrimaryButton,
+.quotesPage .quoteSecondaryButton {
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif !important;
+  font-weight: 650 !important;
+}
+
+.quotesPage input,
+.quotesPage select,
+.quotesPage textarea {
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif !important;
+  font-weight: 400 !important;
+}
+
+.quotesPage label > span,
+.quotesPage legend {
+  font-weight: 600 !important;
 }
