@@ -114,64 +114,131 @@ export default function AppLayout({ children }: AppLayoutProps) {
     return activeGroup?.id || "overview";
   }, [currentPathWithSearch]);
 
-  const [openGroupId, setOpenGroupId] = useState<string>(
-    activeGroupId
-  );
+  /*
+   * gastario-sidebar-multi-open-exact-20260716
+   *
+   * Mehrere Navigationsgruppen dürfen gleichzeitig offen sein.
+   * Die Auswahl wird als Array im Browser gespeichert.
+   */
+  const [openGroupIds, setOpenGroupIds] =
+    useState<string[]>(() => {
+      if (
+        activeGroupId &&
+        activeGroupId !== "overview"
+      ) {
+        return [activeGroupId];
+      }
+
+      return [];
+    });
 
   useEffect(() => {
-    const storedGroup =
+    const storedValue =
       window.localStorage.getItem(
-        "gastario-open-navigation-group"
+        "gastario-open-navigation-groups"
       );
 
-    if (
-      activeGroupId &&
-      activeGroupId !== "overview"
-    ) {
-      setOpenGroupId(activeGroupId);
-      return;
+    let storedGroupIds: string[] = [];
+
+    if (storedValue) {
+      try {
+        const parsedValue =
+          JSON.parse(storedValue);
+
+        if (Array.isArray(parsedValue)) {
+          storedGroupIds =
+            parsedValue.filter(
+              (value): value is string =>
+                typeof value === "string" &&
+                value !== "overview" &&
+                navigationGroups.some(
+                  (group) =>
+                    group.id === value
+                )
+            );
+        }
+      } catch {
+        storedGroupIds = [];
+      }
     }
 
-    if (
-      storedGroup &&
-      navigationGroups.some(
-        (group) => group.id === storedGroup
+    const initialGroupIds =
+      activeGroupId &&
+      activeGroupId !== "overview"
+        ? [
+            ...storedGroupIds,
+            activeGroupId,
+          ]
+        : storedGroupIds;
+
+    setOpenGroupIds(
+      Array.from(
+        new Set(initialGroupIds)
       )
-    ) {
-      setOpenGroupId(storedGroup);
-    }
+    );
+
+    /*
+     * Alten Einzelwert nach erfolgreicher Umstellung entfernen.
+     */
+    window.localStorage.removeItem(
+      "gastario-open-navigation-group"
+    );
   }, []);
 
   useEffect(() => {
     if (
-      activeGroupId &&
-      activeGroupId !== "overview"
+      !activeGroupId ||
+      activeGroupId === "overview"
     ) {
-      setOpenGroupId(activeGroupId);
+      return;
     }
+
+    setOpenGroupIds((currentGroupIds) => {
+      if (
+        currentGroupIds.includes(activeGroupId)
+      ) {
+        return currentGroupIds;
+      }
+
+      const nextGroupIds = [
+        ...currentGroupIds,
+        activeGroupId,
+      ];
+
+      window.localStorage.setItem(
+        "gastario-open-navigation-groups",
+        JSON.stringify(nextGroupIds)
+      );
+
+      return nextGroupIds;
+    });
   }, [activeGroupId]);
 
-  const toggleNavigationGroup = (groupId: string) => {
+  const toggleNavigationGroup = (
+    groupId: string
+  ) => {
     if (groupId === "overview") {
       return;
     }
 
-    setOpenGroupId((currentGroupId) => {
-      const nextGroupId =
-        currentGroupId === groupId ? "" : groupId;
+    setOpenGroupIds((currentGroupIds) => {
+      const nextGroupIds =
+        currentGroupIds.includes(groupId)
+          ? currentGroupIds.filter(
+              (currentGroupId) =>
+                currentGroupId !== groupId
+            )
+          : [
+              ...currentGroupIds,
+              groupId,
+            ];
 
-      if (nextGroupId) {
-        window.localStorage.setItem(
-          "gastario-open-navigation-group",
-          nextGroupId
-        );
-      } else {
-        window.localStorage.removeItem(
-          "gastario-open-navigation-group"
-        );
-      }
+      window.localStorage.setItem(
+        "gastario-open-navigation-groups",
+        JSON.stringify(nextGroupIds)
+      );
 
-      return nextGroupId;
+      return nextGroupIds;
     });
   };
 
@@ -692,8 +759,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
           overflow-x: hidden;
           overflow-y: auto;
           padding: 18px 14px 16px !important;
-          border-right: 1px solid #dfe7e5 !important;
-          background: #fbfcfc !important;
+          border-right: 1px solid #d7e5e1 !important;
+          background:
+            linear-gradient(
+              180deg,
+              #fbfdfc 0%,
+              #f6faf8 100%
+            ) !important;
           box-shadow: none !important;
           font-family:
             Inter,
@@ -711,7 +783,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           align-items: center;
           margin: 0 0 14px !important;
           padding: 2px 10px 16px !important;
-          border-bottom: 1px solid #e5ecea;
+          border-bottom: 1px solid #dce8e5;
         }
 
         .brandLogo {
@@ -724,7 +796,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           flex: 1;
           display: grid;
           align-content: start;
-          gap: 4px !important;
+          gap: 6px !important;
           padding: 0 !important;
         }
 
@@ -737,7 +809,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         .navAccordionStaticLabel,
         .navAccordionTrigger {
           width: 100%;
-          min-height: 42px !important;
+          min-height: 43px !important;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -745,11 +817,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
           margin: 0;
           padding: 0 11px !important;
           border: 1px solid transparent !important;
-          border-radius: 9px !important;
+          border-radius: 11px !important;
           background: transparent !important;
-          color: #394b48 !important;
+          color: #314844 !important;
           font: inherit !important;
-          font-size: 13px !important;
+          font-size: 13.5px !important;
           font-weight: 650 !important;
           letter-spacing: -0.012em !important;
           line-height: 1.25 !important;
@@ -780,8 +852,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
           .navAccordionTrigger,
         .navAccordionGroup.hasActiveItem
           .navAccordionTrigger {
-          border-color: transparent !important;
-          background: #f3f7f6 !important;
+          border-color: #d4e7e1 !important;
+          background:
+            linear-gradient(
+              135deg,
+              #eaf6f2 0%,
+              #f4faf8 100%
+            ) !important;
           color: #075b48 !important;
           font-weight: 700 !important;
           box-shadow: none !important;
@@ -816,7 +893,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           gap: 1px !important;
           margin: 0 0 4px !important;
           padding: 2px 0 3px 12px !important;
-          border-left: 1px solid #dfe8e5;
+          border-left: 1px solid #cfe1dc;
         }
 
         .navAccordionItems[hidden] {
@@ -833,9 +910,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
           border: 1px solid transparent !important;
           border-radius: 8px !important;
           background: transparent !important;
-          color: #455552 !important;
+          color: #3f524e !important;
           font: inherit !important;
-          font-size: 12.5px !important;
+          font-size: 13px !important;
           font-weight: 500 !important;
           letter-spacing: -0.01em !important;
           line-height: 1.3 !important;
@@ -860,12 +937,18 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
         .navAccordionItems a.active {
           border-color: #d6e6e1 !important;
-          background: #edf7f3 !important;
+          background:
+            linear-gradient(
+              135deg,
+              #e7f5f0 0%,
+              #f3faf7 100%
+            ) !important;
           color: #075b48 !important;
           font-size: 12.5px !important;
           font-weight: 700 !important;
           box-shadow:
-            inset 3px 0 0 #e5a400 !important;
+            inset 3px 0 0 #f2a900,
+            0 5px 14px rgba(24, 96, 76, 0.06) !important;
         }
 
         .sidebarFooter {
@@ -931,7 +1014,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
             const isOpen =
               isOverview ||
-              openGroupId === group.id ||
+              openGroupIds.includes(group.id) ||
               groupContainsActiveItem;
 
             return (
