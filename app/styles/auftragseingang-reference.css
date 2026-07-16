@@ -1,0 +1,561 @@
+/*
+ * gastario-incoming-reference-design-20260716
+ *
+ * Finale Gestaltungsebene für die Eingangszentrale.
+ * Diese Datei wird nach der historischen auftragseingang.css geladen.
+ */
+
+.inboxFinalPage {
+  width: 100% !important;
+  max-width: 1540px !important;
+  margin: 0 auto !important;
+  padding: 28px 30px 48px !important;
+  color: #183f37 !important;
+}
+
+/* =========================================================
+   Seitenkopf
+   ========================================================= */
+
+.inboxFinalPage .finalHeader {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 24px !important;
+  margin: 0 0 22px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.inboxFinalPage .finalEyebrow {
+  margin: 0 0 5px !important;
+  color: #08715a !important;
+  font-size: 10px !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.075em !important;
+  text-transform: uppercase !important;
+}
+
+.inboxFinalPage .finalHeader h1 {
+  margin: 0 0 6px !important;
+  color: #123b33 !important;
+  font-size: clamp(27px, 2.4vw, 36px) !important;
+  font-weight: 760 !important;
+  line-height: 1.08 !important;
+  letter-spacing: -0.025em !important;
+}
+
+.inboxFinalPage .finalHeader > div:first-child > p {
+  max-width: 780px !important;
+  margin: 0 !important;
+  color: #71827e !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  line-height: 1.55 !important;
+}
+
+.inboxFinalPage .finalMiniSummary {
+  display: none !important;
+}
+
+.inboxFinalPage .finalHeaderActions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+}
+
+.inboxFinalPage .finalGhost,
+.inboxFinalPage .finalPrimary {
+  min-height: 42px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 0 16px !important;
+  border-radius: 10px !important;
+  font-size: 11.5px !important;
+  font-weight: 760 !important;
+  box-shadow: none !important;
+}
+
+.inboxFinalPage .finalGhost {
+  border: 1px solid #cbd9d6 !important;
+  background: #ffffff !important;
+  color: #36574f !important;
+}
+
+.inboxFinalPage .finalGhost.isLive {
+  border-color: #b8dbd2 !important;
+  background: #edf8f5 !important;
+  color: #08715a !important;
+}
+
+.inboxFinalPage .finalGhost > span {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 999px !important;
+  background: #87a49c !important;
+}
+
+.inboxFinalPage .finalGhost.isLive > span {
+  background: #10a37f !important;
+  box-shadow: 0 0 0 4px rgba(16, 163, 127, 0.11) !important;
+}
+
+.inboxFinalPage .finalPrimary {
+  border: 1px solid #0d9875 !important;
+  background: #10a37f !important;
+  color: #ffffff !important;
+}
+
+.inboxFinalPage .finalPrimary:hover {
+  border-color: #0a8465 !important;
+  background: #0d9270 !important;
+}
+
+/* =========================================================
+   Hinweise
+   ========================================================= */
+
+.inboxFinalPage .finalAlert {
+  margin: 0 0 14px !important;
+  padding: 13px 15px !important;
+  border-radius: 11px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}
+
+.inboxFinalPage .finalAlert.success {
+  border: 1px solid #bde3d5 !important;
+  background: #edf9f4 !important;
+  color: #137056 !important;
+}
+
+.inboxFinalPage .finalAlert.error {
+  border: 1px solid #efc5c1 !important;
+  background: #fff5f4 !important;
+  color: #b42318 !important;
+}
+
+/* =========================================================
+   Filter
+   ========================================================= */
+
+.inboxFinalPage .finalInboxShell {
+  margin: 0 0 14px !important;
+  padding: 13px !important;
+  border: 1px solid #dce6e4 !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.inboxFinalPage .finalToolbar {
+  display: grid !important;
+  grid-template-columns:
+    minmax(260px, 1.6fr)
+    minmax(170px, 0.65fr)
+    auto
+    auto !important;
+  align-items: end !important;
+  gap: 9px !important;
+  margin: 0 !important;
+}
+
+.inboxFinalPage .finalSearch,
+.inboxFinalPage .finalSelect {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 6px !important;
+  color: #657873 !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.045em !important;
+  text-transform: uppercase !important;
+}
+
+.inboxFinalPage .finalSearch input,
+.inboxFinalPage .finalSelect select {
+  width: 100% !important;
+  min-height: 40px !important;
+  padding: 0 11px !important;
+  border: 1px solid #cbd9d6 !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  color: #183d35 !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  outline: none !important;
+}
+
+.inboxFinalPage .finalSearch input:focus,
+.inboxFinalPage .finalSelect select:focus {
+  border-color: #72b6a5 !important;
+  box-shadow: 0 0 0 3px rgba(13, 155, 121, 0.11) !important;
+}
+
+.inboxFinalPage .finalFilterButton,
+.inboxFinalPage .finalResetButton {
+  min-height: 40px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 14px !important;
+  border-radius: 10px !important;
+  font-size: 11px !important;
+  font-weight: 750 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+
+.inboxFinalPage .finalFilterButton {
+  border: 1px solid #0d9875 !important;
+  background: #10a37f !important;
+  color: #ffffff !important;
+}
+
+.inboxFinalPage .finalResetButton {
+  border: 1px solid #cbd9d6 !important;
+  background: #ffffff !important;
+  color: #36574f !important;
+}
+
+/* =========================================================
+   Hauptnavigation
+   ========================================================= */
+
+.inboxFinalPage .inboxCombinedNavigation {
+  position: relative !important;
+  z-index: 2 !important;
+  display: grid !important;
+  gap: 9px !important;
+  margin: 0 0 14px !important;
+  padding: 12px !important;
+  border: 1px solid #dce6e4 !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.inboxFinalPage .finalCategoryTabs,
+.inboxFinalPage .orderStatusSubnav {
+  width: 100% !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 7px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.inboxFinalPage .finalCategoryForm {
+  display: inline-flex !important;
+  margin: 0 !important;
+}
+
+.inboxFinalPage .finalCategoryTab,
+.inboxFinalPage .realOrderTab {
+  min-height: 36px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 0 12px !important;
+  border: 1px solid transparent !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  color: #5d716b !important;
+  font-size: 10.5px !important;
+  font-weight: 740 !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+}
+
+.inboxFinalPage .finalCategoryTab:hover,
+.inboxFinalPage .realOrderTab:hover {
+  border-color: #cfe0dc !important;
+  background: #f4f8f7 !important;
+  color: #176c59 !important;
+  transform: none !important;
+}
+
+.inboxFinalPage .finalCategoryTab.active,
+.inboxFinalPage .realOrderTab.active {
+  border-color: #b8d9d1 !important;
+  background: #e9f6f2 !important;
+  color: #08715a !important;
+  box-shadow: none !important;
+}
+
+.inboxFinalPage .finalCategoryTab strong,
+.inboxFinalPage .realOrderTab strong {
+  min-width: 21px !important;
+  height: 21px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  padding: 0 5px !important;
+  border: 1px solid #d7e4e1 !important;
+  border-radius: 999px !important;
+  background: #f2f7f5 !important;
+  color: #526b64 !important;
+  font-size: 9px !important;
+}
+
+.inboxFinalPage .finalCategoryTab.active strong,
+.inboxFinalPage .realOrderTab.active strong {
+  border-color: #c2ddd6 !important;
+  background: #ffffff !important;
+  color: #08715a !important;
+}
+
+/* =========================================================
+   E-Mail-Ansicht
+   ========================================================= */
+
+.inboxFinalPage .leadEmailPanel {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid #dce6e4 !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  box-shadow: 0 12px 30px rgba(23, 63, 55, 0.045) !important;
+}
+
+.inboxFinalPage .leadEmailHeader {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+  margin: 0 !important;
+  padding: 18px 20px !important;
+  border-bottom: 1px solid #e2eae8 !important;
+  background:
+    linear-gradient(
+      145deg,
+      #f6faf9 0%,
+      #ffffff 72%
+    ) !important;
+}
+
+.inboxFinalPage .leadEmailHeader p {
+  margin: 0 0 4px !important;
+  color: #08715a !important;
+  font-size: 9.5px !important;
+  font-weight: 820 !important;
+  letter-spacing: 0.055em !important;
+  text-transform: uppercase !important;
+}
+
+.inboxFinalPage .leadEmailHeader h2 {
+  margin: 0 !important;
+  color: #173f37 !important;
+  font-size: 20px !important;
+  font-weight: 760 !important;
+}
+
+.inboxFinalPage .leadEmailHeader > strong {
+  min-height: 30px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0 10px !important;
+  border: 1px solid #cfe2dd !important;
+  border-radius: 999px !important;
+  background: #edf8f5 !important;
+  color: #176c59 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+}
+
+.inboxFinalPage .leadEmailGrid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  padding: 14px !important;
+}
+
+.inboxFinalPage .leadEmailCard {
+  min-width: 0 !important;
+  min-height: 154px !important;
+  display: grid !important;
+  align-content: start !important;
+  gap: 9px !important;
+  padding: 14px !important;
+  border: 1px solid #dfe8e6 !important;
+  border-radius: 13px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease !important;
+}
+
+.inboxFinalPage .leadEmailCard:hover {
+  transform: translateY(-1px) !important;
+  border-color: #afc8c2 !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 20px rgba(24, 67, 57, 0.06) !important;
+}
+
+.inboxFinalPage .leadEmailTop {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  color: #7a8b87 !important;
+  font-size: 9.5px !important;
+  font-weight: 700 !important;
+}
+
+.inboxFinalPage .leadTypePill {
+  min-height: 21px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0 7px !important;
+  border: 1px solid #cfe2dd !important;
+  border-radius: 999px !important;
+  background: #edf8f5 !important;
+  color: #176c59 !important;
+  font-size: 8.5px !important;
+  font-weight: 820 !important;
+  text-transform: uppercase !important;
+}
+
+.inboxFinalPage .leadEmailCard h3 {
+  overflow: hidden !important;
+  margin: 0 !important;
+  color: #203f38 !important;
+  font-size: 14px !important;
+  font-weight: 760 !important;
+  line-height: 1.35 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.inboxFinalPage .leadEmailSender {
+  overflow: hidden !important;
+  margin: 0 !important;
+  color: #71827e !important;
+  font-size: 10.5px !important;
+  font-weight: 620 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.inboxFinalPage .leadPreview {
+  display: -webkit-box !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  color: #50655f !important;
+  font-size: 11.5px !important;
+  line-height: 1.5 !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 3 !important;
+}
+
+.inboxFinalPage .leadEmailActions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 7px !important;
+  margin-top: auto !important;
+  padding-top: 3px !important;
+}
+
+.inboxFinalPage .leadPrimaryAction,
+.inboxFinalPage .leadSecondaryAction {
+  min-height: 34px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 11px !important;
+  border-radius: 9px !important;
+  font-size: 10.5px !important;
+  font-weight: 750 !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+}
+
+.inboxFinalPage .leadPrimaryAction {
+  border: 1px solid #0d9875 !important;
+  background: #10a37f !important;
+  color: #ffffff !important;
+}
+
+.inboxFinalPage .leadSecondaryAction {
+  border: 1px solid #d7e1de !important;
+  background: #f8faf9 !important;
+  color: #5c706a !important;
+}
+
+.inboxFinalPage .leadSecondaryAction:hover {
+  border-color: #efc5c1 !important;
+  background: #fff5f4 !important;
+  color: #b42318 !important;
+}
+
+.inboxFinalPage .leadEmpty {
+  min-height: 190px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 30px !important;
+  color: #71837e !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+  text-align: center !important;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .inboxFinalPage {
+    padding-inline: 20px !important;
+  }
+
+  .inboxFinalPage .finalToolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .inboxFinalPage .leadEmailGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .inboxFinalPage {
+    padding: 20px 14px 36px !important;
+  }
+
+  .inboxFinalPage .finalHeader {
+    display: grid !important;
+  }
+
+  .inboxFinalPage .finalHeaderActions {
+    justify-content: flex-start !important;
+  }
+
+  .inboxFinalPage .finalToolbar {
+    grid-template-columns: 1fr !important;
+  }
+
+  .inboxFinalPage .finalFilterButton,
+  .inboxFinalPage .finalResetButton {
+    width: 100% !important;
+  }
+
+  .inboxFinalPage .leadEmailHeader {
+    display: grid !important;
+  }
+}

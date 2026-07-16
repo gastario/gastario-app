@@ -2,6 +2,7 @@ import {
   useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
 import auftragseingangStyles from "../styles/auftragseingang.css?url";
+import auftragseingangReferenceStyles from "../styles/auftragseingang-reference.css?url";
 import { Form, Link, redirect, useActionData, useFetcher, useLoaderData,
   useSearchParams,
 } from "react-router";
@@ -12,7 +13,11 @@ export function links() {
       rel: "stylesheet",
       href: auftragseingangStyles,
     },
-  ];
+      {
+      rel: "stylesheet",
+      href: auftragseingangReferenceStyles,
+    },
+];
 }
 
 const EMAIL_BUCKETS = [
