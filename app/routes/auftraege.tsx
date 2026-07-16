@@ -1,4 +1,4 @@
-﻿import { Form, Link, useActionData, useLoaderData } from "react-router";
+import { Form, Link, useActionData, useLoaderData } from "react-router";
 import { useState } from "react";
 import AppLayout from "../components/AppLayout";
 import {
@@ -529,7 +529,7 @@ export default function OrdersPage() {
     <AppLayout>
       <div
         className={
-          "ordersPage " +
+          "ordersPage ordersReferencePage " +
           (data.view === "past"
             ? "ordersPagePast"
             : "ordersPageUpcoming")

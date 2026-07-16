@@ -3908,3 +3908,398 @@
     display: grid;
   }
 }
+
+/*
+ * gastario-operational-orders-reference-20260716
+ */
+
+.ordersReferencePage {
+  width: 100%;
+  max-width: 1540px;
+  margin: 0 auto;
+}
+
+.ordersReferencePage > .panel {
+  overflow: hidden;
+  border: 1px solid #dce6e4;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(23, 63, 55, 0.045);
+}
+
+.ordersReferencePage > .panel > .panelHeader {
+  display: grid;
+  grid-template-columns: minmax(245px, 0.65fr) minmax(620px, 1.55fr);
+  align-items: start;
+  gap: 22px;
+  padding: 20px 22px;
+  border-bottom: 1px solid #e2eae8;
+  background: linear-gradient(135deg, #ffffff 0%, #fbfdfc 100%);
+}
+
+.ordersReferencePage > .panel > .panelHeader h2 {
+  margin: 3px 0 0;
+  color: #173f37;
+  font-size: 22px;
+  font-weight: 780;
+  line-height: 1.2;
+}
+
+.ordersReferencePage .ordersFilterWrap {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #dce6e4;
+  border-radius: 13px;
+  background: #f8faf9;
+}
+
+.ordersReferencePage .ordersFilterForm {
+  display: grid;
+  grid-template-columns:
+    minmax(250px, 1.45fr)
+    minmax(180px, 0.75fr)
+    auto
+    auto;
+  align-items: end;
+  gap: 10px;
+}
+
+.ordersReferencePage .ordersFilterForm .filterLabel {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  color: #60736e;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ordersReferencePage .ordersFilterForm .filterInput {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 11px;
+  border: 1px solid #cbd9d6;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #183d35;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  box-shadow: none;
+}
+
+.ordersReferencePage .ordersFilterForm .filterInput:focus {
+  border-color: #72b6a5;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(13, 155, 121, 0.1);
+}
+
+.ordersReferencePage .ordersFilterForm .g-ui-button {
+  min-height: 40px;
+  padding-right: 15px;
+  padding-left: 15px;
+  white-space: nowrap;
+}
+
+.ordersReferencePage .statusFilterGroup {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  padding: 6px;
+  border: 1px solid #e0e8e6;
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+.ordersReferencePage .statusFilterGroup .g-ui-button {
+  min-width: 0;
+  min-height: 32px;
+  padding: 0 9px;
+  border-color: transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #61736e;
+  font-size: 9.5px;
+  font-weight: 750;
+  box-shadow: none;
+}
+
+.ordersReferencePage .statusFilterGroup .activeFilter {
+  border-color: #bcdad3;
+  background: #eaf7f3;
+  color: #08715a;
+}
+
+/* Auftragskarten wie bei Angebote */
+
+.ordersReferencePage .operationalOrderRows {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.ordersReferencePage .operationalOrderRow {
+  min-width: 0;
+  min-height: 116px;
+  display: grid;
+  grid-template-columns:
+    48px
+    minmax(220px, 1fr)
+    minmax(320px, 1.4fr)
+    minmax(135px, 0.58fr)
+    minmax(115px, 0.5fr)
+    minmax(145px, 0.62fr)
+    58px;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #dce6e4;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: none;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.ordersReferencePage .operationalOrderRow:hover {
+  transform: translateY(-1px);
+  border-color: #afc7c1;
+  box-shadow: 0 8px 20px rgba(24, 67, 57, 0.06);
+}
+
+.ordersReferencePage .operationalOrderRow .finalOrderIcon {
+  width: auto;
+  height: auto;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  border: 0;
+  border-right: 1px solid #e2eae8;
+  border-radius: 0;
+  background: linear-gradient(145deg, #f4faf8 0%, #ffffff 82%);
+  color: #0b8066;
+}
+
+.ordersReferencePage .operationalOrderRow .finalOrderCustomer {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  padding: 14px 15px;
+  border-right: 1px solid #e2eae8;
+  background: linear-gradient(145deg, #f4faf8 0%, #ffffff 82%);
+}
+
+.ordersReferencePage .operationalOrderRow .finalOrderCustomer h3 {
+  overflow: hidden;
+  margin: 0;
+  color: #203f38;
+  font-size: 14px;
+  font-weight: 780;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ordersReferencePage .operationalOrderRow .finalOrderCustomer p {
+  overflow: hidden;
+  margin: 4px 0 7px;
+  color: #5c726c;
+  font-size: 10.5px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ordersReferencePage .operationalOrderRow .finalOrderItems {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  padding: 12px;
+  border-right: 1px solid #e2eae8;
+}
+
+.ordersReferencePage .operationalOrderRow .finalOrderItems > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  padding: 7px 9px;
+  border: 1px solid #e2eae8;
+  border-radius: 9px;
+  background: #f8faf9;
+}
+
+.ordersReferencePage .operationalOrderRow .finalOrderItems strong {
+  color: #08715a;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.ordersReferencePage .operationalOrderRow .finalOrderItems span {
+  overflow: hidden;
+  color: #314844;
+  font-size: 10.5px;
+  font-weight: 680;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ordersReferencePage .operationalOrderDate,
+.ordersReferencePage .operationalOrderStatus,
+.ordersReferencePage .operationalOrderRow .finalOrderTotal {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  padding: 12px;
+  border-right: 1px solid #e2eae8;
+}
+
+.ordersReferencePage .operationalOrderDate {
+  gap: 4px;
+}
+
+.ordersReferencePage .operationalOrderDate::before {
+  content: "Lieferung";
+  color: #7b8d89;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.ordersReferencePage .operationalOrderStatus {
+  place-items: center;
+}
+
+.ordersReferencePage .operationalOrderRow .finalOrderTotal {
+  justify-items: end;
+  gap: 6px;
+  text-align: right;
+}
+
+.ordersReferencePage .operationalOrderRow .finalOrderTotal strong {
+  color: #173f37;
+  font-size: 15px;
+  font-weight: 820;
+  white-space: nowrap;
+}
+
+.ordersReferencePage .operationalOrderActions {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 7px;
+  padding: 8px;
+}
+
+.ordersReferencePage .ordersCardEmpty {
+  min-height: 190px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 28px;
+  border: 1px dashed #cddbd8;
+  border-radius: 13px;
+  background: #fbfdfc;
+  text-align: center;
+}
+
+.ordersReferencePage .ordersCardEmpty strong {
+  color: #264b42;
+  font-size: 13px;
+  font-weight: 780;
+}
+
+.ordersReferencePage .ordersCardEmpty span {
+  color: #758681;
+  font-size: 11px;
+}
+
+.ordersReferencePage .selectedFocusMode {
+  padding: 14px;
+}
+
+.ordersReferencePage .finalSelectedPanel {
+  overflow: hidden;
+  border: 1px solid #dce6e4;
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+@media (max-width: 1280px) {
+  .ordersReferencePage > .panel > .panelHeader {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersReferencePage .operationalOrderRow {
+    grid-template-columns:
+      46px
+      minmax(210px, 0.9fr)
+      minmax(310px, 1.35fr)
+      minmax(130px, 0.6fr)
+      minmax(115px, 0.55fr);
+  }
+
+  .ordersReferencePage .operationalOrderRow .finalOrderTotal {
+    grid-column: 1 / -2;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    justify-items: stretch;
+    border-top: 1px solid #e2eae8;
+  }
+
+  .ordersReferencePage .operationalOrderActions {
+    grid-column: -2 / -1;
+    grid-row: 2;
+    border-top: 1px solid #e2eae8;
+  }
+}
+
+@media (max-width: 850px) {
+  .ordersReferencePage .ordersFilterForm {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersReferencePage .statusFilterGroup {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ordersReferencePage .operationalOrderRow {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersReferencePage .operationalOrderRow .finalOrderIcon {
+    display: none;
+  }
+
+  .ordersReferencePage .operationalOrderRow .finalOrderCustomer,
+  .ordersReferencePage .operationalOrderRow .finalOrderItems,
+  .ordersReferencePage .operationalOrderDate,
+  .ordersReferencePage .operationalOrderStatus,
+  .ordersReferencePage .operationalOrderRow .finalOrderTotal {
+    grid-column: 1;
+    grid-row: auto;
+    border-right: 0;
+    border-bottom: 1px solid #e2eae8;
+  }
+
+  .ordersReferencePage .operationalOrderActions {
+    grid-column: 1;
+    grid-row: auto;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
