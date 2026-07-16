@@ -753,3 +753,95 @@
     sans-serif !important;
 }
 
+
+/*
+ * gastario-sidebar-readable-final-20260716
+ */
+
+.appShell {
+  grid-template-columns:
+    260px minmax(0, 1fr) !important;
+}
+
+.sidebar {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+.brandLogo {
+  width: 142px !important;
+}
+
+.navAccordionStaticLabel,
+.navAccordionTrigger {
+  min-height: 46px !important;
+  padding: 0 12px !important;
+  font-family:
+    "Plus Jakarta Sans",
+    "Segoe UI",
+    sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.3 !important;
+  text-transform: none !important;
+}
+
+.navAccordionStaticLabel {
+  color: #405a56 !important;
+}
+
+.navAccordionTrigger {
+  color: #405a56 !important;
+}
+
+.navAccordionGroup.isOpen
+  .navAccordionTrigger,
+.navAccordionGroup.hasActiveItem
+  .navAccordionTrigger {
+  color: #075b48 !important;
+  font-weight: 750 !important;
+}
+
+.navAccordionItems {
+  gap: 3px !important;
+  padding-left: 10px !important;
+}
+
+.navAccordionItems a {
+  min-height: 44px !important;
+  padding: 0 13px 0 16px !important;
+  font-family:
+    "Plus Jakarta Sans",
+    "Segoe UI",
+    sans-serif !important;
+  font-size: 14.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.015em !important;
+  line-height: 1.35 !important;
+  color: #253e3a !important;
+}
+
+.navAccordionItems a:hover {
+  font-weight: 600 !important;
+  color: #075b48 !important;
+}
+
+.navAccordionItems a.active {
+  min-height: 46px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #075b48 !important;
+}
+
+.navAccordionChevron {
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 20px !important;
+}
+
+.sidebarLogoutButton {
+  min-height: 46px !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+}
