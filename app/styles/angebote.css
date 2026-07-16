@@ -1,7 +1,7 @@
 /*
  * gastario-quotes-reference-design-20260716
  *
- * Angebotsübersicht im gemeinsamen Gastario-Design
+ * AngebotsÃ¼bersicht im gemeinsamen Gastario-Design
  * von Kunden, Produkten und Auftragseingang.
  */
 
@@ -340,16 +340,154 @@
   }
 }
 /*
- * gastario-live-quotes-form-20260716
+ * gastario-quotes-product-reference-final-20260716
+ *
+ * Angebotsübersicht und Angebotsformular verwenden
+ * exakt dieselbe Farb- und Formensprache wie Produkte.
  */
 
+.quotesPage {
+  display: grid;
+  gap: 22px;
+  max-width: 1540px;
+  padding-bottom: 48px;
+  color: #17252b;
+}
+
+/* Einheitliche Kopf- und Aktionsbuttons */
+
+.quotePrimaryButton,
+.quoteSecondaryButton {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  padding: 0 17px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.quotePrimaryButton {
+  border: 1px solid #087d67 !important;
+  background: #087d67 !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 6px 16px rgba(8, 125, 103, 0.16) !important;
+}
+
+.quotePrimaryButton:hover {
+  transform: translateY(-1px);
+  border-color: #066b58 !important;
+  background: #066b58 !important;
+}
+
+.quoteSecondaryButton {
+  border: 1px solid #d5e1e4 !important;
+  background: #ffffff !important;
+  color: #24444c !important;
+  box-shadow: none !important;
+}
+
+.quoteSecondaryButton:hover {
+  transform: translateY(-1px);
+  border-color: #9cb4ba !important;
+  background: #f7fafb !important;
+}
+
+/* Übersicht und Filter */
+
+.quotesListSection {
+  overflow: hidden;
+}
+
+.quotesFilterBar {
+  display: grid;
+  grid-template-columns:
+    minmax(300px, 1.8fr)
+    minmax(190px, 0.72fr)
+    auto
+    auto;
+  align-items: end;
+  gap: 10px;
+  margin: 0;
+  padding: 15px 20px;
+  border: 0;
+  border-bottom: 1px solid #e4ebe9;
+  border-radius: 0;
+  background: #f9fbfa;
+}
+
+.quotesFilterBar .g-ui-field {
+  display: grid;
+  gap: 6px;
+  color: #526965;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.quotesFilterBar input,
+.quotesFilterBar select {
+  width: 100%;
+  min-height: 41px;
+  box-sizing: border-box;
+  border: 1px solid #cddbd8;
+  border-radius: 10px;
+  padding: 0 12px;
+  background: #ffffff;
+  color: #1e343a;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  outline: none;
+}
+
+.quotesFilterBar input:focus,
+.quotesFilterBar select:focus {
+  border-color: #3b8b78;
+  box-shadow:
+    0 0 0 3px rgba(8, 125, 103, 0.11);
+}
+
+.quotesFilterBar .quotePrimaryButton,
+.quotesFilterBar .quoteSecondaryButton {
+  min-height: 41px;
+  border-radius: 10px;
+  font-size: 12.5px;
+}
+
+.quotesList {
+  display: grid;
+  gap: 8px;
+  padding: 15px 16px 18px;
+  background: #f7faf9;
+}
+
 .quotesEmptyState {
-  min-height: 260px;
+  min-height: 285px;
   display: grid;
   place-items: center;
   align-content: center;
   gap: 12px;
+  padding: 30px;
+  background: #ffffff;
   text-align: center;
+}
+
+.quotesEmptyState > strong {
+  color: #173f37;
+  font-size: 16px;
+  font-weight: 750;
 }
 
 .quotesEmptyState > span {
@@ -357,39 +495,183 @@
   font-size: 13px;
 }
 
+/* Neues Angebot */
+
 .quoteCreateForm {
   display: grid;
-  gap: 18px;
+  gap: 16px;
+  padding: 18px 20px 22px;
+  background: #f7faf9;
+}
+
+/*
+ * Browser-Fieldset vollständig neutralisieren.
+ * Dadurch verschwinden die grauen Standardrahmen.
+ */
+
+.quoteCreateForm .customerFormGroup {
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  border: 1px solid #dce6e4;
+  border-radius: 15px;
+  padding: 0;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.quoteCreateForm .customerFormGroup > legend {
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+  float: left;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid #e4ebe9;
+  padding: 16px 18px 14px;
+  background:
+    linear-gradient(
+      145deg,
+      #f4faf8 0%,
+      #ffffff 88%
+    );
+  color: #173f37;
+  font-size: 15px;
+  font-weight: 760;
+  line-height: 1.25;
+}
+
+.quoteCreateForm .customerFormGroup > legend + * {
+  clear: both;
 }
 
 .quoteFormGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
+  padding: 2px 18px 18px;
 }
 
 .quoteFormFull {
   grid-column: 1 / -1;
 }
 
+.quoteCreateForm .g-ui-field {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  color: #526965;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.quoteCreateForm .g-ui-field > span {
+  min-height: 14px;
+}
+
+.quoteCreateForm input,
+.quoteCreateForm select,
 .quoteCreateForm textarea {
   width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ccdadd;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #1e343a;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.quoteCreateForm input,
+.quoteCreateForm select {
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.quoteCreateForm textarea {
+  min-height: 104px;
+  padding: 12px;
   resize: vertical;
+}
+
+.quoteCreateForm input::placeholder,
+.quoteCreateForm textarea::placeholder {
+  color: #8b9b98;
+  font-weight: 450;
+}
+
+.quoteCreateForm input:focus,
+.quoteCreateForm select:focus,
+.quoteCreateForm textarea:focus {
+  border-color: #5f8d91;
+  box-shadow:
+    0 0 0 4px rgba(95, 141, 145, 0.12);
+}
+
+.quoteCreateForm input:hover,
+.quoteCreateForm select:hover,
+.quoteCreateForm textarea:hover {
+  border-color: #aebfbc;
 }
 
 .quoteCreateActions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  padding-top: 4px;
+  border: 1px solid #dce6e4;
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: #ffffff;
 }
 
-@media (max-width: 900px) {
+.quoteCreateActions .quotePrimaryButton {
+  min-width: 225px;
+}
+
+@media (max-width: 1050px) {
+  .quotesFilterBar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quotesSearchField {
+    grid-column: 1 / -1;
+  }
+
+  .quoteFormGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .quotesFilterBar,
   .quoteFormGrid {
     grid-template-columns: 1fr;
   }
 
+  .quotesSearchField,
   .quoteFormFull {
     grid-column: auto;
+  }
+
+  .quotesFilterBar .quotePrimaryButton,
+  .quotesFilterBar .quoteSecondaryButton,
+  .quoteCreateActions .quotePrimaryButton,
+  .quoteCreateActions .quoteSecondaryButton {
+    width: 100%;
+  }
+
+  .quoteCreateActions {
+    align-items: stretch;
+    flex-direction: column-reverse;
   }
 }

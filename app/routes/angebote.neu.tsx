@@ -313,7 +313,7 @@ export default function NewQuotePage() {
           actions={
             <Link
               to="/angebote"
-              className="g-ui-button g-ui-button--secondary"
+              className="quoteSecondaryButton g-ui-button g-ui-button--secondary"
             >
               Zur Übersicht
             </Link>
@@ -494,14 +494,14 @@ export default function NewQuotePage() {
             <div className="quoteCreateActions">
               <Link
                 to="/angebote"
-                className="g-ui-button g-ui-button--secondary"
+                className="quoteSecondaryButton g-ui-button g-ui-button--secondary"
               >
                 Abbrechen
               </Link>
 
               <button
                 type="submit"
-                className="g-ui-button g-ui-button--primary"
+                className="quotePrimaryButton g-ui-button g-ui-button--primary"
               >
                 Angebot als Entwurf anlegen
               </button>

@@ -231,7 +231,7 @@ export default function QuotesPage() {
           actions={
             <Link
               to="/angebote/neu"
-              className="productsPrimaryButton g-ui-button g-ui-button--primary"
+              className="quotePrimaryButton g-ui-button g-ui-button--primary"
             >
               Neues Angebot
             </Link>
@@ -317,14 +317,14 @@ export default function QuotesPage() {
 
             <button
               type="submit"
-              className="g-ui-button g-ui-button--primary"
+              className="quotePrimaryButton g-ui-button g-ui-button--primary"
             >
               Anzeigen
             </button>
 
             <Link
               to="/angebote"
-              className="g-ui-button g-ui-button--secondary"
+              className="quoteSecondaryButton g-ui-button g-ui-button--secondary"
             >
               Zurücksetzen
             </Link>
@@ -350,7 +350,7 @@ export default function QuotesPage() {
 
               <Link
                 to="/angebote/neu"
-                className="g-ui-button g-ui-button--primary"
+                className="quotePrimaryButton g-ui-button g-ui-button--primary"
               >
                 Erstes Angebot anlegen
               </Link>
@@ -424,7 +424,7 @@ export default function QuotesPage() {
 
                     <Link
                       to={`/angebote/${quote.id}`}
-                      className="g-ui-button g-ui-button--secondary"
+                      className="quoteSecondaryButton g-ui-button g-ui-button--secondary"
                     >
                       Öffnen
                     </Link>
