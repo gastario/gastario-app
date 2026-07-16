@@ -867,3 +867,38 @@
     width: 100% !important;
   }
 }
+
+/*
+ * gastario-hide-order-status-label-20260716
+ */
+
+.inboxFinalPage .orderStatusSubnavLabel {
+  display: none !important;
+}
+
+.inboxFinalPage .inboxNavigationDivider {
+  display: none !important;
+}
+
+.inboxFinalPage .orderStatusSubnav {
+  padding-top: 7px !important;
+  border-top: 1px solid #e7eeec !important;
+}
+
+.inboxFinalPage .realOrderTabs {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 5px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.inboxFinalPage .realOrderTabs > form {
+  width: auto !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+}
