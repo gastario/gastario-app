@@ -1,7 +1,16 @@
 import {
   useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
+import {
+  MetricCard,
+  MetricGrid,
+  Notice,
+  PageHeader,
+  PageSection,
+  PageShell,
+} from "../components/ui/PageShell";
 import auftragseingangStyles from "../styles/auftragseingang.css?url";
+import auftragseingangCleanStyles from "../styles/auftragseingang-clean.css?url";
 import { Form, Link, redirect, useActionData, useFetcher, useLoaderData,
   useSearchParams,
 } from "react-router";
@@ -12,7 +21,11 @@ export function links() {
       rel: "stylesheet",
       href: auftragseingangStyles,
     },
-  ];
+      {
+      rel: "stylesheet",
+      href: auftragseingangCleanStyles,
+    },
+];
 }
 
 const EMAIL_BUCKETS = [
@@ -1002,216 +1015,202 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
     <AppLayout>
       
 
-      <div className="inboxPage inboxFinalPage">
-{data.setupError ? (
-          <div style={{
-            margin: "0 0 18px",
-            padding: "14px 16px",
-            borderRadius: 14,
-            border: "1px solid #fecaca",
-            background: "#fff1f2",
-            color: "#991b1b",
-            fontWeight: 800,
-          }}>
+      {/* gastario-incoming-page-shell-reference-20260716 */}
+      <PageShell className="incomingReferencePage">
+        <PageHeader
+          eyebrow="Eingang"
+          title="Auftragseingang"
+          subtitle={
+            <>
+              {data.tenant?.name || "Kein Mandant"} · Eingehende
+              Aufträge und E-Mails prüfen, bearbeiten und übernehmen.
+            </>
+          }
+          actions={
+            <>
+              <button
+                type="button"
+                className={
+                  liveEnabled
+                    ? "incomingLiveButton isLive"
+                    : "incomingLiveButton"
+                }
+                onClick={() =>
+                  setLiveEnabled((value) => !value)
+                }
+                title={
+                  lastAutoImportAt
+                    ? "Letzter Auto-Abruf: " +
+                      lastAutoImportAt
+                    : "Automatischer Abruf"
+                }
+              >
+                <span aria-hidden="true" />
+                {liveEnabled ? "Live an" : "Live aus"}
+              </button>
+
+              <button
+                type="button"
+                className="g-ui-button g-ui-button--primary"
+                onClick={runEmailImportAndReload}
+                disabled={isImportingNow}
+              >
+                {isImportingNow
+                  ? "Abruf läuft..."
+                  : "E-Mails abrufen"}
+              </button>
+            </>
+          }
+        />
+
+        {data.setupError ? (
+          <Notice type="warning">
             {data.setupError}
-          </div>
-        ) : null}
-<section className="finalHeader">
-          <div>
-            <div className="finalEyebrow">{isEmailFocusedView ? "Eingang" : "Auftragseingang"}</div>
-            <h1>{inboxHeadline}</h1>
-            <p>{inboxSubtitle}</p>
-
-            <div className="finalMiniSummary">
-              <span>
-                <strong>{currentOrderStats.all}</strong>
-                gesamt
-              </span>
-              <span>
-                <strong>{currentOrderStats.review}</strong>
-                offen
-              </span>
-              <span>
-                <strong>{currentOrderStats.confirmed}</strong>
-                übernommen
-              </span>
-            </div>
-          </div>
-
-          <div className="finalHeaderActions">
-            <button
-              type="button"
-              className={liveEnabled ? "finalGhost isLive" : "finalGhost"}
-              onClick={() => setLiveEnabled((value) => !value)}
-              title={lastAutoImportAt ? "Letzter Auto-Abruf: " + lastAutoImportAt : "Automatischer Abruf"}
-            >
-              <span></span>
-              {liveEnabled ? "Live an" : "Live aus"}
-            </button>
-
-            <button
-              type="button"
-              className="finalPrimary"
-              onClick={runEmailImportAndReload}
-              disabled={isImportingNow}
-            >
-              {isImportingNow ? "Abruf läuft..." : "E-Mails abrufen"}
-            </button>
-          </div>
-        </section>
-
-        {actionData?.error ? (
-          <div className="finalAlert error">{actionData.error}</div>
+          </Notice>
         ) : null}
 
         {actionData?.success ? (
-          <div className="finalAlert success">{actionData.success}</div>
+          <Notice type="success">
+            {actionData.success}
+          </Notice>
         ) : null}
 
-        <section className="finalInboxShell">
-          
+        {actionData?.error ? (
+          <Notice type="danger">
+            {actionData.error}
+          </Notice>
+        ) : null}
 
-          <Form method="get" className="finalToolbar">
-            <input type="hidden" name="emailCategory" value={data.selectedEmailCategory} />
+        <MetricGrid>
+          <MetricCard
+            label="Aufträge gesamt"
+            value={currentOrderStats.all}
+            description="im Auftragseingang"
+            badge="Gesamt"
+          />
 
-            <label className="finalSearch">
+          <MetricCard
+            label="Zu prüfen"
+            value={currentOrderStats.review}
+            description="noch nicht übernommen"
+            badge="Offen"
+          />
+
+          <MetricCard
+            label="Übernommen"
+            value={currentOrderStats.confirmed}
+            description="für die Ausführung bestätigt"
+            badge="Erledigt"
+          />
+
+          <MetricCard
+            label="Anfragen"
+            value={data.emailBuckets?.inquiries || 0}
+            description="für Angebote und Rückfragen"
+            badge="Leads"
+          />
+        </MetricGrid>
+
+        <PageSection
+          className="incomingReferenceSection"
+          eyebrow="Eingangsübersicht"
+          title={inboxHeadline}
+          description={inboxSubtitle}
+        >
+          <Form
+            method="get"
+            className="incomingReferenceFilters"
+          >
+            <label className="g-ui-field incomingSearchField">
               <span>Suche</span>
               <input
+                type="search"
                 name="q"
                 defaultValue={data.searchQuery || ""}
-                placeholder="Absender, Kunde oder Betreff suchen ..."
+                placeholder="Absender, Kunde, Nummer oder Betreff"
               />
             </label>
 
-            <label className="finalSelect">
+            <label className="g-ui-field">
               <span>Zeitraum</span>
-              <select name="dateRange" defaultValue={data.dateRange || "last7"}>
-                <option value="last7">Letzte 7 Tage</option>
-                <option value="today">Heute</option>
-                <option value="yesterday">Gestern</option>
+              <select
+                name="dateRange"
+                defaultValue={data.dateRange || "last7"}
+              >
+                <option value="last7">
+                  Letzte 7 Tage
+                </option>
+                <option value="today">
+                  Heute
+                </option>
+                <option value="yesterday">
+                  Gestern
+                </option>
               </select>
             </label>
 
-            <button type="submit" className="finalFilterButton">Weitere Filter</button>
-            <Link to={"/auftragseingang?emailCategory=" + data.selectedEmailCategory + "&dateRange=last7"} className="finalResetButton">
-              Zurücksetzen
-            </Link>
-          </Form>
-        </section>
-                
-        <div className="inboxCombinedNavigation">
-          <nav className="finalCategoryTabs" aria-label="E-Mail-Kategorien">
-            {[
-              [
-                "orders",
-                "Aufträge",
-                currentOrderStats.all,
-              ],
-              [
-                "inquiries",
-                "Anfragen / Leads",
-                data.emailBuckets?.inquiries || 0,
-              ],
-              [
-                "possible",
-                "Unklare E-Mails",
-                data.emailBuckets?.possible || 0,
-              ],
-              [
-                "hidden",
-                "Ignorierte E-Mails",
-                data.emailBuckets?.hidden || 0,
-              ],
-            ].map(([key, label, count]) => {
-              const active = data.selectedEmailCategory === key;
+            <label className="g-ui-field">
+              <span>Kategorie</span>
+              <select
+                name="emailCategory"
+                defaultValue={
+                  data.selectedEmailCategory || "orders"
+                }
+              >
+                <option value="orders">
+                  Aufträge
+                </option>
+                <option value="inquiries">
+                  Anfragen / Leads
+                </option>
+                <option value="possible">
+                  Unklare E-Mails
+                </option>
+                <option value="hidden">
+                  Ignorierte E-Mails
+                </option>
+              </select>
+            </label>
 
-              return (
-                <Form
-                  key={String(key)}
-                  method="get"
-                  action="/auftragseingang"
-                  className="finalCategoryForm"
-                >
-                  <input
-                    type="hidden"
-                    name="emailCategory"
-                    value={String(key)}
-                  />
+            <label className="g-ui-field">
+              <span>Status</span>
+              <select
+                name="status"
+                defaultValue={activeOrderStatus || ""}
+                disabled={isEmailFocusedView}
+              >
+                <option value="">
+                  Alle Aufträge
+                </option>
+                <option value="AUTO_CREATED">
+                  Zu prüfen
+                </option>
+                <option value="CONFIRMED">
+                  Übernommen
+                </option>
+                <option value="REJECTED">
+                  Abgelehnt
+                </option>
+              </select>
+            </label>
 
-                  <input
-                    type="hidden"
-                    name="dateRange"
-                    value={data.dateRange || "last7"}
-                  />
+            <div className="incomingReferenceFilterActions">
+              <button
+                type="submit"
+                className="g-ui-button g-ui-button--primary"
+              >
+                Anzeigen
+              </button>
 
-                  {data.searchQuery ? (
-                    <input
-                      type="hidden"
-                      name="q"
-                      value={data.searchQuery}
-                    />
-                  ) : null}
-
-                  {data.selectedDate ? (
-                    <input
-                      type="hidden"
-                      name="date"
-                      value={data.selectedDate}
-                    />
-                  ) : null}
-
-                  <button
-                    type="submit"
-                    className={
-                      active
-                        ? "finalCategoryTab active"
-                        : "finalCategoryTab"
-                    }
-                  >
-                    <span>{label}</span>
-                    <strong>{count}</strong>
-                  </button>
-                </Form>
-              );
-            })}
-          </nav>
-
-          <span
-            className="inboxNavigationDivider"
-            aria-hidden="true"
-          />
-
-          {!isEmailFocusedView ? (
-            <div className="orderStatusSubnav">
-              <span className="orderStatusSubnavLabel">
-                Auftragsstatus
-              </span>
-
-              <nav className="realOrderTabs" aria-label="Auftragsfilter">
-          {[
-            ["Alle Aufträge", currentOrderStats.all, ""],
-            ["Zu prüfen", currentOrderStats.review, "AUTO_CREATED"],
-            ["\u00dcbernommen", currentOrderStats.confirmed, "CONFIRMED"],
-            ["Abgelehnt", currentOrderStats.rejected, "REJECTED"],
-          ].map(([label, count, status]) => {
-            const active = !isEmailFocusedView && (activeOrderStatus === status || (!activeOrderStatus && !status));
-            const params = new URLSearchParams();
-
-            if (status) params.set("status", String(status));
-
-            const href = "/auftragseingang" + (params.toString() ? "?" + params.toString() : "");
-
-            return (
-              <a key={String(label)} href={href} className={active ? "realOrderTab active" : "realOrderTab"}>
-                <span>{label}</span>
-                <strong>{count}</strong>
-              </a>
-            );
-          })}
-        </nav>
+              <Link
+                to="/auftragseingang"
+                className="g-ui-button g-ui-button--secondary"
+              >
+                Zurücksetzen
+              </Link>
             </div>
-          ) : null}
-        </div>
+          </Form>
+
 {/* gastario-restored-email-focused-view-20260713 */}
         {isEmailFocusedView ? (
           <section className="leadEmailPanel">
@@ -1502,10 +1501,9 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
           ) : null}
         </section>
         )}
-</div>
-
-
-</AppLayout>
+        </PageSection>
+      </PageShell>
+    </AppLayout>
   );
 }
 

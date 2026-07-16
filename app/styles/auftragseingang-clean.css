@@ -1,0 +1,184 @@
+/*
+ * gastario-auftragseingang-clean-reference-20260716
+ *
+ * Eingangszentrale im gemeinsamen Design von
+ * Kunden, Produkten und Aufträgen.
+ */
+
+.incomingReferencePage {
+  max-width: 1540px;
+}
+
+.incomingLiveButton {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 15px;
+  border: 1px solid #cbd9d6;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #36574f;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.incomingLiveButton span {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #8aa39c;
+}
+
+.incomingLiveButton.isLive {
+  border-color: #b8dbd2;
+  background: #edf8f5;
+  color: #08715a;
+}
+
+.incomingLiveButton.isLive span {
+  background: #10a37f;
+  box-shadow:
+    0 0 0 4px rgba(16, 163, 127, 0.1);
+}
+
+.incomingReferenceFilters {
+  display: grid;
+  grid-template-columns:
+    minmax(260px, 1.6fr)
+    minmax(150px, 0.62fr)
+    minmax(170px, 0.72fr)
+    minmax(150px, 0.62fr)
+    auto;
+  align-items: end;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 1px solid #dce6e4;
+  border-radius: 13px;
+  background: #f8faf9;
+}
+
+.incomingReferenceFilters input,
+.incomingReferenceFilters select {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid #cbd9d6;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #183d35;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.incomingReferenceFilters input {
+  padding: 0 11px;
+}
+
+.incomingReferenceFilters select {
+  padding: 0 10px;
+}
+
+.incomingReferenceFilters input:focus,
+.incomingReferenceFilters select:focus {
+  border-color: #72b6a5;
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(13, 155, 121, 0.1);
+}
+
+.incomingReferenceFilters select:disabled {
+  cursor: not-allowed;
+  background: #eef2f1;
+  color: #8a9894;
+}
+
+.incomingReferenceFilterActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.incomingReferenceFilterActions .g-ui-button {
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+/* Alte Sondernavigation vollständig ausblenden */
+.incomingReferencePage .inboxCombinedNavigation,
+.incomingReferencePage .finalCategoryTabs,
+.incomingReferencePage .orderStatusSubnav,
+.incomingReferencePage .realOrderTabs {
+  display: none !important;
+}
+
+/* Bestehende Ergebnisbereiche in PageSection integrieren */
+.incomingReferenceSection .leadEmailPanel,
+.incomingReferenceSection .finalOrdersShell {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.incomingReferenceSection .leadEmailHeader,
+.incomingReferenceSection .finalOrdersHead {
+  padding: 0 0 14px;
+  border-bottom: 1px solid #e2eae8;
+  background: transparent;
+}
+
+.incomingReferenceSection .leadEmailGrid,
+.incomingReferenceSection .finalOrderRows {
+  padding: 14px 0 0;
+}
+
+.incomingReferenceSection .finalOrderRow,
+.incomingReferenceSection .leadEmailCard {
+  border-radius: 13px;
+  box-shadow: none;
+}
+
+.incomingReferenceSection .finalHint {
+  margin: 14px 0 0;
+  padding: 12px;
+  border-top: 1px solid #e2eae8;
+  background: #fafcfb;
+  text-align: center;
+}
+
+@media (max-width: 1200px) {
+  .incomingReferenceFilters {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .incomingSearchField {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 720px) {
+  .incomingReferenceFilters {
+    grid-template-columns: 1fr;
+  }
+
+  .incomingSearchField {
+    grid-column: auto;
+  }
+
+  .incomingReferenceFilterActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .incomingReferenceFilterActions .g-ui-button {
+    width: 100%;
+  }
+}
