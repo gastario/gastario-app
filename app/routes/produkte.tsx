@@ -1,6 +1,13 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Form, useActionData, useFetcher, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
+import {
+  MetricCard,
+  MetricGrid,
+  Notice,
+  PageHeader,
+  PageShell,
+} from "../components/ui/PageShell";
 import productsStyles from "../styles/produkte.css?url";
 
 function euroToCents(value: FormDataEntryValue | null) {
@@ -392,7 +399,7 @@ export async function action({ request }: { request: Request }) {
   return { error: "Unbekannte Aktion." };
 }
 
-﻿export default function ProductsPage() {
+export default function ProductsPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const procurementFetcher = useFetcher<typeof action>();
@@ -483,49 +490,55 @@ export async function action({ request }: { request: Request }) {
 
   return (
     <AppLayout>
-      <div className="productsPage">
-        <header className="productsTopbar">
-          <div>
-            <p className="eyebrow">Verkauf</p>
-            <h1>Produkte</h1>
-            <span className="pageSubline">
+      <PageShell className="productsPage">
+        <PageHeader
+          eyebrow="Verkauf"
+          title="Produkte"
+          subtitle={
+            <>
               {data.tenant?.name || "Kein Mandant"} · Sortiment,
               Verkaufspreise und Rezepturen zentral verwalten.
-            </span>
-          </div>
+            </>
+          }
+          actions={
+            <>
+              <a
+                className="productsSecondaryButton g-ui-button g-ui-button--secondary"
+                href="/einkauf"
+              >
+                Einkauf öffnen
+              </a>
 
-          <div className="productsTopActions">
-            <a className="productsSecondaryButton" href="/einkauf">
-              Einkauf öffnen
-            </a>
-
-            <button
-              className="productsPrimaryButton"
-              type="button"
-              onClick={() => {
-                setSelectedProductId(null);
-                setShowCreateForm((current) => !current);
-              }}
-            >
-              {showCreateForm ? "Formular schließen" : "Neues Produkt"}
-            </button>
-          </div>
-        </header>
+              <button
+                className="productsPrimaryButton g-ui-button g-ui-button--primary"
+                type="button"
+                onClick={() => {
+                  setSelectedProductId(null);
+                  setShowCreateForm((current) => !current);
+                }}
+              >
+                {showCreateForm
+                  ? "Formular schließen"
+                  : "Neues Produkt"}
+              </button>
+            </>
+          }
+        />
 
         {data.setupError ? (
-          <div className="productsNotice productsNoticeWarning">
+          <div className="productsNotice productsNoticeWarning g-ui-notice g-ui-notice--warning">
             {data.setupError}
           </div>
         ) : null}
 
         {actionData?.success ? (
-          <div className="productsNotice productsNoticeSuccess">
+          <div className="productsNotice productsNoticeSuccess g-ui-notice g-ui-notice--success">
             {actionData.success}
           </div>
         ) : null}
 
         {actionData?.error ? (
-          <div className="productsNotice productsNoticeError">
+          <div className="productsNotice productsNoticeError g-ui-notice g-ui-notice--danger">
             {actionData.error}
           </div>
         ) : null}
@@ -579,8 +592,8 @@ export async function action({ request }: { request: Request }) {
         </section>
 
         {showCreateForm ? (
-          <section className="productsCreatePanel">
-            <div className="productsSectionHeader">
+          <section className="productsCreatePanel g-ui-card">
+            <div className="productsSectionHeader g-ui-section-header">
               <div>
                 <p className="eyebrow">Neues Produkt</p>
                 <h2>Produkt manuell anlegen</h2>
@@ -598,7 +611,7 @@ export async function action({ request }: { request: Request }) {
                 value="createProduct"
               />
 
-              <label className="productsField productsFieldWide">
+              <label className="productsField productsFieldWide g-ui-field">
                 <span>Produktname</span>
                 <input
                   name="name"
@@ -607,7 +620,7 @@ export async function action({ request }: { request: Request }) {
                 />
               </label>
 
-              <label className="productsField">
+              <label className="productsField g-ui-field">
                 <span>Kategorie</span>
                 <input
                   name="category"
@@ -615,7 +628,7 @@ export async function action({ request }: { request: Request }) {
                 />
               </label>
 
-              <label className="productsField">
+              <label className="productsField g-ui-field">
                 <span>Einheit</span>
                 <input
                   name="unit"
@@ -624,7 +637,7 @@ export async function action({ request }: { request: Request }) {
                 />
               </label>
 
-              <label className="productsField">
+              <label className="productsField g-ui-field">
                 <span>Verkaufspreis</span>
                 <div className="productsInputSuffix">
                   <input
@@ -636,7 +649,7 @@ export async function action({ request }: { request: Request }) {
                 </div>
               </label>
 
-              <label className="productsField">
+              <label className="productsField g-ui-field">
                 <span>Mehrwertsteuer</span>
                 <div className="productsInputSuffix">
                   <input
@@ -649,7 +662,7 @@ export async function action({ request }: { request: Request }) {
                 </div>
               </label>
 
-              <label className="productsField productsFieldFull">
+              <label className="productsField productsFieldFull g-ui-field">
                 <span>Produktionsnotiz</span>
                 <textarea
                   name="notes"
@@ -660,7 +673,7 @@ export async function action({ request }: { request: Request }) {
 
               <div className="productsCreateActions">
                 <button
-                  className="productsSecondaryButton"
+                  className="productsSecondaryButton g-ui-button g-ui-button--secondary"
                   type="button"
                   onClick={() => setShowCreateForm(false)}
                 >
@@ -668,7 +681,7 @@ export async function action({ request }: { request: Request }) {
                 </button>
 
                 <button
-                  className="productsPrimaryButton"
+                  className="productsPrimaryButton g-ui-button g-ui-button--primary"
                   type="submit"
                 >
                   Produkt anlegen
@@ -679,10 +692,10 @@ export async function action({ request }: { request: Request }) {
         ) : null}
 
         {selectedProduct ? (
-          <section className="productDetailPanel">
+          <section className="productDetailPanel g-ui-card">
             <div className="productDetailHeader">
               <button
-                className="productBackButton"
+                className="productBackButton g-ui-button g-ui-button--secondary"
                 type="button"
                 onClick={() => setSelectedProductId(null)}
               >
@@ -705,8 +718,8 @@ export async function action({ request }: { request: Request }) {
                     <span
                       className={
                         selectedProduct.active
-                          ? "productStatusBadge productStatusActive"
-                          : "productStatusBadge productStatusInactive"
+                          ? "productStatusBadge productStatusActive g-ui-pill"
+                          : "productStatusBadge productStatusInactive g-ui-pill"
                       }
                     >
                       {selectedProduct.active ? "Aktiv" : "Inaktiv"}
@@ -732,8 +745,8 @@ export async function action({ request }: { request: Request }) {
               </div>
             </div>
 
-            <section className="productProcurementPanel">
-              <div className="productDetailSectionHeader">
+            <section className="productProcurementPanel g-ui-card g-ui-card--flat g-ui-card--soft">
+              <div className="productDetailSectionHeader g-ui-section-header">
                 <div>
                   <p className="eyebrow">Herstellung und Beschaffung</p>
                   <h3>Wie wird dieses Produkt bereitgestellt?</h3>
@@ -773,7 +786,7 @@ export async function action({ request }: { request: Request }) {
                   value={selectedProduct.id}
                 />
 
-                <label className="productsField productsFieldFull">
+                <label className="productsField productsFieldFull g-ui-field">
                   <span>Beschaffungsart</span>
                   <select
                     name="procurementType"
@@ -811,7 +824,7 @@ export async function action({ request }: { request: Request }) {
                   </span>
                 </div>
 
-                <label className="productsField">
+                <label className="productsField g-ui-field">
                   <span>Lieferant</span>
                   <input
                     name="supplierName"
@@ -822,7 +835,7 @@ export async function action({ request }: { request: Request }) {
                   />
                 </label>
 
-                <label className="productsField">
+                <label className="productsField g-ui-field">
                   <span>Einkaufsartikel</span>
                   <input
                     name="supplierArticleName"
@@ -833,7 +846,7 @@ export async function action({ request }: { request: Request }) {
                   />
                 </label>
 
-                <label className="productsField">
+                <label className="productsField g-ui-field">
                   <span>Artikelnummer</span>
                   <input
                     name="supplierArticleNumber"
@@ -844,7 +857,7 @@ export async function action({ request }: { request: Request }) {
                   />
                 </label>
 
-                <label className="productsField">
+                <label className="productsField g-ui-field">
                   <span>Einkaufseinheit</span>
                   <input
                     name="purchaseUnit"
@@ -855,7 +868,7 @@ export async function action({ request }: { request: Request }) {
                   />
                 </label>
 
-                <label className="productsField">
+                <label className="productsField g-ui-field">
                   <span>Bedarf je verkaufter Einheit</span>
                   <input
                     name="purchaseQuantityPerUnit"
@@ -869,7 +882,7 @@ export async function action({ request }: { request: Request }) {
                   />
                 </label>
 
-                <label className="productsField">
+                <label className="productsField g-ui-field">
                   <span>Gebindeart</span>
                   <input
                     name="packageUnit"
@@ -880,7 +893,7 @@ export async function action({ request }: { request: Request }) {
                   />
                 </label>
 
-                <label className="productsField">
+                <label className="productsField g-ui-field">
                   <span>Inhalt je Gebinde</span>
                   <input
                     name="packageQuantity"
@@ -894,7 +907,7 @@ export async function action({ request }: { request: Request }) {
                   />
                 </label>
 
-                <label className="productsField">
+                <label className="productsField g-ui-field">
                   <span>Einkaufspreis je Gebinde</span>
                   <div className="productsInputSuffix">
                     <input
@@ -913,7 +926,7 @@ export async function action({ request }: { request: Request }) {
                   </div>
                 </label>
 
-                <label className="productsField productsFieldFull">
+                <label className="productsField productsFieldFull g-ui-field">
                   <span>Vorbereitung und Verarbeitung</span>
                   <textarea
                     name="preparationNotes"
@@ -969,7 +982,7 @@ export async function action({ request }: { request: Request }) {
 
                 <div className="productProcurementActions">
                   <button
-                    className="productsPrimaryButton"
+                    className="productsPrimaryButton g-ui-button g-ui-button--primary"
                     type="submit"
                     disabled={procurementFetcher.state !== "idle"}
                   >
@@ -982,8 +995,8 @@ export async function action({ request }: { request: Request }) {
             </section>
 
             <div className="productDetailGrid">
-              <section className="productDetailSection">
-                <div className="productDetailSectionHeader">
+              <section className="productDetailSection g-ui-card g-ui-card--flat">
+                <div className="productDetailSectionHeader g-ui-section-header">
                   <div>
                     <p className="eyebrow">Stammdaten</p>
                     <h3>Produktdetails bearbeiten</h3>
@@ -1002,7 +1015,7 @@ export async function action({ request }: { request: Request }) {
                     value={selectedProduct.id}
                   />
 
-                  <label className="productsField productsFieldFull">
+                  <label className="productsField productsFieldFull g-ui-field">
                     <span>Produktname</span>
                     <input
                       name="name"
@@ -1011,7 +1024,7 @@ export async function action({ request }: { request: Request }) {
                     />
                   </label>
 
-                  <label className="productsField">
+                  <label className="productsField g-ui-field">
                     <span>Kategorie</span>
                     <input
                       name="category"
@@ -1019,7 +1032,7 @@ export async function action({ request }: { request: Request }) {
                     />
                   </label>
 
-                  <label className="productsField">
+                  <label className="productsField g-ui-field">
                     <span>Einheit</span>
                     <input
                       name="unit"
@@ -1029,7 +1042,7 @@ export async function action({ request }: { request: Request }) {
                     />
                   </label>
 
-                  <label className="productsField">
+                  <label className="productsField g-ui-field">
                     <span>Verkaufspreis</span>
                     <div className="productsInputSuffix">
                       <input
@@ -1043,7 +1056,7 @@ export async function action({ request }: { request: Request }) {
                     </div>
                   </label>
 
-                  <label className="productsField">
+                  <label className="productsField g-ui-field">
                     <span>Mehrwertsteuer</span>
                     <div className="productsInputSuffix">
                       <input
@@ -1058,7 +1071,7 @@ export async function action({ request }: { request: Request }) {
                     </div>
                   </label>
 
-                  <label className="productsField productsFieldFull">
+                  <label className="productsField productsFieldFull g-ui-field">
                     <span>Produktionsnotiz</span>
                     <textarea
                       name="notes"
@@ -1070,7 +1083,7 @@ export async function action({ request }: { request: Request }) {
 
                   <div className="productEditActions">
                     <button
-                      className="productsPrimaryButton"
+                      className="productsPrimaryButton g-ui-button g-ui-button--primary"
                       type="submit"
                     >
                       Änderungen speichern
@@ -1079,8 +1092,8 @@ export async function action({ request }: { request: Request }) {
                 </Form>
               </section>
 
-              <section className="productDetailSection">
-                <div className="productDetailSectionHeader">
+              <section className="productDetailSection g-ui-card g-ui-card--flat">
+                <div className="productDetailSectionHeader g-ui-section-header">
                   <div>
                     <p className="eyebrow">Rezeptur</p>
                     <h3>Rezeptur pro Verkaufseinheit</h3>
@@ -1204,7 +1217,7 @@ export async function action({ request }: { request: Request }) {
                     value={selectedProduct.id}
                   />
 
-                  <label className="productsField productsFieldWide">
+                  <label className="productsField productsFieldWide g-ui-field">
                     <span>Zutat oder Material</span>
                     <input
                       name="ingredientName"
@@ -1213,7 +1226,7 @@ export async function action({ request }: { request: Request }) {
                     />
                   </label>
 
-                  <label className="productsField">
+                  <label className="productsField g-ui-field">
                     <span>Menge pro Einheit</span>
                     <input
                       name="quantityPerUnit"
@@ -1225,7 +1238,7 @@ export async function action({ request }: { request: Request }) {
                     />
                   </label>
 
-                  <label className="productsField">
+                  <label className="productsField g-ui-field">
                     <span>Einheit</span>
                     <input
                       name="ingredientUnit"
@@ -1235,7 +1248,7 @@ export async function action({ request }: { request: Request }) {
                     />
                   </label>
 
-                  <label className="productsField">
+                  <label className="productsField g-ui-field">
                     <span>Lieferant</span>
                     <input
                       name="supplierName"
@@ -1243,7 +1256,7 @@ export async function action({ request }: { request: Request }) {
                     />
                   </label>
 
-                  <label className="productsField productsFieldFull">
+                  <label className="productsField productsFieldFull g-ui-field">
                     <span>Notiz</span>
                     <input
                       name="recipeNotes"
@@ -1253,7 +1266,7 @@ export async function action({ request }: { request: Request }) {
 
                   <div className="productRecipeFormActions">
                     <button
-                      className="productsPrimaryButton"
+                      className="productsPrimaryButton g-ui-button g-ui-button--primary"
                       type="submit"
                     >
                       Rezepturposition hinzufügen
@@ -1294,7 +1307,7 @@ export async function action({ request }: { request: Request }) {
                   />
 
                   <button
-                    className="productsSecondaryButton"
+                    className="productsSecondaryButton g-ui-button g-ui-button--secondary"
                     type="submit"
                   >
                     {selectedProduct.active
@@ -1327,7 +1340,7 @@ export async function action({ request }: { request: Request }) {
                   />
 
                   <button
-                    className="productDeleteButton"
+                    className="productDeleteButton g-ui-button g-ui-button--danger"
                     type="submit"
                   >
                     Produkt löschen
@@ -1338,7 +1351,7 @@ export async function action({ request }: { request: Request }) {
           </section>
         ) : (
           <section className="productsWorkspace">
-            <div className="productsWorkspaceHeader">
+            <div className="productsWorkspaceHeader g-ui-section-header">
               <div>
                 <p className="eyebrow">Produktübersicht</p>
                 <h2>Produkte und Rezepturen</h2>
@@ -1427,7 +1440,7 @@ export async function action({ request }: { request: Request }) {
                 </span>
 
                 <button
-                  className="productsSecondaryButton"
+                  className="productsSecondaryButton g-ui-button g-ui-button--secondary"
                   type="button"
                   onClick={() => {
                     setSearchTerm("");
@@ -1481,8 +1494,8 @@ export async function action({ request }: { request: Request }) {
                             <span
                               className={
                                 product.active
-                                  ? "productStatusBadge productStatusActive"
-                                  : "productStatusBadge productStatusInactive"
+                                  ? "productStatusBadge productStatusActive g-ui-pill"
+                                  : "productStatusBadge productStatusInactive g-ui-pill"
                               }
                             >
                               {product.active
@@ -1577,7 +1590,7 @@ export async function action({ request }: { request: Request }) {
             )}
           </section>
         )}
-      </div>
+      </PageShell>
     </AppLayout>
   );
 }

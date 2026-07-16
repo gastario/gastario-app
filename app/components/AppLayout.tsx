@@ -798,6 +798,216 @@ export default function AppLayout({ children }: AppLayoutProps) {
         .brand {
           padding-bottom: 12px !important;
         }
+
+        /* gastario-sidebar-polish-20260715 */
+
+        .appShell {
+          grid-template-columns:
+            236px minmax(0, 1fr) !important;
+        }
+
+        .sidebar {
+          position: sticky !important;
+          top: 0;
+          height: 100vh !important;
+          overflow-x: hidden;
+          overflow-y: auto;
+          padding: 20px 14px 16px !important;
+          gap: 12px !important;
+          background:
+            linear-gradient(
+              180deg,
+              rgba(250, 252, 252, 0.99) 0%,
+              rgba(246, 250, 249, 0.99) 100%
+            ) !important;
+          border-right:
+            1px solid #d8e4e1 !important;
+          box-shadow:
+            12px 0 28px rgba(28, 65, 62, 0.035);
+        }
+
+        .brand {
+          min-height: 84px;
+          display: flex;
+          align-items: center;
+          padding: 4px 10px 15px !important;
+          margin-bottom: 2px;
+          border-bottom: 1px solid #e3ebe9;
+        }
+
+        .brandLogo {
+          width: 132px !important;
+          max-width: 100%;
+        }
+
+        .navGroups.navAccordion {
+          flex: 1;
+          display: grid;
+          align-content: start;
+          gap: 6px !important;
+          padding: 2px 0 12px;
+        }
+
+        .navAccordionGroup {
+          gap: 3px !important;
+        }
+
+        .navAccordionStaticLabel,
+        .navAccordionTrigger {
+          min-height: 42px !important;
+          padding: 0 11px !important;
+          border-radius: 11px !important;
+          color: #63777c !important;
+          font-size: 10px !important;
+          font-weight: 780 !important;
+          letter-spacing: 0.095em !important;
+          transition:
+            background 150ms ease,
+            border-color 150ms ease,
+            color 150ms ease,
+            box-shadow 150ms ease;
+        }
+
+        .navAccordionStaticLabel {
+          min-height: 32px !important;
+          padding-top: 4px !important;
+          align-items: flex-end !important;
+        }
+
+        .navAccordionTrigger {
+          border: 1px solid transparent !important;
+          background: transparent !important;
+        }
+
+        .navAccordionTrigger:hover {
+          border-color: #dce8e5 !important;
+          background: rgba(239, 247, 245, 0.8) !important;
+          color: #245c50 !important;
+        }
+
+        .navAccordionGroup.isOpen
+          .navAccordionTrigger,
+        .navAccordionGroup.hasActiveItem
+          .navAccordionTrigger {
+          border-color: #d4e6e1 !important;
+          background:
+            linear-gradient(
+              135deg,
+              #edf7f4 0%,
+              #f6faf9 100%
+            ) !important;
+          color: #17634f !important;
+          box-shadow:
+            0 5px 14px rgba(39, 105, 91, 0.055);
+        }
+
+        .navAccordionChevron {
+          width: 22px;
+          height: 22px;
+          border-radius: 7px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.7);
+          color: #718985 !important;
+          font-size: 18px !important;
+          transform: rotate(0deg);
+        }
+
+        .navAccordionGroup.isOpen
+          .navAccordionChevron {
+          background: #ffffff;
+          color: #17634f !important;
+          transform: rotate(90deg);
+        }
+
+        .navAccordionItems {
+          display: grid;
+          gap: 3px !important;
+          margin: 2px 0 5px;
+          padding: 3px 0 3px 9px !important;
+          border-left: 1px solid #dce7e4;
+        }
+
+        .navAccordionItems a {
+          position: relative;
+          min-height: 37px !important;
+          display: flex;
+          align-items: center;
+          border: 1px solid transparent !important;
+          border-radius: 10px !important;
+          padding: 0 10px 0 14px !important;
+          background: transparent !important;
+          color: #33474d !important;
+          font-size: 12.5px !important;
+          font-weight: 570 !important;
+          letter-spacing: -0.006em;
+          box-shadow: none !important;
+        }
+
+        .navAccordionItems a::before {
+          display: none !important;
+        }
+
+        .navAccordionItems a:hover {
+          border-color: #e0e9e7 !important;
+          background: rgba(255, 255, 255, 0.82) !important;
+          color: #145947 !important;
+        }
+
+        .navAccordionItems a.active {
+          border-color: #c8e1da !important;
+          background:
+            linear-gradient(
+              135deg,
+              #e7f5f0 0%,
+              #f4faf8 100%
+            ) !important;
+          color: #075b48 !important;
+          font-weight: 680 !important;
+          box-shadow:
+            inset 3px 0 0 #f2a900,
+            0 5px 14px rgba(28, 91, 74, 0.06)
+            !important;
+        }
+
+        .sidebarFooter {
+          margin-top: auto;
+          padding: 14px 2px 0 !important;
+          border-top: 1px solid #dfe9e6 !important;
+        }
+
+        .sidebarLogoutButton {
+          min-height: 42px !important;
+          border: 1px solid #d3dfdc !important;
+          border-radius: 11px !important;
+          background: rgba(255, 255, 255, 0.86) !important;
+          color: #31474c !important;
+          font-size: 12px !important;
+          font-weight: 650 !important;
+          box-shadow: none !important;
+          transition:
+            border-color 140ms ease,
+            background 140ms ease,
+            color 140ms ease;
+        }
+
+        .sidebarLogoutButton:hover {
+          border-color: #b9cbc7 !important;
+          background: #ffffff !important;
+          color: #173f36 !important;
+        }
+
+        @media (max-width: 980px) {
+          .appShell {
+            grid-template-columns: 1fr !important;
+          }
+
+          .sidebar {
+            position: relative !important;
+            height: auto !important;
+          }
+        }
       `}</style>
 
 

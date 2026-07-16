@@ -340,3 +340,330 @@
     padding: 18px;
   }
 }
+
+/*
+ * Gastario gemeinsame Seitenkomponenten
+ * Diese Regeln gelten für alle Module.
+ */
+
+.g-ui-page {
+  width: 100%;
+  display: grid;
+  align-content: start;
+  gap: 20px;
+}
+
+.g-ui-page-header {
+  width: 100%;
+  min-height: 74px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0;
+}
+
+.g-ui-page-heading {
+  min-width: 0;
+}
+
+.g-ui-eyebrow {
+  margin: 0 0 6px !important;
+  color: var(--gastario-brand) !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.1em !important;
+  line-height: 1.2 !important;
+  text-transform: uppercase;
+}
+
+.g-ui-page-title {
+  margin: 0 !important;
+  color: var(--gastario-text-main) !important;
+  font-size: clamp(28px, 2.4vw, 34px) !important;
+  font-weight: 720 !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1.08 !important;
+}
+
+.g-ui-page-subtitle {
+  max-width: 760px;
+  margin-top: 8px;
+  color: var(--gastario-text-muted);
+  font-size: 13px;
+  font-weight: 450;
+  line-height: 1.55;
+}
+
+.g-ui-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.g-ui-card {
+  width: 100%;
+  border: 1px solid var(--gastario-border);
+  border-radius: var(--gastario-radius-card);
+  background: var(--gastario-bg-card);
+  box-shadow: var(--gastario-shadow-card);
+}
+
+.g-ui-card--flat {
+  box-shadow: none;
+}
+
+.g-ui-card--soft {
+  background: var(--gastario-bg-soft);
+}
+
+.g-ui-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.g-ui-section-title {
+  margin: 0 !important;
+  color: var(--gastario-text-main) !important;
+  font-size: 21px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.15 !important;
+}
+
+.g-ui-section-hint {
+  max-width: 760px;
+  margin-top: 6px;
+  color: var(--gastario-text-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.g-ui-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.g-ui-metric-card {
+  position: relative;
+  min-height: 108px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  overflow: hidden;
+  border: 1px solid var(--gastario-border);
+  border-radius: var(--gastario-radius-card);
+  padding: 18px;
+  background: var(--gastario-bg-card);
+  box-shadow: var(--gastario-shadow-card);
+}
+
+.g-ui-metric-card p,
+.g-ui-metric-card strong,
+.g-ui-metric-card span,
+.g-ui-metric-card small {
+  display: block;
+}
+
+.g-ui-metric-card p {
+  margin: 0 0 6px;
+  color: var(--gastario-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.g-ui-metric-card strong {
+  color: var(--gastario-text-main);
+  font-size: 27px;
+  font-weight: 720;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.g-ui-metric-card span {
+  margin-top: 6px;
+  color: var(--gastario-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.g-ui-metric-card small {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: var(--gastario-brand-soft);
+  color: var(--gastario-brand);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.g-ui-metric-card--attention small {
+  background: #fff4e5;
+  color: #a85a08;
+}
+
+.g-ui-button {
+  min-height: var(--gastario-control-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--gastario-radius-control);
+  padding: 0 16px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+.g-ui-button--primary {
+  border: 1px solid var(--gastario-brand);
+  background: var(--gastario-brand);
+  color: #ffffff;
+}
+
+.g-ui-button--primary:hover {
+  border-color: var(--gastario-brand-hover);
+  background: var(--gastario-brand-hover);
+}
+
+.g-ui-button--secondary {
+  border: 1px solid var(--gastario-border-strong);
+  background: #ffffff;
+  color: var(--gastario-text-main);
+}
+
+.g-ui-button--secondary:hover {
+  border-color: #adc5bf;
+  background: #f8fbfa;
+}
+
+.g-ui-button--danger {
+  border: 1px solid var(--gastario-danger-border);
+  background: var(--gastario-danger-bg);
+  color: var(--gastario-danger-text);
+}
+
+.g-ui-field {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.g-ui-field > span,
+.g-ui-field > label {
+  color: var(--gastario-text-body);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.g-ui-field input,
+.g-ui-field select,
+.g-ui-field textarea,
+.g-ui-input {
+  width: 100%;
+  border: 1px solid var(--gastario-border-strong) !important;
+  border-radius: var(--gastario-radius-control) !important;
+  background: #ffffff !important;
+  color: var(--gastario-text-main) !important;
+  font-size: 13px !important;
+  font-weight: 450 !important;
+  box-shadow: none !important;
+}
+
+.g-ui-field input,
+.g-ui-field select,
+.g-ui-input {
+  min-height: var(--gastario-control-height) !important;
+  padding: 0 12px !important;
+}
+
+.g-ui-field textarea {
+  min-height: 92px;
+  padding: 11px 12px !important;
+  resize: vertical;
+}
+
+.g-ui-field input:focus,
+.g-ui-field select:focus,
+.g-ui-field textarea:focus,
+.g-ui-input:focus {
+  border-color: #6d9a91 !important;
+  box-shadow:
+    0 0 0 4px rgba(8, 113, 88, 0.1) !important;
+}
+
+.g-ui-pill {
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0 9px;
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.g-ui-notice {
+  border-radius: 14px;
+  padding: 13px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.g-ui-notice--info {
+  border: 1px solid #cbddec;
+  background: #f2f8fc;
+  color: #315f7f;
+}
+
+.g-ui-notice--success {
+  border: 1px solid #b8e2d1;
+  background: #edf9f4;
+  color: #086348;
+}
+
+.g-ui-notice--warning {
+  border: 1px solid #f0d1a5;
+  background: #fff8ed;
+  color: #98520d;
+}
+
+.g-ui-notice--danger {
+  border: 1px solid var(--gastario-danger-border);
+  background: var(--gastario-danger-bg);
+  color: var(--gastario-danger-text);
+}
+
+@media (max-width: 1100px) {
+  .g-ui-metric-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .g-ui-page-header,
+  .g-ui-section-header {
+    flex-direction: column;
+  }
+
+  .g-ui-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .g-ui-metric-grid {
+    grid-template-columns: 1fr;
+  }
+}

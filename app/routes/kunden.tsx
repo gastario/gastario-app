@@ -1,5 +1,14 @@
 ﻿import { Form, Link, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
+import {
+  MetricCard,
+  MetricGrid,
+  Notice,
+  PageHeader,
+  PageSection,
+  PageShell,
+} from "../components/ui/PageShell";
+import "../styles/kunden.css";
 
 export function meta() {
   return [{ title: "Kunden · Gastario" }];
@@ -186,222 +195,342 @@ export default function CustomersPage() {
 
   return (
     <AppLayout>
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">Verkauf</p>
-          <h1>Kunden</h1>
-          <span className="pageSubline">
-            {data.tenant?.name || "Kein Mandant"} · echte Kunden, Ansprechpartner und Kontaktdaten.
-          </span>
-        </div>
+      <PageShell className="customersPage">
+        <PageHeader
+          eyebrow="Verkauf"
+          title="Kunden"
+          subtitle={
+            <>
+              {data.tenant?.name || "Kein Mandant"} · Kunden,
+              Ansprechpartner und Kontaktdaten zentral verwalten.
+            </>
+          }
+          actions={
+            <>
+              <Link
+                className="g-ui-button g-ui-button--secondary"
+                to="/auftragseingang"
+              >
+                Auftrag erfassen
+              </Link>
 
-        <div className="topActions">
-          <Link className="secondaryButton" to="/auftragseingang">Auftrag erfassen</Link>
-          <button className="primaryButton" type="button">Neuer Kunde</button>
-        </div>
-      </header>
+              <a
+                className="g-ui-button g-ui-button--primary"
+                href="#kunde-anlegen"
+              >
+                Neuer Kunde
+              </a>
+            </>
+          }
+        />
 
-      {data.setupError ? (
-        <div style={{
-          background: "#fff7ed",
-          border: "1px solid #fed7aa",
-          color: "#9a3412",
-          padding: 16,
-          borderRadius: 16,
-          fontWeight: 900,
-          marginBottom: 16
-        }}>
-          {data.setupError}
-        </div>
-      ) : null}
+        {data.setupError ? (
+          <Notice type="warning">
+            {data.setupError}
+          </Notice>
+        ) : null}
 
-      {actionData?.success ? (
-        <div style={{
-          background: "#ecfdf5",
-          border: "1px solid #a7f3d0",
-          color: "#065f46",
-          padding: 16,
-          borderRadius: 16,
-          fontWeight: 900,
-          marginBottom: 16
-        }}>
-          {actionData.success}
-        </div>
-      ) : null}
+        {actionData?.success ? (
+          <Notice type="success">
+            {actionData.success}
+          </Notice>
+        ) : null}
 
-      {actionData?.error ? (
-        <div style={{
-          background: "#fef2f2",
-          border: "1px solid #fecaca",
-          color: "#991b1b",
-          padding: 16,
-          borderRadius: 16,
-          fontWeight: 900,
-          marginBottom: 16
-        }}>
-          {actionData.error}
-        </div>
-      ) : null}
+        {actionData?.error ? (
+          <Notice type="danger">
+            {actionData.error}
+          </Notice>
+        ) : null}
 
-      <section className="orderSummaryGrid">
-        <article className="metricCard">
-          <div>
-            <p>Kunden gesamt</p>
-            <strong>{data.stats.total}</strong>
-            <span>im Mandanten</span>
-          </div>
-          <small data-trend="aktiv">echt</small>
-        </article>
+        <MetricGrid>
+          <MetricCard
+            label="Kunden gesamt"
+            value={data.stats.total}
+            description="im Mandanten"
+            badge="Gesamt"
+          />
 
-        <article className="metricCard">
-          <div>
-            <p>Mit E-Mail</p>
-            <strong>{data.stats.withEmail}</strong>
-            <span>kontaktierbar</span>
-          </div>
-          <small data-trend="bereit">E-Mail</small>
-        </article>
+          <MetricCard
+            label="Mit E-Mail"
+            value={data.stats.withEmail}
+            description="direkt kontaktierbar"
+            badge="E-Mail"
+          />
 
-        <article className="metricCard">
-          <div>
-            <p>Mit Telefon</p>
-            <strong>{data.stats.withPhone}</strong>
-            <span>Rueckfragen moeglich</span>
-          </div>
-          <small data-trend="pruefen">Kontakt</small>
-        </article>
+          <MetricCard
+            label="Mit Telefon"
+            value={data.stats.withPhone}
+            description="für Rückfragen erreichbar"
+            badge="Kontakt"
+          />
 
-        <article className="metricCard">
-          <div>
-            <p>Mit Auftraegen</p>
-            <strong>{data.stats.withOrders}</strong>
-            <span>aktive Kunden</span>
-          </div>
-          <small data-trend="aktiv">Auftrag</small>
-        </article>
-      </section>
+          <MetricCard
+            label="Mit Aufträgen"
+            value={data.stats.withOrders}
+            description="aktive Kundenbeziehungen"
+            badge="Aufträge"
+          />
+        </MetricGrid>
 
-      <section className="panel">
-        <div className="panelHeader">
-          <div>
-            <p className="eyebrow">Neuer Kunde</p>
-            <h2>Kunde anlegen</h2>
-          </div>
-        </div>
+        <PageSection
+          className="customerCreateSection"
+          eyebrow="Neuer Kunde"
+          title="Kunde anlegen"
+          description="Lege Firmen, Ansprechpartner und Kontaktdaten vollständig an."
+        >
+          <Form
+            id="kunde-anlegen"
+            method="post"
+            className="customerCreateForm"
+          >
+            <input
+              type="hidden"
+              name="intent"
+              value="createCustomer"
+            />
 
-        <Form method="post" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, alignItems: "end" }}>
-          <input type="hidden" name="intent" value="createCustomer" />
+            <label className="g-ui-field">
+              <span>Kundenname</span>
+              <input
+                name="name"
+                placeholder="Firma oder Kunde"
+                required
+              />
+            </label>
 
-          <label>
-            Kundenname
-            <input name="name" placeholder="Firma / Kunde" style={inputStyle} required />
-          </label>
+            <label className="g-ui-field">
+              <span>Ansprechpartner</span>
+              <input
+                name="contactName"
+                placeholder="Vor- und Nachname"
+              />
+            </label>
 
-          <label>
-            Ansprechpartner
-            <input name="contactName" placeholder="Frau/Herr..." style={inputStyle} />
-          </label>
+            <label className="g-ui-field">
+              <span>E-Mail</span>
+              <input
+                name="email"
+                type="email"
+                placeholder="kunde@firma.de"
+              />
+            </label>
 
-          <label>
-            E-Mail
-            <input name="email" type="email" placeholder="kunde@firma.de" style={inputStyle} />
-          </label>
+            <label className="g-ui-field">
+              <span>Telefon</span>
+              <input
+                name="phone"
+                placeholder="030 12345678"
+              />
+            </label>
 
-          <label>
-            Telefon
-            <input name="phone" placeholder="030..." style={inputStyle} />
-          </label>
+            <label className="g-ui-field customerAddressField">
+              <span>Adresse</span>
+              <input
+                name="address"
+                placeholder="Straße, Hausnummer, PLZ und Ort"
+              />
+            </label>
 
-          <label style={{ gridColumn: "span 2" }}>
-            Adresse
-            <input name="address" placeholder="Strasse, PLZ Ort" style={inputStyle} />
-          </label>
+            <div className="customerCreateActions">
+              <button
+                className="g-ui-button g-ui-button--primary"
+                type="submit"
+              >
+                Kunde anlegen
+              </button>
+            </div>
+          </Form>
+        </PageSection>
 
-          <button className="primaryButton" type="submit">
-            Anlegen
-          </button>
-        </Form>
-      </section>
+        <PageSection
+          className="customerListSection"
+          eyebrow="Kundenübersicht"
+          title="Aktuelle Kunden"
+          description={
+            data.customers.length === 1
+              ? "1 Kunde im System"
+              : `${data.customers.length} Kunden im System`
+          }
+        >
+          {data.customers.length === 0 ? (
+            <div className="g-ui-empty customerEmptyState">
+              <strong>Noch keine Kunden angelegt</strong>
+              <span>
+                Lege deinen ersten Kunden an oder übernimm die
+                Kundendaten aus einem neuen Auftrag.
+              </span>
+            </div>
+          ) : (
+            <div className="customersGrid">
+              {data.customers.map((customer: any) => (
+                <article
+                  className="customerCard"
+                  key={customer.id}
+                >
+                  <div className="customerCardHeader">
+                    <div className="customerIdentity">
+                      <div
+                        className="customerInitial"
+                        aria-hidden="true"
+                      >
+                        {String(customer.name || "K")
+                          .trim()
+                          .slice(0, 1)
+                          .toUpperCase()}
+                      </div>
 
-      <section className="panel">
-        <div className="panelHeader">
-          <div>
-            <p className="eyebrow">Kundenuebersicht</p>
-            <h2>Aktuelle Kunden</h2>
-          </div>
-        </div>
+                      <div>
+                        <h3>{customer.name}</h3>
+                        <p>
+                          {customer.contactName ||
+                            "Kein Ansprechpartner"}
+                        </p>
+                      </div>
+                    </div>
 
-        {data.customers.length === 0 ? (
-          <div className="noteBox">
-            <strong>Noch keine Kunden angelegt.</strong>
-            <p>Lege oben deinen ersten Kunden an oder erstelle einen Auftrag im Auftragseingang.</p>
-          </div>
-        ) : (
-          <div className="customersGrid">
-            {data.customers.map((customer: any) => (
-              <article className="customerCard" key={customer.id}>
-                <div className="customerTop">
-                  <div>
-                    <strong>{customer.name}</strong>
-                    <span>{customer.contactName || "Kein Ansprechpartner"} · Aktiv</span>
+                    <span className="customerOrderBadge g-ui-pill">
+                      {customer._count?.orders || 0}{" "}
+                      {(customer._count?.orders || 0) === 1
+                        ? "Auftrag"
+                        : "Aufträge"}
+                    </span>
                   </div>
-                  <small>{customer._count?.orders || 0} Auftraege</small>
-                </div>
 
-                <div className="customerDetails">
-                  <p>
-                    <b>Ansprechpartner</b>
-                    <span>{customer.contactName || "-"}</span>
-                  </p>
-                  <p>
-                    <b>E-Mail</b>
-                    <span>{customer.email || "-"}</span>
-                  </p>
-                  <p>
-                    <b>Telefon</b>
-                    <span>{customer.phone || "-"}</span>
-                  </p>
-                  <p>
-                    <b>Adresse</b>
-                    <span>{customer.address || "-"}</span>
-                  </p>
-                </div>
+                  <div className="customerDetails">
+                    <div>
+                      <span>Ansprechpartner</span>
+                      <strong>
+                        {customer.contactName || "Nicht hinterlegt"}
+                      </strong>
+                    </div>
 
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16 }}>
-                  <details>
-                    <summary className="ghostButton" style={{ listStyle: "none", cursor: "pointer" }}>
-                      Bearbeiten
-                    </summary>
+                    <div>
+                      <span>E-Mail</span>
+                      <strong>
+                        {customer.email || "Nicht hinterlegt"}
+                      </strong>
+                    </div>
 
-                    <Form method="post" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
-                      <input type="hidden" name="intent" value="updateCustomer" />
-                      <input type="hidden" name="customerId" value={customer.id} />
+                    <div>
+                      <span>Telefon</span>
+                      <strong>
+                        {customer.phone || "Nicht hinterlegt"}
+                      </strong>
+                    </div>
 
-                      <input name="name" defaultValue={customer.name} style={inputStyle} />
-                      <input name="contactName" defaultValue={customer.contactName || ""} style={inputStyle} />
-                      <input name="email" type="email" defaultValue={customer.email || ""} style={inputStyle} />
-                      <input name="phone" defaultValue={customer.phone || ""} style={inputStyle} />
-                      <input name="address" defaultValue={customer.address || ""} style={{ ...inputStyle, gridColumn: "1 / -1" }} />
+                    <div className="customerAddressDetail">
+                      <span>Adresse</span>
+                      <strong>
+                        {customer.address || "Nicht hinterlegt"}
+                      </strong>
+                    </div>
+                  </div>
 
-                      <button className="primaryButton" type="submit" style={{ gridColumn: "1 / -1" }}>
-                        Speichern
+                  <div className="customerCardActions">
+                    <details className="customerEditDetails">
+                      <summary className="g-ui-button g-ui-button--secondary">
+                        Bearbeiten
+                      </summary>
+
+                      <Form
+                        method="post"
+                        className="customerEditForm"
+                      >
+                        <input
+                          type="hidden"
+                          name="intent"
+                          value="updateCustomer"
+                        />
+                        <input
+                          type="hidden"
+                          name="customerId"
+                          value={customer.id}
+                        />
+
+                        <label className="g-ui-field">
+                          <span>Kundenname</span>
+                          <input
+                            name="name"
+                            defaultValue={customer.name}
+                            required
+                          />
+                        </label>
+
+                        <label className="g-ui-field">
+                          <span>Ansprechpartner</span>
+                          <input
+                            name="contactName"
+                            defaultValue={
+                              customer.contactName || ""
+                            }
+                          />
+                        </label>
+
+                        <label className="g-ui-field">
+                          <span>E-Mail</span>
+                          <input
+                            name="email"
+                            type="email"
+                            defaultValue={customer.email || ""}
+                          />
+                        </label>
+
+                        <label className="g-ui-field">
+                          <span>Telefon</span>
+                          <input
+                            name="phone"
+                            defaultValue={customer.phone || ""}
+                          />
+                        </label>
+
+                        <label className="g-ui-field customerEditAddress">
+                          <span>Adresse</span>
+                          <input
+                            name="address"
+                            defaultValue={
+                              customer.address || ""
+                            }
+                          />
+                        </label>
+
+                        <div className="customerEditActions">
+                          <button
+                            className="g-ui-button g-ui-button--primary"
+                            type="submit"
+                          >
+                            Änderungen speichern
+                          </button>
+                        </div>
+                      </Form>
+                    </details>
+
+                    <Form method="post">
+                      <input
+                        type="hidden"
+                        name="intent"
+                        value="deleteCustomer"
+                      />
+                      <input
+                        type="hidden"
+                        name="customerId"
+                        value={customer.id}
+                      />
+
+                      <button
+                        className="g-ui-button g-ui-button--danger"
+                        type="submit"
+                      >
+                        Löschen
                       </button>
                     </Form>
-                  </details>
-
-                  <Form method="post">
-                    <input type="hidden" name="intent" value="deleteCustomer" />
-                    <input type="hidden" name="customerId" value={customer.id} />
-                    <button className="ghostButton" type="submit" style={{ color: "#b91c1c" }}>
-                      Loeschen
-                    </button>
-                  </Form>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </PageSection>
+      </PageShell>
     </AppLayout>
   );
 }
+

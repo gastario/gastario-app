@@ -1,0 +1,273 @@
+.customersPage {
+  gap: 20px;
+}
+
+.customerCreateSection,
+.customerListSection {
+  padding: 22px 24px;
+}
+
+.customerCreateForm {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+
+.customerAddressField {
+  grid-column: span 2;
+}
+
+.customerCreateActions {
+  display: flex;
+  align-items: end;
+  justify-content: flex-end;
+}
+
+.customerCreateActions .g-ui-button {
+  width: 100%;
+}
+
+.customersGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.customerCard {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--gastario-border);
+  border-radius: var(--gastario-radius-card);
+  background: #ffffff;
+  box-shadow: none;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.customerCard:hover {
+  transform: translateY(-1px);
+  border-color: #b8cbc7;
+  box-shadow: 0 10px 24px rgba(23, 52, 60, 0.055);
+}
+
+.customerCardHeader {
+  min-height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  border-bottom: 1px solid var(--gastario-border);
+  background:
+    linear-gradient(
+      145deg,
+      #f4faf8 0%,
+      #ffffff 78%
+    );
+}
+
+.customerIdentity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.customerInitial {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--gastario-brand-soft);
+  color: var(--gastario-brand);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.customerIdentity h3 {
+  overflow: hidden;
+  margin: 0;
+  color: var(--gastario-text-main);
+  font-size: 17px;
+  font-weight: 720;
+  letter-spacing: -0.025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customerIdentity p {
+  overflow: hidden;
+  margin: 5px 0 0;
+  color: var(--gastario-text-muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customerOrderBadge {
+  flex: 0 0 auto;
+  border: 1px solid #cde2dc;
+  background: var(--gastario-brand-soft);
+  color: var(--gastario-brand);
+}
+
+.customerDetails {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 18px;
+}
+
+.customerDetails > div {
+  min-width: 0;
+  min-height: 64px;
+  padding: 11px 12px;
+  border: 1px solid var(--gastario-border);
+  border-radius: 12px;
+  background: var(--gastario-bg-soft);
+}
+
+.customerDetails span,
+.customerDetails strong {
+  display: block;
+}
+
+.customerDetails span {
+  margin-bottom: 5px;
+  color: var(--gastario-text-muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.065em;
+  text-transform: uppercase;
+}
+
+.customerDetails strong {
+  overflow: hidden;
+  color: var(--gastario-text-main);
+  font-size: 11.5px;
+  font-weight: 620;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+}
+
+.customerAddressDetail {
+  grid-column: 1 / -1;
+}
+
+.customerCardActions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 18px 18px;
+}
+
+.customerEditDetails {
+  flex: 1;
+}
+
+.customerEditDetails > summary {
+  width: max-content;
+  list-style: none;
+  cursor: pointer;
+}
+
+.customerEditDetails > summary::-webkit-details-marker {
+  display: none;
+}
+
+.customerEditDetails[open] {
+  width: 100%;
+}
+
+.customerEditForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+  padding: 15px;
+  border: 1px solid var(--gastario-border);
+  border-radius: 14px;
+  background: var(--gastario-bg-soft);
+}
+
+.customerEditAddress,
+.customerEditActions {
+  grid-column: 1 / -1;
+}
+
+.customerEditActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.customerEmptyState {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  border: 1px dashed var(--gastario-border-strong);
+  border-radius: 14px;
+  background: var(--gastario-bg-soft);
+  text-align: center;
+}
+
+.customerEmptyState strong {
+  color: var(--gastario-text-main);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.customerEmptyState span {
+  max-width: 520px;
+  color: var(--gastario-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 1100px) {
+  .customerCreateForm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .customersGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .customerCreateSection,
+  .customerListSection {
+    padding: 18px 16px;
+  }
+
+  .customerCreateForm,
+  .customerEditForm,
+  .customerDetails {
+    grid-template-columns: 1fr;
+  }
+
+  .customerAddressField,
+  .customerAddressDetail {
+    grid-column: auto;
+  }
+
+  .customerCardHeader {
+    align-items: flex-start;
+  }
+
+  .customerCardActions {
+    flex-direction: column;
+  }
+
+  .customerCardActions form,
+  .customerCardActions .g-ui-button {
+    width: 100%;
+  }
+}

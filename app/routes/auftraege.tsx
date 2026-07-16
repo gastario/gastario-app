@@ -1,6 +1,10 @@
 ﻿import { Form, Link, useActionData, useLoaderData } from "react-router";
 import { useState } from "react";
 import AppLayout from "../components/AppLayout";
+import {
+  PageHeader,
+  PageShell,
+} from "../components/ui/PageShell";
 import DeliveryNoteButton from "../components/DeliveryNoteButton";
 import auftraegeStyles from "../styles/auftraege.css?url";
 import auftragseingangStyles from "../styles/auftragseingang.css?url";
@@ -531,11 +535,11 @@ export default function OrdersPage() {
             : "ordersPageUpcoming")
         }
       >
-      <header className="topbar">
+      <header className="topbar g-ui-page-header">
         <div>
-          <p className="eyebrow">Verkauf</p>
-          <h1>Aufträge</h1>
-          <span className="pageSubline">
+          <p className="eyebrow g-ui-eyebrow">Verkauf</p>
+          <h1 className="g-ui-page-title">Aufträge</h1>
+          <span className="pageSubline g-ui-page-subtitle">
             {data.tenant?.name || "Kein Mandant"} · {data.view === "past"
               ? "abgeschlossene und vergangene Catering-Aufträge."
               : "kommende Lieferungen, Produktion und Packstatus auf einen Blick."}
@@ -543,8 +547,8 @@ export default function OrdersPage() {
         </div>
 
         <div className="topActions">
-          <Link className="secondaryButton" to="/auftragseingang">Eingangszentrale</Link>
-          <Link className="primaryButton" to="/neuer-auftrag">+ Neuer Auftrag</Link>
+          <Link className="secondaryButton g-ui-button g-ui-button--secondary" to="/auftragseingang">Eingangszentrale</Link>
+          <Link className="primaryButton g-ui-button g-ui-button--primary" to="/neuer-auftrag">+ Neuer Auftrag</Link>
         </div>
       </header>
 
@@ -590,8 +594,8 @@ export default function OrdersPage() {
         </div>
       ) : null}
 
-      <section className="orderSummaryGrid">
-        <article className="metricCard">
+      <section className="orderSummaryGrid g-ui-metrics">
+        <article className="metricCard g-ui-card g-ui-card--flat">
           <div>
             <p>Aufträge gesamt</p>
             <strong>{data.counts.all}</strong>
@@ -600,7 +604,7 @@ export default function OrdersPage() {
           <small data-trend="aktiv">echt</small>
         </article>
 
-        <article className="metricCard">
+        <article className="metricCard g-ui-card g-ui-card--flat">
           <div>
             <p>Bestätigt</p>
             <strong>{data.counts.confirmed}</strong>
@@ -609,7 +613,7 @@ export default function OrdersPage() {
           <small data-trend="aktiv">aktiv</small>
         </article>
 
-        <article className="metricCard">
+        <article className="metricCard g-ui-card g-ui-card--flat">
           <div>
             <p>Operative Aufträge</p>
             <strong>{data.orders.length}</strong>
@@ -618,7 +622,7 @@ export default function OrdersPage() {
           <small data-trend="bereit">live</small>
         </article>
 
-        <article className="metricCard">
+        <article className="metricCard g-ui-card g-ui-card--flat">
           <div>
             <p>Auftragswert</p>
             <strong>{centsToEuro(data.counts.totalValueCents)}</strong>
@@ -628,8 +632,8 @@ export default function OrdersPage() {
         </article>
       </section>
 
-      <section className="panel">
-        <div className="panelHeader">
+      <section className="panel g-ui-card">
+        <div className="panelHeader g-ui-section-header">
           <div>
             <p className="eyebrow">Auftragsübersicht</p>
             <h2>
@@ -639,8 +643,8 @@ export default function OrdersPage() {
             </h2>
           </div>
 
-          <div className="ordersFilterWrap">
-            <Form method="get" className="ordersFilterForm">
+          <div className="ordersFilterWrap g-ui-filter-panel">
+            <Form method="get" className="ordersFilterForm g-ui-filter-form">
               {data.view === "past" ? (
                 <input
                   type="hidden"
@@ -652,23 +656,23 @@ export default function OrdersPage() {
                 <input type="hidden" name="status" value={data.activeStatus} />
               ) : null}
 
-              <label className="filterLabel">
+              <label className="filterLabel g-ui-field">
                 Suche
                 <input
                   type="search"
                   name="q"
                   defaultValue={data.searchQuery || ""}
                   placeholder="Kunde, Nummer, Adresse..."
-                  className="filterInput"
+                  className="filterInput g-ui-input"
                 />
               </label>
 
-              <label className="filterLabel">
+              <label className="filterLabel g-ui-field">
                 Lieferzeitraum
                 <select
                   name="dateRange"
                   defaultValue={data.dateRange || ""}
-                  className="filterInput"
+                  className="filterInput g-ui-input"
                 >
                   <option value="">Alle Lieferungen</option>
                   <option value="today">Heute</option>
@@ -677,12 +681,12 @@ export default function OrdersPage() {
                 </select>
               </label>
 
-              <button className="ghostButton primaryGhostButton" type="submit">
+              <button className="ghostButton primaryGhostButton g-ui-button g-ui-button--primary" type="submit">
                 Filtern
               </button>
 
               <Link
-                className="ghostButton"
+                className="ghostButton g-ui-button g-ui-button--secondary"
                 to={
                   data.view === "past"
                     ? "/auftraege?view=past"
@@ -693,7 +697,7 @@ export default function OrdersPage() {
               </Link>
             </Form>
 
-            <div className="statusFilterGroup">
+            <div className="statusFilterGroup g-ui-segmented">
               {STATUSES.map((status) => {
                 const params = new URLSearchParams();
 
@@ -706,7 +710,7 @@ export default function OrdersPage() {
                 return (
                   <Link
                     key={status.value || "all"}
-                    className={"ghostButton " + (data.activeStatus === status.value ? "activeFilter" : "")}
+                    className={"ghostButton g-ui-button g-ui-button--secondary " + (data.activeStatus === status.value ? "activeFilter" : "")}
                     to={href}
                   >
                     {status.label}
@@ -720,7 +724,7 @@ export default function OrdersPage() {
         {selectedOrder ? (
           <div className="finalOrdersGrid selectedFocusMode">
             <aside
-              className="finalSelectedPanel"
+              className="finalSelectedPanel g-ui-card"
               key={selectedOrder.id}
             >
               <div className="finalSelectedTop">
@@ -752,7 +756,7 @@ export default function OrdersPage() {
                   </p>
                 </div>
 
-                <span className="finalSourceBadge big">
+                <span className="finalSourceBadge big g-ui-pill">
                   {String(
                     selectedOrder.platformName ||
                       selectedOrder.source ||
@@ -761,7 +765,7 @@ export default function OrdersPage() {
                 </span>
               </div>
 
-              <div className="finalSelectedFacts">
+              <div className="finalSelectedFacts g-ui-fact-grid">
                 <div>
                   <span>Lieferung</span>
 
@@ -819,7 +823,7 @@ export default function OrdersPage() {
                 </div>
               </div>
 
-              <div className="finalSelectedItems">
+              <div className="finalSelectedItems g-ui-card g-ui-card--flat">
                 <h4>Positionen</h4>
 
                 {selectedOrderItems
@@ -858,10 +862,10 @@ export default function OrdersPage() {
                 ) : null}
               </div>
 
-              <section className="orderBillingPanel">
+              <section className="orderBillingPanel g-ui-card g-ui-card--flat g-ui-card--soft">
                 <div className="orderBillingHeader">
                   <div>
-                    <p className="eyebrow">Abrechnung</p>
+                    <p className="eyebrow g-ui-eyebrow">Abrechnung</p>
                     <h4>Wie soll dieser Auftrag abgerechnet werden?</h4>
                     <span>
                       Gastario erstellt nur dann eine Rechnung, wenn du
@@ -1017,7 +1021,7 @@ export default function OrdersPage() {
               <div className="finalSelectedActions">
                 <button
                   type="button"
-                  className="finalBackButton"
+                  className="finalBackButton g-ui-button g-ui-button--secondary"
                   onClick={() =>
                     setSelectedOrderId(null)
                   }

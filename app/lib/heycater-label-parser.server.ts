@@ -423,79 +423,199 @@ function parseOneHeycaterLabel(date: string, block: string[]) {
     .filter((line) => !isCustomerLine(line))
     .filter((line) => !isAddressLine(line));
 
-  let name = cleanContent[0] || "Name nicht erkannt";
+  let name =
+    cleanContent[0] ||
+    "Name nicht erkannt";
+
   let startIndex = 1;
 
-  // Manche Heycater-PDFs brechen Vorname/Nachname in zwei Zeilen:
-  // Martyna
-  // Radziszewicz
-  // Salmon Tempura Bowl
-  // Dann darf Radziszewicz nicht als Gericht genommen werden.
+  /*
+   * gastario-exact-multiline-dish-fix-20260716
+   *
+   * Getrennte Vor- und Nachnamen werden nur zusammengefügt,
+   * wenn beide Zeilen jeweils wie ein einzelner Namensteil
+   * aussehen.
+   *
+   * Dadurch wird beispielsweise:
+   *
+   * Max Mustermann
+   * Mediterrane Gemüsepfanne
+   * mit Chicken und Reis
+   *
+   * nicht fälschlich zu:
+   *
+   * Name: Max Mustermann Mediterrane Gemüsepfanne
+   */
+  const looksLikeSingleNamePart = (value: string) => {
+    const text = cleanLine(value);
+
+    if (!looksLikeNamePart(text)) {
+      return false;
+    }
+
+    const words = text
+      .split(/\s+/)
+      .map((word) => word.trim())
+      .filter(Boolean);
+
+    return words.length === 1;
+  };
+
   if (
     cleanContent.length >= 3 &&
-    looksLikeNamePart(cleanContent[0]) &&
-    looksLikeNamePart(cleanContent[1]) &&
+    looksLikeSingleNamePart(cleanContent[0]) &&
+    looksLikeSingleNamePart(cleanContent[1]) &&
     isDishLine(cleanContent[2])
   ) {
-    name = cleanContent[0] + " " + cleanContent[1];
+    name = cleanLine(
+      cleanContent[0] +
+      " " +
+      cleanContent[1]
+    );
+
     startIndex = 2;
   }
 
-  let meal = "Gericht nicht erkannt";
+  let meal =
+    "Gericht nicht erkannt";
+
   const details: string[] = [];
 
-  for (let i = startIndex; i < cleanContent.length; i++) {
-    const line = cleanContent[i];
-    if (!line) continue;
+  let collectingMeal = true;
 
-    // Wichtig: Heycater schreibt manchmal Gericht + Allergene in eine Zeile:
-    // Korean BBQ Veggie Wrap / Vegetarian / Cereals containing gluten, Soybeans
+  for (
+    let i = startIndex;
+    i < cleanContent.length;
+    i++
+  ) {
+    const line = cleanLine(cleanContent[i]);
+
+    if (!line) {
+      continue;
+    }
+
+    /*
+     * Gericht und Allergene können gemeinsam mit
+     * Schrägstrichen in einer Zeile stehen.
+     */
     if (line.includes("/")) {
-      const split = splitMealAndInfo(line);
+      const split =
+        splitMealAndInfo(line);
 
-      if (meal === "Gericht nicht erkannt" && split.meal) {
-        meal = split.meal;
+      if (split.meal) {
+        if (
+          meal ===
+          "Gericht nicht erkannt"
+        ) {
+          meal = split.meal;
+        } else if (collectingMeal) {
+          meal = cleanLine(
+            meal +
+            " " +
+            split.meal
+          );
+        }
       }
 
       if (split.info) {
         details.push(split.info);
+        collectingMeal = false;
       }
 
       continue;
     }
 
+    /*
+     * Sobald Allergene, Ernährungsformen oder sonstige
+     * Infozeilen beginnen, endet der Gerichtname.
+     */
     if (isInfoLine(line)) {
       details.push(line);
+      collectingMeal = false;
       continue;
     }
 
-    if (meal === "Gericht nicht erkannt") {
-      meal = line;
+    /*
+     * Alle normalen Zeilen vor dem Infoblock gehören
+     * zum vollständigen Gerichtnamen.
+     */
+    if (collectingMeal) {
+      if (
+        meal ===
+        "Gericht nicht erkannt"
+      ) {
+        meal = line;
+      } else {
+        meal = cleanLine(
+          meal +
+          " " +
+          line
+        );
+      }
+
       continue;
     }
+
+    /*
+     * Zusätzliche Zeilen nach dem Infoblock werden als
+     * Details behandelt und nicht als Kunde oder Gericht.
+     */
+    details.push(line);
   }
 
   let finalMeal = meal;
-  let finalDetails = details.join(" / ");
+  let finalDetails =
+    details.join(" / ");
 
-  // Sicherheitskorrektur:
-  // Wenn versehentlich "Vegetarian", "Vegan", "Halal" usw. als Gericht genommen wurde,
-  // aber in den Details ein echter Gerichtname steckt, dann tauschen.
-  if ((isInfoLine(finalMeal) || !isDishLine(finalMeal)) && finalDetails) {
+  /*
+   * Bestehende Sicherheitskorrektur:
+   * Falls eine reine Infozeile als Gericht erkannt wurde,
+   * aber in den Details ein echter Gerichtname vorkommt,
+   * wird die Zuordnung korrigiert.
+   */
+  if (
+    (
+      isInfoLine(finalMeal) ||
+      !isDishLine(finalMeal)
+    ) &&
+    finalDetails
+  ) {
     const detailParts = finalDetails
       .split("/")
       .map((part) => cleanLine(part))
       .filter(Boolean);
 
     const realMealFromDetails =
-      detailParts.find((part) => isDishLine(part)) ||
-      detailParts.find((part) => !isInfoLine(part));
+      detailParts.find(
+        (part) => isDishLine(part)
+      ) ||
+      detailParts.find(
+        (part) => !isInfoLine(part)
+      );
 
     if (realMealFromDetails) {
-      finalMeal = realMealFromDetails;
-      finalDetails = detailParts
-        .filter((part) => part !== realMealFromDetails)
-        .join(" / ");
+      /*
+       * Nur austauschen, wenn der bisherige Gerichtname
+       * keine zusammengefügte mehrzeilige Bezeichnung ist.
+       */
+      const mealWordCount =
+        cleanLine(finalMeal)
+          .split(/\s+/)
+          .filter(Boolean)
+          .length;
+
+      if (mealWordCount <= 2) {
+        finalMeal =
+          realMealFromDetails;
+
+        finalDetails = detailParts
+          .filter(
+            (part) =>
+              part !==
+              realMealFromDetails
+          )
+          .join(" / ");
+      }
     }
   }
 

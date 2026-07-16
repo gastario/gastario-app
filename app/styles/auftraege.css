@@ -2184,3 +2184,941 @@
     width: max-content;
   }
 }
+
+/*
+ * Gastario UI migration – Aufträge
+ */
+
+.topbar.g-ui-page-header {
+  margin-bottom: var(--gastario-space-5);
+}
+
+.topbar .g-ui-page-title {
+  font-size: clamp(28px, 2.4vw, 34px) !important;
+  font-weight: 760 !important;
+  line-height: 1.08 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.orderBillingPanel.g-ui-card {
+  border-color: var(--gastario-border);
+  border-radius: var(--gastario-radius-card);
+  background:
+    linear-gradient(
+      145deg,
+      var(--gastario-bg-soft) 0%,
+      #ffffff 78%
+    );
+  box-shadow: none !important;
+}
+
+.orderBillingHeader h4 {
+  color: var(--gastario-text-main);
+  font-size: 18px;
+  font-weight: 740;
+  letter-spacing: -0.025em;
+}
+
+.orderBillingHeader > div > span {
+  color: var(--gastario-text-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.orderBillingStatus {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 10px;
+  background: var(--gastario-brand-soft);
+  color: var(--gastario-brand);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.orderBillingForm label {
+  color: var(--gastario-text-body);
+  font-size: 11px;
+  font-weight: 740;
+}
+
+.orderBillingForm select {
+  min-height: var(--gastario-control-height) !important;
+  border: 1px solid var(--gastario-border-strong) !important;
+  border-radius: var(--gastario-radius-control) !important;
+  background: #ffffff !important;
+  color: var(--gastario-text-main) !important;
+  font-size: 13px !important;
+  font-weight: 450 !important;
+  box-shadow: none !important;
+}
+
+.orderBillingForm select:focus {
+  border-color: #6d9a91 !important;
+  box-shadow: 0 0 0 4px rgba(8, 113, 88, 0.1) !important;
+}
+
+.orderBillingForm button,
+.orderBillingInvoiceAction a {
+  min-height: var(--gastario-control-height) !important;
+  border: 1px solid var(--gastario-brand) !important;
+  border-radius: var(--gastario-radius-control) !important;
+  background: var(--gastario-brand) !important;
+  color: #ffffff !important;
+  padding: 0 16px !important;
+  font-size: 12px !important;
+  font-weight: 760 !important;
+  box-shadow: none !important;
+}
+
+.orderBillingForm button:hover,
+.orderBillingInvoiceAction a:hover {
+  border-color: var(--gastario-brand-hover) !important;
+  background: var(--gastario-brand-hover) !important;
+}
+
+.orderBillingInvoiceAction,
+.orderBillingInformation {
+  border-color: var(--gastario-border);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.orderBillingInvoiceAction strong,
+.orderBillingInformation strong {
+  color: var(--gastario-text-main);
+}
+
+.orderBillingInvoiceAction span,
+.orderBillingInformation span {
+  color: var(--gastario-text-muted);
+}
+
+@media (max-width: 760px) {
+  .topbar.g-ui-page-header {
+    flex-direction: column;
+  }
+}
+
+/*
+ * Gastario UI migration – Aufträge
+ */
+
+.topbar.g-ui-page-header {
+  margin-bottom: var(--gastario-space-5);
+}
+
+.topbar .g-ui-page-title {
+  font-size: clamp(28px, 2.4vw, 34px) !important;
+  font-weight: 760 !important;
+  line-height: 1.08 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.orderBillingPanel.g-ui-card {
+  border-color: var(--gastario-border);
+  border-radius: var(--gastario-radius-card);
+  background:
+    linear-gradient(
+      145deg,
+      var(--gastario-bg-soft) 0%,
+      #ffffff 78%
+    );
+  box-shadow: none !important;
+}
+
+.orderBillingHeader h4 {
+  color: var(--gastario-text-main);
+  font-size: 18px;
+  font-weight: 740;
+  letter-spacing: -0.025em;
+}
+
+.orderBillingHeader > div > span {
+  color: var(--gastario-text-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.orderBillingStatus {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 10px;
+  background: var(--gastario-brand-soft);
+  color: var(--gastario-brand);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.orderBillingForm label {
+  color: var(--gastario-text-body);
+  font-size: 11px;
+  font-weight: 740;
+}
+
+.orderBillingForm select {
+  min-height: var(--gastario-control-height) !important;
+  border: 1px solid var(--gastario-border-strong) !important;
+  border-radius: var(--gastario-radius-control) !important;
+  background: #ffffff !important;
+  color: var(--gastario-text-main) !important;
+  font-size: 13px !important;
+  font-weight: 450 !important;
+  box-shadow: none !important;
+}
+
+.orderBillingForm select:focus {
+  border-color: #6d9a91 !important;
+  box-shadow: 0 0 0 4px rgba(8, 113, 88, 0.1) !important;
+}
+
+.orderBillingForm button,
+.orderBillingInvoiceAction a {
+  min-height: var(--gastario-control-height) !important;
+  border: 1px solid var(--gastario-brand) !important;
+  border-radius: var(--gastario-radius-control) !important;
+  background: var(--gastario-brand) !important;
+  color: #ffffff !important;
+  padding: 0 16px !important;
+  font-size: 12px !important;
+  font-weight: 760 !important;
+  box-shadow: none !important;
+}
+
+.orderBillingForm button:hover,
+.orderBillingInvoiceAction a:hover {
+  border-color: var(--gastario-brand-hover) !important;
+  background: var(--gastario-brand-hover) !important;
+}
+
+.orderBillingInvoiceAction,
+.orderBillingInformation {
+  border-color: var(--gastario-border);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.orderBillingInvoiceAction strong,
+.orderBillingInformation strong {
+  color: var(--gastario-text-main);
+}
+
+.orderBillingInvoiceAction span,
+.orderBillingInformation span {
+  color: var(--gastario-text-muted);
+}
+
+@media (max-width: 760px) {
+  .topbar.g-ui-page-header {
+    flex-direction: column;
+  }
+}
+
+/*
+ * gastario-orders-reference-ui-20260715
+ */
+
+.ordersPage {
+  display: grid;
+  gap: var(--gastario-space-5);
+}
+
+.ordersNotice {
+  margin-bottom: 0;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.ordersPage .orderSummaryGrid.g-ui-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 0;
+}
+
+.ordersPage .metricCard.g-ui-card {
+  min-height: 108px;
+  padding: 18px;
+  border: 1px solid var(--gastario-border) !important;
+  border-radius: var(--gastario-radius-card) !important;
+  background: var(--gastario-bg-card) !important;
+  box-shadow: var(--gastario-shadow-card) !important;
+}
+
+.ordersPage .metricCard::after {
+  display: none;
+}
+
+.ordersPage .metricCard p {
+  margin: 0 0 6px;
+  color: var(--gastario-text-muted);
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.ordersPage .metricCard strong {
+  color: var(--gastario-text-main);
+  font-size: 27px;
+  font-weight: 720;
+}
+
+.ordersPage .metricCard span {
+  margin-top: 6px;
+  color: var(--gastario-text-muted);
+  font-size: 11px;
+}
+
+.ordersPage .metricCard small {
+  top: 16px;
+  right: 16px;
+  border: 0;
+  padding: 5px 8px;
+  background: var(--gastario-brand-soft);
+  color: var(--gastario-brand);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.ordersPage .panel.g-ui-card {
+  overflow: hidden;
+  border: 1px solid var(--gastario-border) !important;
+  border-radius: var(--gastario-radius-card) !important;
+  box-shadow: var(--gastario-shadow-card) !important;
+}
+
+.ordersPage .panelHeader.g-ui-section-header {
+  display: grid;
+  gap: 20px;
+  margin: 0;
+  padding: 22px 24px 20px;
+  border-bottom: 1px solid var(--gastario-border);
+}
+
+.ordersPage .panelHeader > div:first-child {
+  margin: 0;
+}
+
+.ordersPage .panelHeader h2 {
+  margin: 0;
+  color: var(--gastario-text-main);
+  font-size: 22px;
+  font-weight: 740;
+  letter-spacing: -0.03em;
+}
+
+.ordersPage .ordersFilterWrap.g-ui-filter-panel {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--gastario-border);
+  border-radius: 14px;
+  background: var(--gastario-bg-soft);
+}
+
+.ordersPage .ordersFilterForm.g-ui-filter-form {
+  grid-template-columns:
+    minmax(260px, 1.5fr)
+    minmax(190px, 0.8fr)
+    116px
+    116px;
+  gap: 10px;
+}
+
+.ordersPage .filterLabel.g-ui-field {
+  gap: 6px;
+  color: var(--gastario-text-muted) !important;
+  font-size: 10px;
+  font-weight: 740 !important;
+  letter-spacing: 0.045em;
+}
+
+.ordersPage .filterInput.g-ui-input {
+  min-height: var(--gastario-control-height) !important;
+  border: 1px solid var(--gastario-border-strong) !important;
+  border-radius: var(--gastario-radius-control) !important;
+  background: #ffffff !important;
+  color: var(--gastario-text-main) !important;
+  font-size: 13px !important;
+  font-weight: 450 !important;
+  box-shadow: none !important;
+}
+
+.ordersPage .filterInput.g-ui-input:focus {
+  border-color: #6d9a91 !important;
+  box-shadow: 0 0 0 4px rgba(8, 113, 88, 0.1) !important;
+}
+
+.ordersPage .ordersFilterForm .g-ui-button {
+  min-height: var(--gastario-control-height) !important;
+  padding: 0 14px !important;
+  font-size: 11px !important;
+}
+
+.ordersPage .statusFilterGroup.g-ui-segmented {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--gastario-border);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.ordersPage .statusFilterGroup .g-ui-button {
+  min-width: auto;
+  min-height: 34px !important;
+  padding: 0 12px !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  color: var(--gastario-text-muted) !important;
+  font-size: 10px !important;
+  box-shadow: none !important;
+}
+
+.ordersPage .statusFilterGroup .activeFilter {
+  border-color: var(--gastario-border) !important;
+  background: var(--gastario-brand-soft) !important;
+  color: var(--gastario-brand) !important;
+  box-shadow: none !important;
+}
+
+.ordersPage .ordersCardList,
+.ordersPage .ordersTable {
+  padding: 18px 24px 24px;
+  background: #f7faf9;
+}
+
+.ordersPage .ordersListCard,
+.ordersPage .ordersRow {
+  border: 1px solid var(--gastario-border) !important;
+  border-radius: 15px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.ordersPage .ordersListCard:hover,
+.ordersPage .ordersRow:hover {
+  transform: translateY(-1px);
+  border-color: #b8cbc7 !important;
+  box-shadow: 0 8px 20px rgba(23, 52, 60, 0.055) !important;
+}
+
+.ordersPage .finalSelectedPanel.g-ui-card {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff;
+  box-shadow: none !important;
+}
+
+.ordersPage .finalSelectedTop {
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--gastario-border);
+  background:
+    linear-gradient(
+      145deg,
+      #f4faf8 0%,
+      #ffffff 76%
+    );
+}
+
+.ordersPage .finalSelectedKicker {
+  color: var(--gastario-brand);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.ordersPage .finalOrderNumber {
+  color: var(--gastario-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ordersPage .finalSelectedTop h3 {
+  color: var(--gastario-text-main);
+  font-size: 25px;
+  font-weight: 740;
+  letter-spacing: -0.035em;
+}
+
+.ordersPage .finalSourceBadge.g-ui-pill {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--gastario-border);
+  background: #ffffff;
+  color: var(--gastario-brand);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.ordersPage .finalSelectedFacts.g-ui-fact-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 20px 24px;
+}
+
+.ordersPage .finalSelectedFacts > div {
+  min-height: 110px;
+  padding: 16px;
+  border: 1px solid var(--gastario-border);
+  border-radius: 14px;
+  background: var(--gastario-bg-soft);
+}
+
+.ordersPage .finalSelectedFacts span {
+  color: var(--gastario-text-muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.ordersPage .finalSelectedFacts strong {
+  margin-top: 8px;
+  color: var(--gastario-text-main);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ordersPage .finalSelectedFacts small {
+  margin-top: 5px;
+  color: var(--gastario-text-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.ordersPage .finalSelectedItems.g-ui-card {
+  margin: 0 24px 20px;
+  padding: 18px;
+  border: 1px solid var(--gastario-border) !important;
+  border-radius: 14px !important;
+  background: #ffffff;
+}
+
+.ordersPage .finalSelectedItems h4 {
+  margin: 0 0 12px;
+  color: var(--gastario-text-main);
+  font-size: 15px;
+  font-weight: 740;
+}
+
+.ordersPage .finalSelectedItem {
+  min-height: 42px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--gastario-border);
+}
+
+.ordersPage .finalSelectedItem:last-of-type {
+  border-bottom: 0;
+}
+
+.ordersPage .finalSelectedItem span {
+  color: var(--gastario-text-body);
+  font-size: 12px;
+}
+
+.ordersPage .finalSelectedItem span strong {
+  color: var(--gastario-brand);
+}
+
+.ordersPage .finalSelectedItem b {
+  color: var(--gastario-text-main);
+  font-size: 12px;
+}
+
+.ordersPage .finalBackButton.g-ui-button {
+  min-height: 38px !important;
+  border-color: var(--gastario-border-strong) !important;
+  background: #ffffff !important;
+  color: var(--gastario-text-main) !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 1100px) {
+  .ordersPage .orderSummaryGrid.g-ui-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ordersPage .ordersFilterForm.g-ui-filter-form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ordersPage .finalSelectedFacts.g-ui-fact-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .ordersPage .orderSummaryGrid.g-ui-metrics,
+  .ordersPage .ordersFilterForm.g-ui-filter-form {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersPage .panelHeader.g-ui-section-header,
+  .ordersPage .finalSelectedTop,
+  .ordersPage .finalSelectedFacts.g-ui-fact-grid {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .ordersPage .finalSelectedItems.g-ui-card {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+}
+
+/*
+ * gastario-orders-reference-ui-20260715
+ */
+
+.ordersPage {
+  display: grid;
+  gap: var(--gastario-space-5);
+}
+
+.ordersNotice {
+  margin-bottom: 0;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.ordersPage .orderSummaryGrid.g-ui-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 0;
+}
+
+.ordersPage .metricCard.g-ui-card {
+  min-height: 108px;
+  padding: 18px;
+  border: 1px solid var(--gastario-border) !important;
+  border-radius: var(--gastario-radius-card) !important;
+  background: var(--gastario-bg-card) !important;
+  box-shadow: var(--gastario-shadow-card) !important;
+}
+
+.ordersPage .metricCard::after {
+  display: none;
+}
+
+.ordersPage .metricCard p {
+  margin: 0 0 6px;
+  color: var(--gastario-text-muted);
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.ordersPage .metricCard strong {
+  color: var(--gastario-text-main);
+  font-size: 27px;
+  font-weight: 720;
+}
+
+.ordersPage .metricCard span {
+  margin-top: 6px;
+  color: var(--gastario-text-muted);
+  font-size: 11px;
+}
+
+.ordersPage .metricCard small {
+  top: 16px;
+  right: 16px;
+  border: 0;
+  padding: 5px 8px;
+  background: var(--gastario-brand-soft);
+  color: var(--gastario-brand);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.ordersPage .panel.g-ui-card {
+  overflow: hidden;
+  border: 1px solid var(--gastario-border) !important;
+  border-radius: var(--gastario-radius-card) !important;
+  box-shadow: var(--gastario-shadow-card) !important;
+}
+
+.ordersPage .panelHeader.g-ui-section-header {
+  display: grid;
+  gap: 20px;
+  margin: 0;
+  padding: 22px 24px 20px;
+  border-bottom: 1px solid var(--gastario-border);
+}
+
+.ordersPage .panelHeader > div:first-child {
+  margin: 0;
+}
+
+.ordersPage .panelHeader h2 {
+  margin: 0;
+  color: var(--gastario-text-main);
+  font-size: 22px;
+  font-weight: 740;
+  letter-spacing: -0.03em;
+}
+
+.ordersPage .ordersFilterWrap.g-ui-filter-panel {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--gastario-border);
+  border-radius: 14px;
+  background: var(--gastario-bg-soft);
+}
+
+.ordersPage .ordersFilterForm.g-ui-filter-form {
+  grid-template-columns:
+    minmax(260px, 1.5fr)
+    minmax(190px, 0.8fr)
+    116px
+    116px;
+  gap: 10px;
+}
+
+.ordersPage .filterLabel.g-ui-field {
+  gap: 6px;
+  color: var(--gastario-text-muted) !important;
+  font-size: 10px;
+  font-weight: 740 !important;
+  letter-spacing: 0.045em;
+}
+
+.ordersPage .filterInput.g-ui-input {
+  min-height: var(--gastario-control-height) !important;
+  border: 1px solid var(--gastario-border-strong) !important;
+  border-radius: var(--gastario-radius-control) !important;
+  background: #ffffff !important;
+  color: var(--gastario-text-main) !important;
+  font-size: 13px !important;
+  font-weight: 450 !important;
+  box-shadow: none !important;
+}
+
+.ordersPage .filterInput.g-ui-input:focus {
+  border-color: #6d9a91 !important;
+  box-shadow: 0 0 0 4px rgba(8, 113, 88, 0.1) !important;
+}
+
+.ordersPage .ordersFilterForm .g-ui-button {
+  min-height: var(--gastario-control-height) !important;
+  padding: 0 14px !important;
+  font-size: 11px !important;
+}
+
+.ordersPage .statusFilterGroup.g-ui-segmented {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--gastario-border);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.ordersPage .statusFilterGroup .g-ui-button {
+  min-width: auto;
+  min-height: 34px !important;
+  padding: 0 12px !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  color: var(--gastario-text-muted) !important;
+  font-size: 10px !important;
+  box-shadow: none !important;
+}
+
+.ordersPage .statusFilterGroup .activeFilter {
+  border-color: var(--gastario-border) !important;
+  background: var(--gastario-brand-soft) !important;
+  color: var(--gastario-brand) !important;
+  box-shadow: none !important;
+}
+
+.ordersPage .ordersCardList,
+.ordersPage .ordersTable {
+  padding: 18px 24px 24px;
+  background: #f7faf9;
+}
+
+.ordersPage .ordersListCard,
+.ordersPage .ordersRow {
+  border: 1px solid var(--gastario-border) !important;
+  border-radius: 15px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.ordersPage .ordersListCard:hover,
+.ordersPage .ordersRow:hover {
+  transform: translateY(-1px);
+  border-color: #b8cbc7 !important;
+  box-shadow: 0 8px 20px rgba(23, 52, 60, 0.055) !important;
+}
+
+.ordersPage .finalSelectedPanel.g-ui-card {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff;
+  box-shadow: none !important;
+}
+
+.ordersPage .finalSelectedTop {
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--gastario-border);
+  background:
+    linear-gradient(
+      145deg,
+      #f4faf8 0%,
+      #ffffff 76%
+    );
+}
+
+.ordersPage .finalSelectedKicker {
+  color: var(--gastario-brand);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.ordersPage .finalOrderNumber {
+  color: var(--gastario-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ordersPage .finalSelectedTop h3 {
+  color: var(--gastario-text-main);
+  font-size: 25px;
+  font-weight: 740;
+  letter-spacing: -0.035em;
+}
+
+.ordersPage .finalSourceBadge.g-ui-pill {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--gastario-border);
+  background: #ffffff;
+  color: var(--gastario-brand);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.ordersPage .finalSelectedFacts.g-ui-fact-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 20px 24px;
+}
+
+.ordersPage .finalSelectedFacts > div {
+  min-height: 110px;
+  padding: 16px;
+  border: 1px solid var(--gastario-border);
+  border-radius: 14px;
+  background: var(--gastario-bg-soft);
+}
+
+.ordersPage .finalSelectedFacts span {
+  color: var(--gastario-text-muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.ordersPage .finalSelectedFacts strong {
+  margin-top: 8px;
+  color: var(--gastario-text-main);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ordersPage .finalSelectedFacts small {
+  margin-top: 5px;
+  color: var(--gastario-text-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.ordersPage .finalSelectedItems.g-ui-card {
+  margin: 0 24px 20px;
+  padding: 18px;
+  border: 1px solid var(--gastario-border) !important;
+  border-radius: 14px !important;
+  background: #ffffff;
+}
+
+.ordersPage .finalSelectedItems h4 {
+  margin: 0 0 12px;
+  color: var(--gastario-text-main);
+  font-size: 15px;
+  font-weight: 740;
+}
+
+.ordersPage .finalSelectedItem {
+  min-height: 42px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--gastario-border);
+}
+
+.ordersPage .finalSelectedItem:last-of-type {
+  border-bottom: 0;
+}
+
+.ordersPage .finalSelectedItem span {
+  color: var(--gastario-text-body);
+  font-size: 12px;
+}
+
+.ordersPage .finalSelectedItem span strong {
+  color: var(--gastario-brand);
+}
+
+.ordersPage .finalSelectedItem b {
+  color: var(--gastario-text-main);
+  font-size: 12px;
+}
+
+.ordersPage .finalBackButton.g-ui-button {
+  min-height: 38px !important;
+  border-color: var(--gastario-border-strong) !important;
+  background: #ffffff !important;
+  color: var(--gastario-text-main) !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 1100px) {
+  .ordersPage .orderSummaryGrid.g-ui-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ordersPage .ordersFilterForm.g-ui-filter-form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ordersPage .finalSelectedFacts.g-ui-fact-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .ordersPage .orderSummaryGrid.g-ui-metrics,
+  .ordersPage .ordersFilterForm.g-ui-filter-form {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersPage .panelHeader.g-ui-section-header,
+  .ordersPage .finalSelectedTop,
+  .ordersPage .finalSelectedFacts.g-ui-fact-grid {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .ordersPage .finalSelectedItems.g-ui-card {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+}
