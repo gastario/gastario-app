@@ -262,20 +262,53 @@ model EmailRule {
 }
 
 model Customer {
-  id        String   @id @default(cuid())
-  tenantId  String
-  name        String
-  contactName String?
-  email       String?
-  phone       String?
+  /*
+   * gastario-customer-master-data-20260716
+   *
+   * Zentrale Kundenstammdaten für Aufträge,
+   * Lieferungen und Rechnungen.
+   */
+  id       String @id @default(cuid())
+  tenantId String
+
+  customerNumber String
+  customerType   CustomerType @default(BUSINESS)
+  name           String
+  contactName    String?
+  email          String?
+  invoiceEmail   String?
+  phone          String?
+
   address     String?
+  street      String?
+  houseNumber String?
+  postalCode  String?
+  city        String?
+  country     String  @default("DE")
+
+  differentDeliveryAddress Boolean @default(false)
+  deliveryStreet           String?
+  deliveryHouseNumber      String?
+  deliveryPostalCode       String?
+  deliveryCity             String?
+  deliveryCountry          String?
+
+  vatId           String?
+  costCenter      String?
+  paymentTermDays Int             @default(14)
+  invoiceLanguage InvoiceLanguage @default(DE)
+  notes           String?
+  active          Boolean         @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   orders Order[]
 
+  @@unique([tenantId, customerNumber])
   @@index([tenantId])
+  @@index([tenantId, active])
   @@index([name])
 }
 
