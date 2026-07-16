@@ -1,7 +1,7 @@
-/*
+﻿/*
  * gastario-quotes-reference-design-20260716
  *
- * AngebotsÃƒÂ¼bersicht im gemeinsamen Gastario-Design
+ * AngebotsÃƒÆ’Ã‚Â¼bersicht im gemeinsamen Gastario-Design
  * von Kunden, Produkten und Auftragseingang.
  */
 
@@ -342,7 +342,7 @@
 /*
  * gastario-quotes-product-reference-final-20260716
  *
- * AngebotsÃ¼bersicht und Angebotsformular verwenden
+ * AngebotsÃƒÂ¼bersicht und Angebotsformular verwenden
  * exakt dieselbe Farb- und Formensprache wie Produkte.
  */
 
@@ -405,7 +405,7 @@
   background: #f7fafb !important;
 }
 
-/* Ãœbersicht und Filter */
+/* ÃƒÅ“bersicht und Filter */
 
 .quotesListSection {
   overflow: hidden;
@@ -505,7 +505,7 @@
 }
 
 /*
- * Browser-Fieldset vollstÃ¤ndig neutralisieren.
+ * Browser-Fieldset vollstÃƒÂ¤ndig neutralisieren.
  * Dadurch verschwinden die grauen Standardrahmen.
  */
 
@@ -755,4 +755,47 @@
 .quotesPage label > span,
 .quotesPage legend {
   font-weight: 600 !important;
+}
+
+/*
+ * gastario-quotes-workspace-header-match-products-20260716
+ *
+ * Der Kopf der Angebotsübersicht entspricht exakt
+ * dem Kopf der Produktübersicht.
+ */
+
+.quotesListSection > .g-ui-section-header,
+.quotesListSection .g-ui-section-header:first-child {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px;
+  border-bottom: 1px solid #e6edef;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(238, 247, 246, 0.8),
+      #ffffff
+    );
+}
+
+.quotesListSection > .g-ui-section-header h2,
+.quotesListSection .g-ui-section-header:first-child h2 {
+  font-size: 24px;
+  line-height: 1.18;
+}
+
+.quotesListSection > .g-ui-section-header p,
+.quotesListSection .g-ui-section-header:first-child p {
+  margin-top: 6px;
+}
+
+.quotesListSection > .g-ui-section-header span,
+.quotesListSection .g-ui-section-header:first-child span {
+  display: block;
+  margin-top: 6px;
+  color: #6b8085;
+  font-size: 14px;
+  line-height: 1.5;
 }
