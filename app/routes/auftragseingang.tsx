@@ -1049,6 +1049,30 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                 {liveEnabled ? "Live an" : "Live aus"}
               </button>
 
+              <Link
+                to="/import-pruefen"
+                className="g-ui-button g-ui-button--secondary"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  minHeight: 42,
+                  padding: "0 16px",
+                  border: "1px solid #a9d5c8",
+                  borderRadius: 11,
+                  background: "#edf8f4",
+                  color: "#08705b",
+                  fontSize: 13,
+                  fontWeight: 750,
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <span aria-hidden="true">＋</span>
+                Dokument hochladen
+              </Link>
+
               <button
                 type="button"
                 className="g-ui-button g-ui-button--primary"

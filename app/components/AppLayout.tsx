@@ -30,7 +30,6 @@ const navigationGroups = [
     label: "Import",
     items: [
       { label: "E-Mail-Konten", to: "/importe" },
-      { label: "PDF importieren", to: "/import-pruefen" },
       { label: "Import-Regeln", to: "/import-regeln" },
     ],
   },
