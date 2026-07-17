@@ -4801,3 +4801,68 @@
     align-items: stretch !important;
   }
 }
+
+/*
+ * gastario-new-order-wide-layout-20260717
+ */
+
+.newOrderShell {
+  max-width: 1380px !important;
+}
+
+@media (max-width: 1450px) {
+  .newOrderShell {
+    max-width: 1280px !important;
+  }
+}
+
+/*
+ * gastario-orders-scroll-and-wide-form-final-20260717
+ *
+ * Detailansicht vergangener Aufträge vollständig scrollbar
+ * und manuelles Auftragsformular breiter.
+ */
+
+.ordersPagePast,
+.ordersPagePast.selectedFocusMode,
+.ordersPagePast .selectedFocusMode {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.ordersPagePast .finalOrdersGrid.selectedFocusMode {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.ordersPagePast .finalSelectedPanel,
+.ordersReferencePage.ordersPagePast .finalSelectedPanel,
+.ordersPagePast .finalSelectedPanel.g-ui-card {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.ordersPagePast .finalSelectedItems,
+.ordersPagePast .orderBillingPanel,
+.ordersPagePast .finalSelectedActions {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.newOrderShell {
+  width: 100% !important;
+  max-width: 1380px !important;
+}
+
+@media (max-width: 1450px) {
+  .newOrderShell {
+    max-width: 1320px !important;
+  }
+}
