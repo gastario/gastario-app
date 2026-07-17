@@ -18,6 +18,9 @@ export type ExtractedOrder = {
   eventStart: string;
   deliveryAddress: string;
   presentation: string;
+  pdfNetTotalCents?: number;
+  pdfTaxTotalCents?: number;
+  pdfGrossTotalCents?: number;
   items: ExtractedOrderItem[];
 };
 
@@ -1182,6 +1185,116 @@ function scoreExtractedOrder(
   return score;
 }
 
+function parseDocumentMoneyToCents(value: string) {
+  const normalized = String(value || "")
+    .replace(/\s+/g, "")
+    .replace(/\./g, "")
+    .replace(",", ".");
+
+  const amount = Number(normalized);
+
+  return Number.isFinite(amount)
+    ? Math.round(amount * 100)
+    : 0;
+}
+
+function extractLastMoneyMatch(
+  text: string,
+  pattern: RegExp
+) {
+  const matches = Array.from(
+    String(text || "").matchAll(pattern)
+  );
+
+  const lastMatch = matches[matches.length - 1];
+
+  return lastMatch?.[1]
+    ? parseDocumentMoneyToCents(lastMatch[1])
+    : 0;
+}
+
+function extractFinalDocumentTotals(text: string) {
+  return {
+    pdfNetTotalCents:
+      extractLastMoneyMatch(
+        text,
+        /Zwischensumme\s*\(netto\)\s*([0-9.]+,[0-9]{2})/gi
+      ) ||
+      extractLastMoneyMatch(
+        text,
+        /(?:Gesamt\s*netto|Nettosumme|Summe\s*netto)\s*[:\-]?\s*([0-9.]+,[0-9]{2})/gi
+      ),
+
+    pdfTaxTotalCents:
+      extractLastMoneyMatch(
+        text,
+        /(?:Umsatzsteuer|Mehrwertsteuer|MwSt\.?)(?:\s+[0-9.,]+\s*%)?\s*[:\-]?\s*([0-9.]+,[0-9]{2})/gi
+      ),
+
+    pdfGrossTotalCents:
+      extractLastMoneyMatch(
+        text,
+        /Gesamtbetrag\s*[:\-]?\s*([0-9.]+,[0-9]{2})/gi
+      ) ||
+      extractLastMoneyMatch(
+        text,
+        /(?:Gesamtsumme|Summe\s*brutto|Bruttosumme)\s*[:\-]?\s*([0-9.]+,[0-9]{2})/gi
+      ),
+  };
+}
+function extractDocumentCustomerName(text: string) {
+  const lines = String(text || "")
+    .replace(/\r/g, "")
+    .split(/\n/)
+    .map((line) =>
+      String(line || "")
+        .replace(/\s+/g, " ")
+        .trim()
+    )
+    .filter(Boolean);
+
+  const firstPageEndIndex =
+    lines.findIndex((line) =>
+      /^Seite\s+1\s*\/\s*\d+/i.test(line)
+    );
+
+  const firstPageLines =
+    firstPageEndIndex >= 0
+      ? lines.slice(0, firstPageEndIndex)
+      : lines.slice(0, 180);
+
+  const companyCandidates =
+    firstPageLines.filter((line) => {
+      const lower = line.toLowerCase();
+
+      if (
+        !/\b(gmbh|ug|ag|se|kg|ohg|gbr|e\.v\.|ev|inc\.?|ltd\.?|llc)\b/i.test(
+          line
+        )
+      ) {
+        return false;
+      }
+
+      if (
+        lower.includes("edis gastrobetriebe") ||
+        lower.includes("gastario") ||
+        lower.includes("heycater") ||
+        lower.includes("hey group") ||
+        lower.includes("qonto") ||
+        lower.includes("landesbank") ||
+        lower.includes("sparkasse")
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+
+  return companyCandidates.length > 0
+    ? companyCandidates[companyCandidates.length - 1]
+    : "";
+}
+
 function normalizeFinalImportedItem(
   item: ExtractedOrderItem
 ): ExtractedOrderItem | null {
@@ -1213,6 +1326,14 @@ function normalizeFinalImportedItem(
   /*
    * Überträge und Summenzeilen entfernen.
    */
+  if (
+    /^catering\s+am\s+\d{1,2}\.\d{1,2}\.\d{4}$/i.test(
+      name
+    )
+  ) {
+    return null;
+  }
+
   if (
     /^(?:übertrag|uebertrag|seitenübertrag|seitenuebertrag|zwischensumme|gesamtsumme|gesamtbetrag|summe netto|summe brutto|nettosumme|bruttosumme)\b/i.test(
       name
@@ -1250,7 +1371,8 @@ function normalizeFinalImportedItem(
 }
 
 function normalizeFinalImportedOrder(
-  order: ExtractedOrder
+  order: ExtractedOrder,
+  text: string
 ): ExtractedOrder {
   const items = (
     Array.isArray(order.items)
@@ -1265,11 +1387,28 @@ function normalizeFinalImportedOrder(
         Boolean(item)
     );
 
+  const documentTotals =
+    extractFinalDocumentTotals(text);
+
+  const documentCustomerName =
+    extractDocumentCustomerName(text);
+
   return {
     ...order,
 
+    pdfNetTotalCents:
+      documentTotals.pdfNetTotalCents,
+
+    pdfTaxTotalCents:
+      documentTotals.pdfTaxTotalCents,
+
+    pdfGrossTotalCents:
+      documentTotals.pdfGrossTotalCents,
+
     customerName: String(
-      order.customerName || ""
+      documentCustomerName ||
+      order.customerName ||
+      ""
     )
       .replace(/\s+/g, " ")
       .trim(),
@@ -1369,7 +1508,7 @@ export function extractUniversalOrder(
       primaryOrder.items.length > 0
         ? primaryOrder.items
         : secondaryOrder.items,
-  });
+  }, text);
 }
 
 

@@ -1,4 +1,59 @@
-import { redirect, useActionData } from "react-router";
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(2, minmax(190px, 1fr))",
+                        gap: 10,
+                        width: "100%",
+                      }}
+                    >
+                      <div className="documentImportTotalCard">
+                        <span>PDF-Nettosumme</span>
+                        <strong>
+                          {pdfNetTotalCents > 0
+                            ? pdfNetTotalFormatted
+                            : "Nicht erkannt"}
+                        </strong>
+                        <small>
+                          Offizieller Nettobetrag aus dem PDF
+                        </small>
+                      </div>
+
+                      <div className="documentImportTotalCard">
+                        <span>Berechnete Artikelsumme</span>
+                        <strong>
+                          {editableTotalFormatted}
+                        </strong>
+                        <small>
+                          Menge × Einzelpreis der Positionen
+                        </small>
+                      </div>
+
+                      <div className="documentImportTotalCard">
+                        <span>Abweichung</span>
+                        <strong>
+                          {pdfNetTotalCents > 0
+                            ? pdfDifferenceFormatted
+                            : "-"}
+                        </strong>
+                        <small>
+                          Artikelsumme minus PDF-Nettosumme
+                        </small>
+                      </div>
+
+                      <div className="documentImportTotalCard">
+                        <span>PDF-Gesamtbetrag</span>
+                        <strong>
+                          {pdfGrossTotalCents > 0
+                            ? pdfGrossTotalFormatted
+                            : "Nicht erkannt"}
+                        </strong>
+                        <small>
+                          {pdfTaxTotalCents > 0
+                            ? "inkl. " + pdfTaxTotalFormatted + " Umsatzsteuer"
+                            : "Bruttobetrag des Dokuments"}
+                        </small>
+                      </div>
+                    </div>
 import { useEffect, useRef, useState } from "react";
 import AppLayout from "../components/AppLayout";
 import importPruefenStyles from "../styles/import-pruefen.css?url";
@@ -314,6 +369,48 @@ export default function ImportPruefenPage() {
         currency: "EUR",
       }
     );
+
+  const pdfNetTotalCents = Math.max(
+    0,
+    Number(editableOrder?.pdfNetTotalCents || 0)
+  );
+
+  const pdfTaxTotalCents = Math.max(
+    0,
+    Number(editableOrder?.pdfTaxTotalCents || 0)
+  );
+
+  const pdfGrossTotalCents = Math.max(
+    0,
+    Number(editableOrder?.pdfGrossTotalCents || 0)
+  );
+
+  const pdfDifferenceCents =
+    pdfNetTotalCents > 0
+      ? editableTotalCents - pdfNetTotalCents
+      : 0;
+
+  function formatImportCents(value: number) {
+    return (value / 100).toLocaleString(
+      "de-DE",
+      {
+        style: "currency",
+        currency: "EUR",
+      }
+    );
+  }
+
+  const pdfNetTotalFormatted =
+    formatImportCents(pdfNetTotalCents);
+
+  const pdfTaxTotalFormatted =
+    formatImportCents(pdfTaxTotalCents);
+
+  const pdfGrossTotalFormatted =
+    formatImportCents(pdfGrossTotalCents);
+
+  const pdfDifferenceFormatted =
+    formatImportCents(pdfDifferenceCents);
 
   const fileInputRef =
     useRef<HTMLInputElement | null>(null);
