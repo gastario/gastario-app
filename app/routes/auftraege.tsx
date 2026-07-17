@@ -633,92 +633,105 @@ export default function OrdersPage() {
       </section>
 
       <section className="panel g-ui-card">
-        <div className="panelHeader g-ui-section-header">
+        <div className="ordersWorkspaceHeader">
           <div>
-            <p className="eyebrow">Auftragsübersicht</p>
+            <p className="eyebrow g-ui-eyebrow">Auftragsübersicht</p>
             <h2>
               {data.view === "past"
                 ? "Vergangene Aufträge"
                 : "Bevorstehende Aufträge"}
             </h2>
+            <span>
+              {data.view === "past"
+                ? "Abgeschlossene und vergangene Catering-Aufträge."
+                : "Kommende Lieferungen, Produktion und Packstatus verwalten."}
+            </span>
           </div>
 
-          <div className="ordersFilterWrap g-ui-filter-panel">
-            <Form method="get" className="ordersFilterForm g-ui-filter-form">
-              {data.view === "past" ? (
-                <input
-                  type="hidden"
-                  name="view"
-                  value="past"
-                />
-              ) : null}
-              {data.activeStatus ? (
-                <input type="hidden" name="status" value={data.activeStatus} />
-              ) : null}
+          <div className="ordersWorkspaceCount">
+            <strong>{data.orders.length}</strong>
+            <small>
+              {data.orders.length === 1 ? "von 1 Auftrag" : `von ${data.orders.length} Aufträgen`}
+            </small>
+          </div>
+        </div>
 
-              <label className="filterLabel g-ui-field">
-                Suche
-                <input
-                  type="search"
-                  name="q"
-                  defaultValue={data.searchQuery || ""}
-                  placeholder="Kunde, Nummer, Adresse..."
-                  className="filterInput g-ui-input"
-                />
-              </label>
+        <div className="ordersWorkspaceFilters">
+          <Form method="get" className="ordersFilterForm">
+            {data.view === "past" ? (
+              <input type="hidden" name="view" value="past" />
+            ) : null}
 
-              <label className="filterLabel g-ui-field">
-                Lieferzeitraum
-                <select
-                  name="dateRange"
-                  defaultValue={data.dateRange || ""}
-                  className="filterInput g-ui-input"
-                >
-                  <option value="">Alle Lieferungen</option>
-                  <option value="today">Heute</option>
-                  <option value="tomorrow">Morgen</option>
-                  <option value="week">Nächste 7 Tage</option>
-                </select>
-              </label>
+            {data.activeStatus ? (
+              <input type="hidden" name="status" value={data.activeStatus} />
+            ) : null}
 
-              <button className="ghostButton primaryGhostButton g-ui-button g-ui-button--primary" type="submit">
-                Filtern
-              </button>
+            <label className="ordersSearchField">
+              <span>Suche</span>
+              <input
+                type="search"
+                name="q"
+                defaultValue={data.searchQuery || ""}
+                placeholder="Kunde, Nummer oder Adresse"
+              />
+            </label>
 
-              <Link
-                className="ghostButton g-ui-button g-ui-button--secondary"
-                to={
-                  data.view === "past"
-                    ? "/auftraege?view=past"
-                    : "/auftraege"
-                }
+            <label className="ordersFilterField">
+              <span>Lieferzeitraum</span>
+              <select
+                name="dateRange"
+                defaultValue={data.dateRange || ""}
               >
-                Zurücksetzen
-              </Link>
-            </Form>
+                <option value="">Alle Lieferungen</option>
+                <option value="today">Heute</option>
+                <option value="tomorrow">Morgen</option>
+                <option value="week">Nächste 7 Tage</option>
+              </select>
+            </label>
 
-            <div className="statusFilterGroup g-ui-segmented">
-              {STATUSES.map((status) => {
-                const params = new URLSearchParams();
+            <button
+              className="productsPrimaryButton g-ui-button g-ui-button--primary"
+              type="submit"
+            >
+              Anzeigen
+            </button>
 
-                if (status.value) params.set("status", status.value);
-                if (data.searchQuery) params.set("q", data.searchQuery);
-                if (data.dateRange) params.set("dateRange", data.dateRange);
+            <Link
+              className="productsSecondaryButton g-ui-button g-ui-button--secondary"
+              to={data.view === "past" ? "/auftraege?view=past" : "/auftraege"}
+            >
+              Zurücksetzen
+            </Link>
+          </Form>
 
-                const href = params.toString() ? "/auftraege?" + params.toString() : "/auftraege";
+          <nav className="ordersStatusTabs" aria-label="Auftragsstatus">
+            {STATUSES.map((status) => {
+              const params = new URLSearchParams();
 
-                return (
-                  <Link
-                    key={status.value || "all"}
-                    className={"ghostButton g-ui-button g-ui-button--secondary " + (data.activeStatus === status.value ? "activeFilter" : "")}
-                    to={href}
-                  >
-                    {status.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
+              if (data.view === "past") params.set("view", "past");
+              if (status.value) params.set("status", status.value);
+              if (data.searchQuery) params.set("q", data.searchQuery);
+              if (data.dateRange) params.set("dateRange", data.dateRange);
+
+              const href = params.toString()
+                ? "/auftraege?" + params.toString()
+                : "/auftraege";
+
+              return (
+                <Link
+                  key={status.value || "all"}
+                  className={
+                    data.activeStatus === status.value
+                      ? "ordersStatusTab active"
+                      : "ordersStatusTab"
+                  }
+                  to={href}
+                >
+                  {status.label}
+                </Link>
+              );
+            })}
+          </nav>
         </div>
 
         {selectedOrder ? (

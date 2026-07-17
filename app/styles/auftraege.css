@@ -1,4 +1,4 @@
-﻿.ordersPage {
+.ordersPage {
   --order-green: #08775c;
   --order-green-dark: #05634a;
   --order-text: #14241e;
@@ -4303,3 +4303,5 @@
     justify-content: flex-end;
   }
 }
+
+

@@ -98,6 +98,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
       return currentPathWithSearch === to;
     }
 
+    if (
+      to === "/auftraege" &&
+      location.pathname === "/auftraege"
+    ) {
+      return !new URLSearchParams(location.search).has("view");
+    }
+
     return (
       location.pathname === itemPath ||
       location.pathname.startsWith(itemPath + "/")
