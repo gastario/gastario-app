@@ -1182,6 +1182,114 @@ function scoreExtractedOrder(
   return score;
 }
 
+function normalizeFinalImportedItem(
+  item: ExtractedOrderItem
+): ExtractedOrderItem | null {
+  let name = String(item?.name || "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  let description = String(
+    item?.description || ""
+  )
+    .replace(/\s+/g, " ")
+    .trim();
+
+  /*
+   * PDF-Positionsnummer entfernen:
+   * "16 12er Mini Chicken Wrap"
+   * wird zu "12er Mini Chicken Wrap".
+   */
+  name = name.replace(
+    /^\d{1,3}[.)-]?\s+(?=(?:\d{1,3}(?:er)?\s+)?[A-Za-zÄÖÜäöüß])/,
+    ""
+  );
+
+  description = description.replace(
+    /^\d{1,3}[.)-]?\s+(?=[A-Za-zÄÖÜäöüß])/,
+    ""
+  );
+
+  /*
+   * Überträge und Summenzeilen entfernen.
+   */
+  if (
+    /^(?:übertrag|uebertrag|seitenübertrag|seitenuebertrag|zwischensumme|gesamtsumme|gesamtbetrag|summe netto|summe brutto|nettosumme|bruttosumme)\b/i.test(
+      name
+    )
+  ) {
+    return null;
+  }
+
+  if (
+    !name ||
+    !/[A-Za-zÄÖÜäöüß]/.test(name)
+  ) {
+    return null;
+  }
+
+  const quantity = Math.max(
+    1,
+    Number(item?.quantity || 1)
+  );
+
+  const unitCents = Math.max(
+    0,
+    Number(item?.unitCents || 0)
+  );
+
+  return {
+    ...item,
+    name,
+    description,
+    quantity,
+    unitCents,
+    totalCents:
+      quantity * unitCents,
+  };
+}
+
+function normalizeFinalImportedOrder(
+  order: ExtractedOrder
+): ExtractedOrder {
+  const items = (
+    Array.isArray(order.items)
+      ? order.items
+      : []
+  )
+    .map(normalizeFinalImportedItem)
+    .filter(
+      (
+        item
+      ): item is ExtractedOrderItem =>
+        Boolean(item)
+    );
+
+  return {
+    ...order,
+
+    customerName: String(
+      order.customerName || ""
+    )
+      .replace(/\s+/g, " ")
+      .trim(),
+
+    contactName: String(
+      order.contactName || ""
+    )
+      .replace(/\s+/g, " ")
+      .trim(),
+
+    deliveryAddress: String(
+      order.deliveryAddress || ""
+    )
+      .replace(/\s+/g, " ")
+      .trim(),
+
+    items,
+  };
+}
+
 export function extractUniversalOrder(
   text: string
 ): ExtractedOrder {
@@ -1200,27 +1308,25 @@ export function extractUniversalOrder(
   const primaryOrder =
     genericScore > heycaterScore
       ? genericOrder
-      : heycaterOrder;
+      : (
+          heycaterScore >= genericScore &&
+          (
+            heycaterOrder.customerName ||
+            heycaterOrder.deliveryDate ||
+            heycaterOrder.deliveryAddress ||
+            heycaterOrder.items.length > 0
+          )
+        )
+        ? heycaterOrder
+        : genericOrder;
 
   const secondaryOrder =
     primaryOrder === genericOrder
       ? heycaterOrder
       : genericOrder;
 
-  const primaryItems =
-    Array.isArray(primaryOrder.items)
-      ? primaryOrder.items
-      : [];
-
-  const secondaryItems =
-    Array.isArray(secondaryOrder.items)
-      ? secondaryOrder.items
-      : [];
-
-  return {
-    source:
-      primaryOrder.source ||
-      secondaryOrder.source,
+  return normalizeFinalImportedOrder({
+    ...primaryOrder,
 
     customerName:
       primaryOrder.customerName ||
@@ -1259,10 +1365,11 @@ export function extractUniversalOrder(
       secondaryOrder.presentation,
 
     items:
-      primaryItems.length > 0
-        ? primaryItems
-        : secondaryItems,
-  };
+      Array.isArray(primaryOrder.items) &&
+      primaryOrder.items.length > 0
+        ? primaryOrder.items
+        : secondaryOrder.items,
+  });
 }
 
 

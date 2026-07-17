@@ -732,12 +732,12 @@ export default function ImportPruefenPage() {
                     />
 
                     <div className="documentImportTotalCard">
-                      <span>Gesamtsumme netto</span>
+                      <span>Berechnete Artikelsumme</span>
                       <strong>
                         {editableTotalFormatted}
                       </strong>
                       <small>
-                        Summe der erkannten Positionen
+                        Menge × Einzelpreis der erkannten Positionen
                       </small>
                     </div>
 
