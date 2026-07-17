@@ -4866,3 +4866,196 @@
     max-width: 1320px !important;
   }
 }
+
+/*
+ * gastario-orders-actions-and-tabs-polish-20260717
+ *
+ * Deutlichere Statusnavigation und klare Hierarchie
+ * bei Lieferschein- und Löschaktionen.
+ */
+
+/* Statusnavigation als erkennbare Navigationsleiste */
+.ordersPage .ordersStatusTabs {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-top: 12px !important;
+  padding: 9px !important;
+  border: 1px solid #cddfd9 !important;
+  border-radius: 13px !important;
+  background: #edf6f3 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 4px 12px rgba(15, 53, 45, 0.035) !important;
+}
+
+.ordersPage .ordersStatusTab {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 36px !important;
+  padding: 0 16px !important;
+  border: 1px solid transparent !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  color: #345d53 !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease !important;
+}
+
+.ordersPage .ordersStatusTab:hover {
+  border-color: #b6d4ca !important;
+  background: #ffffff !important;
+  color: #086c58 !important;
+  box-shadow: 0 5px 14px rgba(8, 108, 88, 0.08) !important;
+  transform: translateY(-1px);
+}
+
+.ordersPage .ordersStatusTab.active {
+  border-color: #087d67 !important;
+  background: #087d67 !important;
+  color: #ffffff !important;
+  box-shadow: 0 7px 16px rgba(8, 125, 103, 0.2) !important;
+}
+
+/* Aktionen innerhalb einer Auftragszeile */
+.ordersReferencePage .operationalOrderActions {
+  display: grid !important;
+  grid-template-columns: minmax(118px, 1fr) 42px !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-width: 176px !important;
+}
+
+.ordersReferencePage .operationalOrderActions > * {
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+.ordersReferencePage .operationalOrderActions form {
+  display: block !important;
+  width: 42px !important;
+  margin: 0 !important;
+}
+
+/* Lieferschein als eindeutige Hauptaktion */
+.ordersReferencePage
+.operationalOrderActions
+.deliveryDocumentButton {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  width: 100% !important;
+  min-width: 118px !important;
+  min-height: 42px !important;
+  padding: 0 14px !important;
+  border: 1px solid #087d67 !important;
+  border-radius: 10px !important;
+  background: #087d67 !important;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 750 !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+  box-shadow: 0 7px 16px rgba(8, 125, 103, 0.16) !important;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease !important;
+}
+
+.ordersReferencePage
+.operationalOrderActions
+.deliveryDocumentButton:hover {
+  border-color: #066653 !important;
+  background: #066653 !important;
+  box-shadow: 0 9px 20px rgba(8, 125, 103, 0.22) !important;
+  transform: translateY(-1px);
+}
+
+/* Löschen bewusst kleiner und sekundär */
+.ordersReferencePage
+.operationalOrderActions
+.deleteOrderButton,
+.ordersReferencePage
+.operationalOrderActions
+form button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  min-height: 42px !important;
+  padding: 0 !important;
+  border: 1px solid #edc4c0 !important;
+  border-radius: 10px !important;
+  background: #fff8f7 !important;
+  color: #bd2c20 !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease !important;
+}
+
+.ordersReferencePage
+.operationalOrderActions
+.deleteOrderButton:hover,
+.ordersReferencePage
+.operationalOrderActions
+form button:hover {
+  border-color: #df8d86 !important;
+  background: #fff0ee !important;
+  color: #a61f16 !important;
+  transform: translateY(-1px);
+}
+
+/* Vergangene Aufträge behalten trotzdem klare Aktionen */
+.ordersPagePast
+.operationalOrderActions
+.deliveryDocumentButton {
+  border-color: #176f5e !important;
+  background: #176f5e !important;
+  color: #ffffff !important;
+}
+
+.ordersPagePast
+.operationalOrderActions
+.deliveryDocumentButton:hover {
+  border-color: #10594b !important;
+  background: #10594b !important;
+}
+
+@media (max-width: 900px) {
+  .ordersPage .ordersStatusTabs {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .ordersPage .ordersStatusTab {
+    width: 100% !important;
+  }
+
+  .ordersReferencePage .operationalOrderActions {
+    grid-template-columns: 1fr 42px !important;
+    min-width: 0 !important;
+  }
+}
