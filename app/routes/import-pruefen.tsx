@@ -256,7 +256,16 @@ export async function action({ request }: { request: Request }) {
       fileName: pdfFileName,
       matches,
       extractedOrder,
-      preview: text.slice(0, 2500),
+      preview:
+        text.length <= 10000
+          ? text
+          : [
+              "===== DOKUMENTANFANG =====",
+              text.slice(0, 5000),
+              "",
+              "===== DOKUMENTENDE =====",
+              text.slice(-5000),
+            ].join("\n"),
     };
   } catch (error: any) {
     console.error("PDF parse failed:", error);
