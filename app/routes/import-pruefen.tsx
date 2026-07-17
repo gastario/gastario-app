@@ -1,6 +1,16 @@
 ﻿import { redirect, useActionData } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import AppLayout from "../components/AppLayout";
+import importPruefenStyles from "../styles/import-pruefen.css?url";
+
+export function links() {
+  return [
+    {
+      rel: "stylesheet",
+      href: importPruefenStyles,
+    },
+  ];
+}
 
 export function meta() {
   return [{ title: "Dokument importieren - Gastario" }];
@@ -138,26 +148,7 @@ export async function action({ request }: { request: Request }) {
       },
     });
 
-    const tour = await prisma.deliveryTour.create({
-      data: {
-        tenantId: access.tenantId,
-        name: "Import " + order.orderNumber,
-        deliveryDate: parseGermanDate(extractedOrder.deliveryDate),
-        status: "OPEN",
-        notes: "Automatisch aus PDF-Import erstellt.",
-      },
-    });
 
-    await prisma.deliveryStop.create({
-      data: {
-        tenantId: access.tenantId,
-        tourId: tour.id,
-        orderId: order.id,
-        plannedTime: extractedOrder.deliveryTime || null,
-        status: "OPEN",
-        notes: "Automatisch aus PDF-Import erstellt.",
-      },
-    });
 
     return redirect("/auftrag-pruefung/" + order.id + "?created=1&delivery=1");
   }
@@ -426,8 +417,8 @@ export default function ImportPruefenPage() {
 
   return (
     <AppLayout>
-      <div style={pageStyle}>
-        <header style={heroStyle}>
+      <div className="documentImportPage" style={pageStyle}>
+        <header className="documentImportHero" style={heroStyle}>
           <div>
             <p style={eyebrowStyle}>Import & Auftragserkennung</p>
             <h1 style={titleStyle}>Dokument importieren</h1>
@@ -437,7 +428,7 @@ export default function ImportPruefenPage() {
             </p>
           </div>
 
-          <div style={heroStepsStyle}>
+          <div className="documentImportSteps" style={heroStepsStyle}>
             <span>1 Upload</span>
             <span>2 Erkennung</span>
             <span>3 Pruefung</span>
@@ -445,7 +436,7 @@ export default function ImportPruefenPage() {
           </div>
         </header>
 
-        <section style={noticeStyle}>
+        <section className="documentImportNotice" style={noticeStyle}>
           <strong>Sicherer Import:</strong>
           <span>
             Aus einem PDF entsteht zuerst nur ein Pruefauftrag. Der Auftrag wird erst nach manueller Kontrolle
@@ -456,7 +447,7 @@ export default function ImportPruefenPage() {
         {actionData?.error ? <div style={errorStyle}>{actionData.error}</div> : null}
         {actionData?.success ? <div style={successStyle}>{actionData.success}</div> : null}
 
-        <section style={uploadCardStyle}>
+        <section className="documentImportUploadCard" style={uploadCardStyle}>
           <div>
             <p style={eyebrowStyle}>Dokument-Upload</p>
             <h2 style={sectionTitleStyle}>Auftragsdokument hochladen</h2>
@@ -467,7 +458,7 @@ export default function ImportPruefenPage() {
             </p>
           </div>
 
-          <form method="post" encType="multipart/form-data" style={uploadFormStyle}>
+          <form className="documentImportUploadForm" method="post" encType="multipart/form-data" style={uploadFormStyle}>
             <label
               style={{
                 ...uploadDropStyle,
@@ -503,6 +494,7 @@ export default function ImportPruefenPage() {
                 setIsDragging(false);
               }}
               onDrop={handlePdfDrop}
+              className="documentImportDropzone"
             >
               <span
                 style={{
@@ -662,13 +654,13 @@ export default function ImportPruefenPage() {
             ) : null}
 
             <button type="submit" style={primaryButtonStyle} disabled={!fileBase64}>
-              {fileBase64 ? "Dokument auslesen" : "PDF wird geladen..."}
+              {fileBase64 ? "Dokument auslesen" : "PDF auswählen"}
             </button>
           </form>
         </section>
 
         {actionData?.extractedOrder ? (
-          <section style={resultLayoutStyle}>
+          <section className="documentImportResult" style={resultLayoutStyle}>
             <div style={cardStyle}>
               <div style={sectionHeaderStyle}>
                 <div>
@@ -714,7 +706,7 @@ export default function ImportPruefenPage() {
 
               {editableOrder ? (
                 <>
-                  <div style={editableFieldsGridStyle}>
+                  <div className="documentImportFieldsGrid" style={editableFieldsGridStyle}>
                     <EditableField
                       label="Quelle"
                       value={editableOrder.source}
@@ -844,12 +836,12 @@ export default function ImportPruefenPage() {
                     </button>
                   </div>
 
-                  <div style={editableItemsListStyle}>
+                  <div className="documentImportItemsList" style={editableItemsListStyle}>
                     {editableOrder.items.map(
                       (item: any, index: number) => (
                         <div
                           key={index}
-                          style={editableItemRowStyle}
+                          className="documentImportItemRow" style={editableItemRowStyle}
                         >
                           <label style={editorFieldStyle}>
                             Bezeichnung *
@@ -1003,7 +995,7 @@ export default function ImportPruefenPage() {
               )}
             </div>
 
-            <aside style={sideCardStyle}>
+            <aside className="documentImportCheckCard" style={sideCardStyle}>
               <p style={eyebrowStyle}>Pruefung</p>
               <h2 style={sectionTitleStyle}>Import-Check</h2>
 
@@ -1047,7 +1039,7 @@ export default function ImportPruefenPage() {
         ) : null}
 
         {actionData?.preview ? (
-          <details style={cardStyle}>
+          <details className="documentImportRawText" style={cardStyle}>
             <summary style={{ cursor: "pointer", fontWeight: 900, color: "#0f172a" }}>
               Ausgelesenen Rohtext anzeigen
             </summary>

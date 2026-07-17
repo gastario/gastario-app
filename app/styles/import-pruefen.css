@@ -1,0 +1,305 @@
+/* gastario-document-import-reference-20260717 */
+
+.documentImportPage {
+  width: min(100%, 1380px);
+  margin: 0 auto;
+  padding: 28px 28px 64px;
+  box-sizing: border-box;
+  color: #173f37;
+}
+
+.documentImportHero {
+  position: relative;
+  overflow: hidden;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 28px !important;
+  padding: 26px 28px !important;
+  border: 1px solid #d9e8e3;
+  border-radius: 22px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(232, 247, 242, 0.95),
+      rgba(255, 255, 255, 0.98) 55%
+    );
+  box-shadow: 0 14px 34px rgba(15, 53, 45, 0.055);
+}
+
+.documentImportHero h1 {
+  margin: 5px 0 0 !important;
+  color: #103f36 !important;
+  font-size: 38px !important;
+  line-height: 1.08 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.documentImportHero p {
+  color: #607a74 !important;
+  line-height: 1.55 !important;
+}
+
+.documentImportSteps {
+  display: grid !important;
+  grid-template-columns: repeat(4, auto);
+  gap: 8px !important;
+  max-width: none !important;
+}
+
+.documentImportSteps span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid #d2e4de;
+  border-radius: 11px;
+  background: #ffffff;
+  color: #507069;
+  font-size: 12px;
+  font-weight: 720;
+  white-space: nowrap;
+}
+
+.documentImportSteps span:first-child {
+  border-color: #9bcfbe;
+  background: #e4f5ee;
+  color: #08705b;
+}
+
+.documentImportNotice {
+  display: flex !important;
+  align-items: center;
+  gap: 12px !important;
+  padding: 14px 17px !important;
+  border: 1px solid #cfe5dd !important;
+  border-radius: 15px !important;
+  background: #f2faf7 !important;
+  color: #355f55 !important;
+  box-shadow: none !important;
+}
+
+.documentImportNotice strong {
+  color: #08705b;
+  white-space: nowrap;
+}
+
+.documentImportUploadCard,
+.documentImportEditorCard,
+.documentImportCheckCard,
+.documentImportRawText {
+  border: 1px solid #dce9e5 !important;
+  border-radius: 22px !important;
+  background: #ffffff !important;
+  box-shadow: 0 14px 34px rgba(15, 53, 45, 0.05) !important;
+}
+
+.documentImportUploadCard {
+  padding: 26px !important;
+}
+
+.documentImportUploadForm {
+  grid-template-columns: minmax(0, 1fr) 180px !important;
+  align-items: stretch !important;
+}
+
+.documentImportDropzone {
+  min-height: 210px;
+  align-content: center;
+  justify-items: center;
+  gap: 13px !important;
+  padding: 28px !important;
+  border: 1.5px dashed #a8d2c5 !important;
+  border-radius: 17px !important;
+  background:
+    linear-gradient(
+      180deg,
+      #fbfefd,
+      #f4faf7
+    ) !important;
+  text-align: center;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.documentImportDropzone:hover {
+  border-color: #75bea8 !important;
+  background: #eff9f5 !important;
+  box-shadow: 0 0 0 4px rgba(16, 163, 127, 0.06);
+}
+
+.documentImportUploadForm > button[type="submit"] {
+  min-height: 54px !important;
+  align-self: end;
+  border-color: #19a487 !important;
+  background: #19a487 !important;
+  box-shadow: 0 10px 22px rgba(22, 161, 132, 0.16) !important;
+}
+
+.documentImportUploadForm > button[type="submit"]:disabled {
+  border-color: #d4e1dd !important;
+  background: #edf3f1 !important;
+  color: #81928e !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+}
+
+.documentImportResult {
+  grid-template-columns: minmax(0, 1fr) 270px !important;
+  gap: 18px !important;
+}
+
+.documentImportEditorCard {
+  min-width: 0;
+  padding: 25px !important;
+}
+
+.documentImportFieldsGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 13px !important;
+}
+
+.documentImportPage input,
+.documentImportPage select,
+.documentImportPage textarea {
+  width: 100%;
+  min-height: 43px;
+  box-sizing: border-box;
+  border: 1px solid #d4e2de;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #173f37;
+  font: inherit;
+  outline: none;
+}
+
+.documentImportPage input {
+  padding: 0 12px;
+}
+
+.documentImportPage input:focus,
+.documentImportPage select:focus,
+.documentImportPage textarea:focus {
+  border-color: #70bba5;
+  box-shadow: 0 0 0 3px rgba(28, 160, 130, 0.1);
+}
+
+.documentImportItemsList {
+  gap: 9px !important;
+}
+
+.documentImportItemRow {
+  grid-template-columns:
+    minmax(280px, 1.6fr)
+    90px
+    125px
+    minmax(210px, 1fr)
+    42px !important;
+  gap: 10px !important;
+  padding: 12px !important;
+  border: 1px solid #dce8e4 !important;
+  border-radius: 13px !important;
+  background: #fbfdfc !important;
+  box-shadow: none !important;
+}
+
+.documentImportItemRow:hover {
+  border-color: #bfd9d0 !important;
+  background: #f7fbf9 !important;
+}
+
+.documentImportCheckCard {
+  position: sticky;
+  top: 20px;
+  padding: 20px !important;
+}
+
+.documentImportCheckCard h2 {
+  color: #173f37 !important;
+}
+
+.documentImportCheckCard div {
+  gap: 8px !important;
+}
+
+.documentImportCheckCard div span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 33px;
+  padding: 0 10px;
+  border: 1px solid #d3e5df;
+  border-radius: 9px;
+  background: #f3faf7;
+  color: #42675e;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.documentImportRawText {
+  overflow: hidden;
+}
+
+.documentImportRawText summary {
+  color: #355f55 !important;
+}
+
+@media (max-width: 1180px) {
+  .documentImportResult {
+    grid-template-columns: 1fr !important;
+  }
+
+  .documentImportCheckCard {
+    position: static;
+  }
+
+  .documentImportFieldsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .documentImportItemRow {
+    grid-template-columns:
+      minmax(220px, 1fr)
+      90px
+      120px
+      minmax(180px, 1fr)
+      42px !important;
+  }
+}
+
+@media (max-width: 850px) {
+  .documentImportPage {
+    padding: 18px 14px 48px;
+  }
+
+  .documentImportHero {
+    display: grid !important;
+    padding: 21px !important;
+  }
+
+  .documentImportSteps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .documentImportSteps span {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .documentImportUploadForm,
+  .documentImportFieldsGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .documentImportItemRow {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .documentImportItemRow label:first-child,
+  .documentImportItemRow label:nth-child(4) {
+    grid-column: 1 / -1;
+  }
+}

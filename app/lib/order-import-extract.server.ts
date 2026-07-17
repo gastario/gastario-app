@@ -1,4 +1,4 @@
-﻿export type ExtractedOrderItem = {
+export type ExtractedOrderItem = {
   name: string;
   description?: string;
   rawLine?: string;
@@ -553,82 +553,316 @@ function parseGenericMoneyToCents(value: string) {
   return Number.isFinite(number) ? Math.round(number * 100) : 0;
 }
 
-function looksLikeGenericItemLine(line: string) {
-  const text = String(line || "").trim();
-  if (!text) return false;
+function looksLikePriceValue(value: string) {
+  return /^\d{1,6}(?:\.\d{3})*(?:,\d{2})$/.test(value) ||
+    /^\d{1,6}\.\d{2}$/.test(value);
+}
 
-  const lower = text.toLowerCase();
+function hasUsefulProductText(value: string) {
+  const normalized = String(value || "")
+    .replace(/\s+/g, " ")
+    .trim();
 
-  if (
-    lower.includes("gesamt") ||
-    lower.includes("summe") ||
-    lower.includes("netto") ||
-    lower.includes("brutto") ||
-    lower.includes("ust") ||
-    lower.includes("mwst") ||
-    lower.includes("zahlungs") ||
-    lower.includes("iban") ||
-    lower.includes("bic")
-  ) {
+  if (!normalized || normalized.length < 3) {
     return false;
   }
 
-  if (/\b\d+\s*(x|stk|st\.|stück|portionen|personen|pax)\b/i.test(text)) return true;
-  if (/\b\d+[,.]\d{2}\s*€/.test(text) && /[a-zäöüß]/i.test(text)) return true;
-  if (/^\d+\s+.+\s+\d+[,.]\d{2}/.test(text)) return true;
+  if (!/[a-zäöüß]/i.test(normalized)) {
+    return false;
+  }
 
-  return false;
+  const letters = (
+    normalized.match(/[a-zäöüß]/gi) || []
+  ).length;
+
+  return letters >= 3;
+}
+
+function isGenericItemNoiseLine(value: string) {
+  const lower = String(value || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!lower) return true;
+
+  return [
+    "bezeichnung",
+    "einzelpreis",
+    "gesamtpreis",
+    "gesamtbetrag",
+    "zwischensumme",
+    "gesamtsumme",
+    "summe netto",
+    "summe brutto",
+    "mehrwertsteuer",
+    "umsatzsteuer",
+    "zahlungsbedingungen",
+    "rechnungsempfänger",
+    "rechnungsempfaenger",
+    "lieferadresse",
+    "auftragsnummer",
+    "bestellnummer",
+    "iban",
+    "bic",
+    "registergericht",
+    "geschäftsführung",
+    "geschaeftsfuehrung",
+  ].some((term) => lower.includes(term));
+}
+
+function looksLikeGenericItemLine(line: string) {
+  const text = String(line || "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!text || isGenericItemNoiseLine(text)) {
+    return false;
+  }
+
+  if (
+    /^\d+\s+.+\s+\d+[,.]\d{2}\s+\d+[,.]\d{2}(?:\s*(?:€|eur))?$/i.test(text)
+  ) {
+    return true;
+  }
+
+  if (
+    /^\d+\s+\d+[,.]\d{2}\s+\d+[,.]\d{2}(?:\s*(?:€|eur))?$/i.test(text)
+  ) {
+    return true;
+  }
+
+  if (
+    /\b\d+\s*(?:x|stk|st\.|stück|portionen|personen|pax)\b/i.test(text)
+  ) {
+    return true;
+  }
+
+  if (
+    /\d+[,.]\d{2}\s*(?:€|eur)/i.test(text) &&
+    hasUsefulProductText(text)
+  ) {
+    return true;
+  }
+
+  return hasUsefulProductText(text);
 }
 
 function extractGenericItems(lines: string[]) {
   const items: ExtractedOrderItem[] = [];
+  let pendingNameLines: string[] = [];
+
+  function cleanName(value: string) {
+    return String(value || "")
+      .replace(
+        /\b\d+\s*(?:x|stk|st\.|stück|portionen|personen|pax)\b/gi,
+        " "
+      )
+      .replace(
+        /\b\d{1,6}(?:\.\d{3})*(?:,\d{2})\s*(?:€|eur)?\b/gi,
+        " "
+      )
+      .replace(
+        /\b\d{1,6}\.\d{2}\s*(?:€|eur)?\b/gi,
+        " "
+      )
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function pushItem({
+    name,
+    quantity,
+    unitCents,
+    totalCents,
+    rawLine,
+  }: {
+    name: string;
+    quantity: number;
+    unitCents: number;
+    totalCents: number;
+    rawLine: string;
+  }) {
+    const cleanedName = cleanName(name);
+
+    if (!hasUsefulProductText(cleanedName)) {
+      return;
+    }
+
+    if (
+      isInvalidImportedItem(
+        cleanedName,
+        "",
+        rawLine
+      )
+    ) {
+      return;
+    }
+
+    items.push({
+      name: cleanedName,
+      description: "",
+      rawLine,
+      quantity:
+        Number.isFinite(quantity) && quantity > 0
+          ? quantity
+          : 1,
+      unitCents:
+        Number.isFinite(unitCents) && unitCents > 0
+          ? unitCents
+          : 0,
+      totalCents:
+        Number.isFinite(totalCents) && totalCents > 0
+          ? totalCents
+          : 0,
+    });
+  }
 
   for (const rawLine of lines) {
-    const line = rawLine.replace(/\s+/g, " ").trim();
-    if (!looksLikeGenericItemLine(line)) continue;
-
-    let quantity = 1;
-    let name = line;
-    let unitCents = 0;
-    let totalCents = 0;
-
-    const qtyMatch =
-      line.match(/\b([0-9]+)\s*x\s+(.+)/i) ||
-      line.match(/\b([0-9]+)\s*(stk|st\.|stück|portionen|personen|pax)\s+(.+)/i);
-
-    if (qtyMatch) {
-      quantity = Number(qtyMatch[1]) || 1;
-      name = qtyMatch[3] || qtyMatch[2] || line;
-    }
-
-    const euroValues = [...line.matchAll(/([0-9]{1,6}(?:\.[0-9]{3})*(?:,[0-9]{2})|[0-9]{1,6}\.[0-9]{2})\s*€/g)]
-      .map((match) => parseGenericMoneyToCents(match[1]))
-      .filter((value) => value > 0);
-
-    if (euroValues.length >= 2) {
-      unitCents = euroValues[0];
-      totalCents = euroValues[euroValues.length - 1];
-    } else if (euroValues.length === 1) {
-      totalCents = euroValues[0];
-      unitCents = quantity > 0 ? Math.round(totalCents / quantity) : totalCents;
-    }
-
-    name = name
-      .replace(/\b[0-9]+\s*(x|stk|st\.|stück|portionen|personen|pax)\b/gi, "")
-      .replace(/([0-9]{1,6}(?:\.[0-9]{3})*(?:,[0-9]{2})|[0-9]{1,6}\.[0-9]{2})\s*€/g, "")
+    const line = String(rawLine || "")
+      .replace(/\uFFFD|\uFFFE/g, "-")
       .replace(/\s+/g, " ")
       .trim();
 
-    if (!name || name.length < 3) continue;
+    if (!line) {
+      continue;
+    }
 
-    items.push({
-      name,
-      description: "",
-      rawLine: line,
-      quantity: quantity > 0 ? quantity : 1,
-      unitCents,
-      totalCents,
-    });
+    if (isGenericItemNoiseLine(line)) {
+      pendingNameLines = [];
+      continue;
+    }
+
+    const completeRow = line.match(
+      /^(\d+)\s+(.+?)\s+(\d{1,6}(?:\.\d{3})*(?:,\d{2})|\d{1,6}\.\d{2})\s+(\d{1,6}(?:\.\d{3})*(?:,\d{2})|\d{1,6}\.\d{2})(?:\s*(?:€|eur))?$/i
+    );
+
+    if (completeRow) {
+      const quantity =
+        Number(completeRow[1]) || 1;
+
+      const rowName =
+        String(completeRow[2] || "").trim();
+
+      const name = [
+        ...pendingNameLines,
+        rowName,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+
+      pushItem({
+        name,
+        quantity,
+        unitCents:
+          parseGenericMoneyToCents(
+            completeRow[3]
+          ),
+        totalCents:
+          parseGenericMoneyToCents(
+            completeRow[4]
+          ),
+        rawLine: line,
+      });
+
+      pendingNameLines = [];
+      continue;
+    }
+
+    const priceOnlyRow = line.match(
+      /^(\d+)\s+(\d{1,6}(?:\.\d{3})*(?:,\d{2})|\d{1,6}\.\d{2})\s+(\d{1,6}(?:\.\d{3})*(?:,\d{2})|\d{1,6}\.\d{2})(?:\s*(?:€|eur))?$/i
+    );
+
+    if (priceOnlyRow) {
+      const name = pendingNameLines
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+
+      pushItem({
+        name,
+        quantity:
+          Number(priceOnlyRow[1]) || 1,
+        unitCents:
+          parseGenericMoneyToCents(
+            priceOnlyRow[2]
+          ),
+        totalCents:
+          parseGenericMoneyToCents(
+            priceOnlyRow[3]
+          ),
+        rawLine:
+          name + " | " + line,
+      });
+
+      pendingNameLines = [];
+      continue;
+    }
+
+    const quantityTextRow = line.match(
+      /^(\d+)\s*(?:x|stk|st\.|stück|portionen|personen|pax)\s+(.+?)(?:\s+(\d+[,.]\d{2})\s*(?:€|eur)?)?$/i
+    );
+
+    if (quantityTextRow) {
+      const quantity =
+        Number(quantityTextRow[1]) || 1;
+
+      const name = [
+        ...pendingNameLines,
+        String(quantityTextRow[2] || ""),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+
+      const totalCents =
+        quantityTextRow[3]
+          ? parseGenericMoneyToCents(
+              quantityTextRow[3]
+            )
+          : 0;
+
+      pushItem({
+        name,
+        quantity,
+        unitCents:
+          totalCents > 0
+            ? Math.round(totalCents / quantity)
+            : 0,
+        totalCents,
+        rawLine: line,
+      });
+
+      pendingNameLines = [];
+      continue;
+    }
+
+    const separatedValues = line
+      .split(/\s+/)
+      .filter(Boolean);
+
+    const containsOnlyPriceValues =
+      separatedValues.length > 0 &&
+      separatedValues.every(
+        (value) =>
+          /^\d+$/.test(value) ||
+          looksLikePriceValue(value) ||
+          /^(?:€|eur)$/i.test(value)
+      );
+
+    if (containsOnlyPriceValues) {
+      continue;
+    }
+
+    if (looksLikeGenericItemLine(line)) {
+      pendingNameLines.push(line);
+
+      if (pendingNameLines.length > 4) {
+        pendingNameLines =
+          pendingNameLines.slice(-4);
+      }
+    }
   }
 
   return items;
@@ -714,17 +948,70 @@ function extractGenericOrder(text: string): ExtractedOrder {
   };
 }
 
-function scoreExtractedOrder(order: ExtractedOrder) {
-  const items = Array.isArray(order.items) ? order.items : [];
-  const pricedItems = items.filter((item) => Number(item.totalCents || 0) > 0);
+function scoreExtractedOrder(
+  order: ExtractedOrder
+) {
+  const items = Array.isArray(order.items)
+    ? order.items
+    : [];
+
+  const validItems = items.filter((item) => {
+    const name = String(item?.name || "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return (
+      /[a-zäöüß]/i.test(name) &&
+      (name.match(/[a-zäöüß]/gi) || []).length >= 3
+    );
+  });
+
+  const pricedItems = validItems.filter(
+    (item) =>
+      Number(item?.unitCents || 0) > 0 ||
+      Number(item?.totalCents || 0) > 0
+  );
+
+  const invalidNumericItems =
+    items.filter((item) => {
+      const name = String(item?.name || "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const letters =
+        name.match(/[a-zäöüß]/gi) || [];
+
+      return letters.length < 3;
+    });
 
   let score = 0;
-  if (order.customerName) score += 2;
-  if (order.deliveryDate) score += 2;
-  if (order.deliveryTime) score += 1;
-  if (order.deliveryAddress) score += 2;
-  if (items.length > 0) score += 2;
-  if (pricedItems.length > 0) score += 2;
+
+  if (order.customerName) {
+    score += 2;
+  }
+
+  if (order.deliveryDate) {
+    score += 2;
+  }
+
+  if (order.deliveryTime) {
+    score += 1;
+  }
+
+  if (order.deliveryAddress) {
+    score += 2;
+  }
+
+  if (validItems.length > 0) {
+    score += 2;
+    score += Math.min(validItems.length, 3);
+  }
+
+  if (pricedItems.length > 0) {
+    score += 2;
+  }
+
+  score -= invalidNumericItems.length * 2;
 
   return score;
 }

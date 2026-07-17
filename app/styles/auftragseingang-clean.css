@@ -855,3 +855,50 @@
     grid-column: 1 !important;
   }
 }
+
+/*
+ * gastario-incoming-document-import-button-20260717
+ */
+
+.incomingReferencePage .incomingDocumentImportButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 17px;
+  border: 1px solid #8fcab8;
+  border-radius: 11px;
+  background: #def3eb;
+  color: #08705b;
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 5px 14px rgba(16, 133, 105, 0.09);
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.incomingReferencePage .incomingDocumentImportButton:hover {
+  border-color: #6ebba4;
+  background: #cfeee3;
+  color: #075e4d;
+  box-shadow: 0 7px 17px rgba(16, 133, 105, 0.14);
+  transform: translateY(-1px);
+}
+
+.incomingReferencePage .incomingDocumentImportButton span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 6px;
+  background: rgba(8, 112, 91, 0.1);
+  font-size: 14px;
+}
