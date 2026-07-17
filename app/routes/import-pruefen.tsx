@@ -140,7 +140,9 @@ export async function action({ request }: { request: Request }) {
                 quantity: Number(item.quantity || 1),
                 unit: "Stueck",
                 unitCents: Number(item.unitCents || 0),
-                totalCents: Number(item.totalCents || 0),
+                totalCents:
+                  Math.max(1, Number(item.quantity || 1)) *
+                  Math.max(0, Number(item.unitCents || 0)),
                 notes: [item.description, item.rawLine].filter(Boolean).join(" | ") || null,
               }))
             : [],
@@ -286,22 +288,10 @@ export default function ImportPruefenPage() {
               Number(item?.unitCents || 0)
             );
 
-            const storedTotalCents = Math.max(
-              0,
-              Number(item?.totalCents || 0)
-            );
-
             const calculatedTotalCents =
               unitCents * quantity;
 
-            return (
-              sum +
-              (
-                storedTotalCents > 0
-                  ? storedTotalCents
-                  : calculatedTotalCents
-              )
-            );
+            return sum + calculatedTotalCents;
           },
           0
         )

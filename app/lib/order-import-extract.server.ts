@@ -595,6 +595,12 @@ function isGenericItemNoiseLine(value: string) {
     "gesamtsumme",
     "summe netto",
     "summe brutto",
+    "übertrag",
+    "uebertrag",
+    "seitenübertrag",
+    "seitenuebertrag",
+    "betrag vor übertrag",
+    "betrag vor uebertrag",
     "mehrwertsteuer",
     "umsatzsteuer",
     "zahlungsbedingungen",
@@ -806,6 +812,13 @@ function extractGenericItems(lines: string[]) {
       continue;
     }
 
+    if (
+      /^(?:übertrag|uebertrag|seitenübertrag|seitenuebertrag)\b/i.test(line)
+    ) {
+      pendingNameLines = [];
+      continue;
+    }
+
     if (isGenericItemNoiseLine(line)) {
       pendingNameLines = [];
       continue;
@@ -991,9 +1004,49 @@ function extractGenericOrder(text: string): ExtractedOrder {
       );
     }) || "";
 
+  function isPlausibleCustomerName(value: string) {
+    const normalized = String(value || "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    const lower = normalized.toLowerCase();
+
+    if (!normalized || normalized.length < 3) {
+      return false;
+    }
+
+    if (
+      /^\d{1,3}[.)-]?\s+/.test(normalized) ||
+      /^\d+(?:[,.]\d+)?$/.test(normalized)
+    ) {
+      return false;
+    }
+
+    if (
+      /\b(bowl|wrap|salat|curry|pizza|bagel|buffet|frühstück|fruehstueck|sommerrolle|falafel|chicken|vegan|veggie|dessert|kuchen|schnittchen)\b/i.test(
+        lower
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      /^(?:kunde|firma|unternehmen|company|customer)$/i.test(
+        normalized
+      )
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
   const customerName =
-    customerNameFromLabel ||
-    customerCompanyFallback;
+    isPlausibleCustomerName(customerNameFromLabel)
+      ? customerNameFromLabel
+      : isPlausibleCustomerName(customerCompanyFallback)
+        ? customerCompanyFallback
+        : "";
 
   const contactName = extractFirstGenericValue(normalizedText, [
     /(?:Ansprechpartner|Kontakt|Contact|Contact person)\s*[:\-]\s*(.+)/i,
