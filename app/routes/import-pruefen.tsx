@@ -272,6 +272,50 @@ export default function ImportPruefenPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [editableOrder, setEditableOrder] = useState<any>(null);
 
+  const editableTotalCents =
+    Array.isArray(editableOrder?.items)
+      ? editableOrder.items.reduce(
+          (sum: number, item: any) => {
+            const quantity = Math.max(
+              1,
+              Number(item?.quantity || 1)
+            );
+
+            const unitCents = Math.max(
+              0,
+              Number(item?.unitCents || 0)
+            );
+
+            const storedTotalCents = Math.max(
+              0,
+              Number(item?.totalCents || 0)
+            );
+
+            const calculatedTotalCents =
+              unitCents * quantity;
+
+            return (
+              sum +
+              (
+                storedTotalCents > 0
+                  ? storedTotalCents
+                  : calculatedTotalCents
+              )
+            );
+          },
+          0
+        )
+      : 0;
+
+  const editableTotalFormatted =
+    (editableTotalCents / 100).toLocaleString(
+      "de-DE",
+      {
+        style: "currency",
+        currency: "EUR",
+      }
+    );
+
   const fileInputRef =
     useRef<HTMLInputElement | null>(null);
 
@@ -687,6 +731,16 @@ export default function ImportPruefenPage() {
                       name="orderJson"
                       value={JSON.stringify(editableOrder)}
                     />
+
+                    <div className="documentImportTotalCard">
+                      <span>Gesamtsumme netto</span>
+                      <strong>
+                        {editableTotalFormatted}
+                      </strong>
+                      <small>
+                        Summe der erkannten Positionen
+                      </small>
+                    </div>
 
                     <button
                       type="submit"

@@ -437,3 +437,97 @@
     grid-row: 3;
   }
 }
+
+/*
+ * gastario-import-scroll-and-total-final-20260717
+ */
+
+.documentImportItemsList {
+  max-height: 680px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 7px;
+  padding-bottom: 4px;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+
+.documentImportItemsList::-webkit-scrollbar {
+  width: 9px;
+}
+
+.documentImportItemsList::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: #edf4f1;
+}
+
+.documentImportItemsList::-webkit-scrollbar-thumb {
+  border: 2px solid #edf4f1;
+  border-radius: 999px;
+  background: #a8c9bf;
+}
+
+.documentImportItemsList::-webkit-scrollbar-thumb:hover {
+  background: #82b6a7;
+}
+
+.documentImportEditorCard > div:first-child form {
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  flex-wrap: wrap;
+}
+
+.documentImportTotalCard {
+  display: grid;
+  align-content: center;
+  min-width: 190px;
+  padding: 9px 13px;
+  border: 1px solid #c7e1d8;
+  border-radius: 11px;
+  background: #f0faf6;
+  color: #496a62;
+}
+
+.documentImportTotalCard span {
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.documentImportTotalCard strong {
+  margin-top: 2px;
+  color: #0b6655;
+  font-size: 20px;
+  font-weight: 780;
+  line-height: 1.1;
+}
+
+.documentImportTotalCard small {
+  margin-top: 3px;
+  color: #718781;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.documentImportEditorCard {
+  overflow: visible !important;
+}
+
+.documentImportCheckCard {
+  max-height: calc(100vh - 115px);
+  overflow-y: auto;
+}
+
+@media (max-width: 850px) {
+  .documentImportItemsList {
+    max-height: 560px;
+  }
+
+  .documentImportTotalCard {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}

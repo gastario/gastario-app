@@ -953,10 +953,47 @@ function extractGenericOrder(text: string): ExtractedOrder {
 
   const source = detectOrderSource(normalizedText);
 
-  const customerName = extractFirstGenericValue(normalizedText, [
-    /(?:Kunde|Firma|Unternehmen|Company|Customer)\s*[:\-]\s*(.+)/i,
-    /(?:Auftraggeber|Besteller|Rechnungsempfänger|Rechnungsempfaenger)\s*[:\-]\s*(.+)/i,
-  ]);
+  const customerNameFromLabel =
+    extractFirstGenericValue(normalizedText, [
+      /(?:Kunde|Firma|Unternehmen|Company|Customer)\s*[:\-]\s*(.+)/i,
+      /(?:Auftraggeber|Besteller|Rechnungsempfänger|Rechnungsempfaenger)\s*[:\-]\s*(.+)/i,
+    ]);
+
+  const customerCompanyFallback =
+    lines.find((line) => {
+      const value = String(line || "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const lower = value.toLowerCase();
+
+      if (!value || value.length < 3 || value.length > 120) {
+        return false;
+      }
+
+      if (
+        lower.includes("edis gastrobetriebe") ||
+        lower.includes("gastario") ||
+        lower.includes("heycater") ||
+        lower.includes("hey group") ||
+        lower.includes("qonto") ||
+        lower.includes("rechnungsempfänger") ||
+        lower.includes("rechnungsempfaenger") ||
+        lower.includes("lieferadresse") ||
+        lower.includes("auftragsbestätigung") ||
+        lower.includes("auftragsbestaetigung")
+      ) {
+        return false;
+      }
+
+      return /\b(gmbh|ug|ag|se|kg|ohg|gbr|e\.v\.|ev|inc\.?|ltd\.?|llc)\b/i.test(
+        value
+      );
+    }) || "";
+
+  const customerName =
+    customerNameFromLabel ||
+    customerCompanyFallback;
 
   const contactName = extractFirstGenericValue(normalizedText, [
     /(?:Ansprechpartner|Kontakt|Contact|Contact person)\s*[:\-]\s*(.+)/i,
@@ -1092,28 +1129,87 @@ function scoreExtractedOrder(
   return score;
 }
 
-export function extractUniversalOrder(text: string): ExtractedOrder {
-  const heycaterOrder = extractHeycaterOrder(text);
-  const genericOrder = extractGenericOrder(text);
+export function extractUniversalOrder(
+  text: string
+): ExtractedOrder {
+  const heycaterOrder =
+    extractHeycaterOrder(text);
 
-  const heycaterScore = scoreExtractedOrder(heycaterOrder);
-  const genericScore = scoreExtractedOrder(genericOrder);
+  const genericOrder =
+    extractGenericOrder(text);
 
-  if (genericScore > heycaterScore) {
-    return genericOrder;
-  }
+  const heycaterScore =
+    scoreExtractedOrder(heycaterOrder);
 
-  if (
-    heycaterScore >= genericScore &&
-    (heycaterOrder.customerName ||
-      heycaterOrder.deliveryDate ||
-      heycaterOrder.deliveryAddress ||
-      heycaterOrder.items.length > 0)
-  ) {
-    return heycaterOrder;
-  }
+  const genericScore =
+    scoreExtractedOrder(genericOrder);
 
-  return genericOrder;
+  const primaryOrder =
+    genericScore > heycaterScore
+      ? genericOrder
+      : heycaterOrder;
+
+  const secondaryOrder =
+    primaryOrder === genericOrder
+      ? heycaterOrder
+      : genericOrder;
+
+  const primaryItems =
+    Array.isArray(primaryOrder.items)
+      ? primaryOrder.items
+      : [];
+
+  const secondaryItems =
+    Array.isArray(secondaryOrder.items)
+      ? secondaryOrder.items
+      : [];
+
+  return {
+    source:
+      primaryOrder.source ||
+      secondaryOrder.source,
+
+    customerName:
+      primaryOrder.customerName ||
+      secondaryOrder.customerName,
+
+    contactName:
+      primaryOrder.contactName ||
+      secondaryOrder.contactName,
+
+    contactPhone:
+      primaryOrder.contactPhone ||
+      secondaryOrder.contactPhone,
+
+    deliveryDate:
+      primaryOrder.deliveryDate ||
+      secondaryOrder.deliveryDate,
+
+    deliveryTime:
+      primaryOrder.deliveryTime ||
+      secondaryOrder.deliveryTime,
+
+    eventDate:
+      primaryOrder.eventDate ||
+      secondaryOrder.eventDate,
+
+    eventStart:
+      primaryOrder.eventStart ||
+      secondaryOrder.eventStart,
+
+    deliveryAddress:
+      primaryOrder.deliveryAddress ||
+      secondaryOrder.deliveryAddress,
+
+    presentation:
+      primaryOrder.presentation ||
+      secondaryOrder.presentation,
+
+    items:
+      primaryItems.length > 0
+        ? primaryItems
+        : secondaryItems,
+  };
 }
 
 
