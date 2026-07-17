@@ -4304,4 +4304,196 @@
   }
 }
 
+/*
+ * gastario-orders-reference-filter-final-20260717
+ *
+ * Auftragsübersicht im gemeinsamen Referenzdesign
+ * von Produkte und Angebote.
+ */
 
+.ordersPage .panel.g-ui-card {
+  overflow: hidden;
+  border: 1px solid #dce7e8;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 16px 38px rgba(15, 53, 45, 0.055);
+}
+
+.ordersPage .ordersWorkspaceHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px;
+  border-bottom: 1px solid #e6edef;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(238, 247, 246, 0.82),
+      #ffffff
+    );
+}
+
+.ordersPage .ordersWorkspaceHeader h2 {
+  margin: 4px 0 0;
+  color: #082f2b;
+  font-size: 24px;
+  font-weight: 760;
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+}
+
+.ordersPage .ordersWorkspaceHeader > div > span {
+  display: block;
+  margin-top: 7px;
+  color: #6b8085;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ordersPage .ordersWorkspaceCount {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  padding-top: 5px;
+  white-space: nowrap;
+}
+
+.ordersPage .ordersWorkspaceCount strong {
+  color: #082f2b;
+  font-size: 24px;
+  font-weight: 760;
+}
+
+.ordersPage .ordersWorkspaceCount small {
+  color: #75878a;
+  font-size: 11px;
+}
+
+.ordersPage .ordersWorkspaceFilters {
+  padding: 18px 20px;
+  border-bottom: 1px solid #e6edef;
+  background: #f8fbfa;
+}
+
+.ordersPage .ordersFilterForm {
+  display: grid !important;
+  grid-template-columns:
+    minmax(320px, 1.55fr)
+    minmax(220px, 0.7fr)
+    116px
+    126px !important;
+  gap: 10px !important;
+  align-items: end;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.ordersPage .ordersSearchField,
+.ordersPage .ordersFilterField {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+}
+
+.ordersPage .ordersSearchField > span,
+.ordersPage .ordersFilterField > span {
+  color: #50676b;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.ordersPage .ordersSearchField input,
+.ordersPage .ordersFilterField select {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 0 13px;
+  border: 1px solid #cfdddf;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #102f2b;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.ordersPage .ordersSearchField input:focus,
+.ordersPage .ordersFilterField select:focus {
+  border-color: #72b7a6;
+  box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+}
+
+.ordersPage .ordersFilterForm .g-ui-button {
+  min-height: 44px !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+}
+
+.ordersPage .ordersStatusTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 4px;
+  border: 1px solid #dce7e5;
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+.ordersPage .ordersStatusTab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 15px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #5c706b;
+  font-size: 10px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ordersPage .ordersStatusTab:hover {
+  background: #f0f7f4;
+  color: #08735e;
+}
+
+.ordersPage .ordersStatusTab.active {
+  border-color: #c6e4da;
+  background: #eaf7f2;
+  color: #08735e;
+}
+
+@media (max-width: 1050px) {
+  .ordersPage .ordersFilterForm {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .ordersPage .ordersWorkspaceHeader {
+    flex-direction: column;
+    padding: 20px 16px;
+  }
+
+  .ordersPage .ordersWorkspaceFilters {
+    padding: 16px;
+  }
+
+  .ordersPage .ordersFilterForm {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ordersPage .ordersFilterForm .g-ui-button {
+    width: 100%;
+  }
+
+  .ordersPage .ordersStatusTab {
+    flex: 1 1 calc(50% - 6px);
+  }
+}
