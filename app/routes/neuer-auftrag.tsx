@@ -1,6 +1,17 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import auftraegeStyles from "../styles/auftraege.css?url";
 import AppLayout from "../components/AppLayout";
 import { Form, redirect, useActionData } from "react-router";
+
+export function links() {
+  return [
+    {
+      rel: "stylesheet",
+      href: auftraegeStyles,
+    },
+  ];
+}
+
 
 type ManualItem = {
   id: string;
@@ -422,9 +433,9 @@ export default function NeuerAuftragPage() {
 
   return (
     <AppLayout>
-      <div style={pageStyle}>
-        <div style={shellStyle}>
-          <header style={{ ...cardStyle, marginBottom: 18 }}>
+      <div className="newOrderPage" style={pageStyle}>
+        <div className="newOrderShell" style={shellStyle}>
+          <header className="newOrderHero" style={{ ...cardStyle, marginBottom: 18 }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
               <div>
                 <div style={smallOverlineStyle}>Auftrag</div>
@@ -434,7 +445,7 @@ export default function NeuerAuftragPage() {
                 </p>
               </div>
 
-              <a href="/auftragseingang" style={secondaryButtonStyle}>
+              <a className="newOrderSecondaryButton" href="/auftragseingang" style={secondaryButtonStyle}>
                 Zurück zum Eingang
               </a>
             </div>
@@ -454,8 +465,8 @@ export default function NeuerAuftragPage() {
             </div>
           ) : null}
 
-          <Form method="post" style={{ display: "grid", gap: 18 }}>
-            <section style={cardStyle}>
+          <Form method="post" className="newOrderForm" style={{ display: "grid", gap: 18 }}>
+            <section className="newOrderSection" style={cardStyle}>
               <h2 style={sectionTitleStyle}>Kundendaten</h2>
 
               <div className="manualOrderGrid customerGrid">
@@ -486,7 +497,7 @@ export default function NeuerAuftragPage() {
               </div>
             </section>
 
-            <section style={cardStyle}>
+            <section className="newOrderSection" style={cardStyle}>
               <h2 style={sectionTitleStyle}>Lieferung</h2>
 
               <div className="manualOrderGrid deliveryGrid">
@@ -526,13 +537,13 @@ export default function NeuerAuftragPage() {
               </label>
             </section>
 
-            <section style={cardStyle}>
+            <section className="newOrderSection" style={cardStyle}>
               <h2 style={{ ...sectionTitleStyle, marginBottom: 6 }}>Positionen</h2>
               <p style={sectionSubtextStyle}>
                 Positionen können frei ergänzt, als Freitext erfasst oder gelöscht werden.
               </p>
 
-              <div style={{ display: "grid", gap: 12, marginTop: 18 }}>
+              <div className="newOrderItemsList" style={{ display: "grid", gap: 12, marginTop: 18 }}>
                 {items.map((item, index) => (
                   <div
                     key={item.id}
@@ -543,7 +554,7 @@ export default function NeuerAuftragPage() {
                       padding: 12,
                     }}
                   >
-                    <div className="manualOrderItemRow">
+                    <div className="manualOrderItemRow newOrderItemRow">
                       <label style={labelStyle}>
                         Position {index + 1}
                         <input
@@ -590,11 +601,11 @@ export default function NeuerAuftragPage() {
                         />
                       </label>
 
-                      <div style={{ display: "flex", alignItems: "end" }}>
+                      <div className="newOrderDeleteCell" style={{ display: "flex", alignItems: "end" }}>
                         <button
                           type="button"
                           onClick={() => removeItem(item.id)}
-                          style={dangerButtonStyle}
+                          className="newOrderDeleteButton" style={dangerButtonStyle}
                           disabled={items.length <= 1}
                         >
                           Löschen
@@ -605,17 +616,17 @@ export default function NeuerAuftragPage() {
                 ))}
               </div>
 
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16 }}>
-                <button type="button" onClick={addItem} style={subtleButtonStyle}>
+              <div className="newOrderItemActions" style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16 }}>
+                <button className="newOrderAddButton" type="button" onClick={addItem} style={subtleButtonStyle}>
                   + Position hinzufügen
                 </button>
 
-                <button type="button" onClick={addTextItem} style={secondaryButtonStyle}>
+                <button className="newOrderSecondaryButton" type="button" onClick={addTextItem} style={secondaryButtonStyle}>
                   + Freitextposition
                 </button>
               </div>
 
-              <div style={darkTotalBarStyle}>
+              <div className="newOrderTotalBar" style={darkTotalBarStyle}>
                 <div>
                   <div style={{
                     fontSize: 12,
@@ -647,7 +658,7 @@ export default function NeuerAuftragPage() {
               </div>
             </section>
 
-            <section style={cardStyle}>
+            <section className="newOrderSection" style={cardStyle}>
               <h2 style={sectionTitleStyle}>Notizen</h2>
 
               <label style={labelStyle}>
@@ -672,10 +683,10 @@ export default function NeuerAuftragPage() {
                 </div>
 
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <a href="/auftragseingang" style={secondaryButtonStyle}>
+                  <a className="newOrderSecondaryButton" href="/auftragseingang" style={secondaryButtonStyle}>
                     Abbrechen
                   </a>
-                  <button type="submit" style={primaryButtonStyle}>
+                  <button className="newOrderPrimaryButton" type="submit" style={primaryButtonStyle}>
                     Auftrag anlegen
                   </button>
                 </div>

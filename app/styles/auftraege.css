@@ -4497,3 +4497,307 @@
     flex: 1 1 calc(50% - 6px);
   }
 }
+
+/*
+ * gastario-new-order-reference-design-20260717
+ *
+ * Formular "Neuer Auftrag" im gemeinsamen
+ * Gastario-Referenzdesign.
+ */
+
+.newOrderPage {
+  padding-bottom: 56px !important;
+  color: #102f2b !important;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif !important;
+}
+
+.newOrderShell {
+  max-width: 1220px !important;
+  padding: 28px 24px 0 !important;
+}
+
+.newOrderHero,
+.newOrderSection {
+  border: 1px solid #dce7e8 !important;
+  border-radius: 22px !important;
+  background: #ffffff !important;
+  box-shadow: 0 14px 36px rgba(15, 53, 45, 0.055) !important;
+}
+
+.newOrderHero {
+  position: relative;
+  overflow: hidden;
+  padding: 24px 26px !important;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(238, 247, 246, 0.9),
+      #ffffff 58%
+    ) !important;
+}
+
+.newOrderHero h1 {
+  margin-top: 6px !important;
+  color: #082f2b !important;
+  font-size: 32px !important;
+  font-weight: 760 !important;
+  line-height: 1.08 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.newOrderHero p {
+  color: #647b80 !important;
+  font-size: 14px !important;
+  font-weight: 450 !important;
+}
+
+.newOrderForm {
+  gap: 18px !important;
+}
+
+.newOrderSection {
+  padding: 24px !important;
+}
+
+.newOrderSection h2 {
+  margin: 0 0 18px !important;
+  color: #082f2b !important;
+  font-size: 22px !important;
+  font-weight: 730 !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.03em !important;
+}
+
+.newOrderSection > p {
+  color: #6a7f83 !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+
+.newOrderPage label {
+  gap: 7px !important;
+  color: #30494c !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+.newOrderPage input,
+.newOrderPage select,
+.newOrderPage textarea {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  border: 1px solid #cfdddf !important;
+  border-radius: 11px !important;
+  background: #ffffff !important;
+  color: #102f2b !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 450 !important;
+  outline: none !important;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease !important;
+}
+
+.newOrderPage input,
+.newOrderPage select {
+  min-height: 44px !important;
+  padding: 0 13px !important;
+}
+
+.newOrderPage textarea {
+  min-height: 94px !important;
+  padding: 12px 13px !important;
+  line-height: 1.5 !important;
+  resize: vertical !important;
+}
+
+.newOrderPage input::placeholder,
+.newOrderPage textarea::placeholder {
+  color: #93a4a8 !important;
+}
+
+.newOrderPage input:focus,
+.newOrderPage select:focus,
+.newOrderPage textarea:focus {
+  border-color: #58aa94 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.11) !important;
+}
+
+.newOrderItemsList {
+  gap: 12px !important;
+  margin-top: 18px !important;
+}
+
+.newOrderItemsList > div {
+  padding: 14px !important;
+  border: 1px solid #dde8e8 !important;
+  border-radius: 16px !important;
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f8fbfa
+    ) !important;
+}
+
+.newOrderItemRow {
+  grid-template-columns:
+    minmax(260px, 1.45fr)
+    90px
+    135px
+    minmax(240px, 1fr)
+    auto !important;
+  gap: 12px !important;
+  align-items: end !important;
+}
+
+.newOrderDeleteCell {
+  align-items: end !important;
+}
+
+.newOrderPrimaryButton,
+.newOrderSecondaryButton,
+.newOrderAddButton,
+.newOrderDeleteButton {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 44px !important;
+  box-sizing: border-box !important;
+  padding: 0 16px !important;
+  border-radius: 11px !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+}
+
+.newOrderPrimaryButton {
+  border: 1px solid #087d67 !important;
+  background: #087d67 !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 18px rgba(8, 125, 103, 0.16) !important;
+}
+
+.newOrderPrimaryButton:hover {
+  border-color: #066b58 !important;
+  background: #066b58 !important;
+}
+
+.newOrderSecondaryButton {
+  border: 1px solid #cfdddf !important;
+  background: #ffffff !important;
+  color: #173b35 !important;
+}
+
+.newOrderSecondaryButton:hover {
+  border-color: #a9c9c0 !important;
+  background: #f5faf8 !important;
+}
+
+.newOrderAddButton {
+  border: 1px solid #bfe0d5 !important;
+  background: #eaf7f2 !important;
+  color: #08735e !important;
+}
+
+.newOrderAddButton:hover {
+  border-color: #91c9b8 !important;
+  background: #def2ea !important;
+}
+
+.newOrderDeleteButton {
+  min-width: 92px !important;
+  border: 1px solid #f1c5c2 !important;
+  background: #fff8f7 !important;
+  color: #b42318 !important;
+}
+
+.newOrderDeleteButton:hover:not(:disabled) {
+  border-color: #e8a7a2 !important;
+  background: #fff0ef !important;
+}
+
+.newOrderDeleteButton:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.42 !important;
+}
+
+.newOrderItemActions {
+  align-items: center !important;
+  margin-top: 16px !important;
+}
+
+.newOrderTotalBar {
+  margin-top: 20px !important;
+  padding: 18px 20px !important;
+  border: 1px solid #184c42 !important;
+  border-radius: 16px !important;
+  background:
+    linear-gradient(
+      135deg,
+      #102f2b,
+      #16473e
+    ) !important;
+  color: #ffffff !important;
+  box-shadow: 0 14px 30px rgba(8, 47, 43, 0.14) !important;
+}
+
+@media (max-width: 1100px) {
+  .newOrderItemRow {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .newOrderDeleteCell {
+    grid-column: 1 / -1;
+  }
+
+  .newOrderDeleteButton {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .newOrderShell {
+    padding: 18px 14px 0 !important;
+  }
+
+  .newOrderHero,
+  .newOrderSection {
+    padding: 18px !important;
+    border-radius: 18px !important;
+  }
+
+  .newOrderHero h1 {
+    font-size: 27px !important;
+  }
+
+  .manualOrderGrid,
+  .newOrderItemRow {
+    grid-template-columns: 1fr !important;
+  }
+
+  .newOrderItemActions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .newOrderItemActions button,
+  .newOrderItemActions a {
+    width: 100% !important;
+  }
+
+  .newOrderTotalBar {
+    align-items: stretch !important;
+  }
+}
