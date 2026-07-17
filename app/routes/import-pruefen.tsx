@@ -1,9 +1,9 @@
 ﻿import { redirect, useActionData } from "react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AppLayout from "../components/AppLayout";
 
 export function meta() {
-  return [{ title: "Import pruefen - Gastario" }];
+  return [{ title: "Dokument importieren - Gastario" }];
 }
 
 function splitKeywords(value: string) {
@@ -31,6 +31,38 @@ function createOrderNumber() {
     String(now.getDate()).padStart(2, "0");
 
   return "PDF-" + datePart + "-" + Math.random().toString(36).slice(2, 7).toUpperCase();
+}
+
+
+function mapDetectedOrderSource(value: unknown) {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase();
+
+  if (
+    normalized.includes("heycater") ||
+    normalized.includes("heykantine")
+  ) {
+    return "HEYCATER" as const;
+  }
+
+  if (normalized.includes("egora")) {
+    return "EGORA" as const;
+  }
+
+  if (
+    normalized.includes("website") ||
+    normalized.includes("webseite") ||
+    normalized.includes("webformular")
+  ) {
+    return "WEBSITE" as const;
+  }
+
+  if (normalized.includes("lexware")) {
+    return "LEXWARE" as const;
+  }
+
+  return "OTHER" as const;
 }
 
 const FIELD_LABELS: Record<string, string> = {
@@ -73,9 +105,9 @@ export async function action({ request }: { request: Request }) {
       data: {
         tenantId: access.tenantId,
         orderNumber: createOrderNumber(),
-        source: extractedOrder.source === "Heycater" ? "HEYCATER" : "EMAIL",
-        status: "AUTO_CREATED",
-        customerName: extractedOrder.customerName || (extractedOrder.source === "Heycater" ? "Heycater Import" : "PDF Import"),
+        source: mapDetectedOrderSource(extractedOrder.source),
+        status: "REVIEW_NEEDED",
+        customerName: extractedOrder.customerName || "Unbekannter Kunde",
         eventName: extractedOrder.presentation || null,
         deliveryDate: parseGermanDate(extractedOrder.deliveryDate),
         deliveryTimeText: extractedOrder.deliveryTime || null,
@@ -90,7 +122,7 @@ export async function action({ request }: { request: Request }) {
         platformName: extractedOrder.source || "PDF",
         originalPdfName: pdfFileName,
         confidenceScore: 70,
-        reviewReason: "Automatisch aus PDF erstellt. Bitte pruefen.",
+        reviewReason: "Aus einem hochgeladenen Dokument erkannt. Angaben vor der Übernahme prüfen.",
         items: {
           create: Array.isArray(extractedOrder.items)
             ? extractedOrder.items.map((item: any) => ({
@@ -227,7 +259,7 @@ export async function action({ request }: { request: Request }) {
     const extractedOrder = extractUniversalOrder(text);
 
     return {
-      success: "PDF wurde gelesen und gegen Import-Regeln geprueft.",
+      success: "Dokument wurde gelesen und die erkannten Auftragsdaten wurden vorbereitet.",
       fileName: pdfFileName,
       matches,
       extractedOrder,
@@ -240,57 +272,156 @@ export async function action({ request }: { request: Request }) {
 }
 
 export default function ImportPruefenPage() {
+
   const actionData = useActionData<typeof action>() as any;
   const [fileName, setFileName] = useState("");
   const [fileSize, setFileSize] = useState(0);
   const [fileBase64, setFileBase64] = useState("");
+  const [fileError, setFileError] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
+  const [editableOrder, setEditableOrder] = useState<any>(null);
 
-  async function handlePdfChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.currentTarget.files?.[0];
+  const fileInputRef =
+    useRef<HTMLInputElement | null>(null);
 
+  useEffect(() => {
+    if (actionData?.extractedOrder) {
+      setEditableOrder({
+        ...actionData.extractedOrder,
+        items: Array.isArray(actionData.extractedOrder.items)
+          ? actionData.extractedOrder.items.map((item: any) => ({
+              ...item,
+              name: String(item?.name || ""),
+              quantity: Number(item?.quantity || 1),
+              unitCents: Number(item?.unitCents || 0),
+              totalCents: Number(item?.totalCents || 0),
+              description: String(item?.description || ""),
+            }))
+          : [],
+      });
+    }
+  }, [actionData?.extractedOrder]);
+
+  const MAX_PDF_SIZE_BYTES =
+    12 * 1024 * 1024;
+
+  function resetSelectedFile() {
     setFileName("");
     setFileSize(0);
     setFileBase64("");
+    setFileError("");
+    setIsDragging(false);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
+  async function loadPdfFile(
+    file: File | null | undefined
+  ) {
+    resetSelectedFile();
 
     if (!file) {
       return;
     }
 
-    setFileName(file.name);
-    setFileSize(file.size || 0);
+    const normalizedName =
+      String(file.name || "")
+        .trim()
+        .toLowerCase();
 
-    if (!file.size || file.size <= 0) {
-      setFileName("");
-      setFileSize(0);
-      setFileBase64("");
-      event.currentTarget.value = "";
-      alert("Diese PDF-Datei hat 0 Bytes. Bitte die Datei neu herunterladen und nochmal auswaehlen.");
+    const isPdf =
+      file.type === "application/pdf" ||
+      normalizedName.endsWith(".pdf");
+
+    if (!isPdf) {
+      setFileError(
+        "Bitte ausschließlich eine PDF-Datei auswählen."
+      );
       return;
     }
 
+    if (!file.size || file.size <= 0) {
+      setFileError(
+        "Die ausgewählte PDF-Datei ist leer."
+      );
+      return;
+    }
+
+    if (file.size > MAX_PDF_SIZE_BYTES) {
+      setFileError(
+        "Die PDF ist größer als 12 MB."
+      );
+      return;
+    }
+
+    setFileName(file.name);
+    setFileSize(file.size);
+
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuffer);
+      const arrayBuffer =
+        await file.arrayBuffer();
+
+      const bytes =
+        new Uint8Array(arrayBuffer);
 
       if (!bytes.length) {
-        alert("PDF-Datei wurde gelesen, aber mit 0 Bytes.");
+        setFileError(
+          "Die PDF-Datei konnte nicht vollständig gelesen werden."
+        );
         return;
       }
 
       let binary = "";
       const chunkSize = 8192;
 
-      for (let index = 0; index < bytes.length; index += chunkSize) {
-        const chunk = bytes.subarray(index, index + chunkSize);
-        binary += String.fromCharCode(...Array.from(chunk));
+      for (
+        let index = 0;
+        index < bytes.length;
+        index += chunkSize
+      ) {
+        const chunk = bytes.subarray(
+          index,
+          index + chunkSize
+        );
+
+        binary += String.fromCharCode(
+          ...Array.from(chunk)
+        );
       }
 
       setFileBase64(window.btoa(binary));
-    } catch (error) {
+    }
+    catch (error) {
       console.error(error);
       setFileBase64("");
-      alert("PDF-Datei konnte im Browser nicht gelesen werden.");
+
+      setFileError(
+        "Die PDF-Datei konnte im Browser nicht gelesen werden."
+      );
     }
+  }
+
+  async function handlePdfChange(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    await loadPdfFile(
+      event.currentTarget.files?.[0]
+    );
+  }
+
+  async function handlePdfDrop(
+    event: React.DragEvent<HTMLLabelElement>
+  ) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    setIsDragging(false);
+
+    await loadPdfFile(
+      event.dataTransfer.files?.[0]
+    );
   }
 
   return (
@@ -299,10 +430,10 @@ export default function ImportPruefenPage() {
         <header style={heroStyle}>
           <div>
             <p style={eyebrowStyle}>Import & Auftragserkennung</p>
-            <h1 style={titleStyle}>Import pruefen</h1>
+            <h1 style={titleStyle}>Dokument importieren</h1>
             <p style={subtitleStyle}>
-              PDF-Auftrag hochladen, Daten sicher erkennen und danach als Pruefauftrag speichern.
-              Erst auf der Pruefseite wird der Auftrag uebernommen.
+              Auftragsbestätigung, Anfrage oder Catering-Dokument hochladen,
+              automatisch auslesen und anschließend kontrolliert als Prüfauftrag übernehmen.
             </p>
           </div>
 
@@ -327,35 +458,211 @@ export default function ImportPruefenPage() {
 
         <section style={uploadCardStyle}>
           <div>
-            <p style={eyebrowStyle}>PDF Upload</p>
-            <h2 style={sectionTitleStyle}>Auftrag hochladen</h2>
+            <p style={eyebrowStyle}>Dokument-Upload</p>
+            <h2 style={sectionTitleStyle}>Auftragsdokument hochladen</h2>
             <p style={textStyle}>
-              Aktuell optimiert fuer Heycater-PDFs. Weitere Quellen wie E-Mail, Egora oder Website-Anfragen
-              werden spaeter ueber die gleiche Prueflogik verarbeitet.
+              Geeignet für Auftragsbestätigungen, Catering-Anfragen und
+              Bestelldokumente aus Plattformen, Kundenportalen und
+              individuellen PDF-Vorlagen.
             </p>
           </div>
 
           <form method="post" encType="multipart/form-data" style={uploadFormStyle}>
-            <label style={uploadDropStyle}>
-              <span style={{ fontWeight: 900, color: "#0f172a" }}>
-                PDF-Datei auswaehlen
+            <label
+              style={{
+                ...uploadDropStyle,
+                position: "relative",
+                cursor: "pointer",
+                borderColor: isDragging
+                  ? "#79bea9"
+                  : fileBase64
+                    ? "#9bcfbe"
+                    : "#cdded9",
+                background: isDragging
+                  ? "#eaf8f3"
+                  : fileBase64
+                    ? "#f3faf7"
+                    : "#ffffff",
+                boxShadow: isDragging
+                  ? "0 0 0 4px rgba(16, 163, 127, 0.10)"
+                  : "none",
+              }}
+              onDragEnter={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setIsDragging(true);
+              }}
+              onDragOver={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setIsDragging(true);
+              }}
+              onDragLeave={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setIsDragging(false);
+              }}
+              onDrop={handlePdfDrop}
+            >
+              <span
+                style={{
+                  color: "#173f37",
+                  fontSize: 17,
+                  fontWeight: 800,
+                }}
+              >
+                {isDragging
+                  ? "PDF jetzt hier ablegen"
+                  : "PDF-Datei auswählen oder hierherziehen"}
               </span>
-              <input type="file" accept="application/pdf,.pdf" onChange={handlePdfChange} required />
-              <input type="hidden" name="pdfFileName" value={fileName} />
-              <input type="hidden" name="pdfBase64" value={fileBase64} />
+
+              <span
+                style={{
+                  color: "#68807a",
+                  fontSize: 13,
+                  lineHeight: 1.5,
+                  textAlign: "center",
+                }}
+              >
+                Auftragsbestätigung, Anfrage oder
+                Bestelldokument bis maximal 12 MB
+              </span>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf,.pdf"
+                onChange={handlePdfChange}
+                style={{
+                  position: "absolute",
+                  width: 1,
+                  height: 1,
+                  opacity: 0,
+                  pointerEvents: "none",
+                }}
+              />
+
+              <input
+                type="hidden"
+                name="pdfFileName"
+                value={fileName}
+              />
+
+              <input
+                type="hidden"
+                name="pdfBase64"
+                value={fileBase64}
+              />
+
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 40,
+                  padding: "0 17px",
+                  border: "1px solid #b8d8ce",
+                  borderRadius: 10,
+                  background: "#edf8f4",
+                  color: "#08705b",
+                  fontSize: 13,
+                  fontWeight: 750,
+                }}
+              >
+                Datei auswählen
+              </span>
 
               {fileName ? (
-                <small style={hintStyle}>
-                  {fileName} ? {fileSize} Bytes
-                  {fileBase64 ? " ? bereit zur Pruefung" : " ? Datei wird geladen..."}
-                </small>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 14,
+                    width: "100%",
+                    boxSizing: "border-box",
+                    padding: "12px 13px",
+                    border: "1px solid #d7e7e2",
+                    borderRadius: 11,
+                    background: "#ffffff",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: 4,
+                      minWidth: 0,
+                      textAlign: "left",
+                    }}
+                  >
+                    <strong
+                      style={{
+                        overflow: "hidden",
+                        color: "#173f37",
+                        fontSize: 13,
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {fileName}
+                    </strong>
+
+                    <small style={hintStyle}>
+                      {(fileSize / 1024 / 1024).toFixed(2)} MB
+                      {fileBase64
+                        ? " · bereit zum Auslesen"
+                        : " · Datei wird vorbereitet"}
+                    </small>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      resetSelectedFile();
+                    }}
+                    style={{
+                      minWidth: 86,
+                      minHeight: 36,
+                      padding: "0 12px",
+                      border: "1px solid #e8c8c4",
+                      borderRadius: 9,
+                      background: "#fff8f7",
+                      color: "#b23a30",
+                      fontSize: 12,
+                      fontWeight: 700,
+                    }}
+                  >
+                    Entfernen
+                  </button>
+                </div>
               ) : (
-                <small style={hintStyle}>PDF hochladen und anschliessend pruefen lassen.</small>
+                <small style={hintStyle}>
+                  Anklicken oder die PDF direkt
+                  in diesen Bereich ziehen.
+                </small>
               )}
             </label>
 
+            {fileError ? (
+              <div
+                style={{
+                  padding: "11px 13px",
+                  border: "1px solid #efc8c4",
+                  borderRadius: 10,
+                  background: "#fff7f6",
+                  color: "#a93229",
+                  fontSize: 13,
+                  fontWeight: 650,
+                }}
+              >
+                {fileError}
+              </div>
+            ) : null}
+
             <button type="submit" style={primaryButtonStyle} disabled={!fileBase64}>
-              {fileBase64 ? "PDF pruefen" : "PDF wird geladen..."}
+              {fileBase64 ? "Dokument auslesen" : "PDF wird geladen..."}
             </button>
           </form>
         </section>
@@ -369,60 +676,330 @@ export default function ImportPruefenPage() {
                   <h2 style={sectionTitleStyle}>Erkannte Auftragsdaten</h2>
                 </div>
 
-                <form method="post" style={saveOrderFormStyle}>
-                  <input type="hidden" name="_intent" value="saveOrder" />
-                  <input type="hidden" name="pdfFileName" value={actionData.fileName || "upload.pdf"} />
-                  <input type="hidden" name="orderJson" value={JSON.stringify(actionData.extractedOrder)} />
-                  <button type="submit" style={primaryButtonStyle}>
-                    Als Pruefauftrag speichern
-                  </button>
-                </form>
+                {editableOrder ? (
+                  <form method="post" style={saveOrderFormStyle}>
+                    <input
+                      type="hidden"
+                      name="_intent"
+                      value="saveOrder"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="pdfFileName"
+                      value={actionData.fileName || "upload.pdf"}
+                    />
+
+                    <input
+                      type="hidden"
+                      name="orderJson"
+                      value={JSON.stringify(editableOrder)}
+                    />
+
+                    <button
+                      type="submit"
+                      style={primaryButtonStyle}
+                      disabled={
+                        !String(editableOrder.customerName || "").trim() ||
+                        !String(editableOrder.deliveryDate || "").trim() ||
+                        !Array.isArray(editableOrder.items) ||
+                        editableOrder.items.length === 0
+                      }
+                    >
+                      Als Prüfauftrag speichern
+                    </button>
+                  </form>
+                ) : null}
               </div>
 
-              <div style={summaryGridStyle}>
-                <Info label="Quelle" value={actionData.extractedOrder.source} />
-                <Info label="Kunde" value={actionData.extractedOrder.customerName} />
-                <Info label="Kontakt" value={actionData.extractedOrder.contactName} />
-                <Info label="Telefon" value={actionData.extractedOrder.contactPhone} />
-                <Info label="Lieferdatum" value={actionData.extractedOrder.deliveryDate} />
-                <Info label="Lieferzeit" value={actionData.extractedOrder.deliveryTime} />
-                <Info label="Lieferadresse" value={actionData.extractedOrder.deliveryAddress} />
-                <Info label="Praesentation" value={actionData.extractedOrder.presentation} />
-              </div>
+              {editableOrder ? (
+                <>
+                  <div style={editableFieldsGridStyle}>
+                    <EditableField
+                      label="Quelle"
+                      value={editableOrder.source}
+                      onChange={(value) =>
+                        setEditableOrder((current: any) => ({
+                          ...current,
+                          source: value,
+                        }))
+                      }
+                    />
 
-              <h3 style={smallTitleStyle}>Erkannte Positionen</h3>
+                    <EditableField
+                      label="Kunde *"
+                      value={editableOrder.customerName}
+                      required
+                      onChange={(value) =>
+                        setEditableOrder((current: any) => ({
+                          ...current,
+                          customerName: value,
+                        }))
+                      }
+                    />
 
-              {actionData.extractedOrder.items?.length ? (
-                <div style={itemListStyle}>
-                  {actionData.extractedOrder.items.slice(0, 5).map((item: any, index: number) => (
-                    <div key={index} style={itemRowStyle}>
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                        <strong>{index + 1}. {item.name}</strong>
-                        <strong>{item.quantity || 1}x</strong>
-                      </div>
-                      {item.description ? <span>{item.description}</span> : null}
+                    <EditableField
+                      label="Kontaktperson"
+                      value={editableOrder.contactName}
+                      onChange={(value) =>
+                        setEditableOrder((current: any) => ({
+                          ...current,
+                          contactName: value,
+                        }))
+                      }
+                    />
+
+                    <EditableField
+                      label="Telefon"
+                      value={editableOrder.contactPhone}
+                      onChange={(value) =>
+                        setEditableOrder((current: any) => ({
+                          ...current,
+                          contactPhone: value,
+                        }))
+                      }
+                    />
+
+                    <EditableField
+                      label="Lieferdatum *"
+                      value={editableOrder.deliveryDate}
+                      placeholder="TT.MM.JJJJ"
+                      required
+                      onChange={(value) =>
+                        setEditableOrder((current: any) => ({
+                          ...current,
+                          deliveryDate: value,
+                        }))
+                      }
+                    />
+
+                    <EditableField
+                      label="Lieferzeit"
+                      value={editableOrder.deliveryTime}
+                      placeholder="z. B. 12:00"
+                      onChange={(value) =>
+                        setEditableOrder((current: any) => ({
+                          ...current,
+                          deliveryTime: value,
+                        }))
+                      }
+                    />
+
+                    <EditableField
+                      label="Lieferadresse"
+                      value={editableOrder.deliveryAddress}
+                      onChange={(value) =>
+                        setEditableOrder((current: any) => ({
+                          ...current,
+                          deliveryAddress: value,
+                        }))
+                      }
+                    />
+
+                    <EditableField
+                      label="Event / Präsentation"
+                      value={editableOrder.presentation}
+                      onChange={(value) =>
+                        setEditableOrder((current: any) => ({
+                          ...current,
+                          presentation: value,
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div style={itemsHeaderStyle}>
+                    <div>
+                      <h3 style={smallTitleStyle}>
+                        Erkannte Positionen
+                      </h3>
+
+                      <p style={editorHintStyle}>
+                        Bezeichnung, Menge und Preise vor der Übernahme prüfen.
+                      </p>
                     </div>
-                  ))}
 
-                  {actionData.extractedOrder.items.length > 5 ? (
-                    <details style={moreItemsStyle}>
-                      <summary>
-                        + {actionData.extractedOrder.items.length - 5} weitere Positionen anzeigen
-                      </summary>
+                    <button
+                      type="button"
+                      style={secondaryActionButtonStyle}
+                      onClick={() =>
+                        setEditableOrder((current: any) => ({
+                          ...current,
+                          items: [
+                            ...(Array.isArray(current?.items)
+                              ? current.items
+                              : []),
+                            {
+                              name: "",
+                              quantity: 1,
+                              unitCents: 0,
+                              totalCents: 0,
+                              description: "",
+                            },
+                          ],
+                        }))
+                      }
+                    >
+                      + Position
+                    </button>
+                  </div>
 
-                      <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
-                        {actionData.extractedOrder.items.slice(5).map((item: any, index: number) => (
-                          <div key={index} style={compactItemRowStyle}>
-                            <strong>{index + 6}. {item.name}</strong>
-                            <span>{item.quantity || 1}x</span>
-                          </div>
-                        ))}
-                      </div>
-                    </details>
+                  <div style={editableItemsListStyle}>
+                    {editableOrder.items.map(
+                      (item: any, index: number) => (
+                        <div
+                          key={index}
+                          style={editableItemRowStyle}
+                        >
+                          <label style={editorFieldStyle}>
+                            Bezeichnung *
+                            <input
+                              value={item.name || ""}
+                              placeholder="Produkt oder Leistung"
+                              onChange={(event) => {
+                                const value = event.currentTarget.value;
+
+                                setEditableOrder((current: any) => ({
+                                  ...current,
+                                  items: current.items.map(
+                                    (entry: any, itemIndex: number) =>
+                                      itemIndex === index
+                                        ? { ...entry, name: value }
+                                        : entry
+                                  ),
+                                }));
+                              }}
+                            />
+                          </label>
+
+                          <label style={editorFieldStyle}>
+                            Menge
+                            <input
+                              type="number"
+                              min="1"
+                              step="1"
+                              value={item.quantity || 1}
+                              onChange={(event) => {
+                                const quantity =
+                                  Math.max(
+                                    1,
+                                    Number(event.currentTarget.value || 1)
+                                  );
+
+                                setEditableOrder((current: any) => ({
+                                  ...current,
+                                  items: current.items.map(
+                                    (entry: any, itemIndex: number) =>
+                                      itemIndex === index
+                                        ? {
+                                            ...entry,
+                                            quantity,
+                                            totalCents:
+                                              Number(entry.unitCents || 0) *
+                                              quantity,
+                                          }
+                                        : entry
+                                  ),
+                                }));
+                              }}
+                            />
+                          </label>
+
+                          <label style={editorFieldStyle}>
+                            Einzelpreis netto
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={
+                                Number(item.unitCents || 0) / 100
+                              }
+                              onChange={(event) => {
+                                const unitCents =
+                                  Math.round(
+                                    Number(
+                                      event.currentTarget.value || 0
+                                    ) * 100
+                                  );
+
+                                setEditableOrder((current: any) => ({
+                                  ...current,
+                                  items: current.items.map(
+                                    (entry: any, itemIndex: number) =>
+                                      itemIndex === index
+                                        ? {
+                                            ...entry,
+                                            unitCents,
+                                            totalCents:
+                                              unitCents *
+                                              Number(entry.quantity || 1),
+                                          }
+                                        : entry
+                                  ),
+                                }));
+                              }}
+                            />
+                          </label>
+
+                          <label style={editorFieldStyle}>
+                            Hinweis
+                            <input
+                              value={item.description || ""}
+                              placeholder="Beschreibung, Allergene, Besonderheit"
+                              onChange={(event) => {
+                                const description =
+                                  event.currentTarget.value;
+
+                                setEditableOrder((current: any) => ({
+                                  ...current,
+                                  items: current.items.map(
+                                    (entry: any, itemIndex: number) =>
+                                      itemIndex === index
+                                        ? { ...entry, description }
+                                        : entry
+                                  ),
+                                }));
+                              }}
+                            />
+                          </label>
+
+                          <button
+                            type="button"
+                            style={removeItemButtonStyle}
+                            disabled={editableOrder.items.length <= 1}
+                            onClick={() =>
+                              setEditableOrder((current: any) => ({
+                                ...current,
+                                items: current.items.filter(
+                                  (_: any, itemIndex: number) =>
+                                    itemIndex !== index
+                                ),
+                              }))
+                            }
+                            aria-label={
+                              "Position " + (index + 1) + " entfernen"
+                            }
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  {editableOrder.items.some(
+                    (item: any) =>
+                      !String(item?.name || "").trim()
+                  ) ? (
+                    <div style={warningStyle}>
+                      Mindestens eine Position hat noch keine Bezeichnung.
+                    </div>
                   ) : null}
-                </div>
+                </>
               ) : (
-                <div style={emptyStyle}>Noch keine Positionen erkannt.</div>
+                <div style={emptyStyle}>
+                  Die erkannten Daten werden vorbereitet.
+                </div>
               )}
             </div>
 
@@ -482,14 +1059,134 @@ export default function ImportPruefenPage() {
   );
 }
 
-function Info({ label, value }: { label: string; value?: string }) {
+function EditableField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  required,
+}: {
+  label: string;
+  value?: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  required?: boolean;
+}) {
+  const normalizedValue = String(value || "");
+  const missing = Boolean(required && !normalizedValue.trim());
+
   return (
-    <div style={infoBoxStyle}>
-      <span>{label}</span>
-      <strong>{value || "-"}</strong>
-    </div>
+    <label style={editorFieldStyle}>
+      {label}
+      <input
+        value={normalizedValue}
+        placeholder={placeholder}
+        onChange={(event) =>
+          onChange(event.currentTarget.value)
+        }
+        style={{
+          borderColor: missing ? "#e5a8a2" : "#d4e1df",
+          background: missing ? "#fff9f8" : "#ffffff",
+        }}
+      />
+
+      {missing ? (
+        <small style={requiredHintStyle}>
+          Bitte prüfen und ergänzen.
+        </small>
+      ) : null}
+    </label>
   );
 }
+
+const editableFieldsGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+  gap: 14,
+};
+
+const editorFieldStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 7,
+  color: "#38514d",
+  fontSize: 12,
+  fontWeight: 700,
+};
+
+const requiredHintStyle: React.CSSProperties = {
+  color: "#b23a30",
+  fontSize: 11,
+  fontWeight: 650,
+};
+
+const itemsHeaderStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "flex-end",
+  justifyContent: "space-between",
+  gap: 16,
+  marginTop: 22,
+  marginBottom: 12,
+};
+
+const editorHintStyle: React.CSSProperties = {
+  margin: 0,
+  color: "#70837f",
+  fontSize: 13,
+  fontWeight: 500,
+};
+
+const editableItemsListStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 10,
+};
+
+const editableItemRowStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns:
+    "minmax(240px, 1.4fr) 90px 130px minmax(220px, 1fr) 42px",
+  gap: 10,
+  alignItems: "end",
+  padding: 13,
+  border: "1px solid #dce8e4",
+  borderRadius: 14,
+  background: "#fbfdfc",
+};
+
+const secondaryActionButtonStyle: React.CSSProperties = {
+  minHeight: 40,
+  padding: "0 15px",
+  border: "1px solid #acd6ca",
+  borderRadius: 10,
+  background: "#edf8f4",
+  color: "#08705b",
+  fontSize: 12,
+  fontWeight: 750,
+  cursor: "pointer",
+};
+
+const removeItemButtonStyle: React.CSSProperties = {
+  width: 42,
+  minWidth: 42,
+  height: 42,
+  border: "1px solid #edc8c4",
+  borderRadius: 10,
+  background: "#fff8f7",
+  color: "#ba3b31",
+  fontSize: 18,
+  fontWeight: 700,
+  cursor: "pointer",
+};
+
+const warningStyle: React.CSSProperties = {
+  marginTop: 12,
+  padding: "11px 13px",
+  border: "1px solid #efd5a6",
+  borderRadius: 10,
+  background: "#fffaf0",
+  color: "#8a5a12",
+  fontSize: 12,
+  fontWeight: 700,
+};
 
 const pageStyle: React.CSSProperties = {
   display: "grid",
