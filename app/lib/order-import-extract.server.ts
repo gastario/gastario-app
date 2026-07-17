@@ -652,38 +652,119 @@ function extractGenericItems(lines: string[]) {
   const items: ExtractedOrderItem[] = [];
   let pendingNameLines: string[] = [];
 
-  function cleanName(value: string) {
+  function normalizeLine(value: string) {
     return String(value || "")
-      .replace(
-        /\b\d+\s*(?:x|stk|st\.|stück|portionen|personen|pax)\b/gi,
-        " "
-      )
-      .replace(
-        /\b\d{1,6}(?:\.\d{3})*(?:,\d{2})\s*(?:€|eur)?\b/gi,
-        " "
-      )
-      .replace(
-        /\b\d{1,6}\.\d{2}\s*(?:€|eur)?\b/gi,
-        " "
-      )
+      .replace(/\uFFFD|\uFFFE/g, "-")
       .replace(/\s+/g, " ")
       .trim();
   }
 
+  function stripPositionNumber(value: string) {
+    return normalizeLine(value)
+      .replace(
+        /^\d{1,3}[.)-]?\s+(?=[A-Za-zÄÖÜäöüß])/,
+        ""
+      )
+      .trim();
+  }
+
+  function splitSingleProductText(value: string) {
+    let name = stripPositionNumber(value);
+    let description = "";
+
+    const descriptionMarker = name.match(
+      /^(.+?)\s+(mit|beinhaltet|bestehend aus|gefüllt mit|serviert mit|dazu|inkl\.?|inklusive)\s+(.+)$/i
+    );
+
+    if (descriptionMarker) {
+      name = String(descriptionMarker[1] || "").trim();
+
+      description = [
+        descriptionMarker[2],
+        descriptionMarker[3],
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+    }
+    else {
+      const commaIndex = name.indexOf(",");
+
+      if (commaIndex >= 4) {
+        description = name
+          .slice(commaIndex + 1)
+          .trim();
+
+        name = name
+          .slice(0, commaIndex)
+          .trim();
+      }
+    }
+
+    return {
+      name,
+      description,
+    };
+  }
+
+  function splitProductLines(rawLines: string[]) {
+    const normalizedLines = rawLines
+      .map(normalizeLine)
+      .filter(Boolean)
+      .filter(
+        (line) =>
+          !isGenericItemNoiseLine(line)
+      );
+
+    if (normalizedLines.length === 0) {
+      return {
+        name: "",
+        description: "",
+      };
+    }
+
+    const firstLine =
+      stripPositionNumber(normalizedLines[0]);
+
+    const followingLines =
+      normalizedLines
+        .slice(1)
+        .map(normalizeLine)
+        .filter(Boolean);
+
+    if (followingLines.length > 0) {
+      return {
+        name: firstLine,
+        description: followingLines
+          .join(" ")
+          .replace(/\s+/g, " ")
+          .trim(),
+      };
+    }
+
+    return splitSingleProductText(firstLine);
+  }
+
   function pushItem({
     name,
+    description,
     quantity,
     unitCents,
     totalCents,
     rawLine,
   }: {
     name: string;
+    description?: string;
     quantity: number;
     unitCents: number;
     totalCents: number;
     rawLine: string;
   }) {
-    const cleanedName = cleanName(name);
+    const cleanedName =
+      stripPositionNumber(name);
+
+    const cleanedDescription =
+      normalizeLine(description || "");
 
     if (!hasUsefulProductText(cleanedName)) {
       return;
@@ -692,7 +773,7 @@ function extractGenericItems(lines: string[]) {
     if (
       isInvalidImportedItem(
         cleanedName,
-        "",
+        cleanedDescription,
         rawLine
       )
     ) {
@@ -701,7 +782,7 @@ function extractGenericItems(lines: string[]) {
 
     items.push({
       name: cleanedName,
-      description: "",
+      description: cleanedDescription,
       rawLine,
       quantity:
         Number.isFinite(quantity) && quantity > 0
@@ -719,10 +800,7 @@ function extractGenericItems(lines: string[]) {
   }
 
   for (const rawLine of lines) {
-    const line = String(rawLine || "")
-      .replace(/\uFFFD|\uFFFE/g, "-")
-      .replace(/\s+/g, " ")
-      .trim();
+    const line = normalizeLine(rawLine);
 
     if (!line) {
       continue;
@@ -738,23 +816,17 @@ function extractGenericItems(lines: string[]) {
     );
 
     if (completeRow) {
-      const quantity =
-        Number(completeRow[1]) || 1;
-
-      const rowName =
-        String(completeRow[2] || "").trim();
-
-      const name = [
-        ...pendingNameLines,
-        rowName,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .trim();
+      const parsedText =
+        splitProductLines([
+          ...pendingNameLines,
+          String(completeRow[2] || ""),
+        ]);
 
       pushItem({
-        name,
-        quantity,
+        name: parsedText.name,
+        description: parsedText.description,
+        quantity:
+          Number(completeRow[1]) || 1,
         unitCents:
           parseGenericMoneyToCents(
             completeRow[3]
@@ -775,13 +847,14 @@ function extractGenericItems(lines: string[]) {
     );
 
     if (priceOnlyRow) {
-      const name = pendingNameLines
-        .filter(Boolean)
-        .join(" ")
-        .trim();
+      const parsedText =
+        splitProductLines(
+          pendingNameLines
+        );
 
       pushItem({
-        name,
+        name: parsedText.name,
+        description: parsedText.description,
         quantity:
           Number(priceOnlyRow[1]) || 1,
         unitCents:
@@ -793,7 +866,9 @@ function extractGenericItems(lines: string[]) {
             priceOnlyRow[3]
           ),
         rawLine:
-          name + " | " + line,
+          pendingNameLines.join(" | ") +
+          " | " +
+          line,
       });
 
       pendingNameLines = [];
@@ -805,16 +880,11 @@ function extractGenericItems(lines: string[]) {
     );
 
     if (quantityTextRow) {
-      const quantity =
-        Number(quantityTextRow[1]) || 1;
-
-      const name = [
-        ...pendingNameLines,
-        String(quantityTextRow[2] || ""),
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .trim();
+      const parsedText =
+        splitProductLines([
+          ...pendingNameLines,
+          String(quantityTextRow[2] || ""),
+        ]);
 
       const totalCents =
         quantityTextRow[3]
@@ -823,12 +893,18 @@ function extractGenericItems(lines: string[]) {
             )
           : 0;
 
+      const quantity =
+        Number(quantityTextRow[1]) || 1;
+
       pushItem({
-        name,
+        name: parsedText.name,
+        description: parsedText.description,
         quantity,
         unitCents:
           totalCents > 0
-            ? Math.round(totalCents / quantity)
+            ? Math.round(
+                totalCents / quantity
+              )
             : 0,
         totalCents,
         rawLine: line,
@@ -842,7 +918,7 @@ function extractGenericItems(lines: string[]) {
       .split(/\s+/)
       .filter(Boolean);
 
-    const containsOnlyPriceValues =
+    const onlyNumbersAndPrices =
       separatedValues.length > 0 &&
       separatedValues.every(
         (value) =>
@@ -851,16 +927,16 @@ function extractGenericItems(lines: string[]) {
           /^(?:€|eur)$/i.test(value)
       );
 
-    if (containsOnlyPriceValues) {
+    if (onlyNumbersAndPrices) {
       continue;
     }
 
     if (looksLikeGenericItemLine(line)) {
       pendingNameLines.push(line);
 
-      if (pendingNameLines.length > 4) {
+      if (pendingNameLines.length > 5) {
         pendingNameLines =
-          pendingNameLines.slice(-4);
+          pendingNameLines.slice(-5);
       }
     }
   }

@@ -303,3 +303,137 @@
     grid-column: 1 / -1;
   }
 }
+
+/*
+ * gastario-imported-items-structure-final-20260717
+ */
+
+.documentImportItemsList {
+  counter-reset: imported-position;
+}
+
+.documentImportItemRow {
+  counter-increment: imported-position;
+  grid-template-columns:
+    38px
+    minmax(360px, 1fr)
+    90px
+    130px
+    44px !important;
+  grid-template-rows: auto auto;
+  align-items: end !important;
+  padding: 14px !important;
+}
+
+.documentImportItemRow::before {
+  content: counter(imported-position);
+  display: inline-flex;
+  grid-column: 1;
+  grid-row: 1;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  align-self: end;
+  margin-bottom: 5px;
+  border: 1px solid #b9d9cf;
+  border-radius: 9px;
+  background: #eaf7f2;
+  color: #08705b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.documentImportItemRow > label:nth-of-type(1) {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.documentImportItemRow > label:nth-of-type(2) {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.documentImportItemRow > label:nth-of-type(3) {
+  grid-column: 4;
+  grid-row: 1;
+}
+
+.documentImportItemRow > label:nth-of-type(4) {
+  grid-column: 2 / 5;
+  grid-row: 2;
+}
+
+.documentImportItemRow > button {
+  grid-column: 5;
+  grid-row: 1;
+}
+
+.documentImportItemRow > label:nth-of-type(4) input {
+  background: #ffffff;
+}
+
+.incomingDocumentImportButton {
+  min-height: 42px !important;
+  padding: 0 17px !important;
+  border: 1px solid #83c5b2 !important;
+  border-radius: 11px !important;
+  background: #dff3ec !important;
+  color: #08705b !important;
+  box-shadow: 0 5px 14px rgba(16, 133, 105, 0.1) !important;
+}
+
+.incomingDocumentImportButtonIcon {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 1050px) {
+  .documentImportItemRow {
+    grid-template-columns:
+      38px
+      minmax(220px, 1fr)
+      85px
+      115px
+      44px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .documentImportItemRow {
+    grid-template-columns:
+      38px
+      minmax(0, 1fr)
+      44px !important;
+    grid-template-rows: auto auto auto auto;
+  }
+
+  .documentImportItemRow::before {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .documentImportItemRow > label:nth-of-type(1) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .documentImportItemRow > button {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .documentImportItemRow > label:nth-of-type(2) {
+    grid-column: 1 / 2;
+    grid-row: 2;
+  }
+
+  .documentImportItemRow > label:nth-of-type(3) {
+    grid-column: 2 / 4;
+    grid-row: 2;
+  }
+
+  .documentImportItemRow > label:nth-of-type(4) {
+    grid-column: 1 / 4;
+    grid-row: 3;
+  }
+}

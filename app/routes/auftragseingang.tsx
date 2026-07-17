@@ -1051,26 +1051,33 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
               <Link
                 to="/import-pruefen"
-                className="g-ui-button g-ui-button--secondary"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  minHeight: 42,
-                  padding: "0 16px",
-                  border: "1px solid #a9d5c8",
-                  borderRadius: 11,
-                  background: "#edf8f4",
-                  color: "#08705b",
-                  fontSize: 13,
-                  fontWeight: 750,
-                  textDecoration: "none",
-                  whiteSpace: "nowrap",
-                }}
+                className="incomingDocumentImportButton"
               >
-                <span aria-hidden="true">＋</span>
-                Dokument hochladen
+                <svg
+                  className="incomingDocumentImportButtonIcon"
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M7 3.75h7.25L18.5 8v12.25H7z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M14 3.75V8h4.25M12.75 11.25v5.5M10 14h5.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+
+                Dokument importieren
               </Link>
 
               <button

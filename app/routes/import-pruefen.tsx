@@ -1,4 +1,4 @@
-﻿import { redirect, useActionData } from "react-router";
+import { redirect, useActionData } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import AppLayout from "../components/AppLayout";
 import importPruefenStyles from "../styles/import-pruefen.css?url";
@@ -934,10 +934,10 @@ export default function ImportPruefenPage() {
                           </label>
 
                           <label style={editorFieldStyle}>
-                            Hinweis
+                            Beschreibung / Details
                             <input
                               value={item.description || ""}
-                              placeholder="Beschreibung, Allergene, Besonderheit"
+                              placeholder="Zutaten, Beilagen, Allergene oder Besonderheiten"
                               onChange={(event) => {
                                 const description =
                                   event.currentTarget.value;
