@@ -827,6 +827,55 @@ function extractGenericItems(lines: string[]) {
       continue;
     }
 
+    /*
+     * Vollständige Tabellenzeile mit Positionsnummer und Einheit:
+     *
+     * 32 Glasnudelsalat Veggie 15 Stück 4,90 73,50
+     *
+     * Gruppe 1 = Positionsnummer
+     * Gruppe 2 = Produktname
+     * Gruppe 3 = Menge
+     * Gruppe 4 = Einzelpreis
+     * Gruppe 5 = Gesamtpreis
+     */
+    const positionedUnitRow = line.match(
+      /^(\d{1,4})\s+(.+?)\s+(\d+(?:[.,]\d+)?)\s+(?:stück|stueck|stk\.?|st\.?|portionen?|personen?|pax|kg|g|liter|l)\s+(\d{1,6}(?:\.\d{3})*(?:,\d{2})|\d{1,6}\.\d{2})\s+(\d{1,6}(?:\.\d{3})*(?:,\d{2})|\d{1,6}\.\d{2})(?:\s*(?:€|eur))?$/i
+    );
+
+    if (positionedUnitRow) {
+      const quantity = Number(
+        String(positionedUnitRow[3] || "")
+          .replace(",", ".")
+      );
+
+      pushItem({
+        name: String(positionedUnitRow[2] || "")
+          .replace(/\s+/g, " ")
+          .trim(),
+
+        description: "",
+
+        quantity:
+          Number.isFinite(quantity) && quantity > 0
+            ? quantity
+            : 1,
+
+        unitCents:
+          parseGenericMoneyToCents(
+            positionedUnitRow[4]
+          ),
+
+        totalCents:
+          parseGenericMoneyToCents(
+            positionedUnitRow[5]
+          ),
+
+        rawLine: line,
+      });
+
+      pendingNameLines = [];
+      continue;
+    }
     const completeRow = line.match(
       /^(\d+)\s+(.+?)\s+(\d{1,6}(?:\.\d{3})*(?:,\d{2})|\d{1,6}\.\d{2})\s+(\d{1,6}(?:\.\d{3})*(?:,\d{2})|\d{1,6}\.\d{2})(?:\s*(?:€|eur))?$/i
     );
