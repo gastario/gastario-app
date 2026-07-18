@@ -469,11 +469,6 @@ function isInvalidImportedItem(name: string, description?: string, rawLine?: str
   if (value.includes("-- 3 of")) return true;
 
   const blocked = [
-    "lieferkosten",
-    "liefergebuehr",
-    "liefergeb?hr",
-    "versand",
-    "transport",
     "zwischensumme",
     "summe",
     "gesamtsumme",
