@@ -653,6 +653,235 @@ function looksLikeGenericItemLine(line: string) {
   return hasUsefulProductText(text);
 }
 
+function extractStructuredPositionBlocks(
+  lines: string[]
+): ExtractedOrderItem[] {
+  const items: ExtractedOrderItem[] = [];
+
+  let currentCateringDate = "";
+
+  let currentItem:
+    | {
+        name: string;
+        descriptionLines: string[];
+        rawLines: string[];
+        cateringDate: string;
+      }
+    | null = null;
+
+  function normalizeStructuredLine(value: string) {
+    return String(value || "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function isStructuredNoiseLine(value: string) {
+    const lower = normalizeStructuredLine(value)
+      .toLowerCase();
+
+    if (!lower) return true;
+
+    return (
+      isGenericItemNoiseLine(lower) ||
+      /^seite\s+\d+\s*\/\s*\d+/i.test(lower) ||
+      /^--\s*\d+\s+of\s+\d+\s*--$/i.test(lower) ||
+      lower.includes("edis gastrobetriebe") ||
+      lower.includes("goerzallee 299") ||
+      lower.includes("ust-idnr") ||
+      lower.includes("steuernummer") ||
+      lower.includes("amtsgericht") ||
+      lower.includes("landesbank berlin") ||
+      lower.includes("sparkasse") ||
+      lower.includes("iban:") ||
+      lower.includes("bic:") ||
+      lower.includes("info@") ||
+      lower.includes("www.") ||
+      lower.includes("tel.:")
+    );
+  }
+
+  function pushStructuredItem(
+    quantityText: string,
+    unitPriceText: string,
+    totalPriceText: string
+  ) {
+    if (!currentItem) return;
+
+    const quantity = Number(
+      String(quantityText || "")
+        .replace(",", ".")
+    );
+
+    const name = normalizeStructuredLine(
+      currentItem.name
+    );
+
+    const description = currentItem.descriptionLines
+      .map(normalizeStructuredLine)
+      .filter(Boolean)
+      .join(" ")
+      .replace(/-\s+/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (
+      name &&
+      /[A-Za-zÄÖÜäöüß]/.test(name)
+    ) {
+      items.push({
+        name,
+        description,
+        rawLine:
+          currentItem.rawLines.join(" | "),
+        cateringDate:
+          currentItem.cateringDate || undefined,
+        quantity:
+          Number.isFinite(quantity) &&
+          quantity > 0
+            ? quantity
+            : 1,
+        unitCents:
+          parseGenericMoneyToCents(
+            unitPriceText
+          ),
+        totalCents:
+          parseGenericMoneyToCents(
+            totalPriceText
+          ),
+      });
+    }
+
+    currentItem = null;
+  }
+
+  for (const rawLine of lines) {
+    const line =
+      normalizeStructuredLine(rawLine);
+
+    if (!line) continue;
+
+    const cateringDateMatch = line.match(
+      /^catering\s+am\s+(\d{1,2}\.\d{1,2}\.\d{4})$/i
+    );
+
+    if (cateringDateMatch) {
+      currentCateringDate =
+        String(cateringDateMatch[1] || "")
+          .trim();
+
+      currentItem = null;
+      continue;
+    }
+
+    /*
+     * Einzeilige vollständige Position:
+     * 13 Glasnudelsalat Veggie 15 Stück 4,90 73,50
+     */
+    const completePositionRow = line.match(
+      /^(\d{1,4})\s+(.+?)\s+(\d+(?:[.,]\d+)?)\s+(?:stück|stueck|stk\.?|st\.?|portionen?|personen?|pax|kg|g|liter|l)\s+(\d{1,6}(?:\.\d{3})*(?:,\d{2})|\d{1,6}\.\d{2})\s+(\d{1,6}(?:\.\d{3})*(?:,\d{2})|\d{1,6}\.\d{2})(?:\s*(?:€|eur))?$/i
+    );
+
+    if (completePositionRow) {
+      currentItem = {
+        name:
+          String(
+            completePositionRow[2] || ""
+          ).trim(),
+        descriptionLines: [],
+        rawLines: [line],
+        cateringDate: currentCateringDate,
+      };
+
+      pushStructuredItem(
+        completePositionRow[3],
+        completePositionRow[4],
+        completePositionRow[5]
+      );
+
+      continue;
+    }
+
+    /*
+     * Abschlusszeile einer mehrzeiligen Position:
+     * 7 Stück 13,90 97,30
+     */
+    const positionPriceRow = line.match(
+      /^(\d+(?:[.,]\d+)?)\s+(?:stück|stueck|stk\.?|st\.?|portionen?|personen?|pax|kg|g|liter|l)\s+(\d{1,6}(?:\.\d{3})*(?:,\d{2})|\d{1,6}\.\d{2})\s+(\d{1,6}(?:\.\d{3})*(?:,\d{2})|\d{1,6}\.\d{2})(?:\s*(?:€|eur))?$/i
+    );
+
+    if (positionPriceRow && currentItem) {
+      currentItem.rawLines.push(line);
+
+      pushStructuredItem(
+        positionPriceRow[1],
+        positionPriceRow[2],
+        positionPriceRow[3]
+      );
+
+      continue;
+    }
+
+    /*
+     * Start einer neuen mehrzeiligen Position:
+     * 10 Chicken Bowl
+     */
+    const positionStart = line.match(
+      /^(\d{1,4})[.)-]?\s+(.+)$/
+    );
+
+    if (positionStart) {
+      const possibleName =
+        normalizeStructuredLine(
+          positionStart[2]
+        );
+
+      if (
+        /[A-Za-zÄÖÜäöüß]/.test(
+          possibleName
+        ) &&
+        !isStructuredNoiseLine(
+          possibleName
+        ) &&
+        !/^\d{5}\s+/.test(line)
+      ) {
+        currentItem = {
+          name: possibleName,
+          descriptionLines: [],
+          rawLines: [line],
+          cateringDate:
+            currentCateringDate,
+        };
+
+        continue;
+      }
+    }
+
+    if (!currentItem) {
+      continue;
+    }
+
+    if (isStructuredNoiseLine(line)) {
+      continue;
+    }
+
+    if (
+      /^(?:übertrag|uebertrag|zwischensumme|gesamtbetrag|umsatzsteuer)\b/i.test(
+        line
+      )
+    ) {
+      continue;
+    }
+
+    currentItem.descriptionLines.push(
+      line
+    );
+
+    currentItem.rawLines.push(line);
+  }
+
+  return items;
+}
+
 function extractGenericItems(lines: string[]) {
   const items: ExtractedOrderItem[] = [];
   let pendingNameLines: string[] = [];
@@ -1159,7 +1388,85 @@ function extractGenericOrder(text: string): ExtractedOrder {
       return [streetLine, cityLine].filter(Boolean).join(", ");
     })();
 
-  const items = extractGenericItems(lines);
+  const genericItems =
+    extractGenericItems(lines);
+
+  const structuredItems =
+    extractStructuredPositionBlocks(lines);
+
+  const expectedNetTotalCents =
+    extractFinalDocumentTotals(
+      normalizedText
+    ).pdfNetTotalCents;
+
+  function getItemsTotalCents(
+    values: ExtractedOrderItem[]
+  ) {
+    return values.reduce(
+      (sum, item) => {
+        const importedTotalCents =
+          Math.max(
+            0,
+            Number(item.totalCents || 0)
+          );
+
+        const calculatedTotalCents =
+          Math.max(
+            0,
+            Number(item.quantity || 1)
+          ) *
+          Math.max(
+            0,
+            Number(item.unitCents || 0)
+          );
+
+        return (
+          sum +
+          (
+            importedTotalCents > 0
+              ? importedTotalCents
+              : calculatedTotalCents
+          )
+        );
+      },
+      0
+    );
+  }
+
+  const genericItemsTotalCents =
+    getItemsTotalCents(genericItems);
+
+  const structuredItemsTotalCents =
+    getItemsTotalCents(
+      structuredItems
+    );
+
+  const useStructuredItems =
+    structuredItems.length > 0 &&
+    (
+      genericItems.length === 0 ||
+      (
+        expectedNetTotalCents > 0 &&
+        Math.abs(
+          structuredItemsTotalCents -
+          expectedNetTotalCents
+        ) <
+        Math.abs(
+          genericItemsTotalCents -
+          expectedNetTotalCents
+        )
+      ) ||
+      (
+        expectedNetTotalCents <= 0 &&
+        structuredItems.length >
+        genericItems.length
+      )
+    );
+
+  const items =
+    useStructuredItems
+      ? structuredItems
+      : genericItems;
 
   return {
     source,
