@@ -2,6 +2,7 @@ export type ExtractedOrderItem = {
   name: string;
   description?: string;
   rawLine?: string;
+  cateringDate?: string;
   quantity?: number;
   unitCents?: number;
   totalCents?: number;
@@ -660,6 +661,7 @@ function looksLikeGenericItemLine(line: string) {
 function extractGenericItems(lines: string[]) {
   const items: ExtractedOrderItem[] = [];
   let pendingNameLines: string[] = [];
+  let currentCateringDate = "";
 
   function normalizeLine(value: string) {
     return String(value || "")
@@ -793,6 +795,7 @@ function extractGenericItems(lines: string[]) {
       name: cleanedName,
       description: cleanedDescription,
       rawLine,
+      cateringDate: currentCateringDate || undefined,
       quantity:
         Number.isFinite(quantity) && quantity > 0
           ? quantity
@@ -812,6 +815,18 @@ function extractGenericItems(lines: string[]) {
     const line = normalizeLine(rawLine);
 
     if (!line) {
+      continue;
+    }
+
+    const cateringDateMatch = line.match(
+      /^catering\s+am\s+(\d{1,2}\.\d{1,2}\.\d{4})$/i
+    );
+
+    if (cateringDateMatch) {
+      currentCateringDate =
+        String(cateringDateMatch[1] || "").trim();
+
+      pendingNameLines = [];
       continue;
     }
 

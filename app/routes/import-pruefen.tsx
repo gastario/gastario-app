@@ -297,8 +297,15 @@ export default function ImportPruefenPage() {
               Number(item?.unitCents || 0)
             );
 
+            const importedTotalCents = Math.max(
+              0,
+              Number(item?.totalCents || 0)
+            );
+
             const calculatedTotalCents =
-              unitCents * quantity;
+              importedTotalCents > 0
+                ? importedTotalCents
+                : unitCents * quantity;
 
             return sum + calculatedTotalCents;
           },
@@ -987,6 +994,27 @@ export default function ImportPruefenPage() {
                           key={index}
                           className="documentImportItemRow" style={editableItemRowStyle}
                         >
+                          {item.cateringDate ? (
+                            <div
+                              style={{
+                                gridColumn: "1 / -1",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                width: "fit-content",
+                                padding: "6px 10px",
+                                borderRadius: 999,
+                                background: "#eaf7f2",
+                                border: "1px solid #b8ddd0",
+                                color: "#176b57",
+                                fontSize: 12,
+                                fontWeight: 800,
+                                marginBottom: 2,
+                              }}
+                            >
+                              Catering am {item.cateringDate}
+                            </div>
+                          ) : null}
+
                           <label style={editorFieldStyle}>
                             Bezeichnung *
                             <input
