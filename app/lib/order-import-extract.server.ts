@@ -1423,6 +1423,11 @@ function normalizeFinalImportedItem(
     Number(item?.unitCents || 0)
   );
 
+  const importedTotalCents = Math.max(
+    0,
+    Number(item?.totalCents || 0)
+  );
+
   return {
     ...item,
     name,
@@ -1430,7 +1435,9 @@ function normalizeFinalImportedItem(
     quantity,
     unitCents,
     totalCents:
-      quantity * unitCents,
+      importedTotalCents > 0
+        ? importedTotalCents
+        : quantity * unitCents,
   };
 }
 
