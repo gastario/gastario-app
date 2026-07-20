@@ -143,7 +143,7 @@ export async function action({ request }: { request: Request }) {
                 totalCents:
                   Math.max(1, Number(item.quantity || 1)) *
                   Math.max(0, Number(item.unitCents || 0)),
-                notes: [item.description, item.rawLine].filter(Boolean).join(" | ") || null,
+                notes: String(item.description || "").trim() || null,
               }))
             : [],
         },
