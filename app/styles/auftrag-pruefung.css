@@ -1,0 +1,298 @@
+.orderReviewPage {
+  padding: 26px 30px 60px !important;
+  background:
+    linear-gradient(
+      180deg,
+      #edf7f4 0,
+      #f7faf9 330px,
+      #f8faf9 100%
+    ) !important;
+}
+
+.orderReviewWorkspace {
+  max-width: 1380px !important;
+  padding: 28px !important;
+  border-color: #d8e8e2 !important;
+  border-radius: 24px !important;
+  box-shadow:
+    0 22px 54px rgba(18, 59, 49, 0.075) !important;
+}
+
+.orderReviewInfoGrid {
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr)) !important;
+  gap: 11px !important;
+}
+
+.orderReviewInfoGrid > div {
+  min-height: 76px;
+  border-color: #deebe7 !important;
+  box-shadow: none !important;
+}
+
+.orderReviewContentGrid {
+  grid-template-columns:
+    minmax(0, 1fr) 350px !important;
+  gap: 20px !important;
+  align-items: start !important;
+}
+
+.orderReviewPositionsCard {
+  min-width: 0;
+  border-color: #deebe7 !important;
+  box-shadow: none !important;
+}
+
+.orderReviewTable {
+  table-layout: fixed;
+}
+
+.orderReviewTable th {
+  background: #f1f8f5 !important;
+  color: #617870 !important;
+  font-size: 10px !important;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.orderReviewTable th:first-child {
+  width: 78px;
+}
+
+.orderReviewTable th:nth-child(2) {
+  width: 29%;
+}
+
+.orderReviewTable th:last-child {
+  width: 110px;
+}
+
+.orderReviewChecklistCard {
+  position: sticky !important;
+  top: 18px !important;
+  padding: 20px !important;
+  border: 1px solid #cfe3dc !important;
+  border-radius: 19px !important;
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f9fcfb
+    ) !important;
+  box-shadow:
+    0 15px 34px rgba(18, 73, 59, 0.07) !important;
+}
+
+.orderReviewChecklistHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.orderReviewEyebrow {
+  margin: 0 0 5px;
+  color: #16866d;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.orderReviewProgressBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid #d2e4de;
+  border-radius: 999px;
+  background: #f2f7f5;
+  color: #60766f;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.orderReviewProgressBadge.complete {
+  border-color: #9dd3c2;
+  background: #e8f7f1;
+  color: #08705b;
+}
+
+.orderReviewProgress {
+  height: 6px;
+  margin-top: 15px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e6efec;
+}
+
+.orderReviewProgress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      90deg,
+      #22a884,
+      #76c9af
+    );
+  transition: width 180ms ease;
+}
+
+.orderReviewChecks {
+  display: grid;
+  gap: 8px;
+  margin-top: 17px;
+}
+
+.orderReviewCheck {
+  display: grid;
+  grid-template-columns: 21px minmax(0, 1fr);
+  gap: 11px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid #e0ebe7;
+  border-radius: 13px;
+  background: #ffffff;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    transform 140ms ease;
+}
+
+.orderReviewCheck:hover {
+  border-color: #add5c8;
+  background: #f6fbf9;
+  transform: translateY(-1px);
+}
+
+.orderReviewCheck:has(input:checked) {
+  border-color: #9bcfbe;
+  background: #eef9f5;
+}
+
+.orderReviewCheck input {
+  width: 19px;
+  height: 19px;
+  margin: 1px 0 0;
+  accent-color: #159579;
+  cursor: pointer;
+}
+
+.orderReviewCheck > span {
+  display: grid;
+  gap: 3px;
+}
+
+.orderReviewCheck strong {
+  color: #244b42;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.orderReviewCheck small {
+  color: #748780;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.orderReviewBlocked {
+  display: grid;
+  gap: 3px;
+  margin-top: 14px;
+  padding: 11px 12px;
+  border: 1px solid #efc9a7;
+  border-radius: 11px;
+  background: #fff8f1;
+  color: #9b4e15;
+  font-size: 11px;
+}
+
+.orderReviewConfirmButton {
+  width: 100%;
+  min-height: 49px;
+  margin-top: 16px;
+  padding: 0 16px;
+  border: 1px solid #159579;
+  border-radius: 12px;
+  background: #159579;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+  box-shadow:
+    0 10px 22px rgba(21, 149, 121, 0.2);
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.orderReviewConfirmButton:hover:not(:disabled) {
+  border-color: #0e7e66;
+  background: #0e7e66;
+  transform: translateY(-1px);
+  box-shadow:
+    0 13px 27px rgba(21, 149, 121, 0.25);
+}
+
+.orderReviewConfirmButton:disabled {
+  border-color: #d3dfdb;
+  background: #e8efed;
+  color: #899993;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.orderReviewHint {
+  margin: 11px 2px 0;
+  color: #758781;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+@media (max-width: 1100px) {
+  .orderReviewContentGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .orderReviewChecklistCard {
+    position: static !important;
+  }
+}
+
+@media (max-width: 800px) {
+  .orderReviewPage {
+    padding: 16px 12px 44px !important;
+  }
+
+  .orderReviewWorkspace {
+    padding: 19px !important;
+    border-radius: 19px !important;
+  }
+
+  .orderReviewInfoGrid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .orderReviewPositionsCard {
+    overflow-x: auto;
+  }
+
+  .orderReviewTable {
+    min-width: 760px;
+  }
+}
+
+@media (max-width: 560px) {
+  .orderReviewInfoGrid {
+    grid-template-columns: 1fr !important;
+  }
+}

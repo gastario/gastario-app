@@ -1,4 +1,6 @@
-﻿import { Form, Link, redirect, useLoaderData } from "react-router";
+﻿import { useState } from "react";
+import { Form, Link, redirect, useLoaderData, useNavigation } from "react-router";
+import orderReviewStyles from "../styles/auftrag-pruefung.css?url";
 
 function formatDate(value: string | Date | null | undefined) {
   if (!value) return "-";
@@ -96,6 +98,15 @@ function getOrderReviewState(order: any) {
 
 function getMissingOrderChecks(order: any) {
   return getOrderReviewState(order).missing;
+}
+
+export function links() {
+  return [
+    {
+      rel: "stylesheet",
+      href: orderReviewStyles,
+    },
+  ];
 }
 
 export function meta() {
@@ -236,6 +247,35 @@ export default function AuftragPruefungPage() {
   const reviewState = getOrderReviewState(order);
   const missingChecks = reviewState.missing;
   const canConfirmOrder = missingChecks.length === 0;
+  const navigation = useNavigation();
+
+  const [reviewChecks, setReviewChecks] = useState({
+    customer: false,
+    deliveryAddress: false,
+    deliverySchedule: false,
+    items: false,
+    notes: false,
+  });
+
+  const completedReviewChecks =
+    Object.values(reviewChecks).filter(Boolean).length;
+
+  const allReviewChecksCompleted =
+    completedReviewChecks === 5;
+
+  const isConfirming =
+    navigation.state !== "idle" &&
+    navigation.formData?.get("_intent") === "confirmOrder";
+
+  function updateReviewCheck(
+    key: keyof typeof reviewChecks,
+    value: boolean
+  ) {
+    setReviewChecks((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  }
 
   /*
    * gastario-confirmed-order-details-20260714
@@ -252,7 +292,7 @@ export default function AuftragPruefungPage() {
     "/lieferscheine/" + order.id + "/pdf";
 
   return (
-    <main style={{ background: "linear-gradient(180deg, #eef6f8 0%, #f8fbfc 100%)", minHeight: "100vh", padding: 24 }}>
+    <main className="orderReviewPage" style={{ background: "linear-gradient(180deg, #eef6f8 0%, #f8fbfc 100%)", minHeight: "100vh", padding: 24 }}>
       <div style={topbarStyle}>
         <div>
           <Link to="/auftraege" style={secondaryButtonStyle}>
@@ -709,7 +749,7 @@ export default function AuftragPruefungPage() {
           </footer>
         </section>
       ) : (
-      <section style={{ maxWidth: 1180, margin: "0 auto", background: "#fff", borderRadius: 22, padding: 34, boxShadow: "0 18px 45px rgba(15, 23, 42, 0.08)", border: "1px solid #dbe7ec" }}>
+      <section className="orderReviewWorkspace" style={{ maxWidth: 1180, margin: "0 auto", background: "#fff", borderRadius: 22, padding: 34, boxShadow: "0 18px 45px rgba(15, 23, 42, 0.08)", border: "1px solid #dbe7ec" }}>
         <p style={{ margin: 0, color: "#057a67", fontWeight: 900, textTransform: "uppercase", fontSize: 12 }}>
           {isAlreadyConfirmed
             ? "Auftragsdetails"
@@ -773,7 +813,7 @@ export default function AuftragPruefungPage() {
           </div>
         ) : null}
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12, marginTop: 20 }}>
+        <div className="orderReviewInfoGrid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12, marginTop: 20 }}>
           <Info label="Kunde" value={order.customerName} />
           <Info label="Quelle" value={order.platformName || order.source} />
           <Info label="Status" value={order.status} />
@@ -785,14 +825,14 @@ export default function AuftragPruefungPage() {
           <Info label="Summe" value={centsToEuro(total)} />
         </div>
 
-        <div style={contentGridStyle}>
-          <section style={positionsCardStyle}>
+        <div className="orderReviewContentGrid" style={contentGridStyle}>
+          <section className="orderReviewPositionsCard" style={positionsCardStyle}>
             <div style={sectionHeaderStyle}>
               <h2 style={sectionTitleStyle}>Positionen</h2>
               <span style={countBadgeStyle}>{visibleItems.length} Positionen</span>
             </div>
 
-            <table style={tableStyle}>
+            <table className="orderReviewTable" style={tableStyle}>
               <thead>
                 <tr>
                   <th style={thStyle}>Menge</th>
@@ -824,38 +864,186 @@ export default function AuftragPruefungPage() {
           </section>
 
           {!isAlreadyConfirmed ? (
-            <aside style={checklistCardStyle}>
-              <h2 style={sectionTitleStyle}>Checkliste</h2>
+            <aside
+              className="orderReviewChecklistCard"
+              style={checklistCardStyle}
+            >
+              <div className="orderReviewChecklistHeader">
+                <div>
+                  <p className="orderReviewEyebrow">
+                    Freigabe
+                  </p>
 
-              <div style={checkListStyle}>
-                <div style={checkItemStyle}>
-                  <span style={checkBoxStyle}></span>
-                  <span>Kunde stimmt</span>
+                  <h2 style={sectionTitleStyle}>
+                    Prüfung abschließen
+                  </h2>
                 </div>
 
-                <div style={checkItemStyle}>
-                  <span style={checkBoxStyle}></span>
-                  <span>Lieferadresse stimmt</span>
-                </div>
-
-                <div style={checkItemStyle}>
-                  <span style={checkBoxStyle}></span>
-                  <span>Lieferdatum und Lieferzeit stimmen</span>
-                </div>
-
-                <div style={checkItemStyle}>
-                  <span style={checkBoxStyle}></span>
-                  <span>Positionen stimmen</span>
-                </div>
-
-                <div style={checkItemStyle}>
-                  <span style={checkBoxStyle}></span>
-                  <span>Hinweise / Allergene geprüft</span>
-                </div>
+                <span
+                  className={
+                    allReviewChecksCompleted
+                      ? "orderReviewProgressBadge complete"
+                      : "orderReviewProgressBadge"
+                  }
+                >
+                  {completedReviewChecks} von 5
+                </span>
               </div>
 
-              <p style={checkHintStyle}>
-                Bitte alle Punkte prüfen, bevor der Auftrag übernommen wird.
+              <div className="orderReviewProgress">
+                <span
+                  style={{
+                    width: completedReviewChecks * 20 + "%",
+                  }}
+                />
+              </div>
+
+              <div className="orderReviewChecks">
+                <label className="orderReviewCheck">
+                  <input
+                    type="checkbox"
+                    checked={reviewChecks.customer}
+                    onChange={(event) =>
+                      updateReviewCheck(
+                        "customer",
+                        event.currentTarget.checked
+                      )
+                    }
+                  />
+
+                  <span>
+                    <strong>Kunde stimmt</strong>
+                    <small>
+                      Firmenname und Kontakt wurden geprüft.
+                    </small>
+                  </span>
+                </label>
+
+                <label className="orderReviewCheck">
+                  <input
+                    type="checkbox"
+                    checked={reviewChecks.deliveryAddress}
+                    onChange={(event) =>
+                      updateReviewCheck(
+                        "deliveryAddress",
+                        event.currentTarget.checked
+                      )
+                    }
+                  />
+
+                  <span>
+                    <strong>Lieferadresse stimmt</strong>
+                    <small>
+                      Standort, Straße und PLZ sind korrekt.
+                    </small>
+                  </span>
+                </label>
+
+                <label className="orderReviewCheck">
+                  <input
+                    type="checkbox"
+                    checked={reviewChecks.deliverySchedule}
+                    onChange={(event) =>
+                      updateReviewCheck(
+                        "deliverySchedule",
+                        event.currentTarget.checked
+                      )
+                    }
+                  />
+
+                  <span>
+                    <strong>
+                      Datum und Uhrzeit stimmen
+                    </strong>
+                    <small>
+                      Der Liefertermin wurde abgeglichen.
+                    </small>
+                  </span>
+                </label>
+
+                <label className="orderReviewCheck">
+                  <input
+                    type="checkbox"
+                    checked={reviewChecks.items}
+                    onChange={(event) =>
+                      updateReviewCheck(
+                        "items",
+                        event.currentTarget.checked
+                      )
+                    }
+                  />
+
+                  <span>
+                    <strong>
+                      Positionen und Mengen stimmen
+                    </strong>
+                    <small>
+                      Produkte, Anzahl und Preise wurden geprüft.
+                    </small>
+                  </span>
+                </label>
+
+                <label className="orderReviewCheck">
+                  <input
+                    type="checkbox"
+                    checked={reviewChecks.notes}
+                    onChange={(event) =>
+                      updateReviewCheck(
+                        "notes",
+                        event.currentTarget.checked
+                      )
+                    }
+                  />
+
+                  <span>
+                    <strong>
+                      Hinweise und Allergene geprüft
+                    </strong>
+                    <small>
+                      Besonderheiten wurden berücksichtigt.
+                    </small>
+                  </span>
+                </label>
+              </div>
+
+              {!canConfirmOrder ? (
+                <div className="orderReviewBlocked">
+                  <strong>
+                    Auftrag noch nicht freigabefähig
+                  </strong>
+
+                  <span>
+                    Fehlende Pflichtangaben müssen zuerst
+                    ergänzt werden.
+                  </span>
+                </div>
+              ) : null}
+
+              <Form method="post">
+                <input
+                  type="hidden"
+                  name="_intent"
+                  value="confirmOrder"
+                />
+
+                <button
+                  type="submit"
+                  className="orderReviewConfirmButton"
+                  disabled={
+                    !canConfirmOrder ||
+                    !allReviewChecksCompleted ||
+                    isConfirming
+                  }
+                >
+                  {isConfirming
+                    ? "Auftrag wird übernommen..."
+                    : "Auftrag bestätigen und übernehmen"}
+                </button>
+              </Form>
+
+              <p className="orderReviewHint">
+                Nach der Bestätigung erscheint der Auftrag
+                unter den bevorstehenden Aufträgen.
               </p>
             </aside>
           ) : (
