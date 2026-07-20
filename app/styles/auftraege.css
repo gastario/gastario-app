@@ -5256,3 +5256,120 @@ form button:hover {
     min-width: 0 !important;
   }
 }
+
+/*
+ * gastario-past-orders-archive-view-20260720
+ *
+ * Vergangene Aufträge ohne operative Produktionstabs,
+ * mit eigener Archivinformation und vollständiger Liste.
+ */
+
+.ordersPagePast {
+  padding-bottom: 90px !important;
+}
+
+.ordersPagePast .panel {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.ordersPagePast .ordersWorkspaceFilters {
+  border-bottom: 1px solid #e2ebe7;
+}
+
+.ordersPagePast .ordersCardList {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding-bottom: 42px !important;
+}
+
+.ordersPagePast .finalOrderRow,
+.ordersPagePast .operationalOrderRow,
+.ordersPagePast .ordersListCard {
+  flex-shrink: 0;
+}
+
+.pastOrdersArchiveNotice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 62px;
+  padding: 13px 16px;
+  border: 1px solid #dce6e2;
+  border-radius: 13px;
+  background:
+    linear-gradient(
+      180deg,
+      #f8faf9 0%,
+      #f3f6f5 100%
+    );
+}
+
+.pastOrdersArchiveNotice > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pastOrdersArchiveNotice strong {
+  color: #354a43;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.pastOrdersArchiveNotice span {
+  color: #71817a;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.pastOrdersArchiveBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 29px;
+  padding: 0 10px;
+  border: 1px solid #d0dbd7;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #53655e !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .pastOrdersArchiveNotice {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+.pastOrdersFilterInformation {
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid #d5dfdb;
+  border-radius: 10px;
+  background: #f7f9f8;
+}
+
+.pastOrdersFilterInformation span {
+  color: #718079;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.pastOrdersFilterInformation strong {
+  color: #40534c;
+  font-size: 11px;
+  font-weight: 750;
+}

@@ -676,18 +676,28 @@ export default function OrdersPage() {
               />
             </label>
 
-            <label className="ordersFilterField">
-              <span>Lieferzeitraum</span>
-              <select
-                name="dateRange"
-                defaultValue={data.dateRange || ""}
-              >
-                <option value="">Alle Lieferungen</option>
-                <option value="today">Heute</option>
-                <option value="tomorrow">Morgen</option>
-                <option value="week">Nächste 7 Tage</option>
-              </select>
-            </label>
+            {data.view !== "past" ? (
+              <label className="ordersFilterField">
+                <span>Lieferzeitraum</span>
+
+                <select
+                  name="dateRange"
+                  defaultValue={data.dateRange || ""}
+                >
+                  <option value="">Alle Lieferungen</option>
+                  <option value="today">Heute</option>
+                  <option value="tomorrow">Morgen</option>
+                  <option value="week">Nächste 7 Tage</option>
+                </select>
+              </label>
+            ) : (
+              <div className="pastOrdersFilterInformation">
+                <span>Zeitraum</span>
+                <strong>
+                  Alle vergangenen Lieferungen
+                </strong>
+              </div>
+            )}
 
             <button
               className="productsPrimaryButton g-ui-button g-ui-button--primary"
@@ -704,34 +714,65 @@ export default function OrdersPage() {
             </Link>
           </Form>
 
-          <nav className="ordersStatusTabs" aria-label="Auftragsstatus">
-            {STATUSES.map((status) => {
-              const params = new URLSearchParams();
+          {data.view !== "past" ? (
+            <nav
+              className="ordersStatusTabs"
+              aria-label="Auftragsstatus"
+            >
+              {STATUSES.map((status) => {
+                const params = new URLSearchParams();
 
-              if (data.view === "past") params.set("view", "past");
-              if (status.value) params.set("status", status.value);
-              if (data.searchQuery) params.set("q", data.searchQuery);
-              if (data.dateRange) params.set("dateRange", data.dateRange);
+                if (status.value) {
+                  params.set("status", status.value);
+                }
 
-              const href = params.toString()
-                ? "/auftraege?" + params.toString()
-                : "/auftraege";
+                if (data.searchQuery) {
+                  params.set("q", data.searchQuery);
+                }
 
-              return (
-                <Link
-                  key={status.value || "all"}
-                  className={
-                    data.activeStatus === status.value
-                      ? "ordersStatusTab active"
-                      : "ordersStatusTab"
-                  }
-                  to={href}
-                >
-                  {status.label}
-                </Link>
-              );
-            })}
-          </nav>
+                if (data.dateRange) {
+                  params.set(
+                    "dateRange",
+                    data.dateRange
+                  );
+                }
+
+                const href = params.toString()
+                  ? "/auftraege?" + params.toString()
+                  : "/auftraege";
+
+                return (
+                  <Link
+                    key={status.value || "all"}
+                    className={
+                      data.activeStatus === status.value
+                        ? "ordersStatusTab active"
+                        : "ordersStatusTab"
+                    }
+                    to={href}
+                  >
+                    {status.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          ) : (
+            <div className="pastOrdersArchiveNotice">
+              <div>
+                <strong>Auftragsarchiv</strong>
+
+                <span>
+                  Bereits vergangene Lieferungen werden
+                  unabhängig vom Produktions- oder
+                  Packstatus angezeigt.
+                </span>
+              </div>
+
+              <span className="pastOrdersArchiveBadge">
+                {data.orders.length} archiviert
+              </span>
+            </div>
+          )}
         </div>
 
         {selectedOrder ? (
