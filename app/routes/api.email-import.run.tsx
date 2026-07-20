@@ -423,8 +423,33 @@ function parseImportMoneyToCents(value: unknown) {
 }
 
 function extractHeycaterPdfNetCents(text: string) {
-  const match = String(text || "").match(/Gesamtbetrag\s+Netto\s+Ã¢â€šÂ¬\s*([0-9]+(?:[.,][0-9]+)?)/i);
-  return match ? parseImportMoneyToCents(match[1]) : 0;
+  const normalized = String(text || "")
+    .replace(/\u00a0/g, " ")
+    .replace(/\r/g, "")
+    .replace(/[ \t]+/g, " ");
+
+  const patterns = [
+    /Gesamtbetrag\s+Netto\s*(?:€|EUR)?\s*([0-9][0-9.\s]*[,.][0-9]{2})/i,
+    /Nettosumme\s*(?:€|EUR)?\s*([0-9][0-9.\s]*[,.][0-9]{2})/i,
+    /Gesamtsumme\s+Netto\s*(?:€|EUR)?\s*([0-9][0-9.\s]*[,.][0-9]{2})/i,
+    /Netto(?:betrag)?\s*(?:€|EUR)?\s*([0-9][0-9.\s]*[,.][0-9]{2})/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
+
+    if (match) {
+      const cents = parseImportMoneyToCents(
+        match[1]
+      );
+
+      if (cents > 0) {
+        return cents;
+      }
+    }
+  }
+
+  return 0;
 }
 
 function getItemsWithHeycaterSumCorrection(extractedOrder: any, bestText: string) {
@@ -595,81 +620,485 @@ async function extractPdfText(buffer: Buffer) {
   }
 }
 
-async function createReviewOrderFromExtracted(params: {
-  tenantId: string;
-  brandId?: string | null;
-  incomingEmailId: string;
-  extractedOrder: any;
-  bestText?: string;
-}) {
-  const { tenantId, brandId, incomingEmailId, extractedOrder, bestText } = params;
+function normalizeImportedOrderPart(
+  value: unknown
+) {
+  return normalizeImportText(value)
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-  const finalItems = getItemsWithHeycaterSumCorrection(extractedOrder, String(bestText || ""));
-  const pdfNetCents = extractHeycaterPdfNetCents(String(bestText || ""));
-  const itemTotalCents = finalItems.reduce((sum: number, item: any) => {
-    return sum + Number(item?.totalCents || 0);
-  }, 0);
-  const orderTotalCents = pdfNetCents > 0 ? pdfNetCents : itemTotalCents;
+function createImportedItemSignature(
+  items: any[]
+) {
+  return (Array.isArray(items) ? items : [])
+    .map((item: any) => {
+      const name = normalizeImportedOrderPart(
+        item?.name || ""
+      );
 
-  const order = await prisma.order.create({
-    data: {
-      tenantId,
-      brandId: brandId || null,
-      incomingEmailId,
-      orderNumber: createOrderNumber(),
-      source: extractedOrder.source === "Heycater" ? "HEYCATER" : "EMAIL",
-      status: "AUTO_CREATED",
-      customerName: extractedOrder.customerName || "E-Mail Import",
-      eventName: extractedOrder.presentation || null,
-      deliveryDate: parseGermanDate(extractedOrder.deliveryDate),
-      deliveryTimeText: extractedOrder.deliveryTime || null,
-      deliveryAddress: extractedOrder.deliveryAddress || null,
-      contactName: extractedOrder.contactName || null,
-      contactPhone: extractedOrder.contactPhone || null,
-      notes:
-        "Automatisch aus E-Mail erkannt. Eventdatum: " +
-        String(extractedOrder.eventDate || "-") +
-        ", Eventbeginn: " +
-        String(extractedOrder.eventStart || "-"),
-      platformName: extractedOrder.source || "E-Mail",
-      confidenceScore: 70,
-      reviewReason: "Automatisch aus E-Mail erstellt. Bitte pruefen.",
-      totalCents: orderTotalCents,
-      items: {
-        create: finalItems.length > 0 ? finalItems.map((item: any) => ({              name: String(item.name || "Position"),
-              quantity: Number(item.quantity || 1),
-              unit: "Stueck",
-              unitCents: Number(item.unitCents || 0),
-              totalCents: Number(item.totalCents || 0),
-              notes: [item.description, item.rawLine].filter(Boolean).join(" | ") || null,
-            }))
-          : [],
+      const quantity = Math.max(
+        0,
+        Number(item?.quantity || 0)
+      );
+
+      return name
+        ? quantity + "x:" + name
+        : "";
+    })
+    .filter(Boolean)
+    .sort()
+    .join("|");
+}
+
+function importTotalsArePlausible(
+  firstCents: number,
+  secondCents: number
+) {
+  if (
+    firstCents <= 0 ||
+    secondCents <= 0
+  ) {
+    return false;
+  }
+
+  const difference = Math.abs(
+    firstCents - secondCents
+  );
+
+  const permittedDifference = Math.max(
+    100,
+    Math.round(
+      Math.max(
+        firstCents,
+        secondCents
+      ) * 0.02
+    )
+  );
+
+  return difference <= permittedDifference;
+}
+
+async function findExistingImportedOrder(
+  params: {
+    tenantId: string;
+    source: "HEYCATER" | "EMAIL";
+    externalOrderNumber: string;
+    customerName: string;
+    deliveryDate: Date | null;
+    deliveryTime: string;
+    deliveryAddress: string;
+    totalCents: number;
+    items: any[];
+  }
+) {
+  const {
+    tenantId,
+    source,
+    externalOrderNumber,
+    customerName,
+    deliveryDate,
+    deliveryTime,
+    deliveryAddress,
+    totalCents,
+    items,
+  } = params;
+
+  if (externalOrderNumber) {
+    const referenceMatch =
+      await prisma.order.findFirst({
+        where: {
+          tenantId,
+          OR: [
+            {
+              externalOrderNumber,
+            },
+            {
+              platformReference:
+                externalOrderNumber,
+            },
+          ],
+        },
+        select: {
+          id: true,
+          orderNumber: true,
+          status: true,
+        },
+      });
+
+    if (referenceMatch) {
+      return {
+        order: referenceMatch,
+        reason:
+          "Externe Auftragsnummer bereits vorhanden.",
+      };
+    }
+
+    if (source === "HEYCATER") {
+      const historicalMatch =
+        await findExistingHeycaterOrderByExternalNumber(
+          tenantId,
+          externalOrderNumber
+        );
+
+      if (historicalMatch) {
+        return {
+          order: historicalMatch,
+          reason:
+            "Heycater-Auftragsnummer bereits vorhanden.",
+        };
+      }
+    }
+  }
+
+  if (!deliveryDate) {
+    return null;
+  }
+
+  const dayStart = new Date(deliveryDate);
+  dayStart.setHours(0, 0, 0, 0);
+
+  const dayEnd = new Date(deliveryDate);
+  dayEnd.setHours(23, 59, 59, 999);
+
+  const candidates =
+    await prisma.order.findMany({
+      where: {
+        tenantId,
+        source: source as any,
+        deliveryDate: {
+          gte: dayStart,
+          lte: dayEnd,
+        },
       },
-    } as any,
-  });
+      include: {
+        items: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+      take: 100,
+    });
 
-  const tour = await prisma.deliveryTour.create({
-    data: {
+  const normalizedCustomer =
+    normalizeImportedOrderPart(
+      customerName
+    );
+
+  const normalizedTime =
+    normalizeImportedOrderPart(
+      deliveryTime
+    );
+
+  const normalizedAddress =
+    normalizeImportedOrderPart(
+      deliveryAddress
+    );
+
+  const itemSignature =
+    createImportedItemSignature(items);
+
+  for (const candidate of candidates) {
+    const sameCustomer =
+      normalizedCustomer &&
+      normalizeImportedOrderPart(
+        candidate.customerName
+      ) === normalizedCustomer;
+
+    const sameTime =
+      !normalizedTime ||
+      normalizeImportedOrderPart(
+        candidate.deliveryTimeText
+      ) === normalizedTime;
+
+    const sameAddress =
+      normalizedAddress &&
+      normalizeImportedOrderPart(
+        candidate.deliveryAddress
+      ) === normalizedAddress;
+
+    const sameItems =
+      itemSignature &&
+      createImportedItemSignature(
+        candidate.items
+      ) === itemSignature;
+
+    const sameTotal =
+      importTotalsArePlausible(
+        Number(candidate.totalCents || 0),
+        totalCents
+      );
+
+    if (
+      sameCustomer &&
+      sameTime &&
+      (sameAddress || sameItems) &&
+      (
+        sameTotal ||
+        totalCents <= 0 ||
+        Number(candidate.totalCents || 0) <= 0
+      )
+    ) {
+      return {
+        order: candidate,
+        reason:
+          "Gleicher Kunde, Liefertermin und Auftragsinhalt bereits vorhanden.",
+      };
+    }
+  }
+
+  return null;
+}
+
+async function createReviewOrderFromExtracted(
+  params: {
+    tenantId: string;
+    brandId?: string | null;
+    incomingEmailId: string;
+    extractedOrder: any;
+    bestText?: string;
+    subject?: string;
+  }
+) {
+  const {
+    tenantId,
+    brandId,
+    incomingEmailId,
+    extractedOrder,
+    bestText,
+    subject,
+  } = params;
+
+  const sourceText = String(
+    bestText || ""
+  );
+
+  const finalItems =
+    getItemsWithHeycaterSumCorrection(
+      extractedOrder,
+      sourceText
+    );
+
+  const itemTotalCents =
+    finalItems.reduce(
+      (sum: number, item: any) => {
+        return (
+          sum +
+          Math.max(
+            0,
+            Number(
+              item?.totalCents || 0
+            )
+          )
+        );
+      },
+      0
+    );
+
+  const pdfNetCents =
+    extractHeycaterPdfNetCents(
+      sourceText
+    );
+
+  const pdfTotalIsPlausible =
+    pdfNetCents > 0 &&
+    (
+      itemTotalCents <= 0 ||
+      importTotalsArePlausible(
+        pdfNetCents,
+        itemTotalCents
+      )
+    );
+
+  const orderTotalCents =
+    pdfTotalIsPlausible
+      ? pdfNetCents
+      : itemTotalCents;
+
+  const source =
+    extractedOrder.source === "Heycater"
+      ? "HEYCATER"
+      : "EMAIL";
+
+  const externalOrderNumber =
+    String(
+      extractedOrder.externalOrderNumber ||
+      extractedOrder.platformReference ||
+      getHeycaterOrderNumber(
+        String(subject || ""),
+        sourceText
+      ) ||
+      ""
+    ).trim();
+
+  const deliveryDate =
+    parseGermanDate(
+      extractedOrder.deliveryDate
+    );
+
+  const duplicate =
+    await findExistingImportedOrder({
       tenantId,
-      name: "Import " + order.orderNumber,
-      deliveryDate: parseGermanDate(extractedOrder.deliveryDate),
-      status: "OPEN",
-      notes: "Automatisch aus E-Mail-Import vorbereitet.",
-    },
-  });
+      source,
+      externalOrderNumber,
+      customerName:
+        extractedOrder.customerName || "",
+      deliveryDate,
+      deliveryTime:
+        extractedOrder.deliveryTime || "",
+      deliveryAddress:
+        extractedOrder.deliveryAddress || "",
+      totalCents:
+        orderTotalCents,
+      items:
+        finalItems,
+    });
 
-  await prisma.deliveryStop.create({
-    data: {
-      tenantId,
-      tourId: tour.id,
-      orderId: order.id,
-      plannedTime: extractedOrder.deliveryTime || null,
-      status: "OPEN",
-      notes: "Automatisch aus E-Mail-Import vorbereitet.",
-    },
-  });
+  if (duplicate) {
+    return {
+      order: duplicate.order,
+      created: false,
+      duplicateReason:
+        duplicate.reason,
+    };
+  }
 
-  return order;
+  const reviewReasons = [
+    "Automatisch aus E-Mail erstellt. Bitte prüfen.",
+  ];
+
+  if (
+    pdfNetCents > 0 &&
+    itemTotalCents > 0 &&
+    !pdfTotalIsPlausible
+  ) {
+    reviewReasons.push(
+      "PDF-Nettosumme und Positionssumme weichen ab. Die Positionssumme wurde verwendet."
+    );
+  }
+
+  if (!externalOrderNumber) {
+    reviewReasons.push(
+      "Keine eindeutige externe Auftragsnummer erkannt."
+    );
+  }
+
+  const order =
+    await prisma.order.create({
+      data: {
+        tenantId,
+        brandId:
+          brandId || null,
+        incomingEmailId,
+        orderNumber:
+          createOrderNumber(),
+        externalOrderNumber:
+          externalOrderNumber || null,
+        platformReference:
+          externalOrderNumber || null,
+        source:
+          source as any,
+        status:
+          "REVIEW_NEEDED",
+        customerName:
+          extractedOrder.customerName ||
+          "E-Mail Import",
+        eventName:
+          extractedOrder.presentation ||
+          null,
+        deliveryDate,
+        deliveryTimeText:
+          extractedOrder.deliveryTime ||
+          null,
+        deliveryAddress:
+          extractedOrder.deliveryAddress ||
+          null,
+        contactName:
+          extractedOrder.contactName ||
+          null,
+        contactPhone:
+          extractedOrder.contactPhone ||
+          null,
+        notes:
+          "Automatisch aus E-Mail erkannt. Eventdatum: " +
+          String(
+            extractedOrder.eventDate ||
+            "-"
+          ) +
+          ", Eventbeginn: " +
+          String(
+            extractedOrder.eventStart ||
+            "-"
+          ),
+        platformName:
+          extractedOrder.source ||
+          "E-Mail",
+        confidenceScore:
+          pdfTotalIsPlausible
+            ? 80
+            : 55,
+        reviewReason:
+          reviewReasons.join(" "),
+        totalCents:
+          Math.max(
+            0,
+            orderTotalCents
+          ),
+        items: {
+          create:
+            finalItems.length > 0
+              ? finalItems.map(
+                  (item: any) => ({
+                    name: String(
+                      item.name ||
+                      "Position"
+                    ),
+                    quantity:
+                      Math.max(
+                        1,
+                        Number(
+                          item.quantity ||
+                          1
+                        )
+                      ),
+                    unit: String(
+                      item.unit ||
+                      "Stueck"
+                    ),
+                    unitCents:
+                      Math.max(
+                        0,
+                        Number(
+                          item.unitCents ||
+                          0
+                        )
+                      ),
+                    totalCents:
+                      Math.max(
+                        0,
+                        Number(
+                          item.totalCents ||
+                          0
+                        )
+                      ),
+                    notes:
+                      String(
+                        item.description ||
+                        ""
+                      ).trim() || null,
+                  })
+                )
+              : [],
+        },
+      } as any,
+    });
+
+  return {
+    order,
+    created: true,
+    duplicateReason: null,
+  };
 }
 
 export async function loader({ request }: { request: Request }) {
@@ -1011,25 +1440,55 @@ export async function loader({ request }: { request: Request }) {
             const shouldCreateByRules = shouldCreateOrderFromImportRules(extractedOrder, bestText, importRuleMatches);
 
             if (existing.orders.length === 0 && shouldCreateByRules) {
-              await createReviewOrderFromExtracted({
-                tenantId: account.tenantId,
-                brandId: account.brandId,
-                incomingEmailId: existing.id,
-                extractedOrder,
-                bestText,
-              });
+              const creationResult =
+                await createReviewOrderFromExtracted({
+                  tenantId:
+                    account.tenantId,
+                  brandId:
+                    account.brandId,
+                  incomingEmailId:
+                    existing.id,
+                  extractedOrder,
+                  bestText,
+                  subject: String(
+                    parsed.subject || ""
+                  ),
+                });
 
               await prisma.incomingEmail.update({
-                where: { id: existing.id },
+                where: {
+                  id: existing.id,
+                },
                 data: {
-                  status: "ORDER_CREATED" as any,
-                  processedAt: new Date(),
-                  extractedJson: { ...extractedOrder, aiDecision },
-                  errorMessage: null,
+                  status:
+                    creationResult.created
+                      ? ("ORDER_CREATED" as any)
+                      : ("IGNORED" as any),
+                  processedAt:
+                    new Date(),
+                  extractedJson: {
+                    ...extractedOrder,
+                    aiDecision,
+                    duplicateReason:
+                      creationResult
+                        .duplicateReason,
+                    linkedOrderId:
+                      creationResult.order
+                        ?.id || null,
+                  },
+                  errorMessage:
+                    creationResult.created
+                      ? null
+                      : creationResult
+                          .duplicateReason,
                 },
               });
 
-              result.createdOrders += 1;
+              if (creationResult.created) {
+                result.createdOrders += 1;
+              } else {
+                result.skippedDuplicates += 1;
+              }
             } else if (existing.orders.length === 0) {
               await prisma.incomingEmail.update({
                 where: { id: existing.id },
@@ -1213,24 +1672,55 @@ export async function loader({ request }: { request: Request }) {
           const shouldCreateByRules = shouldCreateOrderFromImportRules(extractedOrder, bestText, importRuleMatches);
 
           if (shouldCreateByRules) {
-            const order = await createReviewOrderFromExtracted({
-              tenantId: account.tenantId,
-              brandId: account.brandId,
-              incomingEmailId: incomingEmail.id,
-              extractedOrder,
-              bestText,
-            });
+            const creationResult =
+              await createReviewOrderFromExtracted({
+                tenantId:
+                  account.tenantId,
+                brandId:
+                  account.brandId,
+                incomingEmailId:
+                  incomingEmail.id,
+                extractedOrder,
+                bestText,
+                subject: String(
+                  parsed.subject || ""
+                ),
+              });
 
             await prisma.incomingEmail.update({
-              where: { id: incomingEmail.id },
+              where: {
+                id: incomingEmail.id,
+              },
               data: {
-                status: "ORDER_CREATED" as any,
-                processedAt: new Date(),
-                extractedJson: { ...extractedOrder, aiDecision },
+                status:
+                  creationResult.created
+                    ? ("ORDER_CREATED" as any)
+                    : ("IGNORED" as any),
+                processedAt:
+                  new Date(),
+                extractedJson: {
+                  ...extractedOrder,
+                  aiDecision,
+                  duplicateReason:
+                    creationResult
+                      .duplicateReason,
+                  linkedOrderId:
+                    creationResult.order
+                      ?.id || null,
+                },
+                errorMessage:
+                  creationResult.created
+                    ? null
+                    : creationResult
+                        .duplicateReason,
               },
             });
 
-            result.createdOrders += 1;
+            if (creationResult.created) {
+              result.createdOrders += 1;
+            } else {
+              result.skippedDuplicates += 1;
+            }
           } else {
             await prisma.incomingEmail.update({
               where: { id: incomingEmail.id },
