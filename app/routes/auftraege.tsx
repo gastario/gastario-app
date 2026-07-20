@@ -597,37 +597,89 @@ export default function OrdersPage() {
       <section className="orderSummaryGrid g-ui-metrics">
         <article className="metricCard g-ui-card g-ui-card--flat">
           <div>
-            <p>Aufträge gesamt</p>
+            <p>
+              {data.view === "past"
+                ? "Vergangene Aufträge"
+                : "Aufträge gesamt"}
+            </p>
+
             <strong>{data.counts.all}</strong>
-            <span>{data.counts.confirmed} bestätigt</span>
+
+            <span>
+              {data.view === "past"
+                ? "bereits vergangene Lieferungen"
+                : data.counts.confirmed + " bestätigt"}
+            </span>
           </div>
-          <small data-trend="aktiv">echt</small>
+
+          <small data-trend="aktiv">
+            {data.view === "past" ? "Archiv" : "echt"}
+          </small>
         </article>
 
         <article className="metricCard g-ui-card g-ui-card--flat">
           <div>
-            <p>Bestätigt</p>
-            <strong>{data.counts.confirmed}</strong>
-            <span>für die Ausführung vorgesehen</span>
+            <p>
+              {data.view === "past"
+                ? "Archivierte Aufträge"
+                : "Bestätigt"}
+            </p>
+
+            <strong>
+              {data.view === "past"
+                ? data.orders.length
+                : data.counts.confirmed}
+            </strong>
+
+            <span>
+              {data.view === "past"
+                ? "aktuell in dieser Archivansicht"
+                : "für die Ausführung vorgesehen"}
+            </span>
           </div>
-          <small data-trend="aktiv">aktiv</small>
+
+          <small data-trend="aktiv">
+            {data.view === "past" ? "Historie" : "aktiv"}
+          </small>
         </article>
 
         <article className="metricCard g-ui-card g-ui-card--flat">
           <div>
-            <p>Operative Aufträge</p>
+            <p>
+              {data.view === "past"
+                ? "Lieferungen im Archiv"
+                : "Operative Aufträge"}
+            </p>
+
             <strong>{data.orders.length}</strong>
-            <span>aktuell in dieser Ansicht</span>
+
+            <span>
+              {data.view === "past"
+                ? "vergangene Lieferungen sichtbar"
+                : "aktuell in dieser Ansicht"}
+            </span>
           </div>
-          <small data-trend="bereit">live</small>
+
+          <small data-trend="bereit">
+            {data.view === "past" ? "Archiv" : "live"}
+          </small>
         </article>
 
         <article className="metricCard g-ui-card g-ui-card--flat">
           <div>
             <p>Auftragswert</p>
-            <strong>{centsToEuro(data.counts.totalValueCents)}</strong>
-            <span>Summe aller Positionen</span>
+
+            <strong>
+              {centsToEuro(data.counts.totalValueCents)}
+            </strong>
+
+            <span>
+              {data.view === "past"
+                ? "Wert der vergangenen Lieferungen"
+                : "Summe aller Positionen"}
+            </span>
           </div>
+
           <small data-trend="bereit">EUR</small>
         </article>
       </section>
