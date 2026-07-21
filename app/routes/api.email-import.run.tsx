@@ -55,6 +55,126 @@ function createOrderNumber() {
   return "MAIL-" + datePart + "-" + Math.random().toString(36).slice(2, 7).toUpperCase();
 }
 
+function isPlausibleImportedCustomerName(
+  value: unknown,
+  items: any[] = []
+) {
+  const name = String(value || "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const normalized = normalizeImportText(name);
+
+  if (!name || name.length < 3 || name.length > 120) {
+    return false;
+  }
+
+  const blockedExactValues = new Set([
+    "e-mail import",
+    "email import",
+    "heycater",
+    "hey cater",
+    "kunde unbekannt",
+    "unbekannt",
+    "auftrag",
+    "bestellung",
+    "catering",
+    "lieferung",
+    "lieferung und abholung",
+    "fehlende position",
+  ]);
+
+  if (blockedExactValues.has(normalized)) {
+    return false;
+  }
+
+  if (/^\d+\s*[x×]\s+/i.test(name)) {
+    return false;
+  }
+
+  if (/^\d+[.,]?\d*\s*(stück|stueck|portionen?|personen?|pax)\b/i.test(name)) {
+    return false;
+  }
+
+  const foodWords = [
+    "salat",
+    "bowl",
+    "bagel",
+    "sesambagel",
+    "pizza",
+    "wrap",
+    "lasagne",
+    "curry",
+    "halloumi",
+    "käse",
+    "kaese",
+    "hähnchen",
+    "haehnchen",
+    "chicken",
+    "beef",
+    "falafel",
+    "croissant",
+    "schnitte",
+    "mousse",
+    "frühstücksbuffet",
+    "fruehstuecksbuffet",
+    "lieferkosten",
+    "abholung",
+    "gegrillt",
+    "vegan",
+    "vegetarisch",
+  ];
+
+  const looksLikeFood =
+    foodWords.some((word) =>
+      normalized.includes(
+        normalizeImportText(word)
+      )
+    );
+
+  const matchesImportedItem = (items || []).some(
+    (item: any) => {
+      const itemName = normalizeImportText(
+        item?.name || ""
+      );
+
+      if (!itemName) {
+        return false;
+      }
+
+      return (
+        itemName === normalized ||
+        itemName.includes(normalized) ||
+        normalized.includes(itemName)
+      );
+    }
+  );
+
+  if (looksLikeFood || matchesImportedItem) {
+    return false;
+  }
+
+  const hasCompanySuffix =
+    /\b(gmbh|ug|ag|kg|gbr|se|e\.?\s*v\.?|mbh|ltd|limited|inc|corp|corporation|company|group|holding)\b/i.test(
+      name
+    );
+
+  const hasBusinessWord =
+    /\b(deutschland|berlin|services?|solutions?|systems?|technologies?|consulting|consultants?|studios?|media|logistik|logistics|immobilien|versicherung|bank|hotel|academy|university|universität|klinikum|stiftung)\b/i.test(
+      name
+    );
+
+  const looksLikePersonName =
+    /^[A-ZÄÖÜ][A-Za-zÄÖÜäöüß'-]+(?:\s+[A-ZÄÖÜ][A-Za-zÄÖÜäöüß'-]+){1,3}$/.test(
+      name
+    );
+
+  return Boolean(
+    hasCompanySuffix ||
+    hasBusinessWord ||
+    looksLikePersonName
+  );
+}
 function hasEnoughOrderData(order: any) {
   if (!order) return false;
 
@@ -82,10 +202,10 @@ function hasEnoughOrderData(order: any) {
   const deliveryTime = String(order.deliveryTime || "").trim();
 
   const hasRealCustomer =
-    Boolean(customerName) &&
-    customerName.toLowerCase() !== "e-mail import" &&
-    customerName.toLowerCase() !== "heycater" &&
-    customerName.toLowerCase() !== "unbekannt";
+    isPlausibleImportedCustomerName(
+      customerName,
+      realItems
+    );
 
   const totalCents = realItems.reduce((sum: number, item: any) => {
     return sum + Number(item?.totalCents || 0);
@@ -984,6 +1104,16 @@ async function createReviewOrderFromExtracted(
     );
   }
 
+  const safeCustomerName =
+    isPlausibleImportedCustomerName(
+      extractedOrder.customerName,
+      finalItems
+    )
+      ? String(
+          extractedOrder.customerName || ""
+        ).trim()
+      : "Kunde prüfen";
+
   const order =
     await prisma.order.create({
       data: {
@@ -1002,8 +1132,7 @@ async function createReviewOrderFromExtracted(
         status:
           "REVIEW_NEEDED",
         customerName:
-          extractedOrder.customerName ||
-          "E-Mail Import",
+          safeCustomerName,
         eventName:
           extractedOrder.presentation ||
           null,
