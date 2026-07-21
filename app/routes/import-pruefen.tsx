@@ -745,7 +745,16 @@ export default function ImportPruefenPage() {
               </div>
             ) : null}
 
-            <button type="submit" style={primaryButtonStyle} disabled={!fileBase64}>
+            <button type="submit" style={{
+                        ...primaryButtonStyle,
+                        width: "auto",
+                        minWidth: 220,
+                        minHeight: 44,
+                        padding: "0 20px",
+                        whiteSpace: "nowrap",
+                        boxShadow:
+                          "0 8px 18px rgba(5, 122, 103, 0.14)",
+                      }} disabled={!fileBase64}>
               {fileBase64 ? "Dokument auslesen" : "PDF auswählen"}
             </button>
           </form>
@@ -841,7 +850,16 @@ export default function ImportPruefenPage() {
 
                     <button
                       type="submit"
-                      style={primaryButtonStyle}
+                      style={{
+                        ...primaryButtonStyle,
+                        width: "auto",
+                        minWidth: 210,
+                        minHeight: 44,
+                        padding: "0 20px",
+                        whiteSpace: "nowrap",
+                        boxShadow:
+                          "0 8px 18px rgba(5, 122, 103, 0.14)",
+                      }}
                       disabled={
                         !String(editableOrder.customerName || "").trim() ||
                         !String(editableOrder.deliveryDate || "").trim() ||
@@ -1538,8 +1556,9 @@ const smallTitleStyle: React.CSSProperties = {
 
 const saveOrderFormStyle: React.CSSProperties = {
   display: "flex",
-  justifyContent: "flex-start",
-  margin: "0 0 16px",
+  justifyContent: "flex-end",
+  alignItems: "center",
+  margin: 0,
 };
 
 

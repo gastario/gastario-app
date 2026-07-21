@@ -1743,6 +1743,63 @@ function normalizeFinalImportedItem(
   };
 }
 
+function isOwnImportedBusinessAddress(
+  value: string
+) {
+  const normalized = String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+
+  if (!normalized) {
+    return false;
+  }
+
+  return (
+    normalized.includes("goerzallee 299") ||
+    normalized.includes("edis gastrobetriebe")
+  );
+}
+
+function extractImportedPositionDeliveryAddress(
+  items: ExtractedOrderItem[]
+) {
+  const firstItem =
+    Array.isArray(items) && items.length > 0
+      ? items[0]
+      : null;
+
+  if (!firstItem) {
+    return "";
+  }
+
+  const combined = [
+    firstItem.name,
+    firstItem.description,
+    firstItem.rawLine,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!combined) {
+    return "";
+  }
+
+  const addressMatch = combined.match(
+    /((?:[^,|]{2,90},\s*)?[^,|]*(?:straße|strasse|str\.|chaussee|allee|weg|platz|damm|ufer|ring)\s*\d+[a-z]?(?:\s*[-–]\s*\d+[a-z]?)?\s*,\s*\d{5}\s+[A-Za-zÄÖÜäöüß-]+(?:\s+[A-Za-zÄÖÜäöüß-]+)?)/i
+  );
+
+  if (!addressMatch?.[1]) {
+    return "";
+  }
+
+  return String(addressMatch[1])
+    .replace(/\s+/g, " ")
+    .replace(/\s+,/g, ",")
+    .trim();
+}
 function normalizeFinalImportedOrder(
   order: ExtractedOrder,
   text: string
@@ -1792,11 +1849,28 @@ function normalizeFinalImportedOrder(
       .replace(/\s+/g, " ")
       .trim(),
 
-    deliveryAddress: String(
-      order.deliveryAddress || ""
-    )
-      .replace(/\s+/g, " ")
-      .trim(),
+    deliveryAddress: (() => {
+      const existingAddress =
+        String(order.deliveryAddress || "")
+          .replace(/\s+/g, " ")
+          .trim();
+
+      const positionAddress =
+        extractImportedPositionDeliveryAddress(
+          items
+        );
+
+      if (
+        !existingAddress ||
+        isOwnImportedBusinessAddress(
+          existingAddress
+        )
+      ) {
+        return positionAddress || "";
+      }
+
+      return existingAddress;
+    })(),
 
     items,
   };
