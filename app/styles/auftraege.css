@@ -5773,3 +5773,106 @@ form button:hover {
     text-align: left !important;
   }
 }
+
+/*
+ * gastario-upcoming-actions-final-fix-20260721
+ * Aktionen vollständig sichtbar unter der Auftragszeile.
+ */
+
+.ordersPageUpcoming .operationalOrderRow {
+  grid-template-columns:
+    38px
+    minmax(180px, 0.95fr)
+    minmax(240px, 1.35fr)
+    minmax(115px, 0.65fr)
+    minmax(95px, 0.5fr)
+    minmax(125px, 0.6fr) !important;
+  column-gap: 14px !important;
+  row-gap: 10px !important;
+  padding: 16px !important;
+  overflow: visible !important;
+}
+
+.ordersPageUpcoming .operationalOrderActions {
+  grid-column: 2 / -1 !important;
+  grid-row: 2 !important;
+  display: flex !important;
+  width: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  overflow: visible !important;
+}
+
+.ordersPageUpcoming
+.operationalOrderActions
+.deliveryDocumentButton {
+  width: auto !important;
+  min-width: 118px !important;
+  max-width: none !important;
+  min-height: 36px !important;
+  padding: 0 12px !important;
+}
+
+.ordersPageUpcoming .operationalOrderActions form {
+  display: flex !important;
+  width: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+.ordersPageUpcoming .operationalDeleteButton {
+  width: 36px !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+}
+
+.ordersPageUpcoming .operationalOpenButton {
+  width: auto !important;
+  min-width: 72px !important;
+  min-height: 36px !important;
+}
+
+.ordersPageUpcoming .finalOrderTotal {
+  min-width: 0;
+  justify-self: end;
+}
+
+@media (max-width: 1080px) {
+  .ordersPageUpcoming .operationalOrderRow {
+    grid-template-columns:
+      34px
+      minmax(170px, 0.9fr)
+      minmax(210px, 1.25fr)
+      minmax(110px, 0.6fr)
+      minmax(115px, 0.6fr) !important;
+  }
+
+  .ordersPageUpcoming .operationalOrderStatus {
+    display: none !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .ordersPageUpcoming .operationalOrderRow {
+    grid-template-columns:
+      32px
+      minmax(0, 1fr) !important;
+  }
+
+  .ordersPageUpcoming .finalOrderCustomer,
+  .ordersPageUpcoming .finalOrderItems,
+  .ordersPageUpcoming .operationalOrderDate,
+  .ordersPageUpcoming .finalOrderTotal,
+  .ordersPageUpcoming .operationalOrderActions {
+    grid-column: 2 !important;
+  }
+
+  .ordersPageUpcoming .operationalOrderActions {
+    justify-content: flex-start !important;
+    flex-wrap: wrap;
+  }
+}

@@ -854,6 +854,7 @@ export default function ImportPruefenPage() {
                         ...primaryButtonStyle,
                         width: "auto",
                         minWidth: 210,
+                                                justifySelf: "end",
                         minHeight: 44,
                         padding: "0 20px",
                         whiteSpace: "nowrap",
@@ -1555,9 +1556,10 @@ const smallTitleStyle: React.CSSProperties = {
 
 
 const saveOrderFormStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "flex-end",
-  alignItems: "center",
+  display: "grid",
+  gridTemplateColumns: "1fr",
+  gap: 12,
+  width: "100%",
   margin: 0,
 };
 
@@ -1622,10 +1624,10 @@ const resultLayoutStyle: React.CSSProperties = {
 };
 
 const sectionHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
+  display: "grid",
+  gridTemplateColumns: "1fr",
   gap: 16,
-  alignItems: "flex-start",
+  alignItems: "stretch",
   marginBottom: 16,
 };
 
