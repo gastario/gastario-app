@@ -1380,3 +1380,151 @@ select:focus {
   box-shadow:
     0 0 0 3px rgba(190, 151, 65, 0.18) !important;
 }
+
+/* gastario-incoming-selected-actions-compact-final-20260722 */
+/*
+ * Detailaktionen in der Eingangszentrale:
+ * keine gestreckte mittlere Schaltfläche mehr.
+ */
+
+.incomingReferenceSection .finalSelectedActions {
+  display: flex !important;
+  grid-template-columns: none !important;
+
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+
+  width: 100% !important;
+  min-height: 0 !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 14px 18px 18px !important;
+
+  border-top: 1px solid #e2eae8 !important;
+  background: #fbfcfc !important;
+}
+
+/* Alle direkten Elemente auf natürliche Breite setzen */
+
+.incomingReferenceSection .finalSelectedActions > *,
+.incomingReferenceSection .finalSelectedActions > a,
+.incomingReferenceSection .finalSelectedActions > button,
+.incomingReferenceSection .finalSelectedActions > form {
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Zurück */
+
+.incomingReferenceSection
+.finalSelectedActions
+.finalBackButton {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: auto !important;
+  min-width: 145px !important;
+  max-width: 175px !important;
+  min-height: 42px !important;
+  height: 42px !important;
+
+  padding: 0 16px !important;
+}
+
+/* Prüfen und übernehmen */
+
+.incomingReferenceSection
+.finalSelectedActions
+> a {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 190px !important;
+  max-width: 230px !important;
+  min-height: 42px !important;
+  height: 42px !important;
+
+  padding: 0 18px !important;
+
+  border: 1px solid #0d9875 !important;
+  border-radius: 11px !important;
+  background: #10a37f !important;
+  color: #ffffff !important;
+
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  text-decoration: none !important;
+
+  box-shadow: none !important;
+}
+
+/* Löschen */
+
+.incomingReferenceSection
+.finalSelectedActions
+> form {
+  display: block !important;
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+
+  background: transparent !important;
+}
+
+.incomingReferenceSection
+.finalSelectedActions
+> form
+button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: auto !important;
+  min-width: 112px !important;
+  max-width: 140px !important;
+  min-height: 42px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 15px !important;
+
+  border-radius: 11px !important;
+}
+
+/* Nur mobil volle Breite */
+
+@media (max-width: 620px) {
+  .incomingReferenceSection .finalSelectedActions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .incomingReferenceSection .finalSelectedActions > *,
+  .incomingReferenceSection .finalSelectedActions > a,
+  .incomingReferenceSection .finalSelectedActions > button,
+  .incomingReferenceSection .finalSelectedActions > form,
+  .incomingReferenceSection
+  .finalSelectedActions
+  > form
+  button {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
