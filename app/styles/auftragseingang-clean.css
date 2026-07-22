@@ -6,7 +6,13 @@
  */
 
 .incomingReferencePage {
-  max-width: 1540px;
+  width: 100% !important;
+  max-width: 1580px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 28px !important;
+  padding-right: 28px !important;
+  box-sizing: border-box !important;
 }
 
 .incomingLiveButton {
@@ -908,8 +914,10 @@
  */
 
 .incomingReferencePage {
-  width: 100%;
-  max-width: none;
+  width: 100% !important;
+  max-width: 1580px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 .incomingReferenceSection,
@@ -1148,7 +1156,21 @@
  */
 
 .incomingReferenceSection {
+  width: 100% !important;
   overflow: hidden !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+
+  border: 1px solid #dce6e4 !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+
+  box-shadow:
+    0 16px 38px rgba(15, 53, 45, 0.055) !important;
+
+  box-sizing: border-box !important;
 }
 
 /* Kopfbereich wie Bevorstehende Aufträge */
@@ -1160,10 +1182,14 @@
   justify-content: space-between !important;
   gap: 24px !important;
 
+  width: 100% !important;
   margin: 0 !important;
   padding: 24px !important;
+  box-sizing: border-box !important;
 
+  border: 0 !important;
   border-bottom: 1px solid #e6edef !important;
+  border-radius: 0 !important;
   background:
     linear-gradient(
       135deg,
@@ -1300,5 +1326,13 @@ select:focus {
   > .incomingReferenceFilters
   .g-ui-button {
     width: 100% !important;
+  }
+}
+
+/* gastario-incoming-width-mobile-final-20260722 */
+@media (max-width: 850px) {
+  .incomingReferencePage {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
   }
 }
