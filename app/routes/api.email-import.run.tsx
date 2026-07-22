@@ -1188,8 +1188,12 @@ async function createReviewOrderFromExtracted(
       )
     );
 
+  /*
+   * Eine erkannte PDF-Nettosumme ist der verbindliche Auftragswert.
+   * Die Positionssumme bleibt ausschließlich Kontrollwert.
+   */
   const orderTotalCents =
-    pdfTotalIsPlausible
+    pdfNetCents > 0
       ? pdfNetCents
       : itemTotalCents;
 
@@ -1251,7 +1255,7 @@ async function createReviewOrderFromExtracted(
     !pdfTotalIsPlausible
   ) {
     reviewReasons.push(
-      "PDF-Nettosumme und Positionssumme weichen ab. Die Positionssumme wurde verwendet."
+      "PDF-Nettosumme und Positionssumme weichen ab. Die PDF-Nettosumme wurde als verbindlicher Auftragswert übernommen."
     );
   }
 
