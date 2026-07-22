@@ -5876,4 +5876,376 @@ form button:hover {
   }
 }
 
+/* gastario-orders-lists-unified-final-20260722 */
 
+/*
+ * Ein gemeinsamer Kartenstandard für bevorstehende und vergangene Aufträge.
+ * Keine zweite Aktionszeile und keine vertikal gestapelten Aktionen.
+ */
+
+.ordersPageUpcoming .operationalOrderRows,
+.ordersPagePast .operationalOrderRows {
+  display: grid !important;
+  gap: 11px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  padding: 12px !important;
+  overflow: visible !important;
+}
+
+.ordersPageUpcoming .operationalOrderRow,
+.ordersPagePast .operationalOrderRow {
+  display: grid !important;
+  grid-template-columns:
+    40px
+    minmax(205px, 0.95fr)
+    minmax(300px, 1.45fr)
+    minmax(125px, 0.62fr)
+    minmax(105px, 0.5fr)
+    minmax(130px, 0.58fr)
+    168px !important;
+  grid-template-rows: minmax(112px, auto) !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  min-height: 112px !important;
+  height: auto !important;
+
+  align-items: stretch !important;
+  column-gap: 0 !important;
+  row-gap: 0 !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: 1px solid #dce8e4 !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+.ordersPageUpcoming .operationalOrderRow:hover,
+.ordersPagePast .operationalOrderRow:hover {
+  transform: translateY(-1px) !important;
+  border-color: #b8d2ca !important;
+  box-shadow: 0 8px 20px rgba(20, 67, 55, 0.055) !important;
+}
+
+.ordersPageUpcoming .operationalOrderRow > *,
+.ordersPagePast .operationalOrderRow > * {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  grid-row: 1 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Icon */
+
+.ordersPageUpcoming .operationalOrderRow > .finalOrderIcon,
+.ordersPagePast .operationalOrderRow > .finalOrderIcon {
+  grid-column: 1 !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 10px 7px !important;
+  border: 0 !important;
+  border-right: 1px solid #e3ece9 !important;
+  border-bottom: 0 !important;
+  border-radius: 0 !important;
+  background: #f7fbf9 !important;
+}
+
+/* Kunde */
+
+.ordersPageUpcoming .operationalOrderRow > .finalOrderCustomer,
+.ordersPagePast .operationalOrderRow > .finalOrderCustomer {
+  grid-column: 2 !important;
+  display: grid !important;
+  align-content: center !important;
+  padding: 13px 15px !important;
+  border-right: 1px solid #e3ece9 !important;
+  border-bottom: 0 !important;
+  background: #fbfdfc !important;
+  overflow: hidden !important;
+}
+
+.ordersPageUpcoming .finalOrderCustomer h3,
+.ordersPagePast .finalOrderCustomer h3 {
+  max-width: 100% !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  color: #173f37 !important;
+  font-size: 14px !important;
+  font-weight: 790 !important;
+  line-height: 1.25 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.ordersPageUpcoming .finalOrderCustomer p,
+.ordersPagePast .finalOrderCustomer p {
+  max-width: 100% !important;
+  margin: 4px 0 7px !important;
+  overflow: hidden !important;
+  color: #677b75 !important;
+  font-size: 10px !important;
+  line-height: 1.3 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Produkte */
+
+.ordersPageUpcoming .operationalOrderRow > .finalOrderItems,
+.ordersPagePast .operationalOrderRow > .finalOrderItems {
+  grid-column: 3 !important;
+  display: grid !important;
+  align-content: center !important;
+  gap: 6px !important;
+  padding: 11px 12px !important;
+  border-right: 1px solid #e3ece9 !important;
+  border-bottom: 0 !important;
+  overflow: hidden !important;
+}
+
+.ordersPageUpcoming .finalOrderItems > div,
+.ordersPagePast .finalOrderItems > div {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 28px !important;
+
+  display: grid !important;
+  grid-template-columns: 39px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 7px !important;
+
+  padding: 5px 9px !important;
+  border: 1px solid #e0eae6 !important;
+  border-radius: 8px !important;
+  background: #f7faf9 !important;
+  overflow: hidden !important;
+}
+
+.ordersPageUpcoming .finalOrderItems strong,
+.ordersPagePast .finalOrderItems strong {
+  color: #08715a !important;
+  font-size: 9.5px !important;
+  font-weight: 850 !important;
+  white-space: nowrap !important;
+}
+
+.ordersPageUpcoming .finalOrderItems span,
+.ordersPagePast .finalOrderItems span {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  color: #354d47 !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.ordersPageUpcoming .finalOrderItems small,
+.ordersPagePast .finalOrderItems small {
+  color: #71857f !important;
+  font-size: 9px !important;
+}
+
+/* Lieferung */
+
+.ordersPageUpcoming .operationalOrderRow > .operationalOrderDate,
+.ordersPagePast .operationalOrderRow > .operationalOrderDate {
+  grid-column: 4 !important;
+  display: grid !important;
+  align-content: center !important;
+  align-items: initial !important;
+  gap: 3px !important;
+  padding: 12px !important;
+  border-right: 1px solid #e3ece9 !important;
+  border-bottom: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Status */
+
+.ordersPageUpcoming .operationalOrderRow > .operationalOrderStatus,
+.ordersPagePast .operationalOrderRow > .operationalOrderStatus {
+  grid-column: 5 !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 10px !important;
+  border-right: 1px solid #e3ece9 !important;
+  border-bottom: 0 !important;
+  text-align: center !important;
+}
+
+/* Betrag */
+
+.ordersPageUpcoming .operationalOrderRow > .finalOrderTotal,
+.ordersPagePast .operationalOrderRow > .finalOrderTotal {
+  grid-column: 6 !important;
+  display: grid !important;
+  align-content: center !important;
+  align-items: initial !important;
+  justify-items: end !important;
+  gap: 5px !important;
+  padding: 12px 13px !important;
+  border-right: 1px solid #e3ece9 !important;
+  border-bottom: 0 !important;
+  text-align: right !important;
+  overflow: hidden !important;
+}
+
+.ordersPageUpcoming .finalOrderTotal strong,
+.ordersPagePast .finalOrderTotal strong {
+  color: #173f37 !important;
+  font-size: 17px !important;
+  font-weight: 820 !important;
+  white-space: nowrap !important;
+}
+
+/* Lieferschein und X immer nebeneinander */
+
+.ordersPageUpcoming .operationalOrderRow > .operationalOrderActions,
+.ordersPagePast .operationalOrderRow > .operationalOrderActions {
+  grid-column: 7 !important;
+  grid-row: 1 !important;
+
+  display: grid !important;
+  grid-template-columns: minmax(108px, 1fr) 36px !important;
+  grid-template-rows: 36px !important;
+  align-content: center !important;
+  align-items: center !important;
+  justify-content: stretch !important;
+
+  gap: 8px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 12px 14px 12px 11px !important;
+
+  border: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  background: #fbfdfc !important;
+  overflow: visible !important;
+}
+
+.ordersPageUpcoming .operationalOrderActions .deliveryDocumentButton,
+.ordersPagePast .operationalOrderActions .deliveryDocumentButton {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 36px !important;
+  min-height: 36px !important;
+
+  margin: 0 !important;
+  padding: 0 10px !important;
+  border-radius: 9px !important;
+  font-size: 9px !important;
+  white-space: nowrap !important;
+}
+
+.ordersPageUpcoming .operationalOrderActions form,
+.ordersPagePast .operationalOrderActions form {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+
+  display: block !important;
+  width: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  height: 36px !important;
+  margin: 0 !important;
+}
+
+.ordersPageUpcoming .operationalDeleteButton,
+.ordersPagePast .operationalDeleteButton {
+  width: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 9px !important;
+}
+
+/* Falls ein rechter Sammelcontainer existiert */
+
+.ordersPageUpcoming .operationalOrderRightRail,
+.ordersPagePast .operationalOrderRightRail {
+  display: contents !important;
+}
+
+/* Kleinere Desktopbreiten */
+
+@media (max-width: 1250px) {
+  .ordersPageUpcoming .operationalOrderRow,
+  .ordersPagePast .operationalOrderRow {
+    grid-template-columns:
+      38px
+      minmax(180px, 0.95fr)
+      minmax(235px, 1.3fr)
+      minmax(115px, 0.62fr)
+      minmax(125px, 0.58fr)
+      160px !important;
+  }
+
+  .ordersPageUpcoming .operationalOrderStatus,
+  .ordersPagePast .operationalOrderStatus {
+    display: none !important;
+  }
+
+  .ordersPageUpcoming .operationalOrderRow > .finalOrderTotal,
+  .ordersPagePast .operationalOrderRow > .finalOrderTotal {
+    grid-column: 5 !important;
+  }
+
+  .ordersPageUpcoming .operationalOrderRow > .operationalOrderActions,
+  .ordersPagePast .operationalOrderRow > .operationalOrderActions {
+    grid-column: 6 !important;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 850px) {
+  .ordersPageUpcoming .operationalOrderRow,
+  .ordersPagePast .operationalOrderRow {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+  }
+
+  .ordersPageUpcoming .operationalOrderRow > *,
+  .ordersPagePast .operationalOrderRow > * {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid #e3ece9 !important;
+  }
+
+  .ordersPageUpcoming .operationalOrderRow > .finalOrderIcon,
+  .ordersPagePast .operationalOrderRow > .finalOrderIcon {
+    display: none !important;
+  }
+
+  .ordersPageUpcoming .operationalOrderRow > .operationalOrderActions,
+  .ordersPagePast .operationalOrderRow > .operationalOrderActions {
+    grid-template-columns: minmax(120px, 1fr) 36px !important;
+    padding: 12px 14px !important;
+    border-bottom: 0 !important;
+  }
+}
