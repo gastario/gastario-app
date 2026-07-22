@@ -971,6 +971,163 @@ async function findExistingImportedOrder(
   return null;
 }
 
+/*
+ * gastario-imported-customer-resolution-20260722
+ *
+ * Ein technischer Prüfplatzhalter darf niemals als echter
+ * Kundenname in einem Auftrag gespeichert werden.
+ */
+function resolveImportedCustomerName(params: {
+  extractedOrder: any;
+  subject?: string;
+}) {
+  const { extractedOrder, subject } = params;
+
+  function cleanCandidate(value: unknown) {
+    return String(value || "")
+      .replace(/\s+/g, " ")
+      .replace(/^[,;:|/\-–—\s]+/, "")
+      .replace(/[,;:|/\-–—\s]+$/, "")
+      .trim();
+  }
+
+  function isRejectedCandidate(value: unknown) {
+    const candidate = cleanCandidate(value);
+    const lower = candidate.toLowerCase();
+
+    if (!candidate || candidate.length < 3) {
+      return true;
+    }
+
+    if (
+      [
+        "kunde prüfen",
+        "kunde pruefen",
+        "kunde unbekannt",
+        "unbekannter kunde",
+        "e-mail import",
+        "email import",
+        "keine kontaktperson erkannt",
+        "kontakt unbekannt",
+        "heycater",
+        "hey cater",
+        "hey group",
+        "gastario",
+        "edis gastrobetriebe",
+      ].includes(lower)
+    ) {
+      return true;
+    }
+
+    if (
+      /^(?:auftrag|bestellung|auftragsbestätigung|auftragsbestaetigung|lieferschein|rechnung|angebot|event|catering)$/i.test(
+        candidate
+      )
+    ) {
+      return true;
+    }
+
+    if (/^\d+$/.test(candidate)) {
+      return true;
+    }
+
+    if (!/[A-Za-zÄÖÜäöüß]/.test(candidate)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  const extractedCustomerName = cleanCandidate(
+    extractedOrder?.customerName
+  );
+
+  if (
+    !isRejectedCandidate(extractedCustomerName) &&
+    isPlausibleImportedCustomerName(
+      extractedCustomerName,
+      Array.isArray(extractedOrder?.items)
+        ? extractedOrder.items
+        : []
+    )
+  ) {
+    return {
+      customerName: extractedCustomerName,
+      source: "document-customer",
+    };
+  }
+
+  const contactName = cleanCandidate(
+    extractedOrder?.contactName
+  );
+
+  if (!isRejectedCandidate(contactName)) {
+    return {
+      customerName: contactName,
+      source: "contact-name",
+    };
+  }
+
+  const deliveryAddress = cleanCandidate(
+    extractedOrder?.deliveryAddress
+  );
+
+  const deliveryAddressParts = deliveryAddress
+    .split(",")
+    .map((part) => cleanCandidate(part))
+    .filter(Boolean);
+
+  const addressNameCandidate =
+    deliveryAddressParts.find((part) => {
+      if (isRejectedCandidate(part)) {
+        return false;
+      }
+
+      if (
+        /\b\d{5}\b/.test(part) ||
+        /\b(?:straße|strasse|str\.|weg|allee|platz|damm|ufer|chaussee)\b/i.test(
+          part
+        ) ||
+        /\d/.test(part)
+      ) {
+        return false;
+      }
+
+      return part.length >= 3;
+    }) || "";
+
+  if (addressNameCandidate) {
+    return {
+      customerName: addressNameCandidate,
+      source: "delivery-address",
+    };
+  }
+
+  const cleanedSubject = cleanCandidate(subject)
+    .replace(/\b20\d{2}-\d{4,}\b/g, " ")
+    .replace(
+      /\b(?:bitte|auftrag|bestellung|angebot|freigeben|bestätigt|bestaetigt|heycater|catering|event)\b/gi,
+      " "
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (
+    cleanedSubject.length >= 3 &&
+    cleanedSubject.length <= 100 &&
+    !isRejectedCandidate(cleanedSubject)
+  ) {
+    return {
+      customerName: cleanedSubject,
+      source: "email-subject",
+    };
+  }
+
+  return {
+    customerName: "Unzugeordneter E-Mail-Auftrag",
+    source: "unresolved",
+  };
+}
 async function createReviewOrderFromExtracted(
   params: {
     tenantId: string;
@@ -1104,15 +1261,32 @@ async function createReviewOrderFromExtracted(
     );
   }
 
+  const resolvedCustomer =
+    resolveImportedCustomerName({
+      extractedOrder: {
+        ...extractedOrder,
+        items: finalItems,
+      },
+      subject,
+    });
+
   const safeCustomerName =
-    isPlausibleImportedCustomerName(
-      extractedOrder.customerName,
-      finalItems
-    )
-      ? String(
-          extractedOrder.customerName || ""
-        ).trim()
-      : "Kunde prüfen";
+    resolvedCustomer.customerName;
+
+  if (
+    resolvedCustomer.source !==
+    "document-customer"
+  ) {
+    reviewReasons.push(
+      resolvedCustomer.source === "contact-name"
+        ? "Der Kundenname wurde aus der erkannten Kontaktperson übernommen."
+        : resolvedCustomer.source === "delivery-address"
+          ? "Der Kundenname wurde aus dem Lieferadressblock übernommen."
+          : resolvedCustomer.source === "email-subject"
+            ? "Der Kundenname wurde aus dem E-Mail-Betreff übernommen."
+            : "Der Auftrag konnte noch keinem eindeutigen Kunden zugeordnet werden."
+    );
+  }
 
   const order =
     await prisma.order.create({
