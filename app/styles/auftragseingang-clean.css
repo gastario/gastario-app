@@ -1224,3 +1224,62 @@
     font-size: 20px !important;
   }
 }
+
+/* gastario-incoming-intro-green-panel-final-20260722 */
+/* Nur der Intro-Kopf der Eingangszentrale */
+
+.incomingReferenceSection > .g-ui-section-header {
+  position: relative !important;
+  overflow: hidden !important;
+
+  padding: 24px 24px 22px !important;
+
+  border-bottom: 1px solid #d9e8e3 !important;
+  background:
+    linear-gradient(
+      135deg,
+      #f1f8f5 0%,
+      #f7fbf9 58%,
+      #ffffff 100%
+    ) !important;
+}
+
+.incomingReferenceSection > .g-ui-section-header::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: auto 0 0 0 !important;
+
+  height: 1px !important;
+  background: linear-gradient(
+    90deg,
+    rgba(8, 113, 90, 0.12),
+    rgba(8, 113, 90, 0.03)
+  ) !important;
+
+  pointer-events: none !important;
+}
+
+.incomingReferenceSection
+> .g-ui-section-header
+.g-ui-eyebrow {
+  color: #08715a !important;
+}
+
+.incomingReferenceSection
+> .g-ui-section-header
+.g-ui-section-title {
+  color: #123d34 !important;
+}
+
+.incomingReferenceSection
+> .g-ui-section-header
+.g-ui-section-hint {
+  color: #61756f !important;
+}
+
+/* Filter klar unterhalb des Introbereichs halten */
+
+.incomingReferenceSection > .incomingReferenceFilters {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2eae8 !important;
+}
