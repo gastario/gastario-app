@@ -6402,3 +6402,209 @@ form button:hover {
     min-height: 0 !important;
   }
 }
+
+/* gastario-selected-order-actions-layout-final-20260722 */
+/*
+ * Neue JSX-Struktur:
+ * finalSelectedActions
+ * ├─ finalSelectedActionsMain
+ * └─ finalSelectedDeleteForm
+ */
+
+.ordersPage .finalSelectedActions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 14px !important;
+
+  width: 100% !important;
+  min-height: 0 !important;
+  height: auto !important;
+
+  padding: 16px 20px !important;
+  border-top: 1px solid #e2ebe7 !important;
+  background: #f8fbfa !important;
+
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+/* Hauptaktionen links nebeneinander */
+
+.ordersPage .finalSelectedActionsMain {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+}
+
+/* Alte 100%-Breiten zuverlässig überschreiben */
+
+.ordersPage .finalSelectedActionsMain > *,
+.ordersPage .finalSelectedActionsMain > form,
+.ordersPage .finalSelectedActionsMain > a,
+.ordersPage .finalSelectedActionsMain > button,
+.ordersPage .finalSelectedActionsMain .deliveryDocumentButton {
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 142px !important;
+  max-width: none !important;
+  min-height: 42px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Zurück bewusst neutral */
+
+.ordersPage
+.finalSelectedActionsMain
+.finalBackButton {
+  min-width: 145px !important;
+
+  border: 1px solid #cfddda !important;
+  background: #ffffff !important;
+  color: #304a41 !important;
+
+  box-shadow: none !important;
+}
+
+/* PDF/Lieferschein als klare Hauptaktion */
+
+.ordersPage
+.finalSelectedActionsMain
+.deliveryDocumentButton {
+  min-width: 145px !important;
+
+  border: 1px solid #8fcdbc !important;
+  background: #dff5ed !important;
+  color: #086a57 !important;
+
+  box-shadow: none !important;
+}
+
+/* Foodlabels ebenfalls sauber, aber etwas stärker */
+
+.ordersPage
+.finalSelectedActionsMain
+.finalFoodlabelsButton {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  min-width: 155px !important;
+  padding: 0 16px !important;
+
+  border: 1px solid #0a9473 !important;
+  border-radius: 11px !important;
+  background: #0a9473 !important;
+  color: #ffffff !important;
+
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+
+  box-shadow: 0 7px 16px rgba(10, 148, 115, 0.14) !important;
+}
+
+/* Löschen rechts separat und kompakt */
+
+.ordersPage .finalSelectedDeleteForm {
+  display: block !important;
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+
+  margin: 0 0 0 auto !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+}
+
+.ordersPage
+.finalSelectedDeleteForm
+.finalSelectedDeleteButton {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: auto !important;
+  min-width: 132px !important;
+  max-width: 160px !important;
+  min-height: 42px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 15px !important;
+
+  border: 1px solid #e5b2ae !important;
+  border-radius: 11px !important;
+  background: #fff5f4 !important;
+  color: #b42318 !important;
+
+  font-size: 11px !important;
+  font-weight: 750 !important;
+  line-height: 1 !important;
+
+  box-shadow: none !important;
+}
+
+.ordersPage
+.finalSelectedDeleteForm
+.finalSelectedDeleteButton:hover {
+  border-color: #d98e88 !important;
+  background: #fee9e7 !important;
+  color: #941b12 !important;
+}
+
+/* Tablet */
+
+@media (max-width: 900px) {
+  .ordersPage .finalSelectedActions {
+    align-items: stretch !important;
+  }
+
+  .ordersPage .finalSelectedActionsMain {
+    flex: 1 1 100% !important;
+  }
+
+  .ordersPage .finalSelectedDeleteForm {
+    margin-left: 0 !important;
+  }
+}
+
+/* Mobil */
+
+@media (max-width: 620px) {
+  .ordersPage .finalSelectedActionsMain {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .ordersPage .finalSelectedActionsMain > *,
+  .ordersPage .finalSelectedActionsMain > a,
+  .ordersPage .finalSelectedActionsMain > button,
+  .ordersPage .finalSelectedActionsMain .deliveryDocumentButton,
+  .ordersPage .finalSelectedDeleteForm,
+  .ordersPage
+  .finalSelectedDeleteForm
+  .finalSelectedDeleteButton {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
