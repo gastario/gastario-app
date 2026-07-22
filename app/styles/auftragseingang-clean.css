@@ -125,12 +125,13 @@
 /* Bestehende Ergebnisbereiche in PageSection integrieren */
 .incomingReferenceSection .leadEmailPanel,
 .incomingReferenceSection .finalOrdersShell {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
 }
 
 .incomingReferenceSection .leadEmailHeader,
