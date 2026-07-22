@@ -90,41 +90,27 @@ function classifyIncomingEmail(mail: any) {
   ];
 
   const inquirySignals = [
-    "bitte auftrag bestatigen",
-    "bitte auftrag bestaetigen",
-    "angebot freigeben",
-    "bitte angebot freigeben",
-    "angebot erstellen",
-    "bitte angebot",
     "angebotsanfrage",
     "catering anfrage",
+    "catering-anfrage",
     "neue anfrage",
-    "anfrage",
-    "catering am",
-    "catering fur",
-    "catering fuer",
-    "catering gesucht",
-    "catering nahe",
-    "catering naehe",
-    "nahe ludwigsfelde",
-    "naehe ludwigsfelde",
-    "fingerfood",
-    "buffet",
-    "personen",
-    "gaste",
-    "gaeste",
-    "hochzeit",
-    "sommerfest",
-    "firmenevent",
-    "veranstaltung",
-    "geburtstag",
-    "lunch",
-    "fruhstuck",
-    "fruehstueck",
-    "abendessen",
-    "catering",
+    "anfrage fur",
+    "anfrage fuer",
+    "angebot erstellen",
+    "bitte angebot",
+    "bitte um ein angebot",
+    "angebot anfordern",
+    "kostenvoranschlag",
+    "verfugbarkeit anfragen",
+    "verfuegbarkeit anfragen",
+    "konnen sie uns",
+    "koennen sie uns",
+    "wir interessieren uns",
+    "preis fur",
+    "preis fuer",
+    "was wurde kosten",
+    "was wuerde kosten",
   ];
-
   const otherSignals = [
     "paypal",
     "newsletter",
@@ -447,8 +433,56 @@ export async function action({ request }: { request: Request }) {
       ? origin + "/api/email-import/run?secret=" + encodeURIComponent(secret)
       : origin + "/api/email-import/run";
 
-    await fetch(runUrl);
-    return redirect("/auftragseingang");
+    try {
+      const response = await fetch(runUrl, {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+        },
+      });
+
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.ok) {
+        const message =
+          result?.error ||
+          (Array.isArray(result?.errors) && result.errors.length > 0
+            ? result.errors.join(" | ")
+            : "Der E-Mail-Abruf ist fehlgeschlagen.");
+
+        return {
+          error: message,
+          importResult: result,
+        };
+      }
+
+      if (Array.isArray(result.errors) && result.errors.length > 0) {
+        return {
+          error:
+            "Der Abruf wurde mit Fehlern beendet: " +
+            result.errors.join(" | "),
+          importResult: result,
+        };
+      }
+
+      return {
+        success:
+          "E-Mail-Abruf abgeschlossen: " +
+          Number(result.checked || 0) +
+          " geprüft, " +
+          Number(result.savedEmails || 0) +
+          " gespeichert, " +
+          Number(result.createdOrders || 0) +
+          " Aufträge erstellt.",
+        importResult: result,
+      };
+    } catch (error: any) {
+      return {
+        error:
+          "Der E-Mail-Abruf konnte nicht gestartet werden: " +
+          String(error?.message || error),
+      };
+    }
   }
 
   if (intent === "restoreIncomingEmail") {
@@ -597,35 +631,46 @@ export default function AuftragseingangPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const importFetcher = useFetcher();
-  const [liveEnabled, setLiveEnabled] = useState(true);
+  const [liveEnabled, setLiveEnabled] = useState(false);
   const [lastAutoImportAt, setLastAutoImportAt] = useState<string>("");
   const [isImportingNow, setIsImportingNow] = useState(false);
 
-  async function runEmailImportAndReload() {
-    if (isImportingNow) return;
-
-    setIsImportingNow(true);
-
-    try {
-      const formData = new FormData();
-      formData.set("intent", "runEmailImportNow");
-
-      await fetch("/auftragseingang", {
-        method: "POST",
-        body: formData,
-        credentials: "same-origin",
-      });
-
-      setLastAutoImportAt(new Date().toLocaleTimeString("de-DE", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }));
-
-      window.location.reload();
-    } catch (error) {
-      console.error("E-Mail-Abruf fehlgeschlagen", error);
-      setIsImportingNow(false);
+  useEffect(() => {
+    if (importFetcher.state !== "idle") {
+      setIsImportingNow(true);
+      return;
     }
+
+    setIsImportingNow(false);
+
+    const result: any = importFetcher.data;
+
+    if (result?.success) {
+      setLastAutoImportAt(
+        new Date().toLocaleTimeString("de-DE", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      );
+
+      const reloadTimer = window.setTimeout(() => {
+        window.location.reload();
+      }, 900);
+
+      return () => window.clearTimeout(reloadTimer);
+    }
+  }, [importFetcher.state, importFetcher.data]);
+
+  function runEmailImportAndReload() {
+    if (isImportingNow || importFetcher.state !== "idle") return;
+
+    const formData = new FormData();
+    formData.set("intent", "runEmailImportNow");
+
+    importFetcher.submit(formData, {
+      method: "post",
+      action: "/auftragseingang",
+    });
   }
 
   useEffect(() => {
@@ -930,7 +975,9 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
       customerName &&
       customerName !== "e-mail import" &&
       customerName !== "email import" &&
-      customerName !== "kunde unbekannt";
+      customerName !== "kunde unbekannt" &&
+      customerName !== "kunde prüfen" &&
+      customerName !== "kunde pruefen";
 
     const hasRealItem = items.some((item: any) => {
       const name = String(item?.name || "").trim().toLowerCase();
@@ -960,7 +1007,9 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
       !customerName ||
       customerName === "e-mail import" ||
       customerName === "email import" ||
-      customerName === "kunde unbekannt";
+      customerName === "kunde unbekannt" ||
+      customerName === "kunde prüfen" ||
+      customerName === "kunde pruefen";
 
     const weakText =
       eventName.includes("e-mail import") ||
@@ -1098,11 +1147,64 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
       looksLikeSentenceOrDish
     );
   }
+  const metricOrders = sortedOrders.filter((order: any) => {
+    if (isLikelyTrashImportOrder(order)) return false;
+    if (isLikelyBrokenAutomaticOrder(order)) return false;
+
+    const metricCustomerName = String(
+      order?.customerName ||
+      order?.customer?.name ||
+      ""
+    )
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+
+    if (
+      !metricCustomerName ||
+      metricCustomerName === "kunde prüfen" ||
+      metricCustomerName === "kunde pruefen" ||
+      metricCustomerName === "kunde unbekannt" ||
+      metricCustomerName === "e-mail import" ||
+      metricCustomerName === "email import"
+    ) {
+      return false;
+    }
+
+    if (!Array.isArray(order?.items) || order.items.length === 0) {
+      return false;
+    }
+
+    if (!order.deliveryDate) return false;
+
+    const deliveryDate = new Date(order.deliveryDate);
+
+    if (Number.isNaN(deliveryDate.getTime())) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return deliveryDate >= today;
+  });
+
   const currentOrderStats = {
-    all: data.counts?.all || 0,
-    review: data.counts?.review || 0,
-    confirmed: data.counts?.confirmed || 0,
-    rejected: data.counts?.rejected || 0,
+    all: metricOrders.length,
+
+    review: metricOrders.filter((order: any) =>
+      ["AUTO_CREATED", "REVIEW_NEEDED"].includes(
+        String(order.status || "").toUpperCase()
+      )
+    ).length,
+
+    confirmed: metricOrders.filter(
+      (order: any) =>
+        String(order.status || "").toUpperCase() === "CONFIRMED"
+    ).length,
+
+    rejected: metricOrders.filter(
+      (order: any) =>
+        String(order.status || "").toUpperCase() === "REJECTED"
+    ).length,
   };
 
   /* gastario-url-selected-order-fix-20260713 */
@@ -1214,9 +1316,9 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                 type="button"
                 className="g-ui-button g-ui-button--primary"
                 onClick={runEmailImportAndReload}
-                disabled={isImportingNow}
+                disabled={isImportingNow || importFetcher.state !== "idle"}
               >
-                {isImportingNow
+                {isImportingNow || importFetcher.state !== "idle"
                   ? "Abruf läuft..."
                   : "E-Mails abrufen"}
               </button>
@@ -1230,15 +1332,19 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
           </Notice>
         ) : null}
 
-        {actionData?.success ? (
+        {actionData?.success ||
+        (importFetcher.data as any)?.success ? (
           <Notice type="success">
-            {actionData.success}
+            {actionData?.success ||
+              (importFetcher.data as any)?.success}
           </Notice>
         ) : null}
 
-        {actionData?.error ? (
+        {actionData?.error ||
+        (importFetcher.data as any)?.error ? (
           <Notice type="danger">
-            {actionData.error}
+            {actionData?.error ||
+              (importFetcher.data as any)?.error}
           </Notice>
         ) : null}
 
