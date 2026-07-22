@@ -5885,32 +5885,26 @@ form button:hover {
   grid-template-columns:
     38px
     minmax(180px, 0.95fr)
-    minmax(290px, 1.45fr)
+    minmax(240px, 1.35fr)
     minmax(115px, 0.65fr)
     minmax(95px, 0.5fr)
-    minmax(125px, 0.6fr)
-    164px !important;
-  column-gap: 0 !important;
-  row-gap: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
+    minmax(125px, 0.6fr) !important;
+  column-gap: 14px !important;
+  row-gap: 10px !important;
+  padding: 16px !important;
+  overflow: visible !important;
 }
 
 .ordersPageUpcoming .operationalOrderActions {
-  grid-column: auto !important;
-  grid-row: 1 !important;
-  display: grid !important;
-  grid-template-columns: minmax(112px, 1fr) 36px !important;
+  grid-column: 2 / -1 !important;
+  grid-row: 2 !important;
+  display: flex !important;
   width: auto !important;
   min-width: 0 !important;
   margin: 0 !important;
-  padding: 10px !important;
-  align-self: stretch !important;
-  align-content: center !important;
   align-items: center !important;
-  justify-content: stretch !important;
-  gap: 7px !important;
-  border-left: 1px solid #e4ece9;
+  justify-content: flex-end !important;
+  gap: 8px !important;
   overflow: visible !important;
 }
 
@@ -5984,32 +5978,3 @@ form button:hover {
     flex-wrap: wrap;
   }
 }
-
-/* gastario-upcoming-products-and-actions-fix-20260722 */
-.ordersPageUpcoming .finalOrderItems {
-  gap: 6px !important;
-  padding: 10px 12px !important;
-}
-
-.ordersPageUpcoming .finalOrderItems > div {
-  grid-template-columns: 38px minmax(0, 1fr) !important;
-  gap: 7px !important;
-  padding: 7px 10px !important;
-  border: 1px solid #dfeae6 !important;
-  border-radius: 9px !important;
-}
-
-.ordersPageUpcoming .finalOrderItems strong {
-  font-size: 10.5px !important;
-}
-
-.ordersPageUpcoming .finalOrderItems span {
-  font-size: 11.5px !important;
-  font-weight: 700 !important;
-}
-
-.ordersPageUpcoming .deliveryDocumentButton {
-  width: 100% !important;
-  min-width: 0 !important;
-}
-
