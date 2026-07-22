@@ -627,6 +627,36 @@ function getDisplayedOrderTotal(order: any) {
     positionsCents: positionsTotal,
   };
 }
+/* gastario-repair-broken-email-utf8-20260722 */
+function repairBrokenEmailText(value: unknown) {
+  let current = String(value ?? "");
+
+  if (!current || !/[ÃÂâð�]/.test(current)) {
+    return current;
+  }
+
+  try {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      if (!/[ÃÂâð�]/.test(current)) break;
+
+      const bytes = Uint8Array.from(
+        Array.from(current).map(
+          (character) => character.charCodeAt(0) & 0xff
+        )
+      );
+
+      const repaired = new TextDecoder("utf-8").decode(bytes);
+
+      if (!repaired || repaired === current) break;
+
+      current = repaired;
+    }
+  } catch {
+    return String(value ?? "");
+  }
+
+  return current;
+}
 export default function AuftragseingangPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
@@ -1503,10 +1533,12 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                   const extracted = mail.extractedJson || {};
                   const aiDecision = extracted.aiDecision || {};
 
-                  const bodyPreview = String(mail.bodyText || "")
-                    .replace(/\s+/g, " ")
-                    .trim()
-                    .slice(0, 260);
+                  const bodyPreview = repairBrokenEmailText(
+                    String(mail.bodyText || "")
+                      .replace(/\s+/g, " ")
+                      .trim()
+                      .slice(0, 260)
+                  );
 
                   const receivedAt = mail.receivedAt
                     ? new Date(mail.receivedAt)
@@ -1557,8 +1589,10 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                               Number(aiDecision.confidence || 0) * 100
                             )}{" "}
                             % {"\u00b7"}{" "}
-                            {aiDecision.reason ||
-                              "Keine Begründung gespeichert"}
+                            {repairBrokenEmailText(
+                              aiDecision.reason ||
+                                "Keine Begründung gespeichert"
+                            )}
                           </span>
                         </div>
                       ) : null}

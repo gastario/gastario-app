@@ -1337,3 +1337,46 @@ select:focus {
     padding-right: 16px !important;
   }
 }
+/* gastario-incoming-hide-action-final-20260722 */
+/* Öffnen bleibt Hauptaktion, Ausblenden wird bewusst sekundär */
+
+.incomingReferenceSection .leadSecondaryAction {
+  min-height: 34px !important;
+  padding: 0 14px !important;
+
+  border: 1px solid #dccb9f !important;
+  border-radius: 9px !important;
+  background: #fffaf0 !important;
+  background-image: none !important;
+
+  color: #795817 !important;
+  font: inherit !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+
+  box-shadow: none !important;
+  cursor: pointer !important;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease !important;
+}
+
+.incomingReferenceSection .leadSecondaryAction:hover {
+  border-color: #cbb476 !important;
+  background: #fff4d9 !important;
+  color: #61430e !important;
+  transform: translateY(-1px) !important;
+}
+
+.incomingReferenceSection .leadSecondaryAction:active {
+  transform: translateY(0) !important;
+}
+
+.incomingReferenceSection .leadSecondaryAction:focus-visible {
+  outline: none !important;
+  box-shadow:
+    0 0 0 3px rgba(190, 151, 65, 0.18) !important;
+}

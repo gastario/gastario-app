@@ -6608,3 +6608,130 @@ form button:hover {
     max-width: none !important;
   }
 }
+
+/* gastario-selected-actions-compact-final-20260722 */
+/* Auftragsdetails: Aktionen kompakt statt Vollbreiten-Balken */
+
+.ordersPage .finalSelectedActions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+
+  padding: 16px 20px !important;
+  background: #f8fbfa !important;
+}
+
+.ordersPage .finalSelectedActionsMain {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+
+  flex: 0 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* Auch interne Formulare des DeliveryNoteButton zurücksetzen */
+
+.ordersPage .finalSelectedActionsMain > *,
+.ordersPage .finalSelectedActionsMain > form,
+.ordersPage .finalSelectedActionsMain form {
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* Alle sichtbaren Buttons auf natürliche Breite begrenzen */
+
+.ordersPage .finalSelectedActionsMain > button,
+.ordersPage .finalSelectedActionsMain > a,
+.ordersPage .finalSelectedActionsMain form button,
+.ordersPage .finalSelectedActionsMain .deliveryDocumentButton,
+.ordersPage .finalBackButton,
+.ordersPage .finalFoodlabelsButton {
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 138px !important;
+  max-width: 190px !important;
+  min-height: 42px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 16px !important;
+  box-sizing: border-box !important;
+}
+
+/* Löschen nicht mehr rechts über den gesamten Restbereich ziehen */
+
+.ordersPage .finalSelectedDeleteForm {
+  display: block !important;
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.ordersPage
+.finalSelectedDeleteForm
+.finalSelectedDeleteButton {
+  width: auto !important;
+  min-width: 132px !important;
+  max-width: 160px !important;
+  min-height: 42px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 15px !important;
+}
+
+/* Mobil dürfen die Aktionen wieder untereinander stehen */
+
+@media (max-width: 620px) {
+  .ordersPage .finalSelectedActions,
+  .ordersPage .finalSelectedActionsMain {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+
+  .ordersPage .finalSelectedActionsMain > *,
+  .ordersPage .finalSelectedActionsMain > form,
+  .ordersPage .finalSelectedActionsMain > a,
+  .ordersPage .finalSelectedActionsMain > button,
+  .ordersPage .finalSelectedActionsMain form button,
+  .ordersPage .finalSelectedActionsMain .deliveryDocumentButton,
+  .ordersPage .finalSelectedDeleteForm,
+  .ordersPage
+  .finalSelectedDeleteForm
+  .finalSelectedDeleteButton {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
