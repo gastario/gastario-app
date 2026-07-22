@@ -1125,31 +1125,37 @@ export default function OrdersPage() {
               </section>
 
               <div className="finalSelectedActions">
-                <button
-                  type="button"
-                  className="finalBackButton g-ui-button g-ui-button--secondary"
-                  onClick={() =>
-                    setSelectedOrderId(null)
-                  }
+                <div className="finalSelectedActionsMain">
+                  <button
+                    type="button"
+                    className="finalBackButton g-ui-button g-ui-button--secondary"
+                    onClick={() =>
+                      setSelectedOrderId(null)
+                    }
+                  >
+                    Zurück zur Liste
+                  </button>
+
+                  <DeliveryNoteButton
+                    orderId={selectedOrder.id}
+                  />
+
+                  <Link
+                    className="finalFoodlabelsButton"
+                    to={
+                      "/auftraege/" +
+                      selectedOrder.id +
+                      "/foodlabels"
+                    }
+                  >
+                    Foodlabels erstellen
+                  </Link>
+                </div>
+
+                <Form
+                  method="post"
+                  className="finalSelectedDeleteForm"
                 >
-                  Zurück zur Liste
-                </button>
-
-                <DeliveryNoteButton
-                  orderId={selectedOrder.id}
-                />
-
-                <Link
-                  to={
-                    "/auftraege/" +
-                    selectedOrder.id +
-                    "/foodlabels"
-                  }
-                >
-                  Foodlabels erstellen
-                </Link>
-
-                <Form method="post">
                   <input
                     type="hidden"
                     name="intent"
@@ -1162,8 +1168,11 @@ export default function OrdersPage() {
                     value={selectedOrder.id}
                   />
 
-                  <button type="submit">
-                    Löschen
+                  <button
+                    type="submit"
+                    className="finalSelectedDeleteButton"
+                  >
+                    Auftrag löschen
                   </button>
                 </Form>
               </div>
