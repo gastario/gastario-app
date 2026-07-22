@@ -890,6 +890,18 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
   const visibleOrders = sortedOrders.filter((order: any) => {
     if (isLikelyTrashImportOrder(order)) return false;
 
+    /*
+     * Verdächtige automatische Importe bleiben unter
+     * "Zu prüfen" sichtbar, werden aber nicht unter
+     * "Alle Aufträge" als reguläre Aufträge angezeigt.
+     */
+    if (
+      isLikelyBrokenAutomaticOrder(order) &&
+      activeOrderStatus !== "AUTO_CREATED"
+    ) {
+      return false;
+    }
+
     if (activeOrderStatus && order.status !== activeOrderStatus) {
       return false;
     }
@@ -968,6 +980,124 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
     return false;
   }
 
+  function isLikelyBrokenAutomaticOrder(order: any) {
+    const status = String(order?.status || "").toUpperCase();
+
+    if (
+      status !== "AUTO_CREATED" &&
+      status !== "REVIEW_NEEDED"
+    ) {
+      return false;
+    }
+
+    const customerName = String(
+      order?.customerName ||
+      order?.customer?.name ||
+      ""
+    )
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+
+    if (!customerName) {
+      return true;
+    }
+
+    const companySignals = [
+      "gmbh",
+      " ug",
+      " ag",
+      " se",
+      " kg",
+      " e.v",
+      " berlin",
+      "deutschland",
+      "holding",
+      "group",
+      "company",
+      "studio",
+      "services",
+    ];
+
+    if (
+      companySignals.some((signal) =>
+        customerName.includes(signal)
+      )
+    ) {
+      return false;
+    }
+
+    const ignoredWords = new Set([
+      "mit",
+      "und",
+      "oder",
+      "der",
+      "die",
+      "das",
+      "dem",
+      "den",
+      "ein",
+      "eine",
+      "einer",
+      "vom",
+      "von",
+      "auf",
+      "in",
+      "am",
+      "zum",
+      "zur",
+      "vegan",
+      "vegetarisch",
+    ]);
+
+    function getMeaningfulWords(value: string) {
+      return String(value || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9äöüß]+/g, " ")
+        .split(/\s+/)
+        .map((word) => word.trim())
+        .filter(
+          (word) =>
+            word.length >= 4 &&
+            !ignoredWords.has(word)
+        );
+    }
+
+    const customerWords =
+      getMeaningfulWords(customerName);
+
+    if (customerWords.length === 0) {
+      return true;
+    }
+
+    const items = Array.isArray(order?.items)
+      ? order.items
+      : [];
+
+    const matchesFoodPosition = items.some(
+      (item: any) => {
+        const itemWords = new Set(
+          getMeaningfulWords(item?.name)
+        );
+
+        const sharedWords =
+          customerWords.filter((word) =>
+            itemWords.has(word)
+          );
+
+        return sharedWords.length >= 2;
+      }
+    );
+
+    const looksLikeSentenceOrDish =
+      /[.!?]$/.test(customerName) ||
+      customerName.split(/\s+/).length >= 4;
+
+    return (
+      matchesFoodPosition ||
+      looksLikeSentenceOrDish
+    );
+  }
   const currentOrderStats = {
     all: data.counts?.all || 0,
     review: data.counts?.review || 0,
