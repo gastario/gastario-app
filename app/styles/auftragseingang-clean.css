@@ -1141,31 +1141,45 @@
   }
 }
 
-/* gastario-incoming-section-intro-final-20260722 */
+/* gastario-incoming-workspace-reference-final-20260722 */
+/*
+ * Eingangszentrale nach dem echten Referenzkopf
+ * der Auftragsübersicht.
+ */
 
 .incomingReferenceSection {
   overflow: hidden !important;
 }
 
+/* Kopfbereich wie Bevorstehende Aufträge */
+
 .incomingReferenceSection > .g-ui-section-header {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) !important;
-  align-items: start !important;
-  gap: 0 !important;
+  position: relative !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 24px !important;
+
   margin: 0 !important;
-  padding: 22px 24px 20px !important;
-  border-bottom: 1px solid #e2eae8 !important;
-  background: #ffffff !important;
+  padding: 24px !important;
+
+  border-bottom: 1px solid #e6edef !important;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(238, 247, 246, 0.82),
+      #ffffff
+    ) !important;
 }
 
 .incomingReferenceSection
 > .g-ui-section-header
 > div:first-child {
   min-width: 0 !important;
-  display: grid !important;
-  align-content: start !important;
-  gap: 5px !important;
+  display: block !important;
 }
+
+/* Kleine grüne Bereichsbezeichnung */
 
 .incomingReferenceSection
 > .g-ui-section-header
@@ -1179,107 +1193,112 @@
   text-transform: uppercase !important;
 }
 
+/* Überschrift exakt nach der Auftragsübersicht */
+
 .incomingReferenceSection
 > .g-ui-section-header
 .g-ui-section-title {
-  margin: 0 !important;
-  color: #102f29 !important;
-  font-size: 22px !important;
-  font-weight: 780 !important;
-  line-height: 1.2 !important;
-  letter-spacing: -0.025em !important;
+  margin: 4px 0 0 !important;
+  color: #082f2b !important;
+  font-size: 24px !important;
+  font-weight: 760 !important;
+  line-height: 1.18 !important;
+  letter-spacing: -0.035em !important;
 }
+
+/* Erklärung unterhalb der Überschrift */
 
 .incomingReferenceSection
 > .g-ui-section-header
 .g-ui-section-hint {
+  display: block !important;
   max-width: 760px !important;
-  margin: 0 !important;
-  color: #687b76 !important;
-  font-size: 12px !important;
-  font-weight: 560 !important;
+  margin: 7px 0 0 !important;
+  color: #6b8085 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
   line-height: 1.5 !important;
 }
+
+/* Filterbereich wie bei Bevorstehende Aufträge */
 
 .incomingReferenceSection
 > .incomingReferenceFilters {
   margin: 0 !important;
-  padding: 14px 14px 16px !important;
+  padding: 18px 20px !important;
+
   border-top: 0 !important;
   border-right: 0 !important;
+  border-bottom: 1px solid #e6edef !important;
   border-left: 0 !important;
-  border-bottom: 1px solid #e2eae8 !important;
   border-radius: 0 !important;
-  background: #fbfcfc !important;
+
+  background: #f8fbfa !important;
 }
 
-@media (max-width: 720px) {
+/* Formular selbst bleibt ohne zusätzliche innere Karte */
+
+.incomingReferenceSection
+> .incomingReferenceFilters {
+  align-items: end !important;
+  gap: 10px !important;
+}
+
+/* Einheitliche Felder wie in der Auftragsübersicht */
+
+.incomingReferenceSection
+> .incomingReferenceFilters
+input,
+.incomingReferenceSection
+> .incomingReferenceFilters
+select {
+  min-height: 44px !important;
+  box-sizing: border-box !important;
+  padding: 0 13px !important;
+
+  border: 1px solid #cfdddf !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+
+  color: #102f2b !important;
+  font-size: 13px !important;
+  outline: none !important;
+}
+
+.incomingReferenceSection
+> .incomingReferenceFilters
+input:focus,
+.incomingReferenceSection
+> .incomingReferenceFilters
+select:focus {
+  border-color: #72b7a6 !important;
+  box-shadow:
+    0 0 0 3px rgba(16, 163, 127, 0.1) !important;
+}
+
+.incomingReferenceSection
+> .incomingReferenceFilters
+.g-ui-button {
+  min-height: 44px !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+}
+
+@media (max-width: 700px) {
   .incomingReferenceSection > .g-ui-section-header {
-    padding: 18px 16px 16px !important;
+    flex-direction: column !important;
+    padding: 20px 16px !important;
   }
 
   .incomingReferenceSection
-  > .g-ui-section-header
-  .g-ui-section-title {
-    font-size: 20px !important;
+  > .incomingReferenceFilters {
+    grid-template-columns: 1fr !important;
+    padding: 16px !important;
   }
-}
 
-/* gastario-incoming-intro-green-panel-final-20260722 */
-/* Nur der Intro-Kopf der Eingangszentrale */
-
-.incomingReferenceSection > .g-ui-section-header {
-  position: relative !important;
-  overflow: hidden !important;
-
-  padding: 24px 24px 22px !important;
-
-  border-bottom: 1px solid #d9e8e3 !important;
-  background:
-    linear-gradient(
-      135deg,
-      #f1f8f5 0%,
-      #f7fbf9 58%,
-      #ffffff 100%
-    ) !important;
-}
-
-.incomingReferenceSection > .g-ui-section-header::after {
-  content: "" !important;
-  position: absolute !important;
-  inset: auto 0 0 0 !important;
-
-  height: 1px !important;
-  background: linear-gradient(
-    90deg,
-    rgba(8, 113, 90, 0.12),
-    rgba(8, 113, 90, 0.03)
-  ) !important;
-
-  pointer-events: none !important;
-}
-
-.incomingReferenceSection
-> .g-ui-section-header
-.g-ui-eyebrow {
-  color: #08715a !important;
-}
-
-.incomingReferenceSection
-> .g-ui-section-header
-.g-ui-section-title {
-  color: #123d34 !important;
-}
-
-.incomingReferenceSection
-> .g-ui-section-header
-.g-ui-section-hint {
-  color: #61756f !important;
-}
-
-/* Filter klar unterhalb des Introbereichs halten */
-
-.incomingReferenceSection > .incomingReferenceFilters {
-  background: #ffffff !important;
-  border-bottom: 1px solid #e2eae8 !important;
+  .incomingReferenceSection
+  > .incomingReferenceFilters
+  .g-ui-button {
+    width: 100% !important;
+  }
 }
