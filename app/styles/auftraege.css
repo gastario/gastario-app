@@ -6735,3 +6735,132 @@ form button:hover {
     max-width: none !important;
   }
 }
+
+/* gastario-selected-actions-no-stretch-final-20260722 */
+/* Detailaktionen dürfen keinen verbleibenden Platz auffüllen */
+
+.ordersPage .finalSelectedActions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+
+  padding: 16px 20px !important;
+  background: #f8fbfa !important;
+}
+
+.ordersPage .finalSelectedActionsMain {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.ordersPage .finalSelectedActionsMain > *,
+.ordersPage .finalSelectedActionsMain > a,
+.ordersPage .finalSelectedActionsMain > button {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 140px !important;
+  max-width: 190px !important;
+  min-height: 42px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 16px !important;
+
+  background-image: none !important;
+  box-sizing: border-box !important;
+}
+
+.ordersPage .finalSelectedActionsMain .finalBackButton {
+  min-width: 145px !important;
+  background: #ffffff !important;
+  color: #304a41 !important;
+}
+
+.ordersPage .finalSelectedActionsMain .deliveryDocumentButton {
+  min-width: 142px !important;
+  background: #10a37f !important;
+  color: #ffffff !important;
+}
+
+.ordersPage .finalSelectedActionsMain .finalFoodlabelsButton {
+  min-width: 165px !important;
+  background: #10a37f !important;
+  color: #ffffff !important;
+}
+
+.ordersPage .finalSelectedDeleteForm {
+  display: block !important;
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+  background-image: none !important;
+}
+
+.ordersPage
+.finalSelectedDeleteForm
+.finalSelectedDeleteButton {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 132px !important;
+  max-width: 160px !important;
+  min-height: 42px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 15px !important;
+}
+
+@media (max-width: 620px) {
+  .ordersPage .finalSelectedActions,
+  .ordersPage .finalSelectedActionsMain {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+
+  .ordersPage .finalSelectedActionsMain > *,
+  .ordersPage .finalSelectedActionsMain > a,
+  .ordersPage .finalSelectedActionsMain > button,
+  .ordersPage .finalSelectedDeleteForm,
+  .ordersPage
+  .finalSelectedDeleteForm
+  .finalSelectedDeleteButton {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
