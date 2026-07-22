@@ -241,6 +241,35 @@ export async function loader({ request }: { request: Request }) {
 
         const timestamp = deliveryDateTime.getTime();
 
+        /* gastario-past-date-range-filter-20260722 */
+        if (view === "past") {
+          const pastRangeStart =
+            dateRange === "past7"
+              ? addLocalDays(todayStart, -7)
+              : dateRange === "past30"
+                ? addLocalDays(todayStart, -30)
+                : dateRange === "currentMonth"
+                  ? new Date(
+                      todayStart.getFullYear(),
+                      todayStart.getMonth(),
+                      1
+                    )
+                  : dateRange === "currentYear"
+                    ? new Date(
+                        todayStart.getFullYear(),
+                        0,
+                        1
+                      )
+                    : null;
+
+          if (
+            pastRangeStart &&
+            timestamp < pastRangeStart.getTime()
+          ) {
+            return false;
+          }
+        }
+
         if (
           dateRange === "today" &&
           !(
@@ -743,12 +772,30 @@ export default function OrdersPage() {
                 </select>
               </label>
             ) : (
-              <div className="pastOrdersFilterInformation">
+              <label className="ordersFilterField">
                 <span>Zeitraum</span>
-                <strong>
-                  Alle vergangenen Lieferungen
-                </strong>
-              </div>
+
+                <select
+                  name="dateRange"
+                  defaultValue={data.dateRange || ""}
+                >
+                  <option value="">
+                    Alle vergangenen Lieferungen
+                  </option>
+                  <option value="past7">
+                    Letzte 7 Tage
+                  </option>
+                  <option value="past30">
+                    Letzte 30 Tage
+                  </option>
+                  <option value="currentMonth">
+                    Dieser Monat
+                  </option>
+                  <option value="currentYear">
+                    Dieses Jahr
+                  </option>
+                </select>
+              </label>
             )}
 
             <button

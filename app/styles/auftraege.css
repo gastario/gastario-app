@@ -6328,3 +6328,77 @@ form button:hover {
     padding-right: 16px !important;
   }
 }
+
+/* gastario-past-order-content-height-final-20260722 */
+/*
+ * Archivkarten dürfen bei drei Produkten plus Zusatzhinweis
+ * automatisch wachsen. Der Inhalt wird nicht mehr abgeschnitten.
+ */
+
+.ordersReferencePage.ordersPagePast .operationalOrderRow {
+  min-height: 124px !important;
+  height: auto !important;
+  grid-template-rows: minmax(124px, auto) !important;
+  align-items: stretch !important;
+  overflow: hidden !important;
+}
+
+.ordersReferencePage.ordersPagePast
+.operationalOrderRow
+> .finalOrderCustomer,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRow
+> .finalOrderDate,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRow
+> .operationalOrderStatus,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRow
+> .finalOrderTotal,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRow
+> .operationalOrderActions {
+  align-self: stretch !important;
+}
+
+.ordersReferencePage.ordersPagePast .finalOrderItems {
+  display: grid !important;
+  align-content: center !important;
+  gap: 5px !important;
+
+  min-height: 124px !important;
+  height: auto !important;
+  padding: 10px 12px !important;
+
+  overflow: visible !important;
+}
+
+.ordersReferencePage.ordersPagePast .finalOrderItems > div {
+  flex-shrink: 0 !important;
+}
+
+.ordersReferencePage.ordersPagePast .finalOrderItems > small {
+  display: block !important;
+  width: 100% !important;
+
+  margin: 1px 0 0 !important;
+  padding: 0 2px 1px !important;
+
+  overflow: visible !important;
+  white-space: nowrap !important;
+
+  color: #71857f !important;
+  font-size: 9px !important;
+  font-weight: 650 !important;
+  line-height: 14px !important;
+}
+
+@media (max-width: 850px) {
+  .ordersReferencePage.ordersPagePast .operationalOrderRow {
+    grid-template-rows: auto !important;
+  }
+
+  .ordersReferencePage.ordersPagePast .finalOrderItems {
+    min-height: 0 !important;
+  }
+}
