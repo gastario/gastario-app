@@ -6864,3 +6864,160 @@ form button:hover {
     max-width: none !important;
   }
 }
+
+/* gastario-selected-actions-specificity-fix-20260722 */
+/* Stärkere Selektoren gegen alte width:100%-Regeln */
+
+.ordersPage .finalSelectedActions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+}
+
+/* Hauptaktionen wirklich in einer Zeile halten */
+
+.ordersPage
+.finalSelectedActions
+.finalSelectedActionsMain {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+
+  width: max-content !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* Alte allgemeine Link- und Buttonbreiten überstimmen */
+
+.ordersPage
+.finalSelectedActions
+.finalSelectedActionsMain
+> button,
+
+.ordersPage
+.finalSelectedActions
+.finalSelectedActionsMain
+> a,
+
+.ordersPage
+.finalSelectedActions
+.finalSelectedActionsMain
+> .deliveryDocumentButton,
+
+.ordersPage
+.finalSelectedActions
+.finalSelectedActionsMain
+> .finalFoodlabelsButton {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: max-content !important;
+  min-width: 140px !important;
+  max-width: 210px !important;
+  min-height: 42px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 16px !important;
+  box-sizing: border-box !important;
+}
+
+/* Das Löschformular ist der eigentliche grüne Balken */
+
+.ordersPage
+.finalSelectedActions
+form.finalSelectedDeleteForm {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+
+  width: max-content !important;
+  min-width: 0 !important;
+  max-width: max-content !important;
+  min-height: 0 !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* Löschbutton kompakt und nur selbst rot */
+
+.ordersPage
+.finalSelectedActions
+form.finalSelectedDeleteForm
+button.finalSelectedDeleteButton {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: max-content !important;
+  min-width: 132px !important;
+  max-width: 160px !important;
+  min-height: 42px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 16px !important;
+
+  border: 1px solid #b42318 !important;
+  border-radius: 11px !important;
+  background: #c3261b !important;
+  background-image: none !important;
+  color: #ffffff !important;
+}
+
+/* Erst auf kleinen Mobilgeräten untereinander */
+
+@media (max-width: 620px) {
+  .ordersPage
+  .finalSelectedActions
+  .finalSelectedActionsMain {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+
+  .ordersPage
+  .finalSelectedActions
+  .finalSelectedActionsMain
+  > *,
+
+  .ordersPage
+  .finalSelectedActions
+  form.finalSelectedDeleteForm,
+
+  .ordersPage
+  .finalSelectedActions
+  form.finalSelectedDeleteForm
+  button.finalSelectedDeleteButton {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
