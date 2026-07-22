@@ -6297,3 +6297,34 @@ form button:hover {
     overflow-y: visible !important;
   }
 }
+
+/* gastario-orders-width-match-incoming-final-20260722 */
+/* Auftragsübersicht auf dieselbe großzügige Breite wie die Eingangszentrale setzen */
+
+.ordersPage.ordersReferencePage,
+.ordersPage {
+  width: 100% !important;
+  max-width: 1580px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 28px !important;
+  padding-right: 28px !important;
+}
+
+/* Innerer Referenzbereich darf die neue Breite vollständig nutzen */
+
+.ordersPage .ordersReferencePage,
+.ordersReferencePage > .panel {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* Auf kleineren Bildschirmen weiterhin sauber einrücken */
+
+@media (max-width: 850px) {
+  .ordersPage.ordersReferencePage,
+  .ordersPage {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}

@@ -1140,3 +1140,87 @@
     justify-content: space-between;
   }
 }
+
+/* gastario-incoming-section-intro-final-20260722 */
+
+.incomingReferenceSection {
+  overflow: hidden !important;
+}
+
+.incomingReferenceSection > .g-ui-section-header {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  padding: 22px 24px 20px !important;
+  border-bottom: 1px solid #e2eae8 !important;
+  background: #ffffff !important;
+}
+
+.incomingReferenceSection
+> .g-ui-section-header
+> div:first-child {
+  min-width: 0 !important;
+  display: grid !important;
+  align-content: start !important;
+  gap: 5px !important;
+}
+
+.incomingReferenceSection
+> .g-ui-section-header
+.g-ui-eyebrow {
+  margin: 0 !important;
+  color: #08715a !important;
+  font-size: 9px !important;
+  font-weight: 850 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.065em !important;
+  text-transform: uppercase !important;
+}
+
+.incomingReferenceSection
+> .g-ui-section-header
+.g-ui-section-title {
+  margin: 0 !important;
+  color: #102f29 !important;
+  font-size: 22px !important;
+  font-weight: 780 !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.025em !important;
+}
+
+.incomingReferenceSection
+> .g-ui-section-header
+.g-ui-section-hint {
+  max-width: 760px !important;
+  margin: 0 !important;
+  color: #687b76 !important;
+  font-size: 12px !important;
+  font-weight: 560 !important;
+  line-height: 1.5 !important;
+}
+
+.incomingReferenceSection
+> .incomingReferenceFilters {
+  margin: 0 !important;
+  padding: 14px 14px 16px !important;
+  border-top: 0 !important;
+  border-right: 0 !important;
+  border-left: 0 !important;
+  border-bottom: 1px solid #e2eae8 !important;
+  border-radius: 0 !important;
+  background: #fbfcfc !important;
+}
+
+@media (max-width: 720px) {
+  .incomingReferenceSection > .g-ui-section-header {
+    padding: 18px 16px 16px !important;
+  }
+
+  .incomingReferenceSection
+  > .g-ui-section-header
+  .g-ui-section-title {
+    font-size: 20px !important;
+  }
+}
