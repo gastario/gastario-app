@@ -5592,523 +5592,500 @@ form button:hover {
   }
 }
 
+
+
 /*
- * gastario-past-orders-compact-final-20260720
- * Finale kompakte Archivkarten.
+ * gastario-order-lists-clean-final-20260722
+ *
+ * Ausschließlich die Karten der bevorstehenden und vergangenen Aufträge.
+ * Keine globalen Höhenregeln und keine Eingriffe in Sidebar oder Seitenlayout.
  */
 
-.ordersPagePast .operationalOrderRows,
-.ordersPagePast .ordersCardList {
+/* Gemeinsame Kartenstruktur */
+
+.ordersReferencePage.ordersPageUpcoming .operationalOrderRows,
+.ordersReferencePage.ordersPagePast .operationalOrderRows {
   display: grid !important;
-  gap: 12px !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  overflow: visible !important;
+  gap: 10px !important;
+  padding: 12px !important;
 }
 
-.ordersPagePast .operationalOrderRow {
+.ordersReferencePage.ordersPageUpcoming .operationalOrderRow,
+.ordersReferencePage.ordersPagePast .operationalOrderRow {
   display: grid !important;
   grid-template-columns:
-    48px
-    minmax(190px, 1fr)
-    minmax(260px, 1.45fr)
-    150px
-    110px
-    150px
-    142px !important;
-  grid-template-rows: minmax(132px, auto) !important;
+    40px
+    minmax(210px, 0.95fr)
+    minmax(300px, 1.4fr)
+    minmax(130px, 0.62fr)
+    minmax(110px, 0.5fr)
+    minmax(135px, 0.58fr)
+    176px !important;
+
+  grid-template-rows: auto !important;
   align-items: stretch !important;
-  gap: 0 !important;
 
   width: 100% !important;
-  max-width: 100% !important;
   min-width: 0 !important;
-  min-height: 132px !important;
+  min-height: 116px !important;
   height: auto !important;
 
+  gap: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
 
-  border: 1px solid #dce8e4 !important;
-  border-radius: 16px !important;
+  border: 1px solid #dce7e3 !important;
+  border-radius: 14px !important;
   background: #ffffff !important;
-  box-shadow: 0 8px 22px rgba(20, 67, 55, 0.045) !important;
   overflow: hidden !important;
+  box-shadow: none !important;
 }
 
-.ordersPagePast .operationalOrderRow:hover {
-  border-color: #bad8ce !important;
-  box-shadow: 0 12px 28px rgba(20, 67, 55, 0.075) !important;
-  transform: translateY(-1px);
-}
+/* Alle direkten Spalten bleiben in derselben Kartenzeile */
 
-.ordersPagePast .operationalOrderRow > * {
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderRow > *,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRow > * {
   grid-row: 1 !important;
   min-width: 0 !important;
-  min-height: 0 !important;
   height: auto !important;
   margin: 0 !important;
   box-sizing: border-box !important;
 }
 
-.ordersPagePast .finalOrderIcon {
+/* Icon */
+
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderRow > .finalOrderIcon,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRow > .finalOrderIcon {
   grid-column: 1 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 14px 8px !important;
-  border-right: 1px solid #e3ece9 !important;
-  border-bottom: 0 !important;
-  background: #fbfdfc !important;
-}
-
-.ordersPagePast .finalOrderCustomer {
-  grid-column: 2 !important;
-}
-
-.ordersPagePast .finalOrderItems {
-  grid-column: 3 !important;
-}
-
-.ordersPagePast .operationalOrderDate {
-  grid-column: 4 !important;
-}
-
-.ordersPagePast .operationalOrderStatus {
-  grid-column: 5 !important;
-}
-
-.ordersPagePast .finalOrderTotal {
-  grid-column: 6 !important;
-}
-
-.ordersPagePast .operationalOrderActions {
-  grid-column: 7 !important;
-}
-
-.ordersPagePast .finalOrderCustomer,
-.ordersPagePast .finalOrderItems,
-.ordersPagePast .operationalOrderDate,
-.ordersPagePast .operationalOrderStatus,
-.ordersPagePast .finalOrderTotal {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-  min-width: 0 !important;
-  padding: 15px 13px !important;
-  border-right: 1px solid #e3ece9 !important;
-  border-bottom: 0 !important;
-  overflow: hidden !important;
-}
-
-.ordersPagePast .finalOrderCustomer {
-  padding-left: 16px !important;
-}
-
-.ordersPagePast .finalOrderCustomer h3,
-.ordersPagePast .finalOrderCustomer strong,
-.ordersPagePast .finalOrderCustomer span,
-.ordersPagePast .finalOrderCustomer small {
-  max-width: 100% !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-.ordersPagePast .finalOrderCustomer h3 {
-  white-space: nowrap !important;
-}
-
-.ordersPagePast .finalOrderItems {
-  gap: 6px !important;
-}
-
-.ordersPagePast .finalOrderItems > div {
   display: grid !important;
-  grid-template-columns: 40px minmax(0, 1fr) !important;
-  align-items: center !important;
-  gap: 7px !important;
-  width: 100% !important;
-  min-height: 28px !important;
-  padding: 5px 9px !important;
-  border: 1px solid #e0eae6 !important;
-  border-radius: 9px !important;
-  background: #f8fbfa !important;
-  overflow: hidden !important;
-}
-
-.ordersPagePast .finalOrderItems > div span {
-  min-width: 0 !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-}
-
-.ordersPagePast .operationalOrderDate {
-  align-items: flex-start !important;
-}
-
-.ordersPagePast .operationalOrderStatus {
-  align-items: center !important;
-  text-align: center !important;
-}
-
-.ordersPagePast .finalOrderTotal {
-  align-items: flex-end !important;
-  text-align: right !important;
-}
-
-.ordersPagePast .operationalOrderActions {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-  justify-content: center !important;
-  gap: 8px !important;
-
-  width: auto !important;
-  max-width: none !important;
-  min-width: 0 !important;
-  height: auto !important;
-
-  padding: 13px 11px !important;
+  place-items: center !important;
+  padding: 10px 7px !important;
   border: 0 !important;
-  border-top: 0 !important;
+  border-right: 1px solid #e3ece9 !important;
+  border-radius: 0 !important;
+  background: #f7fbf9 !important;
+}
+
+/* Kundenbereich: feste interne Zeilen statt vertikalem Zentrieren */
+
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderRow > .finalOrderCustomer,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRow > .finalOrderCustomer {
+  grid-column: 2 !important;
+
+  display: grid !important;
+  grid-template-rows:
+    14px
+    22px
+    18px
+    20px !important;
+
+  align-content: center !important;
+  align-items: center !important;
+  gap: 1px !important;
+
+  padding: 13px 15px !important;
+  border-right: 1px solid #e3ece9 !important;
   background: #fbfdfc !important;
   overflow: hidden !important;
 }
 
-.ordersPagePast .operationalOrderActions form {
-  display: block !important;
+.ordersReferencePage.ordersPageUpcoming .finalOrderNumber,
+.ordersReferencePage.ordersPagePast .finalOrderNumber {
+  grid-row: 1 !important;
   width: 100% !important;
-  min-width: 0 !important;
   margin: 0 !important;
-}
 
-.ordersPagePast
-.operationalOrderActions
-.deliveryDocumentButton {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  min-height: 39px !important;
-  padding: 0 8px !important;
-  border-radius: 9px !important;
-  font-size: 9px !important;
-  white-space: nowrap !important;
-}
-
-.ordersPagePast .operationalDeleteButton {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  min-height: 37px !important;
-  border-radius: 9px !important;
-}
-
-@media (max-width: 1250px) {
-  .ordersPagePast .operationalOrderRow {
-    grid-template-columns:
-      44px
-      minmax(170px, 1fr)
-      minmax(220px, 1.3fr)
-      130px
-      135px
-      125px !important;
-  }
-
-  .ordersPagePast .operationalOrderStatus {
-    display: none !important;
-  }
-
-  .ordersPagePast .operationalOrderActions {
-    grid-column: 6 !important;
-  }
-
-  .ordersPagePast .finalOrderTotal {
-    grid-column: 5 !important;
-  }
-}
-
-@media (max-width: 900px) {
-  .ordersPagePast .operationalOrderRow {
-    grid-template-columns: 44px minmax(0, 1fr) !important;
-    grid-template-rows: auto !important;
-  }
-
-  .ordersPagePast .operationalOrderRow > * {
-    grid-column: 2 !important;
-    grid-row: auto !important;
-    border-right: 0 !important;
-    border-bottom: 1px solid #e3ece9 !important;
-  }
-
-  .ordersPagePast .finalOrderIcon {
-    grid-column: 1 !important;
-    grid-row: 1 / 6 !important;
-    border-right: 1px solid #e3ece9 !important;
-    border-bottom: 0 !important;
-  }
-
-  .ordersPagePast .operationalOrderActions {
-    flex-direction: row !important;
-    justify-content: flex-start !important;
-    border-bottom: 0 !important;
-  }
-
-  .ordersPagePast .operationalOrderActions form {
-    width: 42px !important;
-  }
-
-  .ordersPagePast
-  .operationalOrderActions
-  .deliveryDocumentButton {
-    width: auto !important;
-    min-width: 110px !important;
-  }
-
-  .ordersPagePast .operationalDeleteButton {
-    width: 42px !important;
-  }
-
-  .ordersPagePast .finalOrderTotal {
-    align-items: flex-start !important;
-    text-align: left !important;
-  }
-}
-
-/* gastario-orders-lists-unified-final-20260722 */
-
-
-/* gastario-orders-alignment-and-actions-final-20260722 */
-
-/* Einheitliche Kartenhöhe und vertikale Ausrichtung */
-
-.ordersPageUpcoming .operationalOrderRow,
-.ordersPagePast .operationalOrderRow {
-  min-height: 118px !important;
-  grid-template-rows: minmax(118px, auto) !important;
-  align-items: stretch !important;
-}
-
-.ordersPageUpcoming .operationalOrderRow > *,
-.ordersPagePast .operationalOrderRow > * {
-  min-height: 118px !important;
-  box-sizing: border-box !important;
-}
-
-/* Kunde immer exakt gleich aufgebaut */
-
-.ordersPageUpcoming .finalOrderCustomer,
-.ordersPagePast .finalOrderCustomer {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  justify-content: center !important;
-  gap: 0 !important;
-  padding: 13px 15px !important;
-}
-
-.ordersPageUpcoming .finalOrderNumber,
-.ordersPagePast .finalOrderNumber {
-  display: block !important;
-  width: 100% !important;
-  min-height: 13px !important;
-  margin: 0 0 3px !important;
-  font-size: 8.5px !important;
-  line-height: 13px !important;
-  white-space: nowrap !important;
   overflow: hidden !important;
+  color: #08715a !important;
+  font-size: 8px !important;
+  font-weight: 850 !important;
+  line-height: 14px !important;
   text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
 
-.ordersPageUpcoming .finalOrderCustomer h3,
-.ordersPagePast .finalOrderCustomer h3 {
-  display: block !important;
+.ordersReferencePage.ordersPageUpcoming .finalOrderCustomer h3,
+.ordersReferencePage.ordersPagePast .finalOrderCustomer h3 {
+  grid-row: 2 !important;
   width: 100% !important;
-  min-height: 19px !important;
   margin: 0 !important;
+
+  overflow: hidden !important;
+  color: #173f37 !important;
   font-size: 14px !important;
   font-weight: 790 !important;
-  line-height: 19px !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
+  line-height: 22px !important;
+  text-align: left !important;
   text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
 
-.ordersPageUpcoming .finalOrderCustomer p,
-.ordersPagePast .finalOrderCustomer p {
-  display: block !important;
+.ordersReferencePage.ordersPageUpcoming .finalOrderCustomer p,
+.ordersReferencePage.ordersPagePast .finalOrderCustomer p {
+  grid-row: 3 !important;
   width: 100% !important;
-  min-height: 16px !important;
-  margin: 2px 0 5px !important;
-  font-size: 10px !important;
-  line-height: 16px !important;
-  white-space: nowrap !important;
+  margin: 0 !important;
+
   overflow: hidden !important;
+  color: #667b75 !important;
+  font-size: 10px !important;
+  font-weight: 620 !important;
+  line-height: 18px !important;
+  text-align: left !important;
   text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
 
-.ordersPageUpcoming .finalSourceBadge,
-.ordersPagePast .finalSourceBadge {
+.ordersReferencePage.ordersPageUpcoming .finalSourceBadge,
+.ordersReferencePage.ordersPagePast .finalSourceBadge {
+  grid-row: 4 !important;
+  align-self: center !important;
+  justify-self: start !important;
+
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
+
+  width: fit-content !important;
   min-height: 18px !important;
   margin: 0 !important;
   padding: 2px 8px !important;
+
+  border: 1px solid #d8e6e1 !important;
+  border-radius: 999px !important;
+  background: #f3f8f6 !important;
+  color: #58716a !important;
+
+  font-size: 7.5px !important;
+  font-weight: 800 !important;
   line-height: 12px !important;
 }
 
-/* Alle übrigen Spalten mittig ausrichten */
+/* Produkte */
 
-.ordersPageUpcoming .finalOrderItems,
-.ordersPagePast .finalOrderItems,
-.ordersPageUpcoming .operationalOrderDate,
-.ordersPagePast .operationalOrderDate,
-.ordersPageUpcoming .operationalOrderStatus,
-.ordersPagePast .operationalOrderStatus,
-.ordersPageUpcoming .finalOrderTotal,
-.ordersPagePast .finalOrderTotal {
-  align-content: center !important;
-  justify-content: stretch !important;
-}
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderRow > .finalOrderItems,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRow > .finalOrderItems {
+  grid-column: 3 !important;
 
-.ordersPageUpcoming .finalOrderItems,
-.ordersPagePast .finalOrderItems {
   display: grid !important;
+  align-content: center !important;
   gap: 6px !important;
+
   padding: 11px 12px !important;
-}
-
-.ordersPageUpcoming .finalOrderItems > div,
-.ordersPagePast .finalOrderItems > div {
-  min-height: 30px !important;
-  padding: 0 10px !important;
-  border-radius: 9px !important;
-}
-
-.ordersPageUpcoming .finalOrderItems span,
-.ordersPagePast .finalOrderItems span {
-  font-size: 10.5px !important;
-  font-weight: 700 !important;
-  line-height: 16px !important;
-}
-
-/* Rechte Aktionsspalte */
-
-.ordersPageUpcoming .operationalOrderActions,
-.ordersPagePast .operationalOrderActions {
-  display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: nowrap !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  min-width: 0 !important;
-  width: auto !important;
-  min-height: 118px !important;
-  margin: 0 !important;
-  padding: 12px 14px 12px 12px !important;
-  border-left: 0 !important;
-  border-top: 0 !important;
-  background: #fbfdfc !important;
+  border-right: 1px solid #e3ece9 !important;
   overflow: hidden !important;
 }
 
-.ordersPageUpcoming .operationalOrderActions form,
-.ordersPagePast .operationalOrderActions form {
-  display: flex !important;
-  flex: 0 0 38px !important;
+.ordersReferencePage.ordersPageUpcoming .finalOrderItems > div,
+.ordersReferencePage.ordersPagePast .finalOrderItems > div {
+  display: grid !important;
+  grid-template-columns: 40px minmax(0, 1fr) !important;
   align-items: center !important;
-  justify-content: center !important;
-  width: 38px !important;
-  min-width: 38px !important;
-  height: 38px !important;
-  margin: 0 !important;
+  gap: 8px !important;
+
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 29px !important;
+
+  padding: 5px 9px !important;
+  border: 1px solid #e0eae6 !important;
+  border-radius: 9px !important;
+  background: #f7faf9 !important;
+  overflow: hidden !important;
 }
 
-/* Lieferschein */
+.ordersReferencePage.ordersPageUpcoming .finalOrderItems strong,
+.ordersReferencePage.ordersPagePast .finalOrderItems strong {
+  color: #08715a !important;
+  font-size: 9.5px !important;
+  font-weight: 850 !important;
+  white-space: nowrap !important;
+}
 
-.ordersPageUpcoming .operationalOrderActions .deliveryDocumentButton,
-.ordersPagePast .operationalOrderActions .deliveryDocumentButton {
+.ordersReferencePage.ordersPageUpcoming .finalOrderItems span,
+.ordersReferencePage.ordersPagePast .finalOrderItems span {
+  min-width: 0 !important;
+  overflow: hidden !important;
+
+  color: #354d47 !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  line-height: 17px !important;
+
+  text-align: left !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.ordersReferencePage.ordersPageUpcoming .finalOrderItems small,
+.ordersReferencePage.ordersPagePast .finalOrderItems small {
+  color: #71857f !important;
+  font-size: 9px !important;
+  line-height: 14px !important;
+}
+
+/* Lieferung */
+
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderRow > .operationalOrderDate,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRow > .operationalOrderDate {
+  grid-column: 4 !important;
+
+  display: grid !important;
+  align-content: center !important;
+  gap: 3px !important;
+
+  padding: 12px !important;
+  border-right: 1px solid #e3ece9 !important;
+  text-align: left !important;
+  overflow: hidden !important;
+}
+
+/* Status */
+
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderRow > .operationalOrderStatus,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRow > .operationalOrderStatus {
+  grid-column: 5 !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  padding: 10px !important;
+  border-right: 1px solid #e3ece9 !important;
+  text-align: center !important;
+}
+
+/* Betrag */
+
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderRow > .finalOrderTotal,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRow > .finalOrderTotal {
+  grid-column: 6 !important;
+
+  display: grid !important;
+  align-content: center !important;
+  justify-items: end !important;
+  gap: 5px !important;
+
+  padding: 12px 13px !important;
+  border-right: 1px solid #e3ece9 !important;
+  text-align: right !important;
+  overflow: hidden !important;
+}
+
+.ordersReferencePage.ordersPageUpcoming .finalOrderTotal strong,
+.ordersReferencePage.ordersPagePast .finalOrderTotal strong {
+  color: #173f37 !important;
+  font-size: 17px !important;
+  font-weight: 820 !important;
+  white-space: nowrap !important;
+}
+
+/* Lieferschein und Löschen */
+
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderRow > .operationalOrderActions,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRow > .operationalOrderActions {
+  grid-column: 7 !important;
+  grid-row: 1 !important;
+
+  display: grid !important;
+  grid-template-columns: minmax(112px, 1fr) 38px !important;
+  grid-template-rows: 40px !important;
+
+  align-content: center !important;
+  align-items: center !important;
+  justify-content: stretch !important;
+
+  gap: 8px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 12px 14px 12px 11px !important;
+
+  border: 0 !important;
+  background: #fbfdfc !important;
+  overflow: visible !important;
+}
+
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderActions .deliveryDocumentButton,
+.ordersReferencePage.ordersPagePast
+.operationalOrderActions .deliveryDocumentButton {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+
   display: inline-flex !important;
-  flex: 1 1 auto !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 7px !important;
-  width: auto !important;
-  min-width: 104px !important;
-  max-width: 118px !important;
-  height: 38px !important;
-  min-height: 38px !important;
+
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 40px !important;
+  min-height: 40px !important;
+
   margin: 0 !important;
-  padding: 0 13px !important;
-  border: 1px solid #98d4c1 !important;
+  padding: 0 12px !important;
+
+  border: 1px solid #91cfbc !important;
   border-radius: 10px !important;
-  background: #eaf8f3 !important;
+  background: #e6f7f0 !important;
   color: #08715a !important;
+
   font-size: 10px !important;
   font-weight: 800 !important;
   line-height: 1 !important;
   white-space: nowrap !important;
-  box-shadow: 0 3px 8px rgba(8, 113, 90, 0.06) !important;
+
+  box-shadow: 0 3px 9px rgba(8, 113, 90, 0.07) !important;
 }
 
-.ordersPageUpcoming .operationalOrderActions .deliveryDocumentButton:hover,
-.ordersPagePast .operationalOrderActions .deliveryDocumentButton:hover {
-  border-color: #67bba3 !important;
-  background: #dff5ed !important;
-  box-shadow: 0 6px 14px rgba(8, 113, 90, 0.1) !important;
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderActions .deliveryDocumentButton:hover,
+.ordersReferencePage.ordersPagePast
+.operationalOrderActions .deliveryDocumentButton:hover {
+  border-color: #68b99f !important;
+  background: #d9f2e8 !important;
+  box-shadow: 0 6px 14px rgba(8, 113, 90, 0.11) !important;
+  transform: translateY(-1px) !important;
 }
 
-.ordersPageUpcoming .deliveryDocumentButton svg,
-.ordersPagePast .deliveryDocumentButton svg {
-  flex: 0 0 auto !important;
-  width: 13px !important;
-  height: 13px !important;
-}
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderActions form,
+.ordersReferencePage.ordersPagePast
+.operationalOrderActions form {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
 
-/* Löschen direkt daneben */
+  display: block !important;
+  position: static !important;
 
-.ordersPageUpcoming .operationalDeleteButton,
-.ordersPagePast .operationalDeleteButton {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
   width: 38px !important;
   min-width: 38px !important;
   max-width: 38px !important;
-  height: 38px !important;
-  min-height: 38px !important;
-  max-height: 38px !important;
+  height: 40px !important;
+
+  margin: 0 !important;
+}
+
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderActions form::before,
+.ordersReferencePage.ordersPagePast
+.operationalOrderActions form::before {
+  display: none !important;
+  content: none !important;
+}
+
+.ordersReferencePage.ordersPageUpcoming .operationalDeleteButton,
+.ordersReferencePage.ordersPagePast .operationalDeleteButton {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
+
   margin: 0 !important;
   padding: 0 0 2px !important;
-  border: 1px solid #efc4be !important;
+
+  border: 1px solid #efc6c1 !important;
   border-radius: 10px !important;
   background: #fff8f7 !important;
-  color: #d05243 !important;
+  color: #cc4c3d !important;
+
   font-size: 18px !important;
   font-weight: 650 !important;
   line-height: 1 !important;
   box-shadow: none !important;
 }
 
-.ordersPageUpcoming .operationalDeleteButton:hover,
-.ordersPagePast .operationalDeleteButton:hover {
-  border-color: #df9e95 !important;
-  background: #fff0ee !important;
-}
+/* Nur bei kleineren Bildschirmen reduzieren */
 
-@media (max-width: 900px) {
-  .ordersPageUpcoming .operationalOrderRow > *,
-  .ordersPagePast .operationalOrderRow > * {
-    min-height: auto !important;
+@media (max-width: 1280px) {
+  .ordersReferencePage.ordersPageUpcoming .operationalOrderRow,
+  .ordersReferencePage.ordersPagePast .operationalOrderRow {
+    grid-template-columns:
+      38px
+      minmax(185px, 0.95fr)
+      minmax(245px, 1.3fr)
+      minmax(118px, 0.62fr)
+      minmax(125px, 0.58fr)
+      168px !important;
   }
 
-  .ordersPageUpcoming .operationalOrderActions,
-  .ordersPagePast .operationalOrderActions {
-    min-height: auto !important;
-    justify-content: flex-end !important;
+  .ordersReferencePage.ordersPageUpcoming
+  .operationalOrderRow > .operationalOrderStatus,
+  .ordersReferencePage.ordersPagePast
+  .operationalOrderRow > .operationalOrderStatus {
+    display: none !important;
+  }
+
+  .ordersReferencePage.ordersPageUpcoming
+  .operationalOrderRow > .finalOrderTotal,
+  .ordersReferencePage.ordersPagePast
+  .operationalOrderRow > .finalOrderTotal {
+    grid-column: 5 !important;
+  }
+
+  .ordersReferencePage.ordersPageUpcoming
+  .operationalOrderRow > .operationalOrderActions,
+  .ordersReferencePage.ordersPagePast
+  .operationalOrderRow > .operationalOrderActions {
+    grid-column: 6 !important;
   }
 }
 
+@media (max-width: 850px) {
+  .ordersReferencePage.ordersPageUpcoming .operationalOrderRow,
+  .ordersReferencePage.ordersPagePast .operationalOrderRow {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+  }
+
+  .ordersReferencePage.ordersPageUpcoming
+  .operationalOrderRow > *,
+  .ordersReferencePage.ordersPagePast
+  .operationalOrderRow > * {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid #e3ece9 !important;
+  }
+
+  .ordersReferencePage.ordersPageUpcoming
+  .operationalOrderRow > .finalOrderIcon,
+  .ordersReferencePage.ordersPagePast
+  .operationalOrderRow > .finalOrderIcon {
+    display: none !important;
+  }
+
+  .ordersReferencePage.ordersPageUpcoming
+  .operationalOrderRow > .operationalOrderActions,
+  .ordersReferencePage.ordersPagePast
+  .operationalOrderRow > .operationalOrderActions {
+    grid-template-columns: minmax(120px, 1fr) 38px !important;
+    padding: 12px 14px !important;
+    border-bottom: 0 !important;
+  }
+}
