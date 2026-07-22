@@ -993,7 +993,38 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
     return deliveryDate >= today;
   });
 
-  const hiddenPastOrderCount = sortedOrders.length - visibleOrders.length;
+  /*
+   * Nur echte vergangene Catering-Aufträge zählen.
+   * Suchfilter, Statusfilter, Müllimporte und defekte automatische
+   * Datensätze dürfen nicht als vergangene Aufträge erscheinen.
+   */
+  const hiddenPastOrderCount =
+    sortedOrders.filter((order: any) => {
+      if (isLikelyTrashImportOrder(order)) return false;
+      if (isLikelyBrokenAutomaticOrder(order)) return false;
+
+      const status = String(order?.status || "").toUpperCase();
+
+      if (
+        status === "REJECTED" ||
+        status === "CANCELLED"
+      ) {
+        return false;
+      }
+
+      if (!order?.deliveryDate) return false;
+
+      const deliveryDate = new Date(order.deliveryDate);
+
+      if (Number.isNaN(deliveryDate.getTime())) {
+        return false;
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      return deliveryDate < today;
+    }).length;
   function isLikelyTrashImportOrder(order: any) {
     const customerName = String(order?.customerName || order?.customer?.name || "").trim().toLowerCase();
     const contactName = String(order?.contactName || "").trim().toLowerCase();
