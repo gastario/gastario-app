@@ -6089,3 +6089,82 @@ form button:hover {
     border-bottom: 0 !important;
   }
 }
+
+/* gastario-order-list-scroll-final-20260722 */
+/* Auftragskarten innerhalb der Liste scrollbar halten */
+
+.ordersReferencePage.ordersPageUpcoming .operationalOrderRows,
+.ordersReferencePage.ordersPagePast .operationalOrderRows {
+  display: grid !important;
+  align-content: start !important;
+
+  max-height: calc(100vh - 390px) !important;
+  min-height: 240px !important;
+
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  scrollbar-gutter: stable !important;
+
+  padding-right: 10px !important;
+  padding-bottom: 18px !important;
+}
+
+/* Auftragskarten dürfen im Scrollbereich nicht zusammengedrückt werden */
+
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderRows > .operationalOrderRow,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRows > .operationalOrderRow {
+  flex-shrink: 0 !important;
+}
+
+/* Dezente Gastario-Scrollbar */
+
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderRows::-webkit-scrollbar,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRows::-webkit-scrollbar {
+  width: 10px;
+}
+
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderRows::-webkit-scrollbar-track,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRows::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: #eef5f2;
+}
+
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderRows::-webkit-scrollbar-thumb,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRows::-webkit-scrollbar-thumb {
+  border: 2px solid #eef5f2;
+  border-radius: 999px;
+  background: #a9c9bf;
+}
+
+.ordersReferencePage.ordersPageUpcoming
+.operationalOrderRows::-webkit-scrollbar-thumb:hover,
+.ordersReferencePage.ordersPagePast
+.operationalOrderRows::-webkit-scrollbar-thumb:hover {
+  background: #82ad9f;
+}
+
+@media (max-height: 800px) {
+  .ordersReferencePage.ordersPageUpcoming .operationalOrderRows,
+  .ordersReferencePage.ordersPagePast .operationalOrderRows {
+    max-height: calc(100vh - 330px) !important;
+  }
+}
+
+@media (max-width: 850px) {
+  .ordersReferencePage.ordersPageUpcoming .operationalOrderRows,
+  .ordersReferencePage.ordersPagePast .operationalOrderRows {
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow-y: visible !important;
+    scrollbar-gutter: auto !important;
+  }
+}
