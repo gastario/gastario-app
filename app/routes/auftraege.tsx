@@ -1325,53 +1325,54 @@ export default function OrdersPage() {
                     </span>
                   </div>
 
-                  <div className="finalOrderTotal">
-                    <strong>{centsToEuro(total)}</strong>
+                  <div className="operationalOrderRightRail">
+                    <div className="finalOrderTotal">
+                      <strong>{centsToEuro(total)}</strong>
 
-                    <span>
-                      {data.view === "past"
-                        ? "Auftragswert"
-                        : "Gesamt"}
-                    </span>
-                  </div>
+                      <span>
+                        {data.view === "past"
+                          ? "Auftragswert"
+                          : "Gesamt"}
+                      </span>
+                    </div>
 
-                  <div
-                    className="finalOrderActions operationalOrderActions"
-                    onClick={(event) =>
-                      event.stopPropagation()
-                    }
-                    onKeyDown={(event) =>
-                      event.stopPropagation()
-                    }
-                  >
-
-                    <DeliveryNoteButton
-                      orderId={order.id}
-                      compact
-                    />
-
-                    <Form method="post">
-                      <input
-                        type="hidden"
-                        name="intent"
-                        value="deleteOrder"
+                    <div
+                      className="finalOrderActions operationalOrderActions"
+                      onClick={(event) =>
+                        event.stopPropagation()
+                      }
+                      onKeyDown={(event) =>
+                        event.stopPropagation()
+                      }
+                    >
+                      <DeliveryNoteButton
+                        orderId={order.id}
+                        compact
                       />
 
-                      <input
-                        type="hidden"
-                        name="orderId"
-                        value={order.id}
-                      />
+                      <Form method="post">
+                        <input
+                          type="hidden"
+                          name="intent"
+                          value="deleteOrder"
+                        />
 
-                      <button
-                        className="operationalDeleteButton"
-                        type="submit"
-                        aria-label="Auftrag löschen"
-                        title="Auftrag löschen"
-                      >
-                        ×
-                      </button>
-                    </Form>
+                        <input
+                          type="hidden"
+                          name="orderId"
+                          value={order.id}
+                        />
+
+                        <button
+                          className="operationalDeleteButton"
+                          type="submit"
+                          aria-label="Auftrag löschen"
+                          title="Auftrag löschen"
+                        >
+                          ×
+                        </button>
+                      </Form>
+                    </div>
                   </div>
                 </article>
               );

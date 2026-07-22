@@ -5978,3 +5978,174 @@ form button:hover {
     flex-wrap: wrap;
   }
 }
+
+/* gastario-upcoming-right-rail-final-20260722 */
+
+.ordersPageUpcoming .operationalOrderRow {
+  grid-template-columns:
+    38px
+    minmax(180px, 0.95fr)
+    minmax(290px, 1.45fr)
+    minmax(115px, 0.65fr)
+    minmax(100px, 0.5fr)
+    minmax(190px, 0.78fr) !important;
+  column-gap: 0 !important;
+  row-gap: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.ordersPageUpcoming
+.operationalOrderRow
+> .finalOrderIcon {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+}
+
+.ordersPageUpcoming
+.operationalOrderRow
+> .finalOrderCustomer {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+}
+
+.ordersPageUpcoming
+.operationalOrderRow
+> .finalOrderItems {
+  grid-column: 3 !important;
+  grid-row: 1 !important;
+  gap: 6px !important;
+  padding: 10px 12px !important;
+}
+
+.ordersPageUpcoming
+.operationalOrderRow
+> .operationalOrderDate {
+  grid-column: 4 !important;
+  grid-row: 1 !important;
+}
+
+.ordersPageUpcoming
+.operationalOrderRow
+> .operationalOrderStatus {
+  grid-column: 5 !important;
+  grid-row: 1 !important;
+}
+
+.ordersPageUpcoming
+.operationalOrderRow
+> .operationalOrderRightRail {
+  grid-column: 6 !important;
+  grid-row: 1 !important;
+}
+
+.ordersPageUpcoming .finalOrderItems > div {
+  grid-template-columns: 38px minmax(0, 1fr) !important;
+  gap: 7px !important;
+  padding: 7px 10px !important;
+  border: 1px solid #dfeae6 !important;
+  border-radius: 9px !important;
+}
+
+.ordersPageUpcoming .finalOrderItems strong {
+  font-size: 10.5px !important;
+}
+
+.ordersPageUpcoming .finalOrderItems span {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+}
+
+.ordersPageUpcoming .operationalOrderRightRail {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-left: 1px solid #e4ece9;
+  background: #ffffff;
+}
+
+.ordersPageUpcoming
+.operationalOrderRightRail
+.finalOrderTotal,
+.ordersPageUpcoming
+.operationalOrderRightRail
+> .finalOrderTotal {
+  min-width: 0 !important;
+  display: grid !important;
+  justify-items: end !important;
+  gap: 3px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  text-align: right !important;
+}
+
+.ordersPageUpcoming
+.operationalOrderRightRail
+> .operationalOrderActions {
+  grid-column: auto !important;
+  grid-row: auto !important;
+  display: grid !important;
+  grid-template-columns:
+    minmax(112px, 1fr)
+    36px !important;
+  align-items: center !important;
+  gap: 7px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow: visible !important;
+}
+
+.ordersPageUpcoming
+.operationalOrderRightRail
+.deliveryDocumentButton {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.ordersPageUpcoming
+.operationalOrderRightRail
+.operationalOrderActions form {
+  width: 36px !important;
+  min-width: 36px !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 980px) {
+  .ordersPageUpcoming .operationalOrderRow {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ordersPageUpcoming
+  .operationalOrderRow
+  > .finalOrderIcon,
+  .ordersPageUpcoming
+  .operationalOrderRow
+  > .finalOrderCustomer,
+  .ordersPageUpcoming
+  .operationalOrderRow
+  > .finalOrderItems,
+  .ordersPageUpcoming
+  .operationalOrderRow
+  > .operationalOrderDate,
+  .ordersPageUpcoming
+  .operationalOrderRow
+  > .operationalOrderStatus,
+  .ordersPageUpcoming
+  .operationalOrderRow
+  > .operationalOrderRightRail {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+  }
+
+  .ordersPageUpcoming
+  .operationalOrderRightRail {
+    border-left: 0;
+    border-top: 1px solid #e4ece9;
+  }
+}
