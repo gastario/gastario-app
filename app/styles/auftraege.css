@@ -177,7 +177,7 @@
 .ordersPage .panelHeader .eyebrow {
   margin: 0 0 6px;
   color: var(--order-green);
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 850;
   letter-spacing: .12em;
   text-transform: uppercase;
@@ -218,7 +218,7 @@
   display: grid;
   gap: 6px;
   color: #687a72;
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 820;
   letter-spacing: .06em;
   text-transform: uppercase;
@@ -329,7 +329,7 @@
   border-radius: 11px;
   background: #ffffff;
   color: #65766f;
-  font-size: 10.5px;
+  font-size: 8.5px;
   font-weight: 850;
   letter-spacing: .07em;
   text-transform: uppercase;
@@ -403,7 +403,7 @@
   overflow: hidden;
   margin-top: 5px;
   color: #75847f;
-  font-size: 11.5px;
+  font-size: 9px;
   line-height: 1.45;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -435,7 +435,7 @@
   min-height: 30px;
   padding: 0 10px;
   border-radius: 8px;
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 840;
 }
 
@@ -715,7 +715,7 @@
 
 .ordersPage .ordersListItems {
   display: grid;
-  gap: 7px;
+  gap: 4px;
 }
 
 .ordersPage .ordersListItems > div {
@@ -743,7 +743,7 @@
 .ordersPage .ordersListItems small {
   padding-left: 42px;
   color: #5d7a70;
-  font-size: 10.5px;
+  font-size: 8.5px;
   font-weight: 750;
 }
 
@@ -757,7 +757,7 @@
   display: block;
   margin-top: 3px;
   color: #657970;
-  font-size: 11.5px;
+  font-size: 9px;
 }
 
 .ordersPage .ordersListDelivery small {
@@ -792,7 +792,7 @@
 .ordersPage .ordersListTotal span {
   display: inline-flex;
   margin-top: 6px;
-  padding: 12px 14px;
+  padding: 4px 7px;
   border-radius: 999px;
   background: #fff3df;
   color: #bd7417;
@@ -946,7 +946,7 @@
 
 .ordersPage .topbar .eyebrow {
   margin-bottom: 6px;
-  font-size: 11.5px;
+  font-size: 9px;
   letter-spacing: .17em;
 }
 
@@ -1027,7 +1027,7 @@
 .ordersPage .metricCard small {
   top: 15px;
   right: 15px;
-  padding: 12px 14px;
+  padding: 4px 7px;
   font-size: 7px;
 }
 
@@ -1210,7 +1210,7 @@
 .ordersPage .ordersListNumber {
   margin-bottom: 3px;
   color: #547067;
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 820;
   letter-spacing: .045em;
 }
@@ -1225,7 +1225,7 @@
 .ordersPage .ordersListCustomer p {
   margin: 4px 0 8px;
   color: #708078;
-  font-size: 11.5px;
+  font-size: 9px;
 }
 
 .ordersPage .ordersListSource {
@@ -1240,7 +1240,7 @@
 /* Positionen */
 
 .ordersPage .ordersListItems {
-  gap: 8px;
+  gap: 5px;
 }
 
 .ordersPage .ordersListItems > div {
@@ -1276,7 +1276,7 @@
 
 .ordersPage .ordersListDelivery span {
   margin-top: 3px;
-  font-size: 10.5px;
+  font-size: 8.5px;
 }
 
 .ordersPage .ordersListDelivery small {
@@ -1334,7 +1334,7 @@
   border-color: #d2dfda;
   background: #ffffff;
   color: #40584f;
-  font-size: 11.5px;
+  font-size: 9px;
 }
 
 .ordersPage
@@ -1488,7 +1488,7 @@
 }
 
 .ordersPage .ordersListDelivery span {
-  font-size: 11.5px;
+  font-size: 9px;
 }
 
 .ordersPage .ordersListDelivery small {
@@ -2473,11 +2473,11 @@
 .ordersPage .metricCard small {
   top: 16px;
   right: 16px;
-  border: 1px solid #dfeae6;
+  border: 0;
   padding: 5px 8px;
   background: var(--gastario-brand-soft);
   color: var(--gastario-brand);
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 800;
 }
 
@@ -2560,7 +2560,7 @@
   display: flex;
   flex-wrap: wrap;
   width: 100%;
-  gap: 7px;
+  gap: 4px;
   padding: 4px;
   border: 1px solid var(--gastario-border);
   border-radius: 12px;
@@ -2626,7 +2626,7 @@
 
 .ordersPage .finalSelectedKicker {
   color: var(--gastario-brand);
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.1em;
 }
@@ -2650,7 +2650,7 @@
   border: 1px solid var(--gastario-border);
   background: #ffffff;
   color: var(--gastario-brand);
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 800;
 }
 
@@ -2670,7 +2670,7 @@
 
 .ordersPage .finalSelectedFacts span {
   color: var(--gastario-text-muted);
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -2826,11 +2826,11 @@
 .ordersPage .metricCard small {
   top: 16px;
   right: 16px;
-  border: 1px solid #dfeae6;
+  border: 0;
   padding: 5px 8px;
   background: var(--gastario-brand-soft);
   color: var(--gastario-brand);
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 800;
 }
 
@@ -2913,7 +2913,7 @@
   display: flex;
   flex-wrap: wrap;
   width: 100%;
-  gap: 7px;
+  gap: 4px;
   padding: 4px;
   border: 1px solid var(--gastario-border);
   border-radius: 12px;
@@ -2979,7 +2979,7 @@
 
 .ordersPage .finalSelectedKicker {
   color: var(--gastario-brand);
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.1em;
 }
@@ -3003,7 +3003,7 @@
   border: 1px solid var(--gastario-border);
   background: #ffffff;
   color: var(--gastario-brand);
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 800;
 }
 
@@ -3023,7 +3023,7 @@
 
 .ordersPage .finalSelectedFacts span {
   color: var(--gastario-text-muted);
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -3148,7 +3148,7 @@
   gap: 24px;
   margin-bottom: 22px;
   padding: 0;
-  border: 1px solid #dfeae6;
+  border: 0;
   background: transparent;
   box-shadow: none;
 }
@@ -3204,7 +3204,7 @@
 .ordersPage .metricCard > div {
   display: grid;
   align-content: start;
-  gap: 8px;
+  gap: 5px;
 }
 
 .ordersPage .metricCard p {
@@ -3276,7 +3276,7 @@
   display: grid;
   gap: 11px;
   padding: 0;
-  border: 1px solid #dfeae6;
+  border: 0;
   background: transparent;
   box-shadow: none;
 }
@@ -3447,7 +3447,7 @@
   border-radius: 999px;
   background: #f7faf9;
   color: #60736e;
-  font-size: 10.5px;
+  font-size: 8.5px;
   font-weight: 800;
   letter-spacing: 0.035em;
   text-transform: uppercase;
@@ -3456,7 +3456,7 @@
 .ordersPage .finalOrderItems {
   min-width: 0;
   display: grid;
-  gap: 7px;
+  gap: 4px;
 }
 
 .ordersPage .finalOrderItems > div {
@@ -3523,7 +3523,7 @@
   border-radius: 999px;
   background: #f7faf9;
   color: #526963;
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 850;
   letter-spacing: 0.035em;
   text-transform: uppercase;
@@ -3571,7 +3571,7 @@
   display: block;
   margin-top: 3px;
   color: #7a8a86;
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -3662,7 +3662,7 @@
 .ordersPage .finalSelectedKicker {
   margin-bottom: 5px;
   color: #0f755f;
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 850;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -3685,7 +3685,7 @@
   min-width: 0;
   display: grid;
   align-content: start;
-  gap: 8px;
+  gap: 5px;
   min-height: 92px;
   padding: 13px;
   border: 1px solid #e0e9e7;
@@ -3695,7 +3695,7 @@
 
 .ordersPage .finalSelectedFacts span {
   color: #7a8b87;
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -3972,7 +3972,7 @@
   gap: 6px;
   margin: 0;
   color: #60736e;
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -4045,12 +4045,12 @@
 
 .ordersReferencePage .operationalOrderRow {
   min-width: 0;
-  min-height: 104px;
+  min-height: 88px;
   display: grid;
   grid-template-columns:
     38px
-    minmax(190px, 0.9fr)
-    minmax(310px, 1.4fr)
+    minmax(185px, 0.9fr)
+    minmax(250px, 1.25fr)
     minmax(125px, 0.6fr)
     100px
     122px
@@ -4159,8 +4159,8 @@
   min-width: 0;
   display: grid;
   align-content: center;
-  gap: 7px;
-  padding: 12px 14px;
+  gap: 4px;
+  padding: 8px 10px;
   border-right: 1px solid #e4ece9;
 }
 
@@ -4169,12 +4169,12 @@
 .finalOrderItems > div {
   min-width: 0;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
+  grid-template-columns: 32px minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
-  border: 1px solid #dfeae6;
-  border-radius: 9px;
+  gap: 5px;
+  padding: 4px 7px;
+  border: 0;
+  border-radius: 7px;
   background: #f5f9f7;
 }
 
@@ -4182,7 +4182,7 @@
 .operationalOrderRow
 .finalOrderItems strong {
   color: #08715a;
-  font-size: 10.5px;
+  font-size: 8.5px;
   font-weight: 850;
 }
 
@@ -4191,8 +4191,8 @@
 .finalOrderItems span {
   overflow: hidden;
   color: #354d47;
-  font-size: 11.5px;
-  font-weight: 700;
+  font-size: 9px;
+  font-weight: 670;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -4258,7 +4258,7 @@
 .operationalOrderRow
 .finalOrderTotal {
   justify-items: end;
-  gap: 7px;
+  gap: 4px;
   text-align: right;
 }
 
@@ -4456,7 +4456,7 @@
 .ordersPage .ordersWorkspaceCount {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 5px;
   padding-top: 5px;
   white-space: nowrap;
 }
@@ -5466,7 +5466,7 @@ form button:hover {
 
 .pastOrdersFilterInformation span {
   color: #718079;
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 750;
 }
 
@@ -5885,34 +5885,26 @@ form button:hover {
   grid-template-columns:
     38px
     minmax(180px, 0.95fr)
-    minmax(300px, 1.45fr)
+    minmax(240px, 1.35fr)
     minmax(115px, 0.65fr)
     minmax(95px, 0.5fr)
-    minmax(125px, 0.6fr)
-    164px !important;
-  column-gap: 0 !important;
-  row-gap: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
+    minmax(125px, 0.6fr) !important;
+  column-gap: 14px !important;
+  row-gap: 10px !important;
+  padding: 16px !important;
+  overflow: visible !important;
 }
 
 .ordersPageUpcoming .operationalOrderActions {
-  grid-column: auto !important;
-  grid-row: 1 !important;
-  display: grid !important;
-  grid-template-columns:
-    minmax(112px, 1fr)
-    36px !important;
+  grid-column: 2 / -1 !important;
+  grid-row: 2 !important;
+  display: flex !important;
   width: auto !important;
   min-width: 0 !important;
   margin: 0 !important;
-  padding: 10px !important;
-  align-self: stretch !important;
-  align-content: center !important;
   align-items: center !important;
-  justify-content: stretch !important;
-  gap: 7px !important;
-  border-left: 1px solid #e4ece9;
+  justify-content: flex-end !important;
+  gap: 8px !important;
   overflow: visible !important;
 }
 
