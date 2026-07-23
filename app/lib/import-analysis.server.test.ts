@@ -254,4 +254,71 @@ describe("reale Import-Fehlerfälle", () => {
       "Grammarly Germany GmbH"
     );
   });
+
+  it("erkennt eine Heycater-Bestätigung trotz Login-Link als Auftrag", () => {
+    const result = analyzeImportedOrder({
+      documentType: "ORDER_CONFIRMATION",
+      classificationConfidence: 0.78,
+      classificationReason:
+        "Regelprüfung: wahrscheinlich bestätigter Auftrag.",
+      extractedOrder: createOrder({
+        customerName: "Sirius Facilities GmbH",
+      }),
+      subject:
+        "2026-259900 - Fast Track Order bestätigt",
+      sender: "milena@heycater.com",
+      sourceText:
+        "Login Account Der Kunde Sirius Facilities GmbH hat Dein Angebot gebucht. Hiermit erhältst Du die verbindliche Auftragsbestätigung.",
+    });
+
+    expect(result.documentType).toBe(
+      "ORDER_CONFIRMATION"
+    );
+    expect(result.customerReliable).toBe(true);
+  });
+
+  it("akzeptiert einen ausdrücklich bestätigten Kundennamen ohne Rechtsform", () => {
+    const result = analyzeImportedOrder({
+      documentType: "ORDER_CONFIRMATION",
+      classificationConfidence: 0.78,
+      classificationReason:
+        "Regelprüfung: wahrscheinlich bestätigter Auftrag.",
+      extractedOrder: createOrder({
+        customerName: "On Running",
+        pdfNetTotalCents: 0,
+        pdfTaxTotalCents: 0,
+        pdfGrossTotalCents: 144236,
+        items: [
+          {
+            name: "Frühstück",
+            quantity: 100,
+            unitCents: 1200,
+            totalCents: 120000,
+          },
+          {
+            name: "Lieferung und Abholung",
+            quantity: 1,
+            unitCents: 6800,
+            totalCents: 6800,
+          },
+        ],
+      }),
+      subject:
+        "2026-260262 - Fast Track Order bestätigt",
+      sender: "milena@heycater.com",
+      sourceText:
+        "Der Kunde On Running hat Dein Angebot gebucht. Hiermit erhältst Du die verbindliche Auftragsbestätigung.",
+    });
+
+    expect(result.documentType).toBe(
+      "ORDER_CONFIRMATION"
+    );
+    expect(result.customerReliable).toBe(true);
+    expect(result.normalizedCustomerName).toBe(
+      "On Running"
+    );
+    expect(result.selectedOrderTotalCents).toBe(
+      126800
+    );
+  });
 });

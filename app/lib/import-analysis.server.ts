@@ -169,7 +169,10 @@ function isRealItem(item: ExtractedOrderItem) {
   );
 }
 
-function validateCustomerName(value: unknown) {
+function validateCustomerName(
+  value: unknown,
+  sourceText: unknown = ""
+) {
   const customerName =
     normalizeCustomerCandidate(value);
 
@@ -230,7 +233,23 @@ function validateCustomerName(value: unknown) {
     };
   }
 
-  if (!COMPANY_SUFFIX.test(customerName)) {
+  const escapedCustomerName = customerName.replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+  );
+
+  const explicitlyConfirmedInSource =
+    new RegExp(
+      "\\bDer Kunde\\s+" +
+        escapedCustomerName +
+        "\\s+hat\\s+(?:Dein|Ihr|das)\\s+Angebot\\s+gebucht\\b",
+      "i"
+    ).test(String(sourceText || ""));
+
+  if (
+    !COMPANY_SUFFIX.test(customerName) &&
+    !explicitlyConfirmedInSource
+  ) {
     return {
       reliable: false,
       normalizedCustomerName: null,
@@ -249,6 +268,14 @@ function resolveDocumentType(
   const subject = normalizeText(input.subject);
   const text = normalizeText(input.sourceText);
   const combined = `${subject}\n${text}`;
+
+  if (
+    /\b(fast track order bestätigt|fast track order bestaetigt|auftrag bestätigt|auftrag bestaetigt|bestellung bestätigt|bestellung bestaetigt)\b/i.test(
+      subject
+    )
+  ) {
+    return "ORDER_CONFIRMATION";
+  }
 
   if (
     /\b(passwort|kennwort|password|login|konto bestätigen|konto bestaetigen)\b/i.test(
@@ -306,13 +333,7 @@ function resolveDocumentType(
     return "INQUIRY";
   }
 
-  if (
-    /\b(fast track order bestätigt|fast track order bestaetigt|auftrag bestätigt|auftrag bestaetigt|bestellung bestätigt|bestellung bestaetigt)\b/i.test(
-      subject
-    )
-  ) {
-    return "ORDER_CONFIRMATION";
-  }
+
 
   return input.documentType;
 }
@@ -349,7 +370,10 @@ export function analyzeImportedOrder(
   );
 
   const customerValidation =
-    validateCustomerName(order?.customerName);
+    validateCustomerName(
+      order?.customerName,
+      input.sourceText
+    );
 
   const customerReliable =
     customerValidation.reliable;
