@@ -584,13 +584,19 @@ export function canCreateReviewOrderFromAnalysis(
    *
    * AUTO_ACCEPT bleibt weiterhin vollständig deaktiviert.
    */
+  const hasUsableOrderValue =
+    (
+      analysis.selectedOrderTotalCents !== null &&
+      analysis.selectedOrderTotalCents > 0
+    ) ||
+    analysis.calculatedItemsTotalCents > 0;
+
   return (
     analysis.decision !== "REJECT" &&
     analysis.documentType === "ORDER_CONFIRMATION" &&
     analysis.customerReliable &&
     analysis.itemsReliable &&
     analysis.deliveryReliable &&
-    analysis.selectedOrderTotalCents !== null &&
-    analysis.selectedOrderTotalCents > 0
+    hasUsableOrderValue
   );
 }

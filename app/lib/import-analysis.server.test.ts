@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { analyzeImportedOrder } from "./import-analysis.server";
+import {
+  analyzeImportedOrder,
+  canCreateReviewOrderFromAnalysis,
+} from "./import-analysis.server";
 import type { ExtractedOrder } from "./order-import-extract.server";
 
 function createOrder(
@@ -320,5 +323,45 @@ describe("reale Import-Fehlerfälle", () => {
     expect(result.selectedOrderTotalCents).toBe(
       126800
     );
+  });
+
+  it("erlaubt einen Prüfauftrag bei abweichender PDF- und Positionssumme", () => {
+    const result = analyzeImportedOrder({
+      documentType: "ORDER_CONFIRMATION",
+      classificationConfidence: 0.99,
+      classificationReason:
+        "Eindeutige Plattform-Auftragsbestätigung.",
+      extractedOrder: createOrder({
+        customerName: "Sirius Facilities GmbH",
+        pdfNetTotalCents: 31530,
+        pdfTaxTotalCents: 2207,
+        pdfGrossTotalCents: 33737,
+        items: [
+          {
+            name: "Cateringpositionen",
+            quantity: 1,
+            unitCents: 29240,
+            totalCents: 29240,
+          },
+        ],
+      }),
+      subject:
+        "2026-259900 - Fast Track Order bestätigt",
+      sender: "milena@heycater.com",
+      sourceText:
+        "Der Kunde Sirius Facilities GmbH hat Dein Angebot gebucht.",
+    });
+
+    expect(result.documentType).toBe(
+      "ORDER_CONFIRMATION"
+    );
+    expect(result.customerReliable).toBe(true);
+    expect(result.itemsReliable).toBe(true);
+    expect(result.deliveryReliable).toBe(true);
+    expect(result.totalsReliable).toBe(false);
+
+    expect(
+      canCreateReviewOrderFromAnalysis(result)
+    ).toBe(true);
   });
 });
