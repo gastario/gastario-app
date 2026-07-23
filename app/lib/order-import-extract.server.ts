@@ -1588,13 +1588,13 @@ function extractFinalDocumentTotals(text: string) {
       ) ||
       extractLastMoneyMatch(
         text,
-        /(?:Gesamt\s*netto|Nettosumme|Summe\s*netto)\s*[:\-]?\s*([0-9.]+,[0-9]{2})/gi
+        /(?:Gesamtbetrag\s*Netto|Gesamt\s*netto|Nettosumme|Summe\s*netto)\s*(?:€|EUR)?\s*[:\-]?\s*([0-9.]+,[0-9]{1,2})/gi
       ),
 
     pdfTaxTotalCents:
       extractLastMoneyMatch(
         text,
-        /(?:Umsatzsteuer|Mehrwertsteuer|MwSt\.?)(?:\s+[0-9.,]+\s*%)?\s*[:\-]?\s*([0-9.]+,[0-9]{2})/gi
+        /(?:Umsatzsteuer|Mehrwertsteuer|MwSt\.?)(?:\s+[0-9.,]+\s*%)?\s*(?:€|EUR)?\s*[:\-]?\s*([0-9.]+,[0-9]{1,2})/gi
       ),
 
     pdfGrossTotalCents:
@@ -1604,7 +1604,7 @@ function extractFinalDocumentTotals(text: string) {
       ) ||
       extractLastMoneyMatch(
         text,
-        /(?:Gesamtsumme|Summe\s*brutto|Bruttosumme)\s*[:\-]?\s*([0-9.]+,[0-9]{2})/gi
+        /(?:Gesamtbestellwert|Gesamtsumme|Summe\s*brutto|Bruttosumme)\s*(?:€|EUR)?\s*[:\-]?\s*([0-9.]+,[0-9]{1,2})/gi
       ),
   };
 }
@@ -1879,11 +1879,61 @@ function normalizeFinalImportedOrder(
 export function extractUniversalOrder(
   text: string
 ): ExtractedOrder {
+  const normalizedSourceText =
+    String(text || "").replace(/\r/g, "");
+
+  const isStructuredHeycaterConfirmation =
+    /hiermit\s+erh[aä]ltst?\s+du\s+die\s+verbindliche\s+auftragsbest[aä]tigung/i.test(
+      normalizedSourceText
+    ) &&
+    /(?:^|\n)\s*Kunde:\s*(?:\n|$)/i.test(
+      normalizedSourceText
+    ) &&
+    /(?:^|\n)\s*Lieferadresse:\s*(?:\n|$)/i.test(
+      normalizedSourceText
+    ) &&
+    /Gesamtbetrag\s*Netto/i.test(
+      normalizedSourceText
+    ) &&
+    /Gesamtbestellwert/i.test(
+      normalizedSourceText
+    );
+
   const heycaterOrder =
-    extractHeycaterOrder(text);
+    extractHeycaterOrder(normalizedSourceText);
 
   const genericOrder =
-    extractGenericOrder(text);
+    extractGenericOrder(normalizedSourceText);
+
+  if (isStructuredHeycaterConfirmation) {
+    const normalizedHeycaterOrder =
+      normalizeFinalImportedOrder(
+        {
+          ...heycaterOrder,
+          source: "Heycater",
+        },
+        normalizedSourceText
+      );
+
+    /*
+     * Die strukturierten Heycater-Felder haben Vorrang.
+     * Die allgemeine Dokumenterkennung darf Produkttexte
+     * hier niemals als Kunde oder Kontakt einsetzen.
+     */
+    return {
+      ...normalizedHeycaterOrder,
+      source: "Heycater",
+      customerName: heycaterOrder.customerName,
+      contactName: heycaterOrder.contactName,
+      contactPhone: heycaterOrder.contactPhone,
+      deliveryDate: heycaterOrder.deliveryDate,
+      deliveryTime: heycaterOrder.deliveryTime,
+      eventDate: heycaterOrder.eventDate,
+      eventStart: heycaterOrder.eventStart,
+      deliveryAddress: heycaterOrder.deliveryAddress,
+      presentation: heycaterOrder.presentation,
+    };
+  }
 
   const heycaterScore =
     scoreExtractedOrder(heycaterOrder);
@@ -1957,8 +2007,6 @@ export function extractUniversalOrder(
         : secondaryOrder.items,
   }, text);
 }
-
-
 
 
 
