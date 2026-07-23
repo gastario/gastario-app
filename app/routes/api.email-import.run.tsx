@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import { simpleParser } from "mailparser";
 import { prisma } from "../lib/prisma.server";
 import { extractUniversalOrder } from "../lib/order-import-extract.server";
+import { analyzeImportedOrder } from "../lib/import-analysis.server";
 import {
   classifyIncomingMailWithAi,
   classifyIncomingMailWithRules,
@@ -1738,6 +1739,20 @@ export async function loader({ request }: { request: Request }) {
                       }
 
                       const extractedOrder = extractUniversalOrder(bestText);
+
+                      const importAnalysis = analyzeImportedOrder({
+                        documentType: aiDecision.mailType as any,
+                        classificationConfidence: Number(
+                          aiDecision.confidence || 0
+                        ),
+                        classificationReason: String(
+                          aiDecision.reason || ""
+                        ),
+                        extractedOrder,
+                        subject: String(parsed.subject || ""),
+                        sender: String(parsed.from?.text || ""),
+                        sourceText: bestText,
+                      });
             const importRuleMatches = await findOrderImportRuleMatches({
               tenantId: account.tenantId,
               subject: String(parsed.subject || ""),
@@ -1776,6 +1791,7 @@ export async function loader({ request }: { request: Request }) {
                   extractedJson: {
                     ...extractedOrder,
                     aiDecision,
+                    importAnalysis,
                     duplicateReason:
                       creationResult
                         .duplicateReason,
@@ -1802,7 +1818,7 @@ export async function loader({ request }: { request: Request }) {
                 data: {
                   status: "REVIEW_NEEDED" as any,
                   processedAt: new Date(),
-                  extractedJson: extractedOrder ? { ...extractedOrder, aiDecision } : { aiDecision },
+                  extractedJson: extractedOrder ? { ...extractedOrder, aiDecision, importAnalysis } : { aiDecision, importAnalysis },
                   errorMessage: "Nicht automatisch als Auftrag erstellt: Daten nicht eindeutig genug. Bitte im Auftragseingang pruefen.",
                 },
               });
@@ -1970,6 +1986,20 @@ export async function loader({ request }: { request: Request }) {
           }
 
           const extractedOrder = extractUniversalOrder(bestText);
+
+          const importAnalysis = analyzeImportedOrder({
+            documentType: aiDecision.mailType as any,
+            classificationConfidence: Number(
+              aiDecision.confidence || 0
+            ),
+            classificationReason: String(
+              aiDecision.reason || ""
+            ),
+            extractedOrder,
+            subject: String(parsed.subject || ""),
+            sender: String(parsed.from?.text || ""),
+            sourceText: bestText,
+          });
           const importRuleMatches = await findOrderImportRuleMatches({
             tenantId: account.tenantId,
             subject: String(parsed.subject || ""),
@@ -2008,6 +2038,7 @@ export async function loader({ request }: { request: Request }) {
                 extractedJson: {
                   ...extractedOrder,
                   aiDecision,
+                  importAnalysis,
                   duplicateReason:
                     creationResult
                       .duplicateReason,
@@ -2034,6 +2065,11 @@ export async function loader({ request }: { request: Request }) {
               data: {
                 status: "REVIEW_NEEDED" as any,
                 processedAt: new Date(),
+                extractedJson: {
+                  ...extractedOrder,
+                  aiDecision,
+                  importAnalysis,
+                },
                 errorMessage: "Nicht automatisch als Auftrag erstellt: Daten nicht eindeutig genug. Bitte im Auftragseingang pruefen.",
               },
             });
@@ -2061,7 +2097,6 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
-
 
 
 
