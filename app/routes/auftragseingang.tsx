@@ -965,6 +965,23 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
   const visibleOrders = sortedOrders.filter((order: any) => {
     if (isLikelyTrashImportOrder(order)) return false;
 
+    const normalizedOrderStatus = String(order?.status || "").toUpperCase();
+
+    /*
+     * Abgelehnte und stornierte Aufträge gehören nicht in die normale
+     * aktive Ansicht. Sie bleiben sichtbar, wenn der jeweilige Status
+     * ausdrücklich im Statusfilter ausgewählt wurde.
+     */
+    if (
+      !activeOrderStatus &&
+      (
+        normalizedOrderStatus === "REJECTED" ||
+        normalizedOrderStatus === "CANCELLED"
+      )
+    ) {
+      return false;
+    }
+
     /*
      * Verdächtige automatische Importe bleiben unter
      * "Zu prüfen" sichtbar, werden aber nicht unter
