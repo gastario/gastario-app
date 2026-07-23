@@ -8,6 +8,8 @@ export type ImportDocumentType =
   | "INQUIRY"
   | "ORDER_CHANGE"
   | "CANCELLATION"
+  | "REMINDER"
+  | "CHAT_NOTIFICATION"
   | "DELIVERY_NOTE"
   | "INVOICE"
   | "CREDIT_NOTE"
@@ -57,6 +59,7 @@ export type ImportAnalysis = {
   documentType: ImportDocumentType;
 
   customerReliable: boolean;
+  normalizedCustomerName: string | null;
   itemsReliable: boolean;
   deliveryReliable: boolean;
   totalsReliable: boolean;
@@ -84,10 +87,19 @@ const PLACEHOLDER_CUSTOMERS = new Set([
 ]);
 
 const PRODUCT_WORDS =
-  /\b(bagel|bowl|wrap|salat|curry|pizza|buffet|frühstück|fruehstueck|croissant|schnittchen|chicken|vegan|veggie|dessert|kuchen|gemüse|gemuese|obst|lieferung|abholung)\b/i;
+  /\b(bagel|bowl|wrap|salat|curry|pizza|buffet|frühstück|fruehstueck|croissant|schnittchen|chicken|vegan|veggie|dessert|kuchen|gemüse|gemuese|obst|käse|kaese|gouda|weintrauben|petersilie|cornichon|hummus|nudeln|reis|lieferung|abholung)\b/i;
 
-const COMPANY_WORDS =
-  /\b(gmbh|ug|ag|se|kg|ohg|gbr|e\.?\s?v\.?|inc\.?|ltd\.?|llc|holding|group)\b/i;
+const SENTENCE_WORDS =
+  /\b(leider|kunde hat|hat sich|entschieden|angebot nicht angenommen|vielen dank|bitte prüfen|bitte pruefen|guten tag|hallo|mit freundlichen grüßen|mit freundlichen gruessen)\b/i;
+
+const REGISTER_WORDS =
+  /\b(HRA|HRB|Amtsgericht|AG Charlottenburg|Handelsregister|Registergericht|USt-IdNr|Steuernummer)\b/i;
+
+const ADDRESS_WORDS =
+  /\b(straße|strasse|str\.|weg|allee|platz|damm|ufer|chaussee)\b/i;
+
+const COMPANY_SUFFIX =
+  /(?:GmbH(?:\s*&\s*Co\.?\s*KG)?|UG(?:\s*\(haftungsbeschränkt\))?|AG|SE|KG|OHG|GbR|e\.?\s*V\.?|Inc\.?|Ltd\.?|LLC)$/i;
 
 function normalizeText(value: unknown) {
   return String(value || "")
@@ -100,6 +112,16 @@ function normalizeComparison(value: unknown) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
+}
+
+function normalizeCustomerCandidate(value: unknown) {
+  return normalizeText(value)
+    .replace(
+      /^(?:kundenname|kunde|firma|unternehmen|company)\s*[:\-]\s*/i,
+      ""
+    )
+    .replace(/[|;,]\s*$/, "")
+    .trim();
 }
 
 function calculateItemTotal(item: ExtractedOrderItem) {
@@ -148,30 +170,151 @@ function isRealItem(item: ExtractedOrderItem) {
 }
 
 function validateCustomerName(value: unknown) {
-  const customerName = normalizeText(value);
-  const normalized = normalizeComparison(customerName);
+  const customerName =
+    normalizeCustomerCandidate(value);
+
+  const normalized =
+    normalizeComparison(customerName);
 
   if (PLACEHOLDER_CUSTOMERS.has(normalized)) {
-    return false;
+    return {
+      reliable: false,
+      normalizedCustomerName: null,
+    };
   }
 
-  if (customerName.length < 3 || customerName.length > 120) {
-    return false;
+  if (
+    customerName.length < 3 ||
+    customerName.length > 100
+  ) {
+    return {
+      reliable: false,
+      normalizedCustomerName: null,
+    };
   }
 
-  if (/^\d/.test(customerName)) {
-    return false;
-  }
-
-  if (PRODUCT_WORDS.test(customerName)) {
-    return false;
+  if (
+    /^\d/.test(customerName) ||
+    PRODUCT_WORDS.test(customerName) ||
+    SENTENCE_WORDS.test(customerName) ||
+    REGISTER_WORDS.test(customerName)
+  ) {
+    return {
+      reliable: false,
+      normalizedCustomerName: null,
+    };
   }
 
   /*
-   * Ohne eindeutigen Kundenblock oder Kundenstammabgleich
-   * akzeptieren wir zunächst nur klar erkennbare Firmennamen.
+   * Der Parser muss den Firmennamen isolieren.
+   * Firmenname plus vollständige Adresse gilt nicht als sicher.
    */
-  return COMPANY_WORDS.test(customerName);
+  if (
+    /\b\d{5}\b/.test(customerName) ||
+    ADDRESS_WORDS.test(customerName) ||
+    customerName.includes("|")
+  ) {
+    return {
+      reliable: false,
+      normalizedCustomerName: null,
+    };
+  }
+
+  /*
+   * Komma-Listen sind häufig Zutaten oder Fließtext.
+   */
+  if ((customerName.match(/,/g) || []).length >= 2) {
+    return {
+      reliable: false,
+      normalizedCustomerName: null,
+    };
+  }
+
+  if (!COMPANY_SUFFIX.test(customerName)) {
+    return {
+      reliable: false,
+      normalizedCustomerName: null,
+    };
+  }
+
+  return {
+    reliable: true,
+    normalizedCustomerName: customerName,
+  };
+}
+
+function resolveDocumentType(
+  input: ImportAnalysisInput
+): ImportDocumentType {
+  const subject = normalizeText(input.subject);
+  const text = normalizeText(input.sourceText);
+  const combined = `${subject}\n${text}`;
+
+  if (
+    /\b(passwort|kennwort|password|login|konto bestätigen|konto bestaetigen)\b/i.test(
+      combined
+    )
+  ) {
+    return "TRASH";
+  }
+
+  if (
+    /\b(ungelesene nachrichten|neue nachricht im account|chat-benachrichtigung)\b/i.test(
+      subject
+    )
+  ) {
+    return "CHAT_NOTIFICATION";
+  }
+
+  if (
+    /\b(absage|storniert|stornierung|nicht angenommen|anderes angebot entschieden)\b/i.test(
+      combined
+    )
+  ) {
+    return "CANCELLATION";
+  }
+
+  if (
+    /\b(bestelldetails wurden geändert|bestelldetails wurden geaendert|auftrag geändert|auftrag geaendert|bestelländerung|bestellaenderung)\b/i.test(
+      subject
+    )
+  ) {
+    return "ORDER_CHANGE";
+  }
+
+  if (
+    /\b(dein morgiges|morgen.*catering|erinnerung.*lieferung)\b/i.test(
+      subject
+    )
+  ) {
+    return "REMINDER";
+  }
+
+  if (
+    /\b(menü erhalten|menue erhalten|vielen dank für das menü|vielen dank fuer das menue)\b/i.test(
+      subject
+    )
+  ) {
+    return "TRASH";
+  }
+
+  if (
+    /\b(neue anfrage|bitte.*angebot|angebot freigeben|schickt uns euer angebot|catering-anfrage)\b/i.test(
+      subject
+    )
+  ) {
+    return "INQUIRY";
+  }
+
+  if (
+    /\b(fast track order bestätigt|fast track order bestaetigt|auftrag bestätigt|auftrag bestaetigt|bestellung bestätigt|bestellung bestaetigt)\b/i.test(
+      subject
+    )
+  ) {
+    return "ORDER_CONFIRMATION";
+  }
+
+  return input.documentType;
 }
 
 function totalsAreEqual(
@@ -188,6 +331,7 @@ export function analyzeImportedOrder(
   const evidence: ImportEvidence[] = [];
 
   const order = input.extractedOrder;
+  const documentType = resolveDocumentType(input);
 
   const validItems = Array.isArray(order?.items)
     ? order.items.filter(isRealItem)
@@ -204,8 +348,11 @@ export function analyzeImportedOrder(
     Number(order?.pdfNetTotalCents || 0)
   );
 
-  const customerReliable =
+  const customerValidation =
     validateCustomerName(order?.customerName);
+
+  const customerReliable =
+    customerValidation.reliable;
 
   if (!customerReliable) {
     issues.push({
@@ -213,16 +360,18 @@ export function analyzeImportedOrder(
       severity: "ERROR",
       field: "customerName",
       message:
-        "Kein eindeutig belastbarer Firmenkunde erkannt.",
+        "Kein eindeutig isolierter und belastbarer Firmenkunde erkannt.",
     });
   } else {
     evidence.push({
       field: "customerName",
-      value: normalizeText(order.customerName),
+      value:
+        customerValidation.normalizedCustomerName ||
+        "",
       source: "parser",
-      confidence: 0.8,
+      confidence: 0.85,
       evidence:
-        "Der Wert entspricht formal einem Firmennamen.",
+        "Isolierter Firmenname mit eindeutiger Rechtsform.",
     });
   }
 
@@ -296,10 +445,6 @@ export function analyzeImportedOrder(
         "Eine PDF-Nettosumme wurde erkannt, die Positionen sind jedoch nicht vollständig berechenbar.",
     });
   } else if (calculatedItemsTotalCents > 0) {
-    /*
-     * Eine reine Positionssumme reicht noch nicht für eine
-     * automatische Freigabe. Lieferkosten oder Rabatte könnten fehlen.
-     */
     selectedOrderTotalCents =
       calculatedItemsTotalCents;
     selectedTotalSource = "ITEM_SUM";
@@ -322,13 +467,14 @@ export function analyzeImportedOrder(
   }
 
   const isOrderDocument =
-    input.documentType === "ORDER_CONFIRMATION";
+    documentType === "ORDER_CONFIRMATION";
 
   if (!isOrderDocument) {
     issues.push({
       code: "NOT_CONFIRMED_ORDER",
       severity:
-        input.documentType === "INQUIRY"
+        documentType === "INQUIRY" ||
+        documentType === "ORDER_CHANGE"
           ? "WARNING"
           : "ERROR",
       field: "documentType",
@@ -351,18 +497,22 @@ export function analyzeImportedOrder(
     });
   }
 
+  const rejectedDocumentTypes =
+    new Set<ImportDocumentType>([
+      "TRASH",
+      "INVOICE",
+      "CREDIT_NOTE",
+      "DELIVERY_NOTE",
+      "REMINDER",
+      "CHAT_NOTIFICATION",
+      "CANCELLATION",
+    ]);
+
   const hasErrors =
     issues.some((issue) => issue.severity === "ERROR");
 
-  /*
-   * Sicherheitsschalter:
-   * AUTO_ACCEPT wird erst freigeschaltet, wenn ein belastbarer
-   * Regressionstest-Katalog vorhanden ist.
-   */
   const decision: ImportDecision =
-    input.documentType === "TRASH" ||
-    input.documentType === "INVOICE" ||
-    input.documentType === "DELIVERY_NOTE"
+    rejectedDocumentTypes.has(documentType)
       ? "REJECT"
       : hasErrors
         ? "REVIEW_REQUIRED"
@@ -385,8 +535,10 @@ export function analyzeImportedOrder(
   return {
     decision,
     confidence,
-    documentType: input.documentType,
+    documentType,
     customerReliable,
+    normalizedCustomerName:
+      customerValidation.normalizedCustomerName,
     itemsReliable,
     deliveryReliable,
     totalsReliable,
@@ -396,4 +548,25 @@ export function analyzeImportedOrder(
     issues,
     evidence,
   };
+}
+
+export function canCreateReviewOrderFromAnalysis(
+  analysis: ImportAnalysis
+) {
+  /*
+   * Gastario erstellt automatisch nur einen Prüfauftrag,
+   * wenn das Dokument eindeutig eine Auftragsbestätigung ist
+   * und alle operativ notwendigen Kerndaten belastbar sind.
+   *
+   * AUTO_ACCEPT bleibt weiterhin vollständig deaktiviert.
+   */
+  return (
+    analysis.decision !== "REJECT" &&
+    analysis.documentType === "ORDER_CONFIRMATION" &&
+    analysis.customerReliable &&
+    analysis.itemsReliable &&
+    analysis.deliveryReliable &&
+    analysis.selectedOrderTotalCents !== null &&
+    analysis.selectedOrderTotalCents > 0
+  );
 }

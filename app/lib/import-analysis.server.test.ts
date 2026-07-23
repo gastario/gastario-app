@@ -166,3 +166,92 @@ describe("analyzeImportedOrder", () => {
     expect(result.documentType).toBe("DELIVERY_NOTE");
   });
 });
+describe("reale Import-Fehlerfälle", () => {
+  it("weist eine Zutatenliste als Kundennamen zurück", () => {
+    const result = analyzeImportedOrder({
+      documentType: "ORDER_CONFIRMATION",
+      classificationConfidence: 0.99,
+      extractedOrder: createOrder({
+        customerName:
+          "Gouda-Käse, Weintrauben, Petersilie, Cornichon -",
+      }),
+      subject: "Fast Track Order bestätigt",
+    });
+
+    expect(result.customerReliable).toBe(false);
+    expect(result.normalizedCustomerName).toBeNull();
+  });
+
+  it("weist eine Handelsregisterzeile als Kundennamen zurück", () => {
+    const result = analyzeImportedOrder({
+      documentType: "INQUIRY",
+      classificationConfidence: 0.98,
+      extractedOrder: createOrder({
+        customerName:
+          "HRA 50203 B · AG Charlottenburg",
+      }),
+      subject: "Angebot Catering",
+    });
+
+    expect(result.customerReliable).toBe(false);
+  });
+
+  it("erkennt eine Passwort-Mail als Müll", () => {
+    const result = analyzeImportedOrder({
+      documentType: "UNKNOWN",
+      classificationConfidence: 0.45,
+      extractedOrder: createOrder({
+        customerName: "",
+        items: [],
+        pdfNetTotalCents: 0,
+      }),
+      subject: "Lunch Daily – neues Passwort festlegen",
+    });
+
+    expect(result.documentType).toBe("TRASH");
+    expect(result.decision).toBe("REJECT");
+  });
+
+  it("erkennt eine morgige Catering-Erinnerung", () => {
+    const result = analyzeImportedOrder({
+      documentType: "UNKNOWN",
+      classificationConfidence: 0.45,
+      extractedOrder: createOrder(),
+      subject:
+        "2026-260363 - Dein morgiges heykantine! Catering mit heycater!",
+    });
+
+    expect(result.documentType).toBe("REMINDER");
+    expect(result.decision).toBe("REJECT");
+  });
+
+  it("erkennt geänderte Bestelldetails als Auftragsänderung", () => {
+    const result = analyzeImportedOrder({
+      documentType: "ORDER_CONFIRMATION",
+      classificationConfidence: 0.78,
+      extractedOrder: createOrder(),
+      subject:
+        "2026-260189 - Bestelldetails wurden geändert",
+    });
+
+    expect(result.documentType).toBe("ORDER_CHANGE");
+    expect(result.decision).toBe("REVIEW_REQUIRED");
+  });
+
+  it("bereinigt ein Kundenname-Präfix", () => {
+    const result = analyzeImportedOrder({
+      documentType: "ORDER_CONFIRMATION",
+      classificationConfidence: 0.99,
+      extractedOrder: createOrder({
+        customerName:
+          "Kundenname: Grammarly Germany GmbH",
+      }),
+      subject: "Auftrag bestätigt",
+    });
+
+    expect(result.customerReliable).toBe(true);
+    expect(result.normalizedCustomerName).toBe(
+      "Grammarly Germany GmbH"
+    );
+  });
+});

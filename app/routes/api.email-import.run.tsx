@@ -3,7 +3,10 @@ import { createRequire } from "node:module";
 import { simpleParser } from "mailparser";
 import { prisma } from "../lib/prisma.server";
 import { extractUniversalOrder } from "../lib/order-import-extract.server";
-import { analyzeImportedOrder } from "../lib/import-analysis.server";
+import {
+  analyzeImportedOrder,
+  canCreateReviewOrderFromAnalysis,
+} from "../lib/import-analysis.server";
 import {
   classifyIncomingMailWithAi,
   classifyIncomingMailWithRules,
@@ -1761,7 +1764,11 @@ export async function loader({ request }: { request: Request }) {
             });
             const shouldCreateByRules = shouldCreateOrderFromImportRules(extractedOrder, bestText, importRuleMatches);
 
-            if (existing.orders.length === 0 && shouldCreateByRules) {
+          const canCreateReviewOrder =
+            shouldCreateByRules &&
+            canCreateReviewOrderFromAnalysis(importAnalysis);
+
+            if (existing.orders.length === 0 && canCreateReviewOrder) {
               const creationResult =
                 await createReviewOrderFromExtracted({
                   tenantId:
@@ -2008,7 +2015,11 @@ export async function loader({ request }: { request: Request }) {
           });
           const shouldCreateByRules = shouldCreateOrderFromImportRules(extractedOrder, bestText, importRuleMatches);
 
-          if (shouldCreateByRules) {
+          const canCreateReviewOrder =
+            shouldCreateByRules &&
+            canCreateReviewOrderFromAnalysis(importAnalysis);
+
+          if (canCreateReviewOrder) {
             const creationResult =
               await createReviewOrderFromExtracted({
                 tenantId:
