@@ -1,3 +1,5 @@
+import { resolveReliableCustomerName } from "./customer-name-validation.server";
+
 export type ExtractedOrderItem = {
   name: string;
   description?: string;
@@ -1823,6 +1825,16 @@ function normalizeFinalImportedOrder(
   const documentCustomerName =
     extractDocumentCustomerName(text);
 
+  const resolvedCustomerName =
+    resolveReliableCustomerName({
+      text,
+      parserCustomerName:
+        documentCustomerName ||
+        order.customerName ||
+        "",
+      items,
+    });
+
   return {
     ...order,
 
@@ -1835,13 +1847,7 @@ function normalizeFinalImportedOrder(
     pdfGrossTotalCents:
       documentTotals.pdfGrossTotalCents,
 
-    customerName: String(
-      documentCustomerName ||
-      order.customerName ||
-      ""
-    )
-      .replace(/\s+/g, " ")
-      .trim(),
+    customerName: resolvedCustomerName,
 
     contactName: String(
       order.contactName || ""
