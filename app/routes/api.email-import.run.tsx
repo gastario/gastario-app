@@ -1,4 +1,4 @@
-import crypto from "node:crypto";
+﻿import crypto from "node:crypto";
 import { createRequire } from "node:module";
 import { simpleParser } from "mailparser";
 import { prisma } from "../lib/prisma.server";
@@ -96,11 +96,11 @@ function isPlausibleImportedCustomerName(
     return false;
   }
 
-  if (/^\d+\s*[x×]\s+/i.test(name)) {
+  if (/^\d+\s*[xÃ—]\s+/i.test(name)) {
     return false;
   }
 
-  if (/^\d+[.,]?\d*\s*(stück|stueck|portionen?|personen?|pax)\b/i.test(name)) {
+  if (/^\d+[.,]?\d*\s*(stÃ¼ck|stueck|portionen?|personen?|pax)\b/i.test(name)) {
     return false;
   }
 
@@ -114,9 +114,9 @@ function isPlausibleImportedCustomerName(
     "lasagne",
     "curry",
     "halloumi",
-    "käse",
+    "kÃ¤se",
     "kaese",
-    "hähnchen",
+    "hÃ¤hnchen",
     "haehnchen",
     "chicken",
     "beef",
@@ -124,7 +124,7 @@ function isPlausibleImportedCustomerName(
     "croissant",
     "schnitte",
     "mousse",
-    "frühstücksbuffet",
+    "frÃ¼hstÃ¼cksbuffet",
     "fruehstuecksbuffet",
     "lieferkosten",
     "abholung",
@@ -168,12 +168,12 @@ function isPlausibleImportedCustomerName(
     );
 
   const hasBusinessWord =
-    /\b(deutschland|berlin|services?|solutions?|systems?|technologies?|consulting|consultants?|studios?|media|logistik|logistics|immobilien|versicherung|bank|hotel|academy|university|universität|klinikum|stiftung)\b/i.test(
+    /\b(deutschland|berlin|services?|solutions?|systems?|technologies?|consulting|consultants?|studios?|media|logistik|logistics|immobilien|versicherung|bank|hotel|academy|university|universitÃ¤t|klinikum|stiftung)\b/i.test(
       name
     );
 
   const looksLikePersonName =
-    /^[A-ZÄÖÜ][A-Za-zÄÖÜäöüß'-]+(?:\s+[A-ZÄÖÜ][A-Za-zÄÖÜäöüß'-]+){1,3}$/.test(
+    /^[A-ZÃ„Ã–Ãœ][A-Za-zÃ„Ã–ÃœÃ¤Ã¶Ã¼ÃŸ'-]+(?:\s+[A-ZÃ„Ã–Ãœ][A-Za-zÃ„Ã–ÃœÃ¤Ã¶Ã¼ÃŸ'-]+){1,3}$/.test(
       name
     );
 
@@ -344,7 +344,7 @@ async function findClassificationImportRuleMatch(params: {
       params.tenantId
     );
 
-    return (
+    const matchedRule =
       rules.find((rule) => {
         const conditions: boolean[] = [];
 
@@ -393,8 +393,20 @@ async function findClassificationImportRuleMatch(params: {
         return matchMode === "ALL"
           ? conditions.every(Boolean)
           : conditions.some(Boolean);
-      }) || null
-    );
+      }) || null;
+
+    console.log("Classification import rule result:", {
+      tenantId: params.tenantId,
+      subject: params.subject,
+      sender: params.sender,
+      matched: Boolean(matchedRule),
+      ruleId: matchedRule?.id || null,
+      ruleName: matchedRule?.name || null,
+      action: matchedRule?.action || null,
+      documentType: matchedRule?.documentType || null,
+    });
+
+    return matchedRule;
   } catch (error) {
     console.error(
       "Classification import rule check failed",
@@ -472,10 +484,10 @@ function hasStrongOrderKeyword(bestText: string) {
     combined.includes("catering confirmation") ||
     combined.includes("bestellung bestatigt") ||
     combined.includes("bestellung bestaetigt") ||
-    combined.includes("bestellung bestÃƒÂ¤tigt") ||
+    combined.includes("bestellung bestÃƒÆ’Ã‚Â¤tigt") ||
     combined.includes("auftrag bestatigt") ||
     combined.includes("auftrag bestaetigt") ||
-    combined.includes("auftrag bestÃƒÂ¤tigt")
+    combined.includes("auftrag bestÃƒÆ’Ã‚Â¤tigt")
   );
 }
 
@@ -544,7 +556,7 @@ function shouldCreateOrderFromImportRules(extractedOrder: any, bestText: string,
 
         if (!name) return false;
         if (name.includes("fehlende position")) return false;
-        if (name.includes("habe ") || name.includes("kosten fÃƒÂ¼r") || name.includes("servicepersonal")) return false;
+        if (name.includes("habe ") || name.includes("kosten fÃƒÆ’Ã‚Â¼r") || name.includes("servicepersonal")) return false;
         if (name.includes("gas or electric grills") || name.includes("onsite")) return false;
 
         return quantity > 0 || totalCents > 0;
@@ -693,7 +705,7 @@ function getHeycaterEmailKind(subject: string, text: string) {
 
 function parseImportMoneyToCents(value: unknown) {
   const raw = String(value || "")
-    .replace(/[Ã¢â€šÂ¬\s]/g, "")
+    .replace(/[ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬\s]/g, "")
     .replace(/\./g, "")
     .replace(",", ".");
 
@@ -710,10 +722,10 @@ function extractHeycaterPdfNetCents(text: string) {
     .replace(/[ \t]+/g, " ");
 
   const patterns = [
-    /Gesamtbetrag\s+Netto\s*(?:€|EUR)?\s*([0-9][0-9.\s]*[,.][0-9]{2})/i,
-    /Nettosumme\s*(?:€|EUR)?\s*([0-9][0-9.\s]*[,.][0-9]{2})/i,
-    /Gesamtsumme\s+Netto\s*(?:€|EUR)?\s*([0-9][0-9.\s]*[,.][0-9]{2})/i,
-    /Netto(?:betrag)?\s*(?:€|EUR)?\s*([0-9][0-9.\s]*[,.][0-9]{2})/i,
+    /Gesamtbetrag\s+Netto\s*(?:â‚¬|EUR)?\s*([0-9][0-9.\s]*[,.][0-9]{2})/i,
+    /Nettosumme\s*(?:â‚¬|EUR)?\s*([0-9][0-9.\s]*[,.][0-9]{2})/i,
+    /Gesamtsumme\s+Netto\s*(?:â‚¬|EUR)?\s*([0-9][0-9.\s]*[,.][0-9]{2})/i,
+    /Netto(?:betrag)?\s*(?:â‚¬|EUR)?\s*([0-9][0-9.\s]*[,.][0-9]{2})/i,
   ];
 
   for (const pattern of patterns) {
@@ -1135,7 +1147,7 @@ async function findExistingImportedOrder(
 /*
  * gastario-imported-customer-resolution-20260722
  *
- * Ein technischer Prüfplatzhalter darf niemals als echter
+ * Ein technischer PrÃ¼fplatzhalter darf niemals als echter
  * Kundenname in einem Auftrag gespeichert werden.
  */
 function resolveImportedCustomerName(params: {
@@ -1147,8 +1159,8 @@ function resolveImportedCustomerName(params: {
   function cleanCandidate(value: unknown) {
     return String(value || "")
       .replace(/\s+/g, " ")
-      .replace(/^[,;:|/\-–—\s]+/, "")
-      .replace(/[,;:|/\-–—\s]+$/, "")
+      .replace(/^[,;:|/\-â€“â€”\s]+/, "")
+      .replace(/[,;:|/\-â€“â€”\s]+$/, "")
       .trim();
   }
 
@@ -1162,7 +1174,7 @@ function resolveImportedCustomerName(params: {
 
     if (
       [
-        "kunde prüfen",
+        "kunde prÃ¼fen",
         "kunde pruefen",
         "kunde unbekannt",
         "unbekannter kunde",
@@ -1181,7 +1193,7 @@ function resolveImportedCustomerName(params: {
     }
 
     if (
-      /^(?:auftrag|bestellung|auftragsbestätigung|auftragsbestaetigung|lieferschein|rechnung|angebot|event|catering)$/i.test(
+      /^(?:auftrag|bestellung|auftragsbestÃ¤tigung|auftragsbestaetigung|lieferschein|rechnung|angebot|event|catering)$/i.test(
         candidate
       )
     ) {
@@ -1192,7 +1204,7 @@ function resolveImportedCustomerName(params: {
       return true;
     }
 
-    if (!/[A-Za-zÄÖÜäöüß]/.test(candidate)) {
+    if (!/[A-Za-zÃ„Ã–ÃœÃ¤Ã¶Ã¼ÃŸ]/.test(candidate)) {
       return true;
     }
 
@@ -1246,7 +1258,7 @@ function resolveImportedCustomerName(params: {
 
       if (
         /\b\d{5}\b/.test(part) ||
-        /\b(?:straße|strasse|str\.|weg|allee|platz|damm|ufer|chaussee)\b/i.test(
+        /\b(?:straÃŸe|strasse|str\.|weg|allee|platz|damm|ufer|chaussee)\b/i.test(
           part
         ) ||
         /\d/.test(part)
@@ -1267,7 +1279,7 @@ function resolveImportedCustomerName(params: {
   const cleanedSubject = cleanCandidate(subject)
     .replace(/\b20\d{2}-\d{4,}\b/g, " ")
     .replace(
-      /\b(?:bitte|auftrag|bestellung|angebot|freigeben|bestätigt|bestaetigt|heycater|catering|event)\b/gi,
+      /\b(?:bitte|auftrag|bestellung|angebot|freigeben|bestÃ¤tigt|bestaetigt|heycater|catering|event)\b/gi,
       " "
     )
     .replace(/\s+/g, " ")
@@ -1351,7 +1363,7 @@ async function createReviewOrderFromExtracted(
 
   /*
    * Eine erkannte PDF-Nettosumme ist der verbindliche Auftragswert.
-   * Die Positionssumme bleibt ausschließlich Kontrollwert.
+   * Die Positionssumme bleibt ausschlieÃŸlich Kontrollwert.
    */
   const orderTotalCents =
     pdfNetCents > 0
@@ -1407,7 +1419,7 @@ async function createReviewOrderFromExtracted(
   }
 
   const reviewReasons = [
-    "Automatisch aus E-Mail erstellt. Bitte prüfen.",
+    "Automatisch aus E-Mail erstellt. Bitte prÃ¼fen.",
   ];
 
   if (
@@ -1416,7 +1428,7 @@ async function createReviewOrderFromExtracted(
     !pdfTotalIsPlausible
   ) {
     reviewReasons.push(
-      "PDF-Nettosumme und Positionssumme weichen ab. Die PDF-Nettosumme wurde als verbindlicher Auftragswert übernommen."
+      "PDF-Nettosumme und Positionssumme weichen ab. Die PDF-Nettosumme wurde als verbindlicher Auftragswert Ã¼bernommen."
     );
   }
 
@@ -1456,7 +1468,7 @@ async function createReviewOrderFromExtracted(
 
   if (customerNameWasRejected) {
     reviewReasons.push(
-      "Der automatisch erkannte Kundenname war unzuverlässig und wurde nicht übernommen."
+      "Der automatisch erkannte Kundenname war unzuverlÃ¤ssig und wurde nicht Ã¼bernommen."
     );
   }
 
@@ -1466,11 +1478,11 @@ async function createReviewOrderFromExtracted(
   ) {
     reviewReasons.push(
       resolvedCustomer.source === "contact-name"
-        ? "Der Kundenname wurde aus der erkannten Kontaktperson übernommen."
+        ? "Der Kundenname wurde aus der erkannten Kontaktperson Ã¼bernommen."
         : resolvedCustomer.source === "delivery-address"
-          ? "Der Kundenname wurde aus dem Lieferadressblock übernommen."
+          ? "Der Kundenname wurde aus dem Lieferadressblock Ã¼bernommen."
           : resolvedCustomer.source === "email-subject"
-            ? "Der Kundenname wurde aus dem E-Mail-Betreff übernommen."
+            ? "Der Kundenname wurde aus dem E-Mail-Betreff Ã¼bernommen."
             : "Der Auftrag konnte noch keinem eindeutigen Kunden zugeordnet werden."
     );
   }
@@ -1718,7 +1730,7 @@ export async function loader({ request }: { request: Request }) {
         ...ruleDecision,
         warnings: [
           ...(ruleDecision.warnings || []),
-          `KI-Limit pro Abruf erreicht (${maxAiCallsPerRun}). Kostenlose Regelprüfung verwendet.`,
+          `KI-Limit pro Abruf erreicht (${maxAiCallsPerRun}). Kostenlose RegelprÃ¼fung verwendet.`,
         ],
       };
     }
@@ -2417,6 +2429,7 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
 
 
 
