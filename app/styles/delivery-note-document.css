@@ -1,33 +1,40 @@
-﻿.deliveryDocumentButton {
+.deliveryDocumentButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  width: 100%;
-  min-height: 39px;
-  padding: 0 13px;
-  border: 1px solid #c8dad3;
-  border-radius: 10px;
-  background: #ffffff;
-  color: #31544a;
-  font-size: 10px;
-  font-weight: 780;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid #9ed4c4;
+  border-radius: 11px;
+  background: #e5f7f0;
+  color: #08705a;
+  font-size: 11px;
+  font-weight: 760;
   line-height: 1;
   text-decoration: none;
   white-space: nowrap;
-  box-shadow: none;
+  box-sizing: border-box;
+  cursor: pointer;
   transition:
-    background .15s ease,
-    border-color .15s ease,
-    color .15s ease,
-    transform .15s ease;
+    transform 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .deliveryDocumentButton:hover {
   transform: translateY(-1px);
-  border-color: #87bba9;
-  background: #f1f8f5;
-  color: #08705a;
+  border-color: #72bea7;
+  background: #d5f0e6;
+  color: #065a48;
+  box-shadow: 0 7px 16px rgba(8, 112, 90, 0.1);
+}
+
+.deliveryDocumentButton:focus-visible {
+  outline: 3px solid rgba(16, 163, 127, 0.2);
+  outline-offset: 2px;
 }
 
 .deliveryDocumentIcon {
@@ -35,34 +42,57 @@
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 23px;
+  height: 23px;
   border-radius: 7px;
-  background: #eaf5f1;
-  color: #08775c;
+  background: rgba(255, 255, 255, 0.72);
+  color: currentColor;
+}
+
+.deliveryDocumentIcon svg {
+  display: block;
+  width: 15px;
+  height: 15px;
 }
 
 .deliveryDocumentButtonCompact {
-  min-height: 39px;
-  padding: 0 11px;
-  border-color: #cbdad5;
-  background: #ffffff;
-  color: #344f46;
+  width: 42px;
+  min-width: 42px;
+  max-width: 42px;
+  height: 42px;
+  min-height: 42px;
+  padding: 0;
+  border-radius: 12px;
 }
 
 .deliveryDocumentButtonCompact
 .deliveryDocumentIcon {
-  width: 23px;
-  height: 23px;
+  width: 26px;
+  height: 26px;
+  background: transparent;
+}
+
+.deliveryDocumentButtonCompact
+.deliveryDocumentIcon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.deliveryDocumentButtonFull {
+  min-width: 145px;
+}
+
+.deliveryDocumentLabel {
+  display: inline-block;
 }
 
 .deliveryDocumentRefreshLink {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 27px;
-  color: #718079;
-  font-size: 9px;
+  min-height: 30px;
+  color: #667a72;
+  font-size: 10px;
   font-weight: 720;
   text-decoration: none;
 }

@@ -1430,7 +1430,7 @@ export default function OrdersPage() {
                         aria-label="Auftrag löschen"
                         title="Auftrag löschen"
                       >
-                        ×
+                        <svg viewBox="0 0 24 24" aria-hidden="true">                           <path                             d="M4 7h16"                             fill="none"                             stroke="currentColor"                             strokeWidth="1.8"                             strokeLinecap="round"                           />                           <path                             d="M9 7V5h6v2"                             fill="none"                             stroke="currentColor"                             strokeWidth="1.8"                             strokeLinecap="round"                             strokeLinejoin="round"                           />                           <path                             d="M6.5 7l.8 12a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-12"                             fill="none"                             stroke="currentColor"                             strokeWidth="1.8"                             strokeLinecap="round"                             strokeLinejoin="round"                           />                           <path                             d="M10 11v6M14 11v6"                             fill="none"                             stroke="currentColor"                             strokeWidth="1.8"                             strokeLinecap="round"                           />                         </svg>
                       </button>
                     </Form>
                   </div>

@@ -282,20 +282,31 @@ export async function loader({ request }: { request: Request }) {
       prisma.order.findMany({
         where: {
           tenantId: tenantUser.tenantId,
-          ...(status === "AUTO_CREATED"
+          ...(status === "CONFIRMED"
             ? {
                 status: {
                   in: [
-                    "AUTO_CREATED",
-                    "REVIEW_NEEDED",
+                    "CONFIRMED",
+                    "IN_PRODUCTION",
+                    "PACKING_OPEN",
+                    "DELIVERED",
                   ] as any,
                 },
               }
-            : status
+            : status === "REJECTED"
               ? {
-                  status: status as any,
+                  status: "REJECTED" as any,
                 }
-              : {}),
+              : {
+                  status: {
+                    in: [
+                      "AUTO_CREATED",
+                      "REVIEW_NEEDED",
+                      "INCOMPLETE",
+                      "POSSIBLE_DUPLICATE",
+                    ] as any,
+                  },
+                }),
           ...(searchQuery
             ? {
                 OR: [

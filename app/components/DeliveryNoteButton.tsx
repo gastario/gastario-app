@@ -1,4 +1,4 @@
-﻿type DeliveryNoteButtonProps = {
+type DeliveryNoteButtonProps = {
   orderId: string;
   compact?: boolean;
   refresh?: boolean;
@@ -32,11 +32,23 @@ export default function DeliveryNoteButton({
     <a
       className={
         "deliveryDocumentButton " +
-        (compact ? "deliveryDocumentButtonCompact" : "")
+        (compact
+          ? "deliveryDocumentButtonCompact"
+          : "deliveryDocumentButtonFull")
       }
       href={href}
       target="_blank"
       rel="noreferrer"
+      aria-label={
+        compact
+          ? "Lieferschein öffnen"
+          : undefined
+      }
+      title={
+        compact
+          ? "Lieferschein öffnen"
+          : undefined
+      }
     >
       <span
         className="deliveryDocumentIcon"
@@ -44,18 +56,25 @@ export default function DeliveryNoteButton({
       >
         <svg
           viewBox="0 0 24 24"
-          width="15"
-          height="15"
           fill="none"
         >
           <path
-            d="M7 3.75h7l3 3v13.5H7V3.75Z"
+            d="M7 3.5h7l3.5 3.5v13.5H7V3.5Z"
             stroke="currentColor"
             strokeWidth="1.7"
             strokeLinejoin="round"
           />
+
           <path
-            d="M14 3.75v3h3M9.5 11h5M9.5 14h5M9.5 17h3.25"
+            d="M14 3.5V7h3.5"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          <path
+            d="M9.5 11h5M9.5 14.5h5M9.5 18h3.5"
             stroke="currentColor"
             strokeWidth="1.7"
             strokeLinecap="round"
@@ -63,9 +82,11 @@ export default function DeliveryNoteButton({
         </svg>
       </span>
 
-      <span>
-        {compact ? "Lieferschein" : "PDF öffnen"}
-      </span>
+      {!compact ? (
+        <span className="deliveryDocumentLabel">
+          Lieferschein öffnen
+        </span>
+      ) : null}
     </a>
   );
 }

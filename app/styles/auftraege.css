@@ -7303,3 +7303,66 @@ button.finalSelectedDeleteButton {
     width: 100%;
   }
 }
+/* gastario-modern-operational-icons-start */
+
+.ordersPage .operationalDeleteButton {
+  width: 42px !important;
+  height: 42px !important;
+  padding: 0 !important;
+  border: 1px solid #efc9c4 !important;
+  border-radius: 12px !important;
+  background: #fff8f7 !important;
+  color: #bd3b2d !important;
+}
+
+.ordersPage .operationalDeleteButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.ordersPage .operationalDeleteButton:hover {
+  border-color: #dfa49c !important;
+  background: #feeeec !important;
+  color: #a52c20 !important;
+  transform: translateY(-1px);
+}
+
+/* gastario-modern-operational-icons-end */
+/* gastario-modern-operational-delete-icon-start */
+
+.ordersPage .operationalDeleteButton {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 42px !important;
+  min-width: 42px !important;
+  height: 42px !important;
+  padding: 0 !important;
+  border: 1px solid #efd1cc !important;
+  border-radius: 12px !important;
+  background: #fff8f7 !important;
+  color: #ba3c2e !important;
+  line-height: 1 !important;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.ordersPage .operationalDeleteButton svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.ordersPage .operationalDeleteButton:hover {
+  transform: translateY(-1px);
+  border-color: #dfa59d !important;
+  background: #feeeec !important;
+  color: #a52c20 !important;
+  box-shadow: 0 7px 16px rgba(165, 44, 32, 0.09);
+}
+
+/* gastario-modern-operational-delete-icon-end */
