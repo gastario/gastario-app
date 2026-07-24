@@ -65,6 +65,51 @@ function formatQuantity(value: number) {
   });
 }
 
+function isDeliveryServiceItem(
+  item: DeliveryNoteItem
+) {
+  const value = safeText(item.name)
+    .toLowerCase();
+
+  const serviceSignals = [
+    "delivery cost",
+    "delivery costs",
+    "lieferung",
+    "abholung",
+    "transport",
+    "aufbau",
+    "abbau",
+    "servicepersonal",
+    "personal",
+    "equipment",
+    "besteck",
+    "geschirr",
+    "gläser",
+    "glaeser",
+    "chafing",
+    "brennpaste",
+    "mietartikel",
+    "logistik",
+  ];
+
+  return serviceSignals.some(
+    (signal) => value.includes(signal)
+  );
+}
+
+function getVisibleDeliveryNoteItems(
+  items: DeliveryNoteItem[]
+) {
+  return items.filter((item) => {
+    const name = safeText(item.name);
+
+    if (!name) {
+      return false;
+    }
+
+    return Number(item.quantity) > 0;
+  });
+}
 function wrapText(
   text: string,
   font: PDFFont,
@@ -637,19 +682,32 @@ export async function renderDeliveryNotePdf(
 
   drawTableHeader();
 
-  const items =
-    input.items.length > 0
-      ? input.items
+  const allVisibleItems =
+    getVisibleDeliveryNoteItems(
+      input.items
+    );
+
+  const foodItems = allVisibleItems.filter(
+    (item) => !isDeliveryServiceItem(item)
+  );
+
+  const serviceItems = allVisibleItems.filter(
+    (item) => isDeliveryServiceItem(item)
+  );
+
+  const displayedFoodItems =
+    foodItems.length > 0
+      ? foodItems
       : [
           {
-            name: "Keine Positionen hinterlegt",
+            name: "Keine Speisen hinterlegt",
             quantity: 0,
             unit: "-",
             notes: null,
           },
         ];
 
-  items.forEach((item, index) => {
+  displayedFoodItems.forEach((item, index) => {
     const itemLines = wrapText(
       safeText(item.name) || "-",
       bold,
@@ -765,6 +823,97 @@ export async function renderDeliveryNotePdf(
 
   y -= 22;
 
+  if (serviceItems.length > 0) {
+    const serviceRowHeight = 24;
+    const serviceHeight =
+      35 +
+      serviceItems.length *
+        serviceRowHeight;
+
+    ensureSpace(serviceHeight + 22);
+
+    page.drawText("ZUSATZLEISTUNGEN", {
+      x: PAGE_MARGIN,
+      y,
+      size: 8,
+      font: bold,
+      color: green,
+    });
+
+    y -= 14;
+
+    page.drawRectangle({
+      x: PAGE_MARGIN,
+      y: y - serviceHeight,
+      width: CONTENT_WIDTH,
+      height: serviceHeight,
+      color: surface,
+      borderColor: border,
+      borderWidth: 0.8,
+    });
+
+    let serviceY = y - 22;
+
+    serviceItems.forEach(
+      (item, index) => {
+        if (index > 0) {
+          page.drawLine({
+            start: {
+              x: PAGE_MARGIN + 12,
+              y: serviceY + 8,
+            },
+            end: {
+              x:
+                A4_WIDTH -
+                PAGE_MARGIN -
+                12,
+              y: serviceY + 8,
+            },
+            thickness: 0.5,
+            color: borderSoft,
+          });
+        }
+
+        page.drawText(
+          safeText(item.name),
+          {
+            x: PAGE_MARGIN + 14,
+            y: serviceY,
+            size: 9,
+            font: bold,
+            color: dark,
+          }
+        );
+
+        const quantityText =
+          formatQuantity(item.quantity) +
+          " " +
+          safeText(item.unit);
+
+        const quantityWidth =
+          regular.widthOfTextAtSize(
+            quantityText,
+            8.5
+          );
+
+        page.drawText(quantityText, {
+          x:
+            A4_WIDTH -
+            PAGE_MARGIN -
+            14 -
+            quantityWidth,
+          y: serviceY,
+          size: 8.5,
+          font: regular,
+          color: body,
+        });
+
+        serviceY -= serviceRowHeight;
+      }
+    );
+
+    y -= serviceHeight + 22;
+  }
   /*
    * Hinweise
    */
