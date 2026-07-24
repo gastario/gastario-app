@@ -7021,3 +7021,149 @@ button.finalSelectedDeleteButton {
     max-width: none !important;
   }
 }
+
+/* gastario-selected-actions-definitive-fix-20260724 */
+
+.ordersPage .finalSelectedActions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 14px !important;
+
+  width: 100% !important;
+  min-width: 0 !important;
+  padding: 16px 20px !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+.ordersPage .finalSelectedActionsMain {
+  display: flex !important;
+  align-items: center !important;
+  flex: 1 1 auto !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.ordersPage .finalSelectedActionsMain > *,
+.ordersPage .finalSelectedActionsMain > form,
+.ordersPage .finalSelectedActionsMain > a,
+.ordersPage .finalSelectedActionsMain > button {
+  position: static !important;
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-sizing: border-box !important;
+}
+
+.ordersPage .finalSelectedActionsMain button,
+.ordersPage .finalSelectedActionsMain a,
+.ordersPage .finalSelectedActionsMain .deliveryDocumentButton,
+.ordersPage .finalSelectedActionsMain .finalBackButton,
+.ordersPage .finalSelectedActionsMain .finalFoodlabelsButton {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: auto !important;
+  min-width: 142px !important;
+  max-width: none !important;
+  min-height: 42px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 16px !important;
+  border-radius: 11px !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+}
+
+.ordersPage .finalSelectedActionsMain .deliveryDocumentButton {
+  border: 1px solid #8fcdbc !important;
+  background: #dff5ed !important;
+  color: #086a57 !important;
+  box-shadow: none !important;
+}
+
+.ordersPage .finalSelectedActionsMain .finalFoodlabelsButton {
+  min-width: 165px !important;
+  border: 1px solid #0a9473 !important;
+  background: #0a9473 !important;
+  color: #ffffff !important;
+}
+
+.ordersPage .finalSelectedDeleteForm {
+  position: static !important;
+  display: block !important;
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+
+  margin: 0 0 0 auto !important;
+  padding: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.ordersPage .finalSelectedDeleteForm .finalSelectedDeleteButton {
+  position: static !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: auto !important;
+  min-width: 132px !important;
+  max-width: none !important;
+  min-height: 42px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 16px !important;
+  border: 1px solid #e5b2ae !important;
+  border-radius: 11px !important;
+  background: #fff5f4 !important;
+  background-image: none !important;
+  color: #b42318 !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 760px) {
+  .ordersPage .finalSelectedActions,
+  .ordersPage .finalSelectedActionsMain {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+
+  .ordersPage .finalSelectedActionsMain > *,
+  .ordersPage .finalSelectedActionsMain button,
+  .ordersPage .finalSelectedActionsMain a,
+  .ordersPage .finalSelectedActionsMain .deliveryDocumentButton,
+  .ordersPage .finalSelectedDeleteForm,
+  .ordersPage .finalSelectedDeleteForm .finalSelectedDeleteButton {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+  }
+}
