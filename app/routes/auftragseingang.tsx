@@ -1943,43 +1943,63 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                       className="incomingBillingReviewForm"
                     >
                       <div className="incomingBillingContent">
-                        <strong>
-                          Wie soll der Auftrag abgerechnet werden?
-                        </strong>
+                        <div className="incomingBillingHeading">
+                          <strong>
+                            Wie soll der Auftrag abgerechnet werden?
+                          </strong>
 
-                        <select
-                          name="billingMode"
-                          defaultValue={
-                            selectedOrder.billingMode ||
-                            "UNDECIDED"
-                          }
-                        >
-                          <option value="UNDECIDED">
-                            Noch nicht entschieden
-                          </option>
+                          <p>
+                            Wähle die Abrechnungsart und kontrolliere
+                            danach den Auftrag auf der vollständigen
+                            Prüfseite.
+                          </p>
+                        </div>
 
-                          <option value="DIRECT_INVOICE">
-                            Direktrechnung an den Kunden
-                          </option>
+                        <label className="incomingBillingChoice">
+                          <span>Abrechnungsart</span>
 
-                          <option value="EXTERNAL_INVOICE">
-                            Rechnung wurde extern erstellt
-                          </option>
+                          <select
+                            name="billingMode"
+                            defaultValue={
+                              selectedOrder.billingMode ||
+                              "UNDECIDED"
+                            }
+                          >
+                            <option value="UNDECIDED">
+                              Noch nicht entschieden
+                            </option>
 
-                          <option value="PLATFORM_CREDIT">
-                            Plattform-Gutschrift
-                          </option>
+                            <option value="DIRECT_INVOICE">
+                              Direktrechnung an den Kunden
+                            </option>
 
-                          <option value="NO_INVOICE">
-                            Keine Rechnung erforderlich
-                          </option>
-                        </select>
+                            <option value="EXTERNAL_INVOICE">
+                              Rechnung wurde extern erstellt
+                            </option>
 
-                        <p>
-                          Danach werden Kundendaten, Lieferadresse,
-                          Termin und Positionen auf der Prüfseite
-                          kontrolliert.
-                        </p>
+                            <option value="PLATFORM_CREDIT">
+                              Plattform-Gutschrift
+                            </option>
+
+                            <option value="NO_INVOICE">
+                              Keine Rechnung erforderlich
+                            </option>
+                          </select>
+                        </label>
+
+                        <div className="incomingReviewChecklist">
+                          <div className="incomingReviewChecklistTitle">
+                            Vor der Übernahme prüfen
+                          </div>
+
+                          <div className="incomingReviewChecklistGrid">
+                            <span>Kundendaten</span>
+                            <span>Lieferadresse</span>
+                            <span>Datum und Uhrzeit</span>
+                            <span>Positionen und Mengen</span>
+                            <span>Abrechnungsart</span>
+                          </div>
+                        </div>
                       </div>
 
                       <button
