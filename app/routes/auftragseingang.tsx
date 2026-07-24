@@ -1798,7 +1798,13 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
             )}
           </section>
         ) : (
-<section className="finalOrdersShell finalOrdersSplitShell">
+<section
+          className={
+            selectedOrder
+              ? "finalOrdersShell finalOrdersSplitShell selectedOrderOpen"
+              : "finalOrdersShell finalOrdersSplitShell"
+          }
+        >
           <div className="finalOrdersHead">
             <div>
               <h2>{activeOrderViewTitle}</h2>
