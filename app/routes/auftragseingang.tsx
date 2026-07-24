@@ -398,8 +398,14 @@ export async function loader({ request }: { request: Request }) {
         prisma.order.count({
           where: {
             tenantId: tenantUser.tenantId,
-            status: "CONFIRMED" as any,
-
+            status: {
+              in: [
+                "CONFIRMED",
+                "IN_PRODUCTION",
+                "PACKING_OPEN",
+                "DELIVERED",
+              ] as any,
+            },
           },
         }),
         prisma.order.count({
@@ -1065,39 +1071,8 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
     const normalizedOrderStatus = String(order?.status || "").toUpperCase();
 
-    /*
-     * Abgelehnte und stornierte Aufträge gehören nicht in die normale
-     * aktive Ansicht. Sie bleiben sichtbar, wenn der jeweilige Status
-     * ausdrücklich im Statusfilter ausgewählt wurde.
-     */
-    if (
-      !activeOrderStatus &&
-      (
-        normalizedOrderStatus === "CONFIRMED" ||
-        normalizedOrderStatus === "IN_PRODUCTION" ||
-        normalizedOrderStatus === "PACKING_OPEN" ||
-        normalizedOrderStatus === "DELIVERED" ||
-        normalizedOrderStatus === "REJECTED" ||
-        normalizedOrderStatus === "CANCELLED"
-      )
-    ) {
-      return false;
-    }
-
-    /*
-     * Verdächtige automatische Importe bleiben unter
-     * "Zu prüfen" sichtbar, werden aber nicht unter
-     * "Alle Aufträge" als reguläre Aufträge angezeigt.
-     */
-    if (
-      isLikelyBrokenAutomaticOrder(order) &&
-      activeOrderStatus !== "AUTO_CREATED"
-    ) {
-      return false;
-    }
-
-    /*
-     * Der UI-Filter "Zu prüfen" verwendet AUTO_CREATED,
+     /*
+      * Der UI-Filter "Zu prüfen" verwendet AUTO_CREATED,
      * umfasst fachlich aber auch REVIEW_NEEDED.
      */
     const isReviewStatusFilter =
@@ -1114,7 +1089,20 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
     }
 
     if (
+      activeOrderStatus === "CONFIRMED" &&
+      ![
+        "CONFIRMED",
+        "IN_PRODUCTION",
+        "PACKING_OPEN",
+        "DELIVERED",
+      ].includes(normalizedOrderStatus)
+    ) {
+      return false;
+    }
+
+    if (
       activeOrderStatus &&
+      activeOrderStatus !== "CONFIRMED" &&
       !isReviewStatusFilter &&
       normalizedOrderStatus !== activeOrderStatus
     ) {

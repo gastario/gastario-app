@@ -2032,11 +2032,11 @@ export async function loader({ request }: { request: Request }) {
             "CREATE_REVIEW_ORDER";
 
           const canCreateReviewOrder =
+            shouldCreateByClassificationRule ||
             (
-              shouldCreateByClassificationRule ||
-              shouldCreateByRules
-            ) &&
-            canCreateReviewOrderFromAnalysis(importAnalysis);
+              shouldCreateByRules &&
+              canCreateReviewOrderFromAnalysis(importAnalysis)
+            );
 
             if (existing.orders.length === 0 && canCreateReviewOrder) {
               const creationResult =
@@ -2322,11 +2322,11 @@ export async function loader({ request }: { request: Request }) {
             "CREATE_REVIEW_ORDER";
 
           const canCreateReviewOrder =
+            shouldCreateByClassificationRule ||
             (
-              shouldCreateByClassificationRule ||
-              shouldCreateByRules
-            ) &&
-            canCreateReviewOrderFromAnalysis(importAnalysis);
+              shouldCreateByRules &&
+              canCreateReviewOrderFromAnalysis(importAnalysis)
+            );
 
           if (canCreateReviewOrder) {
             const creationResult =
