@@ -197,6 +197,12 @@ export function classifyIncomingMailWithRules(params: {
     "booking confirmation",
     "verbindliche buchung",
     "verbindlich gebucht",
+    "bitte bestätige den auftrag",
+    "bitte bestaetige den auftrag",
+    "bitte um finale bestätigung",
+    "bitte um finale bestaetigung",
+    "hat euer angebot bestätigt",
+    "hat euer angebot bestaetigt",
   ].some((phrase) => lower.includes(phrase));
 
   if (

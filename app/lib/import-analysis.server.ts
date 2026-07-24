@@ -270,7 +270,7 @@ function resolveDocumentType(
   const combined = `${subject}\n${text}`;
 
   if (
-    /\b(fast track order bestätigt|fast track order bestaetigt|auftrag bestätigt|auftrag bestaetigt|bestellung bestätigt|bestellung bestaetigt)\b/i.test(
+    /\b(fast track order bestätigt|fast track order bestaetigt|auftrag bestätigt|auftrag bestaetigt|bestellung bestätigt|bestellung bestaetigt|bitte bestätige den auftrag|bitte bestaetige den auftrag)\b/i.test(
       subject
     )
   ) {
