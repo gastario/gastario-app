@@ -39,7 +39,16 @@ export async function loader({
     });
   }
 
-  const note = await ensureDeliveryNoteForOrder(order.id);
+  const url = new URL(request.url);
+  const forceRefresh =
+    url.searchParams.get("refresh") === "1";
+
+  const note = await ensureDeliveryNoteForOrder(
+    order.id,
+    {
+      force: forceRefresh,
+    }
+  );
 
   const pdfBuffer = Buffer.from(note.pdfData);
 

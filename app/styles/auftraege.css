@@ -7366,3 +7366,56 @@ button.finalSelectedDeleteButton {
 }
 
 /* gastario-modern-operational-delete-icon-end */
+
+
+/* gastario-upcoming-orders-height-polish-start */
+
+/*
+ * Die Auftragsliste nutzt den sichtbaren Desktopbereich besser aus.
+ * Kein künstlicher Leerraum unter einer zu kurzen Listenbox.
+ */
+.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows {
+  display: grid !important;
+  align-content: start !important;
+  gap: 12px !important;
+
+  min-height: calc(100vh - 385px) !important;
+  max-height: none !important;
+
+  padding: 14px 12px 30px !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+/*
+ * Etwas ruhigere, gleichmäßigere Kartenhöhe.
+ */
+.ordersReferencePage.ordersPageUpcoming
+.finalOrderRow.operationalOrderRow {
+  min-height: 136px !important;
+}
+
+/*
+ * Der letzte Auftrag erhält unten genügend Abstand,
+ * damit die Liste nicht abgeschnitten wirkt.
+ */
+.ordersReferencePage.ordersPageUpcoming
+.finalOrderRow.operationalOrderRow:last-child {
+  margin-bottom: 6px !important;
+}
+
+@media (max-width: 1200px) {
+  .ordersReferencePage.ordersPageUpcoming
+  .finalOrderRows.operationalOrderRows {
+    min-height: auto !important;
+    padding-bottom: 22px !important;
+  }
+
+  .ordersReferencePage.ordersPageUpcoming
+  .finalOrderRow.operationalOrderRow {
+    min-height: 124px !important;
+  }
+}
+
+/* gastario-upcoming-orders-height-polish-end */
