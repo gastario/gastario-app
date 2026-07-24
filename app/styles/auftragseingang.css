@@ -6163,3 +6163,141 @@
     margin-left: 0 !important;
   }
 }
+
+/* gastario-order-layout-overlap-fix-20260724 */
+
+.ordersPage .incomingBillingPanel {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 14px !important;
+  align-items: end !important;
+  width: 100% !important;
+  margin: 0 0 18px 0 !important;
+  padding: 18px 20px !important;
+  border: 1px solid #dbe7ec !important;
+  border-radius: 16px !important;
+  background: #f8fbfa !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.ordersPage .incomingOrderConfirmForm {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 12px !important;
+  align-items: end !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.ordersPage .incomingBillingChoice {
+  display: grid !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+.ordersPage .incomingBillingChoice span {
+  display: block !important;
+  margin: 0 !important;
+  color: #38554f !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+}
+
+.ordersPage .incomingBillingChoice select {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 44px !important;
+  box-sizing: border-box !important;
+}
+
+.ordersPage .incomingOrderConfirmForm > button[type="submit"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 220px !important;
+  height: 44px !important;
+  padding: 0 18px !important;
+  border: 1px solid #0a9473 !important;
+  border-radius: 12px !important;
+  background: #0a9473 !important;
+  color: #ffffff !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
+.ordersPage .finalSelectedActions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+.ordersPage .finalSelectedActions > * {
+  position: static !important;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+.ordersPage .finalSelectedActions > a,
+.ordersPage .finalSelectedActions > button,
+.ordersPage .finalSelectedActions > form > button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 44px !important;
+  height: 44px !important;
+  padding: 0 18px !important;
+  border-radius: 12px !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
+.ordersPage .finalSelectedActions > form:last-child {
+  margin-left: auto !important;
+}
+
+.ordersPage .finalSelectedActions > form:last-child button {
+  min-width: 120px !important;
+}
+
+.ordersPage .finalSelectedActions + * {
+  clear: both !important;
+}
+
+@media (max-width: 980px) {
+  .ordersPage .incomingBillingPanel,
+  .ordersPage .incomingOrderConfirmForm {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ordersPage .incomingOrderConfirmForm > button[type="submit"] {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .ordersPage .finalSelectedActions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .ordersPage .finalSelectedActions > *,
+  .ordersPage .finalSelectedActions > form,
+  .ordersPage .finalSelectedActions > a,
+  .ordersPage .finalSelectedActions > button,
+  .ordersPage .finalSelectedActions > form > button {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+  }
+}
