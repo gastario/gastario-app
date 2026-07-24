@@ -7305,7 +7305,7 @@ button.finalSelectedDeleteButton {
 }
 /* gastario-incoming-order-review-v2-start */
 
-.ordersPage .incomingOrderReviewCardV2 {
+.incomingReferencePage .incomingOrderReviewCardV2 {
   display: grid;
   gap: 18px;
   width: 100%;
@@ -7318,7 +7318,7 @@ button.finalSelectedDeleteButton {
   box-shadow: 0 12px 34px rgba(24, 63, 54, 0.055);
 }
 
-.ordersPage .incomingOrderReviewHeaderV2 {
+.incomingReferencePage .incomingOrderReviewHeaderV2 {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -7333,7 +7333,7 @@ button.finalSelectedDeleteButton {
     );
 }
 
-.ordersPage .incomingOrderReviewEyebrowV2 {
+.incomingReferencePage .incomingOrderReviewEyebrowV2 {
   margin-bottom: 5px;
   color: #08745c;
   font-size: 10px;
@@ -7342,14 +7342,14 @@ button.finalSelectedDeleteButton {
   text-transform: uppercase;
 }
 
-.ordersPage .incomingOrderReviewNumberV2 {
+.incomingReferencePage .incomingOrderReviewNumberV2 {
   margin-bottom: 5px;
   color: #5f746e;
   font-size: 12px;
   font-weight: 800;
 }
 
-.ordersPage .incomingOrderReviewHeaderV2 h3 {
+.incomingReferencePage .incomingOrderReviewHeaderV2 h3 {
   margin: 0;
   color: #102f28;
   font-size: 25px;
@@ -7357,13 +7357,13 @@ button.finalSelectedDeleteButton {
   line-height: 1.15;
 }
 
-.ordersPage .incomingOrderReviewHeaderV2 p {
+.incomingReferencePage .incomingOrderReviewHeaderV2 p {
   margin: 7px 0 0;
   color: #61756f;
   font-size: 13px;
 }
 
-.ordersPage .incomingOrderReviewSourceV2 {
+.incomingReferencePage .incomingOrderReviewSourceV2 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -7378,14 +7378,14 @@ button.finalSelectedDeleteButton {
   white-space: nowrap;
 }
 
-.ordersPage .incomingOrderReviewFactsV2 {
+.incomingReferencePage .incomingOrderReviewFactsV2 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin: 0 20px;
 }
 
-.ordersPage .incomingOrderReviewFactsV2 > div {
+.incomingReferencePage .incomingOrderReviewFactsV2 > div {
   display: grid;
   align-content: start;
   gap: 5px;
@@ -7397,8 +7397,8 @@ button.finalSelectedDeleteButton {
   background: #f8fbfa;
 }
 
-.ordersPage .incomingOrderReviewFactsV2 span,
-.ordersPage .incomingOrderSectionHeaderV2 > div > span {
+.incomingReferencePage .incomingOrderReviewFactsV2 span,
+.incomingReferencePage .incomingOrderSectionHeaderV2 > div > span {
   color: #738681;
   font-size: 9px;
   font-weight: 900;
@@ -7406,21 +7406,21 @@ button.finalSelectedDeleteButton {
   text-transform: uppercase;
 }
 
-.ordersPage .incomingOrderReviewFactsV2 strong {
+.incomingReferencePage .incomingOrderReviewFactsV2 strong {
   color: #263f39;
   font-size: 14px;
   line-height: 1.35;
 }
 
-.ordersPage .incomingOrderReviewFactsV2 small {
+.incomingReferencePage .incomingOrderReviewFactsV2 small {
   color: #687b75;
   font-size: 12px;
   line-height: 1.4;
 }
 
-.ordersPage .incomingOrderProductsV2,
-.ordersPage .incomingOrderBillingV2,
-.ordersPage .incomingOrderChecklistV2 {
+.incomingReferencePage .incomingOrderProductsV2,
+.incomingReferencePage .incomingOrderBillingV2,
+.incomingReferencePage .incomingOrderChecklistV2 {
   display: grid;
   gap: 14px;
   margin: 0 20px;
@@ -7430,27 +7430,27 @@ button.finalSelectedDeleteButton {
   background: #ffffff;
 }
 
-.ordersPage .incomingOrderSectionHeaderV2 {
+.incomingReferencePage .incomingOrderSectionHeaderV2 {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 18px;
 }
 
-.ordersPage .incomingOrderSectionHeaderV2 h4 {
+.incomingReferencePage .incomingOrderSectionHeaderV2 h4 {
   margin: 4px 0 0;
   color: #173d34;
   font-size: 17px;
   font-weight: 850;
 }
 
-.ordersPage .incomingOrderSectionHeaderV2 > small {
+.incomingReferencePage .incomingOrderSectionHeaderV2 > small {
   color: #71827d;
   font-size: 11px;
   text-align: right;
 }
 
-.ordersPage .incomingOrderProductScrollV2 {
+.incomingReferencePage .incomingOrderProductScrollV2 {
   max-height: 330px;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -7459,21 +7459,21 @@ button.finalSelectedDeleteButton {
   scrollbar-color: #afcfc5 #edf4f1;
 }
 
-.ordersPage .incomingOrderProductScrollV2::-webkit-scrollbar {
+.incomingReferencePage .incomingOrderProductScrollV2::-webkit-scrollbar {
   width: 8px;
 }
 
-.ordersPage .incomingOrderProductScrollV2::-webkit-scrollbar-track {
+.incomingReferencePage .incomingOrderProductScrollV2::-webkit-scrollbar-track {
   border-radius: 999px;
   background: #edf4f1;
 }
 
-.ordersPage .incomingOrderProductScrollV2::-webkit-scrollbar-thumb {
+.incomingReferencePage .incomingOrderProductScrollV2::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background: #afcfc5;
 }
 
-.ordersPage .incomingOrderProductRowV2 {
+.incomingReferencePage .incomingOrderProductRowV2 {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -7483,25 +7483,25 @@ button.finalSelectedDeleteButton {
   border-bottom: 1px solid #ebf1ef;
 }
 
-.ordersPage .incomingOrderProductRowV2:last-child {
+.incomingReferencePage .incomingOrderProductRowV2:last-child {
   border-bottom: 0;
 }
 
-.ordersPage .incomingOrderProductMainV2 {
+.incomingReferencePage .incomingOrderProductMainV2 {
   display: flex;
   align-items: center;
   gap: 13px;
   min-width: 0;
 }
 
-.ordersPage .incomingOrderProductMainV2 strong {
+.incomingReferencePage .incomingOrderProductMainV2 strong {
   flex: 0 0 48px;
   color: #08745c;
   font-size: 14px;
   font-weight: 900;
 }
 
-.ordersPage .incomingOrderProductMainV2 span {
+.incomingReferencePage .incomingOrderProductMainV2 span {
   min-width: 0;
   color: #354f48;
   font-size: 13px;
@@ -7509,14 +7509,14 @@ button.finalSelectedDeleteButton {
   overflow-wrap: anywhere;
 }
 
-.ordersPage .incomingOrderProductRowV2 > b {
+.incomingReferencePage .incomingOrderProductRowV2 > b {
   flex: 0 0 auto;
   color: #183e35;
   font-size: 13px;
   white-space: nowrap;
 }
 
-.ordersPage .incomingOrderProductsEmptyV2 {
+.incomingReferencePage .incomingOrderProductsEmptyV2 {
   padding: 22px;
   border: 1px dashed #cbdcd7;
   border-radius: 12px;
@@ -7526,7 +7526,7 @@ button.finalSelectedDeleteButton {
   text-align: center;
 }
 
-.ordersPage .incomingOrderWarningV2 {
+.incomingReferencePage .incomingOrderWarningV2 {
   margin: 0 20px;
   padding: 13px 15px;
   border: 1px solid #efd6a4;
@@ -7537,24 +7537,24 @@ button.finalSelectedDeleteButton {
   font-weight: 700;
 }
 
-.ordersPage .incomingOrderReviewFormV2 {
+.incomingReferencePage .incomingOrderReviewFormV2 {
   display: grid;
   gap: 18px;
   margin: 0;
 }
 
-.ordersPage .incomingOrderBillingFieldV2 {
+.incomingReferencePage .incomingOrderBillingFieldV2 {
   display: grid;
   gap: 7px;
 }
 
-.ordersPage .incomingOrderBillingFieldV2 > span {
+.incomingReferencePage .incomingOrderBillingFieldV2 > span {
   color: #38554d;
   font-size: 12px;
   font-weight: 800;
 }
 
-.ordersPage .incomingOrderBillingFieldV2 select {
+.incomingReferencePage .incomingOrderBillingFieldV2 select {
   width: 100%;
   min-height: 46px;
   padding: 0 44px 0 14px;
@@ -7567,17 +7567,17 @@ button.finalSelectedDeleteButton {
   font-weight: 700;
 }
 
-.ordersPage .incomingOrderChecklistV2 {
+.incomingReferencePage .incomingOrderChecklistV2 {
   background: #f8fbfa;
 }
 
-.ordersPage .incomingOrderChecklistGridV2 {
+.incomingReferencePage .incomingOrderChecklistGridV2 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
-.ordersPage .incomingOrderChecklistGridV2 label {
+.incomingReferencePage .incomingOrderChecklistGridV2 label {
   display: flex;
   align-items: flex-start;
   gap: 11px;
@@ -7593,13 +7593,13 @@ button.finalSelectedDeleteButton {
     box-shadow 140ms ease;
 }
 
-.ordersPage .incomingOrderChecklistGridV2 label:hover {
+.incomingReferencePage .incomingOrderChecklistGridV2 label:hover {
   border-color: #9fcabc;
   background: #fbfefd;
   box-shadow: 0 5px 14px rgba(18, 77, 61, 0.05);
 }
 
-.ordersPage .incomingOrderChecklistGridV2 input {
+.incomingReferencePage .incomingOrderChecklistGridV2 input {
   flex: 0 0 auto;
   width: 19px;
   height: 19px;
@@ -7607,25 +7607,25 @@ button.finalSelectedDeleteButton {
   accent-color: #07956f;
 }
 
-.ordersPage .incomingOrderChecklistGridV2 label > span {
+.incomingReferencePage .incomingOrderChecklistGridV2 label > span {
   display: grid;
   gap: 3px;
   min-width: 0;
 }
 
-.ordersPage .incomingOrderChecklistGridV2 strong {
+.incomingReferencePage .incomingOrderChecklistGridV2 strong {
   color: #23483e;
   font-size: 12px;
   font-weight: 850;
 }
 
-.ordersPage .incomingOrderChecklistGridV2 small {
+.incomingReferencePage .incomingOrderChecklistGridV2 small {
   color: #6b7d77;
   font-size: 11px;
   line-height: 1.4;
 }
 
-.ordersPage .incomingOrderReviewSubmitV2 {
+.incomingReferencePage .incomingOrderReviewSubmitV2 {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -7637,22 +7637,22 @@ button.finalSelectedDeleteButton {
   background: #edf8f4;
 }
 
-.ordersPage .incomingOrderReviewSubmitV2 > div {
+.incomingReferencePage .incomingOrderReviewSubmitV2 > div {
   display: grid;
   gap: 4px;
 }
 
-.ordersPage .incomingOrderReviewSubmitV2 strong {
+.incomingReferencePage .incomingOrderReviewSubmitV2 strong {
   color: #123f33;
   font-size: 14px;
 }
 
-.ordersPage .incomingOrderReviewSubmitV2 span {
+.incomingReferencePage .incomingOrderReviewSubmitV2 span {
   color: #5e756d;
   font-size: 12px;
 }
 
-.ordersPage .incomingOrderReviewSubmitV2 button {
+.incomingReferencePage .incomingOrderReviewSubmitV2 button {
   flex: 0 0 auto;
   min-height: 46px;
   padding: 0 20px;
@@ -7667,11 +7667,11 @@ button.finalSelectedDeleteButton {
   box-shadow: 0 8px 18px rgba(7, 149, 111, 0.18);
 }
 
-.ordersPage .incomingOrderReviewSubmitV2 button:hover {
+.incomingReferencePage .incomingOrderReviewSubmitV2 button:hover {
   background: #087d60;
 }
 
-.ordersPage .incomingOrderReviewFooterV2 {
+.incomingReferencePage .incomingOrderReviewFooterV2 {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -7681,11 +7681,11 @@ button.finalSelectedDeleteButton {
   border-top: 1px solid #e2ebe8;
 }
 
-.ordersPage .incomingOrderReviewFooterV2 form {
+.incomingReferencePage .incomingOrderReviewFooterV2 form {
   margin: 0;
 }
 
-.ordersPage .incomingOrderReviewFooterV2 button {
+.incomingReferencePage .incomingOrderReviewFooterV2 button {
   min-height: 42px;
   padding: 0 17px;
   border: 1px solid #cbd9d5;
@@ -7713,44 +7713,44 @@ button.finalSelectedDeleteButton {
 }
 
 @media (max-width: 860px) {
-  .ordersPage .incomingOrderReviewFactsV2,
-  .ordersPage .incomingOrderChecklistGridV2 {
+  .incomingReferencePage .incomingOrderReviewFactsV2,
+  .incomingReferencePage .incomingOrderChecklistGridV2 {
     grid-template-columns: 1fr;
   }
 
-  .ordersPage .incomingOrderReviewSubmitV2 {
+  .incomingReferencePage .incomingOrderReviewSubmitV2 {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .ordersPage .incomingOrderReviewSubmitV2 button {
+  .incomingReferencePage .incomingOrderReviewSubmitV2 button {
     width: 100%;
   }
 }
 
 @media (max-width: 620px) {
-  .ordersPage .incomingOrderReviewHeaderV2 {
+  .incomingReferencePage .incomingOrderReviewHeaderV2 {
     flex-direction: column;
   }
 
-  .ordersPage .incomingOrderReviewFactsV2,
-  .ordersPage .incomingOrderProductsV2,
-  .ordersPage .incomingOrderBillingV2,
-  .ordersPage .incomingOrderChecklistV2,
-  .ordersPage .incomingOrderReviewSubmitV2,
-  .ordersPage .incomingOrderReviewFooterV2,
-  .ordersPage .incomingOrderWarningV2 {
+  .incomingReferencePage .incomingOrderReviewFactsV2,
+  .incomingReferencePage .incomingOrderProductsV2,
+  .incomingReferencePage .incomingOrderBillingV2,
+  .incomingReferencePage .incomingOrderChecklistV2,
+  .incomingReferencePage .incomingOrderReviewSubmitV2,
+  .incomingReferencePage .incomingOrderReviewFooterV2,
+  .incomingReferencePage .incomingOrderWarningV2 {
     margin-right: 12px;
     margin-left: 12px;
   }
 
-  .ordersPage .incomingOrderReviewFooterV2 {
+  .incomingReferencePage .incomingOrderReviewFooterV2 {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .ordersPage .incomingOrderReviewFooterV2 form,
-  .ordersPage .incomingOrderReviewFooterV2 button {
+  .incomingReferencePage .incomingOrderReviewFooterV2 form,
+  .incomingReferencePage .incomingOrderReviewFooterV2 button {
     width: 100%;
   }
 }

@@ -1437,7 +1437,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
       
 
       {/* gastario-incoming-page-shell-reference-20260716 */}
-      <PageShell className="ordersPage incomingReferencePage">
+      <PageShell className="incomingReferencePage">
         <PageHeader
           eyebrow="Eingang"
           title="Auftragseingang"
