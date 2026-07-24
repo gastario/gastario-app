@@ -282,7 +282,20 @@ export async function loader({ request }: { request: Request }) {
       prisma.order.findMany({
         where: {
           tenantId: tenantUser.tenantId,
-          ...(status ? { status: status as any } : {}),
+          ...(status === "AUTO_CREATED"
+            ? {
+                status: {
+                  in: [
+                    "AUTO_CREATED",
+                    "REVIEW_NEEDED",
+                  ] as any,
+                },
+              }
+            : status
+              ? {
+                  status: status as any,
+                }
+              : {}),
           ...(searchQuery
             ? {
                 OR: [
@@ -374,8 +387,12 @@ export async function loader({ request }: { request: Request }) {
         prisma.order.count({
           where: {
             tenantId: tenantUser.tenantId,
-            status: "AUTO_CREATED" as any,
-
+            status: {
+              in: [
+                "AUTO_CREATED",
+                "REVIEW_NEEDED",
+              ] as any,
+            },
           },
         }),
         prisma.order.count({
