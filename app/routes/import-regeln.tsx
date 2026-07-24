@@ -350,331 +350,374 @@ export default function ImportRegelnPage() {
   const anyAction = actionData as any;
   const rules = data.rules as any[];
 
+  const safeEmailRules = rules.filter(
+    (rule) => rule.fieldKey === "__classification__"
+  );
+
+  const pdfFieldRules = rules.filter(
+    (rule) => rule.fieldKey !== "__classification__"
+  );
+
   return (
     <AppLayout>
       <div style={pageStyle}>
-      <div style={headerStyle}>
-        <div>
-          <p style={eyebrowStyle}>Import & Auftragserkennung</p>
-          <h1 style={titleStyle}>Import-Regeln</h1>
-          <p style={subtitleStyle}>
-            Lege Woerter fest, an denen Gastario PDF-Auftraege erkennt. Jede Firma kann eigene Begriffe verwenden.
-          </p>
-        </div>
-      </div>
-
-      {actionData && "error" in actionData ? <div style={errorStyle}>{actionData.error}</div> : null}
-      {actionData && "success" in actionData ? <div style={successStyle}>{actionData.success}</div> : null}
-
-      <section style={cardStyle}>
-        <div style={cardHeaderStyle}>
+        <div style={headerStyle}>
           <div>
-            <p style={eyebrowStyle}>Schnellstart</p>
-            <h2 style={sectionTitleStyle}>Standard-Regeln und PDF-Test</h2>
-          </div>
-
-          <Form method="post">
-            <input type="hidden" name="_intent" value="seedDefaults" />
-            <button type="submit" style={secondaryButtonStyle}>Standard-Regeln einspielen</button>
-          </Form>
-        </div>
-
-        <Form method="post" style={testGridStyle}>
-          <input type="hidden" name="_intent" value="testText" />
-          <label style={fieldStyle}>
-            <span>PDF-Text testen</span>
-            <textarea
-              name="testText"
-              rows={5}
-              placeholder="Hier testweise Text aus einem PDF einfuegen, z. B. Lieferdatum, Lieferadresse, Positionen..."
-              defaultValue={anyAction?.testText || ""}
-              style={textareaStyle}
-            />
-          </label>
-          <div style={formActionStyle}>
-            <button type="submit" style={primaryButtonStyle}>Erkennung testen</button>
-          </div>
-        </Form>
-
-        {anyAction?.matches ? (
-          <div style={matchBoxStyle}>
-            <strong>Erkannte Felder</strong>
-            {anyAction.matches.length === 0 ? (
-              <p style={matchEmptyStyle}>Keine Treffer. Bitte mehr Erkennungswoerter anlegen.</p>
-            ) : (
-              <div style={matchListStyle}>
-                {anyAction.matches.map((match: any, index: number) => {
-                  const label = FIELD_OPTIONS.find((option) => option.value === match.fieldKey)?.label || match.fieldKey;
-
-                  return (
-                    <div key={index} style={matchRowStyle}>
-                      <strong>{label}</strong>
-                      <span>{match.sourceName}</span>
-                      <small>{match.keywords.join(", ")}</small>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        ) : null}
-      </section>
-
-      <section style={cardStyle}>
-        <div style={cardHeaderStyle}>
-          <div>
-            <p style={eyebrowStyle}>
-              Garantierte Erkennung
-            </p>
-
-            <h2 style={sectionTitleStyle}>
-              Feste E-Mail-Regel anlegen
-            </h2>
-
+            <p style={eyebrowStyle}>Import</p>
+            <h1 style={titleStyle}>E-Mail-Erkennung</h1>
             <p style={subtitleStyle}>
-              Diese Regeln werden vor der KI geprüft und legen
-              den Dokumenttyp verbindlich fest.
+              Lege einfache Regeln fest, damit bestätigte Aufträge
+              zuverlässig erkannt werden.
             </p>
           </div>
         </div>
 
-        <Form method="post" style={formGridStyle}>
-          <input
-            type="hidden"
-            name="_intent"
-            value="createClassificationRule"
-          />
+        {actionData && "error" in actionData ? (
+          <div style={errorStyle}>{actionData.error}</div>
+        ) : null}
 
-          <Field label="Regelname">
+        {actionData && "success" in actionData ? (
+          <div style={successStyle}>{actionData.success}</div>
+        ) : null}
+
+        <section style={cardStyle}>
+          <div style={cardHeaderStyle}>
+            <div>
+              <p style={eyebrowStyle}>Neue Regel</p>
+              <h2 style={sectionTitleStyle}>
+                Wann ist eine E-Mail ein Auftrag?
+              </h2>
+              <p style={subtitleStyle}>
+                Bei einem Treffer wird ein Prüfauftrag erstellt.
+              </p>
+            </div>
+          </div>
+
+          <Form method="post" style={formGridStyle}>
             <input
-              name="name"
-              required
-              placeholder="z. B. Heycater finale Bestätigung"
+              type="hidden"
+              name="_intent"
+              value="createClassificationRule"
             />
-          </Field>
-
-          <Field label="Quelle">
             <input
-              name="sourceName"
-              placeholder="z. B. Heycater"
-            />
-          </Field>
-
-          <Field label="Absender enthält">
-            <input
-              name="senderContains"
-              placeholder="z. B. heycater"
-            />
-          </Field>
-
-          <Field label="Betreff enthält">
-            <input
-              name="subjectContains"
-              placeholder="z. B. Bitte bestätige den Auftrag"
-            />
-          </Field>
-
-          <Field label="Nachrichtentext enthält">
-            <input
-              name="bodyContains"
-              placeholder="z. B. hat Euer Angebot bestätigt"
-            />
-          </Field>
-
-          <Field label="Bedingungen">
-            <select
-              name="matchMode"
-              defaultValue="ALL"
-            >
-              <option value="ALL">
-                Alle ausgefüllten Bedingungen müssen stimmen
-              </option>
-
-              <option value="ANY">
-                Mindestens eine Bedingung muss stimmen
-              </option>
-            </select>
-          </Field>
-
-          <Field label="Dokumenttyp">
-            <select
+              type="hidden"
               name="documentType"
-              defaultValue="ORDER_CONFIRMATION"
-            >
-              <option value="ORDER_CONFIRMATION">
-                Auftragsbestätigung
-              </option>
-
-              <option value="INQUIRY">
-                Anfrage
-              </option>
-
-              <option value="ORDER_CHANGE">
-                Auftragsänderung
-              </option>
-
-              <option value="CANCELLATION">
-                Absage / Stornierung
-              </option>
-
-              <option value="DELIVERY_NOTE">
-                Lieferschein / Erinnerung
-              </option>
-
-              <option value="TRASH">
-                Ignorieren
-              </option>
-            </select>
-          </Field>
-
-          <Field label="Aktion">
-            <select
-              name="action"
-              defaultValue="CREATE_REVIEW_ORDER"
-            >
-              <option value="CREATE_REVIEW_ORDER">
-                Prüfauftrag erstellen
-              </option>
-
-              <option value="CREATE_INQUIRY">
-                Als Anfrage markieren
-              </option>
-
-              <option value="SEND_TO_REVIEW">
-                Nur zur Prüfung vorlegen
-              </option>
-
-              <option value="IGNORE">
-                Ignorieren
-              </option>
-            </select>
-          </Field>
-
-          <Field label="Priorität">
-            <input
-              name="priority"
-              type="number"
-              min="0"
-              max="1000"
-              defaultValue="100"
+              value="ORDER_CONFIRMATION"
             />
-          </Field>
+            <input
+              type="hidden"
+              name="action"
+              value="CREATE_REVIEW_ORDER"
+            />
+            <input
+              type="hidden"
+              name="matchMode"
+              value="ALL"
+            />
+            <input
+              type="hidden"
+              name="priority"
+              value="100"
+            />
 
-          <div style={formActionStyle}>
-            <button
-              type="submit"
-              style={primaryButtonStyle}
-            >
-              Feste Regel speichern
-            </button>
+            <Field label="Regelname">
+              <input
+                name="name"
+                required
+                placeholder="Heycater – finale Bestätigung"
+              />
+            </Field>
+
+            <Field label="Plattform oder Absender">
+              <select name="senderContains" defaultValue="heycater">
+                <option value="heycater">Heycater</option>
+                <option value="feedr">Feedr</option>
+                <option value="egora">Egora</option>
+                <option value="">Andere / nicht festlegen</option>
+              </select>
+            </Field>
+
+            <Field label="Betreff enthält">
+              <input
+                name="subjectContains"
+                required
+                placeholder="Bitte bestätige den Auftrag"
+              />
+            </Field>
+
+            <Field label="Text enthält – optional">
+              <input
+                name="bodyContains"
+                placeholder="hat Euer Angebot bestätigt"
+              />
+            </Field>
+
+            <div style={formActionStyle}>
+              <button type="submit" style={primaryButtonStyle}>
+                Regel speichern
+              </button>
+            </div>
+          </Form>
+        </section>
+
+        <section style={cardStyle}>
+          <div style={cardHeaderStyle}>
+            <div>
+              <p style={eyebrowStyle}>Gespeichert</p>
+              <h2 style={sectionTitleStyle}>
+                Sichere E-Mail-Regeln
+              </h2>
+            </div>
+
+            <span style={countPillStyle}>
+              {safeEmailRules.length}
+            </span>
           </div>
-        </Form>
-      </section>
 
-      <section style={cardStyle}>
-        <div style={cardHeaderStyle}>
-          <div>
-            <p style={eyebrowStyle}>Neue Regel</p>
-            <h2 style={sectionTitleStyle}>Erkennungswoerter speichern</h2>
-          </div>
-        </div>
-
-        <Form method="post" style={formGridStyle}>
-          <input type="hidden" name="_intent" value="create" />
-
-          <Field label="Quelle optional">
-            <input name="sourceName" placeholder="z. B. Heycater, Egora, E-Mail" />
-          </Field>
-
-          <Field label="Welches Feld soll erkannt werden?">
-            <select name="fieldKey" defaultValue="deliveryDate">
-              {FIELD_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="Erkennungswoerter / Synonyme">
-            <input name="keywords" placeholder="z. B. Lieferdatum, Delivery Date, Eventdatum" />
-          </Field>
-
-          <div style={formActionStyle}>
-            <button type="submit" style={primaryButtonStyle}>Regel speichern</button>
-          </div>
-        </Form>
-      </section>
-
-      <section style={cardStyle}>
-        <div style={cardHeaderStyle}>
-          <div>
-            <p style={eyebrowStyle}>Gespeichert</p>
-            <h2 style={sectionTitleStyle}>Aktive Import-Regeln</h2>
-          </div>
-          <span style={countPillStyle}>{rules.length} Regeln</span>
-        </div>
-
-        {rules.length === 0 ? (
-          <div style={emptyStyle}>
-            Noch keine Import-Regeln vorhanden. Lege zuerst Begriffe fuer Lieferdatum, Lieferadresse und Positionen an.
-          </div>
-        ) : (
-          <div style={ruleListStyle}>
-            {rules.map((rule) => {
-              const label = FIELD_OPTIONS.find((option) => option.value === rule.fieldKey)?.label || rule.fieldKey;
-
-              return (
+          {safeEmailRules.length === 0 ? (
+            <div style={emptyStyle}>
+              Noch keine sichere E-Mail-Regel vorhanden.
+            </div>
+          ) : (
+            <div style={ruleListStyle}>
+              {safeEmailRules.map((rule) => (
                 <div key={rule.id} style={ruleRowStyle}>
                   <div style={ruleMainStyle}>
                     <div style={ruleTopStyle}>
-                      <strong style={ruleTitleStyle}>{label}</strong>
+                      <strong style={ruleTitleStyle}>
+                        {rule.name || "E-Mail-Regel"}
+                      </strong>
+
                       <span style={ruleStatusStyle(rule.active)}>
                         {rule.active ? "Aktiv" : "Aus"}
                       </span>
                     </div>
 
                     <div style={ruleMetaStyle}>
-                      {rule.sourceName ? <span>Quelle: {rule.sourceName}</span> : <span>Quelle: Alle</span>}
+                      <span>
+                        Plattform:{" "}
+                        {rule.senderContains || "Alle"}
+                      </span>
+                      <span>Ergebnis: Prüfauftrag</span>
                     </div>
 
-                    <div style={keywordBoxStyle}>{rule.keywords}</div>
+                    {rule.subjectContains ? (
+                      <div style={keywordBoxStyle}>
+                        Betreff: {rule.subjectContains}
+                      </div>
+                    ) : null}
+
+                    {rule.bodyContains ? (
+                      <div style={keywordBoxStyle}>
+                        Text: {rule.bodyContains}
+                      </div>
+                    ) : null}
                   </div>
 
                   <div style={ruleActionsStyle}>
                     <Form method="post">
-                      <input type="hidden" name="_intent" value="toggle" />
-                      <input type="hidden" name="ruleId" value={rule.id} />
-                      <input type="hidden" name="active" value={String(rule.active)} />
-                      <button type="submit" style={secondaryButtonStyle}>
-                        {rule.active ? "Deaktivieren" : "Aktivieren"}
+                      <input
+                        type="hidden"
+                        name="_intent"
+                        value="toggle"
+                      />
+                      <input
+                        type="hidden"
+                        name="ruleId"
+                        value={rule.id}
+                      />
+                      <input
+                        type="hidden"
+                        name="active"
+                        value={String(rule.active)}
+                      />
+
+                      <button
+                        type="submit"
+                        style={secondaryButtonStyle}
+                      >
+                        {rule.active
+                          ? "Deaktivieren"
+                          : "Aktivieren"}
                       </button>
                     </Form>
 
                     <Form
                       method="post"
                       onSubmit={(event) => {
-                        if (!window.confirm("Diese Import-Regel wirklich l" + String.fromCharCode(246) + "schen?")) {
+                        if (
+                          !window.confirm(
+                            "Diese E-Mail-Regel wirklich löschen?"
+                          )
+                        ) {
                           event.preventDefault();
                         }
                       }}
                     >
-                      <input type="hidden" name="_intent" value="delete" />
-                      <input type="hidden" name="ruleId" value={rule.id} />
-                      <button type="submit" style={dangerButtonStyle}>
-                        {"L" + String.fromCharCode(246) + "schen"}
+                      <input
+                        type="hidden"
+                        name="_intent"
+                        value="delete"
+                      />
+                      <input
+                        type="hidden"
+                        name="ruleId"
+                        value={rule.id}
+                      />
+
+                      <button
+                        type="submit"
+                        style={dangerButtonStyle}
+                      >
+                        Löschen
                       </button>
                     </Form>
                   </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
+          )}
+        </section>
+
+        <details style={cardStyle}>
+          <summary
+            style={{
+              cursor: "pointer",
+              fontSize: 18,
+              fontWeight: 750,
+              color: "#0f172a",
+            }}
+          >
+            Erweiterte PDF-Erkennung
+          </summary>
+
+          <div
+            style={{
+              display: "grid",
+              gap: 24,
+              marginTop: 24,
+            }}
+          >
+            <section>
+              <div style={cardHeaderStyle}>
+                <div>
+                  <p style={eyebrowStyle}>PDF-Test</p>
+                  <h2 style={sectionTitleStyle}>
+                    Dokumenttext prüfen
+                  </h2>
+                </div>
+
+                <Form method="post">
+                  <input
+                    type="hidden"
+                    name="_intent"
+                    value="seedDefaults"
+                  />
+                  <button
+                    type="submit"
+                    style={secondaryButtonStyle}
+                  >
+                    Standardregeln einspielen
+                  </button>
+                </Form>
+              </div>
+
+              <Form method="post" style={testGridStyle}>
+                <input
+                  type="hidden"
+                  name="_intent"
+                  value="testText"
+                />
+
+                <label style={fieldStyle}>
+                  <span>PDF-Text</span>
+                  <textarea
+                    name="testText"
+                    rows={5}
+                    placeholder="Text aus einem PDF einfügen"
+                    defaultValue={anyAction?.testText || ""}
+                    style={textareaStyle}
+                  />
+                </label>
+
+                <div style={formActionStyle}>
+                  <button
+                    type="submit"
+                    style={primaryButtonStyle}
+                  >
+                    Testen
+                  </button>
+                </div>
+              </Form>
+            </section>
+
+            <section>
+              <div style={cardHeaderStyle}>
+                <div>
+                  <p style={eyebrowStyle}>Felderkennung</p>
+                  <h2 style={sectionTitleStyle}>
+                    Erkennungswort hinzufügen
+                  </h2>
+                </div>
+              </div>
+
+              <Form method="post" style={formGridStyle}>
+                <input
+                  type="hidden"
+                  name="_intent"
+                  value="create"
+                />
+
+                <Field label="Quelle optional">
+                  <input
+                    name="sourceName"
+                    placeholder="Heycater, Feedr oder Egora"
+                  />
+                </Field>
+
+                <Field label="Feld">
+                  <select
+                    name="fieldKey"
+                    defaultValue="deliveryDate"
+                  >
+                    {FIELD_OPTIONS.map((option) => (
+                      <option
+                        key={option.value}
+                        value={option.value}
+                      >
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                <Field label="Erkennungswörter">
+                  <input
+                    name="keywords"
+                    placeholder="Lieferdatum, Eventdatum"
+                  />
+                </Field>
+
+                <div style={formActionStyle}>
+                  <button
+                    type="submit"
+                    style={primaryButtonStyle}
+                  >
+                    Feldregel speichern
+                  </button>
+                </div>
+              </Form>
+
+              <p style={subtitleStyle}>
+                {pdfFieldRules.length} PDF-Feldregeln gespeichert.
+              </p>
+            </section>
           </div>
-        )}
-      </section>
+        </details>
       </div>
     </AppLayout>
   );
 }
-
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label style={fieldStyle}>
