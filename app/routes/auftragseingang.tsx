@@ -2011,7 +2011,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                     </Form>
                   </section>
 
-                  <div className="finalSelectedFooterActionsStatic">
+                  <div className="finalSelectedActions">
                     <button type="button" className="finalBackButton" onClick={() => updateSelectedOrder(null)}>
                       Zurück zur Liste
                     </button>
