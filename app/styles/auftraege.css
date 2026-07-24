@@ -7167,3 +7167,83 @@ button.finalSelectedDeleteButton {
     margin-left: 0 !important;
   }
 }
+
+/* gastario-selected-delete-specificity-fix-20260724 */
+
+.ordersPage
+.finalSelectedActions
+> form.finalSelectedDeleteForm {
+  position: static !important;
+  display: block !important;
+  flex: 0 0 auto !important;
+
+  width: max-content !important;
+  min-width: 0 !important;
+  max-width: max-content !important;
+  min-height: 0 !important;
+  height: auto !important;
+
+  margin: 0 0 0 auto !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.ordersPage
+.finalSelectedActions
+> form.finalSelectedDeleteForm
+> button.finalSelectedDeleteButton {
+  position: static !important;
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: auto !important;
+  min-width: 132px !important;
+  max-width: 160px !important;
+  min-height: 42px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 16px !important;
+
+  border: 1px solid #c6281d !important;
+  border-radius: 11px !important;
+  background: #c6281d !important;
+  background-color: #c6281d !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 14px rgba(198, 40, 29, 0.16) !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+}
+
+.ordersPage
+.finalSelectedActions
+> form.finalSelectedDeleteForm
+> button.finalSelectedDeleteButton:hover {
+  border-color: #a92118 !important;
+  background: #a92118 !important;
+  background-image: none !important;
+}
+
+@media (max-width: 760px) {
+  .ordersPage
+  .finalSelectedActions
+  > form.finalSelectedDeleteForm,
+  .ordersPage
+  .finalSelectedActions
+  > form.finalSelectedDeleteForm
+  > button.finalSelectedDeleteButton {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+  }
+}
