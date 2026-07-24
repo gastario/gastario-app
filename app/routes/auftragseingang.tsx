@@ -1934,61 +1934,26 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                   ) : null}
 
                   <section className="incomingBillingPanel">
-                    <Form
-                      method="get"
-                      action={
+                    <div>
+                      <strong>
+                        Auftrag vor der Übernahme kontrollieren
+                      </strong>
+
+                      <p>
+                        Kundendaten, Lieferadresse, Termin und Positionen
+                        werden auf der vollständigen Prüfseite bestätigt.
+                      </p>
+                    </div>
+
+                    <Link
+                      to={
                         "/auftrag-pruefung/" +
                         selectedOrder.id
                       }
-                      className="incomingBillingReviewForm"
+                      className="incomingReviewOrderButton"
                     >
-                      <div className="incomingBillingContent">
-                        <strong>
-                          Wie soll der Auftrag abgerechnet werden?
-                        </strong>
-
-                        <select
-                          name="billingMode"
-                          defaultValue={
-                            selectedOrder.billingMode ||
-                            "UNDECIDED"
-                          }
-                        >
-                          <option value="UNDECIDED">
-                            Noch nicht entschieden
-                          </option>
-
-                          <option value="DIRECT_INVOICE">
-                            Direktrechnung an den Kunden
-                          </option>
-
-                          <option value="EXTERNAL_INVOICE">
-                            Rechnung wurde extern erstellt
-                          </option>
-
-                          <option value="PLATFORM_CREDIT">
-                            Plattform-Gutschrift
-                          </option>
-
-                          <option value="NO_INVOICE">
-                            Keine Rechnung erforderlich
-                          </option>
-                        </select>
-
-                        <p>
-                          Danach werden Kundendaten, Lieferadresse,
-                          Termin und Positionen auf der Prüfseite
-                          kontrolliert.
-                        </p>
-                      </div>
-
-                      <button
-                        type="submit"
-                        className="incomingReviewOrderButton"
-                      >
-                        Auftrag prüfen und übernehmen
-                      </button>
-                    </Form>
+                      Auftrag prüfen und übernehmen
+                    </Link>
                   </section>
 
                   <div className="finalSelectedActions">

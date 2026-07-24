@@ -149,34 +149,10 @@ export async function loader({ request, params }: { request: Request; params: { 
 
   const url = new URL(request.url);
 
-  const requestedBillingModeRaw =
-    String(
-      url.searchParams.get("billingMode") ||
-      order.billingMode ||
-      "UNDECIDED"
-    ).toUpperCase();
-
-  const allowedBillingModes = [
-    "UNDECIDED",
-    "DIRECT_INVOICE",
-    "EXTERNAL_INVOICE",
-    "PLATFORM_CREDIT",
-    "NO_INVOICE",
-  ];
-
-  const requestedBillingMode =
-    allowedBillingModes.includes(
-      requestedBillingModeRaw
-    )
-      ? requestedBillingModeRaw
-      : "UNDECIDED";
-
   return {
     tenant: tenantUser.tenant,
     order,
-    blocked:
-      url.searchParams.get("blocked") === "1",
-    requestedBillingMode,
+    blocked: url.searchParams.get("blocked") === "1",
   };
 }
 
@@ -313,7 +289,7 @@ export async function action({ request, params }: { request: Request; params: { 
 }
 
 export default function AuftragPruefungPage() {
-  const { tenant, order, blocked, requestedBillingMode } = useLoaderData<typeof loader>();
+  const { tenant, order, blocked } = useLoaderData<typeof loader>();
   const total = order.items.reduce((sum, item) => sum + (item.totalCents || 0), 0);
   const correctionItems = order.items.filter((item) => isHeycaterCorrectionItem(item));
   const visibleItems = order.items.filter((item) => !isHeycaterCorrectionItem(item));
@@ -1100,12 +1076,6 @@ export default function AuftragPruefungPage() {
                   type="hidden"
                   name="_intent"
                   value="confirmOrder"
-                />
-
-                <input
-                  type="hidden"
-                  name="billingMode"
-                  value={requestedBillingMode}
                 />
 
                 <button
