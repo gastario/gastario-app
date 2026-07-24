@@ -1531,7 +1531,7 @@ button {
 
 /* gastario-incoming-order-review-v2-start */
 
-.incomingReferencePage .incomingOrderReviewCardV2 {
+.incomingOrderReviewCardV2 {
   display: grid;
   gap: 18px;
   width: 100%;
@@ -1544,7 +1544,7 @@ button {
   box-shadow: 0 12px 34px rgba(24, 63, 54, 0.055);
 }
 
-.incomingReferencePage .incomingOrderReviewHeaderV2 {
+.incomingOrderReviewHeaderV2 {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -1559,7 +1559,7 @@ button {
     );
 }
 
-.incomingReferencePage .incomingOrderReviewEyebrowV2 {
+.incomingOrderReviewEyebrowV2 {
   margin-bottom: 5px;
   color: #08745c;
   font-size: 10px;
@@ -1568,14 +1568,14 @@ button {
   text-transform: uppercase;
 }
 
-.incomingReferencePage .incomingOrderReviewNumberV2 {
+.incomingOrderReviewNumberV2 {
   margin-bottom: 5px;
   color: #5f746e;
   font-size: 12px;
   font-weight: 800;
 }
 
-.incomingReferencePage .incomingOrderReviewHeaderV2 h3 {
+.incomingOrderReviewHeaderV2 h3 {
   margin: 0;
   color: #102f28;
   font-size: 25px;
@@ -1583,13 +1583,13 @@ button {
   line-height: 1.15;
 }
 
-.incomingReferencePage .incomingOrderReviewHeaderV2 p {
+.incomingOrderReviewHeaderV2 p {
   margin: 7px 0 0;
   color: #61756f;
   font-size: 13px;
 }
 
-.incomingReferencePage .incomingOrderReviewSourceV2 {
+.incomingOrderReviewSourceV2 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1604,14 +1604,14 @@ button {
   white-space: nowrap;
 }
 
-.incomingReferencePage .incomingOrderReviewFactsV2 {
+.incomingOrderReviewFactsV2 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin: 0 20px;
 }
 
-.incomingReferencePage .incomingOrderReviewFactsV2 > div {
+.incomingOrderReviewFactsV2 > div {
   display: grid;
   align-content: start;
   gap: 5px;
@@ -1623,8 +1623,8 @@ button {
   background: #f8fbfa;
 }
 
-.incomingReferencePage .incomingOrderReviewFactsV2 span,
-.incomingReferencePage .incomingOrderSectionHeaderV2 > div > span {
+.incomingOrderReviewFactsV2 span,
+.incomingOrderSectionHeaderV2 > div > span {
   color: #738681;
   font-size: 9px;
   font-weight: 900;
@@ -1632,21 +1632,21 @@ button {
   text-transform: uppercase;
 }
 
-.incomingReferencePage .incomingOrderReviewFactsV2 strong {
+.incomingOrderReviewFactsV2 strong {
   color: #263f39;
   font-size: 14px;
   line-height: 1.35;
 }
 
-.incomingReferencePage .incomingOrderReviewFactsV2 small {
+.incomingOrderReviewFactsV2 small {
   color: #687b75;
   font-size: 12px;
   line-height: 1.4;
 }
 
-.incomingReferencePage .incomingOrderProductsV2,
-.incomingReferencePage .incomingOrderBillingV2,
-.incomingReferencePage .incomingOrderChecklistV2 {
+.incomingOrderProductsV2,
+.incomingOrderBillingV2,
+.incomingOrderChecklistV2 {
   display: grid;
   gap: 14px;
   margin: 0 20px;
@@ -1656,27 +1656,27 @@ button {
   background: #ffffff;
 }
 
-.incomingReferencePage .incomingOrderSectionHeaderV2 {
+.incomingOrderSectionHeaderV2 {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 18px;
 }
 
-.incomingReferencePage .incomingOrderSectionHeaderV2 h4 {
+.incomingOrderSectionHeaderV2 h4 {
   margin: 4px 0 0;
   color: #173d34;
   font-size: 17px;
   font-weight: 850;
 }
 
-.incomingReferencePage .incomingOrderSectionHeaderV2 > small {
+.incomingOrderSectionHeaderV2 > small {
   color: #71827d;
   font-size: 11px;
   text-align: right;
 }
 
-.incomingReferencePage .incomingOrderProductScrollV2 {
+.incomingOrderProductScrollV2 {
   max-height: 330px;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -1685,21 +1685,21 @@ button {
   scrollbar-color: #afcfc5 #edf4f1;
 }
 
-.incomingReferencePage .incomingOrderProductScrollV2::-webkit-scrollbar {
+.incomingOrderProductScrollV2::-webkit-scrollbar {
   width: 8px;
 }
 
-.incomingReferencePage .incomingOrderProductScrollV2::-webkit-scrollbar-track {
+.incomingOrderProductScrollV2::-webkit-scrollbar-track {
   border-radius: 999px;
   background: #edf4f1;
 }
 
-.incomingReferencePage .incomingOrderProductScrollV2::-webkit-scrollbar-thumb {
+.incomingOrderProductScrollV2::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background: #afcfc5;
 }
 
-.incomingReferencePage .incomingOrderProductRowV2 {
+.incomingOrderProductRowV2 {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1709,25 +1709,25 @@ button {
   border-bottom: 1px solid #ebf1ef;
 }
 
-.incomingReferencePage .incomingOrderProductRowV2:last-child {
+.incomingOrderProductRowV2:last-child {
   border-bottom: 0;
 }
 
-.incomingReferencePage .incomingOrderProductMainV2 {
+.incomingOrderProductMainV2 {
   display: flex;
   align-items: center;
   gap: 13px;
   min-width: 0;
 }
 
-.incomingReferencePage .incomingOrderProductMainV2 strong {
+.incomingOrderProductMainV2 strong {
   flex: 0 0 48px;
   color: #08745c;
   font-size: 14px;
   font-weight: 900;
 }
 
-.incomingReferencePage .incomingOrderProductMainV2 span {
+.incomingOrderProductMainV2 span {
   min-width: 0;
   color: #354f48;
   font-size: 13px;
@@ -1735,14 +1735,14 @@ button {
   overflow-wrap: anywhere;
 }
 
-.incomingReferencePage .incomingOrderProductRowV2 > b {
+.incomingOrderProductRowV2 > b {
   flex: 0 0 auto;
   color: #183e35;
   font-size: 13px;
   white-space: nowrap;
 }
 
-.incomingReferencePage .incomingOrderProductsEmptyV2 {
+.incomingOrderProductsEmptyV2 {
   padding: 22px;
   border: 1px dashed #cbdcd7;
   border-radius: 12px;
@@ -1752,7 +1752,7 @@ button {
   text-align: center;
 }
 
-.incomingReferencePage .incomingOrderWarningV2 {
+.incomingOrderWarningV2 {
   margin: 0 20px;
   padding: 13px 15px;
   border: 1px solid #efd6a4;
@@ -1763,24 +1763,24 @@ button {
   font-weight: 700;
 }
 
-.incomingReferencePage .incomingOrderReviewFormV2 {
+.incomingOrderReviewFormV2 {
   display: grid;
   gap: 18px;
   margin: 0;
 }
 
-.incomingReferencePage .incomingOrderBillingFieldV2 {
+.incomingOrderBillingFieldV2 {
   display: grid;
   gap: 7px;
 }
 
-.incomingReferencePage .incomingOrderBillingFieldV2 > span {
+.incomingOrderBillingFieldV2 > span {
   color: #38554d;
   font-size: 12px;
   font-weight: 800;
 }
 
-.incomingReferencePage .incomingOrderBillingFieldV2 select {
+.incomingOrderBillingFieldV2 select {
   width: 100%;
   min-height: 46px;
   padding: 0 44px 0 14px;
@@ -1793,17 +1793,17 @@ button {
   font-weight: 700;
 }
 
-.incomingReferencePage .incomingOrderChecklistV2 {
+.incomingOrderChecklistV2 {
   background: #f8fbfa;
 }
 
-.incomingReferencePage .incomingOrderChecklistGridV2 {
+.incomingOrderChecklistGridV2 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
-.incomingReferencePage .incomingOrderChecklistGridV2 label {
+.incomingOrderChecklistGridV2 label {
   display: flex;
   align-items: flex-start;
   gap: 11px;
@@ -1819,13 +1819,13 @@ button {
     box-shadow 140ms ease;
 }
 
-.incomingReferencePage .incomingOrderChecklistGridV2 label:hover {
+.incomingOrderChecklistGridV2 label:hover {
   border-color: #9fcabc;
   background: #fbfefd;
   box-shadow: 0 5px 14px rgba(18, 77, 61, 0.05);
 }
 
-.incomingReferencePage .incomingOrderChecklistGridV2 input {
+.incomingOrderChecklistGridV2 input {
   flex: 0 0 auto;
   width: 19px;
   height: 19px;
@@ -1833,25 +1833,25 @@ button {
   accent-color: #07956f;
 }
 
-.incomingReferencePage .incomingOrderChecklistGridV2 label > span {
+.incomingOrderChecklistGridV2 label > span {
   display: grid;
   gap: 3px;
   min-width: 0;
 }
 
-.incomingReferencePage .incomingOrderChecklistGridV2 strong {
+.incomingOrderChecklistGridV2 strong {
   color: #23483e;
   font-size: 12px;
   font-weight: 850;
 }
 
-.incomingReferencePage .incomingOrderChecklistGridV2 small {
+.incomingOrderChecklistGridV2 small {
   color: #6b7d77;
   font-size: 11px;
   line-height: 1.4;
 }
 
-.incomingReferencePage .incomingOrderReviewSubmitV2 {
+.incomingOrderReviewSubmitV2 {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1863,22 +1863,22 @@ button {
   background: #edf8f4;
 }
 
-.incomingReferencePage .incomingOrderReviewSubmitV2 > div {
+.incomingOrderReviewSubmitV2 > div {
   display: grid;
   gap: 4px;
 }
 
-.incomingReferencePage .incomingOrderReviewSubmitV2 strong {
+.incomingOrderReviewSubmitV2 strong {
   color: #123f33;
   font-size: 14px;
 }
 
-.incomingReferencePage .incomingOrderReviewSubmitV2 span {
+.incomingOrderReviewSubmitV2 span {
   color: #5e756d;
   font-size: 12px;
 }
 
-.incomingReferencePage .incomingOrderReviewSubmitV2 button {
+.incomingOrderReviewSubmitV2 button {
   flex: 0 0 auto;
   min-height: 46px;
   padding: 0 20px;
@@ -1893,11 +1893,11 @@ button {
   box-shadow: 0 8px 18px rgba(7, 149, 111, 0.18);
 }
 
-.incomingReferencePage .incomingOrderReviewSubmitV2 button:hover {
+.incomingOrderReviewSubmitV2 button:hover {
   background: #087d60;
 }
 
-.incomingReferencePage .incomingOrderReviewFooterV2 {
+.incomingOrderReviewFooterV2 {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1907,11 +1907,11 @@ button {
   border-top: 1px solid #e2ebe8;
 }
 
-.incomingReferencePage .incomingOrderReviewFooterV2 form {
+.incomingOrderReviewFooterV2 form {
   margin: 0;
 }
 
-.incomingReferencePage .incomingOrderReviewFooterV2 button {
+.incomingOrderReviewFooterV2 button {
   min-height: 42px;
   padding: 0 17px;
   border: 1px solid #cbd9d5;
@@ -1939,44 +1939,44 @@ button {
 }
 
 @media (max-width: 860px) {
-  .incomingReferencePage .incomingOrderReviewFactsV2,
-  .incomingReferencePage .incomingOrderChecklistGridV2 {
+  .incomingOrderReviewFactsV2,
+  .incomingOrderChecklistGridV2 {
     grid-template-columns: 1fr;
   }
 
-  .incomingReferencePage .incomingOrderReviewSubmitV2 {
+  .incomingOrderReviewSubmitV2 {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .incomingReferencePage .incomingOrderReviewSubmitV2 button {
+  .incomingOrderReviewSubmitV2 button {
     width: 100%;
   }
 }
 
 @media (max-width: 620px) {
-  .incomingReferencePage .incomingOrderReviewHeaderV2 {
+  .incomingOrderReviewHeaderV2 {
     flex-direction: column;
   }
 
-  .incomingReferencePage .incomingOrderReviewFactsV2,
-  .incomingReferencePage .incomingOrderProductsV2,
-  .incomingReferencePage .incomingOrderBillingV2,
-  .incomingReferencePage .incomingOrderChecklistV2,
-  .incomingReferencePage .incomingOrderReviewSubmitV2,
-  .incomingReferencePage .incomingOrderReviewFooterV2,
-  .incomingReferencePage .incomingOrderWarningV2 {
+  .incomingOrderReviewFactsV2,
+  .incomingOrderProductsV2,
+  .incomingOrderBillingV2,
+  .incomingOrderChecklistV2,
+  .incomingOrderReviewSubmitV2,
+  .incomingOrderReviewFooterV2,
+  .incomingOrderWarningV2 {
     margin-right: 12px;
     margin-left: 12px;
   }
 
-  .incomingReferencePage .incomingOrderReviewFooterV2 {
+  .incomingOrderReviewFooterV2 {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .incomingReferencePage .incomingOrderReviewFooterV2 form,
-  .incomingReferencePage .incomingOrderReviewFooterV2 button {
+  .incomingOrderReviewFooterV2 form,
+  .incomingOrderReviewFooterV2 button {
     width: 100%;
   }
 }
