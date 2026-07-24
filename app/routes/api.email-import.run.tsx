@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import { createRequire } from "node:module";
 import { simpleParser } from "mailparser";
 import { prisma } from "../lib/prisma.server";
-import { extractUniversalOrder } from "../lib/order-import-extract.server";
+
 import {
   analyzeImportedOrder,
   canCreateReviewOrderFromAnalysis,
@@ -1413,6 +1413,58 @@ async function createReviewOrderFromExtracted(
 }
 
 export async function loader({ request }: { request: Request }) {
+  const {
+    extractAndAnalyzeImport,
+  } = await import(
+    "../lib/import-engine/legacy-parser-adapter"
+  );
+
+  function extractOrderWithCentralImportEngine(input: {
+    subject?: string;
+    sender?: string;
+    bodyText?: string;
+    documentText?: string;
+  }) {
+    const engineResult = extractAndAnalyzeImport({
+      subject: input.subject,
+      sender: input.sender,
+      bodyText: input.bodyText,
+      documentText: input.documentText,
+      sourceName: "EMAIL",
+    });
+
+    const draft = engineResult.normalizedDraft;
+
+    return {
+      customerName: draft.customerName,
+      contactName: draft.contactName,
+      contactPhone: draft.contactPhone,
+      deliveryDate: draft.deliveryDate,
+      eventDate: draft.deliveryDate,
+      deliveryTime: draft.deliveryTime,
+      eventStart: draft.deliveryTime,
+      deliveryAddress: draft.deliveryAddress,
+      source: draft.sourceName || "EMAIL",
+      externalOrderNumber:
+        draft.externalOrderNumber,
+      pdfNetTotalCents:
+        draft.netTotalCents || 0,
+      pdfTaxTotalCents:
+        draft.taxTotalCents || 0,
+      pdfGrossTotalCents:
+        draft.grossTotalCents || 0,
+      items: draft.items.map((item) => ({
+        name: item.name,
+        description: item.description,
+        quantity: item.quantity,
+        unit: item.unit || "Stueck",
+        unitCents: item.unitCents,
+        totalCents: item.totalCents,
+        rawLine: item.rawText,
+      })),
+      importEngineResult: engineResult,
+    };
+  }
   const secret = process.env.EMAIL_IMPORT_RUN_SECRET || "";
   const url = new URL(request.url);
   const givenSecret = url.searchParams.get("secret") || "";
@@ -1741,7 +1793,19 @@ export async function loader({ request }: { request: Request }) {
                         continue;
                       }
 
-                      const extractedOrder = extractUniversalOrder(bestText);
+                      const extractedOrder =
+            extractOrderWithCentralImportEngine({
+              subject: String(
+                parsed.subject || ""
+              ),
+              sender: String(
+                parsed.from?.text || ""
+              ),
+              bodyText: String(
+                parsed.text || ""
+              ),
+              documentText: bestText,
+            });
 
                       const importAnalysis = analyzeImportedOrder({
                         documentType: aiDecision.mailType as any,
@@ -1992,7 +2056,19 @@ export async function loader({ request }: { request: Request }) {
             continue;
           }
 
-          const extractedOrder = extractUniversalOrder(bestText);
+          const extractedOrder =
+            extractOrderWithCentralImportEngine({
+              subject: String(
+                parsed.subject || ""
+              ),
+              sender: String(
+                parsed.from?.text || ""
+              ),
+              bodyText: String(
+                parsed.text || ""
+              ),
+              documentText: bestText,
+            });
 
           const importAnalysis = analyzeImportedOrder({
             documentType: aiDecision.mailType as any,
