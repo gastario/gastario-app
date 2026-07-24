@@ -1771,6 +1771,18 @@ export async function loader({ request }: { request: Request }) {
           const parsed = await simpleParser(message.source as Buffer);
           const messageId = String(parsed.messageId || message.uid || "");
 
+          console.log("Email import fetched message:", {
+            accountId: account.id,
+            accountEmail: account.email,
+            mailbox: account.email,
+            uid: message.uid,
+            messageId,
+            subject: String(parsed.subject || ""),
+            sender: String(parsed.from?.text || ""),
+            date:
+              parsed.date?.toISOString?.() || null,
+          });
+
           const existing = await prisma.incomingEmail.findFirst({
             where: {
               tenantId: account.tenantId,
