@@ -5957,3 +5957,80 @@
     min-width: 0;
   }
 }
+/* gastario-incoming-actions-final-fix-20260724 */
+
+.finalSelectedActions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+
+  width: 100% !important;
+  padding: 14px 16px !important;
+  box-sizing: border-box !important;
+}
+
+.finalSelectedActions > .finalBackButton {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 145px !important;
+  min-height: 44px !important;
+  margin: 0 !important;
+}
+
+.finalSelectedActions > form {
+  display: block !important;
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+
+  margin: 0 0 0 auto !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.finalSelectedActions > form > button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: auto !important;
+  min-width: 112px !important;
+  max-width: none !important;
+  min-height: 44px !important;
+
+  margin: 0 !important;
+  padding: 0 20px !important;
+
+  border: 1px solid #c6281d !important;
+  border-radius: 11px !important;
+  background: #c6281d !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 7px 16px rgba(198, 40, 29, 0.16) !important;
+}
+
+.finalSelectedActions > form > button:hover {
+  border-color: #aa2118 !important;
+  background: #aa2118 !important;
+}
+
+@media (max-width: 620px) {
+  .finalSelectedActions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .finalSelectedActions > .finalBackButton,
+  .finalSelectedActions > form,
+  .finalSelectedActions > form > button {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+}
