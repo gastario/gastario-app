@@ -61,7 +61,7 @@ function percentChange(current: number, previous: number) {
 
 export function meta() {
   return [
-    { title: "Dashboard · Gastario" },
+    { title: "Dashboard ? Gastario" },
     {
       name: "description",
       content:
@@ -458,9 +458,9 @@ export default function Home() {
         <header className="dashHeader">
           <div>
             <p className="eyebrow">Dashboard</p>
-            <h1>Betriebsueberblick</h1>
+            <h1>Betriebsüberblick</h1>
             <p>
-              {data.tenant?.name} ? alles Wichtige fuer heute an einem Ort.
+              {data.tenant?.name} – alles Wichtige für heute an einem Ort.
             </p>
           </div>
 
@@ -472,21 +472,21 @@ export default function Home() {
 
         <section className="todayStrip">
           <Link to="/auftragseingang" className="todayItem" data-highlight="true">
-            <span>Zu pruefen</span>
+            <span>Zu prüfen</span>
             <strong>{data.counts.openOrders}</strong>
-            <small>Importe und neue Anfragen</small>
+            <small>Neue und ungeprüfte Aufträge</small>
           </Link>
 
           <Link to="/auftraege" className="todayItem">
             <span>Heute</span>
             <strong>{data.counts.ordersToday}</strong>
-            <small>Auftraege nach Lieferdatum</small>
+            <small>Aufträge nach Lieferdatum</small>
           </Link>
 
           <Link to="/auftraege" className="todayItem">
-            <span>Bestaetigt</span>
+            <span>Bestätigt</span>
             <strong>{data.counts.confirmedOrders}</strong>
-            <small>operative Auftraege</small>
+            <small>operative Aufträge</small>
           </Link>
 
           <Link to="/lager" className="todayItem">
@@ -504,7 +504,7 @@ export default function Home() {
               <h2>Finanzen</h2>
               <span>Umsatz, offene Rechnungen und Abrechnungsstand.</span>
             </div>
-            <Link to="/rechnungen">Rechnungen oeffnen</Link>
+            <Link to="/rechnungen">Rechnungen öffnen</Link>
           </div>
 
           <div className="financeGrid">
@@ -529,7 +529,7 @@ export default function Home() {
             <div>
               <span>Ohne Rechnung</span>
               <strong>{data.finance.ordersWithoutInvoice}</strong>
-              <small>uebernommene Auftraege</small>
+              <small>übernommene Aufträge</small>
             </div>
           </div>
         </section>
@@ -539,17 +539,17 @@ export default function Home() {
             <div>
               <p className="eyebrow">Steuerberater</p>
               <h2>Monatsabschluss</h2>
-              <span>Was noch offen ist, bevor der Monat sauber uebergeben werden kann.</span>
+              <span>Was noch offen ist, bevor der Monat sauber übergeben werden kann.</span>
             </div>
 
-            <Link to="/einstellungen/rechnungen">Rechnungsdaten pruefen</Link>
+            <Link to="/einstellungen/rechnungen">Rechnungsdaten prüfen</Link>
           </div>
 
           <div className="taxGrid">
             <Link to="/auftraege" className="taxTask">
-              <span>Auftraege ohne Rechnung</span>
+              <span>Aufträge ohne Rechnung</span>
               <strong>{data.finance.ordersWithoutInvoice}</strong>
-              <small>uebernommene Auftraege</small>
+              <small>übernommene Aufträge</small>
             </Link>
 
             <Link to="/rechnungen" className="taxTask">
@@ -567,7 +567,7 @@ export default function Home() {
             <Link to="/einstellungen/rechnungen" className="taxTask">
               <span>Fehlende Stammdaten</span>
               <strong>{data.taxAdvisor.missingInvoiceSettings}</strong>
-              <small>Rechnungsdaten pruefen</small>
+              <small>Rechnungsdaten prüfen</small>
             </Link>
           </div>
         </section>
@@ -579,14 +579,14 @@ export default function Home() {
             <div className="cardHead">
               <div>
                 <p className="eyebrow">Tagesplan</p>
-                <h2>Naechste Auftraege heute</h2>
+                <h2>Nächste Aufträge heute</h2>
               </div>
-              <Link to="/auftraege">Bevorstehende oeffnen</Link>
+              <Link to="/auftraege">Bevorstehende öffnen</Link>
             </div>
 
             {data.todayOrders.length === 0 ? (
               <div className="emptyState">
-                <strong>Keine Auftraege heute</strong>
+                <strong>Keine Aufträge heute</strong>
                 <span>Heute ist kein Auftrag mit Lieferdatum geplant.</span>
               </div>
             ) : (
@@ -615,7 +615,7 @@ export default function Home() {
               <div className="cardHead">
                 <div>
                   <p className="eyebrow">Auftragseingang</p>
-                  <h2>Pruefung offen</h2>
+                  <h2>Prüfung offen</h2>
                 </div>
                 <Link to="/auftragseingang">Alle</Link>
               </div>
@@ -624,13 +624,13 @@ export default function Home() {
                 {data.openOrders.length === 0 && data.emailInbox.length === 0 ? (
                   <div className="inboxItem">
                     <strong>Nichts offen</strong>
-                    <span>Keine neuen Auftraege oder E-Mails in Pruefung.</span>
+                    <span>Keine neuen Aufträge oder E-Mails in Prüfung.</span>
                   </div>
                 ) : null}
 
                 {data.openOrders.map((order: any) => (
                   <Link className="inboxItem" to={"/auftrag-pruefung/" + order.id} key={order.id}>
-                    <strong>{order.customerName || "Pruefauftrag"}</strong>
+                    <strong>{order.customerName || "Prüfauftrag"}</strong>
                     <span>{order.source} ? {order.orderNumber}</span>
                   </Link>
                 ))}
@@ -638,7 +638,7 @@ export default function Home() {
                 {data.emailInbox.map((mail: any) => (
                   <Link className="inboxItem" to={"/email-pruefung/" + mail.id} key={mail.id} data-mail="true">
                     <strong>{mail.subject || "E-Mail ohne Betreff"}</strong>
-                    <span>{mail.sender || "Unbekannter Absender"} ? Erkennung noetig</span>
+                    <span>{mail.sender || "Unbekannter Absender"} ? Erkennung nötig</span>
                   </Link>
                 ))}
               </div>
@@ -650,14 +650,14 @@ export default function Home() {
                   <p className="eyebrow">Lager</p>
                   <h2>Mindestbestand</h2>
                 </div>
-                <Link to="/lager">Oeffnen</Link>
+                <Link to="/lager">Öffnen</Link>
               </div>
 
               <div className="inboxList">
                 {data.lowInventoryItems.length === 0 ? (
                   <div className="inboxItem">
                     <strong>Keine Warnung</strong>
-                    <span>Alle Lagerartikel sind ueber Mindestbestand.</span>
+                    <span>Alle Lagerartikel sind über dem Mindestbestand.</span>
                   </div>
                 ) : (
                   data.lowInventoryItems.map((item: any) => (
@@ -683,432 +683,471 @@ export default function Home() {
 const dashboardCss = `
   .dashPage {
     display: grid;
-    gap: 18px;
+    gap: 16px;
+    width: 100%;
   }
 
   .dashHeader {
     display: flex;
     justify-content: space-between;
-    gap: 24px;
     align-items: flex-start;
+    gap: 24px;
   }
 
   .dashHeader h1 {
-    margin: 4px 0 0;
-    color: #071426;
-    font-size: 36px;
-    line-height: 1;
-    letter-spacing: -0.055em;
+    margin: 3px 0 0;
+    color: #0f172a;
+    font-size: clamp(30px, 3vw, 38px);
+    line-height: 1.05;
+    letter-spacing: -0.045em;
+    font-weight: 800;
   }
 
   .dashHeader p:not(.eyebrow) {
     margin: 8px 0 0;
     color: #64748b;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 600;
   }
 
   .dashActions {
     display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
     justify-content: flex-end;
+    gap: 9px;
+    flex-wrap: wrap;
   }
 
   .dashActions a,
-  .cardHead a {
-    border: 1px solid #cbd5e1;
+  .cardHead a,
+  .financeHead a,
+  .taxHead a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    border: 1px solid #d5dee5;
     background: #ffffff;
     color: #0f172a;
-    border-radius: 999px;
-    padding: 9px 13px;
-    font-weight: 900;
+    border-radius: 10px;
+    padding: 8px 13px;
+    font-size: 13px;
+    line-height: 1;
+    font-weight: 700;
     text-decoration: none;
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+    white-space: nowrap;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.035);
+    transition:
+      border-color 160ms ease,
+      background 160ms ease,
+      transform 160ms ease;
+  }
+
+  .dashActions a:hover,
+  .cardHead a:hover,
+  .financeHead a:hover,
+  .taxHead a:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+    transform: translateY(-1px);
   }
 
   .dashActions a[data-primary="true"] {
-    border-color: #057a67;
-    background: #057a67;
+    border-color: #087f6c;
+    background: #087f6c;
     color: #ffffff;
+  }
+
+  .dashActions a[data-primary="true"]:hover {
+    border-color: #066b5c;
+    background: #066b5c;
   }
 
   .todayStrip {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 12px;
   }
 
   .todayItem {
+    position: relative;
     display: grid;
-    gap: 5px;
+    align-content: start;
+    gap: 6px;
+    min-height: 108px;
+    padding: 16px 17px;
+    border: 1px solid #dce5ea;
+    border-radius: 14px;
     background: #ffffff;
-    border: 1px solid #dbe5eb;
-    border-radius: 18px;
-    padding: 16px;
-    text-decoration: none;
     color: #0f172a;
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.045);
+    text-decoration: none;
+    box-shadow: 0 7px 20px rgba(15, 23, 42, 0.035);
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      transform 160ms ease;
+  }
+
+  .todayItem:hover {
+    border-color: #b8c6cf;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.055);
+    transform: translateY(-1px);
   }
 
   .todayItem[data-highlight="true"] {
-    border-color: #bae6fd;
-    background: #f0f9ff;
+    border-color: #9dd7ec;
+    background: linear-gradient(145deg, #f0faff 0%, #ffffff 100%);
   }
 
   .todayItem span {
     color: #64748b;
-    font-size: 13px;
-    font-weight: 900;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
   }
 
   .todayItem strong {
-    font-size: 32px;
+    color: #0f172a;
+    font-size: 30px;
     line-height: 1;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.045em;
+    font-weight: 800;
   }
 
   .todayItem small {
     color: #64748b;
-    font-weight: 750;
+    font-size: 12px;
+    line-height: 1.35;
+    font-weight: 600;
+  }
+
+  .managementGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .financePanel,
+  .taxPanel,
+  .dashCard {
+    border: 1px solid #dce5ea;
+    border-radius: 16px;
+    background: #ffffff;
+    padding: 18px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  }
+
+  .taxPanel {
+    border-color: #efd9ae;
+  }
+
+  .financeHead,
+  .taxHead,
+  .cardHead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    margin-bottom: 14px;
+  }
+
+  .financeHead h2,
+  .taxHead h2,
+  .cardHead h2 {
+    margin: 3px 0 0;
+    color: #0f172a;
+    font-size: 20px;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    font-weight: 800;
+  }
+
+  .financeHead span,
+  .taxHead span {
+    display: block;
+    margin-top: 5px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  .taxHead a {
+    border-color: #e8bc61;
+    color: #8a4b08;
+  }
+
+  .financeGrid,
+  .taxGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .financeGrid > div,
+  .taxTask {
+    display: grid;
+    align-content: start;
+    gap: 5px;
+    min-height: 86px;
+    padding: 13px 14px;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    background: #f8fafc;
+  }
+
+  .taxTask {
+    border-color: #f0d6a7;
+    background: #fffaf2;
+    color: #0f172a;
+    text-decoration: none;
+    transition:
+      border-color 160ms ease,
+      background 160ms ease;
+  }
+
+  .taxTask:hover {
+    border-color: #e6b85e;
+    background: #fff7e8;
+  }
+
+  .financeGrid span,
+  .taxTask span {
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.25;
+    font-weight: 800;
+  }
+
+  .taxTask span {
+    color: #92500b;
+  }
+
+  .financeGrid strong,
+  .taxTask strong {
+    color: #0f172a;
+    font-size: 23px;
+    line-height: 1;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+  }
+
+  .financeGrid small,
+  .taxTask small {
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.35;
+    font-weight: 600;
   }
 
   .dashGrid {
     display: grid;
-    grid-template-columns: minmax(0, 1.9fr) minmax(330px, 0.9fr);
-    gap: 18px;
+    grid-template-columns:
+      minmax(0, 1.65fr)
+      minmax(390px, 0.85fr);
+    gap: 16px;
     align-items: start;
   }
 
   .rightColumn {
     display: grid;
-    gap: 18px;
-  }
-
-  .dashCard {
-    background: #ffffff;
-    border: 1px solid #dbe5eb;
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.055);
+    gap: 16px;
   }
 
   .compactCard {
     padding-bottom: 16px;
   }
 
-  .cardHead {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    align-items: flex-start;
-    margin-bottom: 16px;
-  }
-
-  .cardHead h2 {
-    margin: 4px 0 0;
-    color: #071426;
-    font-size: 22px;
-    letter-spacing: -0.035em;
-  }
-
   .emptyState {
-    border: 1px dashed #cbd5e1;
-    background: #f8fafc;
-    border-radius: 16px;
-    padding: 24px;
     display: grid;
     gap: 5px;
+    min-height: 84px;
+    padding: 18px 20px;
+    border: 1px dashed #cbd5df;
+    border-radius: 12px;
+    background: #f8fafc;
   }
 
   .emptyState strong {
     color: #0f172a;
-    font-size: 18px;
+    font-size: 16px;
+    line-height: 1.3;
+    font-weight: 750;
   }
 
   .emptyState span {
     color: #64748b;
-    font-weight: 700;
+    font-size: 13px;
+    line-height: 1.45;
+    font-weight: 600;
   }
 
   .cleanTable {
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
     overflow: hidden;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
   }
 
   .cleanTableHead,
   .cleanTableRow {
     display: grid;
-    grid-template-columns: 80px 1.1fr 1.7fr 110px;
+    grid-template-columns:
+      76px
+      minmax(130px, 1fr)
+      minmax(180px, 1.5fr)
+      105px;
     gap: 12px;
     align-items: center;
   }
 
   .cleanTableHead {
+    padding: 11px 13px;
     background: #f8fafc;
-    padding: 12px 14px;
     color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    font-size: 12px;
-    font-weight: 900;
+    letter-spacing: 0.045em;
   }
 
   .cleanTableRow {
-    padding: 14px;
-    border-top: 1px solid #e2e8f0;
+    padding: 13px;
+    border-top: 1px solid #e5ebef;
     color: #0f172a;
+    font-size: 13px;
+    font-weight: 650;
     text-decoration: none;
-    font-weight: 750;
+    transition: background 150ms ease;
+  }
+
+  .cleanTableRow:hover {
+    background: #f8fafc;
   }
 
   .cleanTableRow em {
     justify-self: start;
-    background: #f0fdf4;
-    color: #166534;
-    border-radius: 999px;
-    padding: 5px 9px;
+    padding: 5px 8px;
+    border-radius: 7px;
+    background: #edf9f3;
+    color: #17704e;
+    font-size: 11px;
     font-style: normal;
-    font-size: 12px;
-    font-weight: 900;
+    font-weight: 800;
   }
 
   .inboxList {
     display: grid;
-    gap: 10px;
+    gap: 8px;
   }
 
   .inboxItem {
     display: grid;
     gap: 4px;
+    min-width: 0;
+    padding: 12px 13px;
+    border: 1px solid #e1e8ed;
+    border-radius: 11px;
     background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 15px;
-    padding: 13px;
-    text-decoration: none;
     color: #0f172a;
+    text-decoration: none;
+    transition:
+      border-color 150ms ease,
+      background 150ms ease,
+      transform 150ms ease;
+  }
+
+  .inboxItem:hover {
+    border-color: #b9c7d0;
+    background: #ffffff;
+    transform: translateY(-1px);
   }
 
   .inboxItem strong {
-    font-size: 16px;
+    overflow: hidden;
+    color: #0f172a;
+    font-size: 14px;
+    line-height: 1.35;
+    font-weight: 750;
+    text-overflow: ellipsis;
   }
 
   .inboxItem span {
+    overflow: hidden;
     color: #64748b;
-    font-size: 13px;
-    font-weight: 750;
+    font-size: 11px;
+    line-height: 1.35;
+    font-weight: 650;
+    text-overflow: ellipsis;
   }
 
   .inboxItem[data-mail="true"] {
-    border-color: #fed7aa;
-    background: #fffaf0;
+    border-color: #eed6ac;
+    background: #fffaf2;
   }
 
   .inboxItem[data-mail="true"] strong {
-    color: #92400e;
+    color: #80460b;
   }
 
-  .financePanel {
-    background: #ffffff;
-    border: 1px solid #dbe5eb;
-    border-radius: 22px;
-    padding: 20px;
-    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.045);
+  @media (max-width: 1180px) {
+    .dashGrid {
+      grid-template-columns:
+        minmax(0, 1.45fr)
+        minmax(320px, 0.8fr);
+    }
+
+    .todayStrip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
-  .financeHead {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    align-items: flex-start;
-    margin-bottom: 16px;
+  @media (max-width: 980px) {
+    .managementGrid,
+    .dashGrid {
+      grid-template-columns: 1fr;
+    }
+
+    .rightColumn {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
-  .financeHead h2 {
-    margin: 4px 0 0;
-    color: #071426;
-    font-size: 22px;
-    letter-spacing: -0.035em;
+  @media (max-width: 720px) {
+    .dashHeader {
+      display: grid;
+    }
+
+    .dashActions {
+      justify-content: flex-start;
+    }
+
+    .todayStrip,
+    .financeGrid,
+    .taxGrid,
+    .rightColumn {
+      grid-template-columns: 1fr;
+    }
+
+    .cleanTableHead {
+      display: none;
+    }
+
+    .cleanTableRow {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+
+    .financeHead,
+    .taxHead,
+    .cardHead {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .financeHead a,
+    .taxHead a,
+    .cardHead a {
+      align-self: flex-start;
+    }
   }
-
-  .financeHead span {
-    display: block;
-    margin-top: 5px;
-    color: #64748b;
-    font-weight: 700;
-  }
-
-  .financeHead a {
-    border: 1px solid #cbd5e1;
-    background: #ffffff;
-    color: #0f172a;
-    border-radius: 999px;
-    padding: 9px 13px;
-    font-weight: 900;
-    text-decoration: none;
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
-    white-space: nowrap;
-  }
-
-  .financeGrid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-  }
-
-  .financeGrid > div {
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
-    border-radius: 16px;
-    padding: 14px;
-    display: grid;
-    gap: 5px;
-    min-height: 96px;
-  }
-
-  .financeGrid span {
-    color: #64748b;
-    font-size: 13px;
-    font-weight: 900;
-  }
-
-  .financeGrid strong {
-    color: #071426;
-    font-size: 24px;
-    letter-spacing: -0.04em;
-  }
-
-  .financeGrid small {
-    color: #64748b;
-    font-weight: 750;
-  }
-
-
-  .taxPanel {
-    background: #ffffff;
-    border: 1px solid #fde68a;
-    border-radius: 22px;
-    padding: 20px;
-    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.045);
-  }
-
-  .taxHead {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    align-items: flex-start;
-    margin-bottom: 16px;
-  }
-
-  .taxHead h2 {
-    margin: 4px 0 0;
-    color: #071426;
-    font-size: 22px;
-    letter-spacing: -0.035em;
-  }
-
-  .taxHead span {
-    display: block;
-    margin-top: 5px;
-    color: #64748b;
-    font-weight: 700;
-  }
-
-  .taxHead a {
-    border: 1px solid #fbbf24;
-    background: #ffffff;
-    color: #92400e;
-    border-radius: 999px;
-    padding: 9px 13px;
-    font-weight: 900;
-    text-decoration: none;
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
-    white-space: nowrap;
-  }
-
-  .taxGrid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-  }
-
-  .taxTask {
-    border: 1px solid #fed7aa;
-    background: #fffaf0;
-    border-radius: 16px;
-    padding: 14px;
-    display: grid;
-    gap: 5px;
-    color: #0f172a;
-    text-decoration: none;
-    min-height: 96px;
-  }
-
-  .taxTask span {
-    color: #92400e;
-    font-size: 13px;
-    font-weight: 900;
-  }
-
-  .taxTask strong {
-    color: #071426;
-    font-size: 26px;
-    letter-spacing: -0.04em;
-  }
-
-  .taxTask small {
-    color: #64748b;
-    font-weight: 750;
-  }
-
-
-  .managementGrid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-    align-items: start;
-  }
-
-  .managementGrid .financePanel,
-  .managementGrid .taxPanel {
-    min-height: 0;
-  }
-
-  .managementGrid .financeGrid,
-  .managementGrid .taxGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .managementGrid .financeGrid > div,
-  .managementGrid .taxTask {
-    min-height: 86px;
-    padding: 13px;
-  }
-
-  .managementGrid .financeGrid strong,
-  .managementGrid .taxTask strong {
-    font-size: 23px;
-  }
-
-  .managementGrid .financeHead,
-  .managementGrid .taxHead {
-    margin-bottom: 13px;
-  }
-
-  .managementGrid .financeHead h2,
-  .managementGrid .taxHead h2 {
-    font-size: 20px;
-  }
-
-  .managementGrid .financeHead span,
-  .managementGrid .taxHead span {
-    font-size: 13px;
-  }
-
-  .managementGrid .financeHead a,
-  .managementGrid .taxHead a {
-    padding: 8px 11px;
-    font-size: 13px;
-  }
-
 `;
