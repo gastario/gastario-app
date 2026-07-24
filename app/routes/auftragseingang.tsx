@@ -1038,6 +1038,10 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
     if (
       !activeOrderStatus &&
       (
+        normalizedOrderStatus === "CONFIRMED" ||
+        normalizedOrderStatus === "IN_PRODUCTION" ||
+        normalizedOrderStatus === "PACKING_OPEN" ||
+        normalizedOrderStatus === "DELIVERED" ||
         normalizedOrderStatus === "REJECTED" ||
         normalizedOrderStatus === "CANCELLED"
       )
