@@ -608,6 +608,220 @@ export async function action({ request }: { request: Request }) {
     return { success: "E-Mail wurde gelöscht." };
   }
 
+  if (intent === "confirmOrder") {
+    const orderId = String(
+      formData.get("orderId") || ""
+    ).trim();
+
+    if (!orderId) {
+      return { error: "Auftrag fehlt." };
+    }
+
+    const requiredReviewChecks = [
+      "customerChecked",
+      "addressChecked",
+      "scheduleChecked",
+      "itemsChecked",
+      "billingChecked",
+    ];
+
+    const missingReviewChecks =
+      requiredReviewChecks.filter(
+        (fieldName) =>
+          String(formData.get(fieldName) || "") !== "1"
+      );
+
+    if (missingReviewChecks.length > 0) {
+      return {
+        error:
+          "Bitte bestätige alle fünf Prüfpunkte, bevor du den Auftrag übernimmst.",
+      };
+    }
+
+    const requestedBillingMode = String(
+      formData.get("billingMode") || "UNDECIDED"
+    )
+      .trim()
+      .toUpperCase();
+
+    const billingConfiguration: Record<
+      string,
+      {
+        billingMode: string;
+        billingStatus: string;
+      }
+    > = {
+      DIRECT_INVOICE: {
+        billingMode: "DIRECT_INVOICE",
+        billingStatus: "READY_TO_INVOICE",
+      },
+      EXTERNAL_INVOICE: {
+        billingMode: "EXTERNAL_INVOICE",
+        billingStatus: "INVOICED_EXTERNALLY",
+      },
+      PLATFORM_CREDIT: {
+        billingMode: "PLATFORM_CREDIT",
+        billingStatus: "WAITING_FOR_CREDIT",
+      },
+      NO_INVOICE: {
+        billingMode: "NO_INVOICE",
+        billingStatus: "NOT_RELEVANT",
+      },
+    };
+
+    const billingSelection =
+      billingConfiguration[requestedBillingMode];
+
+    if (!billingSelection) {
+      return {
+        error:
+          "Bitte wähle eine verbindliche Abrechnungsart aus.",
+      };
+    }
+
+    const order = await prisma.order.findFirst({
+      where: {
+        id: orderId,
+        tenantId: tenantUser.tenantId,
+      },
+      include: {
+        customer: true,
+        items: true,
+      },
+    });
+
+    if (!order) {
+      return {
+        error: "Der Auftrag wurde nicht gefunden.",
+      };
+    }
+
+    const missingOrderData: string[] = [];
+
+    if (
+      !String(
+        order.customer?.name ||
+          order.customerName ||
+          ""
+      ).trim()
+    ) {
+      missingOrderData.push("Kundendaten");
+    }
+
+    if (!order.deliveryDate) {
+      missingOrderData.push("Lieferdatum");
+    }
+
+    if (!String(order.deliveryTimeText || "").trim()) {
+      missingOrderData.push("Lieferzeit");
+    }
+
+    if (!String(order.deliveryAddress || "").trim()) {
+      missingOrderData.push("Lieferadresse");
+    }
+
+    if (
+      !Array.isArray(order.items) ||
+      order.items.length === 0
+    ) {
+      missingOrderData.push("Positionen");
+    }
+
+    if (missingOrderData.length > 0) {
+      return {
+        error:
+          "Der Auftrag kann noch nicht übernommen werden. Es fehlen: " +
+          missingOrderData.join(", ") +
+          ".",
+      };
+    }
+
+    if (
+      ![
+        "AUTO_CREATED",
+        "REVIEW_NEEDED",
+      ].includes(String(order.status || ""))
+    ) {
+      return {
+        error:
+          "Dieser Auftrag wurde bereits bearbeitet oder übernommen.",
+      };
+    }
+
+    const updateResult =
+      await prisma.order.updateMany({
+        where: {
+          id: orderId,
+          tenantId: tenantUser.tenantId,
+          status: {
+            in: [
+              "AUTO_CREATED",
+              "REVIEW_NEEDED",
+            ] as any,
+          },
+        },
+        data: {
+          status: "CONFIRMED" as any,
+          billingMode:
+            billingSelection.billingMode as any,
+          billingStatus:
+            billingSelection.billingStatus as any,
+        },
+      });
+
+    if (updateResult.count !== 1) {
+      return {
+        error:
+          "Der Auftrag konnte nicht übernommen werden. Bitte lade die Seite neu.",
+      };
+    }
+
+    try {
+      const {
+        ensureProductsForOrder,
+      } = await import(
+        "../lib/order-products.server"
+      );
+
+      await ensureProductsForOrder(
+        orderId,
+        tenantUser.tenantId
+      );
+
+      const {
+        ensureDeliveryNoteForOrder,
+      } = await import(
+        "../lib/delivery-note.server"
+      );
+
+      await ensureDeliveryNoteForOrder(orderId);
+    } catch (error) {
+      console.error(
+        "Nachbearbeitung des übernommenen Auftrags fehlgeschlagen:",
+        error
+      );
+
+      return {
+        error:
+          "Der Auftrag wurde übernommen, aber Produkte oder Lieferschein konnten nicht vollständig vorbereitet werden.",
+      };
+    }
+
+    if (
+      billingSelection.billingMode ===
+      "DIRECT_INVOICE"
+    ) {
+      return redirect(
+        "/rechnungen/neu?orderId=" +
+          encodeURIComponent(orderId)
+      );
+    }
+
+    return redirect(
+      "/auftragseingang?dateRange=last7&emailCategory=orders&status=AUTO_CREATED"
+    );
+  }
+
   if (intent === "deleteOrder") {
     const orderId = String(formData.get("orderId") || "");
     if (!orderId) return { error: "Auftrag fehlt." };
@@ -2012,13 +2226,20 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                   ) : null}
 
                   <Form
-                    method="get"
-                    action={
-                      "/auftrag-pruefung/" +
-                      selectedOrder.id
-                    }
+                    method="post"
                     className="incomingOrderReviewFormV2"
                   >
+                    <input
+                      type="hidden"
+                      name="intent"
+                      value="confirmOrder"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="orderId"
+                      value={selectedOrder.id}
+                    />
                     <section className="incomingOrderBillingV2">
                       <div className="incomingOrderSectionHeaderV2">
                         <div>
@@ -2167,7 +2388,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                       </div>
 
                       <button type="submit">
-                        Auftrag vollständig prüfen
+                        Auftrag bestätigen und übernehmen
                       </button>
                     </div>
                   </Form>
