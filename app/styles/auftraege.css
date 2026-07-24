@@ -7542,130 +7542,153 @@ button.finalSelectedDeleteButton {
 }
 
 /* gastario-incoming-review-panel-final-end */
-/* gastario-selected-order-natural-height-start */
+/* gastario-selected-detail-structural-fix-start */
 
 /*
- * Geöffnete Aufträge müssen mit ihrem Inhalt wachsen.
- * Alte feste Höhen und Overflow-Regeln dürfen den
- * Abrechnungs- und Prüfbereich nicht abschneiden.
+ * Geöffneter Auftrag:
+ * Liste ausblenden und Detailkarte als normalen,
+ * vollständig wachsenden Inhaltsbereich anzeigen.
  */
 
-.ordersReferencePage .selectedFocusMode,
-.ordersReferencePage .finalOrdersGrid.selectedFocusMode {
+.ordersPage .finalOrdersShell:has(.finalOrdersGrid.selectedFocusMode),
+.ordersPage .finalOrdersSplitShell:has(.finalOrdersGrid.selectedFocusMode) {
   height: auto !important;
   min-height: 0 !important;
   max-height: none !important;
   overflow: visible !important;
 }
 
-.ordersReferencePage .panel.g-ui-card:has(.finalSelectedPanel),
-.ordersReferencePage .panel:has(.finalSelectedPanel) {
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
-}
-
-.ordersReferencePage .finalSelectedPanel,
-.ordersReferencePage .finalSelectedPanel.g-ui-card,
-.ordersPage.ordersReferencePage .finalSelectedPanel {
-  display: grid !important;
-  grid-template-rows: auto !important;
-  align-content: start !important;
-
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-
-  padding-bottom: 22px !important;
-  overflow: visible !important;
-}
-
-.ordersReferencePage .finalSelectedItems,
-.ordersReferencePage .incomingBillingPanel,
-.ordersReferencePage .incomingBillingReviewForm,
-.ordersReferencePage .incomingBillingContent,
-.ordersReferencePage .incomingReviewChecklist,
-.ordersReferencePage .finalSelectedActions {
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
-  flex-shrink: 0 !important;
-}
-
-.ordersReferencePage .incomingBillingPanel {
-  position: relative !important;
+.ordersPage .finalOrdersGrid.selectedFocusMode {
   display: block !important;
-  margin-bottom: 20px !important;
+  position: relative !important;
+
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+
+  padding: 0 !important;
+  overflow: visible !important;
 }
 
-.ordersReferencePage .finalSelectedActions {
-  position: static !important;
+.ordersPage
+.finalOrdersGrid.selectedFocusMode
+> .finalOrderRows {
+  display: none !important;
+}
+
+.ordersPage
+.finalOrdersGrid.selectedFocusMode
+> .finalSelectedPanel {
+  display: block !important;
+  position: relative !important;
+
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+
+  padding: 0 0 22px !important;
+  overflow: visible !important;
+}
+
+.ordersPage
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedTop {
+  margin: 0 !important;
+  padding: 22px 24px !important;
+}
+
+.ordersPage
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedFacts {
+  margin: 18px 20px 0 !important;
+}
+
+.ordersPage
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedItems {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+
+  margin: 18px 20px 0 !important;
+  overflow: visible !important;
+}
+
+.ordersPage
+.finalOrdersGrid.selectedFocusMode
+.incomingBillingPanel {
+  display: block !important;
+  position: relative !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+
+  margin: 18px 20px 20px !important;
+  overflow: visible !important;
+}
+
+.ordersPage
+.finalOrdersGrid.selectedFocusMode
+.incomingBillingReviewForm {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px) !important;
+  align-items: end !important;
+  gap: 22px !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.ordersPage
+.finalOrdersGrid.selectedFocusMode
+.incomingBillingContent,
+.ordersPage
+.finalOrdersGrid.selectedFocusMode
+.incomingReviewChecklist {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.ordersPage
+.finalOrdersGrid.selectedFocusMode
+> .finalSelectedPanel
+> .finalSelectedActions {
+  display: flex !important;
+  position: relative !important;
   inset: auto !important;
-  margin-top: 0 !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: 1 !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+
+  margin: 0 20px !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  transform: none !important;
 }
 
-@media (max-height: 900px) {
-  .ordersReferencePage .selectedFocusMode,
-  .ordersReferencePage .finalOrdersGrid.selectedFocusMode,
-  .ordersReferencePage .finalSelectedPanel {
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
+@media (max-width: 900px) {
+  .ordersPage
+  .finalOrdersGrid.selectedFocusMode
+  .incomingBillingReviewForm {
+    grid-template-columns: 1fr !important;
   }
 }
 
-/* gastario-selected-order-natural-height-end */
-/* gastario-inbox-selected-order-height-fix-start */
-
-/* Geöffnete Detailansicht in der Eingangszentrale vollständig anzeigen */
-
-.ordersPage .selectedFocusMode,
-.ordersPage .finalOrdersGrid.selectedFocusMode {
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
-}
-
-.ordersPage .panel:has(.finalSelectedPanel),
-.ordersPage .panel.g-ui-card:has(.finalSelectedPanel) {
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
-}
-
-.ordersPage .finalSelectedPanel,
-.ordersPage .finalSelectedPanel.g-ui-card {
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
-  align-content: start !important;
-}
-
-.ordersPage .incomingBillingPanel,
-.ordersPage .incomingBillingReviewForm,
-.ordersPage .incomingBillingContent,
-.ordersPage .incomingReviewChecklist {
-  position: relative !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
-}
-
-.ordersPage .finalSelectedActions {
-  position: static !important;
-  inset: auto !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  margin-top: 0 !important;
-  overflow: visible !important;
-}
-
-/* gastario-inbox-selected-order-height-fix-end */
+/* gastario-selected-detail-structural-fix-end */
