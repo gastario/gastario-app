@@ -7371,8 +7371,8 @@ button.finalSelectedDeleteButton {
 /* gastario-upcoming-orders-height-polish-start */
 
 /*
- * Die Auftragsliste nutzt den sichtbaren Desktopbereich besser aus.
- * Kein künstlicher Leerraum unter einer zu kurzen Listenbox.
+ * Desktop: Die Liste bleibt bis zu einer festen, gut nutzbaren Höhe
+ * sichtbar. Weitere Aufträge scrollen nur innerhalb dieses Bereichs.
  */
 .ordersReferencePage.ordersPageUpcoming
 .finalOrderRows.operationalOrderRows {
@@ -7380,16 +7380,21 @@ button.finalSelectedDeleteButton {
   align-content: start !important;
   gap: 12px !important;
 
-  min-height: calc(100vh - 385px) !important;
-  max-height: none !important;
+  height: calc(100vh - 315px) !important;
+  min-height: 520px !important;
+  max-height: 700px !important;
 
-  padding: 14px 12px 30px !important;
-  overflow: visible !important;
+  padding: 14px 12px 26px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   box-sizing: border-box !important;
 }
 
 /*
- * Etwas ruhigere, gleichmäßigere Kartenhöhe.
+ * Karten behalten eine gleichmäßige Höhe und werden
+ * beim Scrollen nicht zusammengedrückt.
  */
 .ordersReferencePage.ordersPageUpcoming
 .finalOrderRow.operationalOrderRow {
@@ -7397,24 +7402,67 @@ button.finalSelectedDeleteButton {
 }
 
 /*
- * Der letzte Auftrag erhält unten genügend Abstand,
- * damit die Liste nicht abgeschnitten wirkt.
+ * Etwas Luft unter dem letzten Auftrag.
  */
 .ordersReferencePage.ordersPageUpcoming
 .finalOrderRow.operationalOrderRow:last-child {
-  margin-bottom: 6px !important;
+  margin-bottom: 4px !important;
+}
+
+/*
+ * Dezente Scrollbar im Gastario-Stil.
+ */
+.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows {
+  scrollbar-width: thin;
+  scrollbar-color: #9acdbd #eef6f3;
+}
+
+.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows::-webkit-scrollbar {
+  width: 9px;
+}
+
+.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows::-webkit-scrollbar-track {
+  background: #eef6f3;
+  border-radius: 999px;
+}
+
+.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows::-webkit-scrollbar-thumb {
+  background: #9acdbd;
+  border: 2px solid #eef6f3;
+  border-radius: 999px;
+}
+
+.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows::-webkit-scrollbar-thumb:hover {
+  background: #74b7a3;
 }
 
 @media (max-width: 1200px) {
   .ordersReferencePage.ordersPageUpcoming
   .finalOrderRows.operationalOrderRows {
-    min-height: auto !important;
-    padding-bottom: 22px !important;
+    height: calc(100vh - 300px) !important;
+    min-height: 460px !important;
+    max-height: 650px !important;
   }
 
   .ordersReferencePage.ordersPageUpcoming
   .finalOrderRow.operationalOrderRow {
     min-height: 124px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .ordersReferencePage.ordersPageUpcoming
+  .finalOrderRows.operationalOrderRows {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    scrollbar-gutter: auto;
   }
 }
 
