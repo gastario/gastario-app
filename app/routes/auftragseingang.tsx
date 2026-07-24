@@ -994,7 +994,28 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
       return false;
     }
 
-    if (activeOrderStatus && order.status !== activeOrderStatus) {
+    /*
+     * Der UI-Filter "Zu prüfen" verwendet AUTO_CREATED,
+     * umfasst fachlich aber auch REVIEW_NEEDED.
+     */
+    const isReviewStatusFilter =
+      activeOrderStatus === "AUTO_CREATED";
+
+    if (
+      isReviewStatusFilter &&
+      ![
+        "AUTO_CREATED",
+        "REVIEW_NEEDED",
+      ].includes(normalizedOrderStatus)
+    ) {
+      return false;
+    }
+
+    if (
+      activeOrderStatus &&
+      !isReviewStatusFilter &&
+      normalizedOrderStatus !== activeOrderStatus
+    ) {
       return false;
     }
 
