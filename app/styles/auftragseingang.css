@@ -6034,3 +6034,132 @@
     margin-left: 0 !important;
   }
 }
+/* gastario-incoming-actions-specificity-fix-20260724 */
+
+.finalOrdersGrid.selectedFocusMode .finalSelectedActions {
+  display: flex !important;
+  grid-template-columns: none !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+  gap: 14px !important;
+
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 14px 16px !important;
+  box-sizing: border-box !important;
+}
+
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedActions
+> .finalBackButton {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 145px !important;
+  max-width: none !important;
+  min-height: 44px !important;
+  height: 44px !important;
+
+  margin: 0 !important;
+  padding: 0 18px !important;
+
+  border: 1px solid #d6e5df !important;
+  border-radius: 11px !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedActions
+> form,
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedActions
+> form:last-child {
+  position: static !important;
+  display: block !important;
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  height: auto !important;
+
+  margin: 0 0 0 auto !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedActions
+> form
+> button,
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedActions
+> form:last-child
+> button {
+  position: static !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: auto !important;
+  min-width: 112px !important;
+  max-width: none !important;
+  min-height: 44px !important;
+  height: 44px !important;
+
+  margin: 0 !important;
+  padding: 0 20px !important;
+
+  border: 1px solid #c6281d !important;
+  border-radius: 11px !important;
+  background: #c6281d !important;
+  background-color: #c6281d !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 7px 16px rgba(198, 40, 29, 0.16) !important;
+  box-sizing: border-box !important;
+}
+
+.finalOrdersGrid.selectedFocusMode
+.finalSelectedActions
+> form
+> button:hover {
+  border-color: #aa2118 !important;
+  background: #aa2118 !important;
+  background-image: none !important;
+}
+
+@media (max-width: 620px) {
+  .finalOrdersGrid.selectedFocusMode .finalSelectedActions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .finalOrdersGrid.selectedFocusMode
+  .finalSelectedActions
+  > .finalBackButton,
+  .finalOrdersGrid.selectedFocusMode
+  .finalSelectedActions
+  > form,
+  .finalOrdersGrid.selectedFocusMode
+  .finalSelectedActions
+  > form
+  > button {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+  }
+}
