@@ -2025,8 +2025,17 @@ export async function loader({ request }: { request: Request }) {
             });
             const shouldCreateByRules = shouldCreateOrderFromImportRules(extractedOrder, bestText, importRuleMatches);
 
+          const shouldCreateByClassificationRule =
+            String(
+              classificationRuleMatch?.action || ""
+            ).toUpperCase() ===
+            "CREATE_REVIEW_ORDER";
+
           const canCreateReviewOrder =
-            shouldCreateByRules &&
+            (
+              shouldCreateByClassificationRule ||
+              shouldCreateByRules
+            ) &&
             canCreateReviewOrderFromAnalysis(importAnalysis);
 
             if (existing.orders.length === 0 && canCreateReviewOrder) {
@@ -2306,8 +2315,17 @@ export async function loader({ request }: { request: Request }) {
           });
           const shouldCreateByRules = shouldCreateOrderFromImportRules(extractedOrder, bestText, importRuleMatches);
 
+          const shouldCreateByClassificationRule =
+            String(
+              classificationRuleMatch?.action || ""
+            ).toUpperCase() ===
+            "CREATE_REVIEW_ORDER";
+
           const canCreateReviewOrder =
-            shouldCreateByRules &&
+            (
+              shouldCreateByClassificationRule ||
+              shouldCreateByRules
+            ) &&
             canCreateReviewOrderFromAnalysis(importAnalysis);
 
           if (canCreateReviewOrder) {
