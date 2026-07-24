@@ -63,6 +63,20 @@ async function ensureImportRuleTable(prisma: any) {
     );
   `);
 
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "OrderImportRule"
+      ADD COLUMN IF NOT EXISTS "name" TEXT,
+      ADD COLUMN IF NOT EXISTS "senderContains" TEXT,
+      ADD COLUMN IF NOT EXISTS "subjectContains" TEXT,
+      ADD COLUMN IF NOT EXISTS "bodyContains" TEXT,
+      ADD COLUMN IF NOT EXISTS "matchMode" TEXT NOT NULL DEFAULT 'ANY',
+      ADD COLUMN IF NOT EXISTS "documentType" TEXT,
+      ADD COLUMN IF NOT EXISTS "action" TEXT,
+      ADD COLUMN IF NOT EXISTS "priority" INTEGER NOT NULL DEFAULT 0;
+  `);
+
+  await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "OrderImportRule_priority_idx" ON "OrderImportRule" ("priority");`);
+
   await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "OrderImportRule_tenantId_idx" ON "OrderImportRule" ("tenantId");`);
   await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "OrderImportRule_fieldKey_idx" ON "OrderImportRule" ("fieldKey");`);
 }
@@ -208,6 +222,106 @@ export async function action({ request }: { request: Request }) {
     return { success: "Regel wurde aktualisiert." };
   }
 
+  if (intent === "createClassificationRule") {
+    const name = safeText(formData.get("name"));
+    const sourceName = safeText(formData.get("sourceName"));
+    const senderContains = safeText(formData.get("senderContains"));
+    const subjectContains = safeText(formData.get("subjectContains"));
+    const bodyContains = safeText(formData.get("bodyContains"));
+
+    const matchMode =
+      safeText(formData.get("matchMode")).toUpperCase() === "ALL"
+        ? "ALL"
+        : "ANY";
+
+    const documentType =
+      safeText(formData.get("documentType"));
+
+    const ruleAction =
+      safeText(formData.get("action"));
+
+    const parsedPriority =
+      Number(safeText(formData.get("priority")) || "0");
+
+    const priority =
+      Number.isFinite(parsedPriority)
+        ? Math.max(
+            0,
+            Math.min(
+              1000,
+              Math.trunc(parsedPriority)
+            )
+          )
+        : 0;
+
+    if (!name) {
+      return {
+        error: "Bitte einen Namen für die feste Importregel eintragen.",
+      };
+    }
+
+    if (
+      !senderContains &&
+      !subjectContains &&
+      !bodyContains
+    ) {
+      return {
+        error:
+          "Bitte mindestens eine Bedingung für Absender, Betreff oder Nachrichtentext eintragen.",
+      };
+    }
+
+    if (!documentType || !ruleAction) {
+      return {
+        error:
+          "Bitte Dokumenttyp und Aktion auswählen.",
+      };
+    }
+
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO "OrderImportRule"
+        (
+          "id",
+          "tenantId",
+          "name",
+          "sourceName",
+          "fieldKey",
+          "keywords",
+          "senderContains",
+          "subjectContains",
+          "bodyContains",
+          "matchMode",
+          "documentType",
+          "action",
+          "priority",
+          "active",
+          "updatedAt"
+        )
+       VALUES (
+         $1, $2, $3, $4, $5, $6, $7,
+         $8, $9, $10, $11, $12, $13,
+         true, CURRENT_TIMESTAMP
+       )`,
+      createId(),
+      access.tenantId,
+      name,
+      sourceName || null,
+      "__classification__",
+      "",
+      senderContains || null,
+      subjectContains || null,
+      bodyContains || null,
+      matchMode,
+      documentType,
+      ruleAction,
+      priority
+    );
+
+    return {
+      success: "Feste Importregel wurde gespeichert.",
+    };
+  }
+
   const sourceName = safeText(formData.get("sourceName"));
   const fieldKey = safeText(formData.get("fieldKey"));
   const keywords = safeText(formData.get("keywords"));
@@ -304,6 +418,157 @@ export default function ImportRegelnPage() {
             )}
           </div>
         ) : null}
+      </section>
+
+      <section style={cardStyle}>
+        <div style={cardHeaderStyle}>
+          <div>
+            <p style={eyebrowStyle}>
+              Garantierte Erkennung
+            </p>
+
+            <h2 style={sectionTitleStyle}>
+              Feste E-Mail-Regel anlegen
+            </h2>
+
+            <p style={subtitleStyle}>
+              Diese Regeln werden vor der KI geprüft und legen
+              den Dokumenttyp verbindlich fest.
+            </p>
+          </div>
+        </div>
+
+        <Form method="post" style={formGridStyle}>
+          <input
+            type="hidden"
+            name="_intent"
+            value="createClassificationRule"
+          />
+
+          <Field label="Regelname">
+            <input
+              name="name"
+              required
+              placeholder="z. B. Heycater finale Bestätigung"
+            />
+          </Field>
+
+          <Field label="Quelle">
+            <input
+              name="sourceName"
+              placeholder="z. B. Heycater"
+            />
+          </Field>
+
+          <Field label="Absender enthält">
+            <input
+              name="senderContains"
+              placeholder="z. B. heycater"
+            />
+          </Field>
+
+          <Field label="Betreff enthält">
+            <input
+              name="subjectContains"
+              placeholder="z. B. Bitte bestätige den Auftrag"
+            />
+          </Field>
+
+          <Field label="Nachrichtentext enthält">
+            <input
+              name="bodyContains"
+              placeholder="z. B. hat Euer Angebot bestätigt"
+            />
+          </Field>
+
+          <Field label="Bedingungen">
+            <select
+              name="matchMode"
+              defaultValue="ALL"
+            >
+              <option value="ALL">
+                Alle ausgefüllten Bedingungen müssen stimmen
+              </option>
+
+              <option value="ANY">
+                Mindestens eine Bedingung muss stimmen
+              </option>
+            </select>
+          </Field>
+
+          <Field label="Dokumenttyp">
+            <select
+              name="documentType"
+              defaultValue="ORDER_CONFIRMATION"
+            >
+              <option value="ORDER_CONFIRMATION">
+                Auftragsbestätigung
+              </option>
+
+              <option value="INQUIRY">
+                Anfrage
+              </option>
+
+              <option value="ORDER_CHANGE">
+                Auftragsänderung
+              </option>
+
+              <option value="CANCELLATION">
+                Absage / Stornierung
+              </option>
+
+              <option value="DELIVERY_NOTE">
+                Lieferschein / Erinnerung
+              </option>
+
+              <option value="TRASH">
+                Ignorieren
+              </option>
+            </select>
+          </Field>
+
+          <Field label="Aktion">
+            <select
+              name="action"
+              defaultValue="CREATE_REVIEW_ORDER"
+            >
+              <option value="CREATE_REVIEW_ORDER">
+                Prüfauftrag erstellen
+              </option>
+
+              <option value="CREATE_INQUIRY">
+                Als Anfrage markieren
+              </option>
+
+              <option value="SEND_TO_REVIEW">
+                Nur zur Prüfung vorlegen
+              </option>
+
+              <option value="IGNORE">
+                Ignorieren
+              </option>
+            </select>
+          </Field>
+
+          <Field label="Priorität">
+            <input
+              name="priority"
+              type="number"
+              min="0"
+              max="1000"
+              defaultValue="100"
+            />
+          </Field>
+
+          <div style={formActionStyle}>
+            <button
+              type="submit"
+              style={primaryButtonStyle}
+            >
+              Feste Regel speichern
+            </button>
+          </div>
+        </Form>
       </section>
 
       <section style={cardStyle}>

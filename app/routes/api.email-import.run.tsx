@@ -11,6 +11,10 @@ import {
   classifyIncomingMailWithAi,
   classifyIncomingMailWithRules,
 } from "../lib/ai-import-classifier.server";
+import {
+  isReliableCustomerCandidate,
+  resolveReliableCustomerName,
+} from "../lib/customer-name-validation.server";
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -241,6 +245,20 @@ async function ensureOrderImportRuleTableForEmailImport() {
     );
   `);
 
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "OrderImportRule"
+      ADD COLUMN IF NOT EXISTS "name" TEXT,
+      ADD COLUMN IF NOT EXISTS "senderContains" TEXT,
+      ADD COLUMN IF NOT EXISTS "subjectContains" TEXT,
+      ADD COLUMN IF NOT EXISTS "bodyContains" TEXT,
+      ADD COLUMN IF NOT EXISTS "matchMode" TEXT NOT NULL DEFAULT 'ANY',
+      ADD COLUMN IF NOT EXISTS "documentType" TEXT,
+      ADD COLUMN IF NOT EXISTS "action" TEXT,
+      ADD COLUMN IF NOT EXISTS "priority" INTEGER NOT NULL DEFAULT 0;
+  `);
+
+  await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "OrderImportRule_priority_idx" ON "OrderImportRule" ("priority");`);
+
   await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "OrderImportRule_tenantId_idx" ON "OrderImportRule" ("tenantId");`);
   await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "OrderImportRule_fieldKey_idx" ON "OrderImportRule" ("fieldKey");`);
 }
@@ -300,6 +318,145 @@ async function findOrderImportRuleMatches(params: {
     console.error("OrderImportRule check failed", error);
     return [];
   }
+}
+
+async function findClassificationImportRuleMatch(params: {
+  tenantId: string;
+  subject: string;
+  sender: string;
+  bestText: string;
+}) {
+  const subject = normalizeImportText(params.subject);
+  const sender = normalizeImportText(params.sender);
+  const body = normalizeImportText(params.bestText);
+
+  try {
+    await ensureOrderImportRuleTableForEmailImport();
+
+    const rules = await prisma.$queryRawUnsafe<any[]>(
+      `SELECT *
+       FROM "OrderImportRule"
+       WHERE "tenantId" = $1
+         AND "active" = true
+         AND "documentType" IS NOT NULL
+         AND "action" IS NOT NULL
+       ORDER BY "priority" DESC, "createdAt" ASC`,
+      params.tenantId
+    );
+
+    return (
+      rules.find((rule) => {
+        const conditions: boolean[] = [];
+
+        const senderContains =
+          normalizeImportText(
+            rule.senderContains || ""
+          );
+
+        const subjectContains =
+          normalizeImportText(
+            rule.subjectContains || ""
+          );
+
+        const bodyContains =
+          normalizeImportText(
+            rule.bodyContains || ""
+          );
+
+        if (senderContains) {
+          conditions.push(
+            sender.includes(senderContains)
+          );
+        }
+
+        if (subjectContains) {
+          conditions.push(
+            subject.includes(subjectContains)
+          );
+        }
+
+        if (bodyContains) {
+          conditions.push(
+            body.includes(bodyContains)
+          );
+        }
+
+        if (conditions.length === 0) {
+          return false;
+        }
+
+        const matchMode =
+          String(rule.matchMode || "ANY")
+            .trim()
+            .toUpperCase();
+
+        return matchMode === "ALL"
+          ? conditions.every(Boolean)
+          : conditions.some(Boolean);
+      }) || null
+    );
+  } catch (error) {
+    console.error(
+      "Classification import rule check failed",
+      error
+    );
+
+    return null;
+  }
+}
+
+function createDecisionFromClassificationRule(
+  rule: any,
+  params: {
+    subject: string;
+    sender: string;
+    bestText: string;
+  }
+) {
+  const fallback =
+    classifyIncomingMailWithRules({
+      subject: params.subject,
+      sender: params.sender,
+      text: params.bestText,
+      source:
+        String(rule.sourceName || "EMAIL"),
+    });
+
+  const documentType =
+    String(
+      rule.documentType ||
+      "UNKNOWN"
+    ).trim();
+
+  const action =
+    String(
+      rule.action || ""
+    ).trim();
+
+  return {
+    ...fallback,
+    mode: "rules" as const,
+    mailType: documentType as any,
+    confidence: 1,
+    shouldCreateOrder:
+      action === "CREATE_REVIEW_ORDER",
+    shouldCreateInquiry:
+      action === "CREATE_INQUIRY",
+    reason:
+      "Feste Importregel: " +
+      String(
+        rule.name ||
+        rule.sourceName ||
+        rule.id
+      ),
+    source:
+      String(
+        rule.sourceName ||
+        fallback.source ||
+        "EMAIL"
+      ),
+    warnings: [],
+  };
 }
 
 function hasStrongOrderKeyword(bestText: string) {
@@ -1278,8 +1435,30 @@ async function createReviewOrderFromExtracted(
       subject,
     });
 
+  const reliableCustomerName =
+    resolveReliableCustomerName({
+      text: `${bestText || ""}\n${subject || ""}`,
+      parserCustomerName:
+        resolvedCustomer.customerName,
+      items: finalItems,
+    });
+
+  const customerNameWasRejected =
+    !isReliableCustomerCandidate(
+      reliableCustomerName,
+      finalItems
+    );
+
   const safeCustomerName =
-    resolvedCustomer.customerName;
+    customerNameWasRejected
+      ? "Unzugeordneter E-Mail-Auftrag"
+      : reliableCustomerName;
+
+  if (customerNameWasRejected) {
+    reviewReasons.push(
+      "Der automatisch erkannte Kundenname war unzuverlässig und wurde nicht übernommen."
+    );
+  }
 
   if (
     resolvedCustomer.source !==
@@ -1738,15 +1917,33 @@ export async function loader({ request }: { request: Request }) {
                           )
                         );
 
-                      const aiDecision = canReuseStoredAiDecision
-                        ? storedAiDecision
-                        : await classifyIncomingMailWithinBudget({
-                            tenantName: null,
-                            subject: String(parsed.subject || ""),
-                            sender: String(parsed.from?.text || ""),
-                            text: bestText,
-                            source: "EMAIL",
-                          });
+                      const classificationRuleMatch =
+                        await findClassificationImportRuleMatch({
+                          tenantId: account.tenantId,
+                          subject: String(parsed.subject || ""),
+                          sender: String(parsed.from?.text || ""),
+                          bestText,
+                        });
+
+                      const aiDecision =
+                        classificationRuleMatch
+                          ? createDecisionFromClassificationRule(
+                              classificationRuleMatch,
+                              {
+                                subject: String(parsed.subject || ""),
+                                sender: String(parsed.from?.text || ""),
+                                bestText,
+                              }
+                            )
+                          : canReuseStoredAiDecision
+                            ? storedAiDecision
+                            : await classifyIncomingMailWithinBudget({
+                                tenantName: null,
+                                subject: String(parsed.subject || ""),
+                                sender: String(parsed.from?.text || ""),
+                                text: bestText,
+                                source: "EMAIL",
+                              });
 
                       if (
                         aiDecision.confidence >= 0.85 &&
@@ -2003,13 +2200,31 @@ export async function loader({ request }: { request: Request }) {
             continue;
           }
 
-          const aiDecision = await classifyIncomingMailWithinBudget({
-            tenantName: null,
-            subject: String(parsed.subject || ""),
-            sender: String(parsed.from?.text || ""),
-            text: bestText,
-            source: "EMAIL",
-          });
+          const classificationRuleMatch =
+            await findClassificationImportRuleMatch({
+              tenantId: account.tenantId,
+              subject: String(parsed.subject || ""),
+              sender: String(parsed.from?.text || ""),
+              bestText,
+            });
+
+          const aiDecision =
+            classificationRuleMatch
+              ? createDecisionFromClassificationRule(
+                  classificationRuleMatch,
+                  {
+                    subject: String(parsed.subject || ""),
+                    sender: String(parsed.from?.text || ""),
+                    bestText,
+                  }
+                )
+              : await classifyIncomingMailWithinBudget({
+                  tenantName: null,
+                  subject: String(parsed.subject || ""),
+                  sender: String(parsed.from?.text || ""),
+                  text: bestText,
+                  source: "EMAIL",
+                });
 
           if (
             aiDecision.confidence >= 0.85 &&
