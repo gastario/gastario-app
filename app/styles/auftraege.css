@@ -7542,3 +7542,79 @@ button.finalSelectedDeleteButton {
 }
 
 /* gastario-incoming-review-panel-final-end */
+/* gastario-selected-order-natural-height-start */
+
+/*
+ * Geöffnete Aufträge müssen mit ihrem Inhalt wachsen.
+ * Alte feste Höhen und Overflow-Regeln dürfen den
+ * Abrechnungs- und Prüfbereich nicht abschneiden.
+ */
+
+.ordersReferencePage .selectedFocusMode,
+.ordersReferencePage .finalOrdersGrid.selectedFocusMode {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.ordersReferencePage .panel.g-ui-card:has(.finalSelectedPanel),
+.ordersReferencePage .panel:has(.finalSelectedPanel) {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.ordersReferencePage .finalSelectedPanel,
+.ordersReferencePage .finalSelectedPanel.g-ui-card,
+.ordersPage.ordersReferencePage .finalSelectedPanel {
+  display: grid !important;
+  grid-template-rows: auto !important;
+  align-content: start !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+
+  padding-bottom: 22px !important;
+  overflow: visible !important;
+}
+
+.ordersReferencePage .finalSelectedItems,
+.ordersReferencePage .incomingBillingPanel,
+.ordersReferencePage .incomingBillingReviewForm,
+.ordersReferencePage .incomingBillingContent,
+.ordersReferencePage .incomingReviewChecklist,
+.ordersReferencePage .finalSelectedActions {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  flex-shrink: 0 !important;
+}
+
+.ordersReferencePage .incomingBillingPanel {
+  position: relative !important;
+  display: block !important;
+  margin-bottom: 20px !important;
+}
+
+.ordersReferencePage .finalSelectedActions {
+  position: static !important;
+  inset: auto !important;
+  margin-top: 0 !important;
+}
+
+@media (max-height: 900px) {
+  .ordersReferencePage .selectedFocusMode,
+  .ordersReferencePage .finalOrdersGrid.selectedFocusMode,
+  .ordersReferencePage .finalSelectedPanel {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
+/* gastario-selected-order-natural-height-end */
