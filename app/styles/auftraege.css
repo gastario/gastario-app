@@ -7692,3 +7692,87 @@ button.finalSelectedDeleteButton {
 }
 
 /* gastario-selected-detail-structural-fix-end */
+/* gastario-selected-footer-static-start */
+
+.ordersPage .finalSelectedFooterActionsStatic {
+  position: static !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+
+  margin: 0 20px !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  inset: auto !important;
+  transform: none !important;
+  overflow: visible !important;
+}
+
+.ordersPage .finalSelectedFooterActionsStatic form {
+  position: static !important;
+  display: block !important;
+  width: auto !important;
+  margin: 0 !important;
+}
+
+.ordersPage .finalSelectedFooterActionsStatic button {
+  position: static !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: auto !important;
+  min-width: 156px !important;
+  min-height: 44px !important;
+  padding: 0 18px !important;
+
+  border: 1px solid #cbd9d6 !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  color: #234d42 !important;
+
+  font: inherit !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+.ordersPage
+.finalSelectedFooterActionsStatic
+form
+button {
+  border-color: #d92d20 !important;
+  background: #d92d20 !important;
+  color: #ffffff !important;
+}
+
+.ordersPage .incomingBillingPanel {
+  margin-bottom: 20px !important;
+}
+
+@media (max-width: 640px) {
+  .ordersPage .finalSelectedFooterActionsStatic {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    margin-right: 12px !important;
+    margin-left: 12px !important;
+  }
+
+  .ordersPage .finalSelectedFooterActionsStatic button,
+  .ordersPage .finalSelectedFooterActionsStatic form,
+  .ordersPage .finalSelectedFooterActionsStatic form button {
+    width: 100% !important;
+  }
+}
+
+/* gastario-selected-footer-static-end */
