@@ -5876,3 +5876,84 @@
   background: #cae9df !important;
   color: #07634f !important;
 }
+
+/* gastario-incoming-billing-panel-20260724 */
+
+.incomingBillingPanel {
+  margin: 0 16px 14px;
+  padding: 16px;
+  border: 1px solid #dce8e3;
+  border-radius: 14px;
+  background: #f8fbfa;
+}
+
+.incomingOrderConfirmForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  margin: 0;
+}
+
+.incomingBillingChoice {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.incomingBillingChoice > span {
+  color: #334f46;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.incomingBillingChoice select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid #b9d8ce;
+  border-radius: 11px;
+  background: #ffffff;
+  color: #243d35;
+  font-size: 13px;
+  outline: none;
+}
+
+.incomingBillingChoice select:focus {
+  border-color: #0a9473;
+  box-shadow: 0 0 0 3px rgba(10, 148, 115, 0.1);
+}
+
+.incomingOrderConfirmForm > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 230px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid #0a9473;
+  border-radius: 11px;
+  background: #0a9473;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(10, 148, 115, 0.16);
+}
+
+.incomingOrderConfirmForm > button:hover {
+  border-color: #087c61;
+  background: #087c61;
+}
+
+@media (max-width: 760px) {
+  .incomingOrderConfirmForm {
+    grid-template-columns: 1fr;
+  }
+
+  .incomingOrderConfirmForm > button {
+    width: 100%;
+    min-width: 0;
+  }
+}

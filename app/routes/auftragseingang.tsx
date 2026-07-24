@@ -1910,11 +1910,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                     </div>
                   ) : null}
 
-                  <div className="finalSelectedActions">
-                    <button type="button" className="finalBackButton" onClick={() => updateSelectedOrder(null)}>
-                      Zurück zur Liste
-                    </button>
-
+                  <section className="incomingBillingPanel">
                     <Form
                       method="post"
                       action={
@@ -1965,6 +1961,13 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                         Auftrag prüfen und übernehmen
                       </button>
                     </Form>
+                  </section>
+
+                  <div className="finalSelectedActions">
+                    <button type="button" className="finalBackButton" onClick={() => updateSelectedOrder(null)}>
+                      Zurück zur Liste
+                    </button>
+
 
                     <Form method="post">
                       <input type="hidden" name="intent" value="deleteOrder" />
