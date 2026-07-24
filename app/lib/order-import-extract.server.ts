@@ -256,20 +256,104 @@ export function extractHeycaterOrder(text: string): ExtractedOrder {
 
     const priceMatch = line.match(/^(?:(.*?)\s+)?(\d+)\s*(?:\u20ac|EUR)\s*([0-9]+[,.]?[0-9]*)\s+([0-9]+[,.]?[0-9]*)$/i);
 
-    if (!priceMatch) {
+    const nameUnitQuantityTotalRow =
+      parseNameUnitQuantityTotalRow(line);
+
+    if (
+      !priceMatch &&
+      !nameUnitQuantityTotalRow
+    ) {
       currentLines.push(line);
       continue;
     }
 
-    const prefixName = String(priceMatch[1] || "").trim();
-    const quantity = Number(priceMatch[2] || 1);
-    const unitCents = toCents(priceMatch[3]);
-    const totalCents = toCents(priceMatch[4]);
+    const alternativeName =
+      String(
+        nameUnitQuantityTotalRow?.name || ""
+      ).trim();
 
-    const rowLines = [...currentLines, prefixName]
-      .map((item) => item.trim())
-      .filter(Boolean)
-      .filter((item) => !isNoiseLine(item));
+    const looksLikeSurchargeRow =
+      Boolean(nameUnitQuantityTotalRow) &&
+      /^(?:bitte\b|aufpreis\b|zuschlag\b|pauschale\b|mehrpreis\b|servicepauschale\b)/i.test(
+        alternativeName
+      );
+
+    /*
+     * Reguläre Heycater-Reihenfolge:
+     * Produktname, Menge, €, Einzelpreis, Gesamtpreis
+     *
+     * Bei Zuschlagszeilen kann die PDF-Extraktion dagegen
+     * Einzelpreis und Menge vertauscht ausgeben.
+     */
+    const useAlternativeOrder =
+      Boolean(nameUnitQuantityTotalRow) &&
+      (
+        !priceMatch ||
+        looksLikeSurchargeRow
+      );
+
+    const prefixName =
+      useAlternativeOrder
+        ? alternativeName
+        : String(
+            priceMatch?.[1] || ""
+          ).trim();
+
+    const quantity =
+      useAlternativeOrder
+        ? Number(
+            nameUnitQuantityTotalRow?.quantity || 1
+          )
+        : Number(
+            priceMatch?.[2] || 1
+          );
+
+    const unitCents =
+      useAlternativeOrder
+        ? Number(
+            nameUnitQuantityTotalRow?.unitCents || 0
+          )
+        : toCents(
+            String(
+              priceMatch?.[3] || ""
+            )
+          );
+
+    const totalCents =
+      useAlternativeOrder
+        ? Number(
+            nameUnitQuantityTotalRow?.totalCents || 0
+          )
+        : toCents(
+            String(
+              priceMatch?.[4] || ""
+            )
+          );
+
+    /*
+     * Enthält die Preiszeile bereits einen Namen,
+     * gehört vorheriger Fließtext nicht zu dieser Position.
+     * Beispiel:
+     * Bitte mit mehr Rührei planen 80 € 1 80.0
+     */
+    const rowLines =
+      nameUnitQuantityTotalRow
+        ? [prefixName]
+        : removeLeadingImportedOrderNotes(
+            [...currentLines, prefixName]
+              .map((item) => item.trim())
+              .filter(Boolean)
+              .filter(
+                (item) =>
+                  !isNoiseLine(item) &&
+                  !/^--\s*\d+\s+of\s+\d+\s*--$/i.test(
+                    item
+                  ) &&
+                  !/^seite\s+\d+\s*(?:\/|von)\s*\d+$/i.test(
+                    item
+                  )
+              )
+          );
 
     currentLines = [];
 
@@ -884,6 +968,104 @@ function extractStructuredPositionBlocks(
   return items;
 }
 
+function isStandaloneImportedOrderNoteLine(
+  value: string
+) {
+  const normalized = String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+
+  if (!normalized) {
+    return false;
+  }
+
+  return (
+    /^(?:kein|ohne)\s+(?:schweinefleisch|fleisch|nüsse|nuesse|gluten|laktose)$/i.test(
+      normalized
+    ) ||
+    /^beschilderung\b/i.test(normalized) ||
+    /^(?:allergien?|allergene?|unverträglichkeiten?|unvertraeglichkeiten?)\b/i.test(
+      normalized
+    ) ||
+    /^(?:nuss|nüsse|nuesse|erdbeeren?|gluten|laktose)(?:\s*[,/+&]\s*(?:nuss|nüsse|nuesse|erdbeeren?|gluten|laktose))*$/i.test(
+      normalized
+    )
+  );
+}
+
+function removeLeadingImportedOrderNotes(
+  values: string[]
+) {
+  const result = [...values];
+
+  while (
+    result.length > 0 &&
+    isStandaloneImportedOrderNoteLine(
+      result[0]
+    )
+  ) {
+    result.shift();
+  }
+
+  return result;
+}
+
+/*
+ * Unterstützt Tabellenextraktionen wie:
+ *
+ * Bitte mit mehr Rührei planen 80 € 1 80.0
+ *
+ * Reihenfolge:
+ * Produktname, Einzelpreis, Währung,
+ * Menge, Positionssumme
+ */
+function parseNameUnitQuantityTotalRow(
+  value: string
+) {
+  const match = String(value || "")
+    .trim()
+    .match(
+      /^(.+?)\s+([0-9]+(?:[.,][0-9]+)?)\s*(?:€|eur)\s+(\d+(?:[.,]\d+)?)\s+([0-9]+(?:[.,][0-9]+)?)$/i
+    );
+
+  if (!match) {
+    return null;
+  }
+
+  const name = String(match[1] || "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const quantity = Number(
+    String(match[3] || "")
+      .replace(",", ".")
+  );
+
+  const unitCents =
+    parseGenericMoneyToCents(match[2]);
+
+  const totalCents =
+    parseGenericMoneyToCents(match[4]);
+
+  if (
+    !name ||
+    !Number.isFinite(quantity) ||
+    quantity <= 0 ||
+    unitCents <= 0 ||
+    totalCents <= 0
+  ) {
+    return null;
+  }
+
+  return {
+    name,
+    quantity,
+    unitCents,
+    totalCents,
+  };
+}
+
 function extractGenericItems(lines: string[]) {
   const items: ExtractedOrderItem[] = [];
   let pendingNameLines: string[] = [];
@@ -1062,9 +1244,11 @@ function extractGenericItems(lines: string[]) {
       pendingNameLines = [];
       continue;
     }
-
     if (isGenericItemNoiseLine(line)) {
-      pendingNameLines = [];
+      /*
+       * Seitenköpfe, Fußzeilen und Firmendaten dürfen
+       * eine laufende Position nicht verwerfen.
+       */
       continue;
     }
 
@@ -1220,6 +1404,33 @@ function extractGenericItems(lines: string[]) {
       continue;
     }
 
+    const nameUnitQuantityTotalRow =
+      parseNameUnitQuantityTotalRow(line);
+
+    if (nameUnitQuantityTotalRow) {
+      const parsedText =
+        splitProductLines(
+          removeLeadingImportedOrderNotes([
+            ...pendingNameLines,
+            nameUnitQuantityTotalRow.name,
+          ])
+        );
+
+      pushItem({
+        name: parsedText.name,
+        description: parsedText.description,
+        quantity:
+          nameUnitQuantityTotalRow.quantity,
+        unitCents:
+          nameUnitQuantityTotalRow.unitCents,
+        totalCents:
+          nameUnitQuantityTotalRow.totalCents,
+        rawLine: line,
+      });
+
+      pendingNameLines = [];
+      continue;
+    }
     const separatedValues = line
       .split(/\s+/)
       .filter(Boolean);
@@ -1236,13 +1447,20 @@ function extractGenericItems(lines: string[]) {
     if (onlyNumbersAndPrices) {
       continue;
     }
+    if (
+      isStandaloneImportedOrderNoteLine(
+        line
+      )
+    ) {
+      continue;
+    }
 
     if (looksLikeGenericItemLine(line)) {
       pendingNameLines.push(line);
 
-      if (pendingNameLines.length > 5) {
+      if (pendingNameLines.length > 8) {
         pendingNameLines =
-          pendingNameLines.slice(-5);
+          pendingNameLines.slice(-8);
       }
     }
   }
