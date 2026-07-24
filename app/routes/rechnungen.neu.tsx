@@ -1,4 +1,4 @@
-﻿import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
+import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import { useMemo, useState } from "react";
 import AppLayout from "../components/AppLayout";
 
@@ -60,7 +60,11 @@ function parseDateInput(value: FormDataEntryValue | null) {
 }
 
 function splitInvoiceAddress(value: string | null | undefined) {
-  const lines = String(value || "")
+  const rawValue = String(value || "")
+    .replace(/\u00a0/g, " ")
+    .trim();
+
+  const lines = rawValue
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
@@ -70,16 +74,44 @@ function splitInvoiceAddress(value: string | null | undefined) {
   let city = "";
   let addressExtra = "";
 
+  /*
+   * Form 1:
+   * Köpenicker Straße 122, 10179 Berlin
+   */
+  const singleLineMatch = rawValue.match(
+    /^(.*?)(?:,\s*|\s{2,})(\d{5})\s+(.+)$/
+  );
+
+  if (singleLineMatch) {
+    street = singleLineMatch[1].trim();
+    zip = singleLineMatch[2].trim();
+    city = singleLineMatch[3].trim();
+
+    return {
+      addressExtra,
+      street,
+      zip,
+      city,
+    };
+  }
+
+  /*
+   * Form 2:
+   * Köpenicker Straße 122
+   * 10179 Berlin
+   */
   const postalLineIndex = lines.findIndex((line) =>
     /^\d{5}\s+.+/.test(line)
   );
 
   if (postalLineIndex >= 0) {
-    const match = lines[postalLineIndex].match(/^(\d{5})\s+(.+)$/);
+    const match = lines[postalLineIndex].match(
+      /^(\d{5})\s+(.+)$/
+    );
 
     if (match) {
-      zip = match[1];
-      city = match[2];
+      zip = match[1].trim();
+      city = match[2].trim();
     }
 
     street =
@@ -727,10 +759,16 @@ export default function NeueRechnungPage() {
 
       {sourceOrder ? (
         <section style={sourceOrderNoticeStyle}>
-          <div>
-            <span>Aus Auftrag übernommen</span>
-            <strong>{sourceOrder.orderNumber}</strong>
-            <small>
+          <div style={sourceOrderNoticeContentStyle}>
+            <span style={sourceOrderNoticeLabelStyle}>
+              Aus Auftrag übernommen
+            </span>
+
+            <strong style={sourceOrderNoticeNumberStyle}>
+              {sourceOrder.orderNumber}
+            </strong>
+
+            <small style={sourceOrderNoticeTextStyle}>
               Kunde, Leistungsdatum und Positionen wurden
               vorausgefüllt. Du kannst alle Angaben vor dem
               Speichern noch ändern.
@@ -1221,6 +1259,35 @@ const sourceOrderNoticeStyle: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "space-between",
   gap: 18,
+};
+
+const sourceOrderNoticeContentStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 4,
+  minWidth: 0,
+};
+
+const sourceOrderNoticeLabelStyle: React.CSSProperties = {
+  color: "#08755d",
+  fontSize: 11,
+  fontWeight: 800,
+  letterSpacing: "0.06em",
+  textTransform: "uppercase",
+};
+
+const sourceOrderNoticeNumberStyle: React.CSSProperties = {
+  color: "#173d34",
+  fontSize: 15,
+  fontWeight: 800,
+  lineHeight: 1.25,
+};
+
+const sourceOrderNoticeTextStyle: React.CSSProperties = {
+  display: "block",
+  marginTop: 2,
+  color: "#587168",
+  fontSize: 12,
+  lineHeight: 1.5,
 };
 
 const existingInvoiceNoticeStyle: React.CSSProperties = {
