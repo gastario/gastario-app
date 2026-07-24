@@ -1,4 +1,4 @@
-﻿import crypto from "node:crypto";
+import crypto from "node:crypto";
 import { createRequire } from "node:module";
 import { simpleParser } from "mailparser";
 import { prisma } from "../lib/prisma.server";
@@ -1866,7 +1866,18 @@ export async function loader({ request }: { request: Request }) {
               }
             }
 
-            const ignoreRuleMatch = await findImportIgnoreRuleMatch({
+                      const classificationRuleMatch =
+                        await findClassificationImportRuleMatch({
+                          tenantId: account.tenantId,
+                          subject: String(parsed.subject || ""),
+                          sender: String(parsed.from?.text || ""),
+                          bestText,
+                        });
+
+            const ignoreRuleMatch =
+              classificationRuleMatch
+                ? null
+                : await findImportIgnoreRuleMatch({
               tenantId: account.tenantId,
               subject: String(parsed.subject || ""),
               sender: String(parsed.from?.text || ""),
@@ -1929,13 +1940,6 @@ export async function loader({ request }: { request: Request }) {
                           )
                         );
 
-                      const classificationRuleMatch =
-                        await findClassificationImportRuleMatch({
-                          tenantId: account.tenantId,
-                          subject: String(parsed.subject || ""),
-                          sender: String(parsed.from?.text || ""),
-                          bestText,
-                        });
 
                       const aiDecision =
                         classificationRuleMatch
@@ -2183,7 +2187,18 @@ export async function loader({ request }: { request: Request }) {
             });
           }
 
-          const ignoreRuleMatch = await findImportIgnoreRuleMatch({
+          const classificationRuleMatch =
+            await findClassificationImportRuleMatch({
+              tenantId: account.tenantId,
+              subject: String(parsed.subject || ""),
+              sender: String(parsed.from?.text || ""),
+              bestText,
+            });
+
+          const ignoreRuleMatch =
+            classificationRuleMatch
+              ? null
+              : await findImportIgnoreRuleMatch({
             tenantId: account.tenantId,
             subject: String(parsed.subject || ""),
             sender: String(parsed.from?.text || ""),
@@ -2221,13 +2236,6 @@ export async function loader({ request }: { request: Request }) {
             continue;
           }
 
-          const classificationRuleMatch =
-            await findClassificationImportRuleMatch({
-              tenantId: account.tenantId,
-              subject: String(parsed.subject || ""),
-              sender: String(parsed.from?.text || ""),
-              bestText,
-            });
 
           const aiDecision =
             classificationRuleMatch
