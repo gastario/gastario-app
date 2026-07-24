@@ -283,6 +283,52 @@ export async function loader({ request }: { request: Request }) {
         where: {
           tenantId: tenantUser.tenantId,
           ...(status ? { status: status as any } : {}),
+          ...(searchQuery
+            ? {
+                OR: [
+                  {
+                    customerName: {
+                      contains: searchQuery,
+                      mode: "insensitive",
+                    },
+                  },
+                  {
+                    orderNumber: {
+                      contains: searchQuery,
+                      mode: "insensitive",
+                    },
+                  },
+                  {
+                    externalOrderNumber: {
+                      contains: searchQuery,
+                      mode: "insensitive",
+                    },
+                  },
+                  {
+                    platformReference: {
+                      contains: searchQuery,
+                      mode: "insensitive",
+                    },
+                  },
+                  {
+                    contactName: {
+                      contains: searchQuery,
+                      mode: "insensitive",
+                    },
+                  },
+                  {
+                    items: {
+                      some: {
+                        name: {
+                          contains: searchQuery,
+                          mode: "insensitive",
+                        },
+                      },
+                    },
+                  },
+                ],
+              }
+            : {}),
         },
         include: {
           items: true,
