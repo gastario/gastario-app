@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Form, Link, redirect, useLoaderData, useNavigation } from "react-router";
 import orderReviewStyles from "../styles/auftrag-pruefung.css?url";
 
@@ -178,6 +178,42 @@ export async function action({ request, params }: { request: Request; params: { 
   const intent = String(formData.get("_intent") || "");
 
   if (intent === "confirmOrder") {
+    const requestedBillingMode = String(
+      formData.get("billingMode") || "UNDECIDED"
+    );
+
+    const billingConfiguration: Record<
+      string,
+      {
+        billingMode: string;
+        billingStatus: string;
+      }
+    > = {
+      UNDECIDED: {
+        billingMode: "UNDECIDED",
+        billingStatus: "NOT_BILLED",
+      },
+      DIRECT_INVOICE: {
+        billingMode: "DIRECT_INVOICE",
+        billingStatus: "READY_TO_INVOICE",
+      },
+      EXTERNAL_INVOICE: {
+        billingMode: "EXTERNAL_INVOICE",
+        billingStatus: "INVOICED_EXTERNALLY",
+      },
+      PLATFORM_CREDIT: {
+        billingMode: "PLATFORM_CREDIT",
+        billingStatus: "WAITING_FOR_CREDIT",
+      },
+      NO_INVOICE: {
+        billingMode: "NO_INVOICE",
+        billingStatus: "NOT_RELEVANT",
+      },
+    };
+
+    const billingSelection =
+      billingConfiguration[requestedBillingMode] ||
+      billingConfiguration.UNDECIDED;
     const order = await prisma.order.findFirst({
       where: {
         id: params.orderId,
@@ -205,6 +241,10 @@ export async function action({ request, params }: { request: Request; params: { 
       },
       data: {
         status: "CONFIRMED" as any,
+        billingMode:
+          billingSelection.billingMode as any,
+        billingStatus:
+          billingSelection.billingStatus as any,
       },
     });
 
@@ -229,6 +269,18 @@ export async function action({ request, params }: { request: Request; params: { 
     await ensureDeliveryNoteForOrder(
       String(params.orderId)
     );
+
+    if (
+      billingSelection.billingMode ===
+      "DIRECT_INVOICE"
+    ) {
+      return redirect(
+        "/rechnungen/neu?orderId=" +
+          encodeURIComponent(
+            String(params.orderId)
+          )
+      );
+    }
 
     return redirect("/auftraege");
   }

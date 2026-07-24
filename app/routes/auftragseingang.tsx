@@ -1915,9 +1915,56 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                       Zurück zur Liste
                     </button>
 
-                    <Link to={"/auftrag-pruefung/" + selectedOrder.id} prefetch="intent">
-                      Prüfen & übernehmen
-                    </Link>
+                    <Form
+                      method="post"
+                      action={
+                        "/auftrag-pruefung/" +
+                        selectedOrder.id
+                      }
+                      className="incomingOrderConfirmForm"
+                    >
+                      <input
+                        type="hidden"
+                        name="_intent"
+                        value="confirmOrder"
+                      />
+
+                      <label className="incomingBillingChoice">
+                        <span>Wie soll der Auftrag abgerechnet werden?</span>
+
+                        <select
+                          name="billingMode"
+                          defaultValue={
+                            selectedOrder.billingMode ||
+                            "UNDECIDED"
+                          }
+                        >
+                          <option value="UNDECIDED">
+                            Noch nicht entschieden
+                          </option>
+
+                          <option value="DIRECT_INVOICE">
+                            Eigene Rechnung mit Gastario
+                          </option>
+
+                          <option value="EXTERNAL_INVOICE">
+                            Über anderes System abgerechnet
+                          </option>
+
+                          <option value="PLATFORM_CREDIT">
+                            Plattformgutschrift
+                          </option>
+
+                          <option value="NO_INVOICE">
+                            Keine Rechnung erforderlich
+                          </option>
+                        </select>
+                      </label>
+
+                      <button type="submit">
+                        Auftrag prüfen und übernehmen
+                      </button>
+                    </Form>
 
                     <Form method="post">
                       <input type="hidden" name="intent" value="deleteOrder" />
