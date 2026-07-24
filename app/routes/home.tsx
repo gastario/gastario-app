@@ -1,4 +1,4 @@
-﻿import { Link, useLoaderData } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 function todayRange() {
@@ -113,6 +113,12 @@ export async function loader({ request }: { request: Request }) {
 
   const { start, end } = todayRange();
 
+  const reviewPeriodStart = new Date();
+  reviewPeriodStart.setDate(
+    reviewPeriodStart.getDate() - 7
+  );
+  reviewPeriodStart.setHours(0, 0, 0, 0);
+
   const [
     ordersToday,
     openOrdersCount,
@@ -138,7 +144,15 @@ export async function loader({ request }: { request: Request }) {
     prisma.order.count({
       where: {
         tenantId: access.tenantId,
-        status: "AUTO_CREATED" as any,
+        status: {
+          in: [
+            "AUTO_CREATED",
+            "REVIEW_NEEDED",
+          ] as any,
+        },
+        createdAt: {
+          gte: reviewPeriodStart,
+        },
       },
     }).catch(() => 0),
 
@@ -208,7 +222,15 @@ export async function loader({ request }: { request: Request }) {
     prisma.order.findMany({
       where: {
         tenantId: access.tenantId,
-        status: "AUTO_CREATED" as any,
+        status: {
+          in: [
+            "AUTO_CREATED",
+            "REVIEW_NEEDED",
+          ] as any,
+        },
+        createdAt: {
+          gte: reviewPeriodStart,
+        },
       },
       include: {
         items: true,
@@ -282,6 +304,18 @@ export async function loader({ request }: { request: Request }) {
         tenantId: access.tenantId,
         status: {
           in: ["CONFIRMED", "IN_PRODUCTION", "PACKING_OPEN", "DELIVERED"] as any,
+        },
+        billingMode: {
+          in: [
+            "UNDECIDED",
+            "DIRECT_INVOICE",
+          ] as any,
+        },
+        billingStatus: {
+          in: [
+            "NOT_BILLED",
+            "READY_TO_INVOICE",
+          ] as any,
         },
         invoices: {
           none: {},
