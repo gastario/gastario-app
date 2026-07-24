@@ -1878,96 +1878,330 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
               </div>
 
               {selectedOrder ? (
-                <aside className="finalSelectedPanel" key={selectedOrder.id}>
-                  <div className="finalSelectedTop">
+                <aside
+                  className="incomingOrderReviewCardV2"
+                  key={selectedOrder.id}
+                >
+                  <header className="incomingOrderReviewHeaderV2">
                     <div>
-                      <div className="finalSelectedKicker">Ausgewählt</div>
-                      <div className="finalOrderNumber">{selectedOrder.orderNumber}</div>
-                      <h3>{selectedOrder.customerName || selectedOrder.customer?.name || "Kunde unbekannt"}</h3>
+                      <div className="incomingOrderReviewEyebrowV2">
+                        Auftrag prüfen
+                      </div>
+
+                      <div className="incomingOrderReviewNumberV2">
+                        {selectedOrder.orderNumber}
+                      </div>
+
+                      <h3>
+                        {selectedOrder.customer?.name ||
+                          selectedOrder.customerName ||
+                          "Kunde unbekannt"}
+                      </h3>
+
+                      {selectedOrder.contactName ? (
+                        <p>{selectedOrder.contactName}</p>
+                      ) : null}
                     </div>
 
-                    <span className="finalSourceBadge big">{sourceLabel(selectedOrder.source)}</span>
-                  </div>
+                    <span className="incomingOrderReviewSourceV2">
+                      {sourceLabel(selectedOrder.source)}
+                    </span>
+                  </header>
 
-                  <div className="finalSelectedFacts">
+                  <div className="incomingOrderReviewFactsV2">
                     <div>
                       <span>Lieferung</span>
-                      <strong>{formatDate(selectedOrder.deliveryDate)}</strong>
-                      <small>{selectedOrder.deliveryTimeText || "Uhrzeit offen"}</small>
+                      <strong>
+                        {formatDate(selectedOrder.deliveryDate)}
+                      </strong>
+                      <small>
+                        {selectedOrder.deliveryTimeText ||
+                          "Uhrzeit prüfen"}
+                      </small>
                     </div>
 
                     <div>
                       <span>Lieferadresse</span>
-                      <strong>{selectedOrder.customerName || selectedOrder.customer?.name || "Kunde unbekannt"}</strong>
-                      <small>{selectedOrder.deliveryAddress || "Adresse prüfen"}</small>
+                      <strong>
+                        {selectedOrder.customer?.name ||
+                          selectedOrder.customerName ||
+                          "Kunde unbekannt"}
+                      </strong>
+                      <small>
+                        {selectedOrder.deliveryAddress ||
+                          "Adresse prüfen"}
+                      </small>
                     </div>
 
                     <div>
                       <span>Gesamt</span>
-                      <strong>{selectedOrderTotal ? formatImportCurrencyFromCents(selectedOrderTotal.cents) : "-"}</strong>
-                      <small>{selectedOrderTotal?.source || "bitte prüfen"}</small>
+                      <strong>
+                        {selectedOrderTotal
+                          ? formatImportCurrencyFromCents(
+                              selectedOrderTotal.cents
+                            )
+                          : "-"}
+                      </strong>
+                      <small>
+                        {selectedOrderTotal?.source ||
+                          "Summe prüfen"}
+                      </small>
                     </div>
                   </div>
 
-                  <div className="finalSelectedItems">
-                    <h4>Positionen</h4>
-
-                    {selectedOrderItems.slice(0, 6).map((item: any) => (
-                      <div className="finalSelectedItem" key={item.id || item.name}>
-                        <span>
-                          <strong>{item.quantity || 1}x</strong>
-                          {item.name || "Position"}
-                        </span>
-                        <b>{formatImportCurrencyFromCents(Number(item.totalCents || 0))}</b>
+                  <section className="incomingOrderProductsV2">
+                    <div className="incomingOrderSectionHeaderV2">
+                      <div>
+                        <span>Positionen</span>
+                        <h4>
+                          {selectedOrderItems.length}
+                          {selectedOrderItems.length === 1
+                            ? " Produkt"
+                            : " Produkte"}
+                        </h4>
                       </div>
-                    ))}
 
-                    {selectedOrderItems.length > 6 ? (
-                      <div className="finalSelectedMore">+ {selectedOrderItems.length - 6} weitere Positionen</div>
-                    ) : null}
-                  </div>
+                      <small>
+                        Bei vielen Positionen innerhalb der Liste scrollen
+                      </small>
+                    </div>
+
+                    <div className="incomingOrderProductScrollV2">
+                      {selectedOrderItems.length > 0 ? (
+                        selectedOrderItems.map(
+                          (item: any, itemIndex: number) => (
+                            <div
+                              className="incomingOrderProductRowV2"
+                              key={
+                                item.id ||
+                                `${item.name || "position"}-${itemIndex}`
+                              }
+                            >
+                              <div className="incomingOrderProductMainV2">
+                                <strong>
+                                  {item.quantity || 1}x
+                                </strong>
+
+                                <span>
+                                  {item.name || "Position"}
+                                </span>
+                              </div>
+
+                              <b>
+                                {formatImportCurrencyFromCents(
+                                  Number(item.totalCents || 0)
+                                )}
+                              </b>
+                            </div>
+                          )
+                        )
+                      ) : (
+                        <div className="incomingOrderProductsEmptyV2">
+                          Keine Positionen erkannt. Auftrag bitte manuell
+                          kontrollieren.
+                        </div>
+                      )}
+                    </div>
+                  </section>
 
                   {selectedOrderTotal?.source === "vorläufig" ? (
-                    <div className="finalSelectedNotice">
-                      Der Betrag ist vorläufig und sollte vor Übernahme geprüft werden.
+                    <div className="incomingOrderWarningV2">
+                      Die Gesamtsumme ist vorläufig und muss vor der
+                      Übernahme kontrolliert werden.
                     </div>
                   ) : null}
 
-                  <section className="incomingBillingPanel">
-                    <div>
-                      <strong>
-                        Auftrag vor der Übernahme kontrollieren
-                      </strong>
+                  <Form
+                    method="get"
+                    action={
+                      "/auftrag-pruefung/" +
+                      selectedOrder.id
+                    }
+                    className="incomingOrderReviewFormV2"
+                  >
+                    <section className="incomingOrderBillingV2">
+                      <div className="incomingOrderSectionHeaderV2">
+                        <div>
+                          <span>Abrechnung</span>
+                          <h4>
+                            Wie soll der Auftrag abgerechnet werden?
+                          </h4>
+                        </div>
+                      </div>
 
-                      <p>
-                        Kundendaten, Lieferadresse, Termin und Positionen
-                        werden auf der vollständigen Prüfseite bestätigt.
-                      </p>
+                      <label className="incomingOrderBillingFieldV2">
+                        <span>Abrechnungsart</span>
+
+                        <select
+                          name="billingMode"
+                          defaultValue={
+                            selectedOrder.billingMode ||
+                            "UNDECIDED"
+                          }
+                          required
+                        >
+                          <option value="UNDECIDED">
+                            Noch nicht entschieden
+                          </option>
+
+                          <option value="DIRECT_INVOICE">
+                            Direktrechnung an den Kunden
+                          </option>
+
+                          <option value="EXTERNAL_INVOICE">
+                            Rechnung wurde extern erstellt
+                          </option>
+
+                          <option value="PLATFORM_CREDIT">
+                            Plattform-Gutschrift
+                          </option>
+
+                          <option value="NO_INVOICE">
+                            Keine Rechnung erforderlich
+                          </option>
+                        </select>
+                      </label>
+                    </section>
+
+                    <section className="incomingOrderChecklistV2">
+                      <div className="incomingOrderSectionHeaderV2">
+                        <div>
+                          <span>Pflichtprüfung</span>
+                          <h4>
+                            Vor der Übernahme kontrollieren
+                          </h4>
+                        </div>
+
+                        <small>
+                          Alle fünf Punkte müssen bestätigt werden
+                        </small>
+                      </div>
+
+                      <div className="incomingOrderChecklistGridV2">
+                        <label>
+                          <input
+                            type="checkbox"
+                            name="customerChecked"
+                            value="1"
+                            required
+                          />
+                          <span>
+                            <strong>Kundendaten geprüft</strong>
+                            <small>
+                              Firmenname und Ansprechpartner stimmen.
+                            </small>
+                          </span>
+                        </label>
+
+                        <label>
+                          <input
+                            type="checkbox"
+                            name="addressChecked"
+                            value="1"
+                            required
+                          />
+                          <span>
+                            <strong>Lieferadresse geprüft</strong>
+                            <small>
+                              Straße, Hausnummer und Ort sind vollständig.
+                            </small>
+                          </span>
+                        </label>
+
+                        <label>
+                          <input
+                            type="checkbox"
+                            name="scheduleChecked"
+                            value="1"
+                            required
+                          />
+                          <span>
+                            <strong>Datum und Uhrzeit geprüft</strong>
+                            <small>
+                              Liefertermin und Zeitfenster sind korrekt.
+                            </small>
+                          </span>
+                        </label>
+
+                        <label>
+                          <input
+                            type="checkbox"
+                            name="itemsChecked"
+                            value="1"
+                            required
+                          />
+                          <span>
+                            <strong>Positionen und Mengen geprüft</strong>
+                            <small>
+                              Alle Speisen, Mengen und Preise stimmen.
+                            </small>
+                          </span>
+                        </label>
+
+                        <label>
+                          <input
+                            type="checkbox"
+                            name="billingChecked"
+                            value="1"
+                            required
+                          />
+                          <span>
+                            <strong>Abrechnungsart geprüft</strong>
+                            <small>
+                              Die spätere Rechnungsbearbeitung ist festgelegt.
+                            </small>
+                          </span>
+                        </label>
+                      </div>
+                    </section>
+
+                    <div className="incomingOrderReviewSubmitV2">
+                      <div>
+                        <strong>
+                          Bereit für die vollständige Prüfung?
+                        </strong>
+                        <span>
+                          Ohne vollständige Checkliste kann der Vorgang
+                          nicht fortgesetzt werden.
+                        </span>
+                      </div>
+
+                      <button type="submit">
+                        Auftrag vollständig prüfen
+                      </button>
                     </div>
+                  </Form>
 
-                    <Link
-                      to={
-                        "/auftrag-pruefung/" +
-                        selectedOrder.id
+                  <footer className="incomingOrderReviewFooterV2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateSelectedOrder(null)
                       }
-                      className="incomingReviewOrderButton"
                     >
-                      Auftrag prüfen und übernehmen
-                    </Link>
-                  </section>
-
-                  <div className="finalSelectedActions">
-                    <button type="button" className="finalBackButton" onClick={() => updateSelectedOrder(null)}>
                       Zurück zur Liste
                     </button>
 
-
                     <Form method="post">
-                      <input type="hidden" name="intent" value="deleteOrder" />
-                      <input type="hidden" name="orderId" value={selectedOrder.id} />
-                      <button type="submit">Löschen</button>
+                      <input
+                        type="hidden"
+                        name="intent"
+                        value="deleteOrder"
+                      />
+                      <input
+                        type="hidden"
+                        name="orderId"
+                        value={selectedOrder.id}
+                      />
+
+                      <button
+                        type="submit"
+                        className="incomingOrderDeleteButtonV2"
+                      >
+                        Auftrag löschen
+                      </button>
                     </Form>
-                  </div>
+                  </footer>
                 </aside>
               ) : null}
             </div>
