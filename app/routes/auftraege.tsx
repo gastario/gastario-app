@@ -1,4 +1,4 @@
-import { Form, Link, useActionData, useLoaderData } from "react-router";
+import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import { useState } from "react";
 import AppLayout from "../components/AppLayout";
 import {
@@ -473,6 +473,12 @@ export async function action({ request }: { request: Request }) {
         billingStatus: configuration.billingStatus as any,
       },
     });
+    if (configuration.billingMode === "DIRECT_INVOICE") {
+      return redirect(
+        "/rechnungen/neu?orderId=" +
+          encodeURIComponent(order.id)
+      );
+    }
 
     return {
       success: "Abrechnungsart wurde gespeichert.",
