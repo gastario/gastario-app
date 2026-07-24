@@ -724,9 +724,38 @@ export default function AuftragseingangPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const importFetcher = useFetcher();
-  const [liveEnabled, setLiveEnabled] = useState(false);
-  const [lastAutoImportAt, setLastAutoImportAt] = useState<string>("");
-  const [isImportingNow, setIsImportingNow] = useState(false);
+  const [liveEnabled, setLiveEnabled] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return window.localStorage.getItem(
+      "gastario-email-live-enabled"
+    ) === "true";
+  });
+
+  const [lastAutoImportAt, setLastAutoImportAt] =
+    useState<string>(() => {
+      if (typeof window === "undefined") {
+        return "";
+      }
+
+      return (
+        window.localStorage.getItem(
+          "gastario-email-last-import-at"
+        ) || ""
+      );
+    });
+
+  const [isImportingNow, setIsImportingNow] =
+    useState(false);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      "gastario-email-live-enabled",
+      String(liveEnabled)
+    );
+  }, [liveEnabled]);
 
   useEffect(() => {
     if (importFetcher.state !== "idle") {
@@ -739,11 +768,17 @@ export default function AuftragseingangPage() {
     const result: any = importFetcher.data;
 
     if (result?.success) {
-      setLastAutoImportAt(
+      const importedAt =
         new Date().toLocaleTimeString("de-DE", {
           hour: "2-digit",
           minute: "2-digit",
-        })
+        });
+
+      setLastAutoImportAt(importedAt);
+
+      window.localStorage.setItem(
+        "gastario-email-last-import-at",
+        importedAt
       );
 
       const reloadTimer = window.setTimeout(() => {
