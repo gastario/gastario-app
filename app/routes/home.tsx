@@ -1247,20 +1247,20 @@ export default function Home() {
                     Planung
                   </p>
 
-                  <h2>Kommende Lieferungen</h2>
+                  <h2>Lieferplan</h2>
 
                   <span>
-                    Alle zukünftigen Aufträge
-                    nach Lieferdatum gruppiert.
+                    Alle geplanten Lieferungen
+                    nach Zeitraum und Filter gruppiert.
                   </span>
                 </div>
 
                 <strong className="dashPanelCount">
-                  {upcomingOrdersSorted.length}
+                  {filteredPlanningOrders.length}
                 </strong>
               </div>
 
-              {upcomingOrderGroups.length === 0 ? (
+              {filteredOrderGroups.length === 0 ? (
                 <div className="dashSimpleEmpty">
                   <strong>
                     Keine kommenden Lieferungen
@@ -1273,7 +1273,7 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="dashUpcomingScroll">
-                  {upcomingOrderGroups.map(
+                  {filteredOrderGroups.map(
                     ([dateKey, orders]) => (
                       <section
                         className="dashDateGroup"
@@ -2651,6 +2651,51 @@ const dashboardCss = `
 
   @media (max-width: 700px) {
     .dashFilterControls {
+      grid-template-columns: 1fr;
+    }
+  }
+  /* gastario-dashboard-focused-planning-20260726 */
+
+  .dashTodayPanel {
+    display: none;
+  }
+
+  .dashNextPanel {
+    display: none;
+  }
+
+  .dashUpcomingPanel {
+    min-height: auto;
+  }
+
+  .dashUpcomingScroll {
+    max-height: none;
+    padding-right: 0;
+    overflow: visible;
+    scrollbar-gutter: auto;
+  }
+
+  .dashPlanning,
+  .dashAttention {
+    align-content: start;
+  }
+
+  .dashControlGrid {
+    grid-template-columns:
+      minmax(0, 1.75fr)
+      minmax(300px, 0.62fr);
+  }
+
+  .dashDateGroup > header {
+    min-height: 40px;
+  }
+
+  .dashCompactOrder {
+    min-height: 68px;
+  }
+
+  @media (max-width: 1180px) {
+    .dashControlGrid {
       grid-template-columns: 1fr;
     }
   }`;
