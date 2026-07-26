@@ -154,22 +154,27 @@ model Tenant {
   lockedAt    DateTime?
   lockReason  String?
 
-  users           TenantUser[]
-  brands          Brand[]
-  emailAccounts   EmailAccount[]
-  enabledFeatures TenantFeature[]
-  customers       Customer[]
-  products        Product[]
-  quotes          Quote[]
-  orders          Order[]
-  deliveryNotes   DeliveryNote[]
-  incomingEmails  IncomingEmail[]
-  deliveryTours   DeliveryTour[]
-  deliveryStops   DeliveryStop[]
-  productMappings ProductMapping[]
-  recipeItems     ProductRecipeItem[]
-  suppliers       Supplier[]
-  inventoryItems  InventoryItem[]
+  users                  TenantUser[]
+  brands                 Brand[]
+  emailAccounts          EmailAccount[]
+  enabledFeatures        TenantFeature[]
+  customers              Customer[]
+  products               Product[]
+  quotes                 Quote[]
+  orders                 Order[]
+  deliveryNotes          DeliveryNote[]
+  incomingEmails         IncomingEmail[]
+  deliveryTours          DeliveryTour[]
+  deliveryStops          DeliveryStop[]
+  productMappings        ProductMapping[]
+  recipeItems            ProductRecipeItem[]
+  suppliers              Supplier[]
+  inventoryItems         InventoryItem[]
+  supplierConnections    SupplierConnection[]
+  supplierCatalogItems   SupplierCatalogItem[]
+  supplierPriceSnapshots SupplierPriceSnapshot[]
+  supplierSyncRuns       SupplierSyncRun[]
+  productSupplierMatches ProductSupplierMatch[]
 }
 
 model TenantUser {
@@ -355,13 +360,14 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant          Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   orderItems      OrderItem[]
   quoteItems      QuoteItem[]
   productMappings ProductMapping[]
   recipeItems     ProductRecipeItem[]
   suppliers       Supplier[]
   inventoryItems  InventoryItem[]
+  supplierMatches ProductSupplierMatch[]
 
   @@index([tenantId])
   @@index([name])
@@ -685,9 +691,11 @@ model Supplier {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  product   Product? @relation(fields: [productId], references: [id])
-  productId String?
+  tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product              Product?              @relation(fields: [productId], references: [id])
+  productId            String?
+  supplierConnections  SupplierConnection[]
+  supplierCatalogItems SupplierCatalogItem[]
 
   @@index([tenantId])
   @@index([active])
@@ -925,4 +933,227 @@ model ImportIgnoreRule {
 
   @@index([tenantId])
   @@index([tenantId, isActive])
+}
+
+/**
+ * gastario-supplier-daily-prices-20260726
+ * Mandantenfähige Lieferantenkataloge, Tagespreise und Synchronisierungen.
+ */
+
+enum SupplierConnectionType {
+  API
+  PUNCHOUT
+  BMECAT
+  CXML
+  EDI
+  CSV
+  EXCEL
+  EMAIL
+  MANUAL
+}
+
+enum SupplierConnectionStatus {
+  DISCONNECTED
+  CONFIGURED
+  ACTIVE
+  ERROR
+  PAUSED
+}
+
+enum SupplierSyncStatus {
+  RUNNING
+  SUCCESS
+  PARTIAL
+  FAILED
+}
+
+enum SupplierPriceSource {
+  API
+  PUNCHOUT
+  CATALOG
+  CSV
+  EXCEL
+  EMAIL
+  INVOICE
+  MANUAL
+}
+
+enum SupplierMatchMethod {
+  ARTICLE_NUMBER
+  EAN
+  GTIN
+  MANUAL
+  AI_SUGGESTION
+}
+
+model SupplierConnection {
+  id         String @id @default(cuid())
+  tenantId   String
+  supplierId String
+
+  type   SupplierConnectionType
+  status SupplierConnectionStatus @default(DISCONNECTED)
+
+  label          String?
+  customerNumber String?
+  endpointUrl    String?
+
+  credentialsEncrypted String?
+  settingsJson         Json?
+
+  syncIntervalMinutes  Int       @default(1440)
+  lastSyncAt           DateTime?
+  lastSuccessfulSyncAt DateTime?
+  nextSyncAt           DateTime?
+  lastError            String?
+
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  catalogItems SupplierCatalogItem[]
+  syncRuns     SupplierSyncRun[]
+
+  @@index([tenantId])
+  @@index([supplierId])
+  @@index([status])
+  @@index([nextSyncAt])
+}
+
+model SupplierCatalogItem {
+  id           String  @id @default(cuid())
+  tenantId     String
+  supplierId   String
+  connectionId String?
+
+  externalId    String?
+  articleNumber String?
+  ean           String?
+  gtin          String?
+
+  name        String
+  brand       String?
+  description String?
+
+  orderUnit            String?
+  baseUnit             String?
+  contentQuantity      Float?
+  packageQuantity      Float?
+  minimumOrderQuantity Float   @default(1)
+
+  availabilityStatus String?
+  active             Boolean   @default(true)
+  lastSeenAt         DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant     Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  supplier   Supplier            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  connection SupplierConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+
+  prices  SupplierPriceSnapshot[]
+  matches ProductSupplierMatch[]
+
+  @@unique([supplierId, articleNumber])
+  @@index([tenantId])
+  @@index([supplierId])
+  @@index([connectionId])
+  @@index([ean])
+  @@index([gtin])
+  @@index([name])
+}
+
+model SupplierPriceSnapshot {
+  id            String @id @default(cuid())
+  tenantId      String
+  catalogItemId String
+
+  netPriceCents   Int
+  grossPriceCents Int?
+  currency        String @default("EUR")
+
+  priceUnitQuantity Float   @default(1)
+  priceUnit         String?
+
+  minimumQuantity Float?
+  available       Boolean?
+  stockText       String?
+
+  promotional Boolean @default(false)
+
+  source     SupplierPriceSource
+  validFrom  DateTime?
+  validUntil DateTime?
+  fetchedAt  DateTime            @default(now())
+  createdAt  DateTime            @default(now())
+
+  tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  catalogItem SupplierCatalogItem @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([catalogItemId])
+  @@index([fetchedAt])
+  @@index([validUntil])
+  @@index([netPriceCents])
+}
+
+model SupplierSyncRun {
+  id           String @id @default(cuid())
+  tenantId     String
+  connectionId String
+
+  status SupplierSyncStatus @default(RUNNING)
+
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  itemsSeen     Int @default(0)
+  itemsCreated  Int @default(0)
+  itemsUpdated  Int @default(0)
+  pricesCreated Int @default(0)
+  errorsCount   Int @default(0)
+
+  errorMessage String?
+  detailsJson  Json?
+
+  tenant     Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  connection SupplierConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([connectionId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+model ProductSupplierMatch {
+  id            String @id @default(cuid())
+  tenantId      String
+  productId     String
+  catalogItemId String
+
+  method     SupplierMatchMethod @default(MANUAL)
+  confidence Int                 @default(100)
+
+  preferred Boolean @default(false)
+  active    Boolean @default(true)
+
+  conversionFactor Float   @default(1)
+  notes            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product     Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  catalogItem SupplierCatalogItem @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, catalogItemId])
+  @@index([tenantId])
+  @@index([productId])
+  @@index([catalogItemId])
+  @@index([preferred])
 }

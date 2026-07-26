@@ -109,6 +109,16 @@ export async function loader({ request }: { request: Request }) {
         missingInvoiceSettings: 0,
         readyScore: 0,
       },
+      operationalTasks: {
+        review: 0,
+        incomplete: 0,
+        duplicates: 0,
+        production: 0,
+        packing: 0,
+        missingTime: 0,
+        missingAddress: 0,
+        missingDeliveryNote: 0,
+      },
     };
   }
 
@@ -262,6 +272,113 @@ export async function loader({ request }: { request: Request }) {
   const lowItems = lowInventoryItems.filter((item: any) => {
     return item.minStock > 0 && item.currentStock <= item.minStock;
   });
+
+  /*
+   * gastario-dashboard-real-task-counts-20260726
+   * Mandantenweite operative Aufgaben direkt aus der Datenbank.
+   */
+  const activeTaskStatuses = [
+    "AUTO_CREATED",
+    "REVIEW_NEEDED",
+    "INCOMPLETE",
+    "POSSIBLE_DUPLICATE",
+    "CONFIRMED",
+    "IN_PRODUCTION",
+    "PACKING_OPEN",
+  ] as any;
+
+  const [
+    taskReviewOrders,
+    taskIncompleteOrders,
+    taskDuplicateOrders,
+    taskProductionOrders,
+    taskPackingOrders,
+    taskMissingTimeOrders,
+    taskMissingAddressOrders,
+    taskMissingDeliveryNoteOrders,
+  ] = await Promise.all([
+    prisma.order.count({
+      where: {
+        tenantId: access.tenantId,
+        status: {
+          in: [
+            "AUTO_CREATED",
+            "REVIEW_NEEDED",
+          ] as any,
+        },
+      },
+    }).catch(() => 0),
+
+    prisma.order.count({
+      where: {
+        tenantId: access.tenantId,
+        status: "INCOMPLETE" as any,
+      },
+    }).catch(() => 0),
+
+    prisma.order.count({
+      where: {
+        tenantId: access.tenantId,
+        status: "POSSIBLE_DUPLICATE" as any,
+      },
+    }).catch(() => 0),
+
+    prisma.order.count({
+      where: {
+        tenantId: access.tenantId,
+        status: "IN_PRODUCTION" as any,
+      },
+    }).catch(() => 0),
+
+    prisma.order.count({
+      where: {
+        tenantId: access.tenantId,
+        status: "PACKING_OPEN" as any,
+      },
+    }).catch(() => 0),
+
+    prisma.order.count({
+      where: {
+        tenantId: access.tenantId,
+        status: {
+          in: activeTaskStatuses,
+        },
+        OR: [
+          { deliveryTimeText: null },
+          { deliveryTimeText: "" },
+        ],
+      },
+    }).catch(() => 0),
+
+    prisma.order.count({
+      where: {
+        tenantId: access.tenantId,
+        status: {
+          in: activeTaskStatuses,
+        },
+        OR: [
+          { deliveryAddress: null },
+          { deliveryAddress: "" },
+        ],
+      },
+    }).catch(() => 0),
+
+    prisma.order.count({
+      where: {
+        tenantId: access.tenantId,
+        status: {
+          in: [
+            "CONFIRMED",
+            "IN_PRODUCTION",
+            "PACKING_OPEN",
+          ] as any,
+        },
+        deliveryNote: {
+          is: null,
+        },
+      },
+    }).catch(() => 0),
+  ]);
 
   const now = new Date();
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -424,6 +541,25 @@ export async function loader({ request }: { request: Request }) {
       draftInvoices,
       missingInvoiceSettings,
       readyScore,
+    },
+    operationalTasks: {
+      review:
+        taskReviewOrders +
+        emailInbox.length,
+      incomplete:
+        taskIncompleteOrders,
+      duplicates:
+        taskDuplicateOrders,
+      production:
+        taskProductionOrders,
+      packing:
+        taskPackingOrders,
+      missingTime:
+        taskMissingTimeOrders,
+      missingAddress:
+        taskMissingAddressOrders,
+      missingDeliveryNote:
+        taskMissingDeliveryNoteOrders,
     },
   };
 }
@@ -732,6 +868,50 @@ export default function Home() {
     setDashboardStatus("all");
     setDashboardSearch("");
   }
+
+  /*
+   * gastario-dashboard-distinct-overview-tasks-20260726
+   * Übersicht und operativer Arbeitskorb aus vorhandenen Auftragsdaten.
+   */
+  const overviewNextOrders =
+    allPlanningOrders.slice(0, 3);
+
+  const dashboardTaskCounts = {
+    review:
+      data.operationalTasks.review,
+    incomplete:
+      data.operationalTasks.incomplete,
+    duplicates:
+      data.operationalTasks.duplicates,
+    production:
+      data.operationalTasks.production,
+    packing:
+      data.operationalTasks.packing,
+    missingTime:
+      data.operationalTasks.missingTime,
+    missingAddress:
+      data.operationalTasks.missingAddress,
+    missingDeliveryNote:
+      data.operationalTasks.missingDeliveryNote,
+    withoutInvoice:
+      data.finance.ordersWithoutInvoice,
+    missingInvoiceSettings:
+      data.taxAdvisor.missingInvoiceSettings,
+    inventory:
+      data.counts.lowInventory,
+  };
+
+  const dashboardTotalTasks =
+    dashboardTaskCounts.review +
+    dashboardTaskCounts.incomplete +
+    dashboardTaskCounts.duplicates +
+    dashboardTaskCounts.production +
+    dashboardTaskCounts.packing +
+    dashboardTaskCounts.missingTime +
+    dashboardTaskCounts.missingAddress +
+    dashboardTaskCounts.withoutInvoice +
+    dashboardTaskCounts.missingInvoiceSettings +
+    dashboardTaskCounts.inventory;
 
   const nextPlannedOrder =
     todayOrdersSorted[0] ||
@@ -1112,6 +1292,198 @@ export default function Home() {
           </Link>
         </nav>
 
+        {dashboardView === "overview" ? (
+          <section className="dashOverviewHome">
+            <section className="dashPanel dashOverviewDeliveries">
+              <div className="dashPanelHead">
+                <div>
+                  <p className="dashEyebrow">
+                    Nächste Auslieferungen
+                  </p>
+
+                  <h2>Betriebsplan</h2>
+
+                  <span>
+                    Die nächsten drei geplanten Lieferungen
+                    im direkten Überblick.
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  className="dashOverviewTextButton"
+                  onClick={() => setDashboardView("planning")}
+                >
+                  Vollständigen Lieferplan öffnen
+                </button>
+              </div>
+
+              {overviewNextOrders.length === 0 ? (
+                <div className="dashSimpleEmpty">
+                  <strong>Keine Lieferung geplant</strong>
+
+                  <span>
+                    Aktuell sind keine zukünftigen
+                    Auslieferungen erfasst.
+                  </span>
+                </div>
+              ) : (
+                <div className="dashOverviewDeliveryList">
+                  {overviewNextOrders.map(
+                    (order: any) => (
+                      <Link
+                        className="dashOverviewDelivery"
+                        to={
+                          "/auftrag-pruefung/" +
+                          order.id
+                        }
+                        key={order.id}
+                      >
+                        <div className="dashOverviewDate">
+                          <strong>
+                            {planningDateLabel(
+                              order.deliveryDate
+                            )}
+                          </strong>
+
+                          <span>
+                            {order.deliveryTimeText ||
+                              order.deliveryTime ||
+                              "Zeit offen"}
+                          </span>
+                        </div>
+
+                        <div>
+                          <strong>
+                            {order.customerName ||
+                              "Kunde nicht erkannt"}
+                          </strong>
+
+                          <span>
+                            {order.eventName ||
+                              order.orderNumber}
+                          </span>
+
+                          <small>
+                            {order.deliveryAddress ||
+                              "Lieferadresse noch offen"}
+                          </small>
+                        </div>
+
+                        <em>
+                          {order.items.length}
+                          {" Positionen"}
+                        </em>
+
+                        <b>›</b>
+                      </Link>
+                    )
+                  )}
+                </div>
+              )}
+            </section>
+
+            <section className="dashOverviewOperations">
+              <div className="dashPanel dashOverviewStatus">
+                <div className="dashPanelHead">
+                  <div>
+                    <p className="dashEyebrow">
+                      Operativer Stand
+                    </p>
+
+                    <h2>Heute im Betrieb</h2>
+                  </div>
+                </div>
+
+                <div className="dashOverviewStatusGrid">
+                  <Link to=
+"/produktion"
+>
+                    <strong>
+                      {dashboardTaskCounts.production}
+                    </strong>
+                    <span>In Produktion</span>
+                    <small>Produktion bearbeiten</small>
+                  </Link>
+
+                  <Link to=
+"/packlisten"
+>
+                    <strong>
+                      {dashboardTaskCounts.packing}
+                    </strong>
+                    <span>Packen offen</span>
+                    <small>Packlisten bearbeiten</small>
+                  </Link>
+
+                  <Link to=
+"/auftragseingang"
+>
+                    <strong>
+                      {dashboardTaskCounts.review}
+                    </strong>
+                    <span>Prüfung offen</span>
+                    <small>Eingänge kontrollieren</small>
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={() => setDashboardView("tasks")}
+                  >
+                    <strong>{dashboardTotalTasks}</strong>
+                    <span>Alle Aufgaben</span>
+                    <small>Arbeitskorb öffnen</small>
+                  </button>
+                </div>
+              </div>
+
+              <div className="dashPanel dashOverviewQuickActions">
+                <div className="dashPanelHead">
+                  <div>
+                    <p className="dashEyebrow">
+                      Schnellzugriff
+                    </p>
+
+                    <h2>Direkt öffnen</h2>
+                  </div>
+                </div>
+
+                <div>
+                  <Link to="/produktion">
+                    <strong>Produktion</strong>
+                    <span>Planung und Mengen</span>
+                  </Link>
+
+                  <Link to="/packlisten">
+                    <strong>Packlisten</strong>
+                    <span>Kommissionierung</span>
+                  </Link>
+
+                  <Link to="/lieferungen">
+                    <strong>Lieferungen</strong>
+                    <span>Touren und Fahrer</span>
+                  </Link>
+
+                  <Link to="/lieferscheine">
+                    <strong>Lieferscheine</strong>
+                    <span>Dokumente vorbereiten</span>
+                  </Link>
+
+                  <Link to="/rechnungen">
+                    <strong>Rechnungen</strong>
+                    <span>Abrechnung öffnen</span>
+                  </Link>
+
+                  <Link to="/lager">
+                    <strong>Lager</strong>
+                    <span>Bestände prüfen</span>
+                  </Link>
+                </div>
+              </div>
+            </section>
+          </section>
+        ) : null}
+
         <section className="dashControlGrid">
           <main className="dashPlanning">
             <section className="dashPanel dashTodayPanel">
@@ -1424,41 +1796,114 @@ export default function Home() {
               </nav>
 
               {dashboardSidePanel === "tasks" ? (
-                <div className="dashWorkbarList">
+                <div className="dashWorkbarList dashWorkbarTaskGrid">
                   <Link to="/auftragseingang">
-                    <strong>{openReviewCount}</strong>
-
+                    <strong>
+                      {dashboardTaskCounts.review}
+                    </strong>
                     <div>
                       <span>Auftragseingänge prüfen</span>
                       <small>Neue Aufträge und E-Mails</small>
                     </div>
-
                     <b>›</b>
                   </Link>
 
                   <Link to="/auftraege">
                     <strong>
-                      {data.finance.ordersWithoutInvoice}
+                      {dashboardTaskCounts.incomplete}
                     </strong>
+                    <div>
+                      <span>Unvollständige Aufträge</span>
+                      <small>Fehlende Auftragsangaben</small>
+                    </div>
+                    <b>›</b>
+                  </Link>
 
+                  <Link to="/auftragseingang">
+                    <strong>
+                      {dashboardTaskCounts.duplicates}
+                    </strong>
+                    <div>
+                      <span>Mögliche Duplikate</span>
+                      <small>Doppelte Eingänge kontrollieren</small>
+                    </div>
+                    <b>›</b>
+                  </Link>
+
+                  <Link to="/produktion">
+                    <strong>
+                      {dashboardTaskCounts.production}
+                    </strong>
+                    <div>
+                      <span>Produktion bearbeiten</span>
+                      <small>Aufträge in Produktion</small>
+                    </div>
+                    <b>›</b>
+                  </Link>
+
+                  <Link to="/packlisten">
+                    <strong>
+                      {dashboardTaskCounts.packing}
+                    </strong>
+                    <div>
+                      <span>Packen offen</span>
+                      <small>Packlisten fertigstellen</small>
+                    </div>
+                    <b>›</b>
+                  </Link>
+
+                  <Link to="/auftraege">
+                    <strong>
+                      {dashboardTaskCounts.missingTime}
+                    </strong>
+                    <div>
+                      <span>Lieferzeit fehlt</span>
+                      <small>Uhrzeiten ergänzen</small>
+                    </div>
+                    <b>›</b>
+                  </Link>
+
+                  <Link to="/auftraege">
+                    <strong>
+                      {dashboardTaskCounts.missingAddress}
+                    </strong>
+                    <div>
+                      <span>Lieferadresse fehlt</span>
+                      <small>Lieferdaten vervollständigen</small>
+                    </div>
+                    <b>›</b>
+                  </Link>
+
+                  <Link to="/rechnungen">
+                    <strong>
+                      {dashboardTaskCounts.withoutInvoice}
+                    </strong>
                     <div>
                       <span>Aufträge ohne Rechnung</span>
                       <small>Abrechnung noch offen</small>
                     </div>
-
                     <b>›</b>
                   </Link>
 
                   <Link to="/einstellungen/rechnungen">
                     <strong>
-                      {data.taxAdvisor.missingInvoiceSettings}
+                      {dashboardTaskCounts.missingInvoiceSettings}
                     </strong>
-
                     <div>
-                      <span>Fehlende Stammdaten</span>
-                      <small>Rechnungsdaten prüfen</small>
+                      <span>Rechnungsstammdaten fehlen</span>
+                      <small>Einstellungen vervollständigen</small>
                     </div>
+                    <b>›</b>
+                  </Link>
 
+                  <Link to="/lager">
+                    <strong>
+                      {dashboardTaskCounts.inventory}
+                    </strong>
+                    <div>
+                      <span>Lagerwarnungen</span>
+                      <small>Mindestbestände kontrollieren</small>
+                    </div>
                     <b>›</b>
                   </Link>
                 </div>
@@ -3011,6 +3456,591 @@ const dashboardCss = `
 
   @media (max-width: 520px) {
     .dashWorkbarTabs {
+      grid-template-columns: 1fr;
+    }
+  }
+  /* gastario-dashboard-fullwidth-overview-tasks-20260726 */
+
+  /*
+   * Übersicht:
+   * Lieferplan über die volle Breite.
+   * Rechte Arbeitsleiste vollständig ausblenden.
+   */
+  .dashPage[data-view="overview"]
+  .dashControlGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashPage[data-view="overview"]
+  .dashAttention {
+    display: none !important;
+  }
+
+  .dashPage[data-view="overview"]
+  .dashPlanning {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dashPage[data-view="overview"]
+  .dashUpcomingPanel {
+    width: 100%;
+  }
+
+  /*
+   * Lieferplan:
+   * Ebenfalls maximale Breite ohne rechte Seitenleiste.
+   */
+  .dashPage[data-view="planning"]
+  .dashControlGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashPage[data-view="planning"]
+  .dashAttention {
+    display: none !important;
+  }
+
+  /*
+   * Offene Aufgaben:
+   * Eigener großer Arbeitsbereich statt kleiner Karte links.
+   */
+  .dashPage[data-view="tasks"]
+  .dashControlGrid {
+    display: block;
+    width: 100%;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashPlanning {
+    display: none !important;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashAttention {
+    display: block !important;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbar {
+    width: 100%;
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 24px;
+    border-radius: 18px;
+    box-sizing: border-box;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarHeader {
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarHeader h2 {
+    margin-top: 5px;
+    font-size: 28px;
+    letter-spacing: -0.025em;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarHeader > span {
+    min-width: 42px;
+    height: 42px;
+    font-size: 16px;
+  }
+
+  /*
+   * Arbeitsbereich-Navigation:
+   * Breiter und ruhiger.
+   */
+  .dashPage[data-view="tasks"]
+  .dashWorkbarTabs {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+    width: 100%;
+    max-width: none;
+    gap: 5px;
+    padding: 5px;
+    margin-bottom: 18px;
+    border-radius: 12px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarTabs button {
+    min-height: 42px;
+    padding: 0 14px;
+    border-radius: 9px;
+    font-size: 12px;
+  }
+
+  /*
+   * Aufgabenliste:
+   * Größere Zeilen und bessere Lesbarkeit.
+   */
+  .dashPage[data-view="tasks"]
+  .dashWorkbarList {
+    border-radius: 13px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarList a {
+    grid-template-columns:
+      64px
+      minmax(0, 1fr)
+      24px;
+    gap: 16px;
+    min-height: 84px;
+    padding: 14px 18px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarList > a > strong {
+    font-size: 30px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarList span {
+    font-size: 14px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarList small {
+    margin-top: 2px;
+    font-size: 11px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarList b {
+    font-size: 25px;
+  }
+
+  /*
+   * Lagerbereich:
+   * Nutzt ebenfalls die volle verfügbare Breite.
+   */
+  .dashPage[data-view="tasks"]
+  .dashWorkbarInventory {
+    gap: 14px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarInventoryStatus {
+    grid-template-columns:
+      64px
+      minmax(0, 1fr);
+    min-height: 82px;
+    padding: 14px 18px;
+    border-radius: 13px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarInventoryStatus > strong {
+    font-size: 30px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarInventoryStatus span {
+    font-size: 14px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarInventoryStatus small {
+    font-size: 11px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarOkay {
+    min-height: 70px;
+    justify-content: center;
+    padding: 16px 18px;
+    border-radius: 13px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarStockList {
+    border-radius: 13px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarStockList a {
+    min-height: 62px;
+    justify-content: center;
+    padding: 12px 18px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarOpenButton {
+    min-height: 44px;
+    border-radius: 11px;
+    font-size: 12px;
+  }
+
+  /*
+   * Schnellzugriff:
+   * Gleichmäßige breite Funktionszeilen.
+   */
+  .dashPage[data-view="tasks"]
+  .dashWorkbarQuick {
+    border-radius: 13px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarQuick a {
+    grid-template-columns:
+      minmax(0, 1fr)
+      24px;
+    min-height: 72px;
+    padding: 12px 18px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarQuick strong {
+    font-size: 14px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarQuick span {
+    margin-top: 2px;
+    font-size: 11px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarQuick b {
+    font-size: 25px;
+  }
+
+  /*
+   * Finanzansicht:
+   * Nur die Finanzleiste anzeigen.
+   */
+  .dashPage[data-view="finance"]
+  .dashControlGrid {
+    display: none !important;
+  }
+
+  .dashPage[data-view="finance"]
+  .dashFinanceStrip {
+    display: grid;
+  }
+
+  /*
+   * Responsive Darstellung.
+   */
+  @media (max-width: 760px) {
+    .dashPage[data-view="tasks"]
+    .dashWorkbar {
+      padding: 16px;
+      border-radius: 14px;
+    }
+
+    .dashPage[data-view="tasks"]
+    .dashWorkbarHeader h2 {
+      font-size: 24px;
+    }
+
+    .dashPage[data-view="tasks"]
+    .dashWorkbarTabs {
+      grid-template-columns: 1fr;
+    }
+
+    .dashPage[data-view="tasks"]
+    .dashWorkbarList a {
+      grid-template-columns:
+        48px
+        minmax(0, 1fr)
+        20px;
+      min-height: 72px;
+      padding: 12px;
+    }
+  }
+  /* gastario-dashboard-distinct-overview-tasks-20260726 */
+
+  .dashOverviewHome {
+    display: grid;
+    gap: 16px;
+  }
+
+  .dashOverviewDeliveries {
+    padding: 22px;
+  }
+
+  .dashOverviewTextButton {
+    min-height: 40px;
+    padding: 0 15px;
+    border: 1px solid #d6e4df;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #087b59;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .dashOverviewDeliveryList {
+    display: grid;
+    overflow: hidden;
+    border: 1px solid #dce6e2;
+    border-radius: 13px;
+  }
+
+  .dashOverviewDelivery {
+    display: grid;
+    grid-template-columns:
+      170px
+      minmax(0, 1fr)
+      110px
+      20px;
+    gap: 16px;
+    align-items: center;
+    min-height: 82px;
+    padding: 13px 17px;
+    border-bottom: 1px solid #e6ece9;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .dashOverviewDelivery:last-child {
+    border-bottom: 0;
+  }
+
+  .dashOverviewDelivery:hover {
+    background: #f7fbf9;
+  }
+
+  .dashOverviewDate,
+  .dashOverviewDelivery > div:nth-child(2) {
+    display: grid;
+    gap: 3px;
+  }
+
+  .dashOverviewDate strong {
+    color: #183445;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .dashOverviewDate span {
+    color: #087b59;
+    font-size: 18px;
+    font-weight: 900;
+  }
+
+  .dashOverviewDelivery > div:nth-child(2) > strong {
+    color: #102536;
+    font-size: 14px;
+    font-weight: 850;
+  }
+
+  .dashOverviewDelivery > div:nth-child(2) > span {
+    color: #4e6960;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .dashOverviewDelivery > div:nth-child(2) > small {
+    color: #84958f;
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  .dashOverviewDelivery > em {
+    color: #637870;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 750;
+    text-align: right;
+  }
+
+  .dashOverviewDelivery > b {
+    color: #82958d;
+    font-size: 22px;
+    font-weight: 500;
+  }
+
+  .dashOverviewOperations {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1.45fr)
+      minmax(300px, 0.7fr);
+    gap: 16px;
+  }
+
+  .dashOverviewStatus,
+  .dashOverviewQuickActions {
+    padding: 20px;
+  }
+
+  .dashOverviewStatusGrid {
+    display: grid;
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+    overflow: hidden;
+    border: 1px solid #dce6e2;
+    border-radius: 13px;
+  }
+
+  .dashOverviewStatusGrid a,
+  .dashOverviewStatusGrid button {
+    display: grid;
+    gap: 4px;
+    min-height: 118px;
+    padding: 17px;
+    border: 0;
+    border-right: 1px solid #e3ebe7;
+    background: #ffffff;
+    color: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .dashOverviewStatusGrid > :last-child {
+    border-right: 0;
+  }
+
+  .dashOverviewStatusGrid a:hover,
+  .dashOverviewStatusGrid button:hover {
+    background: #f6fbf9;
+  }
+
+  .dashOverviewStatusGrid strong {
+    color: #087b59;
+    font-size: 30px;
+    line-height: 1;
+    font-weight: 900;
+  }
+
+  .dashOverviewStatusGrid span {
+    color: #153043;
+    font-size: 12px;
+    font-weight: 830;
+  }
+
+  .dashOverviewStatusGrid small {
+    color: #7b8e87;
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  .dashOverviewQuickActions > div:last-child {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .dashOverviewQuickActions a {
+    display: grid;
+    gap: 3px;
+    min-height: 62px;
+    padding: 11px 13px;
+    border: 1px solid #dce6e2;
+    border-radius: 10px;
+    background: #ffffff;
+    text-decoration: none;
+  }
+
+  .dashOverviewQuickActions a:hover {
+    background: #f6fbf9;
+  }
+
+  .dashOverviewQuickActions strong {
+    color: #153043;
+    font-size: 12px;
+    font-weight: 830;
+  }
+
+  .dashOverviewQuickActions span {
+    color: #788b84;
+    font-size: 9px;
+    font-weight: 620;
+  }
+
+  .dashPage[data-view="overview"]
+  .dashControlGrid {
+    display: none !important;
+  }
+
+  .dashPage:not([data-view="overview"])
+  .dashOverviewHome {
+    display: none;
+  }
+
+  .dashPage[data-view="planning"]
+  .dashControlGrid {
+    display: grid;
+  }
+
+  .dashPage[data-view="planning"]
+  .dashAttention {
+    display: none !important;
+  }
+
+  .dashPage[data-view="planning"]
+  .dashPlanning {
+    width: 100%;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarTaskGrid {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarTaskGrid a {
+    min-height: 86px;
+    border: 1px solid #dce6e2;
+    border-radius: 12px;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashWorkbarTaskGrid a:last-child {
+    border-bottom: 1px solid #dce6e2;
+  }
+
+  @media (max-width: 1050px) {
+    .dashOverviewOperations {
+      grid-template-columns: 1fr;
+    }
+
+    .dashOverviewStatusGrid {
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    }
+
+    .dashOverviewStatusGrid a,
+    .dashOverviewStatusGrid button {
+      border-bottom: 1px solid #e3ebe7;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .dashOverviewDelivery {
+      grid-template-columns: 1fr;
+    }
+
+    .dashOverviewDelivery > em {
+      text-align: left;
+    }
+
+    .dashOverviewStatusGrid,
+    .dashPage[data-view="tasks"]
+    .dashWorkbarTaskGrid {
+      grid-template-columns: 1fr;
+    }
+
+    .dashOverviewQuickActions > div:last-child {
       grid-template-columns: 1fr;
     }
   }`;
