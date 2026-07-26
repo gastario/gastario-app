@@ -2698,6 +2698,53 @@ const dashboardCss = `
     .dashControlGrid {
       grid-template-columns: 1fr;
     }
+  }
+  /* gastario-dashboard-planning-scroll-20260726 */
+
+  .dashUpcomingScroll {
+    max-height: 620px;
+    padding-right: 7px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: #8fc7b5 #edf5f2;
+  }
+
+  .dashUpcomingScroll::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .dashUpcomingScroll::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: #edf5f2;
+  }
+
+  .dashUpcomingScroll::-webkit-scrollbar-thumb {
+    border: 2px solid #edf5f2;
+    border-radius: 999px;
+    background: #8fc7b5;
+  }
+
+  .dashDateGroup > header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    box-shadow: 0 1px 0 #dce7e2;
+  }
+
+  @media (max-width: 780px) {
+    .dashUpcomingScroll {
+      max-height: none;
+      padding-right: 0;
+      overflow: visible;
+      scrollbar-gutter: auto;
+    }
+
+    .dashDateGroup > header {
+      position: static;
+    }
   }`;
 
 // gastario-redeploy-20260726
