@@ -414,6 +414,25 @@ export async function renderDeliveryNotePdf(
     color: rgb(0.82, 0.93, 0.89),
   });
 
+  const eventLabel = "EVENTZEITPUNKT";
+  const eventLabelWidth =
+    bold.widthOfTextAtSize(
+      eventLabel,
+      7
+    );
+
+  page.drawText(eventLabel, {
+    x:
+      A4_WIDTH -
+      MARGIN -
+      22 -
+      eventLabelWidth,
+    y: A4_HEIGHT - MARGIN - 48,
+    size: 7,
+    font: bold,
+    color: rgb(0.67, 0.88, 0.81),
+  });
+
   const dateText =
     formatDate(input.deliveryDate);
 
@@ -972,7 +991,7 @@ export async function renderDeliveryNotePdf(
 
   /*
    * gastario-modern-delivery-checklist-20260726
-   * Interne Pack-, Liefer- und Übergabekontrolle.
+   * Kompakte interne Kontrolle auf einer Zusatzseite.
    */
 
   const checklistGroups = [
@@ -980,22 +999,22 @@ export async function renderDeliveryNotePdf(
       title: "Auftrag und Lieferung",
       items: [
         "Lieferadresse kontrolliert",
-        "Lieferzeit kontrolliert",
+        "Eventzeitpunkt kontrolliert",
         "Ansprechpartner kontrolliert",
         "Telefonnummer kontrolliert",
         "Zufahrt und Aufbauort geprüft",
       ],
     },
     {
-      title: "Speisen vollständig",
+      title: "Speisen und Verpackung",
       items: [
-        "Alle Positionen vollständig gepackt",
+        "Alle Positionen vollständig",
         "Mengen kontrolliert",
         "Soßen und Dressings eingepackt",
         "Beilagen und Toppings eingepackt",
         "Brot und Servietten eingepackt",
-        "Sonderwünsche und Allergien geprüft",
-        "Kalte Speisen ausreichend gekühlt",
+        "Sonderwünsche geprüft",
+        "Kühlung sichergestellt",
         "Warme Speisen transportsicher",
       ],
     },
@@ -1005,79 +1024,78 @@ export async function renderDeliveryNotePdf(
         "Chafing Dishes eingepackt",
         "Deckel und Einsätze eingepackt",
         "Brennpaste und Feuerzeug eingepackt",
-        "Servierzangen und Schöpfkellen eingepackt",
-        "Buffetbesteck eingepackt",
+        "Servierbesteck eingepackt",
         "Teller, Bowls und Becher eingepackt",
+        "Mietartikel dokumentiert",
       ],
     },
     {
-      title: "Aufbau und Dekoration",
+      title: "Aufbau und Übergabe",
       items: [
-        "Tischdecken oder Buffetläufer eingepackt",
-        "Speise- und Allergenschilder eingepackt",
+        "Tischdecken und Schilder eingepackt",
         "Dekoration eingepackt",
-        "Klebeband, Schere und Kabelbinder eingepackt",
-        "Müllbeutel und Reinigungstücher eingepackt",
-      ],
-    },
-    {
-      title: "Übergabe beim Kunden",
-      items: [
-        "Kunde über Ankunft informiert",
         "Aufbauort abgestimmt",
         "Buffet vollständig aufgebaut",
         "Soßen und Besteck bereitgestellt",
         "Ware vollständig übergeben",
-        "Leihequipment dokumentiert",
         "Empfang bestätigt",
       ],
     },
   ];
 
   /*
-   * Die Checkliste beginnt bewusst auf einer neuen Seite.
-   * So bleibt Seite 1 ein sauberes Kundendokument.
+   * Genau eine neue Seite für die interne Checkliste.
    */
   addPage(true);
 
   page.drawText("INTERNE LIEFERKONTROLLE", {
     x: MARGIN,
     y,
-    size: 14,
+    size: 12.5,
     font: bold,
     color: greenDark,
   });
 
-  y -= 18;
+  y -= 16;
 
-  page.drawText(
-    "Packen, Verladen, Aufbau und Übergabe",
-    {
-      x: MARGIN,
-      y,
-      size: 8.5,
-      font: regular,
-      color: muted,
-    }
-  );
+  const checklistEventText =
+    "Eventzeitpunkt: " +
+    formatDate(input.deliveryDate) +
+    " · " +
+    (
+      safeText(input.deliveryTimeText)
+        ? safeText(input.deliveryTimeText) + " Uhr"
+        : "Uhrzeit offen"
+    );
 
-  y -= 25;
+  page.drawText(checklistEventText, {
+    x: MARGIN,
+    y,
+    size: 8,
+    font: regular,
+    color: muted,
+  });
 
-  function drawChecklistGroup(
+  y -= 22;
+
+  function drawCompactChecklistGroup(
     title: string,
     items: string[]
   ) {
-    const columnGap = 16;
+    const columnGap = 12;
     const columnWidth =
       (CONTENT_WIDTH - columnGap) / 2;
 
-    const rows =
+    const rowCount =
       Math.ceil(items.length / 2);
 
-    const groupHeight =
-      36 + rows * 22 + 12;
+    const headerHeight = 24;
+    const rowHeight = 16;
 
-    ensureSpace(groupHeight + 14);
+    const groupHeight =
+      headerHeight +
+      rowCount * rowHeight +
+      10;
 
     page.drawRectangle({
       x: MARGIN,
@@ -1086,281 +1104,246 @@ export async function renderDeliveryNotePdf(
       height: groupHeight,
       color: mintLight,
       borderColor: border,
-      borderWidth: 0.8,
+      borderWidth: 0.7,
     });
 
     page.drawRectangle({
       x: MARGIN,
-      y: y - 30,
+      y: y - headerHeight,
       width: CONTENT_WIDTH,
-      height: 30,
+      height: headerHeight,
       color: mint,
       borderColor: border,
-      borderWidth: 0.8,
+      borderWidth: 0.7,
     });
 
     page.drawText(
       title.toUpperCase(),
       {
-        x: MARGIN + 13,
-        y: y - 20,
-        size: 7.8,
+        x: MARGIN + 11,
+        y: y - 16,
+        size: 7.2,
         font: bold,
         color: greenDark,
       }
     );
 
+    const splitIndex = rowCount;
+
     const leftItems =
-      items.slice(0, rows);
+      items.slice(0, splitIndex);
 
     const rightItems =
-      items.slice(rows);
+      items.slice(splitIndex);
 
-    const drawColumn = (
+    const drawChecklistColumn = (
       values: string[],
-      x: number
+      columnX: number
     ) => {
-      let rowY = y - 51;
+      let rowY =
+        y -
+        headerHeight -
+        13;
 
       for (const value of values) {
         page.drawRectangle({
-          x,
-          y: rowY - 7,
-          width: 11,
-          height: 11,
+          x: columnX,
+          y: rowY - 6,
+          width: 9,
+          height: 9,
           borderColor: green,
-          borderWidth: 1,
+          borderWidth: 0.9,
         });
+
+        const lines = wrapText(
+          value,
+          regular,
+          7.3,
+          columnWidth - 24
+        ).slice(0, 1);
 
         drawLines({
           page,
-          lines: wrapText(
-            value,
-            regular,
-            8.1,
-            columnWidth - 28
-          ).slice(0, 2),
-          x: x + 18,
+          lines,
+          x: columnX + 15,
           y: rowY,
           font: regular,
-          size: 8.1,
-          lineHeight: 10,
+          size: 7.3,
+          lineHeight: 8,
           color: body,
         });
 
-        rowY -= 22;
+        rowY -= rowHeight;
       }
     };
 
-    drawColumn(
+    drawChecklistColumn(
       leftItems,
-      MARGIN + 14
+      MARGIN + 11
     );
 
-    drawColumn(
+    drawChecklistColumn(
       rightItems,
       MARGIN +
         columnWidth +
-        columnGap
+        columnGap +
+        5
     );
 
-    y -= groupHeight + 13;
+    y -= groupHeight + 8;
   }
 
   for (const group of checklistGroups) {
-    drawChecklistGroup(
+    drawCompactChecklistGroup(
       group.title,
       group.items
     );
   }
 
-  ensureSpace(150);
-
-  page.drawText(
-    "FEHLENDE ODER NACHGELIEFERTE ARTIKEL",
-    {
-      x: MARGIN,
-      y,
-      size: 7.8,
-      font: bold,
-      color: greenMid,
-    }
-  );
-
-  y -= 20;
-
-  for (let index = 0; index < 3; index += 1) {
-    page.drawLine({
-      start: {
-        x: MARGIN,
-        y,
-      },
-      end: {
-        x: A4_WIDTH - MARGIN,
-        y,
-      },
-      thickness: 0.6,
-      color: border,
-    });
-
-    y -= 22;
-  }
-
-  y -= 5;
-
-  page.drawText(
-    "LEIHEQUIPMENT / RÜCKHOLUNG",
-    {
-      x: MARGIN,
-      y,
-      size: 7.8,
-      font: bold,
-      color: greenMid,
-    }
-  );
-
-  y -= 20;
-
-  for (let index = 0; index < 3; index += 1) {
-    page.drawLine({
-      start: {
-        x: MARGIN,
-        y,
-      },
-      end: {
-        x: A4_WIDTH - MARGIN,
-        y,
-      },
-      thickness: 0.6,
-      color: border,
-    });
-
-    y -= 22;
-  }
   /*
-   * Übergabe
+   * Notizfelder nebeneinander statt auf zusätzlichen Seiten.
    */
 
-  const handoverHeight = 126;
+  const noteGap = 12;
+  const noteBoxWidth =
+    (CONTENT_WIDTH - noteGap) / 2;
+  const noteBoxHeight = 66;
 
-  ensureSpace(handoverHeight + 18);
-
-  drawSectionLabel(
-    "\u00dcBERGABEBEST\u00c4TIGUNG"
-  );
-
-  page.drawRectangle({
-    x: MARGIN,
-    y: y - handoverHeight,
-    width: CONTENT_WIDTH,
-    height: handoverHeight,
-    color: white,
-    borderColor: border,
-    borderWidth: 0.8,
-  });
-
-  const checks = [
-    "Ware vollst\u00e4ndig erhalten",
-    "Abweichungen dokumentiert",
-    "Leihequipment \u00fcbergeben",
+  const noteBoxes = [
+    {
+      title: "FEHLENDE / NACHGELIEFERTE ARTIKEL",
+      x: MARGIN,
+    },
+    {
+      title: "LEIHEQUIPMENT / RÜCKHOLUNG",
+      x:
+        MARGIN +
+        noteBoxWidth +
+        noteGap,
+    },
   ];
 
-  checks.forEach((label, index) => {
-    const x =
-      MARGIN +
-      16 +
-      index * 166;
-
+  noteBoxes.forEach((box) => {
     page.drawRectangle({
-      x,
-      y: y - 32,
-      width: 10,
-      height: 10,
-      borderColor: green,
-      borderWidth: 1,
+      x: box.x,
+      y: y - noteBoxHeight,
+      width: noteBoxWidth,
+      height: noteBoxHeight,
+      color: white,
+      borderColor: border,
+      borderWidth: 0.7,
     });
 
-    drawLines({
-      page,
-      lines: wrapText(
-        label,
-        regular,
-        7.7,
-        134
-      ),
-      x: x + 17,
-      y: y - 25,
-      font: regular,
-      size: 7.7,
-      lineHeight: 9,
-      color: body,
+    page.drawText(box.title, {
+      x: box.x + 10,
+      y: y - 16,
+      size: 6.8,
+      font: bold,
+      color: greenMid,
     });
+
+    for (
+      let lineIndex = 0;
+      lineIndex < 2;
+      lineIndex += 1
+    ) {
+      const lineY =
+        y -
+        34 -
+        lineIndex * 18;
+
+      page.drawLine({
+        start: {
+          x: box.x + 10,
+          y: lineY,
+        },
+        end: {
+          x:
+            box.x +
+            noteBoxWidth -
+            10,
+          y: lineY,
+        },
+        thickness: 0.5,
+        color: border,
+      });
+    }
   });
 
-  const signatureY =
-    y - handoverHeight + 31;
+  y -= noteBoxHeight + 18;
 
-  const signatureWidth = 205;
+  /*
+   * Übergabe und Unterschriften kompakt am Seitenende.
+   */
+
+  page.drawText("ÜBERGABEBESTÄTIGUNG", {
+    x: MARGIN,
+    y,
+    size: 7.5,
+    font: bold,
+    color: greenMid,
+  });
+
+  y -= 18;
+
+  const signatureGap = 26;
+  const signatureWidth =
+    (CONTENT_WIDTH - signatureGap) / 2;
 
   page.drawLine({
     start: {
-      x: MARGIN + 16,
-      y: signatureY,
+      x: MARGIN,
+      y,
     },
     end: {
-      x:
-        MARGIN +
-        16 +
-        signatureWidth,
-      y: signatureY,
+      x: MARGIN + signatureWidth,
+      y,
     },
-    thickness: 0.8,
+    thickness: 0.7,
     color: muted,
   });
 
   page.drawText(
     "Datum / Name Fahrer",
     {
-      x: MARGIN + 16,
-      y: signatureY - 13,
-      size: 7.2,
+      x: MARGIN,
+      y: y - 12,
+      size: 6.8,
       font: regular,
       color: muted,
     }
   );
 
   const recipientX =
-    A4_WIDTH -
-    MARGIN -
-    16 -
-    signatureWidth;
+    MARGIN +
+    signatureWidth +
+    signatureGap;
 
   page.drawLine({
     start: {
       x: recipientX,
-      y: signatureY,
+      y,
     },
     end: {
       x:
         recipientX +
         signatureWidth,
-      y: signatureY,
+      y,
     },
-    thickness: 0.8,
+    thickness: 0.7,
     color: muted,
   });
 
   page.drawText(
-    "Datum / Name / Unterschrift Empf\u00e4nger",
+    "Datum / Name / Unterschrift Empfänger",
     {
       x: recipientX,
-      y: signatureY - 13,
-      size: 7.2,
+      y: y - 12,
+      size: 6.8,
       font: regular,
       color: muted,
     }
   );
-
   /*
    * Fußzeilen
    */

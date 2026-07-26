@@ -7721,3 +7721,90 @@ button.finalSelectedDeleteButton:hover {
 }
 
 /* gastario-orders-stable-layout-final-end */
+
+/* gastario-upcoming-viewport-safe-start */
+
+/*
+ * Nur die Liste der bevorstehenden Aufträge.
+ * Zusätzliche Aufträge scrollen innerhalb des Listenbereichs.
+ */
+.ordersPage.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows {
+  display: grid !important;
+  grid-auto-flow: row !important;
+  grid-auto-rows: minmax(148px, auto) !important;
+  align-content: start !important;
+  gap: 12px !important;
+
+  width: 100% !important;
+  height: calc(100vh - 285px) !important;
+  min-height: 570px !important;
+  max-height: 720px !important;
+
+  padding: 14px 12px 18px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  scrollbar-gutter: stable !important;
+  box-sizing: border-box !important;
+}
+
+.ordersPage.ordersReferencePage.ordersPageUpcoming
+.finalOrderRow.operationalOrderRow {
+  min-height: 148px !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.ordersPage.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows {
+  scrollbar-width: thin;
+  scrollbar-color: #91c9b8 #edf6f3;
+}
+
+.ordersPage.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows::-webkit-scrollbar {
+  width: 9px;
+}
+
+.ordersPage.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows::-webkit-scrollbar-track {
+  margin: 8px 0;
+  background: #edf6f3;
+  border-radius: 999px;
+}
+
+.ordersPage.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows::-webkit-scrollbar-thumb {
+  background: #91c9b8;
+  border: 2px solid #edf6f3;
+  border-radius: 999px;
+}
+
+@media (max-width: 900px) {
+  .ordersPage.ordersReferencePage.ordersPageUpcoming
+  .finalOrderRows.operationalOrderRows {
+    height: calc(100vh - 255px) !important;
+    min-height: 500px !important;
+  }
+
+  .ordersPage.ordersReferencePage.ordersPageUpcoming
+  .finalOrderRow.operationalOrderRow {
+    min-height: 132px !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .ordersPage.ordersReferencePage.ordersPageUpcoming
+  .finalOrderRows.operationalOrderRows {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    scrollbar-gutter: auto !important;
+  }
+}
+
+/* gastario-upcoming-viewport-safe-end */
