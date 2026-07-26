@@ -280,12 +280,93 @@ export async function ensureDeliveryNoteForOrder(
       items: true,
       tenant: true,
       customer: true,
+      incomingEmail: {
+        select: {
+          bodyText: true,
+          attachments: {
+            select: {
+              textContent: true,
+            },
+          },
+        },
+      },
     },
   });
 
   if (!order) {
     throw new Error("Auftrag nicht gefunden.");
   }
+
+  /*
+   * gastario-delivery-note-original-event-time-20260726
+   *
+   * Bei bestehenden Aufträgen den tatsächlichen Eventbeginn
+   * erneut aus der ursprünglichen E-Mail und den gespeicherten
+   * PDF-Texten auslesen.
+   */
+  const originalImportText = [
+    order.incomingEmail?.bodyText,
+    ...(order.incomingEmail?.attachments || [])
+      .map((attachment) =>
+        String(
+          attachment.textContent || ""
+        ).trim()
+      ),
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const eventTimeFromOriginalImport =
+    extractEventStartTime(
+      originalImportText
+    );
+
+  const eventTimeFromStoredNotes =
+    extractEventStartTime(
+      order.notes
+    );
+
+  const normalizeComparableTime = (
+    value: unknown
+  ) => {
+    const text = String(value || "")
+      .replace(/\s*Uhr$/i, "")
+      .trim();
+
+    const match = text.match(
+      /^(\d{1,2})[.:](\d{2})$/
+    );
+
+    if (!match) {
+      return text;
+    }
+
+    return (
+      String(match[1]).padStart(2, "0") +
+      ":" +
+      String(match[2]).padStart(2, "0")
+    );
+  };
+
+  const normalizedDeliveryTime =
+    normalizeComparableTime(
+      order.deliveryTimeText
+    );
+
+  const normalizedStoredEventTime =
+    normalizeComparableTime(
+      eventTimeFromStoredNotes
+    );
+
+  const resolvedDeliveryNoteEventTime =
+    eventTimeFromOriginalImport ||
+    (
+      normalizedStoredEventTime &&
+      normalizedStoredEventTime !==
+        normalizedDeliveryTime
+        ? normalizedStoredEventTime
+        : null
+    );
 
   /*
    * gastario-complete-delivery-address-20260713
@@ -326,9 +407,8 @@ export async function ensureDeliveryNoteForOrder(
       ).trim() || null,
     deliveryDate: order.deliveryDate,
     deliveryTimeText: order.deliveryTimeText,
-    eventTimeText: extractEventStartTime(
-      order.notes
-    ),
+    eventTimeText:
+      resolvedDeliveryNoteEventTime,
     notes: cleanDeliveryNoteGeneralNotes(
       order.notes
     ),
