@@ -971,6 +971,273 @@ export async function renderDeliveryNotePdf(
   }
 
   /*
+   * gastario-modern-delivery-checklist-20260726
+   * Interne Pack-, Liefer- und Übergabekontrolle.
+   */
+
+  const checklistGroups = [
+    {
+      title: "Auftrag und Lieferung",
+      items: [
+        "Lieferadresse kontrolliert",
+        "Lieferzeit kontrolliert",
+        "Ansprechpartner kontrolliert",
+        "Telefonnummer kontrolliert",
+        "Zufahrt und Aufbauort geprüft",
+      ],
+    },
+    {
+      title: "Speisen vollständig",
+      items: [
+        "Alle Positionen vollständig gepackt",
+        "Mengen kontrolliert",
+        "Soßen und Dressings eingepackt",
+        "Beilagen und Toppings eingepackt",
+        "Brot und Servietten eingepackt",
+        "Sonderwünsche und Allergien geprüft",
+        "Kalte Speisen ausreichend gekühlt",
+        "Warme Speisen transportsicher",
+      ],
+    },
+    {
+      title: "Buffet und Equipment",
+      items: [
+        "Chafing Dishes eingepackt",
+        "Deckel und Einsätze eingepackt",
+        "Brennpaste und Feuerzeug eingepackt",
+        "Servierzangen und Schöpfkellen eingepackt",
+        "Buffetbesteck eingepackt",
+        "Teller, Bowls und Becher eingepackt",
+      ],
+    },
+    {
+      title: "Aufbau und Dekoration",
+      items: [
+        "Tischdecken oder Buffetläufer eingepackt",
+        "Speise- und Allergenschilder eingepackt",
+        "Dekoration eingepackt",
+        "Klebeband, Schere und Kabelbinder eingepackt",
+        "Müllbeutel und Reinigungstücher eingepackt",
+      ],
+    },
+    {
+      title: "Übergabe beim Kunden",
+      items: [
+        "Kunde über Ankunft informiert",
+        "Aufbauort abgestimmt",
+        "Buffet vollständig aufgebaut",
+        "Soßen und Besteck bereitgestellt",
+        "Ware vollständig übergeben",
+        "Leihequipment dokumentiert",
+        "Empfang bestätigt",
+      ],
+    },
+  ];
+
+  /*
+   * Die Checkliste beginnt bewusst auf einer neuen Seite.
+   * So bleibt Seite 1 ein sauberes Kundendokument.
+   */
+  addPage(true);
+
+  page.drawText("INTERNE LIEFERKONTROLLE", {
+    x: MARGIN,
+    y,
+    size: 14,
+    font: bold,
+    color: greenDark,
+  });
+
+  y -= 18;
+
+  page.drawText(
+    "Packen, Verladen, Aufbau und Übergabe",
+    {
+      x: MARGIN,
+      y,
+      size: 8.5,
+      font: regular,
+      color: muted,
+    }
+  );
+
+  y -= 25;
+
+  function drawChecklistGroup(
+    title: string,
+    items: string[]
+  ) {
+    const columnGap = 16;
+    const columnWidth =
+      (CONTENT_WIDTH - columnGap) / 2;
+
+    const rows =
+      Math.ceil(items.length / 2);
+
+    const groupHeight =
+      36 + rows * 22 + 12;
+
+    ensureSpace(groupHeight + 14);
+
+    page.drawRectangle({
+      x: MARGIN,
+      y: y - groupHeight,
+      width: CONTENT_WIDTH,
+      height: groupHeight,
+      color: mintLight,
+      borderColor: border,
+      borderWidth: 0.8,
+    });
+
+    page.drawRectangle({
+      x: MARGIN,
+      y: y - 30,
+      width: CONTENT_WIDTH,
+      height: 30,
+      color: mint,
+      borderColor: border,
+      borderWidth: 0.8,
+    });
+
+    page.drawText(
+      title.toUpperCase(),
+      {
+        x: MARGIN + 13,
+        y: y - 20,
+        size: 7.8,
+        font: bold,
+        color: greenDark,
+      }
+    );
+
+    const leftItems =
+      items.slice(0, rows);
+
+    const rightItems =
+      items.slice(rows);
+
+    const drawColumn = (
+      values: string[],
+      x: number
+    ) => {
+      let rowY = y - 51;
+
+      for (const value of values) {
+        page.drawRectangle({
+          x,
+          y: rowY - 7,
+          width: 11,
+          height: 11,
+          borderColor: green,
+          borderWidth: 1,
+        });
+
+        drawLines({
+          page,
+          lines: wrapText(
+            value,
+            regular,
+            8.1,
+            columnWidth - 28
+          ).slice(0, 2),
+          x: x + 18,
+          y: rowY,
+          font: regular,
+          size: 8.1,
+          lineHeight: 10,
+          color: body,
+        });
+
+        rowY -= 22;
+      }
+    };
+
+    drawColumn(
+      leftItems,
+      MARGIN + 14
+    );
+
+    drawColumn(
+      rightItems,
+      MARGIN +
+        columnWidth +
+        columnGap
+    );
+
+    y -= groupHeight + 13;
+  }
+
+  for (const group of checklistGroups) {
+    drawChecklistGroup(
+      group.title,
+      group.items
+    );
+  }
+
+  ensureSpace(150);
+
+  page.drawText(
+    "FEHLENDE ODER NACHGELIEFERTE ARTIKEL",
+    {
+      x: MARGIN,
+      y,
+      size: 7.8,
+      font: bold,
+      color: greenMid,
+    }
+  );
+
+  y -= 20;
+
+  for (let index = 0; index < 3; index += 1) {
+    page.drawLine({
+      start: {
+        x: MARGIN,
+        y,
+      },
+      end: {
+        x: A4_WIDTH - MARGIN,
+        y,
+      },
+      thickness: 0.6,
+      color: border,
+    });
+
+    y -= 22;
+  }
+
+  y -= 5;
+
+  page.drawText(
+    "LEIHEQUIPMENT / RÜCKHOLUNG",
+    {
+      x: MARGIN,
+      y,
+      size: 7.8,
+      font: bold,
+      color: greenMid,
+    }
+  );
+
+  y -= 20;
+
+  for (let index = 0; index < 3; index += 1) {
+    page.drawLine({
+      start: {
+        x: MARGIN,
+        y,
+      },
+      end: {
+        x: A4_WIDTH - MARGIN,
+        y,
+      },
+      thickness: 0.6,
+      color: border,
+    });
+
+    y -= 22;
+  }
+  /*
    * Übergabe
    */
 

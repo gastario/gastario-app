@@ -7378,14 +7378,14 @@ button.finalSelectedDeleteButton {
 .finalOrderRows.operationalOrderRows {
   display: grid !important;
   grid-auto-flow: row !important;
-  grid-auto-rows: 136px !important;
+  grid-auto-rows: minmax(154px, auto) !important;
   align-content: start !important;
   gap: 12px !important;
 
   width: 100% !important;
-  height: 608px !important;
-  min-height: 608px !important;
-  max-height: 608px !important;
+  height: min(690px, calc(100vh - 235px)) !important;
+  min-height: min(690px, calc(100vh - 235px)) !important;
+  max-height: min(690px, calc(100vh - 235px)) !important;
 
   margin: 0 !important;
   padding: 14px 12px 16px !important;
@@ -7401,9 +7401,9 @@ button.finalSelectedDeleteButton {
 .ordersPage.ordersReferencePage.ordersPageUpcoming
 .finalOrderRow.operationalOrderRow {
   display: grid !important;
-  min-height: 136px !important;
-  height: 136px !important;
-  max-height: 136px !important;
+  min-height: 154px !important;
+  height: auto !important;
+  max-height: auto !important;
   margin: 0 !important;
   overflow: hidden !important;
   box-sizing: border-box !important;

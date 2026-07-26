@@ -122,6 +122,116 @@ function normalizeDeliveryNoteUnit(
 
   return String(value || "").trim();
 }
+function joinAddressParts(
+  street: unknown,
+  houseNumber: unknown,
+  postalCode: unknown,
+  city: unknown,
+  country?: unknown
+) {
+  const streetLine = [
+    String(street || "").trim(),
+    String(houseNumber || "").trim(),
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const cityLine = [
+    String(postalCode || "").trim(),
+    String(city || "").trim(),
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const countryText =
+    String(country || "").trim();
+
+  return [
+    streetLine,
+    cityLine,
+    countryText &&
+    countryText.toUpperCase() !== "DE"
+      ? countryText
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+}
+
+function buildDeliveryAddress(
+  order: {
+    deliveryAddress?: string | null;
+    customer?: {
+      address?: string | null;
+      street?: string | null;
+      houseNumber?: string | null;
+      postalCode?: string | null;
+      city?: string | null;
+      country?: string | null;
+      differentDeliveryAddress?: boolean;
+      deliveryStreet?: string | null;
+      deliveryHouseNumber?: string | null;
+      deliveryPostalCode?: string | null;
+      deliveryCity?: string | null;
+      deliveryCountry?: string | null;
+    } | null;
+  }
+) {
+  const customer = order.customer;
+
+  const orderAddress =
+    String(order.deliveryAddress || "")
+      .trim();
+
+  const legacyCustomerAddress =
+    String(customer?.address || "")
+      .trim();
+
+  const standardCustomerAddress =
+    joinAddressParts(
+      customer?.street,
+      customer?.houseNumber,
+      customer?.postalCode,
+      customer?.city,
+      customer?.country
+    );
+
+  const differentDeliveryAddress =
+    joinAddressParts(
+      customer?.deliveryStreet,
+      customer?.deliveryHouseNumber,
+      customer?.deliveryPostalCode,
+      customer?.deliveryCity,
+      customer?.deliveryCountry
+    );
+
+  const candidates = [
+    orderAddress,
+    customer?.differentDeliveryAddress
+      ? differentDeliveryAddress
+      : "",
+    standardCustomerAddress,
+    legacyCustomerAddress,
+    differentDeliveryAddress,
+  ]
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  /*
+   * Die vollständigste vorhandene Anschrift verwenden.
+   * So gewinnt z. B. "Straße 12\n10587 Berlin"
+   * gegen den unvollständigen Wert "10587 Berlin".
+   */
+  return candidates.sort(
+    (left, right) =>
+      right.length - left.length
+  )[0];
+}
 export async function ensureDeliveryNoteForOrder(
   orderId: string,
   options?: {
@@ -154,20 +264,8 @@ export async function ensureDeliveryNoteForOrder(
    * gastario-complete-delivery-address-20260713
    * Die vollständigere Adresse aus Auftrag oder Kundenstamm verwenden.
    */
-  const orderDeliveryAddress =
-    String(order.deliveryAddress || "").trim();
-
-  const customerAddress =
-    String(order.customer?.address || "").trim();
-
   const completeDeliveryAddress =
-    orderDeliveryAddress && customerAddress
-      ? (
-          orderDeliveryAddress.length >= customerAddress.length
-            ? orderDeliveryAddress
-            : customerAddress
-        )
-      : orderDeliveryAddress || customerAddress || null;
+    buildDeliveryAddress(order);
 
   const allowedStatuses = [
     "CONFIRMED",
