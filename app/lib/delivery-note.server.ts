@@ -134,9 +134,6 @@ export async function ensureDeliveryNoteForOrder(
     },
   });
 
-  if (existing && !options?.force) {
-    return existing;
-  }
 
   const order = await prisma.order.findUnique({
     where: {
