@@ -471,8 +471,8 @@ export async function renderDeliveryNotePdf(
 
   const cardGap = 10;
   const cardWidth =
-    (CONTENT_WIDTH - cardGap * 2) / 3;
-  const cardHeight = 76;
+    (CONTENT_WIDTH - cardGap) / 2;
+  const cardHeight = 72;
 
   const cards = [
     {
@@ -480,78 +480,146 @@ export async function renderDeliveryNotePdf(
       value:
         safeText(input.customerName) ||
         "-",
+      secondary: "",
+      emphasized: false,
+    },
+    {
+      label: "LIEFERUNG",
+      value: formatDate(
+        input.deliveryDate
+      ),
+      secondary:
+        safeText(input.deliveryTimeText)
+          ? safeText(
+              input.deliveryTimeText
+            ) + " Uhr"
+          : "Uhrzeit noch offen",
+      emphasized: true,
     },
     {
       label: "LIEFERADRESSE",
       value:
         safeText(input.deliveryAddress) ||
         "-",
+      secondary: "",
+      emphasized: false,
     },
     {
       label: "ANSPRECHPARTNER",
-      value: [
-        safeText(input.contactName),
+      value:
+        safeText(input.contactName) ||
+        "-",
+      secondary:
         safeText(input.contactPhone),
-      ]
-        .filter(Boolean)
-        .join("\n") || "-",
+      emphasized: false,
     },
   ];
 
   cards.forEach((card, index) => {
+    const column = index % 2;
+    const row = Math.floor(index / 2);
+
     const x =
       MARGIN +
-      index * (cardWidth + cardGap);
+      column * (cardWidth + cardGap);
+
+    const cardTopY =
+      y -
+      row * (cardHeight + cardGap);
 
     page.drawRectangle({
       x,
-      y: y - cardHeight,
+      y: cardTopY - cardHeight,
       width: cardWidth,
       height: cardHeight,
-      color: mintLight,
-      borderColor: border,
+      color: card.emphasized
+        ? greenDark
+        : mintLight,
+      borderColor: card.emphasized
+        ? greenDark
+        : border,
       borderWidth: 0.8,
     });
 
     page.drawRectangle({
       x,
-      y: y - 4,
+      y: cardTopY - 4,
       width: cardWidth,
       height: 4,
-      color: green,
+      color: card.emphasized
+        ? green
+        : green,
     });
 
     page.drawText(card.label, {
-      x: x + 13,
-      y: y - 23,
-      size: 7,
+      x: x + 14,
+      y: cardTopY - 22,
+      size: 7.2,
       font: bold,
-      color: muted,
+      color: card.emphasized
+        ? rgb(0.69, 0.9, 0.82)
+        : muted,
     });
 
-    const cardLines = wrapText(
+    if (card.emphasized) {
+      page.drawText(card.value, {
+        x: x + 14,
+        y: cardTopY - 46,
+        size: 14,
+        font: bold,
+        color: white,
+      });
+
+      page.drawText(
+        card.secondary || "-",
+        {
+          x: x + 14,
+          y: cardTopY - 63,
+          size: 9.5,
+          font: bold,
+          color: rgb(0.82, 0.94, 0.89),
+        }
+      );
+
+      return;
+    }
+
+    const valueLines = wrapText(
       card.value,
       index === 0 ? bold : regular,
-      9.2,
-      cardWidth - 26
-    ).slice(0, 4);
+      9.5,
+      cardWidth - 28
+    ).slice(0, card.secondary ? 2 : 3);
 
-    drawLines({
+    const nextY = drawLines({
       page,
-      lines: cardLines,
-      x: x + 13,
-      y: y - 43,
+      lines: valueLines,
+      x: x + 14,
+      y: cardTopY - 43,
       font:
         index === 0
           ? bold
           : regular,
-      size: 9.2,
+      size: 9.5,
       lineHeight: 11.5,
       color: dark,
     });
+
+    if (card.secondary) {
+      page.drawText(card.secondary, {
+        x: x + 14,
+        y: nextY - 1,
+        size: 8.3,
+        font: regular,
+        color: muted,
+      });
+    }
   });
 
-  y -= cardHeight + 25;
+  y -=
+    cardHeight * 2 +
+    cardGap +
+    25;
 
   /*
    * Speisen
