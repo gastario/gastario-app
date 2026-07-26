@@ -1626,6 +1626,31 @@ export async function loader({ request }: { request: Request }) {
 
     const draft = engineResult.normalizedDraft;
 
+    /*
+     * Lieferzeit und Eventbeginn getrennt auslesen.
+     * Beispiel: Lieferzeit 08:45, Eventbeginn 09:00.
+     */
+    const importSourceText = [
+      input.documentText,
+      input.bodyText,
+    ]
+      .filter(Boolean)
+      .join("\n")
+      .replace(/\r/g, " ");
+
+    const eventStartMatch =
+      importSourceText.match(
+        /(?:Event\s*Beginn|Eventbeginn|Eventstart|Beginn\s+der\s+Veranstaltung)\s*:?\s*(\d{1,2})[.:](\d{2})(?:\s*Uhr)?/i
+      );
+
+    const extractedEventStart =
+      eventStartMatch
+        ? String(eventStartMatch[1]).padStart(2, "0") +
+          ":" +
+          String(eventStartMatch[2]).padStart(2, "0")
+        : null;
+
+
     return {
       customerName: draft.customerName,
       contactName: draft.contactName,
@@ -1633,7 +1658,7 @@ export async function loader({ request }: { request: Request }) {
       deliveryDate: draft.deliveryDate,
       eventDate: draft.deliveryDate,
       deliveryTime: draft.deliveryTime,
-      eventStart: draft.deliveryTime,
+      eventStart: extractedEventStart,
       deliveryAddress: draft.deliveryAddress,
       source: draft.sourceName || "EMAIL",
       externalOrderNumber:
