@@ -7897,3 +7897,204 @@ button.finalSelectedDeleteButton:hover {
 }
 
 /* gastario-upcoming-viewport-safe-end */
+
+/* gastario-orders-view-height-equal-final-start */
+
+/*
+ * Bevorstehende und vergangene Aufträge erhalten denselben
+ * sichtbaren unteren Abschluss. Der Archivhinweis wird bei
+ * vergangenen Aufträgen kompakt in die verfügbare Höhe eingerechnet.
+ */
+
+/* Gemeinsame Kartenmaße */
+
+.ordersPage.ordersReferencePage.ordersPageUpcoming
+.finalOrderRow.operationalOrderRow,
+.ordersPage.ordersReferencePage.ordersPagePast
+.finalOrderRow.operationalOrderRow {
+  min-height: 138px !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Bevorstehende Aufträge */
+
+.ordersPage.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows {
+  display: grid !important;
+  grid-auto-flow: row !important;
+  grid-auto-rows: minmax(138px, auto) !important;
+  align-content: start !important;
+  gap: 12px !important;
+
+  height: min(690px, calc(100dvh - 238px)) !important;
+  min-height: min(620px, calc(100dvh - 238px)) !important;
+  max-height: min(690px, calc(100dvh - 238px)) !important;
+
+  margin: 0 !important;
+  padding: 14px 12px 18px !important;
+
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scrollbar-gutter: stable !important;
+  box-sizing: border-box !important;
+}
+
+/* Archivhinweis deutlich kompakter */
+
+.ordersPage.ordersReferencePage.ordersPagePast
+.pastOrdersArchiveNotice {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+
+  min-height: 46px !important;
+  height: 46px !important;
+
+  margin: 0 !important;
+  padding: 7px 14px !important;
+
+  border: 1px solid #dce7e3 !important;
+  border-radius: 11px !important;
+  background: #f8fbfa !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+}
+
+.ordersPage.ordersReferencePage.ordersPagePast
+.pastOrdersArchiveNotice > div {
+  display: grid !important;
+  gap: 1px !important;
+  min-width: 0 !important;
+}
+
+.ordersPage.ordersReferencePage.ordersPagePast
+.pastOrdersArchiveNotice strong {
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+}
+
+.ordersPage.ordersReferencePage.ordersPagePast
+.pastOrdersArchiveNotice
+span:not(.pastOrdersArchiveBadge) {
+  font-size: 9px !important;
+  line-height: 1.25 !important;
+}
+
+.ordersPage.ordersReferencePage.ordersPagePast
+.pastOrdersArchiveBadge {
+  min-height: 26px !important;
+  height: 26px !important;
+  padding: 0 10px !important;
+}
+
+/*
+ * Der Archivhinweis benötigt 46 px.
+ * Deshalb ist die vergangene Liste entsprechend kürzer,
+ * endet aber exakt auf derselben Höhe wie die bevorstehende Liste.
+ */
+
+.ordersPage.ordersReferencePage.ordersPagePast
+.finalOrderRows.operationalOrderRows {
+  display: grid !important;
+  grid-auto-flow: row !important;
+  grid-auto-rows: minmax(138px, auto) !important;
+  align-content: start !important;
+  gap: 12px !important;
+
+  height: min(632px, calc(100dvh - 296px)) !important;
+  min-height: min(562px, calc(100dvh - 296px)) !important;
+  max-height: min(632px, calc(100dvh - 296px)) !important;
+
+  margin: 12px 0 0 !important;
+  padding: 14px 12px 18px !important;
+
+  border-top: 0 !important;
+  background: transparent !important;
+
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  scrollbar-gutter: stable !important;
+  box-sizing: border-box !important;
+}
+
+/* Gleiche Scrollbar für beide Ansichten */
+
+.ordersPage.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows,
+.ordersPage.ordersReferencePage.ordersPagePast
+.finalOrderRows.operationalOrderRows {
+  scrollbar-width: thin;
+  scrollbar-color: #91c9b8 #edf6f3;
+}
+
+.ordersPage.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows::-webkit-scrollbar,
+.ordersPage.ordersReferencePage.ordersPagePast
+.finalOrderRows.operationalOrderRows::-webkit-scrollbar {
+  width: 9px;
+}
+
+.ordersPage.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows::-webkit-scrollbar-track,
+.ordersPage.ordersReferencePage.ordersPagePast
+.finalOrderRows.operationalOrderRows::-webkit-scrollbar-track {
+  margin: 8px 0;
+  background: #edf6f3;
+  border-radius: 999px;
+}
+
+.ordersPage.ordersReferencePage.ordersPageUpcoming
+.finalOrderRows.operationalOrderRows::-webkit-scrollbar-thumb,
+.ordersPage.ordersReferencePage.ordersPagePast
+.finalOrderRows.operationalOrderRows::-webkit-scrollbar-thumb {
+  background: #91c9b8;
+  border: 2px solid #edf6f3;
+  border-radius: 999px;
+}
+
+@media (max-width: 1100px) {
+  .ordersPage.ordersReferencePage.ordersPageUpcoming
+  .finalOrderRows.operationalOrderRows {
+    height: calc(100dvh - 220px) !important;
+    min-height: 500px !important;
+    max-height: 690px !important;
+  }
+
+  .ordersPage.ordersReferencePage.ordersPagePast
+  .finalOrderRows.operationalOrderRows {
+    height: calc(100dvh - 278px) !important;
+    min-height: 442px !important;
+    max-height: 632px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .ordersPage.ordersReferencePage.ordersPagePast
+  .pastOrdersArchiveNotice {
+    height: auto !important;
+    min-height: 0 !important;
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .ordersPage.ordersReferencePage.ordersPageUpcoming
+  .finalOrderRows.operationalOrderRows,
+  .ordersPage.ordersReferencePage.ordersPagePast
+  .finalOrderRows.operationalOrderRows {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    scrollbar-gutter: auto !important;
+  }
+}
+
+/* gastario-orders-view-height-equal-final-end */
