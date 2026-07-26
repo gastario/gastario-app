@@ -1,4 +1,5 @@
 import { Link, useLoaderData } from "react-router";
+import { useMemo, useState } from "react";
 import AppLayout from "../components/AppLayout";
 
 function todayRange() {
@@ -518,6 +519,196 @@ export default function Home() {
   const openReviewCount =
     data.openOrders.length +
     data.emailInbox.length;
+  /*
+   * gastario-dashboard-navigation-filters-20260726
+   * Navigation, Zeitraum, Status und Suche der Betriebsleitstelle.
+   */
+  type DashboardView =
+    | "overview"
+    | "planning"
+    | "tasks"
+    | "finance";
+
+  type DashboardPeriod =
+    | "today"
+    | "tomorrow"
+    | "week"
+    | "month"
+    | "all";
+
+  type DashboardStatus =
+    | "all"
+    | "CONFIRMED"
+    | "IN_PRODUCTION"
+    | "PACKING_OPEN";
+
+  const [dashboardView, setDashboardView] =
+    useState<DashboardView>("overview");
+
+  const [dashboardPeriod, setDashboardPeriod] =
+    useState<DashboardPeriod>("week");
+
+  const [dashboardStatus, setDashboardStatus] =
+    useState<DashboardStatus>("all");
+
+  const [dashboardSearch, setDashboardSearch] =
+    useState("");
+
+  const allPlanningOrders = useMemo(
+    () => [
+      ...todayOrdersSorted,
+      ...upcomingOrdersSorted,
+    ],
+    [
+      todayOrdersSorted,
+      upcomingOrdersSorted,
+    ]
+  );
+
+  const filteredPlanningOrders = useMemo(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(now);
+    tomorrow.setDate(
+      tomorrow.getDate() + 1
+    );
+
+    const weekEnd = new Date(now);
+    weekEnd.setDate(
+      weekEnd.getDate() + 7
+    );
+
+    const monthEnd = new Date(now);
+    monthEnd.setDate(
+      monthEnd.getDate() + 30
+    );
+
+    const normalizedSearch =
+      dashboardSearch
+        .trim()
+        .toLowerCase();
+
+    return allPlanningOrders.filter(
+      (order: any) => {
+        const deliveryDate =
+          order.deliveryDate
+            ? new Date(order.deliveryDate)
+            : null;
+
+        if (
+          !deliveryDate ||
+          Number.isNaN(
+            deliveryDate.getTime()
+          )
+        ) {
+          return dashboardPeriod === "all";
+        }
+
+        deliveryDate.setHours(
+          0,
+          0,
+          0,
+          0
+        );
+
+        const matchesPeriod =
+          dashboardPeriod === "all" ||
+          (
+            dashboardPeriod === "today" &&
+            deliveryDate.getTime() ===
+              now.getTime()
+          ) ||
+          (
+            dashboardPeriod === "tomorrow" &&
+            deliveryDate.getTime() ===
+              tomorrow.getTime()
+          ) ||
+          (
+            dashboardPeriod === "week" &&
+            deliveryDate >= now &&
+            deliveryDate < weekEnd
+          ) ||
+          (
+            dashboardPeriod === "month" &&
+            deliveryDate >= now &&
+            deliveryDate < monthEnd
+          );
+
+        if (!matchesPeriod) {
+          return false;
+        }
+
+        const matchesStatus =
+          dashboardStatus === "all" ||
+          String(order.status) ===
+            dashboardStatus;
+
+        if (!matchesStatus) {
+          return false;
+        }
+
+        if (!normalizedSearch) {
+          return true;
+        }
+
+        const searchableText = [
+          order.customerName,
+          order.orderNumber,
+          order.eventName,
+          order.deliveryAddress,
+          order.contactName,
+          order.customer?.name,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return searchableText.includes(
+          normalizedSearch
+        );
+      }
+    );
+  }, [
+    allPlanningOrders,
+    dashboardPeriod,
+    dashboardSearch,
+    dashboardStatus,
+  ]);
+
+  const filteredOrdersByDate =
+    useMemo(() => {
+      return filteredPlanningOrders.reduce<
+        Record<string, any[]>
+      >((groups, order: any) => {
+        const key = planningDateKey(
+          order.deliveryDate
+        );
+
+        if (!groups[key]) {
+          groups[key] = [];
+        }
+
+        groups[key].push(order);
+
+        return groups;
+      }, {});
+    }, [filteredPlanningOrders]);
+
+  const filteredOrderGroups =
+    useMemo(
+      () =>
+        Object.entries(
+          filteredOrdersByDate
+        ) as Array<[string, any[]]>,
+      [filteredOrdersByDate]
+    );
+
+  function resetDashboardFilters() {
+    setDashboardPeriod("week");
+    setDashboardStatus("all");
+    setDashboardSearch("");
+  }
 
   const nextPlannedOrder =
     todayOrdersSorted[0] ||
@@ -615,7 +806,10 @@ export default function Home() {
     <AppLayout>
       <style>{dashboardCss}</style>
 
-      <div className="dashPage">
+      <div
+        className="dashPage"
+        data-view={dashboardView}
+      >
         <header className="dashHeader">
           <div>
             <p className="dashEyebrow">
@@ -653,6 +847,205 @@ export default function Home() {
           </div>
         </header>
 
+        {/* gastario-dashboard-workspace-controls-20260726 */}
+
+        <nav
+          className="dashWorkspaceTabs"
+          aria-label="Dashboard-Bereiche"
+        >
+          <button
+            type="button"
+            data-active={
+              dashboardView === "overview"
+                ? "true"
+                : "false"
+            }
+            onClick={() =>
+              setDashboardView("overview")
+            }
+          >
+            Übersicht
+          </button>
+
+          <button
+            type="button"
+            data-active={
+              dashboardView === "planning"
+                ? "true"
+                : "false"
+            }
+            onClick={() =>
+              setDashboardView("planning")
+            }
+          >
+            Lieferplan
+          </button>
+
+          <button
+            type="button"
+            data-active={
+              dashboardView === "tasks"
+                ? "true"
+                : "false"
+            }
+            onClick={() =>
+              setDashboardView("tasks")
+            }
+          >
+            Offene Aufgaben
+
+            {openReviewCount > 0 ? (
+              <span>{openReviewCount}</span>
+            ) : null}
+          </button>
+
+          <button
+            type="button"
+            data-active={
+              dashboardView === "finance"
+                ? "true"
+                : "false"
+            }
+            onClick={() =>
+              setDashboardView("finance")
+            }
+          >
+            Finanzen
+          </button>
+        </nav>
+
+        {(dashboardView === "overview" ||
+          dashboardView === "planning") ? (
+          <section className="dashFilterBar">
+            <div className="dashPeriodFilter">
+              <button
+                type="button"
+                data-active={
+                  dashboardPeriod === "today"
+                    ? "true"
+                    : "false"
+                }
+                onClick={() =>
+                  setDashboardPeriod("today")
+                }
+              >
+                Heute
+              </button>
+
+              <button
+                type="button"
+                data-active={
+                  dashboardPeriod === "tomorrow"
+                    ? "true"
+                    : "false"
+                }
+                onClick={() =>
+                  setDashboardPeriod("tomorrow")
+                }
+              >
+                Morgen
+              </button>
+
+              <button
+                type="button"
+                data-active={
+                  dashboardPeriod === "week"
+                    ? "true"
+                    : "false"
+                }
+                onClick={() =>
+                  setDashboardPeriod("week")
+                }
+              >
+                7 Tage
+              </button>
+
+              <button
+                type="button"
+                data-active={
+                  dashboardPeriod === "month"
+                    ? "true"
+                    : "false"
+                }
+                onClick={() =>
+                  setDashboardPeriod("month")
+                }
+              >
+                30 Tage
+              </button>
+
+              <button
+                type="button"
+                data-active={
+                  dashboardPeriod === "all"
+                    ? "true"
+                    : "false"
+                }
+                onClick={() =>
+                  setDashboardPeriod("all")
+                }
+              >
+                Alle
+              </button>
+            </div>
+
+            <div className="dashFilterControls">
+              <select
+                value={dashboardStatus}
+                onChange={(event) =>
+                  setDashboardStatus(
+                    event.target.value as DashboardStatus
+                  )
+                }
+                aria-label="Auftragsstatus filtern"
+              >
+                <option value="all">
+                  Alle Status
+                </option>
+
+                <option value="CONFIRMED">
+                  Bestätigt
+                </option>
+
+                <option value="IN_PRODUCTION">
+                  In Produktion
+                </option>
+
+                <option value="PACKING_OPEN">
+                  Packen offen
+                </option>
+              </select>
+
+              <label className="dashSearchField">
+                <span>⌕</span>
+
+                <input
+                  type="search"
+                  value={dashboardSearch}
+                  onChange={(event) =>
+                    setDashboardSearch(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Kunde, Auftrag oder Adresse suchen"
+                />
+              </label>
+
+              <button
+                type="button"
+                className="dashResetButton"
+                onClick={resetDashboardFilters}
+                disabled={
+                  dashboardPeriod === "week" &&
+                  dashboardStatus === "all" &&
+                  dashboardSearch === ""
+                }
+              >
+                Zurücksetzen
+              </button>
+            </div>
+          </section>
+        ) : null}
         <nav
           className="dashKpiBar"
           aria-label="Dashboard-Kennzahlen"
@@ -2013,4 +2406,233 @@ const dashboardCss = `
       width: auto;
     }
   }
-`;
+
+  /* gastario-dashboard-workspace-controls-20260726 */
+
+  .dashWorkspaceTabs {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 48px;
+    padding: 5px;
+    overflow-x: auto;
+    border: 1px solid #d9e4e0;
+    border-radius: 12px;
+    background: #ffffff;
+  }
+
+  .dashWorkspaceTabs button {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #5d716a;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .dashWorkspaceTabs button:hover {
+    background: #f2f7f5;
+    color: #173b32;
+  }
+
+  .dashWorkspaceTabs button[data-active="true"] {
+    background: #e6f5ef;
+    color: #087b59;
+    box-shadow:
+      inset 0 0 0 1px #c3e3d7;
+  }
+
+  .dashWorkspaceTabs button span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 21px;
+    height: 21px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: #07865f;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 900;
+  }
+
+  .dashFilterBar {
+    display: grid;
+    grid-template-columns:
+      auto
+      minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+    padding: 11px 13px;
+    border: 1px solid #d9e4e0;
+    border-radius: 12px;
+    background: #ffffff;
+  }
+
+  .dashPeriodFilter {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px;
+    border: 1px solid #dce6e2;
+    border-radius: 9px;
+    background: #f2f7f5;
+  }
+
+  .dashPeriodFilter button {
+    min-height: 34px;
+    padding: 0 13px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #657970;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .dashPeriodFilter button[data-active="true"] {
+    background: #ffffff;
+    color: #087b59;
+    box-shadow:
+      0 2px 8px rgba(16, 33, 53, 0.08),
+      inset 0 0 0 1px #d2e3dc;
+  }
+
+  .dashFilterControls {
+    display: grid;
+    grid-template-columns:
+      minmax(145px, 185px)
+      minmax(220px, 1fr)
+      auto;
+    gap: 9px;
+    min-width: 0;
+  }
+
+  .dashFilterControls select,
+  .dashSearchField,
+  .dashResetButton {
+    min-height: 40px;
+    border: 1px solid #d6e1dd;
+    border-radius: 9px;
+    background: #ffffff;
+    box-sizing: border-box;
+  }
+
+  .dashFilterControls select {
+    width: 100%;
+    padding: 0 31px 0 12px;
+    color: #304b43;
+    font-size: 12px;
+    font-weight: 750;
+  }
+
+  .dashSearchField {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    padding: 0 12px;
+  }
+
+  .dashSearchField > span {
+    flex: 0 0 auto;
+    color: #778d85;
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .dashSearchField input {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #203b34;
+    font-size: 12px;
+    font-weight: 650;
+  }
+
+  .dashSearchField input::placeholder {
+    color: #8da099;
+  }
+
+  .dashResetButton {
+    padding: 0 14px;
+    color: #496159;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .dashResetButton:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  .dashPage[data-view="planning"]
+  .dashAttention {
+    display: none;
+  }
+
+  .dashPage[data-view="planning"]
+  .dashControlGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashPlanning {
+    display: none;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashControlGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashPage[data-view="tasks"]
+  .dashAttention {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .dashPage[data-view="finance"]
+  .dashControlGrid {
+    display: none;
+  }
+
+  .dashPage[data-view="planning"]
+  .dashFinanceStrip,
+  .dashPage[data-view="tasks"]
+  .dashFinanceStrip {
+    display: none;
+  }
+
+  @media (max-width: 980px) {
+    .dashFilterBar {
+      grid-template-columns: 1fr;
+    }
+
+    .dashPeriodFilter {
+      overflow-x: auto;
+    }
+
+    .dashPage[data-view="tasks"]
+    .dashAttention {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .dashFilterControls {
+      grid-template-columns: 1fr;
+    }
+  }`;
