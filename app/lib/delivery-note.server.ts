@@ -46,6 +46,33 @@ function cleanDeliveryNoteItemNote(
     : text;
 }
 
+function extractEventStartTime(
+  value: unknown
+) {
+  const text = String(value || "")
+    .replace(/\r/g, " ")
+    .trim();
+
+  if (!text) {
+    return null;
+  }
+
+  const match = text.match(
+    /(?:Eventbeginn|Eventzeitpunkt|Eventzeit|Eventstart|Beginn)\s*:?\s*(\d{1,2})[.:](\d{2})(?:\s*Uhr)?/i
+  );
+
+  if (!match) {
+    return null;
+  }
+
+  const hours = String(match[1])
+    .padStart(2, "0");
+
+  const minutes = String(match[2])
+    .padStart(2, "0");
+
+  return hours + ":" + minutes;
+}
 function cleanDeliveryNoteGeneralNotes(
   value: unknown
 ) {
@@ -299,6 +326,9 @@ export async function ensureDeliveryNoteForOrder(
       ).trim() || null,
     deliveryDate: order.deliveryDate,
     deliveryTimeText: order.deliveryTimeText,
+    eventTimeText: extractEventStartTime(
+      order.notes
+    ),
     notes: cleanDeliveryNoteGeneralNotes(
       order.notes
     ),

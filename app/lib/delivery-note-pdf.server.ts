@@ -23,6 +23,7 @@ type DeliveryNoteInput = {
   contactPhone?: string | null;
   deliveryDate?: Date | string | null;
   deliveryTimeText?: string | null;
+  eventTimeText?: string | null;
   notes?: string | null;
   items: DeliveryNoteItem[];
 };
@@ -414,25 +415,6 @@ export async function renderDeliveryNotePdf(
     color: rgb(0.82, 0.93, 0.89),
   });
 
-  const eventLabel = "EVENTZEITPUNKT";
-  const eventLabelWidth =
-    bold.widthOfTextAtSize(
-      eventLabel,
-      7
-    );
-
-  page.drawText(eventLabel, {
-    x:
-      A4_WIDTH -
-      MARGIN -
-      22 -
-      eventLabelWidth,
-    y: A4_HEIGHT - MARGIN - 48,
-    size: 7,
-    font: bold,
-    color: rgb(0.67, 0.88, 0.81),
-  });
-
   const dateText =
     formatDate(input.deliveryDate);
 
@@ -503,16 +485,27 @@ export async function renderDeliveryNotePdf(
       emphasized: false,
     },
     {
-      label: "LIEFERUNG",
+      label: "LIEFERUNG & EVENT",
       value: formatDate(
         input.deliveryDate
       ),
-      secondary:
-        safeText(input.deliveryTimeText)
-          ? safeText(
-              input.deliveryTimeText
-            ) + " Uhr"
-          : "Uhrzeit noch offen",
+      secondary: [
+        "Lieferung: " +
+          (
+            safeText(input.deliveryTimeText)
+              ? safeText(
+                  input.deliveryTimeText
+                ) + " Uhr"
+              : "offen"
+          ),
+        safeText(input.eventTimeText)
+          ? "Event: " +
+            safeText(input.eventTimeText) +
+            " Uhr"
+          : "",
+      ]
+        .filter(Boolean)
+        .join(" · "),
       emphasized: true,
     },
     {
@@ -1059,13 +1052,19 @@ export async function renderDeliveryNotePdf(
   y -= 16;
 
   const checklistEventText =
-    "Eventzeitpunkt: " +
-    formatDate(input.deliveryDate) +
-    " · " +
+    "Lieferung: " +
     (
       safeText(input.deliveryTimeText)
-        ? safeText(input.deliveryTimeText) + " Uhr"
-        : "Uhrzeit offen"
+        ? safeText(input.deliveryTimeText) +
+          " Uhr"
+        : "offen"
+    ) +
+    (
+      safeText(input.eventTimeText)
+        ? " · Eventbeginn: " +
+          safeText(input.eventTimeText) +
+          " Uhr"
+        : ""
     );
 
   page.drawText(checklistEventText, {
