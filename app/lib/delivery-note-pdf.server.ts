@@ -241,15 +241,37 @@ export async function renderDeliveryNotePdf(
   let page: PDFPage;
   let y = 0;
 
-  const normalizedDeliveryTime =
-    safeText(input.deliveryTimeText)
+  function normalizeClockTime(
+    value: unknown
+  ) {
+    const text = safeText(value)
       .replace(/\s*Uhr$/i, "")
       .trim();
 
+    const match = text.match(
+      /^(\d{1,2})[.:](\d{2})$/
+    );
+
+    if (!match) {
+      return text;
+    }
+
+    return (
+      String(match[1]).padStart(2, "0") +
+      ":" +
+      String(match[2]).padStart(2, "0")
+    );
+  }
+
+  const normalizedDeliveryTime =
+    normalizeClockTime(
+      input.deliveryTimeText
+    );
+
   const normalizedEventTime =
-    safeText(input.eventTimeText)
-      .replace(/\s*Uhr$/i, "")
-      .trim();
+    normalizeClockTime(
+      input.eventTimeText
+    );
 
   const distinctEventTime =
     normalizedEventTime &&
