@@ -572,6 +572,11 @@ export default function Home() {
   const [dashboardSearch, setDashboardSearch] =
     useState("");
 
+  const [dashboardSidePanel, setDashboardSidePanel] =
+    useState<"tasks" | "inventory" | "quick">(
+      "tasks"
+    );
+
   const allPlanningOrders = useMemo(
     () => [
       ...todayOrdersSorted,
@@ -1351,218 +1356,210 @@ export default function Home() {
           </main>
 
           <aside className="dashAttention">
-            <section className="dashPanel">
-              <div className="dashPanelHead">
+            {/* gastario-dashboard-compact-workbar-20260726 */}
+
+            <section className="dashPanel dashWorkbar">
+              <div className="dashWorkbarHeader">
                 <div>
                   <p className="dashEyebrow">
-                    Aufmerksamkeit
+                    Betriebssteuerung
                   </p>
 
-                  <h2>Jetzt bearbeiten</h2>
-
-                  <span>
-                    Offene Punkte für den
-                    laufenden Betrieb.
-                  </span>
+                  <h2>Arbeitsbereich</h2>
                 </div>
+
+                <span>
+                  {openReviewCount +
+                    data.finance.ordersWithoutInvoice +
+                    data.taxAdvisor.missingInvoiceSettings +
+                    data.counts.lowInventory}
+                </span>
               </div>
 
-              <div className="dashAttentionList">
-                <Link to="/auftragseingang">
-                  <strong>{openReviewCount}</strong>
-
-                  <div>
-                    <span>
-                      Auftragseingänge prüfen
-                    </span>
-
-                    <small>
-                      Neue Aufträge und E-Mails
-                    </small>
-                  </div>
-
-                  <b>›</b>
-                </Link>
-
-                <Link to="/auftraege">
-                  <strong>
-                    {data.finance
-                      .ordersWithoutInvoice}
-                  </strong>
-
-                  <div>
-                    <span>
-                      Aufträge ohne Rechnung
-                    </span>
-
-                    <small>
-                      Abrechnung noch offen
-                    </small>
-                  </div>
-
-                  <b>›</b>
-                </Link>
-
-                <Link to="/einstellungen/rechnungen">
-                  <strong>
-                    {data.taxAdvisor
-                      .missingInvoiceSettings}
-                  </strong>
-
-                  <div>
-                    <span>
-                      Fehlende Stammdaten
-                    </span>
-
-                    <small>
-                      Rechnungsdaten prüfen
-                    </small>
-                  </div>
-
-                  <b>›</b>
-                </Link>
-
-                <Link to="/lager">
-                  <strong>
-                    {data.counts.lowInventory}
-                  </strong>
-
-                  <div>
-                    <span>Lagerwarnungen</span>
-
-                    <small>
-                      Mindestbestände kontrollieren
-                    </small>
-                  </div>
-
-                  <b>›</b>
-                </Link>
-              </div>
-            </section>
-
-            <section className="dashPanel dashNextPanel">
-              <div className="dashPanelHead">
-                <div>
-                  <p className="dashEyebrow">
-                    Als Nächstes
-                  </p>
-
-                  <h2>Nächster Auftrag</h2>
-                </div>
-              </div>
-
-              {nextPlannedOrder ? (
-                <Link
-                  className="dashNextOrder"
-                  to={
-                    "/auftrag-pruefung/" +
-                    nextPlannedOrder.id
+              <nav
+                className="dashWorkbarTabs"
+                aria-label="Arbeitsbereich auswählen"
+              >
+                <button
+                  type="button"
+                  data-active={
+                    dashboardSidePanel === "tasks"
+                      ? "true"
+                      : "false"
+                  }
+                  onClick={() =>
+                    setDashboardSidePanel("tasks")
                   }
                 >
-                  <span>
-                    {todayOrdersSorted.length > 0
-                      ? "Heute"
-                      : planningDateLabel(
-                          nextPlannedOrder
-                            .deliveryDate
-                        )}
-                  </span>
+                  Aufgaben
+                </button>
 
-                  <strong>
-                    {formatTime(
-                      nextPlannedOrder
-                        .deliveryTime
-                    )}
-                    {" Uhr"}
-                  </strong>
+                <button
+                  type="button"
+                  data-active={
+                    dashboardSidePanel === "inventory"
+                      ? "true"
+                      : "false"
+                  }
+                  onClick={() =>
+                    setDashboardSidePanel("inventory")
+                  }
+                >
+                  Lager
+                </button>
 
-                  <h3>
-                    {
-                      nextPlannedOrder
-                        .customerName
-                    }
-                  </h3>
+                <button
+                  type="button"
+                  data-active={
+                    dashboardSidePanel === "quick"
+                      ? "true"
+                      : "false"
+                  }
+                  onClick={() =>
+                    setDashboardSidePanel("quick")
+                  }
+                >
+                  Schnellzugriff
+                </button>
+              </nav>
 
-                  <p>
-                    {nextPlannedOrder
-                      .deliveryAddress ||
-                      "Lieferadresse noch offen"}
-                  </p>
+              {dashboardSidePanel === "tasks" ? (
+                <div className="dashWorkbarList">
+                  <Link to="/auftragseingang">
+                    <strong>{openReviewCount}</strong>
 
-                  <small>
-                    {
-                      nextPlannedOrder
-                        .items.length
-                    }
-                    {" Positionen · "}
-                    {
-                      nextPlannedOrder
-                        .orderNumber
-                    }
-                  </small>
-                </Link>
-              ) : (
-                <div className="dashSimpleEmpty">
-                  <strong>
-                    Kein Auftrag geplant
-                  </strong>
+                    <div>
+                      <span>Auftragseingänge prüfen</span>
+                      <small>Neue Aufträge und E-Mails</small>
+                    </div>
 
-                  <span>
-                    Es sind aktuell keine
-                    Lieferungen hinterlegt.
-                  </span>
+                    <b>›</b>
+                  </Link>
+
+                  <Link to="/auftraege">
+                    <strong>
+                      {data.finance.ordersWithoutInvoice}
+                    </strong>
+
+                    <div>
+                      <span>Aufträge ohne Rechnung</span>
+                      <small>Abrechnung noch offen</small>
+                    </div>
+
+                    <b>›</b>
+                  </Link>
+
+                  <Link to="/einstellungen/rechnungen">
+                    <strong>
+                      {data.taxAdvisor.missingInvoiceSettings}
+                    </strong>
+
+                    <div>
+                      <span>Fehlende Stammdaten</span>
+                      <small>Rechnungsdaten prüfen</small>
+                    </div>
+
+                    <b>›</b>
+                  </Link>
                 </div>
-              )}
-            </section>
+              ) : null}
 
-            <section className="dashPanel">
-              <div className="dashPanelHead">
-                <div>
-                  <p className="dashEyebrow">
-                    Lager
-                  </p>
+              {dashboardSidePanel === "inventory" ? (
+                <div className="dashWorkbarInventory">
+                  <div className="dashWorkbarInventoryStatus">
+                    <strong>
+                      {data.counts.lowInventory}
+                    </strong>
 
-                  <h2>Mindestbestand</h2>
-                </div>
+                    <div>
+                      <span>Lagerwarnungen</span>
+                      <small>Artikel unter Mindestbestand</small>
+                    </div>
+                  </div>
 
-                <Link to="/lager">
-                  Öffnen
-                </Link>
-              </div>
+                  {safeLowInventoryItems.length === 0 ? (
+                    <div className="dashWorkbarOkay">
+                      <strong>Keine Lagerwarnung</strong>
 
-              {safeLowInventoryItems.length === 0 ? (
-                <div className="dashInventoryOkay">
-                  <strong>Keine Warnung</strong>
+                      <span>
+                        Alle Bestände liegen über dem Mindestbestand.
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="dashWorkbarStockList">
+                      {safeLowInventoryItems.map(
+                        (item: any) => (
+                          <Link
+                            to="/lager"
+                            key={item.id}
+                          >
+                            <strong>{item.name}</strong>
 
-                  <span>
-                    Alle Lagerartikel liegen
-                    über dem Mindestbestand.
-                  </span>
-                </div>
-              ) : (
-                <div className="dashInventoryList">
-                  {safeLowInventoryItems.map(
-                    (item: any) => (
-                      <Link
-                        to="/lager"
-                        key={item.id}
-                      >
-                        <strong>
-                          {item.name}
-                        </strong>
-
-                        <span>
-                          {item.currentStock}
-                          {" / Mindest "}
-                          {item.minStock}
-                          {" "}
-                          {item.unit}
-                        </span>
-                      </Link>
-                    )
+                            <span>
+                              {item.currentStock}
+                              {" / Mindest "}
+                              {item.minStock}
+                              {" "}
+                              {item.unit}
+                            </span>
+                          </Link>
+                        )
+                      )}
+                    </div>
                   )}
+
+                  <Link
+                    className="dashWorkbarOpenButton"
+                    to="/lager"
+                  >
+                    Lager öffnen
+                  </Link>
                 </div>
-              )}
+              ) : null}
+
+              {dashboardSidePanel === "quick" ? (
+                <div className="dashWorkbarQuick">
+                  <Link to="/produktion">
+                    <div>
+                      <strong>Produktion</strong>
+                      <span>Produktionsplanung öffnen</span>
+                    </div>
+                    <b>›</b>
+                  </Link>
+
+                  <Link to="/packlisten">
+                    <div>
+                      <strong>Packlisten</strong>
+                      <span>Kommissionierung vorbereiten</span>
+                    </div>
+                    <b>›</b>
+                  </Link>
+
+                  <Link to="/lieferungen">
+                    <div>
+                      <strong>Lieferungen</strong>
+                      <span>Fahrer und Touren verwalten</span>
+                    </div>
+                    <b>›</b>
+                  </Link>
+
+                  <Link to="/auftragseingang">
+                    <div>
+                      <strong>Neuer Auftrag</strong>
+                      <span>Auftrag manuell anlegen</span>
+                    </div>
+                    <b>›</b>
+                  </Link>
+
+                  <Link to="/rechnungen">
+                    <div>
+                      <strong>Rechnungen</strong>
+                      <span>Abrechnung bearbeiten</span>
+                    </div>
+                    <b>›</b>
+                  </Link>
+                </div>
+              ) : null}
             </section>
           </aside>
         </section>
@@ -2745,6 +2742,276 @@ const dashboardCss = `
 
     .dashDateGroup > header {
       position: static;
+    }
+  }
+  /* gastario-dashboard-compact-workbar-20260726 */
+
+  .dashControlGrid {
+    grid-template-columns:
+      minmax(0, 1.9fr)
+      minmax(290px, 0.55fr);
+  }
+
+  .dashWorkbar {
+    padding: 15px;
+  }
+
+  .dashWorkbarHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .dashWorkbarHeader h2 {
+    margin: 4px 0 0;
+    color: #102338;
+    font-size: 21px;
+    line-height: 1.15;
+  }
+
+  .dashWorkbarHeader > span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: #eaf6f1;
+    color: #087b59;
+    font-size: 14px;
+    font-weight: 900;
+  }
+
+  .dashWorkbarTabs {
+    display: grid;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+    gap: 3px;
+    padding: 3px;
+    margin-bottom: 11px;
+    border: 1px solid #dbe5e1;
+    border-radius: 9px;
+    background: #f3f7f5;
+  }
+
+  .dashWorkbarTabs button {
+    min-height: 34px;
+    padding: 0 6px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #687b74;
+    font-size: 10px;
+    font-weight: 850;
+    cursor: pointer;
+  }
+
+  .dashWorkbarTabs button[data-active="true"] {
+    background: #ffffff;
+    color: #087b59;
+    box-shadow:
+      0 2px 7px rgba(16, 33, 53, 0.07),
+      inset 0 0 0 1px #d1e2dc;
+  }
+
+  .dashWorkbarList,
+  .dashWorkbarQuick,
+  .dashWorkbarStockList {
+    display: grid;
+    overflow: hidden;
+    border: 1px solid #dfe7e4;
+    border-radius: 9px;
+  }
+
+  .dashWorkbarList a {
+    display: grid;
+    grid-template-columns:
+      40px
+      minmax(0, 1fr)
+      16px;
+    gap: 10px;
+    align-items: center;
+    min-height: 61px;
+    padding: 9px 11px;
+    border-bottom: 1px solid #e3eae7;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .dashWorkbarList a:last-child,
+  .dashWorkbarQuick a:last-child,
+  .dashWorkbarStockList a:last-child {
+    border-bottom: 0;
+  }
+
+  .dashWorkbarList a:hover,
+  .dashWorkbarQuick a:hover,
+  .dashWorkbarStockList a:hover {
+    background: #f5faf8;
+  }
+
+  .dashWorkbarList > a > strong {
+    color: #087b59;
+    font-size: 22px;
+    font-weight: 900;
+    text-align: center;
+  }
+
+  .dashWorkbarList a > div,
+  .dashWorkbarQuick a > div {
+    display: grid;
+    gap: 2px;
+  }
+
+  .dashWorkbarList span,
+  .dashWorkbarQuick strong {
+    color: #152b3e;
+    font-size: 12px;
+    font-weight: 830;
+  }
+
+  .dashWorkbarList small,
+  .dashWorkbarQuick span {
+    color: #748780;
+    font-size: 9px;
+    font-weight: 620;
+  }
+
+  .dashWorkbarList b,
+  .dashWorkbarQuick b {
+    color: #81938c;
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  .dashWorkbarInventory {
+    display: grid;
+    gap: 10px;
+  }
+
+  .dashWorkbarInventoryStatus {
+    display: grid;
+    grid-template-columns:
+      44px
+      minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    padding: 11px;
+    border: 1px solid #dfe7e4;
+    border-radius: 9px;
+    background: #f8fbfa;
+  }
+
+  .dashWorkbarInventoryStatus > strong {
+    color: #087b59;
+    font-size: 23px;
+    font-weight: 900;
+    text-align: center;
+  }
+
+  .dashWorkbarInventoryStatus > div,
+  .dashWorkbarOkay {
+    display: grid;
+    gap: 3px;
+  }
+
+  .dashWorkbarInventoryStatus span,
+  .dashWorkbarOkay strong {
+    color: #152b3e;
+    font-size: 12px;
+    font-weight: 830;
+  }
+
+  .dashWorkbarInventoryStatus small,
+  .dashWorkbarOkay span {
+    color: #748780;
+    font-size: 9px;
+    font-weight: 620;
+    line-height: 1.4;
+  }
+
+  .dashWorkbarOkay {
+    padding: 12px;
+    border: 1px solid #dfe7e4;
+    border-radius: 9px;
+    background: #ffffff;
+  }
+
+  .dashWorkbarStockList a {
+    display: grid;
+    gap: 3px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e3eae7;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .dashWorkbarStockList strong {
+    color: #173044;
+    font-size: 11px;
+    font-weight: 820;
+  }
+
+  .dashWorkbarStockList span {
+    color: #72857e;
+    font-size: 9px;
+    font-weight: 620;
+  }
+
+  .dashWorkbarOpenButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    border: 1px solid #cde1d9;
+    border-radius: 9px;
+    background: #eff8f4;
+    color: #087b59;
+    font-size: 11px;
+    font-weight: 850;
+    text-decoration: none;
+  }
+
+  .dashWorkbarQuick a {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr)
+      16px;
+    gap: 10px;
+    align-items: center;
+    min-height: 55px;
+    padding: 9px 11px;
+    border-bottom: 1px solid #e3eae7;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .dashFinanceStrip {
+    display: none;
+  }
+
+  .dashPage[data-view="finance"]
+  .dashFinanceStrip {
+    display: grid;
+  }
+
+  .dashPage[data-view="finance"]
+  .dashControlGrid {
+    display: none;
+  }
+
+  @media (max-width: 1120px) {
+    .dashControlGrid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .dashWorkbarTabs {
+      grid-template-columns: 1fr;
     }
   }`;
 
