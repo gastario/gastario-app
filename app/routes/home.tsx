@@ -232,7 +232,11 @@ export async function loader({ request }: { request: Request }) {
           gte: end,
         },
         status: {
-          not: "CANCELLED" as any,
+          in: [
+            "CONFIRMED",
+            "IN_PRODUCTION",
+            "PACKING_OPEN",
+          ] as any,
         },
       },
       include: {
@@ -241,33 +245,18 @@ export async function loader({ request }: { request: Request }) {
       },
       orderBy: [
         { deliveryDate: "asc" },
-        { deliveryTime: "asc" },
+        { deliveryTimeText: "asc" },
         { createdAt: "desc" },
       ],
-    }).catch(() => []),
+      take: 1000,
+    }).catch((error) => {
+      console.error(
+        "Dashboard: kommende Lieferungen konnten nicht geladen werden:",
+        error
+      );
 
-    prisma.order.findMany({
-      where: {
-        tenantId: access.tenantId,
-        status: {
-          in: [
-            "AUTO_CREATED",
-            "REVIEW_NEEDED",
-          ] as any,
-        },
-        createdAt: {
-          gte: reviewPeriodStart,
-        },
-      },
-      include: {
-        items: true,
-        customer: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 6,
-    }).catch(() => []),
+      return [];
+    }),
   ]);
 
   const lowItems = lowInventoryItems.filter((item: any) => {
