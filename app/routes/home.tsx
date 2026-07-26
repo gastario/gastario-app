@@ -450,6 +450,27 @@ export default function Home() {
     );
   }
 
+  /*
+   * gastario-dashboard-operations-redesign-20260726
+   * Der operative Tagesablauf steht im Dashboard an erster Stelle.
+   */
+  const todayOrdersSorted = [
+    ...data.todayOrders,
+  ].sort((left: any, right: any) => {
+    return String(
+      left.deliveryTime || ""
+    ).localeCompare(
+      String(right.deliveryTime || ""),
+      "de"
+    );
+  });
+
+  const nextTodayOrder =
+    todayOrdersSorted[0] || null;
+
+  const openReviewCount =
+    data.openOrders.length +
+    data.emailInbox.length;
   return (
     <AppLayout>
       <style>{dashboardCss}</style>
@@ -457,219 +478,582 @@ export default function Home() {
       <div className="dashPage">
         <header className="dashHeader">
           <div>
-            <p className="eyebrow">Dashboard</p>
+            <p className="dashEyebrow">
+              Dashboard
+            </p>
+
             <h1>Betriebsüberblick</h1>
-            <p>
-              {data.tenant?.name} – alles Wichtige für heute an einem Ort.
+
+            <p className="dashIntro">
+              {data.tenant?.name} – alle wichtigen
+              Lieferungen und Aufgaben für heute.
             </p>
           </div>
 
-          <div className="dashActions">
-            <Link to="/auftragseingang">Auftragseingang</Link>
-            <Link to="/auftragseingang" data-primary="true">Neuer Auftrag</Link>
+          <div className="dashHeaderActions">
+            <Link to="/auftragseingang">
+              Auftragseingang
+            </Link>
+
+            <Link
+              to="/auftragseingang"
+              className="dashHeaderPrimary"
+            >
+              Neuer Auftrag
+            </Link>
           </div>
         </header>
 
-        <section className="todayStrip">
-          <Link to="/auftragseingang" className="todayItem" data-highlight="true">
-            <span>Zu prüfen</span>
-            <strong>{data.counts.openOrders}</strong>
-            <small>Neue und ungeprüfte Aufträge</small>
-          </Link>
-
-          <Link to="/auftraege" className="todayItem">
-            <span>Heute</span>
-            <strong>{data.counts.ordersToday}</strong>
-            <small>Aufträge nach Lieferdatum</small>
-          </Link>
-
-          <Link to="/auftraege" className="todayItem">
-            <span>Bestätigt</span>
-            <strong>{data.counts.confirmedOrders}</strong>
-            <small>operative Aufträge</small>
-          </Link>
-
-          <Link to="/lager" className="todayItem">
-            <span>Lager</span>
-            <strong>{data.counts.lowInventory}</strong>
-            <small>Warnungen</small>
-          </Link>
-        </section>
-
-        <section className="managementGrid">
-        <section className="financePanel">
-          <div className="financeHead">
-            <div>
-              <p className="eyebrow">Finanzen</p>
-              <h2>Finanzen</h2>
-              <span>Umsatz, offene Rechnungen und Abrechnungsstand.</span>
-            </div>
-            <Link to="/rechnungen">Rechnungen öffnen</Link>
-          </div>
-
-          <div className="financeGrid">
-            <div>
-              <span>Umsatz diesen Monat</span>
-              <strong>{centsToEuro(data.finance.currentMonthGrossCents)}</strong>
-              <small>nach Rechnungsdatum</small>
-            </div>
-
-            <div>
-              <span>Vormonat</span>
-              <strong>{centsToEuro(data.finance.previousMonthGrossCents)}</strong>
-              <small>{data.finance.monthChangeLabel} zum Vormonat</small>
-            </div>
-
-            <div>
-              <span>Offene Rechnungen</span>
-              <strong>{data.finance.openInvoiceCount}</strong>
-              <small>{centsToEuro(data.finance.openInvoiceGrossCents)} offen</small>
-            </div>
-
-            <div>
-              <span>Ohne Rechnung</span>
-              <strong>{data.finance.ordersWithoutInvoice}</strong>
-              <small>übernommene Aufträge</small>
-            </div>
-          </div>
-        </section>
-
-        <section className="taxPanel">
-          <div className="taxHead">
-            <div>
-              <p className="eyebrow">Steuerberater</p>
-              <h2>Monatsabschluss</h2>
-              <span>Was noch offen ist, bevor der Monat sauber übergeben werden kann.</span>
-            </div>
-
-            <Link to="/einstellungen/rechnungen">Rechnungsdaten prüfen</Link>
-          </div>
-
-          <div className="taxGrid">
-            <Link to="/auftraege" className="taxTask">
-              <span>Aufträge ohne Rechnung</span>
-              <strong>{data.finance.ordersWithoutInvoice}</strong>
-              <small>übernommene Aufträge</small>
-            </Link>
-
-            <Link to="/rechnungen" className="taxTask">
-              <span>Offene Rechnungen</span>
-              <strong>{data.finance.openInvoiceCount}</strong>
-              <small>{centsToEuro(data.finance.openInvoiceGrossCents)} offen</small>
-            </Link>
-
-            <Link to="/rechnungen" className="taxTask">
-              <span>Entwurfsrechnungen</span>
-              <strong>{data.taxAdvisor.draftInvoices}</strong>
-              <small>noch nicht finalisiert</small>
-            </Link>
-
-            <Link to="/einstellungen/rechnungen" className="taxTask">
-              <span>Fehlende Stammdaten</span>
-              <strong>{data.taxAdvisor.missingInvoiceSettings}</strong>
-              <small>Rechnungsdaten prüfen</small>
-            </Link>
-          </div>
-        </section>
-
-        </section>
-
-        <section className="dashGrid">
-          <article className="dashCard">
-            <div className="cardHead">
+        <section className="dashTodayHero">
+          <div className="dashTodayMain">
+            <div className="dashTodayHeading">
               <div>
-                <p className="eyebrow">Tagesplan</p>
-                <h2>Nächste Aufträge heute</h2>
+                <p className="dashEyebrow">
+                  Heute im Fokus
+                </p>
+
+                <h2>
+                  {todayOrdersSorted.length === 0
+                    ? "Keine Lieferungen heute"
+                    : todayOrdersSorted.length === 1
+                      ? "1 Lieferung heute"
+                      : `${todayOrdersSorted.length} Lieferungen heute`}
+                </h2>
+
+                <p>
+                  {nextTodayOrder
+                    ? `Die nächste Lieferung ist um ${formatTime(
+                        nextTodayOrder.deliveryTime
+                      )} Uhr für ${nextTodayOrder.customerName}.`
+                    : "Für heute ist aktuell keine Lieferung eingeplant."}
+                </p>
               </div>
-              <Link to="/auftraege">Bevorstehende öffnen</Link>
+
+              <span
+                className="dashTodayCount"
+                data-empty={
+                  todayOrdersSorted.length === 0
+                    ? "true"
+                    : "false"
+                }
+              >
+                {todayOrdersSorted.length}
+              </span>
             </div>
 
-            {data.todayOrders.length === 0 ? (
-              <div className="emptyState">
-                <strong>Keine Aufträge heute</strong>
-                <span>Heute ist kein Auftrag mit Lieferdatum geplant.</span>
+            <div className="dashTodayMetrics">
+              <div>
+                <span>Nächste Lieferung</span>
+
+                <strong>
+                  {nextTodayOrder
+                    ? formatTime(
+                        nextTodayOrder.deliveryTime
+                      )
+                    : "–"}
+                </strong>
+
+                <small>
+                  {nextTodayOrder
+                    ? nextTodayOrder.customerName
+                    : "Kein Auftrag heute"}
+                </small>
               </div>
-            ) : (
-              <div className="cleanTable">
-                <div className="cleanTableHead">
-                  <span>Zeit</span>
-                  <span>Kunde</span>
-                  <span>Auftrag</span>
-                  <span>Status</span>
+
+              <div>
+                <span>Prüfung offen</span>
+                <strong>{openReviewCount}</strong>
+                <small>Aufträge und E-Mails</small>
+              </div>
+
+              <div>
+                <span>Bestätigt</span>
+                <strong>
+                  {data.counts.confirmedOrders}
+                </strong>
+                <small>operative Aufträge</small>
+              </div>
+
+              <div>
+                <span>Lager</span>
+                <strong>
+                  {data.counts.lowInventory}
+                </strong>
+                <small>Warnungen</small>
+              </div>
+            </div>
+
+            <div className="dashTodayButtons">
+              <Link
+                to="/auftraege"
+                className="dashPrimaryButton"
+              >
+                Bevorstehende Aufträge
+              </Link>
+
+              <Link
+                to="/auftragseingang"
+                className="dashSecondaryButton"
+              >
+                Offene Prüfungen
+              </Link>
+            </div>
+          </div>
+
+          <aside className="dashNextCard">
+            <p className="dashNextLabel">
+              Als Nächstes
+            </p>
+
+            {nextTodayOrder ? (
+              <>
+                <strong className="dashNextTime">
+                  {formatTime(
+                    nextTodayOrder.deliveryTime
+                  )}
+                </strong>
+
+                <h3>
+                  {nextTodayOrder.customerName}
+                </h3>
+
+                <p>
+                  {nextTodayOrder.deliveryAddress ||
+                    "Lieferadresse noch offen"}
+                </p>
+
+                <div className="dashNextTags">
+                  <span>
+                    {nextTodayOrder.items.length}
+                    {" Positionen"}
+                  </span>
+
+                  <span>
+                    {nextTodayOrder.orderNumber}
+                  </span>
                 </div>
 
-                {data.todayOrders.map((order: any) => (
-                  <Link className="cleanTableRow" to={"/auftrag-pruefung/" + order.id} key={order.id}>
-                    <span>{formatTime(order.deliveryTime)}</span>
-                    <strong>{order.customerName}</strong>
-                    <span>{order.eventName || order.orderNumber} ? {order.items.length} Positionen</span>
-                    <em>{order.status}</em>
-                  </Link>
-                ))}
+                <Link
+                  to={
+                    "/auftrag-pruefung/" +
+                    nextTodayOrder.id
+                  }
+                >
+                  Auftrag öffnen
+                </Link>
+              </>
+            ) : (
+              <div className="dashNextEmpty">
+                <strong>Kein Auftrag heute</strong>
+
+                <span>
+                  Der heutige Tagesplan enthält
+                  aktuell keine Lieferung.
+                </span>
+              </div>
+            )}
+          </aside>
+        </section>
+
+        <section className="dashOperationsGrid">
+          <article className="dashCard dashDeliveriesCard">
+            <div className="dashCardHeader">
+              <div>
+                <p className="dashEyebrow">
+                  Tagesplan
+                </p>
+
+                <h2>Heutige Lieferungen</h2>
+
+                <span>
+                  Nach Lieferzeit sortiert und direkt
+                  für den Tagesbetrieb verfügbar.
+                </span>
+              </div>
+
+              <Link to="/auftraege">
+                Alle Aufträge
+              </Link>
+            </div>
+
+            {todayOrdersSorted.length === 0 ? (
+              <div className="dashEmpty">
+                <strong>
+                  Keine Aufträge heute
+                </strong>
+
+                <span>
+                  Heute ist kein Auftrag mit
+                  Lieferdatum geplant.
+                </span>
+              </div>
+            ) : (
+              <div className="dashDeliveryList">
+                {todayOrdersSorted.map(
+                  (order: any, index: number) => (
+                    <Link
+                      className="dashDeliveryRow"
+                      to={
+                        "/auftrag-pruefung/" +
+                        order.id
+                      }
+                      key={order.id}
+                      data-next={
+                        index === 0
+                          ? "true"
+                          : "false"
+                      }
+                    >
+                      <div className="dashDeliveryTime">
+                        <strong>
+                          {formatTime(
+                            order.deliveryTime
+                          )}
+                        </strong>
+
+                        <span>
+                          {index === 0
+                            ? "Als Nächstes"
+                            : "Heute"}
+                        </span>
+                      </div>
+
+                      <div className="dashDeliveryMain">
+                        <strong>
+                          {order.customerName}
+                        </strong>
+
+                        <span>
+                          {order.eventName ||
+                            order.orderNumber}
+                        </span>
+
+                        <small>
+                          {order.deliveryAddress ||
+                            "Lieferadresse offen"}
+                        </small>
+                      </div>
+
+                      <div className="dashDeliveryAmount">
+                        <strong>
+                          {order.items.length}
+                        </strong>
+
+                        <span>Positionen</span>
+                      </div>
+
+                      <em>
+                        {String(order.status)
+                          .replaceAll("_", " ")}
+                      </em>
+                    </Link>
+                  )
+                )}
               </div>
             )}
           </article>
 
-          <aside className="rightColumn">
+          <aside className="dashSideColumn">
             <article className="dashCard">
-              <div className="cardHead">
+              <div className="dashCardHeader">
                 <div>
-                  <p className="eyebrow">Auftragseingang</p>
+                  <p className="dashEyebrow">
+                    Auftragseingang
+                  </p>
+
                   <h2>Prüfung offen</h2>
+
+                  <span>
+                    Neue Aufträge und E-Mails,
+                    die kontrolliert werden müssen.
+                  </span>
                 </div>
-                <Link to="/auftragseingang">Alle</Link>
+
+                <Link to="/auftragseingang">
+                  Alle
+                </Link>
               </div>
 
-              <div className="inboxList">
-                {data.openOrders.length === 0 && data.emailInbox.length === 0 ? (
-                  <div className="inboxItem">
+              <div className="dashInboxList">
+                {data.openOrders.length === 0 &&
+                data.emailInbox.length === 0 ? (
+                  <div className="dashInboxItem">
                     <strong>Nichts offen</strong>
-                    <span>Keine neuen Aufträge oder E-Mails in Prüfung.</span>
+
+                    <span>
+                      Aktuell sind keine neuen
+                      Aufträge oder E-Mails offen.
+                    </span>
                   </div>
                 ) : null}
 
-                {data.openOrders.map((order: any) => (
-                  <Link className="inboxItem" to={"/auftrag-pruefung/" + order.id} key={order.id}>
-                    <strong>{order.customerName || "Prüfauftrag"}</strong>
-                    <span>{order.source} ? {order.orderNumber}</span>
-                  </Link>
-                ))}
+                {data.openOrders.map(
+                  (order: any) => (
+                    <Link
+                      className="dashInboxItem"
+                      to={
+                        "/auftrag-pruefung/" +
+                        order.id
+                      }
+                      key={order.id}
+                    >
+                      <strong>
+                        {order.customerName ||
+                          "Prüfauftrag"}
+                      </strong>
 
-                {data.emailInbox.map((mail: any) => (
-                  <Link className="inboxItem" to={"/email-pruefung/" + mail.id} key={mail.id} data-mail="true">
-                    <strong>{mail.subject || "E-Mail ohne Betreff"}</strong>
-                    <span>{mail.sender || "Unbekannter Absender"} ? Erkennung nötig</span>
-                  </Link>
-                ))}
+                      <span>
+                        {order.source}
+                        {" · "}
+                        {order.orderNumber}
+                      </span>
+                    </Link>
+                  )
+                )}
+
+                {data.emailInbox.map(
+                  (mail: any) => (
+                    <Link
+                      className="dashInboxItem"
+                      to={
+                        "/email-pruefung/" +
+                        mail.id
+                      }
+                      key={mail.id}
+                    >
+                      <strong>
+                        {mail.subject ||
+                          "E-Mail ohne Betreff"}
+                      </strong>
+
+                      <span>
+                        {mail.sender ||
+                          "Unbekannter Absender"}
+                        {" · Erkennung nötig"}
+                      </span>
+                    </Link>
+                  )
+                )}
               </div>
             </article>
 
-            <article className="dashCard compactCard">
-              <div className="cardHead">
+            <article className="dashCard">
+              <div className="dashCardHeader">
                 <div>
-                  <p className="eyebrow">Lager</p>
+                  <p className="dashEyebrow">
+                    Lager
+                  </p>
+
                   <h2>Mindestbestand</h2>
                 </div>
-                <Link to="/lager">Öffnen</Link>
+
+                <Link to="/lager">
+                  Öffnen
+                </Link>
               </div>
 
-              <div className="inboxList">
+              <div className="dashInboxList">
                 {data.lowInventoryItems.length === 0 ? (
-                  <div className="inboxItem">
-                    <strong>Keine Warnung</strong>
-                    <span>Alle Lagerartikel sind über dem Mindestbestand.</span>
+                  <div className="dashInboxItem">
+                    <strong>
+                      Keine Warnung
+                    </strong>
+
+                    <span>
+                      Alle Lagerartikel liegen
+                      über dem Mindestbestand.
+                    </span>
                   </div>
                 ) : (
-                  data.lowInventoryItems.map((item: any) => (
-                    <Link className="inboxItem" to="/lager" key={item.id}>
-                      <strong>{item.name}</strong>
-                      <span>{item.currentStock} / Mindest {item.minStock} {item.unit}</span>
-                    </Link>
-                  ))
+                  data.lowInventoryItems.map(
+                    (item: any) => (
+                      <Link
+                        className="dashInboxItem"
+                        to="/lager"
+                        key={item.id}
+                      >
+                        <strong>
+                          {item.name}
+                        </strong>
+
+                        <span>
+                          {item.currentStock}
+                          {" / Mindest "}
+                          {item.minStock}
+                          {" "}
+                          {item.unit}
+                        </span>
+                      </Link>
+                    )
+                  )
                 )}
               </div>
             </article>
           </aside>
+        </section>
+
+        <section className="dashManagementGrid">
+          <article className="dashCard">
+            <div className="dashCardHeader">
+              <div>
+                <p className="dashEyebrow">
+                  Finanzen
+                </p>
+
+                <h2>Finanzüberblick</h2>
+
+                <span>
+                  Umsatz und offene Abrechnung.
+                </span>
+              </div>
+
+              <Link to="/rechnungen">
+                Rechnungen
+              </Link>
+            </div>
+
+            <div className="dashFinanceGrid">
+              <div>
+                <span>Umsatz diesen Monat</span>
+
+                <strong>
+                  {centsToEuro(
+                    data.finance
+                      .currentMonthGrossCents
+                  )}
+                </strong>
+
+                <small>
+                  nach Rechnungsdatum
+                </small>
+              </div>
+
+              <div>
+                <span>Vormonat</span>
+
+                <strong>
+                  {centsToEuro(
+                    data.finance
+                      .previousMonthGrossCents
+                  )}
+                </strong>
+
+                <small>
+                  {data.finance.monthChangeLabel}
+                  {" zum Vormonat"}
+                </small>
+              </div>
+
+              <div>
+                <span>Offene Rechnungen</span>
+
+                <strong>
+                  {data.finance.openInvoiceCount}
+                </strong>
+
+                <small>
+                  {centsToEuro(
+                    data.finance
+                      .openInvoiceGrossCents
+                  )}
+                  {" offen"}
+                </small>
+              </div>
+
+              <div>
+                <span>Ohne Rechnung</span>
+
+                <strong>
+                  {data.finance
+                    .ordersWithoutInvoice}
+                </strong>
+
+                <small>
+                  übernommene Aufträge
+                </small>
+              </div>
+            </div>
+          </article>
+
+          <article className="dashCard dashMonthCard">
+            <div className="dashCardHeader">
+              <div>
+                <p className="dashEyebrow">
+                  Steuerberater
+                </p>
+
+                <h2>Monatsabschluss</h2>
+
+                <span>
+                  Offene Punkte vor der Übergabe.
+                </span>
+              </div>
+
+              <Link to="/einstellungen/rechnungen">
+                Stammdaten
+              </Link>
+            </div>
+
+            <div className="dashFinanceGrid">
+              <Link to="/auftraege">
+                <span>
+                  Aufträge ohne Rechnung
+                </span>
+
+                <strong>
+                  {data.finance
+                    .ordersWithoutInvoice}
+                </strong>
+
+                <small>
+                  übernommene Aufträge
+                </small>
+              </Link>
+
+              <Link to="/rechnungen">
+                <span>Offene Rechnungen</span>
+
+                <strong>
+                  {data.finance.openInvoiceCount}
+                </strong>
+
+                <small>
+                  {centsToEuro(
+                    data.finance
+                      .openInvoiceGrossCents
+                  )}
+                  {" offen"}
+                </small>
+              </Link>
+
+              <Link to="/rechnungen">
+                <span>Entwürfe</span>
+
+                <strong>
+                  {data.taxAdvisor.draftInvoices}
+                </strong>
+
+                <small>
+                  noch nicht finalisiert
+                </small>
+              </Link>
+
+              <Link to="/einstellungen/rechnungen">
+                <span>
+                  Fehlende Stammdaten
+                </span>
+
+                <strong>
+                  {data.taxAdvisor
+                    .missingInvoiceSettings}
+                </strong>
+
+                <small>
+                  Rechnungsdaten prüfen
+                </small>
+              </Link>
+            </div>
+          </article>
         </section>
       </div>
     </AppLayout>
@@ -683,471 +1067,666 @@ export default function Home() {
 const dashboardCss = `
   .dashPage {
     display: grid;
-    gap: 16px;
+    gap: 22px;
     width: 100%;
+    max-width: 1580px;
+    margin: 0 auto;
+    padding: 28px 28px 44px;
+    box-sizing: border-box;
   }
 
   .dashHeader {
     display: flex;
-    justify-content: space-between;
     align-items: flex-start;
+    justify-content: space-between;
     gap: 24px;
   }
 
   .dashHeader h1 {
-    margin: 3px 0 0;
-    color: #0f172a;
-    font-size: clamp(30px, 3vw, 38px);
-    line-height: 1.05;
-    letter-spacing: -0.045em;
-    font-weight: 800;
+    margin: 6px 0 8px;
+    color: #102135;
+    font-size: 46px;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
   }
 
-  .dashHeader p:not(.eyebrow) {
-    margin: 8px 0 0;
-    color: #64748b;
-    font-size: 14px;
-    font-weight: 600;
+  .dashIntro {
+    max-width: 820px;
+    margin: 0;
+    color: #61768a;
+    font-size: 16px;
+    font-weight: 650;
+    line-height: 1.5;
   }
 
-  .dashActions {
+  .dashEyebrow {
+    margin: 0;
+    color: #078660;
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1.2;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .dashHeaderActions {
     display: flex;
-    justify-content: flex-end;
-    gap: 9px;
+    gap: 10px;
     flex-wrap: wrap;
   }
 
-  .dashActions a,
-  .cardHead a,
-  .financeHead a,
-  .taxHead a {
+  .dashHeaderActions a,
+  .dashCardHeader a {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 38px;
-    border: 1px solid #d5dee5;
+    min-height: 44px;
+    padding: 0 17px;
+    border: 1px solid #d7e3df;
+    border-radius: 13px;
     background: #ffffff;
-    color: #0f172a;
-    border-radius: 10px;
-    padding: 8px 13px;
-    font-size: 13px;
-    line-height: 1;
-    font-weight: 700;
+    color: #213f38;
+    font-size: 14px;
+    font-weight: 820;
     text-decoration: none;
     white-space: nowrap;
-    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.035);
-    transition:
-      border-color 160ms ease,
-      background 160ms ease,
-      transform 160ms ease;
   }
 
-  .dashActions a:hover,
-  .cardHead a:hover,
-  .financeHead a:hover,
-  .taxHead a:hover {
-    border-color: #94a3b8;
-    background: #f8fafc;
-    transform: translateY(-1px);
-  }
-
-  .dashActions a[data-primary="true"] {
-    border-color: #087f6c;
-    background: #087f6c;
+  .dashHeaderActions .dashHeaderPrimary {
+    border-color: #078660;
+    background: #078660;
     color: #ffffff;
+    box-shadow: 0 10px 22px rgba(7, 134, 96, 0.2);
   }
 
-  .dashActions a[data-primary="true"]:hover {
-    border-color: #066b5c;
-    background: #066b5c;
-  }
-
-  .todayStrip {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .todayItem {
-    position: relative;
-    display: grid;
-    align-content: start;
-    gap: 6px;
-    min-height: 108px;
-    padding: 16px 17px;
-    border: 1px solid #dce5ea;
-    border-radius: 14px;
-    background: #ffffff;
-    color: #0f172a;
-    text-decoration: none;
-    box-shadow: 0 7px 20px rgba(15, 23, 42, 0.035);
-    transition:
-      border-color 160ms ease,
-      box-shadow 160ms ease,
-      transform 160ms ease;
-  }
-
-  .todayItem:hover {
-    border-color: #b8c6cf;
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.055);
-    transform: translateY(-1px);
-  }
-
-  .todayItem[data-highlight="true"] {
-    border-color: #9dd7ec;
-    background: linear-gradient(145deg, #f0faff 0%, #ffffff 100%);
-  }
-
-  .todayItem span {
-    color: #64748b;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.01em;
-  }
-
-  .todayItem strong {
-    color: #0f172a;
-    font-size: 30px;
-    line-height: 1;
-    letter-spacing: -0.045em;
-    font-weight: 800;
-  }
-
-  .todayItem small {
-    color: #64748b;
-    font-size: 12px;
-    line-height: 1.35;
-    font-weight: 600;
-  }
-
-  .managementGrid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 16px;
-    align-items: stretch;
-  }
-
-  .financePanel,
-  .taxPanel,
-  .dashCard {
-    border: 1px solid #dce5ea;
-    border-radius: 16px;
-    background: #ffffff;
-    padding: 18px;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
-  }
-
-  .taxPanel {
-    border-color: #efd9ae;
-  }
-
-  .financeHead,
-  .taxHead,
-  .cardHead {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 18px;
-    margin-bottom: 14px;
-  }
-
-  .financeHead h2,
-  .taxHead h2,
-  .cardHead h2 {
-    margin: 3px 0 0;
-    color: #0f172a;
-    font-size: 20px;
-    line-height: 1.15;
-    letter-spacing: -0.025em;
-    font-weight: 800;
-  }
-
-  .financeHead span,
-  .taxHead span {
-    display: block;
-    margin-top: 5px;
-    color: #64748b;
-    font-size: 13px;
-    line-height: 1.4;
-    font-weight: 600;
-  }
-
-  .taxHead a {
-    border-color: #e8bc61;
-    color: #8a4b08;
-  }
-
-  .financeGrid,
-  .taxGrid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-
-  .financeGrid > div,
-  .taxTask {
-    display: grid;
-    align-content: start;
-    gap: 5px;
-    min-height: 86px;
-    padding: 13px 14px;
-    border: 1px solid #e1e8ed;
-    border-radius: 12px;
-    background: #f8fafc;
-  }
-
-  .taxTask {
-    border-color: #f0d6a7;
-    background: #fffaf2;
-    color: #0f172a;
-    text-decoration: none;
-    transition:
-      border-color 160ms ease,
-      background 160ms ease;
-  }
-
-  .taxTask:hover {
-    border-color: #e6b85e;
-    background: #fff7e8;
-  }
-
-  .financeGrid span,
-  .taxTask span {
-    color: #64748b;
-    font-size: 12px;
-    line-height: 1.25;
-    font-weight: 800;
-  }
-
-  .taxTask span {
-    color: #92500b;
-  }
-
-  .financeGrid strong,
-  .taxTask strong {
-    color: #0f172a;
-    font-size: 23px;
-    line-height: 1;
-    letter-spacing: -0.035em;
-    font-weight: 800;
-  }
-
-  .financeGrid small,
-  .taxTask small {
-    color: #64748b;
-    font-size: 12px;
-    line-height: 1.35;
-    font-weight: 600;
-  }
-
-  .dashGrid {
+  .dashTodayHero {
     display: grid;
     grid-template-columns:
       minmax(0, 1.65fr)
-      minmax(390px, 0.85fr);
+      minmax(300px, 0.72fr);
+    gap: 16px;
+  }
+
+  .dashTodayMain,
+  .dashNextCard,
+  .dashCard {
+    border: 1px solid #dbe7e3;
+    border-radius: 23px;
+    background: #ffffff;
+    box-shadow: 0 14px 34px rgba(16, 33, 53, 0.055);
+  }
+
+  .dashTodayMain {
+    padding: 25px 27px;
+    background:
+      radial-gradient(
+        circle at 95% 8%,
+        rgba(9, 157, 112, 0.15),
+        transparent 31%
+      ),
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #f4fbf8 100%
+      );
+  }
+
+  .dashTodayHeading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .dashTodayHeading h2 {
+    margin: 7px 0 8px;
+    color: #102236;
+    font-size: 36px;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+  }
+
+  .dashTodayHeading > div > p:not(.dashEyebrow) {
+    max-width: 700px;
+    margin: 0;
+    color: #597169;
+    font-size: 15px;
+    font-weight: 680;
+    line-height: 1.5;
+  }
+
+  .dashTodayCount {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    min-width: 76px;
+    height: 76px;
+    padding: 0 16px;
+    border-radius: 21px;
+    background: linear-gradient(
+      180deg,
+      #0ba277 0%,
+      #067654 100%
+    );
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: 900;
+    box-shadow: 0 14px 28px rgba(6, 118, 84, 0.22);
+  }
+
+  .dashTodayCount[data-empty="true"] {
+    background: #e8f0ed;
+    color: #63766f;
+    box-shadow: none;
+  }
+
+  .dashTodayMetrics {
+    display: grid;
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+    gap: 11px;
+    margin-top: 20px;
+  }
+
+  .dashTodayMetrics > div {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+    padding: 14px 15px;
+    border: 1px solid #dce8e3;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  .dashTodayMetrics span,
+  .dashFinanceGrid span {
+    color: #667c75;
+    font-size: 10px;
+    font-weight: 850;
+    line-height: 1.3;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .dashTodayMetrics strong {
+    overflow: hidden;
+    color: #112438;
+    font-size: 23px;
+    font-weight: 900;
+    line-height: 1.12;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dashTodayMetrics small,
+  .dashFinanceGrid small {
+    color: #6c817a;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.4;
+  }
+
+  .dashTodayButtons {
+    display: flex;
+    gap: 11px;
+    flex-wrap: wrap;
+    margin-top: 19px;
+  }
+
+  .dashPrimaryButton,
+  .dashSecondaryButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 0 18px;
+    border-radius: 13px;
+    font-size: 14px;
+    font-weight: 850;
+    text-decoration: none;
+  }
+
+  .dashPrimaryButton {
+    background: #078660;
+    color: #ffffff;
+    box-shadow: 0 10px 22px rgba(7, 134, 96, 0.2);
+  }
+
+  .dashSecondaryButton {
+    border: 1px solid #d7e4df;
+    background: #ffffff;
+    color: #24443c;
+  }
+
+  .dashNextCard {
+    display: flex;
+    flex-direction: column;
+    padding: 23px;
+    background: linear-gradient(
+      155deg,
+      #073f32 0%,
+      #075943 100%
+    );
+    color: #ffffff;
+  }
+
+  .dashNextLabel {
+    margin: 0;
+    color: #8de0c5;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .dashNextTime {
+    margin-top: 13px;
+    color: #ffffff;
+    font-size: 45px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.035em;
+  }
+
+  .dashNextCard h3 {
+    margin: 17px 0 5px;
+    color: #ffffff;
+    font-size: 22px;
+    line-height: 1.2;
+  }
+
+  .dashNextCard > p:not(.dashNextLabel) {
+    margin: 0;
+    color: #d3e9e1;
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.5;
+  }
+
+  .dashNextTags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  .dashNextTags span {
+    padding: 7px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.17);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #e1f2ec;
+    font-size: 11px;
+    font-weight: 750;
+  }
+
+  .dashNextCard > a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    margin-top: auto;
+    padding: 0 15px;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #07543f;
+    font-size: 13px;
+    font-weight: 850;
+    text-decoration: none;
+  }
+
+  .dashNextEmpty {
+    display: grid;
+    align-content: center;
+    gap: 7px;
+    min-height: 160px;
+  }
+
+  .dashNextEmpty strong {
+    font-size: 21px;
+  }
+
+  .dashNextEmpty span {
+    color: #d3e9e1;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .dashOperationsGrid {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1.55fr)
+      minmax(330px, 0.72fr);
     gap: 16px;
     align-items: start;
   }
 
-  .rightColumn {
+  .dashSideColumn {
     display: grid;
     gap: 16px;
   }
 
-  .compactCard {
-    padding-bottom: 16px;
+  .dashCard {
+    padding: 19px;
   }
 
-  .emptyState {
-    display: grid;
-    gap: 5px;
-    min-height: 84px;
-    padding: 18px 20px;
-    border: 1px dashed #cbd5df;
-    border-radius: 12px;
-    background: #f8fafc;
+  .dashDeliveriesCard {
+    padding: 21px;
   }
 
-  .emptyState strong {
-    color: #0f172a;
-    font-size: 16px;
-    line-height: 1.3;
-    font-weight: 750;
+  .dashCardHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 17px;
+    margin-bottom: 16px;
   }
 
-  .emptyState span {
-    color: #64748b;
+  .dashCardHeader h2 {
+    margin: 5px 0 5px;
+    color: #112438;
+    font-size: 23px;
+    line-height: 1.17;
+    letter-spacing: -0.02em;
+  }
+
+  .dashCardHeader > div > span {
+    color: #6a8079;
     font-size: 13px;
-    line-height: 1.45;
-    font-weight: 600;
+    font-weight: 620;
+    line-height: 1.5;
   }
 
-  .cleanTable {
-    overflow: hidden;
-    border: 1px solid #e1e8ed;
-    border-radius: 12px;
+  .dashDeliveryList {
+    display: grid;
+    gap: 10px;
   }
 
-  .cleanTableHead,
-  .cleanTableRow {
+  .dashDeliveryRow {
     display: grid;
     grid-template-columns:
-      76px
-      minmax(130px, 1fr)
-      minmax(180px, 1.5fr)
-      105px;
-    gap: 12px;
+      105px
+      minmax(0, 1fr)
+      82px
+      128px;
+    gap: 14px;
     align-items: center;
-  }
-
-  .cleanTableHead {
-    padding: 11px 13px;
-    background: #f8fafc;
-    color: #64748b;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.045em;
-  }
-
-  .cleanTableRow {
-    padding: 13px;
-    border-top: 1px solid #e5ebef;
-    color: #0f172a;
-    font-size: 13px;
-    font-weight: 650;
-    text-decoration: none;
-    transition: background 150ms ease;
-  }
-
-  .cleanTableRow:hover {
-    background: #f8fafc;
-  }
-
-  .cleanTableRow em {
-    justify-self: start;
-    padding: 5px 8px;
-    border-radius: 7px;
-    background: #edf9f3;
-    color: #17704e;
-    font-size: 11px;
-    font-style: normal;
-    font-weight: 800;
-  }
-
-  .inboxList {
-    display: grid;
-    gap: 8px;
-  }
-
-  .inboxItem {
-    display: grid;
-    gap: 4px;
-    min-width: 0;
-    padding: 12px 13px;
-    border: 1px solid #e1e8ed;
-    border-radius: 11px;
-    background: #f8fafc;
-    color: #0f172a;
+    min-height: 90px;
+    padding: 13px 15px;
+    border: 1px solid #dde7e3;
+    border-radius: 16px;
+    background: #fbfdfc;
+    color: inherit;
     text-decoration: none;
     transition:
-      border-color 150ms ease,
-      background 150ms ease,
-      transform 150ms ease;
+      transform 140ms ease,
+      border-color 140ms ease,
+      box-shadow 140ms ease;
   }
 
-  .inboxItem:hover {
-    border-color: #b9c7d0;
-    background: #ffffff;
+  .dashDeliveryRow:hover {
     transform: translateY(-1px);
+    border-color: #bcd9ce;
+    box-shadow: 0 10px 22px rgba(16, 33, 53, 0.06);
   }
 
-  .inboxItem strong {
-    overflow: hidden;
-    color: #0f172a;
-    font-size: 14px;
-    line-height: 1.35;
-    font-weight: 750;
-    text-overflow: ellipsis;
+  .dashDeliveryRow[data-next="true"] {
+    border-color: #93cfbb;
+    background: linear-gradient(
+      90deg,
+      #f0fbf7 0%,
+      #ffffff 50%
+    );
   }
 
-  .inboxItem span {
-    overflow: hidden;
-    color: #64748b;
+  .dashDeliveryTime {
+    display: grid;
+    gap: 5px;
+  }
+
+  .dashDeliveryTime strong {
+    color: #087a59;
+    font-size: 25px;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .dashDeliveryTime span {
+    color: #71877f;
     font-size: 11px;
-    line-height: 1.35;
-    font-weight: 650;
+    font-weight: 750;
+  }
+
+  .dashDeliveryMain {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .dashDeliveryMain strong,
+  .dashDeliveryMain span,
+  .dashDeliveryMain small {
+    overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .inboxItem[data-mail="true"] {
-    border-color: #eed6ac;
-    background: #fffaf2;
+  .dashDeliveryMain strong {
+    color: #13273b;
+    font-size: 17px;
+    font-weight: 850;
   }
 
-  .inboxItem[data-mail="true"] strong {
-    color: #80460b;
+  .dashDeliveryMain span {
+    color: #38534c;
+    font-size: 13px;
+    font-weight: 720;
   }
 
-  @media (max-width: 1180px) {
-    .dashGrid {
-      grid-template-columns:
-        minmax(0, 1.45fr)
-        minmax(320px, 0.8fr);
-    }
-
-    .todayStrip {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  .dashDeliveryMain small {
+    color: #788b85;
+    font-size: 11px;
+    font-weight: 620;
   }
 
-  @media (max-width: 980px) {
-    .managementGrid,
-    .dashGrid {
+  .dashDeliveryAmount {
+    display: grid;
+    gap: 3px;
+    text-align: center;
+  }
+
+  .dashDeliveryAmount strong {
+    color: #173044;
+    font-size: 21px;
+    font-weight: 900;
+  }
+
+  .dashDeliveryAmount span {
+    color: #71847e;
+    font-size: 10px;
+    font-weight: 730;
+  }
+
+  .dashDeliveryRow em {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 0 11px;
+    border: 1px solid #c7e4d8;
+    border-radius: 999px;
+    background: #edf8f4;
+    color: #08795b;
+    font-size: 10px;
+    font-weight: 850;
+    font-style: normal;
+    text-align: center;
+  }
+
+  .dashInboxList {
+    display: grid;
+    gap: 9px;
+  }
+
+  .dashInboxItem {
+    display: grid;
+    gap: 4px;
+    padding: 13px 14px;
+    border: 1px solid #dfe8e4;
+    border-radius: 14px;
+    background: #fafcfb;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .dashInboxItem strong {
+    color: #14283c;
+    font-size: 15px;
+    font-weight: 840;
+    line-height: 1.25;
+  }
+
+  .dashInboxItem span {
+    color: #6e837c;
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.4;
+  }
+
+  .dashEmpty {
+    display: grid;
+    align-content: center;
+    gap: 7px;
+    min-height: 210px;
+    padding: 24px;
+    border: 1px dashed #d1dfda;
+    border-radius: 18px;
+    background: #fafcfb;
+  }
+
+  .dashEmpty strong {
+    color: #15293d;
+    font-size: 21px;
+    font-weight: 850;
+  }
+
+  .dashEmpty span {
+    color: #6f847d;
+    font-size: 14px;
+    font-weight: 620;
+  }
+
+  .dashManagementGrid {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .dashFinanceGrid {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .dashFinanceGrid > div,
+  .dashFinanceGrid > a {
+    display: grid;
+    gap: 6px;
+    min-height: 105px;
+    padding: 15px;
+    border: 1px solid #dee7e3;
+    border-radius: 16px;
+    background: #fafcfb;
+    color: inherit;
+    text-decoration: none;
+    box-sizing: border-box;
+  }
+
+  .dashFinanceGrid strong {
+    color: #12263a;
+    font-size: 23px;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+
+  .dashMonthCard .dashFinanceGrid > a {
+    border-color: #efd9af;
+    background: #fff9ef;
+  }
+
+  @media (max-width: 1250px) {
+    .dashTodayHero,
+    .dashOperationsGrid,
+    .dashManagementGrid {
       grid-template-columns: 1fr;
     }
 
-    .rightColumn {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .dashNextCard > a {
+      margin-top: 22px;
     }
   }
 
-  @media (max-width: 720px) {
+  @media (max-width: 900px) {
+    .dashPage {
+      padding: 21px 18px 36px;
+    }
+
     .dashHeader {
-      display: grid;
-    }
-
-    .dashActions {
-      justify-content: flex-start;
-    }
-
-    .todayStrip,
-    .financeGrid,
-    .taxGrid,
-    .rightColumn {
-      grid-template-columns: 1fr;
-    }
-
-    .cleanTableHead {
-      display: none;
-    }
-
-    .cleanTableRow {
-      grid-template-columns: 1fr;
-      gap: 4px;
-    }
-
-    .financeHead,
-    .taxHead,
-    .cardHead {
-      align-items: stretch;
       flex-direction: column;
     }
 
-    .financeHead a,
-    .taxHead a,
-    .cardHead a {
-      align-self: flex-start;
+    .dashHeader h1 {
+      font-size: 38px;
+    }
+
+    .dashTodayMetrics {
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    }
+
+    .dashDeliveryRow {
+      grid-template-columns:
+        90px
+        minmax(0, 1fr);
+    }
+
+    .dashDeliveryAmount,
+    .dashDeliveryRow em {
+      justify-self: start;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .dashTodayHeading {
+      flex-direction: column;
+    }
+
+    .dashTodayMetrics,
+    .dashFinanceGrid {
+      grid-template-columns: 1fr;
+    }
+
+    .dashHeaderActions,
+    .dashTodayButtons {
+      width: 100%;
+    }
+
+    .dashHeaderActions a,
+    .dashPrimaryButton,
+    .dashSecondaryButton,
+    .dashCardHeader a {
+      width: 100%;
+    }
+
+    .dashCardHeader {
+      flex-direction: column;
+    }
+
+    .dashDeliveryRow {
+      grid-template-columns: 1fr;
     }
   }
 `;
