@@ -431,6 +431,35 @@ export async function loader({ request }: { request: Request }) {
 export default function Home() {
   const data = useLoaderData<typeof loader>();
 
+  /*
+   * gastario-dashboard-safe-loader-arrays-20260726
+   * Fehlende Loader-Listen dürfen das Dashboard nicht zum Absturz bringen.
+   */
+  const safeTodayOrders =
+    Array.isArray(data.todayOrders)
+      ? data.todayOrders
+      : [];
+
+  const safeUpcomingOrders =
+    Array.isArray(data.upcomingOrders)
+      ? data.upcomingOrders
+      : [];
+
+  const safeOpenOrders =
+    Array.isArray(data.openOrders)
+      ? data.openOrders
+      : [];
+
+  const safeEmailInbox =
+    Array.isArray(data.emailInbox)
+      ? data.emailInbox
+      : [];
+
+  const safeLowInventoryItems =
+    Array.isArray(data.lowInventoryItems)
+      ? data.lowInventoryItems
+      : [];
+
   if (data.setupError) {
     return (
       <AppLayout>
@@ -472,7 +501,7 @@ export default function Home() {
    * Operative Leitstelle für heutige und kommende Lieferungen.
    */
   const todayOrdersSorted = [
-    ...data.todayOrders,
+    ...safeTodayOrders,
   ].sort((left: any, right: any) => {
     return String(
       left.deliveryTime || ""
@@ -483,7 +512,7 @@ export default function Home() {
   });
 
   const upcomingOrdersSorted = [
-    ...data.upcomingOrders,
+    ...safeUpcomingOrders,
   ].sort((left: any, right: any) => {
     const leftDate = left.deliveryDate
       ? new Date(left.deliveryDate).getTime()
@@ -506,8 +535,8 @@ export default function Home() {
   });
 
   const openReviewCount =
-    data.openOrders.length +
-    data.emailInbox.length;
+    safeOpenOrders.length +
+    safeEmailInbox.length;
   /*
    * gastario-dashboard-navigation-filters-20260726
    * Navigation, Zeitraum, Status und Suche der Betriebsleitstelle.
@@ -1500,7 +1529,7 @@ export default function Home() {
                 </Link>
               </div>
 
-              {data.lowInventoryItems.length === 0 ? (
+              {safeLowInventoryItems.length === 0 ? (
                 <div className="dashInventoryOkay">
                   <strong>Keine Warnung</strong>
 
@@ -1511,7 +1540,7 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="dashInventoryList">
-                  {data.lowInventoryItems.map(
+                  {safeLowInventoryItems.map(
                     (item: any) => (
                       <Link
                         to="/lager"
