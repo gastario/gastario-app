@@ -1729,4 +1729,90 @@ const dashboardCss = `
       grid-template-columns: 1fr;
     }
   }
-`;
+
+  /* gastario-dashboard-compact-side-column-start */
+
+  /*
+   * Die rechte Auftragseingangsliste erhält eine feste,
+   * intern scrollbarere Höhe. Dadurch entsteht links
+   * kein unnötig großer Leerraum.
+   */
+
+  .dashOperationsSide,
+  .dashSideColumn {
+    min-width: 0;
+    align-content: start;
+  }
+
+  .dashSideColumn > .dashCard:first-child {
+    max-height: 455px;
+    overflow: hidden;
+  }
+
+  .dashSideColumn > .dashCard:first-child
+  .dashInboxList {
+    max-height: 300px;
+    padding-right: 5px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .dashSideColumn > .dashCard:first-child
+  .dashInboxList {
+    scrollbar-width: thin;
+    scrollbar-color: #99c9ba #edf5f2;
+  }
+
+  .dashSideColumn > .dashCard:first-child
+  .dashInboxList::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .dashSideColumn > .dashCard:first-child
+  .dashInboxList::-webkit-scrollbar-track {
+    background: #edf5f2;
+    border-radius: 999px;
+  }
+
+  .dashSideColumn > .dashCard:first-child
+  .dashInboxList::-webkit-scrollbar-thumb {
+    border: 2px solid #edf5f2;
+    border-radius: 999px;
+    background: #99c9ba;
+  }
+
+  .dashEmpty {
+    min-height: 175px;
+  }
+
+  .dashOperationsGrid {
+    gap: 18px;
+  }
+
+  .dashManagementGrid {
+    margin-top: 0;
+  }
+
+  @media (max-width: 1250px) {
+    .dashSideColumn > .dashCard:first-child {
+      max-height: none;
+    }
+
+    .dashSideColumn > .dashCard:first-child
+    .dashInboxList {
+      max-height: 320px;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .dashSideColumn > .dashCard:first-child
+    .dashInboxList {
+      max-height: none;
+      overflow: visible;
+      scrollbar-gutter: auto;
+    }
+  }
+
+  /* gastario-dashboard-compact-side-column-end */`;
