@@ -241,6 +241,22 @@ export async function renderDeliveryNotePdf(
   let page: PDFPage;
   let y = 0;
 
+  const normalizedDeliveryTime =
+    safeText(input.deliveryTimeText)
+      .replace(/\s*Uhr$/i, "")
+      .trim();
+
+  const normalizedEventTime =
+    safeText(input.eventTimeText)
+      .replace(/\s*Uhr$/i, "")
+      .trim();
+
+  const distinctEventTime =
+    normalizedEventTime &&
+    normalizedEventTime !== normalizedDeliveryTime
+      ? normalizedEventTime
+      : "";
+
   const allItems = input.items.filter(
     (item) =>
       safeText(item.name) &&
@@ -498,9 +514,9 @@ export async function renderDeliveryNotePdf(
                 ) + " Uhr"
               : "offen"
           ),
-        safeText(input.eventTimeText)
+        distinctEventTime
           ? "Event: " +
-            safeText(input.eventTimeText) +
+            distinctEventTime +
             " Uhr"
           : "",
       ]
@@ -1039,7 +1055,14 @@ export async function renderDeliveryNotePdf(
   /*
    * Genau eine neue Seite für die interne Checkliste.
    */
-  addPage(true);
+  const checklistNeedsNewPage =
+    y < A4_HEIGHT - 245;
+
+  if (checklistNeedsNewPage) {
+    addPage(true);
+  } else {
+    y -= 22;
+  }
 
   page.drawText("INTERNE LIEFERKONTROLLE", {
     x: MARGIN,
@@ -1060,9 +1083,9 @@ export async function renderDeliveryNotePdf(
         : "offen"
     ) +
     (
-      safeText(input.eventTimeText)
+      distinctEventTime
         ? " · Eventbeginn: " +
-          safeText(input.eventTimeText) +
+          distinctEventTime +
           " Uhr"
         : ""
     );
