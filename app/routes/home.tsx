@@ -1307,10 +1307,11 @@ export default function Home() {
                                 }
                                 key={order.id}
                               >
+                                {/* gastario-dashboard-delivery-time-text-20260726 */}
                                 <strong className="dashCompactTime">
-                                  {formatTime(
-                                    order.deliveryTime
-                                  )}
+                                  {order.deliveryTimeText ||
+                                    order.deliveryTime ||
+                                    "Zeit offen"}
                                 </strong>
 
                                 <div>
