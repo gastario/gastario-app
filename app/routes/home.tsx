@@ -1815,4 +1815,97 @@ const dashboardCss = `
     }
   }
 
-  /* gastario-dashboard-compact-side-column-end */`;
+  /* gastario-dashboard-compact-side-column-end */
+  /* gastario-dashboard-masonry-layout-start */
+
+  /*
+   * Linke und rechte Dashboard-Spalte laufen unabhängig.
+   * So müssen Finanzen und Monatsabschluss nicht mehr
+   * auf die Höhe der rechten Prüfungsspalte warten.
+   */
+
+  @media (min-width: 1251px) {
+    .dashPage {
+      grid-template-columns:
+        minmax(0, 1.55fr)
+        minmax(330px, 0.72fr);
+      align-items: start;
+    }
+
+    .dashHeader,
+    .dashTodayHero {
+      grid-column: 1 / -1;
+    }
+
+    .dashOperationsGrid {
+      display: contents;
+    }
+
+    .dashDeliveriesCard {
+      grid-column: 1;
+      grid-row: 3;
+      min-width: 0;
+    }
+
+    .dashSideColumn {
+      grid-column: 2;
+      grid-row: 3 / span 2;
+      min-width: 0;
+      align-self: start;
+    }
+
+    .dashManagementGrid {
+      grid-column: 1;
+      grid-row: 4;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      min-width: 0;
+      margin: 0;
+      align-self: start;
+    }
+
+    .dashManagementGrid > .dashCard {
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    .dashDeliveriesCard .dashEmpty {
+      min-height: 150px;
+    }
+
+    .dashSideColumn > .dashCard:first-child {
+      max-height: 455px;
+    }
+
+    .dashSideColumn > .dashCard:first-child
+    .dashInboxList {
+      max-height: 292px;
+    }
+  }
+
+  @media (max-width: 1250px) {
+    .dashPage {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+
+    .dashOperationsGrid,
+    .dashManagementGrid {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+
+    .dashHeader,
+    .dashTodayHero,
+    .dashOperationsGrid,
+    .dashManagementGrid,
+    .dashDeliveriesCard,
+    .dashSideColumn {
+      grid-column: auto;
+      grid-row: auto;
+    }
+  }
+
+  /* gastario-dashboard-masonry-layout-end */`;
