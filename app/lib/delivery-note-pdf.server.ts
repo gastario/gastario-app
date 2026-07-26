@@ -30,9 +30,9 @@ type DeliveryNoteInput = {
 const A4_WIDTH = 595.28;
 const A4_HEIGHT = 841.89;
 
-const PAGE_MARGIN = 42;
-const CONTENT_WIDTH = A4_WIDTH - PAGE_MARGIN * 2;
-const FOOTER_HEIGHT = 36;
+const MARGIN = 40;
+const CONTENT_WIDTH = A4_WIDTH - MARGIN * 2;
+const FOOTER_LIMIT = 58;
 
 function safeText(value: unknown) {
   return String(value ?? "")
@@ -44,7 +44,9 @@ function safeText(value: unknown) {
 function formatDate(
   value: Date | string | null | undefined
 ) {
-  if (!value) return "-";
+  if (!value) {
+    return "-";
+  }
 
   const date = new Date(value);
 
@@ -65,67 +67,21 @@ function formatQuantity(value: number) {
   });
 }
 
-function isDeliveryServiceItem(
-  item: DeliveryNoteItem
-) {
-  const value = safeText(item.name)
-    .toLowerCase();
-
-  const serviceSignals = [
-    "delivery cost",
-    "delivery costs",
-    "lieferung",
-    "abholung",
-    "transport",
-    "aufbau",
-    "abbau",
-    "servicepersonal",
-    "personal",
-    "equipment",
-    "besteck",
-    "geschirr",
-    "gläser",
-    "glaeser",
-    "chafing",
-    "brennpaste",
-    "mietartikel",
-    "logistik",
-  ];
-
-  return serviceSignals.some(
-    (signal) => value.includes(signal)
-  );
-}
-
-function getVisibleDeliveryNoteItems(
-  items: DeliveryNoteItem[]
-) {
-  return items.filter((item) => {
-    const name = safeText(item.name);
-
-    if (!name) {
-      return false;
-    }
-
-    return Number(item.quantity) > 0;
-  });
-}
 function wrapText(
-  text: string,
+  value: unknown,
   font: PDFFont,
   size: number,
   maxWidth: number
 ) {
-  const source = safeText(text);
+  const text = safeText(value);
 
-  if (!source) {
+  if (!text) {
     return [""];
   }
 
-  const paragraphs = source.split("\n");
   const result: string[] = [];
 
-  for (const paragraph of paragraphs) {
+  for (const paragraph of text.split("\n")) {
     const words = paragraph
       .split(/\s+/)
       .filter(Boolean);
@@ -165,15 +121,16 @@ function wrapText(
       let fragment = "";
 
       for (const character of word) {
-        const nextFragment = fragment + character;
+        const candidateFragment =
+          fragment + character;
 
         if (
           font.widthOfTextAtSize(
-            nextFragment,
+            candidateFragment,
             size
           ) <= maxWidth
         ) {
-          fragment = nextFragment;
+          fragment = candidateFragment;
         } else {
           if (fragment) {
             result.push(fragment);
@@ -191,10 +148,10 @@ function wrapText(
     }
   }
 
-  return result.length > 0 ? result : [""];
+  return result.length ? result : [""];
 }
 
-function drawTextLines(params: {
+function drawLines(params: {
   page: PDFPage;
   lines: string[];
   x: number;
@@ -221,6 +178,38 @@ function drawTextLines(params: {
   return currentY;
 }
 
+function isServiceItem(
+  item: DeliveryNoteItem
+) {
+  const name = safeText(item.name)
+    .toLowerCase();
+
+  const signals = [
+    "delivery cost",
+    "delivery costs",
+    "lieferung",
+    "abholung",
+    "transport",
+    "logistik",
+    "aufbau",
+    "abbau",
+    "servicepersonal",
+    "personal",
+    "equipment",
+    "mietartikel",
+    "geschirr",
+    "besteck",
+    "gläser",
+    "glaeser",
+    "chafing",
+    "brennpaste",
+  ];
+
+  return signals.some((signal) =>
+    name.includes(signal)
+  );
+}
+
 export async function renderDeliveryNotePdf(
   input: DeliveryNoteInput
 ) {
@@ -234,469 +223,412 @@ export async function renderDeliveryNotePdf(
     StandardFonts.HelveticaBold
   );
 
-  const green = rgb(0.035, 0.51, 0.39);
-  const greenDark = rgb(0.025, 0.34, 0.27);
-  const greenSoft = rgb(0.91, 0.97, 0.95);
+  const green = rgb(0.04, 0.58, 0.44);
+  const greenDark = rgb(0.02, 0.27, 0.21);
+  const greenMid = rgb(0.08, 0.42, 0.33);
+  const mint = rgb(0.9, 0.97, 0.94);
+  const mintLight = rgb(0.965, 0.988, 0.98);
 
-  const dark = rgb(0.08, 0.15, 0.13);
-  const body = rgb(0.19, 0.28, 0.25);
-  const muted = rgb(0.39, 0.47, 0.44);
+  const dark = rgb(0.055, 0.12, 0.1);
+  const body = rgb(0.18, 0.25, 0.22);
+  const muted = rgb(0.4, 0.47, 0.44);
 
-  const border = rgb(0.82, 0.88, 0.86);
-  const borderSoft = rgb(0.9, 0.93, 0.92);
-  const surface = rgb(0.975, 0.985, 0.982);
+  const border = rgb(0.8, 0.87, 0.84);
+  const borderSoft = rgb(0.9, 0.94, 0.92);
   const white = rgb(1, 1, 1);
 
   let page: PDFPage;
   let y = 0;
 
-  const tableX = PAGE_MARGIN;
-  const tableWidth = CONTENT_WIDTH;
+  const allItems = input.items.filter(
+    (item) =>
+      safeText(item.name) &&
+      Number(item.quantity) > 0
+  );
 
-  const positionWidth = 335;
-  const quantityWidth = 82;
-  const unitWidth =
-    tableWidth -
-    positionWidth -
-    quantityWidth;
+  const foodItems = allItems.filter(
+    (item) => !isServiceItem(item)
+  );
 
-  const quantityX =
-    tableX + positionWidth;
+  const serviceItems = allItems.filter(
+    (item) => isServiceItem(item)
+  );
 
-  const unitX =
-    quantityX + quantityWidth;
-
-  function drawContinuationHeader() {
-    page.drawText(
-      safeText(input.tenantName) || "Gastario",
-      {
-        x: PAGE_MARGIN,
-        y: A4_HEIGHT - 45,
-        size: 10,
-        font: bold,
-        color: greenDark,
-      }
-    );
-
-    const documentText =
-      "Lieferschein " + safeText(input.number);
-
-    const documentWidth =
-      bold.widthOfTextAtSize(documentText, 9);
-
-    page.drawText(documentText, {
-      x:
-        A4_WIDTH -
-        PAGE_MARGIN -
-        documentWidth,
-      y: A4_HEIGHT - 45,
-      size: 9,
-      font: bold,
-      color: muted,
-    });
-
-    page.drawLine({
-      start: {
-        x: PAGE_MARGIN,
-        y: A4_HEIGHT - 58,
-      },
-      end: {
-        x: A4_WIDTH - PAGE_MARGIN,
-        y: A4_HEIGHT - 58,
-      },
-      thickness: 0.8,
-      color: border,
-    });
-
-    y = A4_HEIGHT - 82;
-  }
-
-  function addPage(
-    continuation = false
-  ) {
+  function addPage(continuation = false) {
     page = pdf.addPage([
       A4_WIDTH,
       A4_HEIGHT,
     ]);
 
-    if (continuation) {
-      drawContinuationHeader();
-    } else {
-      y = A4_HEIGHT - PAGE_MARGIN;
+    if (!continuation) {
+      y = A4_HEIGHT - MARGIN;
+      return;
     }
-  }
 
-  function drawTableHeader() {
-    page.drawRectangle({
-      x: tableX,
-      y: y - 28,
-      width: tableWidth,
-      height: 28,
-      color: greenSoft,
-      borderColor: border,
-      borderWidth: 0.8,
+    page.drawText(
+      safeText(input.tenantName) || "Gastario",
+      {
+        x: MARGIN,
+        y: A4_HEIGHT - 38,
+        size: 9.5,
+        font: bold,
+        color: greenDark,
+      }
+    );
+
+    const title =
+      "Lieferschein " +
+      safeText(input.number);
+
+    const titleWidth =
+      regular.widthOfTextAtSize(
+        title,
+        8.5
+      );
+
+    page.drawText(title, {
+      x:
+        A4_WIDTH -
+        MARGIN -
+        titleWidth,
+      y: A4_HEIGHT - 38,
+      size: 8.5,
+      font: regular,
+      color: muted,
     });
 
     page.drawLine({
       start: {
-        x: quantityX,
-        y,
+        x: MARGIN,
+        y: A4_HEIGHT - 51,
       },
       end: {
-        x: quantityX,
-        y: y - 28,
+        x: A4_WIDTH - MARGIN,
+        y: A4_HEIGHT - 51,
       },
-      thickness: 0.6,
+      thickness: 0.7,
       color: border,
     });
 
-    page.drawLine({
-      start: {
-        x: unitX,
-        y,
-      },
-      end: {
-        x: unitX,
-        y: y - 28,
-      },
-      thickness: 0.6,
-      color: border,
-    });
-
-    page.drawText("POSITION", {
-      x: tableX + 12,
-      y: y - 18,
-      size: 8,
-      font: bold,
-      color: greenDark,
-    });
-
-    page.drawText("MENGE", {
-      x: quantityX + 12,
-      y: y - 18,
-      size: 8,
-      font: bold,
-      color: greenDark,
-    });
-
-    page.drawText("EINHEIT", {
-      x: unitX + 12,
-      y: y - 18,
-      size: 8,
-      font: bold,
-      color: greenDark,
-    });
-
-    y -= 28;
+    y = A4_HEIGHT - 76;
   }
 
   function ensureSpace(
-    requiredHeight: number,
-    repeatTableHeader = false
+    height: number
   ) {
-    const minimumY =
-      PAGE_MARGIN + FOOTER_HEIGHT + 20;
-
-    if (y - requiredHeight >= minimumY) {
+    if (y - height >= FOOTER_LIMIT) {
       return;
     }
 
     addPage(true);
-
-    if (repeatTableHeader) {
-      drawTableHeader();
-    }
   }
 
-  addPage(false);
+  function drawSectionLabel(
+    label: string
+  ) {
+    page.drawText(label, {
+      x: MARGIN,
+      y,
+      size: 8,
+      font: bold,
+      color: greenMid,
+    });
+
+    y -= 14;
+  }
+
+  addPage();
 
   /*
-   * Kopfbereich
+   * Moderner Hero-Header
    */
 
+  const headerHeight = 128;
+
   page.drawRectangle({
-    x: PAGE_MARGIN,
-    y: A4_HEIGHT - 154,
+    x: MARGIN,
+    y: A4_HEIGHT - MARGIN - headerHeight,
     width: CONTENT_WIDTH,
-    height: 112,
+    height: headerHeight,
     color: greenDark,
   });
 
   page.drawRectangle({
-    x: PAGE_MARGIN,
-    y: A4_HEIGHT - 154,
-    width: 7,
-    height: 112,
+    x: MARGIN,
+    y: A4_HEIGHT - MARGIN - headerHeight,
+    width: 8,
+    height: headerHeight,
     color: green,
   });
 
-  page.drawText(
-    safeText(input.tenantName) || "Gastario",
-    {
-      x: PAGE_MARGIN + 22,
-      y: A4_HEIGHT - 70,
-      size: 13,
-      font: bold,
-      color: white,
-    }
-  );
-
   page.drawText("LIEFERSCHEIN", {
-    x: PAGE_MARGIN + 22,
-    y: A4_HEIGHT - 101,
-    size: 9,
+    x: MARGIN + 24,
+    y: A4_HEIGHT - MARGIN - 28,
+    size: 8.5,
     font: bold,
-    color: rgb(0.72, 0.9, 0.84),
+    color: rgb(0.68, 0.9, 0.82),
   });
 
   page.drawText(
     safeText(input.number),
     {
-      x: PAGE_MARGIN + 22,
-      y: A4_HEIGHT - 132,
-      size: 24,
+      x: MARGIN + 24,
+      y: A4_HEIGHT - MARGIN - 60,
+      size: 23,
       font: bold,
       color: white,
     }
   );
 
-  const orderLabel =
-    "Auftrag " + safeText(input.orderNumber);
+  page.drawText(
+    safeText(input.tenantName) ||
+      "Gastario",
+    {
+      x: MARGIN + 24,
+      y: A4_HEIGHT - MARGIN - 89,
+      size: 10,
+      font: regular,
+      color: rgb(0.82, 0.93, 0.89),
+    }
+  );
 
-  const orderLabelWidth =
-    bold.widthOfTextAtSize(orderLabel, 10);
+  const orderText =
+    "Auftrag " +
+    safeText(input.orderNumber);
 
-  page.drawText(orderLabel, {
+  const orderWidth =
+    bold.widthOfTextAtSize(
+      orderText,
+      9
+    );
+
+  page.drawText(orderText, {
     x:
       A4_WIDTH -
-      PAGE_MARGIN -
+      MARGIN -
       22 -
-      orderLabelWidth,
-    y: A4_HEIGHT - 132,
-    size: 10,
+      orderWidth,
+    y: A4_HEIGHT - MARGIN - 30,
+    size: 9,
     font: bold,
-    color: rgb(0.82, 0.94, 0.9),
+    color: rgb(0.82, 0.93, 0.89),
   });
 
-  y = A4_HEIGHT - 178;
+  const dateText =
+    formatDate(input.deliveryDate);
+
+  const dateWidth =
+    regular.widthOfTextAtSize(
+      dateText,
+      9
+    );
+
+  page.drawText(dateText, {
+    x:
+      A4_WIDTH -
+      MARGIN -
+      22 -
+      dateWidth,
+    y: A4_HEIGHT - MARGIN - 55,
+    size: 9,
+    font: regular,
+    color: white,
+  });
+
+  const timeText =
+    safeText(input.deliveryTimeText)
+      ? safeText(input.deliveryTimeText) +
+        " Uhr"
+      : "Uhrzeit offen";
+
+  const timeWidth =
+    regular.widthOfTextAtSize(
+      timeText,
+      9
+    );
+
+  page.drawText(timeText, {
+    x:
+      A4_WIDTH -
+      MARGIN -
+      22 -
+      timeWidth,
+    y: A4_HEIGHT - MARGIN - 76,
+    size: 9,
+    font: regular,
+    color: white,
+  });
+
+  y =
+    A4_HEIGHT -
+    MARGIN -
+    headerHeight -
+    24;
 
   /*
-   * Lieferinformationen
+   * Drei Informationskarten
    */
 
-  const cardGap = 12;
+  const cardGap = 10;
   const cardWidth =
     (CONTENT_WIDTH - cardGap * 2) / 3;
-  const cardHeight = 66;
+  const cardHeight = 76;
 
-  const informationCards = [
+  const cards = [
     {
-      label: "LIEFERDATUM",
-      value: formatDate(input.deliveryDate),
-    },
-    {
-      label: "LIEFERZEIT",
+      label: "KUNDE",
       value:
-        safeText(input.deliveryTimeText) ||
-        "Noch offen",
+        safeText(input.customerName) ||
+        "-",
     },
     {
-      label: "POSITIONEN",
-      value: String(input.items.length),
+      label: "LIEFERADRESSE",
+      value:
+        safeText(input.deliveryAddress) ||
+        "-",
+    },
+    {
+      label: "ANSPRECHPARTNER",
+      value: [
+        safeText(input.contactName),
+        safeText(input.contactPhone),
+      ]
+        .filter(Boolean)
+        .join("\n") || "-",
     },
   ];
 
-  informationCards.forEach(
-    (information, index) => {
-      const x =
-        PAGE_MARGIN +
-        index * (cardWidth + cardGap);
+  cards.forEach((card, index) => {
+    const x =
+      MARGIN +
+      index * (cardWidth + cardGap);
 
-      page.drawRectangle({
-        x,
-        y: y - cardHeight,
-        width: cardWidth,
-        height: cardHeight,
-        color: surface,
-        borderColor: border,
-        borderWidth: 0.8,
-      });
+    page.drawRectangle({
+      x,
+      y: y - cardHeight,
+      width: cardWidth,
+      height: cardHeight,
+      color: mintLight,
+      borderColor: border,
+      borderWidth: 0.8,
+    });
 
-      page.drawText(information.label, {
-        x: x + 14,
-        y: y - 21,
+    page.drawRectangle({
+      x,
+      y: y - 4,
+      width: cardWidth,
+      height: 4,
+      color: green,
+    });
+
+    page.drawText(card.label, {
+      x: x + 13,
+      y: y - 23,
+      size: 7,
+      font: bold,
+      color: muted,
+    });
+
+    const cardLines = wrapText(
+      card.value,
+      index === 0 ? bold : regular,
+      9.2,
+      cardWidth - 26
+    ).slice(0, 4);
+
+    drawLines({
+      page,
+      lines: cardLines,
+      x: x + 13,
+      y: y - 43,
+      font:
+        index === 0
+          ? bold
+          : regular,
+      size: 9.2,
+      lineHeight: 11.5,
+      color: dark,
+    });
+  });
+
+  y -= cardHeight + 25;
+
+  /*
+   * Speisen
+   */
+
+  drawSectionLabel(
+    "BESTELLTE SPEISEN"
+  );
+
+  const tableX = MARGIN;
+  const tableWidth = CONTENT_WIDTH;
+
+  const numberWidth = 34;
+  const positionWidth = 330;
+  const quantityWidth = 72;
+  const unitWidth =
+    tableWidth -
+    numberWidth -
+    positionWidth -
+    quantityWidth;
+
+  const positionX =
+    tableX + numberWidth;
+
+  const quantityX =
+    positionX + positionWidth;
+
+  const unitX =
+    quantityX + quantityWidth;
+
+  function drawTableHeader() {
+    page.drawRectangle({
+      x: tableX,
+      y: y - 30,
+      width: tableWidth,
+      height: 30,
+      color: mint,
+      borderColor: border,
+      borderWidth: 0.8,
+    });
+
+    const headers = [
+      {
+        text: "NR.",
+        x: tableX + 10,
+      },
+      {
+        text: "POSITION",
+        x: positionX + 10,
+      },
+      {
+        text: "MENGE",
+        x: quantityX + 10,
+      },
+      {
+        text: "EINHEIT",
+        x: unitX + 10,
+      },
+    ];
+
+    headers.forEach((header) => {
+      page.drawText(header.text, {
+        x: header.x,
+        y: y - 19,
         size: 7.5,
         font: bold,
-        color: muted,
+        color: greenDark,
       });
+    });
 
-      const valueLines = wrapText(
-        information.value,
-        bold,
-        12,
-        cardWidth - 28
-      );
-
-      drawTextLines({
-        page,
-        lines: valueLines.slice(0, 2),
-        x: x + 14,
-        y: y - 43,
-        font: bold,
-        size: 12,
-        lineHeight: 14,
-        color: dark,
-      });
-    }
-  );
-
-  y -= cardHeight + 22;
-
-  /*
-   * Empfängerblock
-   */
-
-  page.drawText("LIEFERUNG AN", {
-    x: PAGE_MARGIN,
-    y,
-    size: 8,
-    font: bold,
-    color: green,
-  });
-
-  y -= 14;
-
-  const recipientHeight = 104;
-
-  page.drawRectangle({
-    x: PAGE_MARGIN,
-    y: y - recipientHeight,
-    width: CONTENT_WIDTH,
-    height: recipientHeight,
-    color: white,
-    borderColor: border,
-    borderWidth: 0.8,
-  });
-
-  const recipientLeftX =
-    PAGE_MARGIN + 16;
-
-  const recipientRightX =
-    PAGE_MARGIN + CONTENT_WIDTH / 2 + 12;
-
-  page.drawText(
-    safeText(input.customerName) || "-",
-    {
-      x: recipientLeftX,
-      y: y - 24,
-      size: 13,
-      font: bold,
-      color: dark,
-    }
-  );
-
-  const addressLines = wrapText(
-    safeText(input.deliveryAddress) || "-",
-    regular,
-    9.5,
-    CONTENT_WIDTH / 2 - 36
-  );
-
-  drawTextLines({
-    page,
-    lines: addressLines.slice(0, 4),
-    x: recipientLeftX,
-    y: y - 46,
-    font: regular,
-    size: 9.5,
-    lineHeight: 13,
-    color: body,
-  });
-
-  page.drawLine({
-    start: {
-      x: PAGE_MARGIN + CONTENT_WIDTH / 2,
-      y: y - 14,
-    },
-    end: {
-      x: PAGE_MARGIN + CONTENT_WIDTH / 2,
-      y: y - recipientHeight + 14,
-    },
-    thickness: 0.7,
-    color: borderSoft,
-  });
-
-  page.drawText("ANSPRECHPARTNER", {
-    x: recipientRightX,
-    y: y - 23,
-    size: 7.5,
-    font: bold,
-    color: muted,
-  });
-
-  page.drawText(
-    safeText(input.contactName) || "-",
-    {
-      x: recipientRightX,
-      y: y - 42,
-      size: 10,
-      font: bold,
-      color: dark,
-    }
-  );
-
-  page.drawText("TELEFON", {
-    x: recipientRightX,
-    y: y - 65,
-    size: 7.5,
-    font: bold,
-    color: muted,
-  });
-
-  page.drawText(
-    safeText(input.contactPhone) || "-",
-    {
-      x: recipientRightX,
-      y: y - 84,
-      size: 10,
-      font: regular,
-      color: body,
-    }
-  );
-
-  y -= recipientHeight + 24;
-
-  /*
-   * Positionstabelle
-   */
-
-  page.drawText("BESTELLTE POSITIONEN", {
-    x: PAGE_MARGIN,
-    y,
-    size: 8,
-    font: bold,
-    color: green,
-  });
-
-  y -= 14;
+    y -= 30;
+  }
 
   drawTableHeader();
 
-  const allVisibleItems =
-    getVisibleDeliveryNoteItems(
-      input.items
-    );
-
-  const foodItems = allVisibleItems.filter(
-    (item) => !isDeliveryServiceItem(item)
-  );
-
-  const serviceItems = allVisibleItems.filter(
-    (item) => isDeliveryServiceItem(item)
-  );
-
   const displayedFoodItems =
-    foodItems.length > 0
+    foodItems.length
       ? foodItems
       : [
           {
@@ -707,167 +639,159 @@ export async function renderDeliveryNotePdf(
           },
         ];
 
-  displayedFoodItems.forEach((item, index) => {
-    const itemLines = wrapText(
-      safeText(item.name) || "-",
-      bold,
-      9.5,
-      positionWidth - 24
-    );
+  displayedFoodItems.forEach(
+    (item, index) => {
+      const titleLines = wrapText(
+        item.name,
+        bold,
+        9.3,
+        positionWidth - 20
+      );
 
-    const noteLines = item.notes
-      ? wrapText(
-          safeText(item.notes),
-          regular,
-          8,
-          positionWidth - 24
-        )
-      : [];
+      const noteLines = item.notes
+        ? wrapText(
+            item.notes,
+            regular,
+            7.8,
+            positionWidth - 20
+          ).slice(0, 3)
+        : [];
 
-    const rowTextHeight =
-      itemLines.length * 13 +
-      noteLines.length * 10;
+      const rowHeight = Math.max(
+        42,
+        titleLines.length * 12 +
+          noteLines.length * 9 +
+          17
+      );
 
-    const rowHeight =
-      Math.max(42, rowTextHeight + 18);
+      if (
+        y - rowHeight <
+        FOOTER_LIMIT + 20
+      ) {
+        addPage(true);
+        drawTableHeader();
+      }
 
-    ensureSpace(rowHeight, true);
-
-    page.drawRectangle({
-      x: tableX,
-      y: y - rowHeight,
-      width: tableWidth,
-      height: rowHeight,
-      color:
-        index % 2 === 0
-          ? white
-          : surface,
-      borderColor: borderSoft,
-      borderWidth: 0.7,
-    });
-
-    page.drawLine({
-      start: {
-        x: quantityX,
-        y,
-      },
-      end: {
-        x: quantityX,
+      page.drawRectangle({
+        x: tableX,
         y: y - rowHeight,
-      },
-      thickness: 0.6,
-      color: borderSoft,
-    });
-
-    page.drawLine({
-      start: {
-        x: unitX,
-        y,
-      },
-      end: {
-        x: unitX,
-        y: y - rowHeight,
-      },
-      thickness: 0.6,
-      color: borderSoft,
-    });
-
-    let textY = drawTextLines({
-      page,
-      lines: itemLines,
-      x: tableX + 12,
-      y: y - 17,
-      font: bold,
-      size: 9.5,
-      lineHeight: 13,
-      color: dark,
-    });
-
-    if (noteLines.length > 0) {
-      drawTextLines({
-        page,
-        lines: noteLines,
-        x: tableX + 12,
-        y: textY - 1,
-        font: regular,
-        size: 8,
-        lineHeight: 10,
-        color: muted,
+        width: tableWidth,
+        height: rowHeight,
+        color:
+          index % 2 === 0
+            ? white
+            : mintLight,
+        borderColor: borderSoft,
+        borderWidth: 0.6,
       });
-    }
 
-    page.drawText(
-      formatQuantity(item.quantity),
-      {
-        x: quantityX + 12,
-        y: y - 23,
-        size: 9.5,
+      page.drawText(
+        String(index + 1).padStart(
+          2,
+          "0"
+        ),
+        {
+          x: tableX + 10,
+          y: y - 22,
+          size: 8,
+          font: bold,
+          color: greenMid,
+        }
+      );
+
+      let textY = drawLines({
+        page,
+        lines: titleLines,
+        x: positionX + 10,
+        y: y - 18,
         font: bold,
+        size: 9.3,
+        lineHeight: 12,
         color: dark,
-      }
-    );
+      });
 
-    page.drawText(
-      safeText(item.unit) || "St\u00fcck",
-      {
-        x: unitX + 12,
-        y: y - 23,
-        size: 9,
-        font: regular,
-        color: body,
+      if (noteLines.length) {
+        drawLines({
+          page,
+          lines: noteLines,
+          x: positionX + 10,
+          y: textY - 1,
+          font: regular,
+          size: 7.8,
+          lineHeight: 9,
+          color: muted,
+        });
       }
-    );
 
-    y -= rowHeight;
-  });
+      page.drawText(
+        formatQuantity(item.quantity),
+        {
+          x: quantityX + 10,
+          y: y - 22,
+          size: 9,
+          font: bold,
+          color: dark,
+        }
+      );
+
+      page.drawText(
+        safeText(item.unit) || "Stk.",
+        {
+          x: unitX + 10,
+          y: y - 22,
+          size: 8.5,
+          font: regular,
+          color: body,
+        }
+      );
+
+      y -= rowHeight;
+    }
+  );
 
   y -= 22;
 
-  if (serviceItems.length > 0) {
-    const serviceRowHeight = 24;
+  /*
+   * Zusatzleistungen
+   */
+
+  if (serviceItems.length) {
     const serviceHeight =
-      35 +
-      serviceItems.length *
-        serviceRowHeight;
+      42 +
+      serviceItems.length * 28;
 
-    ensureSpace(serviceHeight + 22);
+    ensureSpace(serviceHeight + 25);
 
-    page.drawText("ZUSATZLEISTUNGEN", {
-      x: PAGE_MARGIN,
-      y,
-      size: 8,
-      font: bold,
-      color: green,
-    });
-
-    y -= 14;
+    drawSectionLabel(
+      "ZUSATZLEISTUNGEN"
+    );
 
     page.drawRectangle({
-      x: PAGE_MARGIN,
+      x: MARGIN,
       y: y - serviceHeight,
       width: CONTENT_WIDTH,
       height: serviceHeight,
-      color: surface,
+      color: mintLight,
       borderColor: border,
       borderWidth: 0.8,
     });
 
-    let serviceY = y - 22;
+    let serviceY = y - 24;
 
     serviceItems.forEach(
       (item, index) => {
         if (index > 0) {
           page.drawLine({
             start: {
-              x: PAGE_MARGIN + 12,
-              y: serviceY + 8,
+              x: MARGIN + 14,
+              y: serviceY + 10,
             },
             end: {
               x:
                 A4_WIDTH -
-                PAGE_MARGIN -
-                12,
-              y: serviceY + 8,
+                MARGIN -
+                14,
+              y: serviceY + 10,
             },
             thickness: 0.5,
             color: borderSoft,
@@ -877,7 +801,7 @@ export async function renderDeliveryNotePdf(
         page.drawText(
           safeText(item.name),
           {
-            x: PAGE_MARGIN + 14,
+            x: MARGIN + 15,
             y: serviceY,
             size: 9,
             font: bold,
@@ -885,81 +809,93 @@ export async function renderDeliveryNotePdf(
           }
         );
 
-        const quantityText =
+        const value =
           formatQuantity(item.quantity) +
           " " +
-          safeText(item.unit);
+          (safeText(item.unit) || "Stk.");
 
-        const quantityWidth =
+        const valueWidth =
           regular.widthOfTextAtSize(
-            quantityText,
+            value,
             8.5
           );
 
-        page.drawText(quantityText, {
+        page.drawText(value, {
           x:
             A4_WIDTH -
-            PAGE_MARGIN -
-            14 -
-            quantityWidth,
+            MARGIN -
+            15 -
+            valueWidth,
           y: serviceY,
           size: 8.5,
           font: regular,
           color: body,
         });
 
-        serviceY -= serviceRowHeight;
+        serviceY -= 28;
       }
     );
 
     y -= serviceHeight + 22;
   }
+
   /*
    * Hinweise
    */
 
   if (safeText(input.notes)) {
     const noteLines = wrapText(
-      safeText(input.notes),
+      input.notes,
       regular,
-      9,
-      CONTENT_WIDTH - 28
+      8.7,
+      CONTENT_WIDTH - 50
     );
 
-    const noteHeight =
-      Math.max(
-        62,
-        noteLines.length * 12 + 34
-      );
+    const noteHeight = Math.max(
+      62,
+      noteLines.length * 11 + 34
+    );
 
-    ensureSpace(noteHeight + 18);
+    ensureSpace(noteHeight + 22);
+
+    drawSectionLabel(
+      "HINWEISE ZUR LIEFERUNG"
+    );
 
     page.drawRectangle({
-      x: PAGE_MARGIN,
+      x: MARGIN,
       y: y - noteHeight,
       width: CONTENT_WIDTH,
       height: noteHeight,
-      color: greenSoft,
-      borderColor: border,
+      color: rgb(0.99, 0.965, 0.88),
+      borderColor: rgb(0.9, 0.8, 0.5),
       borderWidth: 0.8,
     });
 
-    page.drawText("HINWEISE ZUR LIEFERUNG", {
-      x: PAGE_MARGIN + 14,
-      y: y - 19,
-      size: 7.5,
-      font: bold,
-      color: greenDark,
+    page.drawRectangle({
+      x: MARGIN + 14,
+      y: y - 27,
+      width: 18,
+      height: 18,
+      color: rgb(0.95, 0.74, 0.2),
     });
 
-    drawTextLines({
+    page.drawText("!", {
+      x: MARGIN + 20,
+      y: y - 23,
+      size: 10,
+      font: bold,
+      color: white,
+    });
+
+    drawLines({
       page,
       lines: noteLines,
-      x: PAGE_MARGIN + 14,
-      y: y - 39,
+      x: MARGIN + 42,
+      y: y - 22,
       font: regular,
-      size: 9,
-      lineHeight: 12,
+      size: 8.7,
+      lineHeight: 11,
       color: body,
     });
 
@@ -967,25 +903,19 @@ export async function renderDeliveryNotePdf(
   }
 
   /*
-   * Übergabe und Unterschrift
+   * Übergabe
    */
 
-  const handoverHeight = 142;
+  const handoverHeight = 126;
 
-  ensureSpace(handoverHeight);
+  ensureSpace(handoverHeight + 18);
 
-  page.drawText("ÜBERGABEBESTÄTIGUNG", {
-    x: PAGE_MARGIN,
-    y,
-    size: 8,
-    font: bold,
-    color: green,
-  });
-
-  y -= 14;
+  drawSectionLabel(
+    "\u00dcBERGABEBEST\u00c4TIGUNG"
+  );
 
   page.drawRectangle({
-    x: PAGE_MARGIN,
+    x: MARGIN,
     y: y - handoverHeight,
     width: CONTENT_WIDTH,
     height: handoverHeight,
@@ -994,63 +924,57 @@ export async function renderDeliveryNotePdf(
     borderWidth: 0.8,
   });
 
-  const checkboxY = y - 25;
-
-  const confirmationItems = [
-    "Ware vollständig erhalten",
+  const checks = [
+    "Ware vollst\u00e4ndig erhalten",
     "Abweichungen dokumentiert",
-    "Leihequipment übergeben",
+    "Leihequipment \u00fcbergeben",
   ];
 
-  confirmationItems.forEach(
-    (label, index) => {
-      const x =
-        PAGE_MARGIN +
-        16 +
-        index * 166;
+  checks.forEach((label, index) => {
+    const x =
+      MARGIN +
+      16 +
+      index * 166;
 
-      page.drawRectangle({
-        x,
-        y: checkboxY - 7,
-        width: 10,
-        height: 10,
-        borderColor: green,
-        borderWidth: 1,
-      });
+    page.drawRectangle({
+      x,
+      y: y - 32,
+      width: 10,
+      height: 10,
+      borderColor: green,
+      borderWidth: 1,
+    });
 
-      const confirmationLines = wrapText(
+    drawLines({
+      page,
+      lines: wrapText(
         label,
         regular,
-        8,
-        138
-      );
-
-      drawTextLines({
-        page,
-        lines: confirmationLines,
-        x: x + 17,
-        y: checkboxY,
-        font: regular,
-        size: 8,
-        lineHeight: 10,
-        color: body,
-      });
-    }
-  );
+        7.7,
+        134
+      ),
+      x: x + 17,
+      y: y - 25,
+      font: regular,
+      size: 7.7,
+      lineHeight: 9,
+      color: body,
+    });
+  });
 
   const signatureY =
-    y - handoverHeight + 35;
+    y - handoverHeight + 31;
 
-  const signatureWidth = 210;
+  const signatureWidth = 205;
 
   page.drawLine({
     start: {
-      x: PAGE_MARGIN + 16,
+      x: MARGIN + 16,
       y: signatureY,
     },
     end: {
       x:
-        PAGE_MARGIN +
+        MARGIN +
         16 +
         signatureWidth,
       y: signatureY,
@@ -1062,28 +986,28 @@ export async function renderDeliveryNotePdf(
   page.drawText(
     "Datum / Name Fahrer",
     {
-      x: PAGE_MARGIN + 16,
-      y: signatureY - 14,
-      size: 7.5,
+      x: MARGIN + 16,
+      y: signatureY - 13,
+      size: 7.2,
       font: regular,
       color: muted,
     }
   );
 
-  const customerSignatureX =
+  const recipientX =
     A4_WIDTH -
-    PAGE_MARGIN -
+    MARGIN -
     16 -
     signatureWidth;
 
   page.drawLine({
     start: {
-      x: customerSignatureX,
+      x: recipientX,
       y: signatureY,
     },
     end: {
       x:
-        customerSignatureX +
+        recipientX +
         signatureWidth,
       y: signatureY,
     },
@@ -1092,34 +1016,34 @@ export async function renderDeliveryNotePdf(
   });
 
   page.drawText(
-    "Datum / Name / Unterschrift Empfänger",
+    "Datum / Name / Unterschrift Empf\u00e4nger",
     {
-      x: customerSignatureX,
-      y: signatureY - 14,
-      size: 7.5,
+      x: recipientX,
+      y: signatureY - 13,
+      size: 7.2,
       font: regular,
       color: muted,
     }
   );
 
   /*
-   * Fußzeilen und Seitennummern
+   * Fußzeilen
    */
 
   const pages = pdf.getPages();
 
   pages.forEach(
     (currentPage, index) => {
-      const footerY = 28;
+      const footerY = 26;
 
       currentPage.drawLine({
         start: {
-          x: PAGE_MARGIN,
-          y: footerY + 16,
+          x: MARGIN,
+          y: footerY + 15,
         },
         end: {
-          x: A4_WIDTH - PAGE_MARGIN,
-          y: footerY + 16,
+          x: A4_WIDTH - MARGIN,
+          y: footerY + 15,
         },
         thickness: 0.6,
         color: borderSoft,
@@ -1129,59 +1053,62 @@ export async function renderDeliveryNotePdf(
         safeText(input.tenantName) ||
           "Gastario",
         {
-          x: PAGE_MARGIN,
+          x: MARGIN,
           y: footerY,
-          size: 7.5,
+          size: 7,
           font: bold,
           color: muted,
         }
       );
 
-      const footerCenterText =
+      const orderFooter =
         "Auftrag " +
         safeText(input.orderNumber);
 
-      const footerCenterWidth =
+      const orderFooterWidth =
         regular.widthOfTextAtSize(
-          footerCenterText,
-          7.5
+          orderFooter,
+          7
         );
 
       currentPage.drawText(
-        footerCenterText,
+        orderFooter,
         {
           x:
             A4_WIDTH / 2 -
-            footerCenterWidth / 2,
+            orderFooterWidth / 2,
           y: footerY,
-          size: 7.5,
+          size: 7,
           font: regular,
           color: muted,
         }
       );
 
-      const pageText =
+      const pageLabel =
         "Seite " +
         String(index + 1) +
         " von " +
         String(pages.length);
 
-      const pageTextWidth =
+      const pageLabelWidth =
         regular.widthOfTextAtSize(
-          pageText,
-          7.5
+          pageLabel,
+          7
         );
 
-      currentPage.drawText(pageText, {
-        x:
-          A4_WIDTH -
-          PAGE_MARGIN -
-          pageTextWidth,
-        y: footerY,
-        size: 7.5,
-        font: regular,
-        color: muted,
-      });
+      currentPage.drawText(
+        pageLabel,
+        {
+          x:
+            A4_WIDTH -
+            MARGIN -
+            pageLabelWidth,
+          y: footerY,
+          size: 7,
+          font: regular,
+          color: muted,
+        }
+      );
     }
   );
 
