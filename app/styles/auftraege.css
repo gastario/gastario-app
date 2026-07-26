@@ -7367,103 +7367,357 @@ button.finalSelectedDeleteButton {
 
 /* gastario-modern-operational-delete-icon-end */
 
+/* gastario-orders-stable-layout-final-start */
 
-/* gastario-upcoming-orders-height-polish-start */
+/* =========================================================
+   BEVORSTEHENDE AUFTRÄGE – STABILE LISTE
+   Vier vollständige Karten, danach internes Scrollen.
+   ========================================================= */
 
-/*
- * Desktop: Die Liste bleibt bis zu einer festen, gut nutzbaren Höhe
- * sichtbar. Weitere Aufträge scrollen nur innerhalb dieses Bereichs.
- */
-.ordersReferencePage.ordersPageUpcoming
+.ordersPage.ordersReferencePage.ordersPageUpcoming
 .finalOrderRows.operationalOrderRows {
   display: grid !important;
+  grid-auto-flow: row !important;
+  grid-auto-rows: 136px !important;
   align-content: start !important;
   gap: 12px !important;
 
-  height: calc(100vh - 315px) !important;
-  min-height: 520px !important;
-  max-height: 700px !important;
+  width: 100% !important;
+  height: 608px !important;
+  min-height: 608px !important;
+  max-height: 608px !important;
 
-  padding: 14px 12px 26px !important;
+  margin: 0 !important;
+  padding: 14px 12px 16px !important;
+
   overflow-x: hidden !important;
   overflow-y: auto !important;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
+  overscroll-behavior: contain !important;
+  scrollbar-gutter: stable !important;
+
   box-sizing: border-box !important;
 }
 
-/*
- * Karten behalten eine gleichmäßige Höhe und werden
- * beim Scrollen nicht zusammengedrückt.
- */
-.ordersReferencePage.ordersPageUpcoming
+.ordersPage.ordersReferencePage.ordersPageUpcoming
 .finalOrderRow.operationalOrderRow {
+  display: grid !important;
   min-height: 136px !important;
+  height: 136px !important;
+  max-height: 136px !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
 }
 
-/*
- * Etwas Luft unter dem letzten Auftrag.
- */
-.ordersReferencePage.ordersPageUpcoming
-.finalOrderRow.operationalOrderRow:last-child {
-  margin-bottom: 4px !important;
-}
+/* Dezente Gastario-Scrollbar */
 
-/*
- * Dezente Scrollbar im Gastario-Stil.
- */
-.ordersReferencePage.ordersPageUpcoming
+.ordersPage.ordersReferencePage.ordersPageUpcoming
 .finalOrderRows.operationalOrderRows {
   scrollbar-width: thin;
-  scrollbar-color: #9acdbd #eef6f3;
+  scrollbar-color: #91c9b8 #edf6f3;
 }
 
-.ordersReferencePage.ordersPageUpcoming
+.ordersPage.ordersReferencePage.ordersPageUpcoming
 .finalOrderRows.operationalOrderRows::-webkit-scrollbar {
   width: 9px;
 }
 
-.ordersReferencePage.ordersPageUpcoming
+.ordersPage.ordersReferencePage.ordersPageUpcoming
 .finalOrderRows.operationalOrderRows::-webkit-scrollbar-track {
-  background: #eef6f3;
+  margin: 8px 0;
+  background: #edf6f3;
   border-radius: 999px;
 }
 
-.ordersReferencePage.ordersPageUpcoming
+.ordersPage.ordersReferencePage.ordersPageUpcoming
 .finalOrderRows.operationalOrderRows::-webkit-scrollbar-thumb {
-  background: #9acdbd;
-  border: 2px solid #eef6f3;
+  background: #91c9b8;
+  border: 2px solid #edf6f3;
   border-radius: 999px;
 }
 
-.ordersReferencePage.ordersPageUpcoming
+.ordersPage.ordersReferencePage.ordersPageUpcoming
 .finalOrderRows.operationalOrderRows::-webkit-scrollbar-thumb:hover {
-  background: #74b7a3;
+  background: #69b39d;
 }
 
-@media (max-width: 1200px) {
-  .ordersReferencePage.ordersPageUpcoming
-  .finalOrderRows.operationalOrderRows {
-    height: calc(100vh - 300px) !important;
-    min-height: 460px !important;
-    max-height: 650px !important;
+/* =========================================================
+   AUSGEWÄHLTER AUFTRAG – STABILE DETAILANSICHT
+   ========================================================= */
+
+.ordersPage.ordersReferencePage
+.finalSelectedActions {
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto !important;
+  align-items: center !important;
+  justify-content: stretch !important;
+  gap: 14px !important;
+
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 74px !important;
+
+  margin: 0 !important;
+  padding: 15px 18px !important;
+
+  border-top: 1px solid #e1ebe7 !important;
+  background: #f7fbf9 !important;
+
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+/* Hauptaktionen bleiben links und dürfen sauber umbrechen */
+
+.ordersPage.ordersReferencePage
+.finalSelectedActions
+.finalSelectedActionsMain {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+.ordersPage.ordersReferencePage
+.finalSelectedActions
+.finalSelectedActionsMain > *,
+.ordersPage.ordersReferencePage
+.finalSelectedActions
+.finalSelectedActionsMain > a,
+.ordersPage.ordersReferencePage
+.finalSelectedActions
+.finalSelectedActionsMain > button,
+.ordersPage.ordersReferencePage
+.finalSelectedActions
+.finalSelectedActionsMain
+.deliveryDocumentButton {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: auto !important;
+  min-width: 145px !important;
+  max-width: 205px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+
+  margin: 0 !important;
+  padding: 0 16px !important;
+
+  border-radius: 11px !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+}
+
+/* Zurück */
+
+.ordersPage.ordersReferencePage
+.finalSelectedActions
+.finalBackButton {
+  border: 1px solid #cfddda !important;
+  background: #ffffff !important;
+  color: #304a41 !important;
+  box-shadow: none !important;
+}
+
+/* Lieferschein */
+
+.ordersPage.ordersReferencePage
+.finalSelectedActions
+.deliveryDocumentButton {
+  border: 1px solid #0b9473 !important;
+  background: #e1f5ee !important;
+  color: #08705a !important;
+  box-shadow: none !important;
+}
+
+/* Foodlabels */
+
+.ordersPage.ordersReferencePage
+.finalSelectedActions
+.finalFoodlabelsButton {
+  min-width: 165px !important;
+  border: 1px solid #0a9473 !important;
+  background: #0a9473 !important;
+  color: #ffffff !important;
+  box-shadow: 0 7px 16px rgba(10, 148, 115, 0.14) !important;
+}
+
+/* Löschen bleibt rechts vollständig sichtbar */
+
+.ordersPage.ordersReferencePage
+.finalSelectedActions
+form.finalSelectedDeleteForm {
+  display: block !important;
+  flex: 0 0 auto !important;
+
+  width: auto !important;
+  min-width: 132px !important;
+  max-width: 160px !important;
+  height: 44px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  background: transparent !important;
+
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+.ordersPage.ordersReferencePage
+.finalSelectedActions
+form.finalSelectedDeleteForm
+button.finalSelectedDeleteButton {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 100% !important;
+  min-width: 132px !important;
+  max-width: 160px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+
+  margin: 0 !important;
+  padding: 0 15px !important;
+
+  border: 1px solid #e3aaa4 !important;
+  border-radius: 11px !important;
+  background: #fff3f2 !important;
+  color: #ad2d23 !important;
+
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+
+  box-shadow: none !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+}
+
+.ordersPage.ordersReferencePage
+.finalSelectedActions
+form.finalSelectedDeleteForm
+button.finalSelectedDeleteButton:hover {
+  border-color: #d88078 !important;
+  background: #fee7e5 !important;
+  color: #8f2018 !important;
+}
+
+/* Mittelgroße Fenster: Löschen in zweite Zeile, statt Abschneiden */
+
+@media (max-width: 1150px) {
+  .ordersPage.ordersReferencePage
+  .finalSelectedActions {
+    grid-template-columns: 1fr !important;
   }
 
-  .ordersReferencePage.ordersPageUpcoming
+  .ordersPage.ordersReferencePage
+  .finalSelectedActions
+  form.finalSelectedDeleteForm {
+    justify-self: start !important;
+  }
+}
+
+/* Kleinere Desktop-/Tablet-Ansicht */
+
+@media (max-width: 900px) {
+  .ordersPage.ordersReferencePage.ordersPageUpcoming
+  .finalOrderRows.operationalOrderRows {
+    grid-auto-rows: 124px !important;
+    height: 556px !important;
+    min-height: 556px !important;
+    max-height: 556px !important;
+  }
+
+  .ordersPage.ordersReferencePage.ordersPageUpcoming
   .finalOrderRow.operationalOrderRow {
     min-height: 124px !important;
+    height: 124px !important;
+    max-height: 124px !important;
   }
 }
 
-@media (max-width: 760px) {
-  .ordersReferencePage.ordersPageUpcoming
+/* Mobil: keine verschachtelte Scrollliste */
+
+@media (max-width: 620px) {
+  .ordersPage.ordersReferencePage.ordersPageUpcoming
   .finalOrderRows.operationalOrderRows {
+    display: grid !important;
+    grid-auto-rows: auto !important;
+
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
+
     overflow: visible !important;
-    scrollbar-gutter: auto;
+    scrollbar-gutter: auto !important;
+  }
+
+  .ordersPage.ordersReferencePage.ordersPageUpcoming
+  .finalOrderRow.operationalOrderRow {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .ordersPage.ordersReferencePage
+  .finalSelectedActions,
+  .ordersPage.ordersReferencePage
+  .finalSelectedActions
+  .finalSelectedActionsMain {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+
+  .ordersPage.ordersReferencePage
+  .finalSelectedActions
+  .finalSelectedActionsMain > *,
+  .ordersPage.ordersReferencePage
+  .finalSelectedActions
+  .finalSelectedActionsMain > a,
+  .ordersPage.ordersReferencePage
+  .finalSelectedActions
+  .finalSelectedActionsMain > button,
+  .ordersPage.ordersReferencePage
+  .finalSelectedActions
+  .finalSelectedActionsMain
+  .deliveryDocumentButton,
+  .ordersPage.ordersReferencePage
+  .finalSelectedActions
+  form.finalSelectedDeleteForm,
+  .ordersPage.ordersReferencePage
+  .finalSelectedActions
+  form.finalSelectedDeleteForm
+  button.finalSelectedDeleteButton {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
   }
 }
 
-/* gastario-upcoming-orders-height-polish-end */
+/* gastario-orders-stable-layout-final-end */
