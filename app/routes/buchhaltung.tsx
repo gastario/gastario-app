@@ -556,9 +556,8 @@ export default function AccountingPage() {
           <h1>Buchhaltung</h1>
 
           <span className="pageSubline">
-            Externe Auftragsbestätigungen
-            sicher und ausschließlich lesend
-            mit Gastario verbinden.
+            Verbinde Gastario sicher mit deinem Buchhaltungsprogramm.
+            Aktive Verbindungen werden beim zentralen Import automatisch berücksichtigt.
           </span>
         </div>
       </header>
@@ -575,7 +574,7 @@ export default function AccountingPage() {
             </h2>
 
             <span className="pageSubline">
-              Gastario bleibt unabhängig. Jeder Caterer kann später das von ihm verwendete Buchhaltungsprogramm verbinden.
+              Wähle das Buchhaltungsprogramm deines Betriebs. Weitere Anbieter werden schrittweise ergänzt.
             </span>
           </div>
         </div>
@@ -604,17 +603,69 @@ export default function AccountingPage() {
                   className="settingsCard"
                   style={{
                     display: "grid",
-                    gap: 12,
+                    gridTemplateRows:
+                      "auto minmax(64px, auto) 1fr auto",
+                    gap: 14,
                     alignContent: "start",
-                    minHeight: 190,
+                    minHeight: 236,
+                    padding: 18,
+                    border:
+                      connected
+                        ? "1px solid #9ed9c5"
+                        : "1px solid #dbe7e2",
+                    background:
+                      connected
+                        ? "linear-gradient(180deg, #f3fcf8 0%, #ffffff 100%)"
+                        : available
+                          ? "#ffffff"
+                          : "#f8faf9",
+                    boxShadow:
+                      connected
+                        ? "0 14px 32px rgba(12, 122, 86, 0.10)"
+                        : "0 8px 22px rgba(15, 23, 42, 0.04)",
                   }}
                 >
                   <div className="settingsCardTop">
-                    <strong>
+                    <strong
+                      style={{
+                        fontSize: 18,
+                        lineHeight: 1.2,
+                        color: "#12372b",
+                      }}
+                    >
                       {provider.name}
                     </strong>
 
-                    <em>
+                    <em
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        minHeight: 28,
+                        padding: "5px 10px",
+                        borderRadius: 999,
+                        fontSize: 12,
+                        fontStyle: "normal",
+                        fontWeight: 800,
+                        whiteSpace: "nowrap",
+                        color:
+                          connected
+                            ? "#087554"
+                            : available
+                              ? "#1d4f43"
+                              : "#64748b",
+                        background:
+                          connected
+                            ? "#dff7ed"
+                            : available
+                              ? "#edf7f3"
+                              : "#eef2f4",
+                        border:
+                          connected
+                            ? "1px solid #afe5d3"
+                            : "1px solid #dbe5e1",
+                      }}
+                    >
                       {connected
                         ? "Verbunden"
                         : available
@@ -717,145 +768,6 @@ export default function AccountingPage() {
         </section>
       ) : null}
 
-      {connection?.active ? (
-        <section className="panel">
-          <div className="panelHeader">
-            <div>
-              <p className="eyebrow">
-                Dokumente
-              </p>
-
-              <h2>
-                Auftragsbestätigungen
-              </h2>
-
-              <span className="pageSubline">
-                Die letzten Dokumente zunächst nur ansehen. Es werden noch keine Gastario-Aufträge erstellt oder verändert.
-              </span>
-            </div>
-
-            <Form method="post">
-              <button
-                type="submit"
-                name="intent"
-                value="previewDocuments"
-                className="primaryButton"
-              >
-                Auftragsbestätigungen abrufen
-              </button>
-            </Form>
-          </div>
-
-          {Array.isArray(
-            actionData?.documents
-          ) ? (
-            actionData.documents.length >
-            0 ? (
-              <div
-                style={{
-                  display: "grid",
-                  gap: 10,
-                }}
-              >
-                {actionData.documents.map(
-                  (document) => (
-                    <article
-                      key={document.id}
-                      className="settingsCard"
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "minmax(140px, 0.8fr) minmax(180px, 1.4fr) minmax(110px, 0.7fr) minmax(110px, 0.7fr)",
-                        gap: 14,
-                        alignItems: "center",
-                      }}
-                    >
-                      <div>
-                        <small>
-                          Auftragsbestätigung
-                        </small>
-
-                        <strong
-                          style={{
-                            display: "block",
-                            marginTop: 4,
-                          }}
-                        >
-                          {document.voucherNumber}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <small>Kunde</small>
-
-                        <strong
-                          style={{
-                            display: "block",
-                            marginTop: 4,
-                          }}
-                        >
-                          {document.contactName}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <small>Datum</small>
-
-                        <strong
-                          style={{
-                            display: "block",
-                            marginTop: 4,
-                          }}
-                        >
-                          {formatAccountingDate(
-                            document.voucherDate
-                          )}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <small>Betrag</small>
-
-                        <strong
-                          style={{
-                            display: "block",
-                            marginTop: 4,
-                          }}
-                        >
-                          {formatAccountingAmount(
-                            document.totalAmount,
-                            document.currency
-                          )}
-                        </strong>
-                      </div>
-                    </article>
-                  )
-                )}
-              </div>
-            ) : (
-              <div className="noteBox">
-                <strong>
-                  Keine Auftragsbestätigungen gefunden
-                </strong>
-
-                <p>
-                  Im verbundenen Konto wurden aktuell keine passenden Dokumente gefunden.
-                </p>
-              </div>
-            )
-          ) : (
-            <div className="noteBox">
-              <strong>
-                Noch nicht abgerufen
-              </strong>
-
-              <p>
-                Klicke auf „Auftragsbestätigungen abrufen“, um die letzten Dokumente als Vorschau zu laden.
-              </p>
-            </div>
-          )}
-        </section>
-      ) : null}
       <section className="settingsGrid">
         <article
           className="panel"
@@ -871,8 +783,12 @@ export default function AccountingPage() {
               </p>
 
               <h2>
-                Zugang einrichten
+                Lexware Office verbinden
               </h2>
+
+              <span className="pageSubline">
+                Zugang sicher hinterlegen und die Verbindung prüfen.
+              </span>
             </div>
 
             <span
@@ -984,16 +900,13 @@ export default function AccountingPage() {
             }}
           >
             <strong>
-              Nur lesender Zugriff
+              Sicherer, nur lesender Zugriff
             </strong>
 
             <p>
-              Gastario liest ausschließlich
-              Auftragsbestätigungen und deren
-              PDF-Dateien. Im verbundenen
-              Buchhaltungskonto werden keine
-              Dokumente erstellt, verändert
-              oder gelöscht.
+              Gastario liest ausschließlich benötigte Belegdaten.
+              Im verbundenen Buchhaltungskonto werden keine Dokumente
+              erstellt, geändert oder gelöscht.
             </p>
           </div>
         </article>
@@ -1006,12 +919,21 @@ export default function AccountingPage() {
               </p>
 
               <h2>
-                Verbundenes Konto
+                Verbindungsstatus
               </h2>
+
+              <span className="pageSubline">
+                Technischer Status der aktuell ausgewählten Anbindung.
+              </span>
             </div>
           </div>
 
           <div className="settingsList">
+            <div className="settingsItem">
+              <span>Anbieter</span>
+              <strong>Lexware Office</strong>
+            </div>
+
             <div className="settingsItem">
               <span>Mandant</span>
               <strong>
