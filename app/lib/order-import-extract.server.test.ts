@@ -296,4 +296,40 @@ Lieferung und Abholung
       )
     ).toBe(134800);
   });
+
+
+  it("übernimmt eine E-Mail-Adresse niemals als Produktposition", () => {
+    const text = `
+Auftragsbestätigung AB3585
+
+Kunde:
+FORUM Berufsbildung e.V.
+
+Bezeichnung Menge Einzelpreis Gesamt
+info@letmebowl-catering.de
+6 x 14,50 EUR 87,00 EUR
+Vegane Bowl
+7 x 12,90 EUR 90,30 EUR
+
+Gesamtbetrag netto 177,30 EUR
+`;
+
+    const result = extractUniversalOrder(text);
+
+    expect(
+      result.items.some((item) =>
+        String(item.name || "")
+          .toLowerCase()
+          .includes("@letmebowl-catering.de")
+      )
+    ).toBe(false);
+
+    expect(
+      result.items.some((item) =>
+        String(item.name || "")
+          .toLowerCase()
+          .includes("vegane bowl")
+      )
+    ).toBe(true);
+  });
 });
