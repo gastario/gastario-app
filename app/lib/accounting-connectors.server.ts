@@ -63,8 +63,11 @@ export type AccountingOrderConfirmationSummary = {
   updatedDate: string | null;
   voucherStatus: string | null;
   contactId: string | null;
-  totalGrossAmount: number | null;
+  contactName: string | null;
+  totalAmount: number | null;
+  openAmount: number | null;
   currency: string | null;
+  archived: boolean;
 };
 
 export type AccountingOrderConfirmation = {
@@ -296,6 +299,7 @@ export async function listOrderConfirmations(
     voucherType: "orderconfirmation",
     page: String(page),
     size: String(size),
+    sort: "voucherDate,DESC",
   });
 
   if (options?.voucherStatus) {

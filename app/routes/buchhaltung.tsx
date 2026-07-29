@@ -35,6 +35,44 @@ function formatDateTime(
   ).format(date);
 }
 
+function formatAccountingAmount(
+  value?: number | null,
+  currency = "EUR"
+) {
+  if (
+    value === null ||
+    value === undefined ||
+    !Number.isFinite(value)
+  ) {
+    return "-";
+  }
+
+  return new Intl.NumberFormat(
+    "de-DE",
+    {
+      style: "currency",
+      currency,
+    }
+  ).format(value);
+}
+
+function formatAccountingDate(
+  value?: string | null
+) {
+  if (!value) {
+    return "-";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat(
+    "de-DE"
+  ).format(date);
+}
 export async function loader({
   request,
 }: {
@@ -131,6 +169,7 @@ export async function action({
 
   const {
     testAccountingConnection,
+    getAccountingConnector,
   } = await import(
     "../lib/accounting-connectors.server"
   );
@@ -161,6 +200,118 @@ export async function action({
       },
     });
 
+  if (intent === "previewDocuments") {
+    if (
+      !existing ||
+      !existing.credentialsEncrypted
+    ) {
+      return {
+        error:
+          "Bitte zuerst eine Buchhaltungsverbindung einrichten.",
+      };
+    }
+
+    if (!existing.active) {
+      return {
+        error:
+          "Die Buchhaltungsverbindung ist pausiert.",
+      };
+    }
+
+    const connector =
+      getAccountingConnector(
+        existing.provider
+      );
+
+    if (!connector) {
+      return {
+        error:
+          "Für diesen Anbieter ist noch kein aktiver Connector vorhanden.",
+      };
+    }
+
+    try {
+      const accessToken =
+        decryptIntegrationSecret(
+          existing.credentialsEncrypted
+        );
+
+      const page =
+        await connector.listOrderConfirmations(
+          accessToken,
+          {
+            page: 0,
+            size: 20,
+          }
+        );
+
+      const documents = (
+        Array.isArray(page.content)
+          ? page.content
+          : []
+      ).map((document) => ({
+        id: document.id,
+        voucherNumber:
+          document.voucherNumber || "-",
+        voucherDate:
+          document.voucherDate || null,
+        voucherStatus:
+          document.voucherStatus || "-",
+        contactName:
+          document.contactName || "-",
+        totalAmount:
+          typeof document.totalAmount ===
+          "number"
+            ? document.totalAmount
+            : null,
+        currency:
+          document.currency || "EUR",
+        archived:
+          Boolean(document.archived),
+      }));
+
+      await prisma.accountingConnection.update({
+        where: {
+          id: existing.id,
+        },
+        data: {
+          status: "ACTIVE",
+          lastSyncAt: new Date(),
+          lastSuccessfulSyncAt:
+            new Date(),
+          lastError: null,
+        },
+      });
+
+      return {
+        success:
+          documents.length +
+          " Auftragsbestätigungen wurden abgerufen.",
+        documents,
+      };
+    } catch (error: any) {
+      const message = String(
+        error?.message || error
+      );
+
+      await prisma.accountingConnection.update({
+        where: {
+          id: existing.id,
+        },
+        data: {
+          status: "ERROR",
+          lastSyncAt: new Date(),
+          lastError: message,
+        },
+      });
+
+      return {
+        error:
+          "Auftragsbestätigungen konnten nicht abgerufen werden: " +
+          message,
+      };
+    }
+  }
   if (
     intent === "saveConnection" ||
     intent === "testConnection"
@@ -566,6 +717,145 @@ export default function AccountingPage() {
         </section>
       ) : null}
 
+      {connection?.active ? (
+        <section className="panel">
+          <div className="panelHeader">
+            <div>
+              <p className="eyebrow">
+                Dokumente
+              </p>
+
+              <h2>
+                Auftragsbestätigungen
+              </h2>
+
+              <span className="pageSubline">
+                Die letzten Dokumente zunächst nur ansehen. Es werden noch keine Gastario-Aufträge erstellt oder verändert.
+              </span>
+            </div>
+
+            <Form method="post">
+              <button
+                type="submit"
+                name="intent"
+                value="previewDocuments"
+                className="primaryButton"
+              >
+                Auftragsbestätigungen abrufen
+              </button>
+            </Form>
+          </div>
+
+          {Array.isArray(
+            actionData?.documents
+          ) ? (
+            actionData.documents.length >
+            0 ? (
+              <div
+                style={{
+                  display: "grid",
+                  gap: 10,
+                }}
+              >
+                {actionData.documents.map(
+                  (document) => (
+                    <article
+                      key={document.id}
+                      className="settingsCard"
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "minmax(140px, 0.8fr) minmax(180px, 1.4fr) minmax(110px, 0.7fr) minmax(110px, 0.7fr)",
+                        gap: 14,
+                        alignItems: "center",
+                      }}
+                    >
+                      <div>
+                        <small>
+                          Auftragsbestätigung
+                        </small>
+
+                        <strong
+                          style={{
+                            display: "block",
+                            marginTop: 4,
+                          }}
+                        >
+                          {document.voucherNumber}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <small>Kunde</small>
+
+                        <strong
+                          style={{
+                            display: "block",
+                            marginTop: 4,
+                          }}
+                        >
+                          {document.contactName}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <small>Datum</small>
+
+                        <strong
+                          style={{
+                            display: "block",
+                            marginTop: 4,
+                          }}
+                        >
+                          {formatAccountingDate(
+                            document.voucherDate
+                          )}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <small>Betrag</small>
+
+                        <strong
+                          style={{
+                            display: "block",
+                            marginTop: 4,
+                          }}
+                        >
+                          {formatAccountingAmount(
+                            document.totalAmount,
+                            document.currency
+                          )}
+                        </strong>
+                      </div>
+                    </article>
+                  )
+                )}
+              </div>
+            ) : (
+              <div className="noteBox">
+                <strong>
+                  Keine Auftragsbestätigungen gefunden
+                </strong>
+
+                <p>
+                  Im verbundenen Konto wurden aktuell keine passenden Dokumente gefunden.
+                </p>
+              </div>
+            )
+          ) : (
+            <div className="noteBox">
+              <strong>
+                Noch nicht abgerufen
+              </strong>
+
+              <p>
+                Klicke auf „Auftragsbestätigungen abrufen“, um die letzten Dokumente als Vorschau zu laden.
+              </p>
+            </div>
+          )}
+        </section>
+      ) : null}
       <section className="settingsGrid">
         <article
           className="panel"
