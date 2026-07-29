@@ -4057,6 +4057,349 @@ const dashboardCss = `
     .dashOverviewQuickActions > div:last-child {
       grid-template-columns: 1fr;
     }
+  }
+  /* gastario-dashboard-mobile-final-20260729 */
+  @media (max-width: 780px) {
+    .dashPage {
+      width: 100%;
+      max-width: 100%;
+      gap: 12px;
+      padding: 16px 12px 30px;
+      overflow-x: hidden;
+    }
+
+    .dashPage,
+    .dashPage * {
+      box-sizing: border-box;
+    }
+
+    .dashHeader {
+      gap: 14px;
+    }
+
+    .dashHeader h1 {
+      margin-top: 4px;
+      font-size: 30px;
+      line-height: 1.08;
+    }
+
+    .dashSubtitle {
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .dashHeaderActions {
+      display: grid;
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      width: 100%;
+    }
+
+    .dashHeaderActions a {
+      width: auto;
+      min-width: 0;
+      min-height: 46px;
+      padding: 0 10px;
+      text-align: center;
+      white-space: normal;
+    }
+
+    .dashWorkspaceTabs {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+      padding: 5px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .dashWorkspaceTabs::-webkit-scrollbar,
+    .dashPeriodFilter::-webkit-scrollbar {
+      display: none;
+    }
+
+    .dashWorkspaceTabs button {
+      flex: 0 0 auto;
+      min-height: 42px;
+      padding: 0 14px;
+      scroll-snap-align: start;
+      white-space: nowrap;
+    }
+
+    .dashFilterBar {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .dashPeriodFilter {
+      display: flex;
+      gap: 5px;
+      width: 100%;
+      padding-bottom: 2px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .dashPeriodFilter button {
+      flex: 0 0 auto;
+      min-width: 72px;
+      min-height: 42px;
+      padding: 0 13px;
+      white-space: nowrap;
+    }
+
+    .dashFilterControls {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .dashFilterControls select,
+    .dashSearchField,
+    .dashResetButton {
+      width: 100%;
+      min-width: 0;
+      min-height: 44px;
+    }
+
+    .dashSearchField input {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .dashKpiBar {
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      overflow: visible;
+      border: 0;
+      background: transparent;
+    }
+
+    .dashKpiBar a {
+      min-height: 92px;
+      padding: 13px;
+      border: 1px solid #d9e4e0;
+      border-radius: 12px;
+      background: #ffffff;
+    }
+
+    .dashKpiBar a:last-child {
+      grid-column: 1 / -1;
+    }
+
+    .dashKpiBar strong {
+      font-size: 25px;
+    }
+
+    .dashKpiBar small {
+      overflow: visible;
+      line-height: 1.25;
+      text-overflow: clip;
+      white-space: normal;
+    }
+
+    .dashOverviewHome,
+    .dashOverviewOperations,
+    .dashControlGrid,
+    .dashPlanning,
+    .dashAttention {
+      grid-template-columns: minmax(0, 1fr);
+      width: 100%;
+      min-width: 0;
+    }
+
+    .dashPanel {
+      width: 100%;
+      min-width: 0;
+      padding: 15px;
+      border-radius: 13px;
+    }
+
+    .dashPanelHead {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+      margin-bottom: 13px;
+    }
+
+    .dashPanelHead h2 {
+      font-size: 21px;
+    }
+
+    .dashPanelHead > a,
+    .dashPanelHead > button,
+    .dashOverviewTextButton {
+      width: 100%;
+      min-height: 42px;
+      justify-content: center;
+    }
+
+    .dashOverviewDeliveryList {
+      display: grid;
+      gap: 9px;
+    }
+
+    .dashOverviewDelivery {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+      padding: 13px;
+      border: 1px solid #dfe8e4;
+      border-radius: 11px;
+      background: #fbfdfc;
+    }
+
+    .dashOverviewDate {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+      padding-bottom: 9px;
+      border-bottom: 1px solid #e4ece9;
+    }
+
+    .dashOverviewDate strong,
+    .dashOverviewDate span {
+      min-width: 0;
+    }
+
+    .dashOverviewDelivery > div:nth-child(2) {
+      min-width: 0;
+    }
+
+    .dashOverviewDelivery > div:nth-child(2) strong,
+    .dashOverviewDelivery > div:nth-child(2) span,
+    .dashOverviewDelivery > div:nth-child(2) small {
+      display: block;
+      overflow-wrap: anywhere;
+    }
+
+    .dashOverviewStatusGrid {
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .dashOverviewStatusGrid a,
+    .dashOverviewStatusGrid button {
+      min-width: 0;
+      min-height: 108px;
+      padding: 12px;
+    }
+
+    .dashOverviewQuickActions > div:last-child {
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .dashOverviewQuickActions a {
+      min-width: 0;
+      min-height: 76px;
+      padding: 12px;
+    }
+
+    .dashDateGroup {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .dashDateGroup > header {
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .dashOrderRow,
+    .dashCompactOrder {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      min-width: 0;
+      padding: 12px;
+    }
+
+    .dashOrderRow > *,
+    .dashCompactOrder > * {
+      min-width: 0;
+      justify-self: stretch;
+    }
+
+    .dashOrderRow strong,
+    .dashOrderRow span,
+    .dashOrderRow small,
+    .dashCompactOrder strong,
+    .dashCompactOrder span,
+    .dashCompactOrder small {
+      overflow-wrap: anywhere;
+    }
+
+    .dashUpcomingScroll {
+      width: 100%;
+      min-width: 0;
+      overflow: visible;
+    }
+
+    .dashWorkbarTabs {
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .dashWorkbarTabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .dashWorkbarTabs button {
+      flex: 0 0 auto;
+      min-height: 42px;
+      white-space: nowrap;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .dashPage {
+      padding-right: 10px;
+      padding-left: 10px;
+    }
+
+    .dashHeaderActions {
+      grid-template-columns: 1fr;
+    }
+
+    .dashKpiBar {
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    }
+
+    .dashKpiBar a:last-child {
+      grid-column: 1 / -1;
+    }
+
+    .dashOverviewStatusGrid,
+    .dashOverviewQuickActions > div:last-child {
+      grid-template-columns: 1fr;
+    }
+
+    .dashOverviewStatusGrid a,
+    .dashOverviewStatusGrid button {
+      min-height: 86px;
+    }
+
+    .dashPanel {
+      padding: 13px;
+    }
   }`;
 
 // gastario-redeploy-20260726
