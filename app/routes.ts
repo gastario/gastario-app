@@ -10,6 +10,7 @@ export default [
   route("auftraege", "routes/auftraege.tsx"),
   route("auftraege/:orderId/foodlabels", "routes/auftraege.$orderId.foodlabels.tsx"),
   route("import-regeln", "routes/import-regeln.tsx"),
+  route("buchhaltung", "routes/buchhaltung.tsx"),
   route("import-pruefen", "routes/import-pruefen.tsx"),
   route("importe", "routes/importe.tsx"),
   route("angebote", "routes/angebote.tsx"),
