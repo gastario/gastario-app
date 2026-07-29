@@ -161,28 +161,24 @@ export async function action({ request }: { request: Request }) {
       formData.get("supplierId") || ""
     ).trim();
 
-    const requestedType = String(
-      formData.get("connectionType") || "MANUAL"
+    const providerCode = String(
+      formData.get("providerCode") || ""
     ).trim();
 
-    const allowedTypes = [
-      "API",
-      "PUNCHOUT",
-      "BMECAT",
-      "CXML",
-      "EDI",
-      "CSV",
-      "EXCEL",
-      "EMAIL",
-      "MANUAL",
-    ];
+    const provider = automaticSupplierProviders.find(
+      (entry) => entry.code === providerCode
+    );
 
     if (!supplierId) {
-      return { error: "Bitte einen Lieferanten auswählen." };
+      return {
+        error: "Bitte einen Lieferanten auswählen.",
+      };
     }
 
-    if (!allowedTypes.includes(requestedType)) {
-      return { error: "Unbekannter Verbindungstyp." };
+    if (!provider) {
+      return {
+        error: "Bitte einen unterstützten Anbieter auswählen.",
+      };
     }
 
     const supplier = await prisma.supplier.findFirst({
@@ -193,46 +189,64 @@ export async function action({ request }: { request: Request }) {
     });
 
     if (!supplier) {
-      return { error: "Lieferant nicht gefunden." };
+      return {
+        error: "Lieferant nicht gefunden.",
+      };
     }
 
-    const syncIntervalMinutes = Math.max(
-      60,
-      Number(
-        formData.get("syncIntervalMinutes") || 1440
-      ) || 1440
-    );
+    const existingConnection =
+      await prisma.supplierConnection.findFirst({
+        where: {
+          tenantId: access.tenantId,
+          supplierId: supplier.id,
+          active: true,
+        },
+      });
+
+    if (existingConnection) {
+      return {
+        error:
+          "Für diesen Lieferanten besteht bereits eine aktive Verbindung.",
+      };
+    }
+
+    const customerNumber = String(
+      formData.get("customerNumber") || ""
+    ).trim();
+
+    const locationName = String(
+      formData.get("locationName") || ""
+    ).trim();
 
     await prisma.supplierConnection.create({
       data: {
         tenantId: access.tenantId,
         supplierId: supplier.id,
-        type: requestedType as any,
-        status:
-          requestedType === "MANUAL"
-            ? "ACTIVE"
-            : "CONFIGURED",
-        label:
-          String(formData.get("label") || "").trim() ||
-          null,
-        customerNumber:
-          String(
-            formData.get("customerNumber") || ""
-          ).trim() || null,
-        endpointUrl:
-          String(formData.get("endpointUrl") || "").trim() ||
-          null,
-        syncIntervalMinutes,
+        type: provider.internalType as any,
+        status: "CONFIGURED",
+        label: provider.name,
+        customerNumber: customerNumber || null,
+        syncIntervalMinutes: 360,
         active: true,
+        settingsJson: {
+          providerCode: provider.code,
+          providerName: provider.name,
+          locationName: locationName || null,
+          automaticSync: true,
+          fullCatalogSyncHour: 4,
+          priceRefreshHours: [8, 12, 16],
+          liveCheckBeforePurchase: true,
+          onboardingStatus: "ACCESS_REQUIRED",
+        },
       },
     });
 
     return {
       success:
-        "Lieferantenverbindung wurde angelegt.",
+        provider.name +
+        " wurde für die automatische Verbindung vorbereitet.",
     };
   }
-
   const supplierId = String(formData.get("supplierId") || "");
 
   if (!supplierId) {
@@ -296,6 +310,47 @@ export async function action({ request }: { request: Request }) {
   return { error: "Unbekannte Aktion." };
 }
 
+/*
+ * gastario-automatic-supplier-connectors-20260729
+ * Nutzer wählen konkrete Lieferanten statt technischer Schnittstellentypen.
+ */
+const automaticSupplierProviders = [
+  {
+    code: "METRO",
+    name: "METRO",
+    description:
+      "Automatischer Abruf kundenspezifischer Preise und Verfügbarkeit.",
+    internalType: "API",
+  },
+  {
+    code: "TRANSGOURMET",
+    name: "Transgourmet",
+    description:
+      "Automatischer Preis- und Sortimentsabgleich für das Kundenkonto.",
+    internalType: "API",
+  },
+  {
+    code: "CHEFS_CULINAR",
+    name: "CHEFS CULINAR",
+    description:
+      "Automatischer Katalog-, Preis- und Verfügbarkeitsabgleich.",
+    internalType: "API",
+  },
+  {
+    code: "SELGROS",
+    name: "Selgros",
+    description:
+      "Automatischer Abruf von Sortiment und kundenspezifischen Preisen.",
+    internalType: "API",
+  },
+  {
+    code: "OTHER",
+    name: "Weiterer Lieferant",
+    description:
+      "Gastario richtet den passenden offiziellen Datenkanal ein.",
+    internalType: "API",
+  },
+] as const;
 const inputStyle = {
   border: "1px solid #cbd5e1",
   borderRadius: 12,
@@ -519,31 +574,35 @@ export default function SuppliersPage() {
             </label>
 
             <label>
-              Verbindungstyp
+              Anbieter
               <select
-                name="connectionType"
+                name="providerCode"
                 style={inputStyle}
-                defaultValue="MANUAL"
+                defaultValue=""
+                required
               >
-                <option value="API">API</option>
-                <option value="PUNCHOUT">
-                  PunchOut
+                <option value="" disabled>
+                  Anbieter auswählen
                 </option>
-                <option value="BMECAT">BMEcat</option>
-                <option value="CXML">cXML</option>
-                <option value="EDI">EDI</option>
-                <option value="CSV">CSV</option>
-                <option value="EXCEL">Excel</option>
-                <option value="EMAIL">E-Mail</option>
-                <option value="MANUAL">Manuell</option>
+
+                {automaticSupplierProviders.map(
+                  (provider) => (
+                    <option
+                      key={provider.code}
+                      value={provider.code}
+                    >
+                      {provider.name}
+                    </option>
+                  )
+                )}
               </select>
             </label>
 
             <label>
-              Bezeichnung
+              Standort / Markt
               <input
-                name="label"
-                placeholder="z. B. Metro Berlin"
+                name="locationName"
+                placeholder="z. B. Berlin-Marienfelde"
                 style={inputStyle}
               />
             </label>
@@ -557,25 +616,41 @@ export default function SuppliersPage() {
               />
             </label>
 
-            <label>
-              Intervall
-              <select
-                name="syncIntervalMinutes"
-                style={inputStyle}
-                defaultValue="1440"
+            <div
+              style={{
+                display: "grid",
+                gap: 5,
+                padding: "11px 12px",
+                border: "1px solid #cfe3dc",
+                borderRadius: 12,
+                background: "#f1f8f5",
+              }}
+            >
+              <strong
+                style={{
+                  color: "#087b59",
+                  fontSize: 12,
+                }}
               >
-                <option value="60">stündlich</option>
-                <option value="360">alle 6 Stunden</option>
-                <option value="720">alle 12 Stunden</option>
-                <option value="1440">täglich</option>
-              </select>
-            </label>
+                Automatische Aktualisierung
+              </strong>
+
+              <span
+                style={{
+                  color: "#60766e",
+                  fontSize: 10,
+                  lineHeight: 1.4,
+                }}
+              >
+                Mehrmals täglich und erneut vor dem Einkauf.
+              </span>
+            </div>
 
             <button
               className="primaryButton"
               type="submit"
             >
-              Verbindung anlegen
+              Automatisch verbinden
             </button>
           </Form>
         )}
@@ -606,7 +681,7 @@ export default function SuppliersPage() {
                 connection.status === "ACTIVE"
                   ? "Aktiv"
                   : connection.status === "CONFIGURED"
-                    ? "Eingerichtet"
+                    ? "Zugang wird eingerichtet"
                     : connection.status === "ERROR"
                       ? "Fehler"
                       : connection.status === "PAUSED"
@@ -648,14 +723,16 @@ export default function SuppliersPage() {
                   </div>
 
                   <div>
-                    <small>Typ</small>
+                    <small>Anbieter</small>
                     <strong
                       style={{
                         display: "block",
                         marginTop: 4,
                       }}
                     >
-                      {connection.type}
+                      {connection.settingsJson?.providerName ||
+                        connection.label ||
+                        connection.supplierName}
                     </strong>
                   </div>
 
