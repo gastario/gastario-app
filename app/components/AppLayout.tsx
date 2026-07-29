@@ -349,8 +349,13 @@ const currentPathWithSearch =
           aria-label="Navigation öffnen"
           aria-expanded={isMobileSidebarOpen}
         >
-          <span aria-hidden="true">☰</span>
-          <span>Menü</span>
+          <span>Navigation</span>
+          <span
+            className="mobileMenuChevron"
+            aria-hidden="true"
+          >
+            ›
+          </span>
         </button>
       </header>
 
@@ -1155,6 +1160,19 @@ const currentPathWithSearch =
             font: inherit;
             font-size: 13px;
             font-weight: 750;
+          }
+          .mobileMenuChevron {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 7px;
+            background: #e8f4f0;
+            color: #075b48;
+            font-size: 20px;
+            font-weight: 400;
+            line-height: 1;
           }
 
           .mobileSidebarBackdrop {
