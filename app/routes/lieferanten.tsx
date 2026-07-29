@@ -247,6 +247,71 @@ export async function action({ request }: { request: Request }) {
         " wurde für die automatische Verbindung vorbereitet.",
     };
   }
+  /*
+   * gastario-supplier-sync-actions-20260729
+   * Startet ausschliesslich den echten serverseitigen Connector.
+   * Es werden niemals Testpreise oder erfundene Artikel gespeichert.
+   */
+  if (intent === "syncSupplierConnection") {
+    const connectionId = String(
+      formData.get("connectionId") || ""
+    ).trim();
+
+    if (!connectionId) {
+      return {
+        error: "Lieferantenverbindung fehlt.",
+      };
+    }
+
+    const connection =
+      await prisma.supplierConnection.findFirst({
+        where: {
+          id: connectionId,
+          tenantId: access.tenantId,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+    if (!connection) {
+      return {
+        error: "Lieferantenverbindung nicht gefunden.",
+      };
+    }
+
+    const { runSupplierSync } = await import(
+      "../lib/supplier-sync.server"
+    );
+
+    const result = await runSupplierSync({
+      connectionId: connection.id,
+      tenantId: access.tenantId,
+      mode: "FULL",
+    });
+
+    if (!result.ok) {
+      return {
+        error:
+          result.providerName +
+          ": " +
+          result.message,
+      };
+    }
+
+    return {
+      success:
+        result.providerName +
+        " wurde aktualisiert. " +
+        result.itemsCreated +
+        " Artikel neu, " +
+        result.itemsUpdated +
+        " Artikel aktualisiert und " +
+        result.pricesCreated +
+        " Preise gespeichert.",
+    };
+  }
+
   const supplierId = String(formData.get("supplierId") || "");
 
   if (!supplierId) {
@@ -694,7 +759,7 @@ export default function SuppliersPage() {
                   style={{
                     display: "grid",
                     gridTemplateColumns:
-                      "minmax(220px, 1fr) 130px 150px 150px minmax(180px, 1fr)",
+                      "minmax(210px, 1.2fr) 120px 150px 130px minmax(190px, 1fr) auto",
                     gap: 16,
                     alignItems: "center",
                     padding: 16,
@@ -774,25 +839,73 @@ export default function SuppliersPage() {
                         marginTop: 4,
                       }}
                     >
-                      {lastSync?.startedAt
+                      {connection.lastSyncAt
                         ? new Date(
-                            lastSync.startedAt
+                            connection.lastSyncAt
                           ).toLocaleString("de-DE")
-                        : "Noch nicht synchronisiert"}
+                        : lastSync?.startedAt
+                          ? new Date(
+                              lastSync.startedAt
+                            ).toLocaleString("de-DE")
+                          : "Noch nicht synchronisiert"}
                     </strong>
 
-                    {lastSync?.errorMessage ? (
+                    {connection.lastSuccessfulSyncAt ? (
                       <span
                         style={{
                           display: "block",
                           marginTop: 4,
-                          color: "#b91c1c",
+                          color: "#087b59",
+                          fontSize: 11,
                         }}
                       >
-                        {lastSync.errorMessage}
+                        Erfolgreich:{" "}
+                        {new Date(
+                          connection.lastSuccessfulSyncAt
+                        ).toLocaleString("de-DE")}
+                      </span>
+                    ) : null}
+
+                    {connection.lastError ||
+                    lastSync?.errorMessage ? (
+                      <span
+                        style={{
+                          display: "block",
+                          marginTop: 5,
+                          color: "#b91c1c",
+                          fontSize: 11,
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        {connection.lastError ||
+                          lastSync?.errorMessage}
                       </span>
                     ) : null}
                   </div>
+
+                  <Form method="post">
+                    <input
+                      type="hidden"
+                      name="intent"
+                      value="syncSupplierConnection"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="connectionId"
+                      value={connection.id}
+                    />
+
+                    <button
+                      className="primaryButton"
+                      type="submit"
+                      style={{
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      Preise aktualisieren
+                    </button>
+                  </Form>
                 </article>
               );
             })
