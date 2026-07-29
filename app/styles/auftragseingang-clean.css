@@ -1982,3 +1982,233 @@ button {
 }
 
 /* gastario-incoming-order-review-v2-end */
+
+/*
+ * gastario-incoming-mobile-final-20260729
+ * Finale mobile Darstellung der Eingangszentrale.
+ */
+@media (max-width: 720px) {
+  .incomingReferencePage {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding-right: 10px !important;
+    padding-left: 10px !important;
+    overflow-x: hidden !important;
+  }
+
+  .incomingReferencePage,
+  .incomingReferencePage * {
+    box-sizing: border-box;
+  }
+
+  .incomingReferencePage .g-ui-page-header,
+  .incomingReferencePage .pageHeader,
+  .incomingReferencePage .topbar {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .incomingReferencePage .g-ui-page-header__actions,
+  .incomingReferencePage .pageHeaderActions,
+  .incomingReferencePage .topActions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .incomingReferencePage .g-ui-page-header__actions > *,
+  .incomingReferencePage .pageHeaderActions > *,
+  .incomingReferencePage .topActions > * {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .incomingReferenceFilters {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 9px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 11px !important;
+  }
+
+  .incomingReferenceFilters > *,
+  .incomingReferenceFilters label,
+  .incomingReferenceFilters input,
+  .incomingReferenceFilters select {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .incomingSearchField {
+    grid-column: auto !important;
+  }
+
+  .incomingReferenceFilterActions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-column: auto !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .incomingReferenceFilterActions .g-ui-button {
+    width: 100% !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+  }
+
+  .incomingReferenceSection,
+  .incomingReferenceSection .leadEmailPanel,
+  .incomingReferenceSection .finalOrdersShell,
+  .leadEmailGrid,
+  .finalOrdersGrid,
+  .finalOrderRows {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+
+  .leadEmailHeader,
+  .finalOrdersHead {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 9px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .leadEmailGrid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 9px !important;
+  }
+
+  .leadEmailCard {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 11px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 13px !important;
+    overflow: hidden !important;
+  }
+
+  .leadEmailCard > *,
+  .leadEmailCard form,
+  .leadEmailCard div,
+  .leadEmailCard p,
+  .leadEmailCard span,
+  .leadEmailCard strong,
+  .leadEmailCard small {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .leadEmailCard p,
+  .leadEmailCard span,
+  .leadEmailCard strong,
+  .leadEmailCard small {
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+  }
+
+  .leadEmailActions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .leadEmailActions form,
+  .leadEmailActions a,
+  .leadEmailActions button,
+  .leadPrimaryAction,
+  .leadSecondaryAction {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .finalOrdersGrid,
+  .finalOrdersGrid.selectedFocusMode {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    padding: 10px !important;
+    overflow: visible !important;
+  }
+
+  .finalOrderRow {
+    display: grid !important;
+    grid-template-columns: 38px minmax(0, 1fr) !important;
+    gap: 9px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 12px !important;
+    overflow: hidden !important;
+  }
+
+  .finalOrderCustomer,
+  .finalOrderItems,
+  .finalOrderDate,
+  .finalOrderTotal,
+  .finalOrderActions {
+    grid-column: 2 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    justify-self: stretch !important;
+    text-align: left !important;
+  }
+
+  .finalOrderCustomer h3,
+  .finalOrderCustomer p,
+  .finalOrderItems,
+  .finalOrderItems span,
+  .finalOrderDate,
+  .finalOrderTotal {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere !important;
+    white-space: normal !important;
+  }
+
+  .finalOrderActions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 7px !important;
+  }
+
+  .finalSelectedPanel {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 13px !important;
+  }
+
+  .finalSelectedActions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .incomingDocumentImportButton,
+  .incomingLiveButton {
+    width: 100% !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+  }
+}
