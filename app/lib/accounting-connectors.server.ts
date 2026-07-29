@@ -297,6 +297,8 @@ export async function listOrderConfirmations(
 
   const searchParams = new URLSearchParams({
     voucherType: "orderconfirmation",
+    voucherStatus:
+      String(options?.voucherStatus || "any"),
     page: String(page),
     size: String(size),
     sort: "voucherDate,DESC",
