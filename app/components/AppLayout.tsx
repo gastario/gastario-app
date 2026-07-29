@@ -83,7 +83,14 @@ type AppLayoutProps = {
 export default function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
 
-  const currentPathWithSearch =
+  
+  /* gastario-mobile-sidebar-drawer-20260729 */
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] =
+    useState(false);
+
+  const [isMobileNavigation, setIsMobileNavigation] =
+    useState(false);
+const currentPathWithSearch =
     location.pathname + location.search;
 
   const isNavigationItemActive = (to: string) => {
@@ -220,6 +227,78 @@ export default function AppLayout({ children }: AppLayoutProps) {
       return nextGroupIds;
     });
   }, [activeGroupId]);
+  useEffect(() => {
+    const mediaQuery =
+      window.matchMedia("(max-width: 980px)");
+
+    const updateMobileNavigation = () => {
+      const isMobile = mediaQuery.matches;
+
+      setIsMobileNavigation(isMobile);
+
+      if (isMobile) {
+        setOpenGroupIds(
+          activeGroupId &&
+            activeGroupId !== "overview"
+            ? [activeGroupId]
+            : []
+        );
+      }
+    };
+
+    updateMobileNavigation();
+
+    mediaQuery.addEventListener(
+      "change",
+      updateMobileNavigation
+    );
+
+    return () => {
+      mediaQuery.removeEventListener(
+        "change",
+        updateMobileNavigation
+      );
+    };
+  }, [activeGroupId]);
+
+  useEffect(() => {
+    setIsMobileSidebarOpen(false);
+  }, [currentPathWithSearch]);
+
+  useEffect(() => {
+    if (!isMobileSidebarOpen) {
+      return;
+    }
+
+    const previousOverflow =
+      document.body.style.overflow;
+
+    document.body.style.overflow = "hidden";
+
+    const closeOnEscape = (
+      event: KeyboardEvent
+    ) => {
+      if (event.key === "Escape") {
+        setIsMobileSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener(
+      "keydown",
+      closeOnEscape
+    );
+
+    return () => {
+      document.body.style.overflow =
+        previousOverflow;
+
+      window.removeEventListener(
+        "keydown",
+        closeOnEscape
+      );
+    };
+  }, [isMobileSidebarOpen]);
+
 
   const toggleNavigationGroup = (
     groupId: string
@@ -230,15 +309,19 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
     setOpenGroupIds((currentGroupIds) => {
       const nextGroupIds =
-        currentGroupIds.includes(groupId)
-          ? currentGroupIds.filter(
-              (currentGroupId) =>
-                currentGroupId !== groupId
-            )
-          : [
-              ...currentGroupIds,
-              groupId,
-            ];
+        isMobileNavigation
+          ? currentGroupIds.includes(groupId)
+            ? []
+            : [groupId]
+          : currentGroupIds.includes(groupId)
+            ? currentGroupIds.filter(
+                (currentGroupId) =>
+                  currentGroupId !== groupId
+              )
+            : [
+                ...currentGroupIds,
+                groupId,
+              ];
 
       window.localStorage.setItem(
         "gastario-open-navigation-groups",
@@ -251,6 +334,42 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <main className="appShell">
+      <header className="mobileAppBar">
+        <img
+          src="/brand/gastario-logo.png"
+          alt="Gastario"
+        />
+
+        <button
+          type="button"
+          className="mobileMenuButton"
+          onClick={() =>
+            setIsMobileSidebarOpen(true)
+          }
+          aria-label="Navigation öffnen"
+          aria-expanded={isMobileSidebarOpen}
+        >
+          <span aria-hidden="true">☰</span>
+          <span>Menü</span>
+        </button>
+      </header>
+
+      <button
+        type="button"
+        className={
+          "mobileSidebarBackdrop" +
+          (isMobileSidebarOpen
+            ? " isVisible"
+            : "")
+        }
+        onClick={() =>
+          setIsMobileSidebarOpen(false)
+        }
+        aria-label="Navigation schließen"
+        tabIndex={
+          isMobileSidebarOpen ? 0 : -1
+        }
+      />
       <style>
         {`
           :root {
@@ -987,23 +1106,182 @@ export default function AppLayout({ children }: AppLayoutProps) {
           background: #f8faf9 !important;
           color: #153f35 !important;
         }
+        .mobileAppBar,
+        .mobileSidebarBackdrop,
+        .mobileSidebarClose {
+          display: none;
+        }
 
         @media (max-width: 980px) {
           .appShell {
-            grid-template-columns: 1fr !important;
+            grid-template-columns:
+              minmax(0, 1fr) !important;
+            width: 100%;
+            min-width: 0;
+          }
+
+          .mobileAppBar {
+            position: sticky;
+            z-index: 90;
+            top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 64px;
+            padding: 9px 14px;
+            border-bottom: 1px solid #d7e5e1;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow:
+              0 5px 18px rgba(15, 23, 42, 0.07);
+            backdrop-filter: blur(14px);
+          }
+
+          .mobileAppBar img {
+            width: 116px;
+            height: auto;
+          }
+
+          .mobileMenuButton {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            min-height: 42px;
+            padding: 0 13px;
+            border: 1px solid #d4e3df;
+            border-radius: 10px;
+            background: #f8fbfa;
+            color: #16483b;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 750;
+          }
+
+          .mobileSidebarBackdrop {
+            position: fixed;
+            z-index: 109;
+            inset: 0;
+            display: block;
+            visibility: hidden;
+            border: 0;
+            background: rgba(9, 20, 30, 0.43);
+            opacity: 0;
+            pointer-events: none;
+            transition:
+              opacity 180ms ease,
+              visibility 180ms ease;
+          }
+
+          .mobileSidebarBackdrop.isVisible {
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
           }
 
           .sidebar {
-            position: relative !important;
-            height: auto !important;
+            position: fixed !important;
+            z-index: 110;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: min(86vw, 326px);
+            height: 100dvh !important;
+            padding: 14px 13px 15px !important;
+            overflow-y: auto;
+            box-shadow:
+              18px 0 40px rgba(9, 24, 35, 0.18) !important;
+            transform: translateX(-105%);
+            visibility: hidden;
+            transition:
+              transform 200ms ease,
+              visibility 200ms ease;
+          }
+
+          .sidebar.isMobileOpen {
+            visibility: visible;
+            transform: translateX(0);
+          }
+
+          .sidebar .brand {
+            min-height: 66px;
+            justify-content: space-between;
+            margin-bottom: 8px !important;
+            padding: 4px 4px 12px !important;
+          }
+
+          .sidebar .brandLogo {
+            width: 124px !important;
+          }
+
+          .mobileSidebarClose {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border: 1px solid #d8e4e1;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #314844;
+            font: inherit;
+            font-size: 25px;
+          }
+
+          .navGroups.navAccordion {
+            gap: 4px !important;
+          }
+
+          .navAccordionStaticLabel,
+          .navAccordionTrigger {
+            min-height: 45px !important;
+            font-size: 14px !important;
+          }
+
+          .navAccordionItems a {
+            min-height: 41px !important;
+          }
+
+          .workspace {
+            width: 100%;
+            min-width: 0;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .sidebar,
+          .mobileSidebarBackdrop {
+            transition: none;
           }
         }
       `}</style>
 
 
-      <aside className="sidebar">
+      <aside
+        className={
+          "sidebar" +
+          (isMobileSidebarOpen
+            ? " isMobileOpen"
+            : "")
+        }
+      >
         <div className="brand">
-          <img className="brandLogo" src="/brand/gastario-logo.png" alt="Gastario" />
+          <img
+            className="brandLogo"
+            src="/brand/gastario-logo.png"
+            alt="Gastario"
+          />
+
+          <button
+            type="button"
+            className="mobileSidebarClose"
+            onClick={() =>
+              setIsMobileSidebarOpen(false)
+            }
+            aria-label="Navigation schließen"
+          >
+            ×
+          </button>
         </div>
 
         <nav
@@ -1074,6 +1352,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
                     return (
                       <Link
                         preventScrollReset
+                        onClick={() =>
+                          setIsMobileSidebarOpen(false)
+                        }
                         className={
                           isActive ? "active" : undefined
                         }
