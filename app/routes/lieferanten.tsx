@@ -1,4 +1,4 @@
-﻿import { Form, useActionData, useLoaderData } from "react-router";
+import { Form, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 export function meta() {
@@ -11,9 +11,48 @@ export async function loader({ request }: { request: Request }) {
 
   const access = await requireTenantFeature(request, "SUPPLIERS");
 
+  /*
+   * gastario-supplier-connections-ui-20260729
+   * Lieferanten inklusive Verbindungen, Katalogen und aktuellem Preisstand.
+   */
   const suppliers = await prisma.supplier.findMany({
     where: {
       tenantId: access.tenantId,
+    },
+    include: {
+      supplierConnections: {
+        orderBy: [
+          { active: "desc" },
+          { createdAt: "desc" },
+        ],
+        include: {
+          syncRuns: {
+            orderBy: {
+              startedAt: "desc",
+            },
+            take: 1,
+          },
+          _count: {
+            select: {
+              catalogItems: true,
+              syncRuns: true,
+            },
+          },
+        },
+      },
+      supplierCatalogItems: {
+        orderBy: {
+          name: "asc",
+        },
+        include: {
+          prices: {
+            orderBy: {
+              fetchedAt: "desc",
+            },
+            take: 1,
+          },
+        },
+      },
     },
     orderBy: [
       { active: "desc" },
@@ -26,14 +65,60 @@ export async function loader({ request }: { request: Request }) {
     new Set(activeSuppliers.map((supplier) => supplier.category).filter(Boolean))
   );
 
+  const freshnessLimit = Date.now() - 24 * 60 * 60 * 1000;
+
+  const connections = suppliers.flatMap((supplier: any) => {
+    return supplier.supplierConnections.map((connection: any) => ({
+      ...connection,
+      supplierName: supplier.name,
+      supplierActive: supplier.active,
+    }));
+  });
+
+  const catalogItems = suppliers.flatMap((supplier: any) => {
+    return supplier.supplierCatalogItems.map((item: any) => ({
+      ...item,
+      supplierName: supplier.name,
+    }));
+  });
+
+  const catalogItemsWithPrice = catalogItems.filter((item: any) => {
+    return item.prices.length > 0;
+  });
+
+  const currentPriceItems = catalogItemsWithPrice.filter((item: any) => {
+    const fetchedAt = new Date(item.prices[0].fetchedAt).getTime();
+
+    return Number.isFinite(fetchedAt) && fetchedAt >= freshnessLimit;
+  });
+
+  const stalePriceItems = catalogItemsWithPrice.filter((item: any) => {
+    const fetchedAt = new Date(item.prices[0].fetchedAt).getTime();
+
+    return !Number.isFinite(fetchedAt) || fetchedAt < freshnessLimit;
+  });
+
   return {
     tenant: access.tenant,
     suppliers,
+    connections,
+    catalogItems,
+    currentPriceItems,
+    stalePriceItems,
     stats: {
       total: suppliers.length,
       active: activeSuppliers.length,
       categories: mainCategories.length,
       inactive: suppliers.length - activeSuppliers.length,
+      connections: connections.length,
+      activeConnections: connections.filter(
+        (connection: any) =>
+          connection.active &&
+          connection.status === "ACTIVE"
+      ).length,
+      catalogItems: catalogItems.length,
+      currentPrices: currentPriceItems.length,
+      stalePrices: stalePriceItems.length,
     },
   };
 }
@@ -69,6 +154,83 @@ export async function action({ request }: { request: Request }) {
     });
 
     return { success: "Lieferant wurde angelegt." };
+  }
+
+  if (intent === "createConnection") {
+    const supplierId = String(
+      formData.get("supplierId") || ""
+    ).trim();
+
+    const requestedType = String(
+      formData.get("connectionType") || "MANUAL"
+    ).trim();
+
+    const allowedTypes = [
+      "API",
+      "PUNCHOUT",
+      "BMECAT",
+      "CXML",
+      "EDI",
+      "CSV",
+      "EXCEL",
+      "EMAIL",
+      "MANUAL",
+    ];
+
+    if (!supplierId) {
+      return { error: "Bitte einen Lieferanten auswählen." };
+    }
+
+    if (!allowedTypes.includes(requestedType)) {
+      return { error: "Unbekannter Verbindungstyp." };
+    }
+
+    const supplier = await prisma.supplier.findFirst({
+      where: {
+        id: supplierId,
+        tenantId: access.tenantId,
+      },
+    });
+
+    if (!supplier) {
+      return { error: "Lieferant nicht gefunden." };
+    }
+
+    const syncIntervalMinutes = Math.max(
+      60,
+      Number(
+        formData.get("syncIntervalMinutes") || 1440
+      ) || 1440
+    );
+
+    await prisma.supplierConnection.create({
+      data: {
+        tenantId: access.tenantId,
+        supplierId: supplier.id,
+        type: requestedType as any,
+        status:
+          requestedType === "MANUAL"
+            ? "ACTIVE"
+            : "CONFIGURED",
+        label:
+          String(formData.get("label") || "").trim() ||
+          null,
+        customerNumber:
+          String(
+            formData.get("customerNumber") || ""
+          ).trim() || null,
+        endpointUrl:
+          String(formData.get("endpointUrl") || "").trim() ||
+          null,
+        syncIntervalMinutes,
+        active: true,
+      },
+    });
+
+    return {
+      success:
+        "Lieferantenverbindung wurde angelegt.",
+    };
   }
 
   const supplierId = String(formData.get("supplierId") || "");
@@ -176,35 +338,60 @@ export default function SuppliersPage() {
         </div>
       ) : null}
 
-      <section className="orderSummaryGrid">
+      <section
+        className="orderSummaryGrid"
+        style={{
+          gridTemplateColumns:
+            "repeat(5, minmax(0, 1fr))",
+        }}
+      >
         <article className="metricCard">
           <div>
             <p>Lieferanten</p>
             <strong>{data.stats.total}</strong>
             <span>{data.stats.active} aktiv</span>
           </div>
-          <small data-trend="aktiv">echt</small>
+          <small data-trend="aktiv">Stammdaten</small>
         </article>
 
         <article className="metricCard">
           <div>
-            <p>Kategorien</p>
-            <strong>{data.stats.categories}</strong>
-            <span>aktive Lieferantenbereiche</span>
+            <p>Verbindungen</p>
+            <strong>{data.stats.connections}</strong>
+            <span>
+              {data.stats.activeConnections} live aktiv
+            </span>
           </div>
-          <small data-trend="bereit">bereit</small>
+          <small data-trend="bereit">Schnittstellen</small>
         </article>
 
         <article className="metricCard">
           <div>
-            <p>Inaktiv</p>
-            <strong>{data.stats.inactive}</strong>
-            <span>deaktivierte Lieferanten</span>
+            <p>Katalogartikel</p>
+            <strong>{data.stats.catalogItems}</strong>
+            <span>zugeordnete Lieferantenartikel</span>
           </div>
-          <small data-trend="pruefen">Archiv</small>
+          <small data-trend="bereit">Katalog</small>
+        </article>
+
+        <article className="metricCard">
+          <div>
+            <p>Aktuelle Preise</p>
+            <strong>{data.stats.currentPrices}</strong>
+            <span>innerhalb der letzten 24 Stunden</span>
+          </div>
+          <small data-trend="aktiv">Aktuell</small>
+        </article>
+
+        <article className="metricCard">
+          <div>
+            <p>Veraltete Preise</p>
+            <strong>{data.stats.stalePrices}</strong>
+            <span>älter als 24 Stunden</span>
+          </div>
+          <small data-trend="pruefen">Prüfen</small>
         </article>
       </section>
-
       <section className="panel">
         <div className="panelHeader">
           <div>
@@ -260,6 +447,280 @@ export default function SuppliersPage() {
             Anlegen
           </button>
         </Form>
+      </section>
+
+      <section className="panel">
+        <div className="panelHeader">
+          <div>
+            <p className="eyebrow">
+              Tagespreise & Schnittstellen
+            </p>
+            <h2>Lieferantenverbindungen</h2>
+            <span className="pageSubline">
+              Verbinde Lieferantenkonten, Preislisten oder
+              manuelle Kataloge mit Gastario.
+            </span>
+          </div>
+        </div>
+
+        {data.suppliers.length === 0 ? (
+          <div className="noteBox">
+            <strong>
+              Zuerst einen Lieferanten anlegen
+            </strong>
+            <p>
+              Eine Verbindung kann erst einem vorhandenen
+              Lieferanten zugeordnet werden.
+            </p>
+          </div>
+        ) : (
+          <Form
+            method="post"
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "1.1fr 1fr 1fr 1fr 1fr auto",
+              gap: 12,
+              alignItems: "end",
+              padding: 18,
+              border: "1px solid #dbe7e2",
+              borderRadius: 16,
+              background: "#f8fbfa",
+            }}
+          >
+            <input
+              type="hidden"
+              name="intent"
+              value="createConnection"
+            />
+
+            <label>
+              Lieferant
+              <select
+                name="supplierId"
+                style={inputStyle}
+                required
+              >
+                <option value="">
+                  Lieferant auswählen
+                </option>
+
+                {data.suppliers
+                  .filter((supplier: any) => supplier.active)
+                  .map((supplier: any) => (
+                    <option
+                      key={supplier.id}
+                      value={supplier.id}
+                    >
+                      {supplier.name}
+                    </option>
+                  ))}
+              </select>
+            </label>
+
+            <label>
+              Verbindungstyp
+              <select
+                name="connectionType"
+                style={inputStyle}
+                defaultValue="MANUAL"
+              >
+                <option value="API">API</option>
+                <option value="PUNCHOUT">
+                  PunchOut
+                </option>
+                <option value="BMECAT">BMEcat</option>
+                <option value="CXML">cXML</option>
+                <option value="EDI">EDI</option>
+                <option value="CSV">CSV</option>
+                <option value="EXCEL">Excel</option>
+                <option value="EMAIL">E-Mail</option>
+                <option value="MANUAL">Manuell</option>
+              </select>
+            </label>
+
+            <label>
+              Bezeichnung
+              <input
+                name="label"
+                placeholder="z. B. Metro Berlin"
+                style={inputStyle}
+              />
+            </label>
+
+            <label>
+              Kundennummer
+              <input
+                name="customerNumber"
+                placeholder="optional"
+                style={inputStyle}
+              />
+            </label>
+
+            <label>
+              Intervall
+              <select
+                name="syncIntervalMinutes"
+                style={inputStyle}
+                defaultValue="1440"
+              >
+                <option value="60">stündlich</option>
+                <option value="360">alle 6 Stunden</option>
+                <option value="720">alle 12 Stunden</option>
+                <option value="1440">täglich</option>
+              </select>
+            </label>
+
+            <button
+              className="primaryButton"
+              type="submit"
+            >
+              Verbindung anlegen
+            </button>
+          </Form>
+        )}
+
+        <div
+          style={{
+            display: "grid",
+            gap: 12,
+            marginTop: 18,
+          }}
+        >
+          {data.connections.length === 0 ? (
+            <div className="noteBox">
+              <strong>
+                Noch keine Verbindung eingerichtet
+              </strong>
+              <p>
+                Lege zunächst eine manuelle Verbindung oder
+                einen Preislisten-Import an.
+              </p>
+            </div>
+          ) : (
+            data.connections.map((connection: any) => {
+              const lastSync =
+                connection.syncRuns[0] || null;
+
+              const statusLabel =
+                connection.status === "ACTIVE"
+                  ? "Aktiv"
+                  : connection.status === "CONFIGURED"
+                    ? "Eingerichtet"
+                    : connection.status === "ERROR"
+                      ? "Fehler"
+                      : connection.status === "PAUSED"
+                        ? "Pausiert"
+                        : "Nicht verbunden";
+
+              return (
+                <article
+                  key={connection.id}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "minmax(220px, 1fr) 130px 150px 150px minmax(180px, 1fr)",
+                    gap: 16,
+                    alignItems: "center",
+                    padding: 16,
+                    border: "1px solid #dbe7e2",
+                    borderRadius: 14,
+                    background: "#ffffff",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: 4,
+                    }}
+                  >
+                    <strong>
+                      {connection.supplierName}
+                    </strong>
+                    <span>
+                      {connection.label ||
+                        connection.type}
+                    </span>
+                    <small>
+                      Kundennummer:{" "}
+                      {connection.customerNumber || "-"}
+                    </small>
+                  </div>
+
+                  <div>
+                    <small>Typ</small>
+                    <strong
+                      style={{
+                        display: "block",
+                        marginTop: 4,
+                      }}
+                    >
+                      {connection.type}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <small>Status</small>
+                    <strong
+                      style={{
+                        display: "block",
+                        marginTop: 4,
+                        color:
+                          connection.status === "ACTIVE"
+                            ? "#087b59"
+                            : connection.status === "ERROR"
+                              ? "#b91c1c"
+                              : "#596d66",
+                      }}
+                    >
+                      {statusLabel}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <small>Katalogartikel</small>
+                    <strong
+                      style={{
+                        display: "block",
+                        marginTop: 4,
+                      }}
+                    >
+                      {connection._count.catalogItems}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <small>Letzte Synchronisierung</small>
+                    <strong
+                      style={{
+                        display: "block",
+                        marginTop: 4,
+                      }}
+                    >
+                      {lastSync?.startedAt
+                        ? new Date(
+                            lastSync.startedAt
+                          ).toLocaleString("de-DE")
+                        : "Noch nicht synchronisiert"}
+                    </strong>
+
+                    {lastSync?.errorMessage ? (
+                      <span
+                        style={{
+                          display: "block",
+                          marginTop: 4,
+                          color: "#b91c1c",
+                        }}
+                      >
+                        {lastSync.errorMessage}
+                      </span>
+                    ) : null}
+                  </div>
+                </article>
+              );
+            })
+          )}
+        </div>
       </section>
 
       <section className="panel">
