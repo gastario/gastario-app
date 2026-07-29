@@ -8098,3 +8098,411 @@ span:not(.pastOrdersArchiveBadge) {
 }
 
 /* gastario-orders-view-height-equal-final-end */
+
+/*
+ * gastario-orders-mobile-real-final-20260729
+ * Finale mobile Darstellung für /auftraege.
+ */
+@media (max-width: 720px) {
+  .ordersReferencePage {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 12px 7px 34px !important;
+    overflow-x: hidden !important;
+  }
+
+  .ordersReferencePage,
+  .ordersReferencePage * {
+    box-sizing: border-box;
+  }
+
+  .ordersReferencePage .topbar,
+  .ordersReferencePage .g-ui-page-header {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ordersReferencePage .topActions {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .ordersReferencePage .topActions a {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ordersReferencePage .orderSummaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .ordersReferencePage .metricCard {
+    min-width: 0 !important;
+    padding: 12px !important;
+  }
+
+  .ordersReferencePage .panel.g-ui-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 12px 7px !important;
+    overflow: hidden !important;
+  }
+
+  .ordersWorkspaceHeader {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .ordersWorkspaceCount {
+    justify-self: start !important;
+  }
+
+  .ordersWorkspaceFilters,
+  .ordersFilterForm {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ordersFilterForm {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 9px !important;
+  }
+
+  .ordersFilterForm > *,
+  .ordersSearchField,
+  .ordersFilterField,
+  .ordersFilterForm input,
+  .ordersFilterForm select,
+  .ordersFilterForm button,
+  .ordersFilterForm a {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ordersStatusTabs {
+    display: grid !important;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ordersStatusTab {
+    width: 100% !important;
+    min-width: 0 !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: normal !important;
+  }
+
+  .operationalOrderRows {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+
+  .ordersReferencePage .operationalOrderRow,
+  .ordersReferencePage .operationalOrderRowUpcoming,
+  .ordersReferencePage .operationalOrderRowPast {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border-radius: 17px !important;
+    overflow: hidden !important;
+    transform: none !important;
+  }
+
+  .ordersReferencePage .operationalOrderRow .finalOrderIcon {
+    display: none !important;
+  }
+
+  .ordersReferencePage .operationalOrderRow .finalOrderCustomer,
+  .ordersReferencePage .operationalOrderRow .finalOrderItems,
+  .ordersReferencePage .operationalOrderDate,
+  .ordersReferencePage .operationalOrderStatus,
+  .ordersReferencePage .operationalOrderRow .finalOrderTotal,
+  .ordersReferencePage .operationalOrderActions {
+    grid-column: 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    justify-self: stretch !important;
+  }
+
+  .ordersReferencePage .operationalOrderRow .finalOrderCustomer {
+    padding: 15px !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid #e2eae7 !important;
+  }
+
+  .ordersReferencePage .operationalOrderRow .finalOrderCustomer h3 {
+    margin: 5px 0 4px !important;
+    font-size: 21px !important;
+    line-height: 1.15 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .ordersReferencePage .operationalOrderRow .finalOrderCustomer p {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .ordersReferencePage .operationalOrderRow .finalOrderItems {
+    display: grid !important;
+    gap: 7px !important;
+    padding: 14px 15px !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid #e2eae7 !important;
+  }
+
+  .ordersReferencePage .operationalOrderRow .finalOrderItems div {
+    display: grid !important;
+    grid-template-columns:
+      54px minmax(0, 1fr) !important;
+    gap: 9px !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 8px 10px !important;
+    border: 1px solid #dfe8e5 !important;
+    border-radius: 10px !important;
+    background: #fafcfb !important;
+  }
+
+  .ordersReferencePage .operationalOrderRow .finalOrderItems span {
+    min-width: 0 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .ordersReferencePage .operationalOrderDate,
+  .ordersReferencePage .operationalOrderStatus,
+  .ordersReferencePage .operationalOrderRow .finalOrderTotal {
+    padding: 13px 15px !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid #e2eae7 !important;
+    text-align: left !important;
+  }
+
+  .ordersReferencePage .operationalOrderRow .finalOrderTotal {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+  }
+
+  .ordersReferencePage .operationalOrderActions {
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr) 48px !important;
+    gap: 8px !important;
+    padding: 12px 15px !important;
+    border: 0 !important;
+    border-top: 0 !important;
+  }
+
+  .ordersReferencePage .operationalOrderActions > *,
+  .ordersReferencePage .operationalOrderActions form {
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  .ordersReferencePage
+  .operationalOrderActions
+  .deliveryDocumentButton {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 46px !important;
+    padding: 0 13px !important;
+    font-size: 13px !important;
+  }
+
+  .ordersReferencePage .operationalOrderActions form {
+    width: 48px !important;
+  }
+
+  .ordersReferencePage .operationalDeleteButton {
+    width: 48px !important;
+    min-width: 48px !important;
+    height: 46px !important;
+    min-height: 46px !important;
+  }
+
+  .ordersReferencePage
+  .finalOrdersGrid.selectedFocusMode {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 4px !important;
+  }
+
+  .ordersReferencePage .finalSelectedPanel {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 18px !important;
+  }
+
+  .ordersReferencePage .finalSelectedTop {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 16px !important;
+  }
+
+  .ordersReferencePage .finalSelectedTop h3 {
+    max-width: 100% !important;
+    font-size: clamp(29px, 9vw, 40px) !important;
+    line-height: 1.04 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .ordersReferencePage .finalSourceBadge.big {
+    justify-self: start !important;
+  }
+
+  .ordersReferencePage .finalSelectedFacts {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 14px 16px !important;
+  }
+
+  .ordersReferencePage .finalSelectedFacts > div {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ordersReferencePage .finalSelectedItems,
+  .ordersReferencePage .orderBillingPanel {
+    width: calc(100% - 32px) !important;
+    max-width: calc(100% - 32px) !important;
+    min-width: 0 !important;
+    margin-right: 16px !important;
+    margin-left: 16px !important;
+  }
+
+  .ordersReferencePage .finalSelectedItem {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 7px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ordersReferencePage .finalSelectedItem span {
+    min-width: 0 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .ordersReferencePage .finalSelectedItem b {
+    justify-self: start !important;
+  }
+
+  .ordersReferencePage .orderBillingHeader,
+  .ordersReferencePage .orderBillingForm,
+  .ordersReferencePage .orderBillingInvoiceAction {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 9px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ordersReferencePage .orderBillingForm select,
+  .ordersReferencePage .orderBillingForm button {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ordersReferencePage .finalSelectedActions {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 9px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 15px 16px 18px !important;
+  }
+
+  .ordersReferencePage .finalSelectedActionsMain {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 9px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .ordersReferencePage .finalSelectedActionsMain > *,
+  .ordersReferencePage .finalSelectedActionsMain form,
+  .ordersReferencePage .finalSelectedActionsMain a,
+  .ordersReferencePage .finalSelectedActionsMain button,
+  .ordersReferencePage
+  .finalSelectedActionsMain
+  .deliveryDocumentButton,
+  .ordersReferencePage .finalBackButton,
+  .ordersReferencePage .finalFoodlabelsButton {
+    display: flex !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 48px !important;
+    margin: 0 !important;
+    white-space: normal !important;
+  }
+
+  .ordersReferencePage .finalSelectedDeleteForm {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  .ordersReferencePage .finalSelectedDeleteButton {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 48px !important;
+  }
+}
