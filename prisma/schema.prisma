@@ -175,6 +175,7 @@ model Tenant {
   supplierPriceSnapshots SupplierPriceSnapshot[]
   supplierSyncRuns       SupplierSyncRun[]
   productSupplierMatches ProductSupplierMatch[]
+  accountingConnections  AccountingConnection[]
 }
 
 model TenantUser {
@@ -933,6 +934,53 @@ model ImportIgnoreRule {
 
   @@index([tenantId])
   @@index([tenantId, isActive])
+}
+
+/**
+ * gastario-accounting-read-connection-20260729
+ * Mandantenfähige, rein lesende Anbindung externer Buchhaltungssysteme.
+ */
+
+enum AccountingProvider {
+  LEXWARE
+}
+
+enum AccountingConnectionStatus {
+  DISCONNECTED
+  CONFIGURED
+  ACTIVE
+  ERROR
+  PAUSED
+}
+
+model AccountingConnection {
+  id       String @id @default(cuid())
+  tenantId String
+
+  provider AccountingProvider
+  status   AccountingConnectionStatus @default(DISCONNECTED)
+
+  label                String?
+  credentialsEncrypted String
+  organizationId       String?
+  companyName          String?
+  settingsJson         Json?
+
+  lastSyncAt           DateTime?
+  lastSuccessfulSyncAt DateTime?
+  nextSyncAt           DateTime?
+  lastError            String?
+
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, provider])
+  @@index([tenantId])
+  @@index([status])
+  @@index([nextSyncAt])
 }
 
 /**

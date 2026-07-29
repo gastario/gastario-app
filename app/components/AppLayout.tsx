@@ -31,6 +31,7 @@ const navigationGroups = [
     items: [
       { label: "E-Mail-Konten", to: "/importe" },
       { label: "Import-Regeln", to: "/import-regeln" },
+      { label: "Buchhaltung", to: "/buchhaltung" },
     ],
   },
   {
