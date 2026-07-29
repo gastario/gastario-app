@@ -8907,3 +8907,159 @@ span:not(.pastOrdersArchiveBadge) {
     margin: 0 !important;
   }
 }
+/*
+ * gastario-orders-mobile-compact-grid-20260729
+ * Kompakte mobile Karten statt vollständiger Einspaltenansicht.
+ */
+@media (min-width: 391px) and (max-width: 720px) {
+  .ordersPage.ordersReferencePage
+    .operationalOrderRow {
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1.15fr)
+      minmax(0, 0.85fr) !important;
+    grid-template-rows:
+      auto
+      auto
+      auto !important;
+    gap: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .ordersPage .operationalOrderRow
+    > .finalOrderCustomer {
+    grid-column: 1 / -1 !important;
+    grid-row: 1 !important;
+    padding: 15px 16px !important;
+  }
+
+  .ordersPage .operationalOrderRow
+    > .finalOrderItems {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    align-self: stretch !important;
+    padding: 14px !important;
+    border-right:
+      1px solid #e2eae7 !important;
+    border-bottom:
+      1px solid #e2eae7 !important;
+  }
+
+  .ordersPage .operationalOrderRow
+    > .operationalOrderDate {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    align-self: stretch !important;
+    padding: 14px !important;
+    border-bottom:
+      1px solid #e2eae7 !important;
+  }
+
+  .ordersPage .operationalOrderRow
+    > .operationalOrderStatus {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+    padding: 13px 14px !important;
+    border-right:
+      1px solid #e2eae7 !important;
+    border-bottom: 0 !important;
+  }
+
+  .ordersPage .operationalOrderRow
+    > .finalOrderTotal {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+    align-self: end !important;
+    justify-content: flex-start !important;
+    padding:
+      48px 14px 13px !important;
+    border-right:
+      1px solid #e2eae7 !important;
+    border-bottom: 0 !important;
+  }
+
+  .ordersPage .operationalOrderRow
+    > .operationalOrderActions {
+    grid-column: 2 !important;
+    grid-row: 3 !important;
+    align-self: stretch !important;
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 1fr)
+      46px !important;
+    align-content: center !important;
+    padding: 13px !important;
+    border-bottom: 0 !important;
+  }
+
+  .ordersPage .operationalOrderRow
+    .finalOrderItems > div {
+    grid-template-columns:
+      42px minmax(0, 1fr) !important;
+    min-height: 38px !important;
+    padding: 7px 8px !important;
+  }
+
+  .ordersPage .operationalOrderRow
+    .finalOrderItems > div:nth-of-type(n + 3) {
+    display: none !important;
+  }
+
+  .ordersPage .operationalOrderRow
+    .finalOrderItems > small {
+    margin-top: 3px !important;
+    font-size: 11px !important;
+  }
+
+  .ordersPage .operationalOrderDate
+    strong {
+    font-size: 18px !important;
+  }
+
+  .ordersPage .operationalOrderDate
+    small {
+    display: -webkit-box !important;
+    overflow: hidden !important;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+  }
+
+  .ordersPage .operationalOrderRow
+    .finalOrderTotal {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 5px !important;
+  }
+
+  .ordersPage .operationalOrderRow
+    .finalOrderTotal strong {
+    font-size: 21px !important;
+  }
+
+  .ordersPage .operationalOrderRow
+    .finalOrderTotal span {
+    max-width: 100% !important;
+    font-size: 9.5px !important;
+  }
+}
+
+/*
+ * Auf sehr schmalen Geräten weiter einspaltig,
+ * damit nichts abgeschnitten wird.
+ */
+@media (max-width: 390px) {
+  .ordersPage.ordersReferencePage
+    .operationalOrderRow {
+    grid-template-columns:
+      minmax(0, 1fr) !important;
+  }
+
+  .ordersPage .operationalOrderRow > * {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+  }
+}

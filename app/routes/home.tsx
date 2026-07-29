@@ -4400,6 +4400,118 @@ const dashboardCss = `
     .dashPanel {
       padding: 13px;
     }
-  }`;
+  }
+/*
+ * gastario-dashboard-mobile-full-width-20260729
+ * Gleiche mobile Inhaltsbreite wie die Eingangszentrale.
+ */
+@media (max-width: 780px) {
+  .dashPage {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 14px 7px 36px !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .dashPage,
+  .dashPage * {
+    box-sizing: border-box;
+  }
+
+  .dashHeader,
+  .dashWorkspaceTabs,
+  .dashFilterBar,
+  .dashKpiBar,
+  .dashOverviewHome,
+  .dashOverviewDeliveries,
+  .dashOverviewOperations,
+  .dashControlGrid,
+  .dashPlanning,
+  .dashAttention,
+  .dashPanel,
+  .dashTodayPanel,
+  .dashUpcomingPanel,
+  .dashWorkbar {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
+
+  .dashHeader {
+    padding-right: 5px !important;
+    padding-left: 5px !important;
+  }
+
+  .dashHeaderActions {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .dashHeaderActions > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .dashWorkspaceTabs {
+    padding-right: 2px !important;
+    padding-left: 2px !important;
+  }
+
+  .dashFilterBar {
+    padding: 11px !important;
+    border-radius: 16px !important;
+  }
+
+  .dashPeriodFilter {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .dashPeriodFilter > * {
+    min-width: 0 !important;
+  }
+
+  .dashKpiBar {
+    gap: 10px !important;
+  }
+
+  .dashKpiBar > * {
+    min-width: 0 !important;
+  }
+
+  .dashPanel {
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+    border-radius: 16px !important;
+  }
+
+  .dashOverviewDelivery,
+  .dashOverviewStatusGrid > *,
+  .dashOverviewQuickActions > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .dashPage {
+    padding-right: 5px !important;
+    padding-left: 5px !important;
+  }
+
+  .dashFilterBar,
+  .dashPanel {
+    padding-right: 10px !important;
+    padding-left: 10px !important;
+  }
+}
+`;
 
 // gastario-redeploy-20260726
