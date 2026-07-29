@@ -2461,6 +2461,441 @@ export async function loader({ request }: { request: Request }) {
         });
       } finally {
         lock.release();
+
+        /*
+         * gastario-sent-confirmation-import-20260729
+         *
+         * Aus dem Gesendet-Ordner werden ausschliesslich
+         * Nachrichten verarbeitet, auf die eine aktive
+         * Klassifizierungsregel passt.
+         */
+        try {
+          const listedMailboxes =
+            (await client.list()) as any[];
+
+          const sentMailbox =
+            listedMailboxes.find((mailbox: any) => {
+              return String(
+                mailbox?.specialUse || ""
+              ).toLowerCase() === "\\sent";
+            }) ||
+            listedMailboxes.find((mailbox: any) => {
+              const mailboxPath = String(
+                mailbox?.path || ""
+              )
+                .trim()
+                .toLowerCase();
+
+              return (
+                mailboxPath === "sent" ||
+                mailboxPath === "sent items" ||
+                mailboxPath === "gesendet" ||
+                mailboxPath === "gesendete elemente" ||
+                mailboxPath.endsWith("/sent") ||
+                mailboxPath.endsWith("/sent items") ||
+                mailboxPath.endsWith("/gesendet") ||
+                mailboxPath.endsWith(
+                  "/gesendete elemente"
+                )
+              );
+            });
+
+          if (sentMailbox?.path) {
+            const sentMailboxPath = String(
+              sentMailbox.path
+            );
+
+            const sentLock =
+              await client.getMailboxLock(
+                sentMailboxPath
+              );
+
+            try {
+              const sentUids =
+                await client.search({
+                  since,
+                });
+
+              for await (
+                const message of client.fetch(
+                  sentUids,
+                  {
+                    uid: true,
+                    envelope: true,
+                    source: true,
+                  }
+                )
+              ) {
+                const parsed =
+                  await simpleParser(
+                    message.source as Buffer
+                  );
+
+                const subject = String(
+                  parsed.subject || ""
+                );
+
+                const sender = String(
+                  parsed.from?.text || ""
+                );
+
+                let bestText = String(
+                  parsed.text || ""
+                );
+
+                const attachmentsToSave:
+                  Array<{
+                    filename: string;
+                    mimeType: string | null;
+                    textContent: string | null;
+                    size: number;
+                    contentType: string | null;
+                  }> = [];
+
+                for (
+                  const attachment of
+                    parsed.attachments || []
+                ) {
+                  let attachmentText = "";
+
+                  const isPdf =
+                    attachment.contentType ===
+                      "application/pdf" ||
+                    String(
+                      attachment.filename || ""
+                    )
+                      .toLowerCase()
+                      .endsWith(".pdf");
+
+                  if (isPdf) {
+                    result.pdfAttachments += 1;
+
+                    const pdfResult =
+                      await extractPdfText(
+                        Buffer.from(
+                          attachment.content
+                        )
+                      );
+
+                    attachmentText =
+                      pdfResult.text;
+
+                    if (attachmentText) {
+                      result.pdfTextExtracted += 1;
+
+                      bestText +=
+                        "\n\n" +
+                        attachmentText;
+                    } else {
+                      result.pdfTextEmpty += 1;
+                    }
+
+                    if (pdfResult.error) {
+                      result.pdfErrors.push(
+                        String(
+                          attachment.filename ||
+                            "attachment"
+                        ) +
+                          ": " +
+                          pdfResult.error
+                      );
+                    }
+                  }
+
+                  attachmentsToSave.push({
+                    filename:
+                      attachment.filename ||
+                      "attachment",
+                    mimeType:
+                      attachment.contentType ||
+                      null,
+                    textContent:
+                      attachmentText || null,
+                    size: Number(
+                      attachment.size || 0
+                    ),
+                    contentType:
+                      attachment.contentType ||
+                      null,
+                  });
+                }
+
+                const classificationRuleMatch =
+                  await findClassificationImportRuleMatch({
+                    tenantId:
+                      account.tenantId,
+                    subject,
+                    sender,
+                    bestText,
+                  });
+
+                const shouldImportSentMessage =
+                  String(
+                    classificationRuleMatch
+                      ?.action || ""
+                  ).toUpperCase() ===
+                  "CREATE_REVIEW_ORDER";
+
+                if (!shouldImportSentMessage) {
+                  continue;
+                }
+
+                const messageId = String(
+                  parsed.messageId ||
+                    (
+                      "sent-" +
+                      account.id +
+                      "-" +
+                      sentMailboxPath +
+                      "-" +
+                      message.uid
+                    )
+                );
+
+                const mailboxKey =
+                  account.email +
+                  "::" +
+                  sentMailboxPath;
+
+                const duplicate =
+                  await prisma.incomingEmail.findFirst({
+                    where: {
+                      tenantId:
+                        account.tenantId,
+                      OR: [
+                        {
+                          messageId,
+                        },
+                        {
+                          mailbox:
+                            mailboxKey,
+                          subject:
+                            subject ||
+                            "(ohne Betreff)",
+                          sender,
+                        },
+                      ],
+                    },
+                    select: {
+                      id: true,
+                    },
+                  });
+
+                if (duplicate) {
+                  result.skippedDuplicates += 1;
+                  continue;
+                }
+
+                const incomingEmail =
+                  await prisma.incomingEmail.create({
+                    data: {
+                      tenantId:
+                        account.tenantId,
+                      emailAccountId:
+                        account.id,
+                      brandId:
+                        account.brandId ||
+                        null,
+                      mailbox:
+                        mailboxKey,
+                      sender,
+                      subject:
+                        subject ||
+                        "(ohne Betreff)",
+                      bodyText: String(
+                        parsed.text || ""
+                      ),
+                      source: "EMAIL" as any,
+                      status:
+                        "RECEIVED" as any,
+                      messageId,
+                      extractedJson: {
+                        uid: message.uid,
+                        date:
+                          parsed.date
+                            ?.toISOString?.() ||
+                          null,
+                        from:
+                          parsed.from?.text ||
+                          null,
+                        to:
+                          parsed.to?.text ||
+                          null,
+                        subject:
+                          parsed.subject ||
+                          null,
+                        imapFolder:
+                          sentMailboxPath,
+                        direction: "SENT",
+                        classificationRuleId:
+                          classificationRuleMatch
+                            ?.id || null,
+                      },
+                    },
+                  });
+
+                result.savedEmails += 1;
+
+                for (
+                  const attachment of
+                    attachmentsToSave
+                ) {
+                  await prisma.emailAttachment.create({
+                    data: {
+                      incomingEmailId:
+                        incomingEmail.id,
+                      filename:
+                        attachment.filename,
+                      mimeType:
+                        attachment.mimeType,
+                      textContent:
+                        attachment.textContent,
+                      extractedJson: {
+                        size:
+                          attachment.size,
+                        contentType:
+                          attachment.contentType,
+                        pdfTextLength:
+                          attachment.textContent
+                            ?.length || 0,
+                        pdfTextError:
+                          attachment.mimeType ===
+                            "application/pdf" &&
+                          !attachment.textContent
+                            ? "PDF_TEXT_EMPTY"
+                            : null,
+                        imapFolder:
+                          sentMailboxPath,
+                        direction: "SENT",
+                      },
+                    },
+                  });
+                }
+
+                const aiDecision =
+                  createDecisionFromClassificationRule(
+                    classificationRuleMatch,
+                    {
+                      subject,
+                      sender,
+                      bestText,
+                    }
+                  );
+
+                const extractedOrder =
+                  extractOrderWithCentralImportEngine({
+                    subject,
+                    sender,
+                    bodyText: String(
+                      parsed.text || ""
+                    ),
+                    documentText:
+                      bestText,
+                  });
+
+                const importAnalysis =
+                  analyzeImportedOrder({
+                    documentType:
+                      aiDecision.mailType as any,
+                    classificationConfidence:
+                      Number(
+                        aiDecision.confidence ||
+                          0
+                      ),
+                    classificationReason:
+                      String(
+                        aiDecision.reason || ""
+                      ),
+                    extractedOrder,
+                    subject,
+                    sender,
+                    sourceText:
+                      bestText,
+                  });
+
+                const creationResult =
+                  await createReviewOrderFromExtracted({
+                    tenantId:
+                      account.tenantId,
+                    brandId:
+                      account.brandId,
+                    incomingEmailId:
+                      incomingEmail.id,
+                    extractedOrder,
+                    bestText,
+                    subject,
+                  });
+
+                await prisma.incomingEmail.update({
+                  where: {
+                    id: incomingEmail.id,
+                  },
+                  data: {
+                    status:
+                      creationResult.created
+                        ? ("ORDER_CREATED" as any)
+                        : ("IGNORED" as any),
+                    processedAt:
+                      new Date(),
+                    extractedJson: {
+                      ...extractedOrder,
+                      aiDecision,
+                      importAnalysis,
+                      imapFolder:
+                        sentMailboxPath,
+                      direction: "SENT",
+                      classificationRuleId:
+                        classificationRuleMatch
+                          ?.id || null,
+                      duplicateReason:
+                        creationResult
+                          .duplicateReason,
+                      linkedOrderId:
+                        creationResult.order
+                          ?.id || null,
+                    },
+                    errorMessage:
+                      creationResult.created
+                        ? null
+                        : creationResult
+                            .duplicateReason,
+                  },
+                });
+
+                if (creationResult.created) {
+                  result.createdOrders += 1;
+                } else {
+                  result.skippedDuplicates += 1;
+                }
+              }
+            } finally {
+              sentLock.release();
+            }
+          }
+        } catch (sentMailboxError: any) {
+          console.error(
+            "Sent confirmation import failed",
+            {
+              accountId: account.id,
+              accountEmail:
+                account.email,
+              error: String(
+                sentMailboxError?.message ||
+                  sentMailboxError
+              ),
+            }
+          );
+
+          result.errors.push(
+            account.email +
+              " Gesendet-Ordner: " +
+              String(
+                sentMailboxError?.message ||
+                  sentMailboxError
+              )
+          );
+        }
+
         await client.logout();
       }
     } catch (error: any) {
