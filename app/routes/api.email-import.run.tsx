@@ -395,16 +395,6 @@ async function findClassificationImportRuleMatch(params: {
           : conditions.some(Boolean);
       }) || null;
 
-    console.log("Classification import rule result:", {
-      tenantId: params.tenantId,
-      subject: params.subject,
-      sender: params.sender,
-      matched: Boolean(matchedRule),
-      ruleId: matchedRule?.id || null,
-      ruleName: matchedRule?.name || null,
-      action: matchedRule?.action || null,
-      documentType: matchedRule?.documentType || null,
-    });
 
     return matchedRule;
   } catch (error) {
@@ -1796,17 +1786,6 @@ export async function loader({ request }: { request: Request }) {
           const parsed = await simpleParser(message.source as Buffer);
           const messageId = String(parsed.messageId || message.uid || "");
 
-          console.log("Email import fetched message:", {
-            accountId: account.id,
-            accountEmail: account.email,
-            mailbox: account.email,
-            uid: message.uid,
-            messageId,
-            subject: String(parsed.subject || ""),
-            sender: String(parsed.from?.text || ""),
-            date:
-              parsed.date?.toISOString?.() || null,
-          });
 
           const existing = await prisma.incomingEmail.findFirst({
             where: {
