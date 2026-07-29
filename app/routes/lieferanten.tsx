@@ -248,6 +248,84 @@ export async function action({ request }: { request: Request }) {
     };
   }
   /*
+   * gastario-update-supplier-connection-20260729
+   * Speichert Kundennummer und Standort einer bestehenden
+   * automatischen Lieferantenverbindung.
+   */
+  if (intent === "updateSupplierConnection") {
+    const connectionId = String(
+      formData.get("connectionId") || ""
+    ).trim();
+
+    const customerNumber = String(
+      formData.get("customerNumber") || ""
+    ).trim();
+
+    const locationName = String(
+      formData.get("locationName") || ""
+    ).trim();
+
+    if (!connectionId) {
+      return {
+        error: "Lieferantenverbindung fehlt.",
+      };
+    }
+
+    if (!customerNumber) {
+      return {
+        error: "Bitte die Kundennummer eintragen.",
+      };
+    }
+
+    const connection =
+      await prisma.supplierConnection.findFirst({
+        where: {
+          id: connectionId,
+          tenantId: access.tenantId,
+        },
+        select: {
+          id: true,
+          settingsJson: true,
+        },
+      });
+
+    if (!connection) {
+      return {
+        error: "Lieferantenverbindung nicht gefunden.",
+      };
+    }
+
+    const previousSettings =
+      connection.settingsJson &&
+      typeof connection.settingsJson === "object" &&
+      !Array.isArray(connection.settingsJson)
+        ? connection.settingsJson
+        : {};
+
+    await prisma.supplierConnection.update({
+      where: {
+        id: connection.id,
+      },
+      data: {
+        customerNumber,
+        status: "CONFIGURED",
+        lastError: null,
+        settingsJson: {
+          ...(previousSettings as Record<string, unknown>),
+          customerNumber,
+          locationName: locationName || null,
+          onboardingStatus: "ACCESS_REQUIRED",
+          automaticSync: true,
+        },
+      },
+    });
+
+    return {
+      success:
+        "Kundennummer und Standort wurden gespeichert.",
+    };
+  }
+  /*
    * gastario-supplier-sync-actions-20260729
    * Startet ausschliesslich den echten serverseitigen Connector.
    * Es werden niemals Testpreise oder erfundene Artikel gespeichert.
@@ -783,7 +861,15 @@ export default function SuppliersPage() {
                     </span>
                     <small>
                       Kundennummer:{" "}
-                      {connection.customerNumber || "-"}
+                      {connection.customerNumber ||
+                        connection.settingsJson?.customerNumber ||
+                        "-"}
+                    </small>
+
+                    <small>
+                      Standort:{" "}
+                      {connection.settingsJson?.locationName ||
+                        "-"}
                     </small>
                   </div>
 
@@ -883,29 +969,105 @@ export default function SuppliersPage() {
                     ) : null}
                   </div>
 
-                  <Form method="post">
-                    <input
-                      type="hidden"
-                      name="intent"
-                      value="syncSupplierConnection"
-                    />
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: 8,
+                      minWidth: 210,
+                    }}
+                  >
+                    <details>
+                      <summary
+                        className="ghostButton"
+                        style={{
+                          listStyle: "none",
+                          cursor: "pointer",
+                          textAlign: "center",
+                        }}
+                      >
+                        Zugang bearbeiten
+                      </summary>
 
-                    <input
-                      type="hidden"
-                      name="connectionId"
-                      value={connection.id}
-                    />
+                      <Form
+                        method="post"
+                        style={{
+                          display: "grid",
+                          gap: 8,
+                          marginTop: 8,
+                          padding: 12,
+                          border: "1px solid #dbe7e2",
+                          borderRadius: 12,
+                          background: "#f8fbfa",
+                        }}
+                      >
+                        <input
+                          type="hidden"
+                          name="intent"
+                          value="updateSupplierConnection"
+                        />
 
-                    <button
-                      className="primaryButton"
-                      type="submit"
-                      style={{
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Preise aktualisieren
-                    </button>
-                  </Form>
+                        <input
+                          type="hidden"
+                          name="connectionId"
+                          value={connection.id}
+                        />
+
+                        <input
+                          name="customerNumber"
+                          defaultValue={
+                            connection.customerNumber ||
+                            connection.settingsJson?.customerNumber ||
+                            ""
+                          }
+                          placeholder="Kundennummer"
+                          style={inputStyle}
+                          required
+                        />
+
+                        <input
+                          name="locationName"
+                          defaultValue={
+                            connection.settingsJson?.locationName ||
+                            ""
+                          }
+                          placeholder="Standort / Markt"
+                          style={inputStyle}
+                        />
+
+                        <button
+                          className="secondaryButton"
+                          type="submit"
+                        >
+                          Zugang speichern
+                        </button>
+                      </Form>
+                    </details>
+
+                    <Form method="post">
+                      <input
+                        type="hidden"
+                        name="intent"
+                        value="syncSupplierConnection"
+                      />
+
+                      <input
+                        type="hidden"
+                        name="connectionId"
+                        value={connection.id}
+                      />
+
+                      <button
+                        className="primaryButton"
+                        type="submit"
+                        style={{
+                          whiteSpace: "nowrap",
+                          width: "100%",
+                        }}
+                      >
+                        Preise aktualisieren
+                      </button>
+                    </Form>
+                  </div>
                 </article>
               );
             })
