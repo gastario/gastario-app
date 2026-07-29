@@ -1809,6 +1809,17 @@ export async function loader({ request }: { request: Request }) {
             },
           });
 
+          if (String(parsed.subject || "").toUpperCase().includes("AB3585")) {
+            console.log("AB3585 INBOX found:", {
+              accountEmail: account.email,
+              messageId,
+              subject: String(parsed.subject || ""),
+              sender: String(parsed.from?.text || ""),
+              existingEmailId: existing?.id || null,
+              existingOrdersCount: existing?.orders?.length || 0,
+            });
+          }
+
           if (existing) {
             result.skippedDuplicates += 1;
 
@@ -1889,6 +1900,16 @@ export async function loader({ request }: { request: Request }) {
                           sender: String(parsed.from?.text || ""),
                           bestText,
                         });
+
+                      if (String(parsed.subject || "").toUpperCase().includes("AB3585")) {
+                        console.log("AB3585 classification result:", {
+                          accountEmail: account.email,
+                          matchedRuleId: classificationRuleMatch?.id || null,
+                          matchedRuleName: classificationRuleMatch?.name || null,
+                          action: classificationRuleMatch?.action || null,
+                          documentType: classificationRuleMatch?.documentType || null,
+                        });
+                      }
 
             const ignoreRuleMatch =
               classificationRuleMatch
@@ -2210,6 +2231,16 @@ export async function loader({ request }: { request: Request }) {
               sender: String(parsed.from?.text || ""),
               bestText,
             });
+
+          if (String(parsed.subject || "").toUpperCase().includes("AB3585")) {
+            console.log("AB3585 classification result:", {
+              accountEmail: account.email,
+              matchedRuleId: classificationRuleMatch?.id || null,
+              matchedRuleName: classificationRuleMatch?.name || null,
+              action: classificationRuleMatch?.action || null,
+              documentType: classificationRuleMatch?.documentType || null,
+            });
+          }
 
           const ignoreRuleMatch =
             classificationRuleMatch
