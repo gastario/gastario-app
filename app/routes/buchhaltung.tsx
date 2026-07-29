@@ -4,6 +4,7 @@ import {
   useLoaderData,
 } from "react-router";
 import AppLayout from "../components/AppLayout";
+import { ACCOUNTING_PROVIDERS } from "../lib/accounting-providers";
 
 export function meta() {
   return [{ title: "Buchhaltung · Gastario" }];
@@ -411,6 +412,131 @@ export default function AccountingPage() {
         </div>
       </header>
 
+      <section className="panel">
+        <div className="panelHeader">
+          <div>
+            <p className="eyebrow">
+              Anbieter
+            </p>
+
+            <h2>
+              Unterstützte Buchhaltungsprogramme
+            </h2>
+
+            <span className="pageSubline">
+              Gastario bleibt unabhängig. Jeder Caterer kann später das von ihm verwendete Buchhaltungsprogramm verbinden.
+            </span>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: 14,
+          }}
+        >
+          {ACCOUNTING_PROVIDERS.map(
+            (provider) => {
+              const available =
+                provider.availability ===
+                "AVAILABLE";
+
+              const connected =
+                provider.code === "LEXWARE" &&
+                Boolean(connection);
+
+              return (
+                <article
+                  key={provider.code}
+                  className="settingsCard"
+                  style={{
+                    display: "grid",
+                    gap: 12,
+                    alignContent: "start",
+                    minHeight: 190,
+                  }}
+                >
+                  <div className="settingsCardTop">
+                    <strong>
+                      {provider.name}
+                    </strong>
+
+                    <em>
+                      {connected
+                        ? "Verbunden"
+                        : available
+                          ? "Verfügbar"
+                          : "In Vorbereitung"}
+                    </em>
+                  </div>
+
+                  <span>
+                    {provider.description}
+                  </span>
+
+                  {provider.capabilities.length >
+                  0 ? (
+                    <div
+                      style={{
+                        display: "grid",
+                        gap: 5,
+                      }}
+                    >
+                      {provider.capabilities.map(
+                        (capability) => (
+                          <small
+                            key={capability}
+                          >
+                            ✓ {capability}
+                          </small>
+                        )
+                      )}
+                    </div>
+                  ) : (
+                    <small>
+                      Noch keine aktive Verbindung verfügbar.
+                    </small>
+                  )}
+
+                  {available ? (
+                    <a
+                      href="#zugang-einrichten"
+                      className="secondaryButton"
+                      style={{
+                        display: "inline-flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        textDecoration: "none",
+                        marginTop: "auto",
+                      }}
+                    >
+                      {connected
+                        ? "Verbindung verwalten"
+                        : "Verbindung einrichten"}
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      className="ghostButton"
+                      disabled
+                      style={{
+                        marginTop: "auto",
+                        opacity: 0.6,
+                        cursor: "not-allowed",
+                      }}
+                    >
+                      Noch nicht verfügbar
+                    </button>
+                  )}
+                </article>
+              );
+            }
+          )}
+        </div>
+      </section>
+
       {data.error ? (
         <section className="panel">
           <div className="noteBox">
@@ -441,7 +567,13 @@ export default function AccountingPage() {
       ) : null}
 
       <section className="settingsGrid">
-        <article className="panel">
+        <article
+          className="panel"
+          id="zugang-einrichten"
+          style={{
+            scrollMarginTop: 24,
+          }}
+        >
           <div className="panelHeader">
             <div>
               <p className="eyebrow">

@@ -1,5 +1,44 @@
 const LEXWARE_API_BASE_URL = "https://api.lexware.io";
 
+export type AccountingProviderCode =
+  | "LEXWARE";
+
+export type AccountingConnector = {
+  providerCode: AccountingProviderCode;
+  providerName: string;
+  readOnly: true;
+
+  testConnection(
+    accessToken: string
+  ): Promise<{
+    ok: boolean;
+    organizationId: string;
+    companyName: string;
+    userEmail: string | null;
+    subscriptionStatus: string | null;
+  }>;
+
+  listOrderConfirmations(
+    accessToken: string,
+    options?: {
+      page?: number;
+      size?: number;
+      voucherStatus?: string;
+      voucherNumber?: string;
+    }
+  ): Promise<AccountingOrderConfirmationPage>;
+
+  getOrderConfirmation(
+    accessToken: string,
+    documentId: string
+  ): Promise<AccountingOrderConfirmation>;
+
+  getOrderConfirmationPdf(
+    accessToken: string,
+    documentId: string
+  ): Promise<AccountingPdfFile>;
+};
+
 export type AccountingProfile = {
   organizationId: string;
   companyName: string;
@@ -384,4 +423,29 @@ export async function getOrderConfirmationPdf(
         "content-type"
       ) || "application/pdf",
   };
+}
+export const lexwareAccountingConnector: AccountingConnector = {
+  providerCode: "LEXWARE",
+  providerName: "Lexware Office",
+  readOnly: true,
+  testConnection: testAccountingConnection,
+  listOrderConfirmations,
+  getOrderConfirmation,
+  getOrderConfirmationPdf,
+};
+
+export function getAccountingConnector(
+  providerCode: unknown
+): AccountingConnector | null {
+  const normalizedCode = String(
+    providerCode || ""
+  )
+    .trim()
+    .toUpperCase();
+
+  if (normalizedCode === "LEXWARE") {
+    return lexwareAccountingConnector;
+  }
+
+  return null;
 }
