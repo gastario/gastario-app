@@ -150,7 +150,14 @@ export async function loader({ request }: { request: Request }) {
           gte: start,
           lt: end,
         },
-      },
+        status: {
+          in: [
+            "CONFIRMED",
+            "IN_PRODUCTION",
+            "PACKING_OPEN",
+          ] as any,
+        },
+},
     }).catch(() => 0),
 
     prisma.order.count({
@@ -219,7 +226,14 @@ export async function loader({ request }: { request: Request }) {
           gte: start,
           lt: end,
         },
-      },
+        status: {
+          in: [
+            "CONFIRMED",
+            "IN_PRODUCTION",
+            "PACKING_OPEN",
+          ] as any,
+        },
+},
       include: {
         items: true,
         customer: true,
@@ -874,7 +888,7 @@ export default function Home() {
    * Übersicht und operativer Arbeitskorb aus vorhandenen Auftragsdaten.
    */
   const overviewNextOrders =
-    allPlanningOrders.slice(0, 3);
+    filteredPlanningOrders.slice(0, 3);
 
   const dashboardTaskCounts = {
     review:
