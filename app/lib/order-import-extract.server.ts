@@ -549,6 +549,13 @@ function isInvalidImportedItem(name: string, description?: string, rawLine?: str
 
   if (!value) return true;
 
+  const containsEmailAddress =
+    /\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/i.test(
+      value
+    );
+
+  if (containsEmailAddress) return true;
+
   if (/^[-??\s]*\d+\s+of\s+\d+[-??\s]*/i.test(value)) return true;
   if (value.includes("-- 1 of")) return true;
   if (value.includes("-- 2 of")) return true;
@@ -1614,10 +1621,47 @@ function extractGenericOrder(text: string): ExtractedOrder {
   const structuredItems =
     extractStructuredPositionBlocks(lines);
 
-  const expectedNetTotalCents =
+  const expectedDocumentTotals =
     extractFinalDocumentTotals(
       normalizedText
-    ).pdfNetTotalCents;
+    );
+
+  const expectedNetTotalCents =
+    Math.max(
+      0,
+      Number(
+        expectedDocumentTotals
+          .pdfNetTotalCents || 0
+      )
+    );
+
+  const expectedGrossTotalCents =
+    Math.max(
+      0,
+      Number(
+        expectedDocumentTotals
+          .pdfGrossTotalCents || 0
+      )
+    );
+
+  function getClosestDocumentTotalDifference(
+    itemTotalCents: number
+  ) {
+    const candidates = [
+      expectedNetTotalCents,
+      expectedGrossTotalCents,
+    ].filter((value) => value > 0);
+
+    if (candidates.length === 0) {
+      return Number.POSITIVE_INFINITY;
+    }
+
+    return Math.min(
+      ...candidates.map((value) =>
+        Math.abs(itemTotalCents - value)
+      )
+    );
+  }
 
   function getItemsTotalCents(
     values: ExtractedOrderItem[]
@@ -1666,18 +1710,20 @@ function extractGenericOrder(text: string): ExtractedOrder {
     (
       genericItems.length === 0 ||
       (
-        expectedNetTotalCents > 0 &&
-        Math.abs(
-          structuredItemsTotalCents -
-          expectedNetTotalCents
+        (
+          expectedNetTotalCents > 0 ||
+          expectedGrossTotalCents > 0
+        ) &&
+        getClosestDocumentTotalDifference(
+          structuredItemsTotalCents
         ) <
-        Math.abs(
-          genericItemsTotalCents -
-          expectedNetTotalCents
+        getClosestDocumentTotalDifference(
+          genericItemsTotalCents
         )
       ) ||
       (
         expectedNetTotalCents <= 0 &&
+        expectedGrossTotalCents <= 0 &&
         structuredItems.length >
         genericItems.length
       )
@@ -1809,12 +1855,20 @@ function extractFinalDocumentTotals(text: string) {
       extractLastMoneyMatch(
         text,
         /(?:Gesamtbetrag\s*Netto|Gesamt\s*netto|Nettosumme|Summe\s*netto)\s*(?:€|EUR)?\s*[:\-]?\s*([0-9.]+,[0-9]{1,2})/gi
+      ) ||
+      extractLastMoneyMatch(
+        text,
+        /\(\s*Netto\s*:\s*([0-9.]+,[0-9]{1,2})\s*(?:€|EUR)?\s*\)/gi
       ),
 
     pdfTaxTotalCents:
       extractLastMoneyMatch(
         text,
         /(?:Umsatzsteuer|Mehrwertsteuer|MwSt\.?)(?:\s+[0-9.,]+\s*%)?\s*(?:€|EUR)?\s*[:\-]?\s*([0-9.]+,[0-9]{1,2})/gi
+      ) ||
+      extractLastMoneyMatch(
+        text,
+        /\bUSt\.?\s*[0-9.,]+\s*%\s*\(\s*([0-9.]+,[0-9]{1,2})\s*(?:€|EUR)?\s*\)/gi
       ),
 
     pdfGrossTotalCents:

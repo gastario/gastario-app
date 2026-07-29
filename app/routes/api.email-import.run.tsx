@@ -1337,27 +1337,65 @@ async function createReviewOrderFromExtracted(
     );
 
   const pdfNetCents =
-    extractHeycaterPdfNetCents(
-      sourceText
-    );
-
-  const pdfTotalIsPlausible =
-    pdfNetCents > 0 &&
-    (
-      itemTotalCents <= 0 ||
-      importTotalsArePlausible(
-        pdfNetCents,
-        itemTotalCents
+    Math.max(
+      0,
+      Number(
+        extractedOrder
+          ?.pdfNetTotalCents ||
+        extractHeycaterPdfNetCents(
+          sourceText
+        ) ||
+        0
       )
     );
 
+  const pdfGrossCents =
+    Math.max(
+      0,
+      Number(
+        extractedOrder
+          ?.pdfGrossTotalCents || 0
+      )
+    );
+
+  const netMatchesItems =
+    pdfNetCents > 0 &&
+    itemTotalCents > 0 &&
+    importTotalsArePlausible(
+      pdfNetCents,
+      itemTotalCents
+    );
+
+  const grossMatchesItems =
+    pdfGrossCents > 0 &&
+    itemTotalCents > 0 &&
+    importTotalsArePlausible(
+      pdfGrossCents,
+      itemTotalCents
+    );
+
+  const resolvedDocumentTotalCents =
+    grossMatchesItems
+      ? pdfGrossCents
+      : netMatchesItems
+        ? pdfNetCents
+        : itemTotalCents <= 0
+          ? (
+              pdfGrossCents ||
+              pdfNetCents
+            )
+          : 0;
+
+  const pdfTotalIsPlausible =
+    resolvedDocumentTotalCents > 0;
+
   /*
-   * Eine erkannte PDF-Nettosumme ist der verbindliche Auftragswert.
-   * Die Positionssumme bleibt ausschlieÃŸlich Kontrollwert.
+   * Die Dokumentensumme wird nur übernommen,
+   * wenn sie zur Positionssumme passt.
    */
   const orderTotalCents =
-    pdfNetCents > 0
-      ? pdfNetCents
+    resolvedDocumentTotalCents > 0
+      ? resolvedDocumentTotalCents
       : itemTotalCents;
 
   const source =
@@ -1418,7 +1456,7 @@ async function createReviewOrderFromExtracted(
     !pdfTotalIsPlausible
   ) {
     reviewReasons.push(
-      "PDF-Nettosumme und Positionssumme weichen ab. Die PDF-Nettosumme wurde als verbindlicher Auftragswert Ã¼bernommen."
+      "Dokumentensumme und Positionssumme weichen ab. Der Auftrag wurde mit der berechneten Positionssumme zur Prüfung angelegt."
     );
   }
 

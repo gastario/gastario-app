@@ -311,7 +311,11 @@ info@letmebowl-catering.de
 Vegane Bowl
 7 x 12,90 EUR 90,30 EUR
 
-Gesamtbetrag netto 177,30 EUR
+Zwischensumme 364,00
+Lieferkosten
+1 Stück 27,50 27,50
+Gesamtbetrag 391,50
+Im Gesamtbetrag von 391,50 EUR (Netto: 365,89 EUR) sind USt 7 % (25,61 EUR) enthalten.
 `;
 
     const result = extractUniversalOrder(text);
@@ -331,5 +335,16 @@ Gesamtbetrag netto 177,30 EUR
           .includes("vegane bowl")
       )
     ).toBe(true);
+    expect(
+      result.pdfNetTotalCents
+    ).toBe(36589);
+
+    expect(
+      result.pdfTaxTotalCents
+    ).toBe(2561);
+
+    expect(
+      result.pdfGrossTotalCents
+    ).toBe(39150);
   });
 });
