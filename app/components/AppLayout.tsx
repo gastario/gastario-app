@@ -335,10 +335,19 @@ const currentPathWithSearch =
   return (
     <main className="appShell">
       <header className="mobileAppBar">
-        <img
-          src="/brand/gastario-logo.png"
-          alt="Gastario"
-        />
+        <Link
+          to="/"
+          className="mobileBrandLink"
+          aria-label="Zum Dashboard"
+          onClick={() =>
+            setIsMobileSidebarOpen(false)
+          }
+        >
+          <img
+            src="/brand/gastario-logo.png"
+            alt="Gastario"
+          />
+        </Link>
 
         <button
           type="button"
@@ -1266,6 +1275,84 @@ const currentPathWithSearch =
           }
         }
 
+        /*
+         * gastario-mobile-header-left-final-20260729
+         */
+        @media (max-width: 980px) {
+          .mobileAppBar {
+            position: relative;
+            top: auto;
+            min-height: 104px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 16px 12px;
+            background: #ffffff;
+            border-bottom: 1px solid #dce7e4;
+            box-shadow:
+              0 4px 14px rgba(15, 23, 42, 0.05);
+          }
+
+          .mobileAppBar img {
+            width: 138px;
+            max-width: 55vw;
+            height: auto;
+          }
+
+          .mobileMenuButton {
+            width: auto;
+            min-width: 0;
+            min-height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 7px;
+            padding: 0 11px;
+            border: 1px solid #cfe0db;
+            border-radius: 9px;
+            background: #f5faf8;
+            color: #145c4b;
+            font-size: 0;
+            font-weight: 700;
+            box-shadow: none;
+          }
+
+          .mobileMenuButton::before {
+            content: "☰";
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            line-height: 1;
+          }
+
+          .mobileMenuButton::after {
+            content: "Menü";
+            font-size: 12.5px;
+            line-height: 1;
+          }
+
+          .mobileMenuButton > span {
+            display: none !important;
+          }
+        }
+        .mobileBrandLink,
+        .sidebarBrandLink {
+          display: inline-flex;
+          align-items: center;
+          width: fit-content;
+          max-width: 100%;
+          border-radius: 10px;
+          text-decoration: none;
+        }
+
+        .mobileBrandLink:focus-visible,
+        .sidebarBrandLink:focus-visible {
+          outline: 3px solid rgba(15, 159, 122, 0.22);
+          outline-offset: 3px;
+        }
         @media (prefers-reduced-motion: reduce) {
           .sidebar,
           .mobileSidebarBackdrop {
@@ -1284,11 +1371,20 @@ const currentPathWithSearch =
         }
       >
         <div className="brand">
-          <img
-            className="brandLogo"
-            src="/brand/gastario-logo.png"
-            alt="Gastario"
-          />
+          <Link
+            to="/"
+            className="sidebarBrandLink"
+            aria-label="Zum Dashboard"
+            onClick={() =>
+              setIsMobileSidebarOpen(false)
+            }
+          >
+            <img
+              className="brandLogo"
+              src="/brand/gastario-logo.png"
+              alt="Gastario"
+            />
+          </Link>
 
           <button
             type="button"
