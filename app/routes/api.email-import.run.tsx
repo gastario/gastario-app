@@ -2479,6 +2479,15 @@ export async function loader({ request }: { request: Request }) {
               );
             });
 
+          console.log("Sent mailbox resolution:", {
+            accountEmail: account.email,
+            resolvedPath: sentMailbox?.path || null,
+            availableMailboxes: listedMailboxes.map((mailbox: any) => ({
+              path: String(mailbox?.path || ""),
+              specialUse: String(mailbox?.specialUse || ""),
+            })),
+          });
+
           if (sentMailbox?.path) {
             const sentMailboxPath = String(
               sentMailbox.path
@@ -2494,6 +2503,13 @@ export async function loader({ request }: { request: Request }) {
                 await client.search({
                   since,
                 });
+
+              console.log("Sent mailbox search result:", {
+                accountEmail: account.email,
+                mailboxPath: sentMailboxPath,
+                since: since.toISOString(),
+                messageCount: sentUids.length,
+              });
 
               for await (
                 const message of client.fetch(
