@@ -1400,6 +1400,32 @@ const currentPathWithSearch =
           }
         }
       
+        /*
+         * gastario-orders-fullwidth-app-layout-20260730
+         * Exakt dieselbe mobile Seitenbreite wie das Dashboard.
+         */
+        @media (max-width: 980px) {
+          .workspace > .gastario-orders-fullwidth {
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 16px 12px 30px !important;
+            box-sizing: border-box !important;
+            justify-self: stretch !important;
+            align-self: stretch !important;
+            overflow-x: hidden !important;
+          }
+
+          .workspace > .gastario-orders-fullwidth > * {
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            box-sizing: border-box !important;
+          }
+        }
 `}</style>
 
 
