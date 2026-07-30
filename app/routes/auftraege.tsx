@@ -516,6 +516,55 @@ export async function action({ request }: { request: Request }) {
   return { error: "Unbekannte Aktion." };
 }
 
+const ordersDashboardWidthCss = `
+  /*
+   * gastario-orders-dashboard-width-20260730
+   * Gleiche Seitenbreite und gleiche Einbindungsart wie das Dashboard.
+   */
+  .ordersDashboardPage {
+    display: grid;
+    gap: 16px;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .ordersDashboardPage,
+  .ordersDashboardPage * {
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 980px) {
+    .ordersDashboardPage {
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 12px 6px 34px !important;
+      gap: 12px !important;
+      overflow-x: hidden !important;
+      box-sizing: border-box !important;
+    }
+
+    .ordersDashboardPage > * {
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      box-sizing: border-box !important;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .ordersDashboardPage {
+      padding: 12px 6px 30px !important;
+    }
+  }
+`;
 export default function OrdersPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
@@ -562,9 +611,11 @@ export default function OrdersPage() {
 
   return (
     <AppLayout>
+      <style>{ordersDashboardWidthCss}</style>
+
       <div
         className={
-          "ordersPage ordersReferencePage gastario-orders-fullwidth " +
+          "ordersPage ordersReferencePage ordersDashboardPage " +
           (data.view === "past"
             ? "ordersPagePast"
             : "ordersPageUpcoming")
