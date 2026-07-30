@@ -9063,3 +9063,52 @@ span:not(.pastOrdersArchiveBadge) {
     grid-row: auto !important;
   }
 }
+
+/*
+ * gastario-orders-final-mobile-width-20260730
+ * Aufträge mobil exakt auf Auftragseingang-Breite.
+ */
+@media (max-width: 980px) {
+  .ordersPage,
+  .ordersPage.ordersReferencePage {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 12px 6px 34px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  .ordersPage > *,
+  .ordersPage.ordersReferencePage > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .ordersPage .topbar,
+  .ordersPage .orderSummaryGrid,
+  .ordersPage .panel,
+  .ordersPage .ordersWorkspaceHeader,
+  .ordersPage .ordersWorkspaceFilters,
+  .ordersPage .ordersFilterWrap,
+  .ordersPage .ordersList,
+  .ordersPage .ordersListCard {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .ordersPage,
+  .ordersPage.ordersReferencePage {
+    padding: 12px 6px 30px !important;
+  }
+}
