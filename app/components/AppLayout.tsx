@@ -413,7 +413,8 @@ const currentPathWithSearch =
           }
 
           body {
-            min-width: 1180px;
+            width: 100%;
+            min-width: 0;
           }
 
           .appShell {

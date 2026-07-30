@@ -667,3 +667,153 @@
     grid-template-columns: 1fr;
   }
 }
+/*
+ * gastario-mobile-foundation-20260730
+ * Gemeinsames responsives Grundsystem für alle Gastario-Module.
+ */
+
+:root {
+  --gastario-page-width: none;
+}
+
+.g-ui-page {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+}
+
+.g-ui-page > *,
+.g-ui-page-heading,
+.g-ui-page-header,
+.g-ui-section-header,
+.g-ui-card,
+.g-ui-metric-grid,
+.g-ui-metric-card {
+  min-width: 0;
+}
+
+.g-ui-card,
+.g-ui-metric-card {
+  box-sizing: border-box;
+}
+
+.g-ui-page img,
+.g-ui-page svg,
+.g-ui-page video,
+.g-ui-page canvas {
+  max-width: 100%;
+}
+
+.g-ui-table-scroll,
+.g-ui-overflow-scroll {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 980px) {
+  html,
+  body {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .g-ui-page {
+    gap: 14px;
+  }
+
+  .g-ui-page-header {
+    min-height: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .g-ui-page-title {
+    max-width: 100%;
+    font-size: clamp(24px, 7vw, 30px) !important;
+    line-height: 1.12 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .g-ui-page-subtitle {
+    max-width: 100%;
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .g-ui-header-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns:
+      repeat(auto-fit, minmax(140px, 1fr));
+    align-items: stretch;
+    justify-content: stretch;
+    gap: 8px;
+  }
+
+  .g-ui-header-actions > *,
+  .g-ui-header-actions form,
+  .g-ui-header-actions .g-ui-button {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .g-ui-card {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .g-ui-section-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .g-ui-section-title {
+    font-size: 18px;
+    overflow-wrap: anywhere;
+  }
+
+  .g-ui-section-hint {
+    max-width: 100%;
+  }
+
+  .g-ui-input,
+  .g-ui-select,
+  .g-ui-textarea {
+    max-width: 100%;
+    font-size: 16px;
+  }
+
+  .g-ui-button {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 520px) {
+  .g-ui-page {
+    gap: 12px;
+  }
+
+  .g-ui-header-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .g-ui-card {
+    padding: 12px;
+    border-radius: 13px;
+  }
+
+  .g-ui-page-title {
+    font-size: 24px !important;
+  }
+}
