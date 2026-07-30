@@ -89,15 +89,15 @@ export function links() {
   return [
     {
       rel: "stylesheet",
-      href: auftraegeStyles,
-    },
-    {
-      rel: "stylesheet",
       href: auftragseingangStyles,
     },
     {
       rel: "stylesheet",
       href: deliveryNoteDocumentStyles,
+    },
+    {
+      rel: "stylesheet",
+      href: auftraegeStyles,
     },
   ];
 }
