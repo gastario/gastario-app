@@ -1402,18 +1402,19 @@ const currentPathWithSearch =
       
         /*
          * gastario-orders-fullwidth-app-layout-20260730
-         * Verbindliche Mobile-Breite für die Auftragsübersicht.
+         * Exakt dieselbe mobile Seitenbreite wie das Dashboard.
          */
         @media (max-width: 980px) {
           .workspace > .gastario-orders-fullwidth {
-            width: calc(100% - 12px) !important;
+            width: 100% !important;
             min-width: 0 !important;
-            max-width: calc(100% - 12px) !important;
-            margin: 0 6px !important;
-            padding: 12px 0 30px !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 16px 12px 30px !important;
             box-sizing: border-box !important;
             justify-self: stretch !important;
             align-self: stretch !important;
+            overflow-x: hidden !important;
           }
 
           .workspace > .gastario-orders-fullwidth > * {
@@ -1425,8 +1426,7 @@ const currentPathWithSearch =
             box-sizing: border-box !important;
           }
         }
-
-        `}</style>
+`}</style>
 
 
       <aside
