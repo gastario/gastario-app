@@ -555,7 +555,41 @@ const ordersDashboardWidthCss = `
       max-width: 100% !important;
       margin-left: 0 !important;
       margin-right: 0 !important;
+      justify-self: stretch !important;
+      align-self: stretch !important;
       box-sizing: border-box !important;
+    }
+
+    /*
+     * gastario-orders-dashboard-exact-main-sections-20260730
+     * Alte g-ui- und Aufträge-Regeln dürfen die mobilen Hauptbereiche
+     * nicht mehr schmal oder zentriert darstellen.
+     */
+    .ordersDashboardPage > .topbar,
+    .ordersDashboardPage > .orderSummaryGrid,
+    .ordersDashboardPage > .panel {
+      display: grid !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: none !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      justify-self: stretch !important;
+      align-self: stretch !important;
+      box-sizing: border-box !important;
+    }
+
+    .ordersDashboardPage > .topbar {
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .ordersDashboardPage > .orderSummaryGrid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .ordersDashboardPage > .panel {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
     }
   }
 
