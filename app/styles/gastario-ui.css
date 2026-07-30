@@ -1392,3 +1392,239 @@
     padding: 12px !important;
   }
 }
+
+/*
+ * gastario-mailbox-mobile-layout-20260730
+ * Responsive Infokarten und Postfachzeilen.
+ */
+
+.g-mobile-hint-grid,
+.g-mobile-mailbox-row,
+.g-mobile-mailbox-actions {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+@media (max-width: 980px) {
+  .g-mobile-hint-grid {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .g-mobile-hint-grid > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .g-mobile-mailbox-row {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .g-mobile-mailbox-row > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .g-mobile-mailbox-row strong,
+  .g-mobile-mailbox-row span,
+  .g-mobile-mailbox-row small {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  .g-mobile-mailbox-actions {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .g-mobile-mailbox-actions > *,
+  .g-mobile-mailbox-actions form,
+  .g-mobile-mailbox-actions button {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .g-mobile-hint-grid > *,
+  .g-mobile-mailbox-row {
+    padding: 12px !important;
+  }
+}
+
+/*
+ * gastario-order-detail-mobile-layout-20260730
+ * Responsive bestätigte Auftragsdetailansicht.
+ */
+
+.g-mobile-order-detail-page,
+.g-mobile-order-detail-card,
+.g-mobile-order-detail-header,
+.g-mobile-order-detail-content,
+.g-mobile-order-items-list,
+.g-mobile-order-item-row,
+.g-mobile-order-summary,
+.g-mobile-order-actions {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+@media (max-width: 980px) {
+  .g-mobile-order-detail-page {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: 12px 6px 34px !important;
+    overflow-x: hidden !important;
+  }
+
+  .g-mobile-order-detail-page > * {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .g-mobile-order-detail-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 18px !important;
+    overflow: hidden !important;
+  }
+
+  .g-mobile-order-detail-header {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 18px 16px !important;
+    gap: 12px !important;
+  }
+
+  .g-mobile-order-detail-header > * {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .g-mobile-order-detail-header h1 {
+    max-width: 100%;
+    font-size: 30px !important;
+    line-height: 1.08 !important;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  .g-mobile-order-detail-content {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
+    padding: 18px 16px 20px !important;
+  }
+
+  .g-mobile-order-detail-content > *,
+  .g-mobile-order-items-list,
+  .g-mobile-order-summary {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .g-mobile-order-item-row {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+    padding: 14px !important;
+  }
+
+  .g-mobile-order-item-row > * {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    text-align: left !important;
+    white-space: normal !important;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  .g-mobile-order-item-row strong:last-child {
+    margin-top: 4px;
+    color: #087158 !important;
+    font-size: 16px !important;
+    text-align: left !important;
+  }
+
+  .g-mobile-order-summary {
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-content: stretch !important;
+    gap: 10px !important;
+  }
+
+  .g-mobile-order-summary > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .g-mobile-order-actions {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+    padding: 14px 16px 18px !important;
+  }
+
+  .g-mobile-order-actions > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .g-mobile-order-detail-page {
+    padding: 10px 6px 30px !important;
+  }
+
+  .g-mobile-order-detail-header h1 {
+    font-size: 28px !important;
+  }
+
+  .g-mobile-order-detail-content {
+    padding: 16px 12px 18px !important;
+  }
+
+  .g-mobile-order-actions {
+    padding: 12px !important;
+  }
+}

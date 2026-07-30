@@ -344,7 +344,7 @@ export default function AuftragPruefungPage() {
     "/lieferscheine/" + order.id + "/pdf";
 
   return (
-    <main className="orderReviewPage" style={{ background: "linear-gradient(180deg, #eef6f8 0%, #f8fbfc 100%)", minHeight: "100vh", padding: 24 }}>
+    <main className="orderReviewPage g-mobile-order-detail-page" style={{ background: "linear-gradient(180deg, #eef6f8 0%, #f8fbfc 100%)", minHeight: "100vh", padding: 24 }}>
       <div style={topbarStyle}>
         <div>
           <Link to="/auftraege" style={secondaryButtonStyle}>
@@ -358,6 +358,7 @@ export default function AuftragPruefungPage() {
       {/* gastario-selected-order-details-view-20260714 */}
       {isAlreadyConfirmed ? (
         <section
+          className="g-mobile-order-detail-card"
           style={{
             maxWidth: 1180,
             margin: "0 auto",
@@ -369,6 +370,7 @@ export default function AuftragPruefungPage() {
           }}
         >
           <header
+            className="g-mobile-order-detail-header"
             style={{
               display: "flex",
               justifyContent: "space-between",
@@ -452,6 +454,7 @@ export default function AuftragPruefungPage() {
           </header>
 
           <div
+            className="g-mobile-order-detail-content"
             style={{
               display: "grid",
               gridTemplateColumns: "minmax(0, 1fr) 280px",
@@ -499,6 +502,7 @@ export default function AuftragPruefungPage() {
               </div>
 
               <div
+                className="g-mobile-order-items-list"
                 style={{
                   overflow: "hidden",
                   border: "1px solid #e0e8e4",
@@ -509,6 +513,7 @@ export default function AuftragPruefungPage() {
                 {visibleItems.map((item, index) => (
                   <div
                     key={item.id}
+                    className="g-mobile-order-item-row"
                     style={{
                       display: "grid",
                       gridTemplateColumns:
@@ -587,6 +592,7 @@ export default function AuftragPruefungPage() {
             </section>
 
             <aside
+              className="g-mobile-order-summary"
               style={{
                 display: "grid",
                 alignContent: "start",
@@ -744,6 +750,7 @@ export default function AuftragPruefungPage() {
           </div>
 
           <footer
+            className="g-mobile-order-actions"
             style={{
               display: "grid",
               gridTemplateColumns:

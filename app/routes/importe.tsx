@@ -336,7 +336,7 @@ export default function ImportsPage() {
             </div>
           </Form>
 
-          <div style={hintGridStyle}>
+          <div className="g-mobile-hint-grid" style={hintGridStyle}>
             <div>
               <strong>Keine Weiterleitung noetig</strong>
               <span>Gastario verbindet sich direkt mit dem Postfach.</span>
@@ -352,7 +352,7 @@ export default function ImportsPage() {
           </div>
         </section>
 
-        <section style={cardStyle}>
+        <section className="g-mobile-inline-card" style={cardStyle}>
           <div style={sectionHeaderStyle}>
             <div>
               <p style={eyebrowStyle}>Verbunden</p>
@@ -366,7 +366,7 @@ export default function ImportsPage() {
           ) : (
             <div style={listStyle}>
               {data.emailAccounts.map((account: any) => (
-                <article key={account.id} style={rowStyle}>
+                <article key={account.id} className="g-mobile-mailbox-row" style={rowStyle}>
                   <div>
                     <strong>{account.email}</strong>
                     <span>{account.label || "Auftragseingang"}</span>
@@ -375,7 +375,7 @@ export default function ImportsPage() {
                     </small>
                   </div>
 
-                  <div style={rowActionsStyle}>
+                  <div className="g-mobile-mailbox-actions" style={rowActionsStyle}>
                     <span style={badgeStyle}>{account.active ? "aktiv" : "inaktiv"}</span>
 
                     <Form method="post">
