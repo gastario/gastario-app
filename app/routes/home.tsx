@@ -239,7 +239,7 @@ export async function loader({ request }: { request: Request }) {
         customer: true,
       },
       orderBy: [
-        { deliveryTime: "asc" },
+        { deliveryTimeText: "asc" },
         { createdAt: "desc" },
       ],
       take: 8,
@@ -654,9 +654,9 @@ export default function Home() {
     ...safeTodayOrders,
   ].sort((left: any, right: any) => {
     return String(
-      left.deliveryTime || ""
+      left.deliveryTimeText || ""
     ).localeCompare(
-      String(right.deliveryTime || ""),
+      String(right.deliveryTimeText || ""),
       "de"
     );
   });
@@ -677,9 +677,9 @@ export default function Home() {
     }
 
     return String(
-      left.deliveryTime || ""
+      left.deliveryTimeText || ""
     ).localeCompare(
-      String(right.deliveryTime || ""),
+      String(right.deliveryTimeText || ""),
       "de"
     );
   });
@@ -1362,7 +1362,6 @@ export default function Home() {
 
                           <span>
                             {order.deliveryTimeText ||
-                              order.deliveryTime ||
                               "Zeit offen"}
                           </span>
                         </div>
@@ -1552,7 +1551,7 @@ export default function Home() {
                         {" · "}
                         {formatTime(
                           nextPlannedOrder
-                            .deliveryTime
+                            .deliveryTimeText
                         )}
                         {" Uhr"}
                       </strong>
@@ -1588,7 +1587,7 @@ export default function Home() {
                         <div className="dashOrderTime">
                           <strong>
                             {formatTime(
-                              order.deliveryTime
+                              order.deliveryTimeText
                             )}
                           </strong>
 
@@ -1701,7 +1700,6 @@ export default function Home() {
                                 {/* gastario-dashboard-delivery-time-text-20260726 */}
                                 <strong className="dashCompactTime">
                                   {order.deliveryTimeText ||
-                                    order.deliveryTime ||
                                     "Zeit offen"}
                                 </strong>
 
