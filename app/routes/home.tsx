@@ -4510,6 +4510,114 @@ const dashboardCss = `
     padding-left: 10px !important;
   }
 }
-`;
 
-// gastario-redeploy-20260726
+/*
+ * gastario-dashboard-mobile-width-reference-20260730
+ * Dashboard verwendet mobil dieselbe Breite wie der Auftragseingang.
+ */
+@media (max-width: 980px) {
+  .dashPage {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 12px 6px 34px !important;
+    gap: 12px !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .dashPage,
+  .dashPage * {
+    box-sizing: border-box;
+  }
+
+  .dashPage > *,
+  .dashHeader,
+  .dashWorkspaceTabs,
+  .dashFilterBar,
+  .dashControlGrid,
+  .dashAttention,
+  .dashKpiBar,
+  .dashFinanceStrip,
+  .dashPanel,
+  .dashUpcomingPanel,
+  .dashUpcomingScroll,
+  .dashDateGroup,
+  .dashOrderList,
+  .dashCompactOrder {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .dashHeader {
+    gap: 12px !important;
+  }
+
+  .dashHeader h1,
+  .dashPanel h2,
+  .dashPanel h3,
+  .dashCompactOrder strong,
+  .dashCompactOrder span,
+  .dashCompactOrder small {
+    min-width: 0;
+    max-width: 100%;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  .dashControlGrid,
+  .dashAttention,
+  .dashKpiBar,
+  .dashFinanceStrip {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .dashAttention > *,
+  .dashKpiBar > *,
+  .dashFinanceStrip > *,
+  .dashControlGrid > * {
+    grid-column: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .dashUpcomingScroll {
+    padding-right: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  .dashCompactOrder {
+    overflow: hidden;
+  }
+
+  .dashWorkspaceTabs,
+  .dashPeriodFilter {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 520px) {
+  .dashPage {
+    padding: 12px 6px 30px !important;
+  }
+
+  .dashHeader h1 {
+    font-size: 28px !important;
+    line-height: 1.12 !important;
+  }
+
+  .dashPanel {
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+  }
+}
+`;

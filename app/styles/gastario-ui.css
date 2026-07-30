@@ -771,7 +771,9 @@
     max-width: 100%;
     font-size: clamp(24px, 7vw, 30px) !important;
     line-height: 1.12 !important;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
 
   .g-ui-page-subtitle {
@@ -813,7 +815,9 @@
 
   .g-ui-section-title {
     font-size: 18px;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
 
   .g-ui-section-hint {
@@ -873,7 +877,10 @@
   .g-ui-page a,
   .g-ui-page button {
     max-width: 100%;
-    overflow-wrap: anywhere;
+    min-width: 0;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
 
   .g-ui-page input,
@@ -904,5 +911,291 @@
     min-width: 0;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+}
+
+/*
+ * gastario-responsive-system-v2-20260730
+ * Zentrale Responsive-Regeln für bestehende und zukünftige Gastario-Seiten.
+ */
+
+/* Verbindliche Bausteine für neue und überarbeitete Seiten */
+.g-responsive-grid,
+.g-responsive-form-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.g-responsive-actions,
+.g-responsive-toolbar,
+.g-responsive-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.g-responsive-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.g-responsive-tabs > * {
+  flex: 0 0 auto;
+}
+
+.g-responsive-table {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.g-responsive-table table {
+  width: 100%;
+  min-width: 720px;
+}
+
+/* Lange technische Werte dürfen umbrechen, normale Wörter bleiben lesbar */
+.g-break-value,
+.g-ui-page code,
+.g-ui-page pre,
+.g-ui-page [data-break-value="true"] {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* Automatische Absicherung innerhalb aller gemeinsamen Gastario-Seiten */
+.g-ui-page,
+.g-ui-page *,
+.workspace,
+.workspace > * {
+  box-sizing: border-box;
+}
+
+.g-ui-page :is(
+  article,
+  section,
+  header,
+  footer,
+  nav,
+  form,
+  fieldset,
+  div
+) {
+  min-width: 0;
+}
+
+.g-ui-page :is(
+  input,
+  select,
+  textarea
+) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.g-ui-page :is(
+  img,
+  video,
+  canvas,
+  iframe
+) {
+  max-width: 100%;
+}
+
+@media (max-width: 980px) {
+  /*
+   * Wiederkehrende Gastario-Namensmuster.
+   * Dadurch profitieren bestehende Seiten ohne einzelne TSX-Änderungen.
+   */
+  .g-ui-page :is(
+    [class$="FormGrid"],
+    [class$="FieldsGrid"],
+    [class$="FilterGrid"],
+    [class$="CardGrid"],
+    [class$="ContentGrid"],
+    [class$="DetailGrid"],
+    [class$="OverviewGrid"],
+    [class$="SummaryGrid"]
+  ) {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    grid-template-columns:
+      repeat(auto-fit, minmax(min(240px, 100%), 1fr)) !important;
+  }
+
+  .g-ui-page :is(
+    [class$="Toolbar"],
+    [class$="ActionBar"],
+    [class$="ActionsRow"],
+    [class$="HeaderActions"],
+    [class$="FilterBar"],
+    [class$="FilterRow"],
+    [class$="ButtonRow"]
+  ) {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .g-ui-page :is(
+    [class$="Tabs"],
+    [class$="TabBar"],
+    [class$="TabList"],
+    [class$="Navigation"]
+  ) {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .g-ui-page :is(
+    [class$="Tabs"],
+    [class$="TabBar"],
+    [class$="TabList"]
+  ) > * {
+    flex: 0 0 auto;
+  }
+
+  /*
+   * Badges, Pills und Tags sollen nicht zu schmalen Wortspalten werden.
+   */
+  .g-ui-page :is(
+    [class$="Badge"],
+    [class$="Pill"],
+    [class$="Tag"],
+    [class$="Chip"]
+  ) {
+    width: auto;
+    min-width: max-content;
+    max-width: 100%;
+    word-break: normal;
+    overflow-wrap: normal;
+    hyphens: none;
+  }
+
+  /*
+   * Tabellen bleiben vollständig erreichbar, ohne die gesamte Seite
+   * horizontal zu verbreitern.
+   */
+  .g-ui-page table {
+    display: table;
+    width: 100%;
+    max-width: none;
+  }
+
+  .g-ui-page :is(
+    [class$="TableWrapper"],
+    [class$="TableWrap"],
+    [class$="TableScroll"],
+    [class$="TableContainer"],
+    [class$="tableWrapper"],
+    [class$="tableWrap"],
+    [class$="tableScroll"],
+    [class$="tableContainer"]
+  ) {
+    display: block;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .g-responsive-grid,
+  .g-responsive-form-grid {
+    grid-template-columns:
+      repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .g-ui-page :is(
+    [class$="FormGrid"],
+    [class$="FieldsGrid"],
+    [class$="FilterGrid"],
+    [class$="CardGrid"],
+    [class$="ContentGrid"],
+    [class$="DetailGrid"],
+    [class$="OverviewGrid"],
+    [class$="SummaryGrid"]
+  ),
+  .g-responsive-grid,
+  .g-responsive-form-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .g-responsive-actions,
+  .g-responsive-toolbar,
+  .g-responsive-filters {
+    align-items: stretch;
+  }
+
+  .g-responsive-actions > :is(
+    button,
+    a,
+    form,
+    input,
+    select
+  ),
+  .g-responsive-toolbar > :is(
+    button,
+    a,
+    form,
+    input,
+    select
+  ),
+  .g-responsive-filters > :is(
+    button,
+    a,
+    form,
+    input,
+    select
+  ) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .g-ui-page :is(
+    [class$="HeaderActions"],
+    [class$="ActionBar"],
+    [class$="ActionsRow"],
+    [class$="ButtonRow"]
+  ) > :is(
+    button,
+    a,
+    form
+  ) {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
   }
 }
