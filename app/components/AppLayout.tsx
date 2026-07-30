@@ -335,19 +335,6 @@ const currentPathWithSearch =
   return (
     <main className="appShell">
       <header className="mobileAppBar">
-        <Link
-          to="/"
-          className="mobileBrandLink"
-          aria-label="Zum Dashboard"
-          onClick={() =>
-            setIsMobileSidebarOpen(false)
-          }
-        >
-          <img
-            src="/brand/gastario-logo.png"
-            alt="Gastario"
-          />
-        </Link>
 
         <button
           type="button"
@@ -366,6 +353,20 @@ const currentPathWithSearch =
             ›
           </span>
         </button>
+
+        <Link
+          to="/"
+          className="mobileBrandLink"
+          aria-label="Zum Dashboard"
+          onClick={() =>
+            setIsMobileSidebarOpen(false)
+          }
+        >
+          <img
+            src="/brand/gastario-logo.png"
+            alt="Gastario"
+          />
+        </Link>
       </header>
 
       <button
@@ -516,14 +517,18 @@ const currentPathWithSearch =
           }
 
           .workspace {
+            width: 100%;
             min-width: 0;
-            padding: 34px 42px 70px;
+            padding: 20px 16px 56px;
+            box-sizing: border-box;
           }
 
           .workspace > * {
-            max-width: 1480px;
-            margin-left: auto;
-            margin-right: auto;
+            width: 100%;
+            max-width: none;
+            margin-left: 0;
+            margin-right: 0;
+            box-sizing: border-box;
           }
 
           .topbar {
@@ -638,7 +643,16 @@ const currentPathWithSearch =
             }
 
             .workspace {
-              padding: 24px 18px 48px;
+              width: 100%;
+              padding: 14px 10px 40px;
+              box-sizing: border-box;
+            }
+
+            .workspace > * {
+              width: 100%;
+              max-width: none;
+              margin-left: 0;
+              margin-right: 0;
             }
 
             .topbar {
@@ -1276,44 +1290,65 @@ const currentPathWithSearch =
         }
 
         /*
-         * gastario-mobile-header-left-final-20260729
+         * gastario-mobile-header-fullwidth-final-20260730
          */
         @media (max-width: 980px) {
           .mobileAppBar {
-            position: relative;
-            top: auto;
-            min-height: 104px;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+
             display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: center;
-            gap: 8px;
-            padding: 14px 16px 12px;
-            background: #ffffff;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 9px;
+
+            width: 100%;
+            min-height: 60px;
+            padding: 8px 10px;
+            box-sizing: border-box;
+
             border-bottom: 1px solid #dce7e4;
+            background: rgba(255, 255, 255, 0.97);
             box-shadow:
               0 4px 14px rgba(15, 23, 42, 0.05);
+            backdrop-filter: blur(14px);
+          }
+
+          .mobileBrandLink {
+            flex: 0 0 auto;
+            margin: 0;
+            padding: 0;
           }
 
           .mobileAppBar img {
-            width: 138px;
-            max-width: 55vw;
+            display: block;
+            width: 118px;
+            max-width: 42vw;
             height: auto;
           }
 
           .mobileMenuButton {
-            width: auto;
-            min-width: 0;
-            min-height: 34px;
+            flex: 0 0 auto;
+
             display: inline-flex;
             align-items: center;
             justify-content: flex-start;
-            gap: 7px;
-            padding: 0 11px;
+            gap: 6px;
+
+            width: auto;
+            min-width: 0;
+            min-height: 38px;
+            margin: 0;
+            padding: 0 10px;
+
             border: 1px solid #cfe0db;
             border-radius: 9px;
             background: #f5faf8;
             color: #145c4b;
+
+            font: inherit;
             font-size: 0;
             font-weight: 700;
             box-shadow: none;

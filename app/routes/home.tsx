@@ -2089,9 +2089,9 @@ const dashboardCss = `
     display: grid;
     gap: 16px;
     width: 100%;
-    max-width: 1540px;
-    margin: 0 auto;
-    padding: 28px 28px 42px;
+    max-width: none;
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
   }
 
