@@ -1399,7 +1399,34 @@ const currentPathWithSearch =
             transition: none;
           }
         }
-      `}</style>
+      
+        /*
+         * gastario-orders-fullwidth-app-layout-20260730
+         * Verbindliche Mobile-Breite für die Auftragsübersicht.
+         */
+        @media (max-width: 980px) {
+          .workspace > .gastario-orders-fullwidth {
+            width: calc(100% - 12px) !important;
+            min-width: 0 !important;
+            max-width: calc(100% - 12px) !important;
+            margin: 0 6px !important;
+            padding: 12px 0 30px !important;
+            box-sizing: border-box !important;
+            justify-self: stretch !important;
+            align-self: stretch !important;
+          }
+
+          .workspace > .gastario-orders-fullwidth > * {
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            box-sizing: border-box !important;
+          }
+        }
+
+        `}</style>
 
 
       <aside

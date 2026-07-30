@@ -564,7 +564,7 @@ export default function OrdersPage() {
     <AppLayout>
       <div
         className={
-          "ordersPage ordersReferencePage " +
+          "ordersPage ordersReferencePage gastario-orders-fullwidth " +
           (data.view === "past"
             ? "ordersPagePast"
             : "ordersPageUpcoming")
