@@ -1199,3 +1199,196 @@
     max-width: 100%;
   }
 }
+
+/*
+ * gastario-inline-page-mobile-system-20260730
+ * Gemeinsame Responsive-Schicht für ältere Seiten mit Inline-Styles.
+ */
+
+.g-mobile-inline-page,
+.g-mobile-inline-page *,
+.g-mobile-inline-card,
+.g-mobile-inline-hero,
+.g-mobile-form-grid,
+.g-mobile-content-grid,
+.g-mobile-rule-list,
+.g-mobile-rule-row,
+.g-mobile-label-row,
+.g-mobile-stats-grid,
+.g-mobile-table-scroll {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.g-mobile-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 980px) {
+  .g-mobile-inline-page {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 12px 6px 34px !important;
+    overflow-x: hidden !important;
+  }
+
+  .g-mobile-inline-page > * {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .g-mobile-inline-hero {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 16px !important;
+    gap: 12px !important;
+  }
+
+  .g-mobile-inline-hero > * {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .g-mobile-inline-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: 16px !important;
+    overflow: hidden;
+  }
+
+  .g-mobile-form-grid {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .g-mobile-form-grid > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    grid-column: auto !important;
+  }
+
+  .g-mobile-form-grid :is(
+    input,
+    select,
+    textarea,
+    button
+  ) {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .g-mobile-content-grid {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  .g-mobile-rule-list {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .g-mobile-rule-row,
+  .g-mobile-label-row {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .g-mobile-rule-row > *,
+  .g-mobile-label-row > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    grid-column: auto !important;
+  }
+
+  .g-mobile-rule-row :is(
+    button,
+    a,
+    form
+  ),
+  .g-mobile-label-row :is(
+    button,
+    a,
+    form
+  ) {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .g-mobile-stats-grid {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .g-mobile-stats-grid > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .g-mobile-table-scroll {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+  }
+
+  .g-mobile-table-scroll table {
+    width: max-content !important;
+    min-width: 720px !important;
+    max-width: none !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .g-mobile-inline-page {
+    padding: 12px 6px 30px !important;
+  }
+
+  .g-mobile-inline-card,
+  .g-mobile-inline-hero {
+    padding: 14px !important;
+    border-radius: 16px !important;
+  }
+
+  .g-mobile-stats-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .g-mobile-rule-row,
+  .g-mobile-label-row {
+    padding: 12px !important;
+  }
+}

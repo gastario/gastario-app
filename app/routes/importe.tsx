@@ -1,4 +1,4 @@
-﻿import crypto from "node:crypto";
+import crypto from "node:crypto";
 import { Form, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
@@ -246,8 +246,8 @@ export default function ImportsPage() {
   return (
     <AppLayout>
       <style>{importPageCss}</style>
-      <div style={pageStyle}>
-        <header style={heroStyle}>
+      <div className="g-mobile-inline-page" style={pageStyle}>
+        <header className="g-mobile-inline-hero" style={heroStyle}>
           <div>
             <p style={eyebrowStyle}>E-Mail-Import</p>
             <h1 style={titleStyle}>Auftraege automatisch erkennen</h1>
@@ -268,7 +268,7 @@ export default function ImportsPage() {
         {actionData?.error ? <div style={errorStyle}>{actionData.error}</div> : null}
         {actionData?.success ? <div style={successStyle}>{actionData.success}</div> : null}
 
-        <section style={setupCardStyle}>
+        <section className="g-mobile-inline-card" style={setupCardStyle}>
           <div style={sectionHeaderStyle}>
             <div>
               <p style={eyebrowStyle}>Postfach</p>
@@ -283,7 +283,7 @@ export default function ImportsPage() {
             </div>
           </div>
 
-          <Form method="post" style={formStyle}>
+          <Form method="post" className="g-mobile-form-grid" style={formStyle}>
             <label style={fieldStyle}>
               <span>E-Mail-Adresse</span>
               <input name="email" type="email" placeholder="info@letmebowl-catering.de" required style={inputStyle} />

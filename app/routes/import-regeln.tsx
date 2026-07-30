@@ -360,7 +360,7 @@ export default function ImportRegelnPage() {
 
   return (
     <AppLayout>
-      <div style={pageStyle}>
+      <div className="g-mobile-inline-page" style={pageStyle}>
         <div style={headerStyle}>
           <div>
             <p style={eyebrowStyle}>Import</p>
@@ -380,7 +380,7 @@ export default function ImportRegelnPage() {
           <div style={successStyle}>{actionData.success}</div>
         ) : null}
 
-        <section style={cardStyle}>
+        <section className="g-mobile-inline-card" style={cardStyle}>
           <div style={cardHeaderStyle}>
             <div>
               <p style={eyebrowStyle}>Neue Regel</p>
@@ -393,7 +393,7 @@ export default function ImportRegelnPage() {
             </div>
           </div>
 
-          <Form method="post" style={formGridStyle}>
+          <Form method="post" className="g-mobile-form-grid" style={formGridStyle}>
             <input
               type="hidden"
               name="_intent"
@@ -460,7 +460,7 @@ export default function ImportRegelnPage() {
           </Form>
         </section>
 
-        <section style={cardStyle}>
+        <section className="g-mobile-inline-card" style={cardStyle}>
           <div style={cardHeaderStyle}>
             <div>
               <p style={eyebrowStyle}>Gespeichert</p>
@@ -479,9 +479,9 @@ export default function ImportRegelnPage() {
               Noch keine sichere E-Mail-Regel vorhanden.
             </div>
           ) : (
-            <div style={ruleListStyle}>
+            <div className="g-mobile-rule-list" style={ruleListStyle}>
               {safeEmailRules.map((rule) => (
-                <div key={rule.id} style={ruleRowStyle}>
+                <div key={rule.id} className="g-mobile-rule-row" style={ruleRowStyle}>
                   <div style={ruleMainStyle}>
                     <div style={ruleTopStyle}>
                       <strong style={ruleTitleStyle}>
@@ -661,7 +661,7 @@ export default function ImportRegelnPage() {
                 </div>
               </div>
 
-              <Form method="post" style={formGridStyle}>
+              <Form method="post" className="g-mobile-form-grid" style={formGridStyle}>
                 <input
                   type="hidden"
                   name="_intent"

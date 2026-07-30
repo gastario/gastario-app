@@ -1,4 +1,4 @@
-﻿import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
+import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 function centsToEuro(value: number | null | undefined) {
@@ -230,8 +230,8 @@ export default function RechnungenPage() {
         </div>
       ) : null}
 
-      <section style={pageGridStyle}>
-        <div style={heroStyle}>
+      <section className="g-mobile-inline-page" style={pageGridStyle}>
+        <div className="g-mobile-inline-hero" style={heroStyle}>
           <div style={heroCopyStyle}>
             <p style={smallLabelStyle}>Übersicht</p>
             <h2 style={heroTitleStyle}>Rechnungen & Entwürfe</h2>
@@ -248,14 +248,14 @@ export default function RechnungenPage() {
           </div>
         </div>
 
-        <div style={statsGridStyle}>
+        <div className="g-mobile-stats-grid" style={statsGridStyle}>
           <StatCard label="Entwürfe" value={data.stats.drafts} hint="Noch nicht final" tone="draft" />
           <StatCard label="Erstellt" value={data.stats.issued} hint="Finalisierte Rechnungen" tone="issued" />
           <StatCard label="Bezahlt" value={data.stats.paid} hint="Erledigt" tone="paid" />
           <StatCard label="Storniert" value={data.stats.cancelled} hint="Korrektur / Storno" tone="cancelled" />
         </div>
 
-        <div style={cardStyle}>
+        <div className="g-mobile-inline-card" style={cardStyle}>
           <div style={cardHeaderStyle}>
             <div>
               <p style={smallLabelStyle}>Liste</p>
@@ -268,7 +268,7 @@ export default function RechnungenPage() {
 
           </div>
 
-          <div style={tableWrapStyle}>
+          <div className="g-mobile-table-scroll" style={tableWrapStyle}>
             <table style={tableStyle}>
               <thead>
                 <tr>

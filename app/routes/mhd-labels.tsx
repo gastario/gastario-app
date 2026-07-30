@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
@@ -253,8 +253,8 @@ export default function MhdLabelsPage() {
       {actionData && "error" in actionData ? <div className="no-print" style={errorStyle}>{actionData.error}</div> : null}
       {actionData && "success" in actionData ? <div className="no-print" style={successStyle}>{actionData.success}</div> : null}
 
-      <section className="no-print" style={pageGridStyle}>
-        <div style={editorCardStyle}>
+      <section className="no-print g-mobile-inline-page" style={pageGridStyle}>
+        <div className="g-mobile-inline-card" style={editorCardStyle}>
           <div style={cardHeaderStyle}>
             <div>
               <p style={smallLabelStyle}>Label erstellen</p>
@@ -262,7 +262,7 @@ export default function MhdLabelsPage() {
             </div>
           </div>
 
-          <Form method="post" style={formGridStyle}>
+          <Form method="post" className="g-mobile-form-grid" style={formGridStyle}>
             <input type="hidden" name="intent" value="createLabel" />
 
             <Field label="Produktname *">
@@ -323,8 +323,8 @@ export default function MhdLabelsPage() {
           </Form>
         </div>
 
-        <div style={contentGridStyle}>
-          <div style={listCardStyle}>
+        <div className="g-mobile-content-grid" style={contentGridStyle}>
+          <div className="g-mobile-inline-card" style={listCardStyle}>
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Gespeichert</p>
@@ -337,7 +337,7 @@ export default function MhdLabelsPage() {
             ) : (
               <div style={labelListStyle}>
                 {data.labels.map((label) => (
-                  <div key={label.id} style={labelRowStyle}>
+                  <div key={label.id} className="g-mobile-label-row" style={labelRowStyle}>
                                         <div style={rowTitleBlockStyle}>
                       <strong style={rowTitleStyle}>{label.productName}</strong>
 
@@ -386,7 +386,7 @@ export default function MhdLabelsPage() {
             )}
           </div>
 
-          <div style={previewCardStyle}>
+          <div className="g-mobile-inline-card" style={previewCardStyle}>
             <div style={cardHeaderStyle}>
               <div>
                 <p style={smallLabelStyle}>Vorschau</p>
