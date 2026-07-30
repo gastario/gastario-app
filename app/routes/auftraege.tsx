@@ -517,47 +517,6 @@ export async function action({ request }: { request: Request }) {
 }
 
 export default function OrdersPage() {
-  /*
-   * gastario-orders-runtime-width-debug-20260730
-   */
-  const [widthDebug, setWidthDebug] = useState<string>("Messung läuft …");
-
-  useEffect(() => {
-    const selectors = [
-      ".appShell",
-      ".workspace",
-      ".ordersPage",
-      ".ordersPage > .topbar",
-      ".ordersPage > .orderSummaryGrid",
-      ".ordersPage > .panel",
-    ];
-
-    const lines = [
-      `viewport: ${window.innerWidth}px`,
-      `document: ${document.documentElement.clientWidth}px`,
-    ];
-
-    for (const selector of selectors) {
-      const element = document.querySelector(selector) as HTMLElement | null;
-
-      if (!element) {
-        lines.push(`${selector}: nicht gefunden`);
-        continue;
-      }
-
-      const rect = element.getBoundingClientRect();
-      const style = window.getComputedStyle(element);
-
-      lines.push(
-        `${selector}: x=${Math.round(rect.x)}, width=${Math.round(rect.width)}, ` +
-          `cssWidth=${style.width}, maxWidth=${style.maxWidth}, ` +
-          `marginL=${style.marginLeft}, marginR=${style.marginRight}, ` +
-          `display=${style.display}, columns=${style.gridTemplateColumns}`
-      );
-    }
-
-    setWidthDebug(lines.join("\n"));
-  }, []);
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
@@ -603,23 +562,6 @@ export default function OrdersPage() {
 
   return (
     <AppLayout>
-      <pre
-        style={{
-          position: "relative",
-          zIndex: 9999,
-          width: "100%",
-          margin: 0,
-          padding: 10,
-          background: "#111827",
-          color: "#ffffff",
-          fontSize: 11,
-          lineHeight: 1.45,
-          whiteSpace: "pre-wrap",
-          overflowWrap: "anywhere",
-        }}
-      >
-        {widthDebug}
-      </pre>
 
       <div
         className={
