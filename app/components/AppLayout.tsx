@@ -645,13 +645,17 @@ const currentPathWithSearch =
 
             .workspace {
               width: 100%;
-              padding: 14px 10px 40px;
+              min-width: 0;
+              max-width: 100%;
+              padding: 0;
               box-sizing: border-box;
+              overflow-x: hidden;
             }
 
             .workspace > * {
               width: 100%;
-              max-width: none;
+              min-width: 0;
+              max-width: 100%;
               margin-left: 0;
               margin-right: 0;
             }
