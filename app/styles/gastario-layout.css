@@ -1605,3 +1605,136 @@
     box-sizing: border-box !important;
   }
 }
+
+/*
+ * gastario-navigation-counts-and-unified-geometry-20260801
+ *
+ * Einheitliche Inhaltsbreite und echte Navigationsbadges.
+ */
+
+.workspace {
+  display: block !important;
+  padding:
+    var(--g-page-padding-desktop) !important;
+}
+
+.workspace > * {
+  width: 100% !important;
+  max-width:
+    var(--g-page-max-width) !important;
+  margin-right: auto !important;
+  margin-left: auto !important;
+  box-sizing: border-box !important;
+}
+
+.workspace >
+  .gastario-orders-fullwidth {
+  width: 100% !important;
+  max-width:
+    var(--g-page-max-width) !important;
+  margin-right: auto !important;
+  margin-left: auto !important;
+}
+
+.navAccordionTriggerContent {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.navAccordionTriggerContent > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navAccordionItems a {
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.navItemLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navCountBadge {
+  min-width: 23px;
+  height: 23px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding: 0 7px;
+  border: 1px solid
+    var(--g-color-border);
+  border-radius:
+    var(--g-radius-pill);
+  background:
+    var(--g-color-brand-soft);
+  color:
+    var(--g-color-brand-hover);
+  font-size: 10px;
+  font-weight:
+    var(--g-font-weight-semibold);
+  line-height: 1;
+  letter-spacing: 0;
+  box-shadow: none;
+}
+
+.navCountBadgeGroup {
+  min-width: 21px;
+  height: 21px;
+  padding: 0 6px;
+  border-color:
+    var(--g-color-border-subtle);
+  background:
+    var(--g-color-surface);
+  font-size: 9px;
+}
+
+.navAccordionItems a.active
+  .navCountBadge {
+  border-color:
+    var(--g-color-border-strong);
+  background:
+    var(--g-color-surface);
+  color:
+    var(--g-color-brand-active);
+}
+
+@media (max-width: 1180px) {
+  .workspace {
+    padding:
+      var(--g-page-padding-tablet) !important;
+  }
+}
+
+@media (max-width: 980px) {
+  .workspace {
+    padding:
+      var(--g-page-padding-tablet) !important;
+  }
+
+  .workspace > * {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .workspace {
+    padding:
+      var(--g-page-padding-mobile) !important;
+  }
+
+  .navCountBadge {
+    min-width: 25px;
+    height: 25px;
+  }
+}

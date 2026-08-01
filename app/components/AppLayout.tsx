@@ -1,101 +1,274 @@
-import { Link, useLocation } from "react-router";
-import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import {
+  Link,
+  useFetcher,
+  useLocation,
+} from "react-router";
 
 import "../styles/gastario-layout.css";
 
-const navigationGroups = [
+type NavigationCountKey =
+  | "inbox"
+  | "upcomingOrders"
+  | "openQuotes"
+  | "production"
+  | "packing"
+  | "deliveries"
+  | "financeOpen"
+  | "inventoryWarnings";
+
+type NavigationCounts = Record<
+  NavigationCountKey,
+  number
+>;
+
+type NavigationItem = {
+  label: string;
+  to: string;
+  countKey?: NavigationCountKey;
+};
+
+type NavigationGroup = {
+  id: string;
+  label: string;
+  countKeys?: NavigationCountKey[];
+  items: NavigationItem[];
+};
+
+type AppLayoutProps = {
+  children: ReactNode;
+};
+
+const emptyNavigationCounts: NavigationCounts = {
+  inbox: 0,
+  upcomingOrders: 0,
+  openQuotes: 0,
+  production: 0,
+  packing: 0,
+  deliveries: 0,
+  financeOpen: 0,
+  inventoryWarnings: 0,
+};
+
+const navigationGroups: NavigationGroup[] = [
   {
     id: "overview",
     label: "Übersicht",
     items: [
-      { label: "Dashboard", to: "/" },
+      {
+        label: "Dashboard",
+        to: "/",
+      },
     ],
   },
   {
     id: "inbox",
     label: "Eingang",
+    countKeys: ["inbox"],
     items: [
-      { label: "Eingangszentrale", to: "/auftragseingang" },
+      {
+        label: "Eingangszentrale",
+        to: "/auftragseingang",
+        countKey: "inbox",
+      },
     ],
   },
   {
     id: "orders",
     label: "Aufträge",
+    countKeys: ["upcomingOrders"],
     items: [
-      { label: "Bevorstehende Aufträge", to: "/auftraege" },
-      { label: "Vergangene Aufträge", to: "/auftraege?view=past" },
-      { label: "Neuer Auftrag", to: "/neuer-auftrag" },
+      {
+        label: "Bevorstehende Aufträge",
+        to: "/auftraege",
+        countKey: "upcomingOrders",
+      },
+      {
+        label: "Vergangene Aufträge",
+        to: "/auftraege?view=past",
+      },
+      {
+        label: "Neuer Auftrag",
+        to: "/neuer-auftrag",
+      },
     ],
   },
   {
     id: "import",
     label: "Import",
     items: [
-      { label: "E-Mail-Konten", to: "/importe" },
-      { label: "Import-Regeln", to: "/import-regeln" },
-      { label: "Buchhaltung", to: "/buchhaltung" },
+      {
+        label: "E-Mail-Konten",
+        to: "/importe",
+      },
+      {
+        label: "Import-Regeln",
+        to: "/import-regeln",
+      },
+      {
+        label: "Buchhaltung",
+        to: "/buchhaltung",
+      },
     ],
   },
   {
     id: "sales",
     label: "Verkauf",
+    countKeys: ["openQuotes"],
     items: [
-      { label: "Angebote", to: "/angebote" },
-      { label: "Kunden", to: "/kunden" },
-      { label: "Produkte", to: "/produkte" },
-      { label: "Produkt-Import", to: "/produkt-import" },
+      {
+        label: "Angebote",
+        to: "/angebote",
+        countKey: "openQuotes",
+      },
+      {
+        label: "Kunden",
+        to: "/kunden",
+      },
+      {
+        label: "Produkte",
+        to: "/produkte",
+      },
+      {
+        label: "Produkt-Import",
+        to: "/produkt-import",
+      },
     ],
   },
   {
     id: "operations",
     label: "Betrieb",
+    countKeys: [
+      "production",
+      "packing",
+    ],
     items: [
-      { label: "Produktion", to: "/produktion" },
-      { label: "MHD-Labels", to: "/mhd-labels" },
-      { label: "Foodlabel erstellen", to: "/foodlabels" },
-      { label: "Packlisten", to: "/packlisten" },
-      { label: "Lieferungen", to: "/lieferungen" },
-      { label: "Lieferscheine", to: "/lieferscheine" },
+      {
+        label: "Produktion",
+        to: "/produktion",
+        countKey: "production",
+      },
+      {
+        label: "MHD-Labels",
+        to: "/mhd-labels",
+      },
+      {
+        label: "Foodlabel erstellen",
+        to: "/foodlabels",
+      },
+      {
+        label: "Packlisten",
+        to: "/packlisten",
+        countKey: "packing",
+      },
+      {
+        label: "Lieferungen",
+        to: "/lieferungen",
+        countKey: "deliveries",
+      },
+      {
+        label: "Lieferscheine",
+        to: "/lieferscheine",
+      },
     ],
   },
   {
     id: "finance",
     label: "Finanzen",
+    countKeys: ["financeOpen"],
     items: [
-      { label: "Rechnungen", to: "/rechnungen" },
-      { label: "Abrechnung", to: "/abrechnung" },
+      {
+        label: "Rechnungen",
+        to: "/rechnungen",
+        countKey: "financeOpen",
+      },
+      {
+        label: "Abrechnung",
+        to: "/abrechnung",
+      },
     ],
   },
   {
     id: "masterdata",
     label: "Stammdaten",
+    countKeys: ["inventoryWarnings"],
     items: [
-      { label: "Lieferanten", to: "/lieferanten" },
-      { label: "Lager", to: "/lager" },
-      { label: "Rezepte", to: "/rezepte" },
-      { label: "Konto & Abo", to: "/konto/abo" },
+      {
+        label: "Lieferanten",
+        to: "/lieferanten",
+      },
+      {
+        label: "Lager",
+        to: "/lager",
+        countKey: "inventoryWarnings",
+      },
+      {
+        label: "Rezepte",
+        to: "/rezepte",
+      },
+      {
+        label: "Konto & Abo",
+        to: "/konto/abo",
+      },
     ],
   },
 ];
 
-type AppLayoutProps = {
-  children: React.ReactNode;
-};
+function formatNavigationCount(
+  count: number
+) {
+  if (count > 99) {
+    return "99+";
+  }
 
-export default function AppLayout({ children }: AppLayoutProps) {
+  return String(count);
+}
+
+export default function AppLayout({
+  children,
+}: AppLayoutProps) {
   const location = useLocation();
+  const countFetcher = useFetcher();
 
-  
-  /* gastario-mobile-sidebar-drawer-20260729 */
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] =
     useState(false);
 
   const [isMobileNavigation, setIsMobileNavigation] =
     useState(false);
-const currentPathWithSearch =
+
+  const currentPathWithSearch =
     location.pathname + location.search;
 
-  const isNavigationItemActive = (to: string) => {
+  const navigationCounts =
+    (
+      countFetcher.data as
+        | NavigationCounts
+        | undefined
+    ) || emptyNavigationCounts;
+
+  const countForKeys = (
+    keys?: NavigationCountKey[]
+  ) => {
+    if (!keys?.length) {
+      return 0;
+    }
+
+    return keys.reduce(
+      (sum, key) =>
+        sum +
+        Number(navigationCounts[key] || 0),
+      0
+    );
+  };
+
+  const isNavigationItemActive = (
+    to: string
+  ) => {
     const itemPath = to.split("?")[0];
     const itemHasQuery = to.includes("?");
 
@@ -111,31 +284,30 @@ const currentPathWithSearch =
       to === "/auftraege" &&
       location.pathname === "/auftraege"
     ) {
-      return !new URLSearchParams(location.search).has("view");
+      return !new URLSearchParams(
+        location.search
+      ).has("view");
     }
 
     return (
       location.pathname === itemPath ||
-      location.pathname.startsWith(itemPath + "/")
+      location.pathname.startsWith(
+        itemPath + "/"
+      )
     );
   };
 
   const activeGroupId = useMemo(() => {
-    const activeGroup = navigationGroups.find((group) =>
-      group.items.some((item) =>
-        isNavigationItemActive(item.to)
-      )
-    );
+    const activeGroup =
+      navigationGroups.find((group) =>
+        group.items.some((item) =>
+          isNavigationItemActive(item.to)
+        )
+      );
 
     return activeGroup?.id || "overview";
   }, [currentPathWithSearch]);
 
-  /*
-   * gastario-sidebar-multi-open-exact-20260716
-   *
-   * Mehrere Navigationsgruppen dürfen gleichzeitig offen sein.
-   * Die Auswahl wird als Array im Browser gespeichert.
-   */
   const [openGroupIds, setOpenGroupIds] =
     useState<string[]>(() => {
       if (
@@ -193,9 +365,6 @@ const currentPathWithSearch =
       )
     );
 
-    /*
-     * Alten Einzelwert nach erfolgreicher Umstellung entfernen.
-     */
     window.localStorage.removeItem(
       "gastario-open-navigation-group"
     );
@@ -211,7 +380,9 @@ const currentPathWithSearch =
 
     setOpenGroupIds((currentGroupIds) => {
       if (
-        currentGroupIds.includes(activeGroupId)
+        currentGroupIds.includes(
+          activeGroupId
+        )
       ) {
         return currentGroupIds;
       }
@@ -229,9 +400,12 @@ const currentPathWithSearch =
       return nextGroupIds;
     });
   }, [activeGroupId]);
+
   useEffect(() => {
     const mediaQuery =
-      window.matchMedia("(max-width: 980px)");
+      window.matchMedia(
+        "(max-width: 980px)"
+      );
 
     const updateMobileNavigation = () => {
       const isMobile = mediaQuery.matches;
@@ -275,7 +449,8 @@ const currentPathWithSearch =
     const previousOverflow =
       document.body.style.overflow;
 
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow =
+      "hidden";
 
     const closeOnEscape = (
       event: KeyboardEvent
@@ -301,6 +476,27 @@ const currentPathWithSearch =
     };
   }, [isMobileSidebarOpen]);
 
+  useEffect(() => {
+    const loadCounts = () => {
+      countFetcher.load(
+        "/api/navigation-counts"
+      );
+    };
+
+    loadCounts();
+
+    const refreshInterval =
+      window.setInterval(
+        loadCounts,
+        60000
+      );
+
+    return () => {
+      window.clearInterval(
+        refreshInterval
+      );
+    };
+  }, []);
 
   const toggleNavigationGroup = (
     groupId: string
@@ -309,35 +505,41 @@ const currentPathWithSearch =
       return;
     }
 
-    setOpenGroupIds((currentGroupIds) => {
-      const nextGroupIds =
-        isMobileNavigation
-          ? currentGroupIds.includes(groupId)
-            ? []
-            : [groupId]
-          : currentGroupIds.includes(groupId)
-            ? currentGroupIds.filter(
-                (currentGroupId) =>
-                  currentGroupId !== groupId
+    setOpenGroupIds(
+      (currentGroupIds) => {
+        const nextGroupIds =
+          isMobileNavigation
+            ? currentGroupIds.includes(
+                groupId
               )
-            : [
-                ...currentGroupIds,
-                groupId,
-              ];
+              ? []
+              : [groupId]
+            : currentGroupIds.includes(
+                  groupId
+                )
+              ? currentGroupIds.filter(
+                  (currentGroupId) =>
+                    currentGroupId !==
+                    groupId
+                )
+              : [
+                  ...currentGroupIds,
+                  groupId,
+                ];
 
-      window.localStorage.setItem(
-        "gastario-open-navigation-groups",
-        JSON.stringify(nextGroupIds)
-      );
+        window.localStorage.setItem(
+          "gastario-open-navigation-groups",
+          JSON.stringify(nextGroupIds)
+        );
 
-      return nextGroupIds;
-    });
+        return nextGroupIds;
+      }
+    );
   };
 
   return (
     <main className="appShell">
       <header className="mobileAppBar">
-
         <button
           type="button"
           className="mobileMenuButton"
@@ -345,9 +547,12 @@ const currentPathWithSearch =
             setIsMobileSidebarOpen(true)
           }
           aria-label="Navigation öffnen"
-          aria-expanded={isMobileSidebarOpen}
+          aria-expanded={
+            isMobileSidebarOpen
+          }
         >
           <span>Navigation</span>
+
           <span
             className="mobileMenuChevron"
             aria-hidden="true"
@@ -375,9 +580,11 @@ const currentPathWithSearch =
         type="button"
         className={
           "mobileSidebarBackdrop" +
-          (isMobileSidebarOpen
-            ? " isVisible"
-            : "")
+          (
+            isMobileSidebarOpen
+              ? " isVisible"
+              : ""
+          )
         }
         onClick={() =>
           setIsMobileSidebarOpen(false)
@@ -387,16 +594,15 @@ const currentPathWithSearch =
           isMobileSidebarOpen ? 0 : -1
         }
       />
-      
-      
-
 
       <aside
         className={
           "sidebar" +
-          (isMobileSidebarOpen
-            ? " isMobileOpen"
-            : "")
+          (
+            isMobileSidebarOpen
+              ? " isMobileOpen"
+              : ""
+          )
         }
       >
         <div className="brand">
@@ -431,106 +637,176 @@ const currentPathWithSearch =
           className="navGroups navAccordion"
           aria-label="Hauptnavigation"
         >
-          {navigationGroups.map((group) => {
-            const isOverview =
-              group.id === "overview";
+          {navigationGroups.map(
+            (group) => {
+              const isOverview =
+                group.id === "overview";
 
-            const groupContainsActiveItem =
-              group.items.some((item) =>
-                isNavigationItemActive(item.to)
-              );
+              const groupContainsActiveItem =
+                group.items.some((item) =>
+                  isNavigationItemActive(
+                    item.to
+                  )
+                );
 
-            const isOpen =
-              isOverview ||
-              openGroupIds.includes(group.id) ||
-              groupContainsActiveItem;
+              const isOpen =
+                isOverview ||
+                openGroupIds.includes(
+                  group.id
+                ) ||
+                groupContainsActiveItem;
 
-            return (
-              <div
-                className={
-                  "navGroup navAccordionGroup" +
-                  (isOpen ? " isOpen" : "") +
-                  (groupContainsActiveItem
-                    ? " hasActiveItem"
-                    : "")
-                }
-                key={group.id}
-              >
-                {isOverview ? (
-                  <div className="navAccordionStaticLabel">
-                    {group.label}
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    className="navAccordionTrigger"
-                    onClick={() =>
-                      toggleNavigationGroup(group.id)
-                    }
-                    aria-expanded={isOpen}
-                    aria-controls={
-                      "navigation-group-" + group.id
-                    }
-                  >
-                    <span>{group.label}</span>
+              const groupCount =
+                countForKeys(
+                  group.countKeys
+                );
 
-                    <span
-                      className="navAccordionChevron"
-                      aria-hidden="true"
-                    >
-                      ›
-                    </span>
-                  </button>
-                )}
-
+              return (
                 <div
-                  id={"navigation-group-" + group.id}
-                  className="navAccordionItems"
-                  hidden={!isOpen}
+                  className={
+                    "navGroup navAccordionGroup" +
+                    (
+                      isOpen
+                        ? " isOpen"
+                        : ""
+                    ) +
+                    (
+                      groupContainsActiveItem
+                        ? " hasActiveItem"
+                        : ""
+                    )
+                  }
+                  key={group.id}
                 >
-                  {group.items.map((item) => {
-                    const isActive =
-                      isNavigationItemActive(item.to);
+                  {isOverview ? (
+                    <div className="navAccordionStaticLabel">
+                      {group.label}
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="navAccordionTrigger"
+                      onClick={() =>
+                        toggleNavigationGroup(
+                          group.id
+                        )
+                      }
+                      aria-expanded={isOpen}
+                      aria-controls={
+                        "navigation-group-" +
+                        group.id
+                      }
+                    >
+                      <span className="navAccordionTriggerContent">
+                        <span>
+                          {group.label}
+                        </span>
 
-                    return (
-                      <Link
-                        preventScrollReset
-                        onClick={() =>
-                          setIsMobileSidebarOpen(false)
-                        }
-                        className={
-                          isActive ? "active" : undefined
-                        }
-                        to={item.to}
-                        key={item.to}
+                        {groupCount > 0 ? (
+                          <span
+                            className="navCountBadge navCountBadgeGroup"
+                            aria-label={
+                              groupCount +
+                              " offene Vorgänge"
+                            }
+                          >
+                            {formatNavigationCount(
+                              groupCount
+                            )}
+                          </span>
+                        ) : null}
+                      </span>
+
+                      <span
+                        className="navAccordionChevron"
+                        aria-hidden="true"
                       >
-                        {item.label}
-                      </Link>
-                    );
-                  })}
+                        ›
+                      </span>
+                    </button>
+                  )}
+
+                  <div
+                    id={
+                      "navigation-group-" +
+                      group.id
+                    }
+                    className="navAccordionItems"
+                    hidden={!isOpen}
+                  >
+                    {group.items.map(
+                      (item) => {
+                        const isActive =
+                          isNavigationItemActive(
+                            item.to
+                          );
+
+                        const itemCount =
+                          item.countKey
+                            ? Number(
+                                navigationCounts[
+                                  item.countKey
+                                ] || 0
+                              )
+                            : 0;
+
+                        return (
+                          <Link
+                            preventScrollReset
+                            onClick={() =>
+                              setIsMobileSidebarOpen(
+                                false
+                              )
+                            }
+                            className={
+                              isActive
+                                ? "active"
+                                : undefined
+                            }
+                            to={item.to}
+                            key={item.to}
+                          >
+                            <span className="navItemLabel">
+                              {item.label}
+                            </span>
+
+                            {itemCount > 0 ? (
+                              <span
+                                className="navCountBadge"
+                                aria-label={
+                                  itemCount +
+                                  " offene Vorgänge"
+                                }
+                              >
+                                {formatNavigationCount(
+                                  itemCount
+                                )}
+                              </span>
+                            ) : null}
+                          </Link>
+                        );
+                      }
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            }
+          )}
         </nav>
 
         <div className="sidebarFooter">
-          <a className="sidebarLogoutButton" href="/logout">
+          <a
+            className="sidebarLogoutButton"
+            href="/logout"
+          >
             Ausloggen
           </a>
         </div>
       </aside>
 
-      <section className="workspace">{children}</section>
+      <section className="workspace">
+        {children}
+      </section>
     </main>
   );
 }
-
-
-
-
-
-
-
-
-

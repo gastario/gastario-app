@@ -55,6 +55,7 @@ export default [
 
   route("api/mailjet/inbound", "routes/api.mailjet.inbound.tsx"),
   route("api/email-import/run", "routes/api.email-import.run.tsx"),
+  route("api/navigation-counts", "routes/api.navigation-counts.tsx"),
 
   route("gastario-control", "routes/gastario-control.tsx"),
   route("gastario-control/mandanten", "routes/gastario-control.mandanten.tsx"),

@@ -1,0 +1,245 @@
+/*
+ * Gastario Design System 2026
+ * Einheitliche Seitenstruktur für alle PageShell-Routen.
+ */
+
+.g-ui-page {
+  width: 100%;
+  max-width: 100%;
+  display: grid;
+  gap: var(--g-space-5);
+  margin: 0;
+  padding: 0;
+  color: var(--g-color-text);
+}
+
+.g-ui-page-header {
+  min-height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--g-space-6);
+  padding: 2px 2px 0;
+}
+
+.g-ui-page-heading {
+  min-width: 0;
+}
+
+.g-ui-eyebrow {
+  margin: 0 0 5px;
+  color: var(--g-color-brand);
+  font-size: 10px;
+  font-weight: var(--g-font-weight-bold);
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.g-ui-page-title {
+  margin: 0;
+  color: var(--g-color-text);
+  font-size: var(--g-font-size-page);
+  font-weight: var(--g-font-weight-semibold);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+
+.g-ui-page-subtitle {
+  max-width: 820px;
+  margin-top: 8px;
+  color: var(--g-color-text-muted);
+  font-size: 13px;
+  font-weight: var(--g-font-weight-regular);
+  line-height: 1.55;
+}
+
+.g-ui-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.g-ui-card {
+  width: 100%;
+  min-width: 0;
+  padding: var(--g-space-5);
+  border: 1px solid var(--g-color-border);
+  border-radius: var(--g-radius-card);
+  background: var(--g-color-surface);
+  box-shadow: var(--g-shadow-card);
+}
+
+.g-ui-card--soft {
+  background: var(--g-color-surface-soft);
+}
+
+.g-ui-card--flat {
+  box-shadow: none;
+}
+
+.g-ui-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--g-space-5);
+  margin-bottom: var(--g-space-5);
+}
+
+.g-ui-section-title {
+  margin: 3px 0 0;
+  color: var(--g-color-text);
+  font-size: var(--g-font-size-section);
+  font-weight: var(--g-font-weight-semibold);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.g-ui-section-hint {
+  max-width: 760px;
+  margin-top: 6px;
+  color: var(--g-color-text-muted);
+  font-size: 12px;
+  font-weight: var(--g-font-weight-regular);
+  line-height: 1.5;
+}
+
+.g-ui-metric-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.g-ui-metric-card {
+  min-width: 0;
+  min-height: 112px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--g-color-border);
+  border-radius: var(--g-radius-card);
+  background: var(--g-color-surface);
+  box-shadow: var(--g-shadow-card);
+}
+
+.g-ui-metric-card > div > p {
+  margin: 0;
+  color: var(--g-color-text-muted);
+  font-size: 11px;
+  font-weight: var(--g-font-weight-medium);
+}
+
+.g-ui-metric-card > div > strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--g-color-text);
+  font-size: 27px;
+  font-weight: var(--g-font-weight-semibold);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.g-ui-metric-card > div > span {
+  display: block;
+  margin-top: 7px;
+  color: var(--g-color-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.g-ui-metric-card > small {
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 9px;
+  border-radius: var(--g-radius-pill);
+  background: var(--g-color-brand-soft);
+  color: var(--g-color-brand-hover);
+  font-size: 10px;
+  font-weight: var(--g-font-weight-semibold);
+  white-space: nowrap;
+}
+
+.g-ui-metric-card--attention {
+  border-color: var(--g-color-warning-border);
+  background:
+    linear-gradient(
+      135deg,
+      var(--g-color-warning-bg),
+      var(--g-color-surface)
+    );
+}
+
+.g-ui-notice {
+  padding: 14px 16px;
+  border: 1px solid var(--g-color-info-border);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-info-bg);
+  color: var(--g-color-info);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.g-ui-notice--success {
+  border-color: var(--g-color-success-border);
+  background: var(--g-color-success-bg);
+  color: var(--g-color-success);
+}
+
+.g-ui-notice--warning {
+  border-color: var(--g-color-warning-border);
+  background: var(--g-color-warning-bg);
+  color: var(--g-color-warning);
+}
+
+.g-ui-notice--danger {
+  border-color: var(--g-color-danger-border);
+  background: var(--g-color-danger-bg);
+  color: var(--g-color-danger);
+}
+
+@media (max-width: 1100px) {
+  .g-ui-metric-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .g-ui-page {
+    gap: var(--g-space-4);
+  }
+
+  .g-ui-page-header,
+  .g-ui-section-header {
+    min-height: 0;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .g-ui-header-actions {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr);
+    justify-content: stretch;
+  }
+
+  .g-ui-header-actions > * {
+    width: 100%;
+  }
+
+  .g-ui-card {
+    padding: var(--g-space-4);
+  }
+
+  .g-ui-metric-grid {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+}
