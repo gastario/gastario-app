@@ -64,8 +64,13 @@ const navigationGroups: NavigationGroup[] = [
         label: "Dashboard",
         to: "/",
       },
+      {
+        label: "Auswertungen",
+        to: "/auswertungen",
+      },
     ],
   },
+
   {
     id: "inbox",
     label: "Eingang",
@@ -76,8 +81,17 @@ const navigationGroups: NavigationGroup[] = [
         to: "/auftragseingang",
         countKey: "inbox",
       },
+      {
+        label: "E-Mail-Konten",
+        to: "/importe",
+      },
+      {
+        label: "Import-Regeln",
+        to: "/import-regeln",
+      },
     ],
   },
+
   {
     id: "orders",
     label: "Aufträge",
@@ -98,24 +112,7 @@ const navigationGroups: NavigationGroup[] = [
       },
     ],
   },
-  {
-    id: "import",
-    label: "Import",
-    items: [
-      {
-        label: "E-Mail-Konten",
-        to: "/importe",
-      },
-      {
-        label: "Import-Regeln",
-        to: "/import-regeln",
-      },
-      {
-        label: "Buchhaltung",
-        to: "/buchhaltung",
-      },
-    ],
-  },
+
   {
     id: "sales",
     label: "Verkauf",
@@ -136,10 +133,11 @@ const navigationGroups: NavigationGroup[] = [
       },
       {
         label: "Produkt-Import",
-        to: "/produkt-import",
+        to: "/produkte/import",
       },
     ],
   },
+
   {
     id: "operations",
     label: "Betrieb",
@@ -152,14 +150,6 @@ const navigationGroups: NavigationGroup[] = [
         label: "Produktion",
         to: "/produktion",
         countKey: "production",
-      },
-      {
-        label: "MHD-Labels",
-        to: "/mhd-labels",
-      },
-      {
-        label: "Foodlabel erstellen",
-        to: "/foodlabels",
       },
       {
         label: "Packlisten",
@@ -175,8 +165,42 @@ const navigationGroups: NavigationGroup[] = [
         label: "Lieferscheine",
         to: "/lieferscheine",
       },
+      {
+        label: "MHD-Labels",
+        to: "/mhd-labels",
+      },
+      {
+        label: "Foodlabels",
+        to: "/foodlabels",
+      },
     ],
   },
+
+  {
+    id: "purchasing",
+    label: "Einkauf",
+    countKeys: ["inventoryWarnings"],
+    items: [
+      {
+        label: "Einkaufsplanung",
+        to: "/einkauf",
+      },
+      {
+        label: "Lager",
+        to: "/lager",
+        countKey: "inventoryWarnings",
+      },
+      {
+        label: "Lieferanten",
+        to: "/lieferanten",
+      },
+      {
+        label: "Rezepte",
+        to: "/rezepte",
+      },
+    ],
+  },
+
   {
     id: "finance",
     label: "Finanzen",
@@ -188,28 +212,31 @@ const navigationGroups: NavigationGroup[] = [
         countKey: "financeOpen",
       },
       {
-        label: "Abrechnung",
-        to: "/abrechnung",
+        label: "Buchhaltung",
+        to: "/buchhaltung",
+      },
+      {
+        label: "Belege",
+        to: "/belege",
+      },
+      {
+        label: "Steuerberater-Export",
+        to: "/steuerberater-export",
       },
     ],
   },
+
   {
-    id: "masterdata",
-    label: "Stammdaten",
-    countKeys: ["inventoryWarnings"],
+    id: "administration",
+    label: "Verwaltung",
     items: [
       {
-        label: "Lieferanten",
-        to: "/lieferanten",
+        label: "Einstellungen",
+        to: "/einstellungen",
       },
       {
-        label: "Lager",
-        to: "/lager",
-        countKey: "inventoryWarnings",
-      },
-      {
-        label: "Rezepte",
-        to: "/rezepte",
+        label: "Rechnungseinstellungen",
+        to: "/einstellungen/rechnungen",
       },
       {
         label: "Konto & Abo",
@@ -222,13 +249,15 @@ const navigationGroups: NavigationGroup[] = [
 function formatNavigationCount(
   count: number
 ) {
-  if (count > 99) {
-    return "99+";
-  }
+  const normalizedCount = Math.max(
+    0,
+    Math.trunc(Number(count) || 0)
+  );
 
-  return String(count);
+  return new Intl.NumberFormat(
+    "de-DE"
+  ).format(normalizedCount);
 }
-
 export default function AppLayout({
   children,
 }: AppLayoutProps) {

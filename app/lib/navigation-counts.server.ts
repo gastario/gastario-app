@@ -23,42 +23,64 @@ export const emptyNavigationCounts: NavigationCounts = {
 export async function getNavigationCounts(
   request: Request
 ): Promise<NavigationCounts> {
-  const { prisma } = await import("./prisma.server");
-  const { getUserId } = await import("./session.server");
+  const { prisma } =
+    await import("./prisma.server");
 
-  const userId = await getUserId(request);
+  const { getUserId } =
+    await import("./session.server");
+
+  const userId =
+    await getUserId(request);
 
   if (!userId) {
-    return { ...emptyNavigationCounts };
+    return {
+      ...emptyNavigationCounts,
+    };
   }
 
-  const membership = await prisma.tenantUser
-    .findFirst({
-      where: {
-        userId,
-      },
-      select: {
-        tenantId: true,
-        tenant: {
-          select: {
-            lockedAt: true,
+  const membership =
+    await prisma.tenantUser
+      .findFirst({
+        where: {
+          userId,
+        },
+        select: {
+          tenantId: true,
+          tenant: {
+            select: {
+              lockedAt: true,
+            },
           },
         },
-      },
-    })
-    .catch(() => null);
+      })
+      .catch(() => null);
 
   if (
     !membership?.tenantId ||
     membership.tenant?.lockedAt
   ) {
-    return { ...emptyNavigationCounts };
+    return {
+      ...emptyNavigationCounts,
+    };
   }
 
-  const tenantId = membership.tenantId;
+  const tenantId =
+    membership.tenantId;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  /*
+   * Der Auftragseingang zeigt standardmäßig
+   * die letzten sieben Tage. Der Badge folgt
+   * demselben Zeitraum, damit keine jahrealten
+   * unverknüpften E-Mails als offene Aufgabe
+   * erscheinen.
+   */
+  const inboxSince = new Date(today);
+  inboxSince.setDate(
+    inboxSince.getDate() - 7
+  );
 
   const intakeOrderStatuses = [
     "AUTO_CREATED",
@@ -67,17 +89,13 @@ export async function getNavigationCounts(
     "POSSIBLE_DUPLICATE",
   ] as any;
 
+  /*
+   * Muss der Auftragsübersicht entsprechen:
+   * nur operative, noch nicht abgeschlossene
+   * Aufträge mit heutiger oder zukünftiger
+   * Lieferung.
+   */
   const activeUpcomingStatuses = [
-    "AUTO_CREATED",
-    "REVIEW_NEEDED",
-    "INCOMPLETE",
-    "POSSIBLE_DUPLICATE",
-    "CONFIRMED",
-    "IN_PRODUCTION",
-    "PACKING_OPEN",
-  ] as any;
-
-  const activeDeliveryStatuses = [
     "CONFIRMED",
     "IN_PRODUCTION",
     "PACKING_OPEN",
@@ -99,6 +117,7 @@ export async function getNavigationCounts(
       .count({
         where: {
           tenantId,
+
           status: {
             in: [
               "RECEIVED",
@@ -106,6 +125,11 @@ export async function getNavigationCounts(
               "FAILED",
             ] as any,
           },
+
+          receivedAt: {
+            gte: inboxSince,
+          },
+
           orders: {
             none: {},
           },
@@ -117,6 +141,7 @@ export async function getNavigationCounts(
       .count({
         where: {
           tenantId,
+
           status: {
             in: intakeOrderStatuses,
           },
@@ -128,9 +153,11 @@ export async function getNavigationCounts(
       .count({
         where: {
           tenantId,
+
           status: {
             in: activeUpcomingStatuses,
           },
+
           deliveryDate: {
             gte: today,
           },
@@ -151,7 +178,8 @@ export async function getNavigationCounts(
       .count({
         where: {
           tenantId,
-          status: "IN_PRODUCTION" as any,
+          status:
+            "IN_PRODUCTION" as any,
         },
       })
       .catch(() => 0),
@@ -160,7 +188,8 @@ export async function getNavigationCounts(
       .count({
         where: {
           tenantId,
-          status: "PACKING_OPEN" as any,
+          status:
+            "PACKING_OPEN" as any,
         },
       })
       .catch(() => 0),
@@ -169,9 +198,11 @@ export async function getNavigationCounts(
       .count({
         where: {
           tenantId,
+
           status: {
-            in: activeDeliveryStatuses,
+            in: activeUpcomingStatuses,
           },
+
           deliveryDate: {
             gte: today,
           },
@@ -183,12 +214,14 @@ export async function getNavigationCounts(
       .count({
         where: {
           tenantId,
+
           status: {
             in: [
               "DRAFT",
               "ISSUED",
             ] as any,
           },
+
           cancelledAt: null,
         },
       })
@@ -198,8 +231,10 @@ export async function getNavigationCounts(
       .count({
         where: {
           tenantId,
+
           billingStatus:
             "READY_TO_INVOICE" as any,
+
           invoices: {
             none: {},
           },
@@ -213,6 +248,7 @@ export async function getNavigationCounts(
           tenantId,
           active: true,
         },
+
         select: {
           currentStock: true,
           minStock: true,
@@ -223,13 +259,11 @@ export async function getNavigationCounts(
 
   const inventoryWarnings =
     inventoryItems.filter((item) => {
-      const currentStock = Number(
-        item.currentStock || 0
-      );
+      const currentStock =
+        Number(item.currentStock || 0);
 
-      const minStock = Number(
-        item.minStock || 0
-      );
+      const minStock =
+        Number(item.minStock || 0);
 
       return (
         minStock > 0 &&
