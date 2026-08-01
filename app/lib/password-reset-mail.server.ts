@@ -28,7 +28,11 @@ export function isPasswordResetMailConfigured() {
   return Boolean(
     String(process.env.MAILJET_API_KEY || "").trim() &&
       String(process.env.MAILJET_SECRET_KEY || "").trim() &&
-      String(process.env.MAILJET_FROM_EMAIL || "").trim()
+      String(
+        process.env.MAILJET_FROM_EMAIL ||
+          process.env.MAIL_FROM_EMAIL ||
+          ""
+      ).trim()
   );
 }
 
@@ -43,13 +47,24 @@ export async function sendPasswordResetEmail(
     "MAILJET_SECRET_KEY"
   );
 
-  const fromEmail = readRequiredEnvironmentVariable(
-    "MAILJET_FROM_EMAIL"
-  );
+  const fromEmail = String(
+    process.env.MAILJET_FROM_EMAIL ||
+      process.env.MAIL_FROM_EMAIL ||
+      ""
+  ).trim();
+
+  if (!fromEmail) {
+    throw new Error(
+      "Die Umgebungsvariable MAIL_FROM_EMAIL fehlt."
+    );
+  }
 
   const fromName =
-    String(process.env.MAILJET_FROM_NAME || "").trim() ||
-    "Gastario";
+    String(
+      process.env.MAILJET_FROM_NAME ||
+        process.env.MAIL_FROM_NAME ||
+        ""
+    ).trim() || "Gastario";
 
   const recipientName =
     String(input.name || "").trim() || "Gastario Nutzer";
