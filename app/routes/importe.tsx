@@ -2,6 +2,15 @@ import crypto from "node:crypto";
 import { Form, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
+import {
+  Notice,
+  PageHeader,
+  PageSection,
+  PageShell,
+} from "../components/ui/PageShell";
+
+import "../styles/gastario-module-workspace.css";
+
 export function meta() {
   return [{ title: "E-Mail-Import · Gastario" }];
 }
@@ -240,307 +249,320 @@ export async function action({ request }: { request: Request }) {
 }
 
 export default function ImportsPage() {
-  const data = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>() as any;
+  const data =
+    useLoaderData<typeof loader>();
+
+  const actionData =
+    useActionData<typeof action>() as any;
+
+  const activeAccounts =
+    data.emailAccounts.filter(
+      (account: any) =>
+        Boolean(account.active)
+    ).length;
 
   return (
     <AppLayout>
-      <style>{importPageCss}</style>
-      <div className="g-mobile-inline-page" style={pageStyle}>
-        <header className="g-mobile-inline-hero" style={heroStyle}>
-          <div>
-            <p style={eyebrowStyle}>E-Mail-Import</p>
-            <h1 style={titleStyle}>Auftraege automatisch erkennen</h1>
-            <p style={subtitleStyle}>
-              Verbinde einmal dein Auftrags-Postfach. Gastario liest neue Mails automatisch,
-              erkennt Auftraege und legt sie zuerst sicher im Auftragseingang zur Pruefung ab.
-            </p>
-          </div>
+      <PageShell className="modulePage">
+        <PageHeader
+          eyebrow="Eingang"
+          title="E-Mail-Konten"
+          subtitle={
+            <>
+              {data.tenantName}
+              {" · "}
+              Auftrags-Postfächer sicher verbinden
+              und für den automatischen Abruf
+              vorbereiten.
+            </>
+          }
+          actions={
+            <div className="moduleHeaderStatus">
+              <span className="moduleBadge moduleBadgeSuccess">
+                {activeAccounts} aktiv
+              </span>
 
-          <div style={stepPillWrapStyle}>
-            <span>1 Postfach</span>
-            <span>2 Testen</span>
-            <span>3 Automatisch</span>
-          </div>
-        </header>
-
-        {data.error ? <div style={errorStyle}>{data.error}</div> : null}
-        {actionData?.error ? <div style={errorStyle}>{actionData.error}</div> : null}
-        {actionData?.success ? <div style={successStyle}>{actionData.success}</div> : null}
-
-        <section className="g-mobile-inline-card" style={setupCardStyle}>
-          <div style={sectionHeaderStyle}>
-            <div>
-              <p style={eyebrowStyle}>Postfach</p>
-              <h2 style={sectionTitleStyle}>Auftrags-Postfach verbinden</h2>
-              <p style={sectionTextStyle}>
-                Trage die E-Mail ein, auf der Bestellungen von Heycater, Kunden oder deiner Website eingehen.
-              </p>
+              <span className="moduleBadge">
+                IMAP
+              </span>
             </div>
+          }
+        />
 
-            <div style={statusBadgeStyle}>
-              sicherer IMAP-Abruf
-            </div>
-          </div>
+        {data.error ? (
+          <Notice type="danger">
+            {data.error}
+          </Notice>
+        ) : null}
 
-          <Form method="post" className="g-mobile-form-grid" style={formStyle}>
-            <label style={fieldStyle}>
+        {actionData?.error ? (
+          <Notice type="danger">
+            {actionData.error}
+          </Notice>
+        ) : null}
+
+        {actionData?.success ? (
+          <Notice type="success">
+            {actionData.success}
+          </Notice>
+        ) : null}
+
+        <PageSection
+          eyebrow="Postfach verbinden"
+          title="Neues E-Mail-Konto"
+          description="Gastario liest Bestellungen direkt per IMAP. Das Passwort wird verschlüsselt gespeichert."
+          actions={
+            <span className="moduleBadge moduleBadgeSuccess">
+              Sicherer Abruf
+            </span>
+          }
+        >
+          <Form
+            method="post"
+            className="moduleFormGrid moduleFormGridMailbox"
+          >
+            <label className="moduleField">
               <span>E-Mail-Adresse</span>
-              <input name="email" type="email" placeholder="info@letmebowl-catering.de" required style={inputStyle} />
+
+              <input
+                name="email"
+                type="email"
+                placeholder="info@firma.de"
+                required
+              />
             </label>
 
-            <label style={fieldStyle}>
+            <label className="moduleField">
               <span>Bezeichnung</span>
-              <input name="label" placeholder="z. B. Heycater / Website / Allgemein" style={inputStyle} />
+
+              <input
+                name="label"
+                placeholder="z. B. Heycater oder Website"
+              />
             </label>
 
-            <label style={fieldStyle}>
+            <label className="moduleField">
               <span>Anbieter</span>
-              <select name="provider" defaultValue="STRATO" style={inputStyle}>
-                <option value="STRATO">STRATO</option>
-                <option value="GMAIL">Gmail</option>
-                <option value="MICROSOFT">Microsoft 365</option>
-                <option value="IONOS">IONOS</option>
-                <option value="OTHER">Sonstiges</option>
+
+              <select
+                name="provider"
+                defaultValue="STRATO"
+              >
+                <option value="STRATO">
+                  STRATO
+                </option>
+
+                <option value="GMAIL">
+                  Gmail
+                </option>
+
+                <option value="MICROSOFT">
+                  Microsoft 365
+                </option>
+
+                <option value="IONOS">
+                  IONOS
+                </option>
+
+                <option value="OTHER">
+                  Sonstiges
+                </option>
               </select>
             </label>
 
-            <label style={fieldStyle}>
+            <label className="moduleField">
               <span>IMAP-Server</span>
-              <input name="imapHost" defaultValue="imap.strato.de" required style={inputStyle} />
+
+              <input
+                name="imapHost"
+                defaultValue="imap.strato.de"
+                required
+              />
             </label>
 
-            <label style={fieldStyle}>
+            <label className="moduleField">
               <span>Port</span>
-              <input name="imapPort" defaultValue="993" inputMode="numeric" required style={inputStyle} />
+
+              <input
+                name="imapPort"
+                defaultValue="993"
+                inputMode="numeric"
+                required
+              />
             </label>
 
-            <label style={fieldStyle}>
+            <label className="moduleField">
               <span>Benutzername</span>
-              <input name="imapUsername" placeholder="meistens die E-Mail-Adresse" style={inputStyle} />
+
+              <input
+                name="imapUsername"
+                placeholder="meistens die E-Mail-Adresse"
+              />
             </label>
 
-            <label style={fieldStyle}>
-              <span>Passwort / App-Passwort</span>
-              <input name="password" type="password" placeholder="Passwort wird verschluesselt gespeichert" style={inputStyle} />
+            <label className="moduleField moduleFieldPassword">
+              <span>Passwort oder App-Passwort</span>
+
+              <input
+                name="password"
+                type="password"
+                placeholder="Verschlüsselte Speicherung"
+              />
             </label>
 
-            <div style={buttonRowStyle}>
-              <button type="submit" name="intent" value="testMailbox" style={secondaryButtonStyle}>
+            <div className="moduleFormActions">
+              <button
+                type="submit"
+                name="intent"
+                value="testMailbox"
+                className="moduleButton moduleButtonSecondary"
+              >
                 Verbindung testen
               </button>
 
-              <button type="submit" name="intent" value="saveMailbox" style={primaryButtonStyle}>
+              <button
+                type="submit"
+                name="intent"
+                value="saveMailbox"
+                className="moduleButton moduleButtonPrimary"
+              >
                 Postfach speichern
               </button>
             </div>
           </Form>
 
-          <div className="g-mobile-hint-grid" style={hintGridStyle}>
-            <div>
-              <strong>Keine Weiterleitung noetig</strong>
-              <span>Gastario verbindet sich direkt mit dem Postfach.</span>
-            </div>
-            <div>
-              <strong>Erst Pruefung, dann Auftrag</strong>
-              <span>Neue Mails landen nicht blind als Auftrag, sondern im Auftragseingang.</span>
-            </div>
-            <div>
-              <strong>SMTP wird nicht gebraucht</strong>
-              <span>Zum Lesen der Mails nutzen wir IMAP.</span>
-            </div>
-          </div>
-        </section>
+          <div className="moduleHintGrid">
+            <article>
+              <strong>
+                Keine Weiterleitung nötig
+              </strong>
 
-        <section className="g-mobile-inline-card" style={cardStyle}>
-          <div style={sectionHeaderStyle}>
-            <div>
-              <p style={eyebrowStyle}>Verbunden</p>
-              <h2 style={sectionTitleStyle}>Aktive Postfaecher</h2>
-              <p style={sectionTextStyle}>Diese Postfaecher werden fuer die Auftragserkennung vorbereitet.</p>
-            </div>
-          </div>
+              <span>
+                Gastario verbindet sich direkt
+                mit dem vorhandenen Postfach.
+              </span>
+            </article>
 
+            <article>
+              <strong>
+                Erst prüfen, dann übernehmen
+              </strong>
+
+              <span>
+                Neue Aufträge landen zuerst
+                kontrolliert in der
+                Eingangszentrale.
+              </span>
+            </article>
+
+            <article>
+              <strong>
+                Nur IMAP erforderlich
+              </strong>
+
+              <span>
+                SMTP wird für das Lesen der
+                eingehenden Nachrichten nicht
+                benötigt.
+              </span>
+            </article>
+          </div>
+        </PageSection>
+
+        <PageSection
+          eyebrow="Verbunden"
+          title="Aktive Postfächer"
+          description="Alle Konten, die für den automatischen Auftragseingang eingerichtet sind."
+          actions={
+            <span className="moduleCount">
+              {data.emailAccounts.length}
+            </span>
+          }
+        >
           {data.emailAccounts.length === 0 ? (
-            <div style={emptyStyle}>Noch kein Postfach verbunden.</div>
+            <div className="moduleEmpty">
+              <strong>
+                Noch kein Postfach verbunden
+              </strong>
+
+              <span>
+                Richte oben das erste
+                Auftrags-Postfach ein.
+              </span>
+            </div>
           ) : (
-            <div style={listStyle}>
-              {data.emailAccounts.map((account: any) => (
-                <article key={account.id} className="g-mobile-mailbox-row" style={rowStyle}>
-                  <div>
-                    <strong>{account.email}</strong>
-                    <span>{account.label || "Auftragseingang"}</span>
-                    <small>
-                      {account.provider || "IMAP"} · {account.imapHost || "-"}:{account.imapPort || "-"} · {maskSecret(account.imapPasswordEncrypted)}
-                    </small>
-                  </div>
+            <div className="moduleList">
+              {data.emailAccounts.map(
+                (account: any) => (
+                  <article
+                    key={account.id}
+                    className="moduleListRow"
+                  >
+                    <div className="moduleListMain">
+                      <strong>
+                        {account.email}
+                      </strong>
 
-                  <div className="g-mobile-mailbox-actions" style={rowActionsStyle}>
-                    <span style={badgeStyle}>{account.active ? "aktiv" : "inaktiv"}</span>
+                      <span>
+                        {account.label ||
+                          "Auftragseingang"}
+                      </span>
 
-                    <Form method="post">
-                      <input type="hidden" name="intent" value="deleteEmailAccount" />
-                      <input type="hidden" name="id" value={account.id} />
-                      <button type="submit" style={deleteButtonStyle}>Entfernen</button>
-                    </Form>
-                  </div>
-                </article>
-              ))}
+                      <small>
+                        {account.provider ||
+                          "IMAP"}
+                        {" · "}
+                        {account.imapHost || "-"}
+                        :
+                        {account.imapPort || "-"}
+                        {" · "}
+                        {maskSecret(
+                          account.imapPasswordEncrypted
+                        )}
+                      </small>
+                    </div>
+
+                    <div className="moduleRowActions">
+                      <span
+                        className={
+                          account.active
+                            ? "moduleBadge moduleBadgeSuccess"
+                            : "moduleBadge"
+                        }
+                      >
+                        {account.active
+                          ? "Aktiv"
+                          : "Inaktiv"}
+                      </span>
+
+                      <Form method="post">
+                        <input
+                          type="hidden"
+                          name="intent"
+                          value="deleteEmailAccount"
+                        />
+
+                        <input
+                          type="hidden"
+                          name="id"
+                          value={account.id}
+                        />
+
+                        <button
+                          type="submit"
+                          className="moduleButton moduleButtonDanger"
+                        >
+                          Entfernen
+                        </button>
+                      </Form>
+                    </div>
+                  </article>
+                )
+              )}
             </div>
           )}
-        </section>
-      </div>
+        </PageSection>
+      </PageShell>
     </AppLayout>
   );
 }
-
-const pageStyle: React.CSSProperties = { display: "grid", gap: 20 };
-const eyebrowStyle: React.CSSProperties = { margin: 0, color: "#057a67", textTransform: "uppercase", letterSpacing: "0.07em", fontSize: 11, fontWeight: 800 };
-const titleStyle: React.CSSProperties = { margin: "4px 0 0", color: "#0f172a", fontSize: 34, letterSpacing: "-0.04em", fontWeight: 850 };
-const subtitleStyle: React.CSSProperties = { margin: "6px 0 0", color: "#64748b", fontSize: 15, fontWeight: 650, maxWidth: 900 };
-const cardStyle: React.CSSProperties = { background: "#ffffff", border: "1px solid #dbe5eb", borderRadius: 20, padding: 24, boxShadow: "0 16px 34px rgba(15, 23, 42, 0.06)" };
-const sectionTitleStyle: React.CSSProperties = { margin: "4px 0 16px", color: "#0f172a", fontSize: 23 };
-const formStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 16,
-  alignItems: "end",
-};
-const fieldStyle: React.CSSProperties = { display: "grid", gap: 7, color: "#475569", fontSize: 12, fontWeight: 800 };
-const inputStyle: React.CSSProperties = { minHeight: 42, borderRadius: 12, border: "1px solid #cbd5e1", padding: "0 12px", fontWeight: 700 };
-const primaryButtonStyle: React.CSSProperties = { minHeight: 42, borderRadius: 12, border: "1px solid #057a67", background: "#057a67", color: "#ffffff", padding: "0 18px", fontWeight: 900, cursor: "pointer" };
-const hintBoxStyle: React.CSSProperties = { marginTop: 16, border: "1px solid #bfdbfe", background: "#eff6ff", color: "#1e3a8a", borderRadius: 14, padding: 14, display: "grid", gap: 4, fontWeight: 700 };
-const listStyle: React.CSSProperties = { display: "grid", gap: 10 };
-const rowStyle: React.CSSProperties = {
-  border: "1px solid #e2e8f0",
-  borderRadius: 18,
-  padding: 18,
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 18,
-  alignItems: "center",
-  background: "#f8fafc",
-};
-const rowActionsStyle: React.CSSProperties = { display: "flex", gap: 10, alignItems: "center" };
-const badgeStyle: React.CSSProperties = { border: "1px solid #bbf7d0", background: "#f0fdf4", color: "#166534", borderRadius: 999, padding: "5px 10px", fontSize: 12, fontWeight: 900 };
-const deleteButtonStyle: React.CSSProperties = { border: "1px solid #fecaca", background: "#fff1f2", color: "#b91c1c", borderRadius: 12, padding: "9px 12px", fontWeight: 900, cursor: "pointer" };
-const errorStyle: React.CSSProperties = { border: "1px solid #fecaca", background: "#fff1f2", color: "#9f1239", borderRadius: 14, padding: 14, fontWeight: 800 };
-const successStyle: React.CSSProperties = { border: "1px solid #bbf7d0", background: "#f0fdf4", color: "#166534", borderRadius: 14, padding: 14, fontWeight: 800 };
-const emptyStyle: React.CSSProperties = { border: "1px dashed #cbd5e1", borderRadius: 14, padding: 18, color: "#64748b", fontWeight: 700 };
-
-
-const buttonRowStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 10,
-  alignItems: "center",
-  justifyContent: "flex-end",
-};
-
-const secondaryButtonStyle: React.CSSProperties = {
-  minHeight: 42,
-  borderRadius: 12,
-  border: "1px solid #cbd5e1",
-  background: "#ffffff",
-  color: "#0f172a",
-  padding: "0 18px",
-  fontWeight: 900,
-  cursor: "pointer",
-};
-
-
-const heroStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 24,
-  alignItems: "flex-start",
-};
-
-const stepPillWrapStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 8,
-  flexWrap: "wrap",
-  justifyContent: "flex-end",
-  maxWidth: 360,
-};
-
-
-
-const setupCardStyle: React.CSSProperties = {
-  background: "linear-gradient(135deg, #ffffff 0%, #f8fffd 100%)",
-  border: "1px solid #cdeee8",
-  borderRadius: 22,
-  padding: 26,
-  boxShadow: "0 18px 38px rgba(15, 23, 42, 0.07)",
-};
-
-const sectionHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 16,
-  alignItems: "flex-start",
-  marginBottom: 18,
-};
-
-const sectionTextStyle: React.CSSProperties = {
-  margin: "4px 0 0",
-  color: "#64748b",
-  fontWeight: 650,
-};
-
-const statusBadgeStyle: React.CSSProperties = {
-  border: "1px solid #bbf7d0",
-  background: "#f0fdf4",
-  color: "#166534",
-  borderRadius: 999,
-  padding: "8px 12px",
-  fontSize: 12,
-  fontWeight: 900,
-  whiteSpace: "nowrap",
-};
-
-const hintGridStyle: React.CSSProperties = {
-  marginTop: 18,
-  display: "grid",
-  gridTemplateColumns: "repeat(3, 1fr)",
-  gap: 12,
-};
-
-const mailboxInfoStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 5,
-};
-
-
-
-const importPageCss = `
-  [style*="max-width: 360"] span {
-    display: inline-flex;
-    border: 1px solid #cdeee8;
-    background: #eefbf7;
-    color: #047857;
-    border-radius: 999px;
-    padding: 8px 11px;
-    font-size: 12px;
-    font-weight: 900;
-  }
-
-  [style*="grid-template-columns: repeat(3, 1fr)"] > div {
-    border: 1px solid #dbeafe;
-    background: #eff6ff;
-    color: #1e3a8a;
-    border-radius: 14px;
-    padding: 14px;
-    display: grid;
-    gap: 4px;
-    font-weight: 700;
-  }
-
-  [style*="grid-template-columns: repeat(3, 1fr)"] strong {
-    color: #0f172a;
-  }
-
-  [style*="grid-template-columns: repeat(3, 1fr)"] span {
-    color: #475569;
-    font-size: 13px;
-  }
-`;

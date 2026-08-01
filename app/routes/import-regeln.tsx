@@ -1,6 +1,15 @@
 import { Form, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
+import {
+  Notice,
+  PageHeader,
+  PageSection,
+  PageShell,
+} from "../components/ui/PageShell";
+
+import "../styles/gastario-module-workspace.css";
+
 const FIELD_OPTIONS = [
   { value: "customerName", label: "Kunde" },
   { value: "eventName", label: "Eventname" },
@@ -345,75 +354,103 @@ export async function action({ request }: { request: Request }) {
 }
 
 export default function ImportRegelnPage() {
-  const data = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
-  const anyAction = actionData as any;
-  const rules = data.rules as any[];
+  const data =
+    useLoaderData<typeof loader>();
 
-  const safeEmailRules = rules.filter(
-    (rule) => rule.fieldKey === "__classification__"
-  );
+  const actionData =
+    useActionData<typeof action>();
 
-  const pdfFieldRules = rules.filter(
-    (rule) => rule.fieldKey !== "__classification__"
-  );
+  const anyAction =
+    actionData as any;
+
+  const rules =
+    data.rules as any[];
+
+  const safeEmailRules =
+    rules.filter(
+      (rule) =>
+        rule.fieldKey ===
+        "__classification__"
+    );
+
+  const pdfFieldRules =
+    rules.filter(
+      (rule) =>
+        rule.fieldKey !==
+        "__classification__"
+    );
 
   return (
     <AppLayout>
-      <div className="g-mobile-inline-page" style={pageStyle}>
-        <div style={headerStyle}>
-          <div>
-            <p style={eyebrowStyle}>Import</p>
-            <h1 style={titleStyle}>E-Mail-Erkennung</h1>
-            <p style={subtitleStyle}>
-              Lege einfache Regeln fest, damit bestätigte Aufträge
-              zuverlässig erkannt werden.
-            </p>
-          </div>
-        </div>
+      <PageShell className="modulePage">
+        <PageHeader
+          eyebrow="Eingang"
+          title="Import-Regeln"
+          subtitle="Lege fest, wie Gastario bestätigte Aufträge und wichtige Felder zuverlässig erkennt."
+          actions={
+            <div className="moduleHeaderStatus">
+              <span className="moduleBadge moduleBadgeSuccess">
+                {safeEmailRules.filter(
+                  (rule) => rule.active
+                ).length}
+                {" aktiv"}
+              </span>
 
-        {actionData && "error" in actionData ? (
-          <div style={errorStyle}>{actionData.error}</div>
-        ) : null}
-
-        {actionData && "success" in actionData ? (
-          <div style={successStyle}>{actionData.success}</div>
-        ) : null}
-
-        <section className="g-mobile-inline-card" style={cardStyle}>
-          <div style={cardHeaderStyle}>
-            <div>
-              <p style={eyebrowStyle}>Neue Regel</p>
-              <h2 style={sectionTitleStyle}>
-                Wann ist eine E-Mail ein Auftrag?
-              </h2>
-              <p style={subtitleStyle}>
-                Bei einem Treffer wird ein Prüfauftrag erstellt.
-              </p>
+              <span className="moduleBadge">
+                {pdfFieldRules.length}
+                {" PDF-Regeln"}
+              </span>
             </div>
-          </div>
+          }
+        />
 
-          <Form method="post" className="g-mobile-form-grid" style={formGridStyle}>
+        {actionData &&
+        "error" in actionData ? (
+          <Notice type="danger">
+            {actionData.error}
+          </Notice>
+        ) : null}
+
+        {actionData &&
+        "success" in actionData ? (
+          <Notice type="success">
+            {actionData.success}
+          </Notice>
+        ) : null}
+
+        <PageSection
+          eyebrow="Neue Regel"
+          title="Wann ist eine E-Mail ein Auftrag?"
+          description="Bei einem eindeutigen Treffer erstellt Gastario einen Prüfauftrag in der Eingangszentrale."
+        >
+          <Form
+            method="post"
+            className="moduleFormGrid moduleFormGridRule"
+          >
             <input
               type="hidden"
               name="_intent"
               value="createClassificationRule"
             />
+
             <input
               type="hidden"
               name="documentType"
               value="ORDER_CONFIRMATION"
             />
+
             <input
               type="hidden"
               name="action"
               value="CREATE_REVIEW_ORDER"
             />
+
             <input
               type="hidden"
               name="matchMode"
               value="ALL"
             />
+
             <input
               type="hidden"
               name="priority"
@@ -429,11 +466,25 @@ export default function ImportRegelnPage() {
             </Field>
 
             <Field label="Plattform oder Absender">
-              <select name="senderContains" defaultValue="heycater">
-                <option value="heycater">Heycater</option>
-                <option value="feedr">Feedr</option>
-                <option value="egora">Egora</option>
-                <option value="">Andere / nicht festlegen</option>
+              <select
+                name="senderContains"
+                defaultValue="heycater"
+              >
+                <option value="heycater">
+                  Heycater
+                </option>
+
+                <option value="feedr">
+                  Feedr
+                </option>
+
+                <option value="egora">
+                  Egora
+                </option>
+
+                <option value="">
+                  Andere oder nicht festlegen
+                </option>
               </select>
             </Field>
 
@@ -452,223 +503,266 @@ export default function ImportRegelnPage() {
               />
             </Field>
 
-            <div style={formActionStyle}>
-              <button type="submit" style={primaryButtonStyle}>
+            <div className="moduleFormActions">
+              <button
+                type="submit"
+                className="moduleButton moduleButtonPrimary"
+              >
                 Regel speichern
               </button>
             </div>
           </Form>
-        </section>
+        </PageSection>
 
-        <section className="g-mobile-inline-card" style={cardStyle}>
-          <div style={cardHeaderStyle}>
-            <div>
-              <p style={eyebrowStyle}>Gespeichert</p>
-              <h2 style={sectionTitleStyle}>
-                Sichere E-Mail-Regeln
-              </h2>
-            </div>
-
-            <span style={countPillStyle}>
+        <PageSection
+          eyebrow="Gespeichert"
+          title="Sichere E-Mail-Regeln"
+          description="Aktive Regeln werden beim automatischen E-Mail-Abruf angewendet."
+          actions={
+            <span className="moduleCount">
               {safeEmailRules.length}
             </span>
-          </div>
-
+          }
+        >
           {safeEmailRules.length === 0 ? (
-            <div style={emptyStyle}>
-              Noch keine sichere E-Mail-Regel vorhanden.
+            <div className="moduleEmpty">
+              <strong>
+                Noch keine Regel vorhanden
+              </strong>
+
+              <span>
+                Lege oben die erste sichere
+                Erkennungsregel an.
+              </span>
             </div>
           ) : (
-            <div className="g-mobile-rule-list" style={ruleListStyle}>
-              {safeEmailRules.map((rule) => (
-                <div key={rule.id} className="g-mobile-rule-row" style={ruleRowStyle}>
-                  <div style={ruleMainStyle}>
-                    <div style={ruleTopStyle}>
-                      <strong style={ruleTitleStyle}>
-                        {rule.name || "E-Mail-Regel"}
-                      </strong>
+            <div className="moduleList">
+              {safeEmailRules.map(
+                (rule) => (
+                  <article
+                    key={rule.id}
+                    className="moduleListRow moduleRuleRow"
+                  >
+                    <div className="moduleListMain">
+                      <div className="moduleTitleLine">
+                        <strong>
+                          {rule.name ||
+                            "E-Mail-Regel"}
+                        </strong>
 
-                      <span style={ruleStatusStyle(rule.active)}>
-                        {rule.active ? "Aktiv" : "Aus"}
-                      </span>
+                        <span
+                          className={
+                            rule.active
+                              ? "moduleBadge moduleBadgeSuccess"
+                              : "moduleBadge"
+                          }
+                        >
+                          {rule.active
+                            ? "Aktiv"
+                            : "Aus"}
+                        </span>
+                      </div>
+
+                      <div className="moduleMetaLine">
+                        <span>
+                          <small>
+                            Plattform
+                          </small>
+
+                          <strong>
+                            {rule.senderContains ||
+                              "Alle"}
+                          </strong>
+                        </span>
+
+                        <span>
+                          <small>
+                            Ergebnis
+                          </small>
+
+                          <strong>
+                            Prüfauftrag
+                          </strong>
+                        </span>
+                      </div>
+
+                      {rule.subjectContains ? (
+                        <div className="moduleKeyword">
+                          <small>Betreff</small>
+
+                          <span>
+                            {rule.subjectContains}
+                          </span>
+                        </div>
+                      ) : null}
+
+                      {rule.bodyContains ? (
+                        <div className="moduleKeyword">
+                          <small>Text</small>
+
+                          <span>
+                            {rule.bodyContains}
+                          </span>
+                        </div>
+                      ) : null}
                     </div>
 
-                    <div style={ruleMetaStyle}>
-                      <span>
-                        Plattform:{" "}
-                        {rule.senderContains || "Alle"}
-                      </span>
-                      <span>Ergebnis: Prüfauftrag</span>
+                    <div className="moduleRowActions moduleRuleActions">
+                      <Form method="post">
+                        <input
+                          type="hidden"
+                          name="_intent"
+                          value="toggle"
+                        />
+
+                        <input
+                          type="hidden"
+                          name="ruleId"
+                          value={rule.id}
+                        />
+
+                        <input
+                          type="hidden"
+                          name="active"
+                          value={String(
+                            rule.active
+                          )}
+                        />
+
+                        <button
+                          type="submit"
+                          className="moduleButton moduleButtonSecondary"
+                        >
+                          {rule.active
+                            ? "Deaktivieren"
+                            : "Aktivieren"}
+                        </button>
+                      </Form>
+
+                      <Form
+                        method="post"
+                        onSubmit={(event) => {
+                          if (
+                            !window.confirm(
+                              "Diese E-Mail-Regel wirklich löschen?"
+                            )
+                          ) {
+                            event.preventDefault();
+                          }
+                        }}
+                      >
+                        <input
+                          type="hidden"
+                          name="_intent"
+                          value="delete"
+                        />
+
+                        <input
+                          type="hidden"
+                          name="ruleId"
+                          value={rule.id}
+                        />
+
+                        <button
+                          type="submit"
+                          className="moduleButton moduleButtonDanger"
+                        >
+                          Löschen
+                        </button>
+                      </Form>
                     </div>
-
-                    {rule.subjectContains ? (
-                      <div style={keywordBoxStyle}>
-                        Betreff: {rule.subjectContains}
-                      </div>
-                    ) : null}
-
-                    {rule.bodyContains ? (
-                      <div style={keywordBoxStyle}>
-                        Text: {rule.bodyContains}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div style={ruleActionsStyle}>
-                    <Form method="post">
-                      <input
-                        type="hidden"
-                        name="_intent"
-                        value="toggle"
-                      />
-                      <input
-                        type="hidden"
-                        name="ruleId"
-                        value={rule.id}
-                      />
-                      <input
-                        type="hidden"
-                        name="active"
-                        value={String(rule.active)}
-                      />
-
-                      <button
-                        type="submit"
-                        style={secondaryButtonStyle}
-                      >
-                        {rule.active
-                          ? "Deaktivieren"
-                          : "Aktivieren"}
-                      </button>
-                    </Form>
-
-                    <Form
-                      method="post"
-                      onSubmit={(event) => {
-                        if (
-                          !window.confirm(
-                            "Diese E-Mail-Regel wirklich löschen?"
-                          )
-                        ) {
-                          event.preventDefault();
-                        }
-                      }}
-                    >
-                      <input
-                        type="hidden"
-                        name="_intent"
-                        value="delete"
-                      />
-                      <input
-                        type="hidden"
-                        name="ruleId"
-                        value={rule.id}
-                      />
-
-                      <button
-                        type="submit"
-                        style={dangerButtonStyle}
-                      >
-                        Löschen
-                      </button>
-                    </Form>
-                  </div>
-                </div>
-              ))}
+                  </article>
+                )
+              )}
             </div>
           )}
-        </section>
+        </PageSection>
 
-        <details style={cardStyle}>
-          <summary
-            style={{
-              cursor: "pointer",
-              fontSize: 18,
-              fontWeight: 750,
-              color: "#0f172a",
-            }}
-          >
-            Erweiterte PDF-Erkennung
+        <details className="moduleAdvanced">
+          <summary>
+            <span>
+              Erweiterte PDF-Erkennung
+            </span>
+
+            <small>
+              {pdfFieldRules.length}
+              {" Feldregeln"}
+            </small>
           </summary>
 
-          <div
-            style={{
-              display: "grid",
-              gap: 24,
-              marginTop: 24,
-            }}
-          >
-            <section>
-              <div style={cardHeaderStyle}>
-                <div>
-                  <p style={eyebrowStyle}>PDF-Test</p>
-                  <h2 style={sectionTitleStyle}>
-                    Dokumenttext prüfen
-                  </h2>
-                </div>
-
+          <div className="moduleAdvancedBody">
+            <PageSection
+              eyebrow="PDF-Test"
+              title="Dokumenttext prüfen"
+              description="Füge Text aus einem PDF ein und prüfe die aktuelle Erkennung."
+              flat
+            >
+              <div className="moduleSectionActions">
                 <Form method="post">
                   <input
                     type="hidden"
                     name="_intent"
                     value="seedDefaults"
                   />
+
                   <button
                     type="submit"
-                    style={secondaryButtonStyle}
+                    className="moduleButton moduleButtonSecondary"
                   >
                     Standardregeln einspielen
                   </button>
                 </Form>
               </div>
 
-              <Form method="post" style={testGridStyle}>
+              <Form
+                method="post"
+                className="moduleTestGrid"
+              >
                 <input
                   type="hidden"
                   name="_intent"
                   value="testText"
                 />
 
-                <label style={fieldStyle}>
+                <label className="moduleField">
                   <span>PDF-Text</span>
+
                   <textarea
                     name="testText"
                     rows={5}
                     placeholder="Text aus einem PDF einfügen"
-                    defaultValue={anyAction?.testText || ""}
-                    style={textareaStyle}
+                    defaultValue={
+                      anyAction?.testText || ""
+                    }
                   />
                 </label>
 
-                <div style={formActionStyle}>
-                  <button
-                    type="submit"
-                    style={primaryButtonStyle}
-                  >
-                    Testen
-                  </button>
-                </div>
+                <button
+                  type="submit"
+                  className="moduleButton moduleButtonPrimary"
+                >
+                  Testen
+                </button>
               </Form>
-            </section>
+            </PageSection>
 
-            <section>
-              <div style={cardHeaderStyle}>
-                <div>
-                  <p style={eyebrowStyle}>Felderkennung</p>
-                  <h2 style={sectionTitleStyle}>
-                    Erkennungswort hinzufügen
-                  </h2>
-                </div>
-              </div>
-
-              <Form method="post" className="g-mobile-form-grid" style={formGridStyle}>
+            <PageSection
+              eyebrow="Felderkennung"
+              title="Erkennungswort hinzufügen"
+              description="Lege zusätzliche Begriffe für Lieferdatum, Kunde, Adresse oder andere Felder fest."
+              flat
+            >
+              <Form
+                method="post"
+                className="moduleFormGrid moduleFormGridPdf"
+              >
                 <input
                   type="hidden"
                   name="_intent"
                   value="create"
                 />
 
-                <Field label="Quelle optional">
+                <Field label="Quelle – optional">
                   <input
                     name="sourceName"
                     placeholder="Heycater, Feedr oder Egora"
@@ -680,14 +774,16 @@ export default function ImportRegelnPage() {
                     name="fieldKey"
                     defaultValue="deliveryDate"
                   >
-                    {FIELD_OPTIONS.map((option) => (
-                      <option
-                        key={option.value}
-                        value={option.value}
-                      >
-                        {option.label}
-                      </option>
-                    ))}
+                    {FIELD_OPTIONS.map(
+                      (option) => (
+                        <option
+                          key={option.value}
+                          value={option.value}
+                        >
+                          {option.label}
+                        </option>
+                      )
+                    )}
                   </select>
                 </Field>
 
@@ -698,292 +794,34 @@ export default function ImportRegelnPage() {
                   />
                 </Field>
 
-                <div style={formActionStyle}>
+                <div className="moduleFormActions">
                   <button
                     type="submit"
-                    style={primaryButtonStyle}
+                    className="moduleButton moduleButtonPrimary"
                   >
                     Feldregel speichern
                   </button>
                 </div>
               </Form>
-
-              <p style={subtitleStyle}>
-                {pdfFieldRules.length} PDF-Feldregeln gespeichert.
-              </p>
-            </section>
+            </PageSection>
           </div>
         </details>
-      </div>
+      </PageShell>
     </AppLayout>
   );
 }
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
-    <label style={fieldStyle}>
+    <label className="moduleField">
       <span>{label}</span>
       {children}
     </label>
   );
 }
-
-const pageStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 20,
-};
-
-const headerStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  gap: 16,
-};
-
-const eyebrowStyle: React.CSSProperties = {
-  margin: 0,
-  color: "#057a67",
-  textTransform: "uppercase",
-  letterSpacing: "0.07em",
-  fontSize: 11,
-  fontWeight: 750,
-};
-
-const titleStyle: React.CSSProperties = {
-  margin: "4px 0 0",
-  color: "#0f172a",
-  fontSize: 34,
-  letterSpacing: "-0.04em",
-  fontWeight: 760,
-};
-
-const subtitleStyle: React.CSSProperties = {
-  margin: "6px 0 0",
-  color: "#64748b",
-  fontSize: 15,
-  fontWeight: 600,
-  maxWidth: 760,
-};
-
-const cardStyle: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #dbe5eb",
-  borderRadius: 18,
-  padding: 22,
-  boxShadow: "0 10px 26px rgba(15, 23, 42, 0.045)",
-};
-
-const cardHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: 16,
-  marginBottom: 18,
-};
-
-const sectionTitleStyle: React.CSSProperties = {
-  margin: "4px 0 0",
-  fontSize: 22,
-  color: "#0f172a",
-  letterSpacing: "-0.025em",
-};
-
-const formGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr 1.4fr auto",
-  gap: 14,
-  alignItems: "end",
-};
-
-const fieldStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 7,
-  color: "#475569",
-  fontSize: 12,
-  fontWeight: 700,
-};
-
-const formActionStyle: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "flex-end",
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  minHeight: 40,
-  borderRadius: 11,
-  border: "1px solid #057a67",
-  background: "#057a67",
-  color: "#ffffff",
-  padding: "0 16px",
-  fontWeight: 800,
-  cursor: "pointer",
-  boxShadow: "0 10px 20px rgba(5, 122, 103, 0.16)",
-};
-
-const secondaryButtonStyle: React.CSSProperties = {
-  minHeight: 36,
-  borderRadius: 10,
-  border: "1px solid #c8d4dd",
-  background: "#ffffff",
-  color: "#0f172a",
-  padding: "0 12px",
-  fontWeight: 750,
-  cursor: "pointer",
-  width: "100%",
-};
-
-const dangerButtonStyle: React.CSSProperties = {
-  ...secondaryButtonStyle,
-  borderColor: "#ffc9c0",
-  background: "#fff7f5",
-  color: "#b42318",
-};
-
-const errorStyle: React.CSSProperties = {
-  border: "1px solid #fecaca",
-  background: "#fff1f2",
-  color: "#9f1239",
-  borderRadius: 14,
-  padding: 14,
-  fontWeight: 750,
-};
-
-const successStyle: React.CSSProperties = {
-  border: "1px solid #bbf7d0",
-  background: "#f0fdf4",
-  color: "#166534",
-  borderRadius: 14,
-  padding: 14,
-  fontWeight: 750,
-};
-
-const countPillStyle: React.CSSProperties = {
-  border: "1px solid #dbe5eb",
-  borderRadius: 999,
-  padding: "7px 11px",
-  color: "#475569",
-  fontWeight: 800,
-  fontSize: 12,
-};
-
-const emptyStyle: React.CSSProperties = {
-  border: "1px dashed #cbd5e1",
-  borderRadius: 14,
-  padding: 18,
-  color: "#64748b",
-  fontWeight: 650,
-};
-
-const ruleListStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 10,
-};
-
-const ruleRowStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 170px",
-  gap: 16,
-  border: "1px solid #e2e8f0",
-  borderRadius: 14,
-  padding: 14,
-  alignItems: "center",
-};
-
-const ruleMainStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 8,
-  minWidth: 0,
-};
-
-const ruleTopStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-};
-
-const ruleTitleStyle: React.CSSProperties = {
-  color: "#0f172a",
-  fontSize: 16,
-};
-
-const ruleStatusStyle = (active: boolean): React.CSSProperties => ({
-  border: "1px solid " + (active ? "#bbf7d0" : "#e2e8f0"),
-  background: active ? "#f0fdf4" : "#f8fafc",
-  color: active ? "#166534" : "#64748b",
-  borderRadius: 999,
-  padding: "4px 8px",
-  fontSize: 11,
-  fontWeight: 850,
-});
-
-const ruleMetaStyle: React.CSSProperties = {
-  color: "#64748b",
-  fontSize: 13,
-  fontWeight: 650,
-};
-
-const keywordBoxStyle: React.CSSProperties = {
-  color: "#0f172a",
-  background: "#f8fafc",
-  border: "1px solid #e2e8f0",
-  borderRadius: 10,
-  padding: "9px 11px",
-  fontSize: 13,
-  lineHeight: 1.35,
-  fontWeight: 650,
-  wordBreak: "break-word",
-};
-
-const ruleActionsStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 8,
-};
-
-
-const testGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr auto",
-  gap: 14,
-  alignItems: "end",
-};
-
-const textareaStyle: React.CSSProperties = {
-  width: "100%",
-  border: "1px solid #cbd5e1",
-  borderRadius: 12,
-  padding: "11px 12px",
-  font: "inherit",
-  resize: "vertical",
-  minHeight: 110,
-};
-
-const matchBoxStyle: React.CSSProperties = {
-  marginTop: 16,
-  border: "1px solid #dbe5eb",
-  borderRadius: 14,
-  padding: 14,
-  background: "#f8fafc",
-  display: "grid",
-  gap: 10,
-};
-
-const matchListStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 8,
-};
-
-const matchRowStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "180px 110px 1fr",
-  gap: 10,
-  alignItems: "center",
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
-  borderRadius: 10,
-  padding: "10px 12px",
-};
-
-const matchEmptyStyle: React.CSSProperties = {
-  margin: 0,
-  color: "#64748b",
-  fontWeight: 650,
-};

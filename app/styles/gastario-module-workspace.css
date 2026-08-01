@@ -1,0 +1,844 @@
+/*
+ * Gastario 2026 – gemeinsames Moduldesign
+ *
+ * Verbindlich für Import, Import-Regeln und Buchhaltung.
+ */
+
+.modulePage {
+  width: 100%;
+}
+
+.moduleHeaderStatus,
+.moduleFormActions,
+.moduleRowActions,
+.moduleSectionActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.moduleFormActionsStart {
+  justify-content: flex-start;
+}
+
+.moduleBadge,
+.moduleCount {
+  min-height: 27px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border: 1px solid
+    var(--g-color-border);
+  border-radius:
+    var(--g-radius-pill);
+  background:
+    var(--g-color-surface-soft);
+  color:
+    var(--g-color-text-body);
+  font-size: 10px;
+  font-weight:
+    var(--g-font-weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.moduleBadgeSuccess {
+  border-color:
+    var(--g-color-success-border);
+  background:
+    var(--g-color-success-bg);
+  color:
+    var(--g-color-success);
+}
+
+.moduleCount {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 9px;
+  background:
+    var(--g-color-surface);
+  color:
+    var(--g-color-brand-hover);
+  font-size: 12px;
+}
+
+/* Formulare */
+
+.moduleFormGrid {
+  width: 100%;
+  display: grid;
+  align-items: end;
+  gap: 15px;
+}
+
+.moduleFormGridMailbox {
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+}
+
+.moduleFormGridRule {
+  grid-template-columns:
+    minmax(180px, 0.9fr)
+    minmax(180px, 0.9fr)
+    minmax(240px, 1.3fr)
+    minmax(220px, 1.1fr);
+}
+
+.moduleFormGridPdf {
+  grid-template-columns:
+    minmax(180px, 0.8fr)
+    minmax(190px, 0.8fr)
+    minmax(260px, 1.3fr);
+}
+
+.moduleFormGridMailbox
+  .moduleFormActions,
+.moduleFormGridRule
+  .moduleFormActions,
+.moduleFormGridPdf
+  .moduleFormActions {
+  grid-column: 1 / -1;
+}
+
+.moduleField {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  color:
+    var(--g-color-text-body);
+  font-size: 12px;
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.moduleField > span {
+  line-height: 1.25;
+}
+
+.moduleField > small {
+  color:
+    var(--g-color-text-muted);
+  font-size: 10px;
+  font-weight:
+    var(--g-font-weight-regular);
+  line-height: 1.4;
+}
+
+.moduleField input,
+.moduleField select,
+.moduleField textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid
+    var(--g-color-border-strong);
+  border-radius:
+    var(--g-radius-control);
+  background:
+    var(--g-color-surface);
+  color:
+    var(--g-color-text);
+  box-shadow: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight:
+    var(--g-font-weight-regular);
+  outline: none;
+  box-sizing: border-box;
+  transition:
+    border-color var(--g-transition-fast),
+    box-shadow var(--g-transition-fast);
+}
+
+.moduleField input,
+.moduleField select {
+  min-height:
+    var(--g-input-height);
+  padding: 0 13px;
+}
+
+.moduleField textarea {
+  min-height: 130px;
+  padding: 12px 13px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.moduleField input:focus,
+.moduleField select:focus,
+.moduleField textarea:focus {
+  border-color:
+    var(--g-color-brand);
+  box-shadow:
+    0 0 0 4px
+    rgba(11, 125, 101, 0.1);
+}
+
+.moduleFieldPassword {
+  grid-column: 1 / 2;
+}
+
+/* Buttons */
+
+.moduleButton {
+  min-height:
+    var(--g-control-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 15px;
+  border: 1px solid
+    var(--g-color-border-strong);
+  border-radius:
+    var(--g-radius-control);
+  background:
+    var(--g-color-surface);
+  color:
+    var(--g-color-text);
+  box-shadow: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight:
+    var(--g-font-weight-semibold);
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color var(--g-transition-fast),
+    border-color var(--g-transition-fast),
+    background var(--g-transition-fast),
+    box-shadow var(--g-transition-fast);
+}
+
+.moduleButton:hover {
+  background:
+    var(--g-color-surface-soft);
+  color:
+    var(--g-color-brand-hover);
+}
+
+.moduleButtonPrimary {
+  border-color:
+    var(--g-color-brand);
+  background:
+    var(--g-color-brand);
+  color: #ffffff;
+  box-shadow:
+    0 8px 20px
+    rgba(11, 125, 101, 0.14);
+}
+
+.moduleButtonPrimary:hover {
+  border-color:
+    var(--g-color-brand-hover);
+  background:
+    var(--g-color-brand-hover);
+  color: #ffffff;
+}
+
+.moduleButtonDanger {
+  border-color:
+    var(--g-color-danger-border);
+  background:
+    var(--g-color-danger-bg);
+  color:
+    var(--g-color-danger);
+}
+
+.moduleButtonDanger:hover {
+  border-color:
+    var(--g-color-danger);
+  background:
+    var(--g-color-danger-bg);
+  color:
+    var(--g-color-danger);
+}
+
+.moduleButton:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+/* Hinweise */
+
+.moduleHintGrid {
+  width: 100%;
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.moduleHintGrid article {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid
+    var(--g-color-border-subtle);
+  border-radius:
+    var(--g-radius-control);
+  background:
+    var(--g-color-surface-soft);
+}
+
+.moduleHintGrid strong,
+.moduleHintGrid span {
+  display: block;
+}
+
+.moduleHintGrid strong {
+  color:
+    var(--g-color-text);
+  font-size: 12px;
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.moduleHintGrid span {
+  margin-top: 5px;
+  color:
+    var(--g-color-text-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* Listen */
+
+.moduleList {
+  display: grid;
+  gap: 9px;
+}
+
+.moduleListRow {
+  min-width: 0;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+  align-items: center;
+  gap: 18px;
+  padding: 15px 16px;
+  border: 1px solid
+    var(--g-color-border-subtle);
+  border-radius:
+    var(--g-radius-control);
+  background:
+    var(--g-color-surface-soft);
+}
+
+.moduleListMain {
+  min-width: 0;
+}
+
+.moduleListMain > strong,
+.moduleListMain > span,
+.moduleListMain > small {
+  display: block;
+}
+
+.moduleListMain > strong {
+  overflow: hidden;
+  color:
+    var(--g-color-text);
+  font-size: 13px;
+  font-weight:
+    var(--g-font-weight-semibold);
+  text-overflow: ellipsis;
+}
+
+.moduleListMain > span {
+  margin-top: 3px;
+  color:
+    var(--g-color-text-body);
+  font-size: 11px;
+  font-weight:
+    var(--g-font-weight-medium);
+}
+
+.moduleListMain > small {
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+  color:
+    var(--g-color-text-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.moduleEmpty {
+  min-height: 130px;
+  display: grid;
+  place-content: center;
+  padding: 20px;
+  border: 1px dashed
+    var(--g-color-border-strong);
+  border-radius:
+    var(--g-radius-control);
+  background:
+    var(--g-color-surface-soft);
+  text-align: center;
+}
+
+.moduleEmpty strong,
+.moduleEmpty span {
+  display: block;
+}
+
+.moduleEmpty strong {
+  color:
+    var(--g-color-text);
+  font-size: 14px;
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.moduleEmpty span {
+  margin-top: 5px;
+  color:
+    var(--g-color-text-muted);
+  font-size: 11px;
+}
+
+/* Regeln */
+
+.moduleRuleRow {
+  align-items: start;
+}
+
+.moduleTitleLine {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.moduleTitleLine > strong {
+  color:
+    var(--g-color-text);
+  font-size: 14px;
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.moduleMetaLine {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.moduleMetaLine > span {
+  min-width: 150px;
+  display: grid;
+  gap: 3px;
+  padding: 8px 10px;
+  border: 1px solid
+    var(--g-color-border-subtle);
+  border-radius:
+    var(--g-radius-sm);
+  background:
+    var(--g-color-surface);
+}
+
+.moduleMetaLine small,
+.moduleKeyword small {
+  color:
+    var(--g-color-text-muted);
+  font-size: 8px;
+  font-weight:
+    var(--g-font-weight-bold);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.moduleMetaLine strong {
+  color:
+    var(--g-color-text);
+  font-size: 11px;
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.moduleKeyword {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 9px 10px;
+  border: 1px solid
+    var(--g-color-border-subtle);
+  border-radius:
+    var(--g-radius-sm);
+  background:
+    var(--g-color-surface);
+}
+
+.moduleKeyword span {
+  overflow-wrap: anywhere;
+  color:
+    var(--g-color-text-body);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.moduleRuleActions {
+  min-width: 150px;
+  display: grid;
+}
+
+.moduleRuleActions form,
+.moduleRuleActions button {
+  width: 100%;
+}
+
+/* Erweiterte Regeln */
+
+.moduleAdvanced {
+  overflow: hidden;
+  border: 1px solid
+    var(--g-color-border);
+  border-radius:
+    var(--g-radius-card);
+  background:
+    var(--g-color-surface);
+  box-shadow:
+    var(--g-shadow-card);
+}
+
+.moduleAdvanced > summary {
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0 20px;
+  color:
+    var(--g-color-text);
+  font-size: 14px;
+  font-weight:
+    var(--g-font-weight-semibold);
+  cursor: pointer;
+}
+
+.moduleAdvanced > summary small {
+  color:
+    var(--g-color-text-muted);
+  font-size: 10px;
+  font-weight:
+    var(--g-font-weight-medium);
+}
+
+.moduleAdvancedBody {
+  display: grid;
+  gap: 14px;
+  padding: 0 14px 14px;
+  border-top: 1px solid
+    var(--g-color-border-subtle);
+}
+
+.moduleAdvancedBody
+  > .g-ui-card {
+  margin-top: 14px;
+}
+
+.moduleSectionActions {
+  margin-bottom: 14px;
+}
+
+.moduleTestGrid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+  align-items: end;
+  gap: 12px;
+}
+
+/* Buchhaltungsanbieter */
+
+.moduleProviderGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.moduleProviderCard {
+  min-width: 0;
+  min-height: 255px;
+  display: grid;
+  grid-template-rows:
+    auto
+    minmax(64px, auto)
+    1fr
+    auto;
+  align-content: start;
+  gap: 13px;
+  padding: 16px;
+  border: 1px solid
+    var(--g-color-border);
+  border-radius:
+    var(--g-radius-control);
+  background:
+    var(--g-color-surface-soft);
+}
+
+.moduleProviderCard.isConnected {
+  border-color:
+    var(--g-color-success-border);
+  background:
+    linear-gradient(
+      145deg,
+      var(--g-color-success-bg),
+      var(--g-color-surface)
+    );
+}
+
+.moduleProviderTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.moduleProviderTop > strong {
+  color:
+    var(--g-color-text);
+  font-size: 15px;
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.moduleProviderCard > p {
+  margin: 0;
+  color:
+    var(--g-color-text-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.moduleCapabilities {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+}
+
+.moduleCapabilities span {
+  color:
+    var(--g-color-text-body);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.moduleProviderCard
+  > .moduleButton {
+  width: 100%;
+  align-self: end;
+}
+
+/* Verbindung und Status */
+
+.moduleSplit {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 14px;
+}
+
+.moduleConnectionPanel {
+  scroll-margin-top: 24px;
+}
+
+.moduleConnectionForm {
+  display: grid;
+  gap: 15px;
+}
+
+.moduleSafeBox {
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid
+    var(--g-color-border-subtle);
+  border-radius:
+    var(--g-radius-control);
+  background:
+    var(--g-color-surface-soft);
+}
+
+.moduleSafeBox strong {
+  color:
+    var(--g-color-text);
+  font-size: 12px;
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.moduleSafeBox p {
+  margin: 6px 0 0;
+  color:
+    var(--g-color-text-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.moduleStatusList {
+  display: grid;
+  gap: 8px;
+}
+
+.moduleStatusList > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns:
+    minmax(145px, 0.55fr)
+    minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 1px solid
+    var(--g-color-border-subtle);
+  border-radius:
+    var(--g-radius-sm);
+  background:
+    var(--g-color-surface-soft);
+}
+
+.moduleStatusList span {
+  color:
+    var(--g-color-text-muted);
+  font-size: 9px;
+  font-weight:
+    var(--g-font-weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.moduleStatusList strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color:
+    var(--g-color-text);
+  font-size: 11px;
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.moduleStatusActions {
+  margin-top: 17px;
+}
+
+/* Responsive */
+
+@media (max-width: 1200px) {
+  .moduleFormGridRule {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .moduleProviderGrid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .moduleFormGridMailbox,
+  .moduleFormGridPdf,
+  .moduleSplit {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .moduleFieldPassword {
+    grid-column: auto;
+  }
+
+  .moduleHintGrid {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .moduleTestGrid {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .moduleTestGrid
+    > .moduleButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .moduleHeaderStatus {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .moduleFormGridRule,
+  .moduleProviderGrid {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .moduleFormActions,
+  .moduleFormActionsStart {
+    width: 100%;
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .moduleFormActions
+    .moduleButton,
+  .moduleFormActionsStart
+    .moduleButton {
+    width: 100%;
+  }
+
+  .moduleListRow {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .moduleRowActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .moduleRuleActions {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .moduleRuleActions form,
+  .moduleRuleActions button {
+    width: 100%;
+  }
+
+  .moduleStatusList > div {
+    grid-template-columns:
+      minmax(0, 1fr);
+    gap: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .moduleRuleActions {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .moduleAdvanced > summary {
+    padding: 0 15px;
+  }
+
+  .moduleAdvancedBody {
+    padding: 0 10px 10px;
+  }
+}

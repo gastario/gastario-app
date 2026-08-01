@@ -4,6 +4,15 @@ import {
   useLoaderData,
 } from "react-router";
 import AppLayout from "../components/AppLayout";
+
+import {
+  Notice,
+  PageHeader,
+  PageSection,
+  PageShell,
+} from "../components/ui/PageShell";
+
+import "../styles/gastario-module-workspace.css";
 import { ACCOUNTING_PROVIDERS } from "../lib/accounting-providers";
 
 export function meta() {
@@ -545,300 +554,169 @@ export default function AccountingPage() {
   const connection =
     data.connection;
 
+  const connectionLabel =
+    connection?.active
+      ? "Aktiv"
+      : connection
+        ? "Pausiert"
+        : "Nicht verbunden";
+
   return (
     <AppLayout>
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">
-            Integrationen
-          </p>
-
-          <h1>Buchhaltung</h1>
-
-          <span className="pageSubline">
-            Verbinde Gastario sicher mit deinem Buchhaltungsprogramm.
-            Aktive Verbindungen werden beim zentralen Import automatisch berücksichtigt.
-          </span>
-        </div>
-      </header>
-
-      <section className="panel">
-        <div className="panelHeader">
-          <div>
-            <p className="eyebrow">
-              Anbieter
-            </p>
-
-            <h2>
-              Unterstützte Buchhaltungsprogramme
-            </h2>
-
-            <span className="pageSubline">
-              Wähle das Buchhaltungsprogramm deines Betriebs. Weitere Anbieter werden schrittweise ergänzt.
+      <PageShell className="modulePage">
+        <PageHeader
+          eyebrow="Finanzen"
+          title="Buchhaltung"
+          subtitle="Verbinde Gastario sicher mit deinem Buchhaltungsprogramm und verwalte den technischen Status zentral."
+          actions={
+            <span
+              className={
+                connection?.active
+                  ? "moduleBadge moduleBadgeSuccess"
+                  : "moduleBadge"
+              }
+            >
+              {connectionLabel}
             </span>
-          </div>
-        </div>
+          }
+        />
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: 14,
-          }}
+        {data.error ? (
+          <Notice type="danger">
+            {data.error}
+          </Notice>
+        ) : null}
+
+        {actionData?.error ? (
+          <Notice type="danger">
+            {actionData.error}
+          </Notice>
+        ) : null}
+
+        {actionData?.success ? (
+          <Notice type="success">
+            {actionData.success}
+          </Notice>
+        ) : null}
+
+        <PageSection
+          eyebrow="Anbieter"
+          title="Unterstützte Buchhaltungsprogramme"
+          description="Wähle das Buchhaltungsprogramm deines Betriebs. Weitere Anbieter werden schrittweise ergänzt."
         >
-          {ACCOUNTING_PROVIDERS.map(
-            (provider) => {
-              const available =
-                provider.availability ===
-                "AVAILABLE";
+          <div className="moduleProviderGrid">
+            {ACCOUNTING_PROVIDERS.map(
+              (provider) => {
+                const available =
+                  provider.availability ===
+                  "AVAILABLE";
 
-              const connected =
-                provider.code === "LEXWARE" &&
-                Boolean(connection);
+                const connected =
+                  provider.code ===
+                    "LEXWARE" &&
+                  Boolean(connection);
 
-              return (
-                <article
-                  key={provider.code}
-                  className="settingsCard"
-                  style={{
-                    display: "grid",
-                    gridTemplateRows:
-                      "auto minmax(64px, auto) 1fr auto",
-                    gap: 14,
-                    alignContent: "start",
-                    minHeight: 236,
-                    padding: 18,
-                    border:
+                return (
+                  <article
+                    key={provider.code}
+                    className={
                       connected
-                        ? "1px solid #9ed9c5"
-                        : "1px solid #dbe7e2",
-                    background:
-                      connected
-                        ? "linear-gradient(180deg, #f3fcf8 0%, #ffffff 100%)"
-                        : available
-                          ? "#ffffff"
-                          : "#f8faf9",
-                    boxShadow:
-                      connected
-                        ? "0 14px 32px rgba(12, 122, 86, 0.10)"
-                        : "0 8px 22px rgba(15, 23, 42, 0.04)",
-                  }}
-                >
-                  <div className="settingsCardTop">
-                    <strong
-                      style={{
-                        fontSize: 18,
-                        lineHeight: 1.2,
-                        color: "#12372b",
-                      }}
-                    >
-                      {provider.name}
-                    </strong>
+                        ? "moduleProviderCard isConnected"
+                        : "moduleProviderCard"
+                    }
+                  >
+                    <div className="moduleProviderTop">
+                      <strong>
+                        {provider.name}
+                      </strong>
 
-                    <em
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        minHeight: 28,
-                        padding: "5px 10px",
-                        borderRadius: 999,
-                        fontSize: 12,
-                        fontStyle: "normal",
-                        fontWeight: 800,
-                        whiteSpace: "nowrap",
-                        color:
+                      <span
+                        className={
                           connected
-                            ? "#087554"
-                            : available
-                              ? "#1d4f43"
-                              : "#64748b",
-                        background:
-                          connected
-                            ? "#dff7ed"
-                            : available
-                              ? "#edf7f3"
-                              : "#eef2f4",
-                        border:
-                          connected
-                            ? "1px solid #afe5d3"
-                            : "1px solid #dbe5e1",
-                      }}
-                    >
-                      {connected
-                        ? "Verbunden"
-                        : available
-                          ? "Verfügbar"
-                          : "In Vorbereitung"}
-                    </em>
-                  </div>
+                            ? "moduleBadge moduleBadgeSuccess"
+                            : "moduleBadge"
+                        }
+                      >
+                        {connected
+                          ? "Verbunden"
+                          : available
+                            ? "Verfügbar"
+                            : "In Vorbereitung"}
+                      </span>
+                    </div>
 
-                  <span>
-                    {provider.description}
-                  </span>
+                    <p>
+                      {provider.description}
+                    </p>
 
-                  {provider.capabilities.length >
-                  0 ? (
-                    <div
-                      style={{
-                        display: "grid",
-                        gap: 5,
-                      }}
-                    >
-                      {provider.capabilities.map(
-                        (capability) => (
-                          <small
-                            key={capability}
-                          >
-                            ✓ {capability}
-                          </small>
+                    <div className="moduleCapabilities">
+                      {provider.capabilities.length >
+                      0 ? (
+                        provider.capabilities.map(
+                          (capability) => (
+                            <span key={capability}>
+                              ✓ {capability}
+                            </span>
+                          )
                         )
+                      ) : (
+                        <span>
+                          Noch keine aktive
+                          Verbindung verfügbar.
+                        </span>
                       )}
                     </div>
-                  ) : (
-                    <small>
-                      Noch keine aktive Verbindung verfügbar.
-                    </small>
-                  )}
 
-                  {available ? (
-                    <a
-                      href="#zugang-einrichten"
-                      className="secondaryButton"
-                      style={{
-                        display: "inline-flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        textDecoration: "none",
-                        marginTop: "auto",
-                      }}
-                    >
-                      {connected
-                        ? "Verbindung verwalten"
-                        : "Verbindung einrichten"}
-                    </a>
-                  ) : (
-                    <button
-                      type="button"
-                      className="ghostButton"
-                      disabled
-                      style={{
-                        marginTop: "auto",
-                        opacity: 0.6,
-                        cursor: "not-allowed",
-                      }}
-                    >
-                      Noch nicht verfügbar
-                    </button>
-                  )}
-                </article>
-              );
-            }
-          )}
-        </div>
-      </section>
-
-      {data.error ? (
-        <section className="panel">
-          <div className="noteBox">
-            <strong>Fehler</strong>
-            <p>{data.error}</p>
+                    {available ? (
+                      <a
+                        href="#zugang-einrichten"
+                        className="moduleButton moduleButtonSecondary"
+                      >
+                        {connected
+                          ? "Verbindung verwalten"
+                          : "Verbindung einrichten"}
+                      </a>
+                    ) : (
+                      <button
+                        type="button"
+                        className="moduleButton moduleButtonSecondary"
+                        disabled
+                      >
+                        Noch nicht verfügbar
+                      </button>
+                    )}
+                  </article>
+                );
+              }
+            )}
           </div>
-        </section>
-      ) : null}
+        </PageSection>
 
-      {actionData?.error ? (
-        <section className="panel">
-          <div className="noteBox">
-            <strong>
-              Verbindung nicht möglich
-            </strong>
-            <p>{actionData.error}</p>
-          </div>
-        </section>
-      ) : null}
-
-      {actionData?.success ? (
-        <section className="panel">
-          <div className="noteBox">
-            <strong>Erfolgreich</strong>
-            <p>{actionData.success}</p>
-          </div>
-        </section>
-      ) : null}
-
-      <section className="settingsGrid">
-        <article
-          className="panel"
-          id="zugang-einrichten"
-          style={{
-            scrollMarginTop: 24,
-          }}
-        >
-          <div className="panelHeader">
-            <div>
-              <p className="eyebrow">
-                Verbindung
-              </p>
-
-              <h2>
-                Lexware Office verbinden
-              </h2>
-
-              <span className="pageSubline">
-                Zugang sicher hinterlegen und die Verbindung prüfen.
-              </span>
-            </div>
-
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                padding: "7px 12px",
-                borderRadius: 999,
-                background:
+        <section className="moduleSplit">
+          <PageSection
+            id="zugang-einrichten"
+            className="moduleConnectionPanel"
+            eyebrow="Verbindung"
+            title="Lexware Office verbinden"
+            description="Zugangsschlüssel sicher hinterlegen und die Verbindung prüfen."
+            actions={
+              <span
+                className={
                   connection?.active
-                    ? "#e8f7f1"
-                    : "#f1f5f9",
-                color:
-                  connection?.active
-                    ? "#087b59"
-                    : "#475569",
-                fontSize: 13,
-                fontWeight: 700,
-              }}
-            >
-              {connection?.active
-                ? "aktiv"
-                : connection
-                  ? "pausiert"
-                  : "nicht verbunden"}
-            </span>
-          </div>
-
-          <Form method="post">
-            <input
-              type="hidden"
-              name="intent"
-              value="saveConnection"
-            />
-
-            <div
-              style={{
-                display: "grid",
-                gap: 16,
-              }}
-            >
-              <label
-                style={{
-                  display: "grid",
-                  gap: 7,
-                }}
+                    ? "moduleBadge moduleBadgeSuccess"
+                    : "moduleBadge"
+                }
               >
-                <strong>
-                  Zugangsschlüssel
-                </strong>
+                {connectionLabel}
+              </span>
+            }
+          >
+            <Form
+              method="post"
+              className="moduleConnectionForm"
+            >
+              <label className="moduleField">
+                <span>Zugangsschlüssel</span>
 
                 <input
                   type="password"
@@ -846,20 +724,9 @@ export default function AccountingPage() {
                   autoComplete="off"
                   placeholder={
                     connection
-                      ? "Leer lassen, um gespeicherten Schlüssel weiterzuverwenden"
+                      ? "Leer lassen, um den gespeicherten Schlüssel weiterzuverwenden"
                       : "Zugangsschlüssel eintragen"
                   }
-                  style={{
-                    width: "100%",
-                    minHeight: 46,
-                    border:
-                      "1px solid #cbd5e1",
-                    borderRadius: 12,
-                    padding: "0 14px",
-                    font: "inherit",
-                    boxSizing:
-                      "border-box",
-                  }}
                 />
 
                 <small>
@@ -867,16 +734,12 @@ export default function AccountingPage() {
                 </small>
               </label>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 10,
-                }}
-              >
+              <div className="moduleFormActions moduleFormActionsStart">
                 <button
                   type="submit"
-                  className="primaryButton"
+                  name="intent"
+                  value="saveConnection"
+                  className="moduleButton moduleButtonPrimary"
                 >
                   Verbindung speichern
                 </button>
@@ -885,151 +748,129 @@ export default function AccountingPage() {
                   type="submit"
                   name="intent"
                   value="testConnection"
-                  className="secondaryButton"
+                  className="moduleButton moduleButtonSecondary"
                 >
                   Verbindung testen
                 </button>
               </div>
-            </div>
-          </Form>
+            </Form>
 
-          <div
-            className="noteBox"
-            style={{
-              marginTop: 20,
-            }}
-          >
-            <strong>
-              Sicherer, nur lesender Zugriff
-            </strong>
+            <div className="moduleSafeBox">
+              <strong>
+                Sicherer, nur lesender Zugriff
+              </strong>
 
-            <p>
-              Gastario liest ausschließlich benötigte Belegdaten.
-              Im verbundenen Buchhaltungskonto werden keine Dokumente
-              erstellt, geändert oder gelöscht.
-            </p>
-          </div>
-        </article>
-
-        <article className="panel">
-          <div className="panelHeader">
-            <div>
-              <p className="eyebrow">
-                Status
+              <p>
+                Gastario liest ausschließlich
+                benötigte Belegdaten. Im
+                verbundenen Buchhaltungskonto
+                werden keine Dokumente erstellt,
+                geändert oder gelöscht.
               </p>
-
-              <h2>
-                Verbindungsstatus
-              </h2>
-
-              <span className="pageSubline">
-                Technischer Status der aktuell ausgewählten Anbindung.
-              </span>
             </div>
-          </div>
+          </PageSection>
 
-          <div className="settingsList">
-            <div className="settingsItem">
-              <span>Anbieter</span>
-              <strong>Lexware Office</strong>
+          <PageSection
+            eyebrow="Status"
+            title="Verbindungsstatus"
+            description="Technischer Status der aktuell ausgewählten Anbindung."
+          >
+            <div className="moduleStatusList">
+              <div>
+                <span>Anbieter</span>
+                <strong>
+                  Lexware Office
+                </strong>
+              </div>
+
+              <div>
+                <span>Mandant</span>
+                <strong>
+                  {data.tenantName}
+                </strong>
+              </div>
+
+              <div>
+                <span>Unternehmen</span>
+                <strong>
+                  {connection?.companyName ||
+                    "-"}
+                </strong>
+              </div>
+
+              <div>
+                <span>Organisations-ID</span>
+                <strong>
+                  {connection?.organizationId ||
+                    "-"}
+                </strong>
+              </div>
+
+              <div>
+                <span>Status</span>
+                <strong>
+                  {connection?.status ||
+                    "DISCONNECTED"}
+                </strong>
+              </div>
+
+              <div>
+                <span>
+                  Letzter erfolgreicher Test
+                </span>
+
+                <strong>
+                  {formatDateTime(
+                    connection
+                      ?.lastSuccessfulSyncAt
+                  )}
+                </strong>
+              </div>
+
+              <div>
+                <span>Letzter Fehler</span>
+
+                <strong>
+                  {connection?.lastError ||
+                    "-"}
+                </strong>
+              </div>
             </div>
 
-            <div className="settingsItem">
-              <span>Mandant</span>
-              <strong>
-                {data.tenantName}
-              </strong>
-            </div>
+            {connection ? (
+              <div className="moduleFormActions moduleFormActionsStart moduleStatusActions">
+                <Form method="post">
+                  <button
+                    type="submit"
+                    name="intent"
+                    value={
+                      connection.active
+                        ? "pauseConnection"
+                        : "activateConnection"
+                    }
+                    className="moduleButton moduleButtonSecondary"
+                  >
+                    {connection.active
+                      ? "Verbindung pausieren"
+                      : "Verbindung aktivieren"}
+                  </button>
+                </Form>
 
-            <div className="settingsItem">
-              <span>Unternehmen</span>
-              <strong>
-                {connection?.companyName ||
-                  "-"}
-              </strong>
-            </div>
-
-            <div className="settingsItem">
-              <span>
-                Organisations-ID
-              </span>
-              <strong>
-                {connection?.organizationId ||
-                  "-"}
-              </strong>
-            </div>
-
-            <div className="settingsItem">
-              <span>Status</span>
-              <strong>
-                {connection?.status ||
-                  "DISCONNECTED"}
-              </strong>
-            </div>
-
-            <div className="settingsItem">
-              <span>
-                Letzter erfolgreicher Test
-              </span>
-              <strong>
-                {formatDateTime(
-                  connection
-                    ?.lastSuccessfulSyncAt
-                )}
-              </strong>
-            </div>
-
-            <div className="settingsItem">
-              <span>
-                Letzter Fehler
-              </span>
-              <strong>
-                {connection?.lastError ||
-                  "-"}
-              </strong>
-            </div>
-          </div>
-
-          {connection ? (
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 10,
-                marginTop: 20,
-              }}
-            >
-              <Form method="post">
-                <button
-                  type="submit"
-                  name="intent"
-                  value={
-                    connection.active
-                      ? "pauseConnection"
-                      : "activateConnection"
-                  }
-                  className="secondaryButton"
-                >
-                  {connection.active
-                    ? "Verbindung pausieren"
-                    : "Verbindung aktivieren"}
-                </button>
-              </Form>
-
-              <Form method="post">
-                <button
-                  type="submit"
-                  name="intent"
-                  value="deleteConnection"
-                  className="ghostButton"
-                >
-                  Verbindung entfernen
-                </button>
-              </Form>
-            </div>
-          ) : null}
-        </article>
-      </section>
+                <Form method="post">
+                  <button
+                    type="submit"
+                    name="intent"
+                    value="deleteConnection"
+                    className="moduleButton moduleButtonDanger"
+                  >
+                    Verbindung entfernen
+                  </button>
+                </Form>
+              </div>
+            ) : null}
+          </PageSection>
+        </section>
+      </PageShell>
     </AppLayout>
   );
 }
