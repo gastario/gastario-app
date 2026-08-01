@@ -1,3 +1,7 @@
+import {
+  isActionableIncomingEmail,
+} from "./incoming-email-classification";
+
 export type NavigationCounts = {
   inbox: number;
   upcomingOrders: number;
@@ -44,8 +48,10 @@ export async function getNavigationCounts(
         where: {
           userId,
         },
+
         select: {
           tenantId: true,
+
           tenant: {
             select: {
               lockedAt: true,
@@ -70,14 +76,9 @@ export async function getNavigationCounts(
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  /*
-   * Der Auftragseingang zeigt standardmäßig
-   * die letzten sieben Tage. Der Badge folgt
-   * demselben Zeitraum, damit keine jahrealten
-   * unverknüpften E-Mails als offene Aufgabe
-   * erscheinen.
-   */
-  const inboxSince = new Date(today);
+  const inboxSince =
+    new Date(today);
+
   inboxSince.setDate(
     inboxSince.getDate() - 7
   );
@@ -89,12 +90,6 @@ export async function getNavigationCounts(
     "POSSIBLE_DUPLICATE",
   ] as any;
 
-  /*
-   * Muss der Auftragsübersicht entsprechen:
-   * nur operative, noch nicht abgeschlossene
-   * Aufträge mit heutiger oder zukünftiger
-   * Lieferung.
-   */
   const activeUpcomingStatuses = [
     "CONFIRMED",
     "IN_PRODUCTION",
@@ -102,7 +97,7 @@ export async function getNavigationCounts(
   ] as any;
 
   const [
-    pendingEmails,
+    incomingEmailCandidates,
     pendingIntakeOrders,
     upcomingOrders,
     openQuotes,
@@ -114,7 +109,7 @@ export async function getNavigationCounts(
     inventoryItems,
   ] = await Promise.all([
     prisma.incomingEmail
-      .count({
+      .findMany({
         where: {
           tenantId,
 
@@ -134,8 +129,14 @@ export async function getNavigationCounts(
             none: {},
           },
         },
+
+        select: {
+          status: true,
+          subject: true,
+          sender: true,
+        },
       })
-      .catch(() => 0),
+      .catch(() => []),
 
     prisma.order
       .count({
@@ -257,13 +258,22 @@ export async function getNavigationCounts(
       .catch(() => []),
   ]);
 
+  const actionableEmails =
+    incomingEmailCandidates.filter(
+      isActionableIncomingEmail
+    ).length;
+
   const inventoryWarnings =
     inventoryItems.filter((item) => {
       const currentStock =
-        Number(item.currentStock || 0);
+        Number(
+          item.currentStock || 0
+        );
 
       const minStock =
-        Number(item.minStock || 0);
+        Number(
+          item.minStock || 0
+        );
 
       return (
         minStock > 0 &&
@@ -273,8 +283,10 @@ export async function getNavigationCounts(
 
   return {
     inbox:
-      Number(pendingEmails || 0) +
-      Number(pendingIntakeOrders || 0),
+      actionableEmails +
+      Number(
+        pendingIntakeOrders || 0
+      ),
 
     upcomingOrders:
       Number(upcomingOrders || 0),
