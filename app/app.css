@@ -1,30 +1,39 @@
+@import "./styles/gastario-tokens.css";
+@import "./styles/gastario-foundation.css";
 @import "./styles/gastario-ui.css";
 
 :root {
-  --bg: #eef3f7;
-  --surface: #ffffff;
-  --surface-soft: #f7f9fb;
-  --sidebar: #e8eef5;
-  --sidebar-dark: #dbe5ee;
-  --text: #152033;
-  --muted: #64748b;
-  --muted-strong: #475569;
-  --line: #d7e0ea;
-  --line-soft: #e4eaf0;
-  --primary: #0f766e;
-  --primary-dark: #115e59;
-  --accent: #f59e0b;
-  --success-bg: #dcfce7;
-  --success-text: #166534;
-  --warning-bg: #fef3c7;
-  --warning-text: #92400e;
-  --danger-bg: #fee2e2;
-  --danger-text: #991b1b;
-  --info-bg: #e6f4ff;
-  --info-text: #075985;
-  --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
-}
+  --bg: var(--g-color-page);
+  --surface: var(--g-color-surface);
+  --surface-soft: var(--g-color-surface-soft);
+  --sidebar: var(--g-color-sidebar);
+  --sidebar-dark: var(--g-color-brand-soft);
 
+  --text: var(--g-color-text);
+  --muted: var(--g-color-text-muted);
+  --muted-strong: var(--g-color-text-body);
+
+  --line: var(--g-color-border);
+  --line-soft: var(--g-color-border-subtle);
+
+  --primary: var(--g-color-brand);
+  --primary-dark: var(--g-color-brand-hover);
+  --accent: var(--g-color-accent);
+
+  --success-bg: var(--g-color-success-bg);
+  --success-text: var(--g-color-success);
+
+  --warning-bg: var(--g-color-warning-bg);
+  --warning-text: var(--g-color-warning);
+
+  --danger-bg: var(--g-color-danger-bg);
+  --danger-text: var(--g-color-danger);
+
+  --info-bg: var(--g-color-info-bg);
+  --info-text: var(--g-color-info);
+
+  --shadow: var(--g-shadow-card);
+}
 * {
   box-sizing: border-box;
 }

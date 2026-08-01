@@ -1,0 +1,126 @@
+/*
+ * Gastario Design System 2026
+ * Masterdesign: Intelligence Workspace – helle Variante
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Typografie */
+  --g-font-sans:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  --g-font-size-xs: 11px;
+  --g-font-size-sm: 12px;
+  --g-font-size-body: 14px;
+  --g-font-size-control: 14px;
+  --g-font-size-section: 20px;
+  --g-font-size-page: clamp(28px, 2.4vw, 34px);
+
+  --g-font-weight-regular: 400;
+  --g-font-weight-medium: 500;
+  --g-font-weight-semibold: 600;
+  --g-font-weight-bold: 700;
+
+  /* Grundflächen */
+  --g-color-page: #f4f7f5;
+  --g-color-surface: #ffffff;
+  --g-color-surface-soft: #f7faf8;
+  --g-color-surface-raised: #fbfdfc;
+  --g-color-sidebar: #fbfdfc;
+
+  /* Texte */
+  --g-color-text: #173c36;
+  --g-color-text-body: #4f6862;
+  --g-color-text-muted: #6b7e79;
+  --g-color-text-soft: #879793;
+
+  /* Marke */
+  --g-color-brand: #0b7d65;
+  --g-color-brand-hover: #086650;
+  --g-color-brand-active: #075947;
+  --g-color-brand-soft: #e2f3ed;
+  --g-color-brand-softer: #f0f8f5;
+
+  /* Linien */
+  --g-color-border: #d8e4e0;
+  --g-color-border-strong: #c6d7d2;
+  --g-color-border-subtle: #e7eeeb;
+
+  /* Akzent */
+  --g-color-accent: #d5921c;
+  --g-color-accent-soft: #fff5df;
+
+  /* Status */
+  --g-color-success: #147354;
+  --g-color-success-bg: #e8f7f0;
+  --g-color-success-border: #b9dfcf;
+
+  --g-color-warning: #8f5d12;
+  --g-color-warning-bg: #fff7e8;
+  --g-color-warning-border: #eed49e;
+
+  --g-color-danger: #a43c35;
+  --g-color-danger-bg: #fff2f1;
+  --g-color-danger-border: #efc4c0;
+
+  --g-color-info: #2e659c;
+  --g-color-info-bg: #edf5fc;
+  --g-color-info-border: #c9dff1;
+
+  /* Abstände */
+  --g-space-1: 4px;
+  --g-space-2: 8px;
+  --g-space-3: 12px;
+  --g-space-4: 16px;
+  --g-space-5: 20px;
+  --g-space-6: 24px;
+  --g-space-7: 28px;
+  --g-space-8: 32px;
+  --g-space-9: 40px;
+  --g-space-10: 48px;
+
+  /* Rundungen */
+  --g-radius-xs: 8px;
+  --g-radius-sm: 10px;
+  --g-radius-control: 12px;
+  --g-radius-card: 16px;
+  --g-radius-panel: 20px;
+  --g-radius-large: 24px;
+  --g-radius-pill: 999px;
+
+  /* Maße */
+  --g-control-height-sm: 36px;
+  --g-control-height: 44px;
+  --g-input-height: 48px;
+  --g-sidebar-width: 252px;
+  --g-page-max-width: 1480px;
+
+  /* Schatten */
+  --g-shadow-xs:
+    0 1px 2px rgba(23, 60, 54, 0.035);
+
+  --g-shadow-card:
+    0 10px 28px rgba(23, 60, 54, 0.055);
+
+  --g-shadow-panel:
+    0 18px 46px rgba(23, 60, 54, 0.075);
+
+  --g-shadow-overlay:
+    0 30px 80px rgba(23, 60, 54, 0.16);
+
+  /* Bewegung */
+  --g-transition-fast: 140ms ease;
+  --g-transition-normal: 200ms ease;
+
+  /* Responsive */
+  --g-page-padding-desktop: 28px;
+  --g-page-padding-tablet: 20px;
+  --g-page-padding-mobile: 14px;
+}

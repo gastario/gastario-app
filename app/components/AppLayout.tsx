@@ -388,16 +388,16 @@ const currentPathWithSearch =
       <style>
         {`
           :root {
-            --g-bg: #edf3f7;
-            --g-sidebar: #f8fbfc;
-            --g-card: #ffffff;
-            --g-border: #dbe5eb;
-            --g-border-strong: #c8d4dd;
-            --g-text: #0f172a;
-            --g-muted: #64748b;
-            --g-green: #057a67;
-            --g-green-dark: #045f50;
-            --g-warn: #f59e0b;
+            --g-bg: var(--g-color-page);
+            --g-sidebar: var(--g-color-sidebar);
+            --g-card: var(--g-color-surface);
+            --g-border: var(--g-color-border);
+            --g-border-strong: var(--g-color-border-strong);
+            --g-text: var(--g-color-text);
+            --g-muted: var(--g-color-text-muted);
+            --g-green: var(--g-color-brand);
+            --g-green-dark: var(--g-color-brand-hover);
+            --g-warn: var(--g-color-accent);
           }
 
           * {

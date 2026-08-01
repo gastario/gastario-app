@@ -4,53 +4,52 @@
  */
 
 :root {
-  --gastario-bg-page: #f4f8f7;
-  --gastario-bg-card: #ffffff;
-  --gastario-bg-soft: #f7faf9;
+  --gastario-bg-page: var(--g-color-page);
+  --gastario-bg-card: var(--g-color-surface);
+  --gastario-bg-soft: var(--g-color-surface-soft);
 
-  --gastario-text-main: #17343c;
-  --gastario-text-body: #526a70;
-  --gastario-text-muted: #75898e;
+  --gastario-text-main: var(--g-color-text);
+  --gastario-text-body: var(--g-color-text-body);
+  --gastario-text-muted: var(--g-color-text-muted);
 
-  --gastario-brand: #087158;
-  --gastario-brand-hover: #065e49;
-  --gastario-brand-soft: #eaf6f1;
+  --gastario-brand: var(--g-color-brand);
+  --gastario-brand-hover: var(--g-color-brand-hover);
+  --gastario-brand-soft: var(--g-color-brand-soft);
 
-  --gastario-border: #d9e5e3;
-  --gastario-border-strong: #c8d8d5;
+  --gastario-border: var(--g-color-border);
+  --gastario-border-strong: var(--g-color-border-strong);
 
-  --gastario-success-bg: #ecf8f3;
-  --gastario-success-border: #b8e0ce;
-  --gastario-success-text: #176247;
+  --gastario-success-bg: var(--g-color-success-bg);
+  --gastario-success-border: var(--g-color-success-border);
+  --gastario-success-text: var(--g-color-success);
 
-  --gastario-warning-bg: #fff8eb;
-  --gastario-warning-border: #f4d89a;
-  --gastario-warning-text: #8a5915;
+  --gastario-warning-bg: var(--g-color-warning-bg);
+  --gastario-warning-border: var(--g-color-warning-border);
+  --gastario-warning-text: var(--g-color-warning);
 
-  --gastario-danger-bg: #fff3f2;
-  --gastario-danger-border: #f2c6c2;
-  --gastario-danger-text: #a43c35;
+  --gastario-danger-bg: var(--g-color-danger-bg);
+  --gastario-danger-border: var(--g-color-danger-border);
+  --gastario-danger-text: var(--g-color-danger);
 
-  --gastario-radius-small: 10px;
-  --gastario-radius-control: 12px;
-  --gastario-radius-card: 18px;
-  --gastario-radius-large: 24px;
+  --gastario-radius-small: var(--g-radius-sm);
+  --gastario-radius-control: var(--g-radius-control);
+  --gastario-radius-card: var(--g-radius-card);
+  --gastario-radius-large: var(--g-radius-large);
 
-  --gastario-shadow-card: 0 10px 28px rgba(23, 52, 60, 0.055);
+  --gastario-shadow-card: var(--g-shadow-card);
 
-  --gastario-control-height: 44px;
-  --gastario-page-width: 1480px;
+  --gastario-control-height: var(--g-control-height);
+  --gastario-page-width: var(--g-page-max-width);
 
-  --gastario-space-1: 4px;
-  --gastario-space-2: 8px;
-  --gastario-space-3: 12px;
-  --gastario-space-4: 16px;
-  --gastario-space-5: 20px;
-  --gastario-space-6: 24px;
-  --gastario-space-7: 28px;
-  --gastario-space-8: 32px;
+  --gastario-space-1: var(--g-space-1);
+  --gastario-space-2: var(--g-space-2);
+  --gastario-space-3: var(--g-space-3);
+  --gastario-space-4: var(--g-space-4);
+  --gastario-space-5: var(--g-space-5);
+  --gastario-space-6: var(--g-space-6);
+  --gastario-space-7: var(--g-space-7);
+  --gastario-space-8: var(--g-space-8);
 }
-
 .g-ui-page {
   width: 100%;
   max-width: var(--gastario-page-width);

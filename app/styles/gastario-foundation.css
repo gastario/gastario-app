@@ -1,0 +1,68 @@
+/*
+ * Globale Gastario-Grundregeln.
+ * Seiten und Komponenten greifen auf gastario-tokens.css zu.
+ */
+
+html {
+  min-width: 320px;
+  background: var(--g-color-page);
+  font-family: var(--g-font-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--g-color-page);
+  color: var(--g-color-text);
+  font-family: var(--g-font-sans);
+  font-size: var(--g-font-size-body);
+  font-weight: var(--g-font-weight-regular);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(11, 125, 101, 0.2);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--g-color-brand-soft);
+  color: var(--g-color-text);
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
