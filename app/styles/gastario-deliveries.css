@@ -1,0 +1,909 @@
+/*
+ * Gastario Lieferungen
+ * Masterdesign Variante 1 – Intelligence Workspace Light
+ */
+
+.deliveriesPage {
+  width: 100%;
+}
+
+/* Buttons */
+
+.deliveriesHeaderActions,
+.deliveriesErrorActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.deliveriesButton {
+  min-height: var(--g-control-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 15px;
+  border: 1px solid
+    var(--g-color-border-strong);
+  border-radius:
+    var(--g-radius-control);
+  background:
+    var(--g-color-surface);
+  color:
+    var(--g-color-text);
+  box-shadow: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight:
+    var(--g-font-weight-semibold);
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color var(--g-transition-fast),
+    border-color var(--g-transition-fast),
+    background var(--g-transition-fast),
+    box-shadow var(--g-transition-fast),
+    transform var(--g-transition-fast);
+}
+
+.deliveriesButton:hover {
+  border-color:
+    var(--g-color-border-strong);
+  background:
+    var(--g-color-surface-soft);
+  color:
+    var(--g-color-brand-hover);
+}
+
+.deliveriesButtonPrimary {
+  border-color:
+    var(--g-color-brand);
+  background:
+    var(--g-color-brand);
+  color: #ffffff;
+  box-shadow:
+    0 8px 20px
+    rgba(11, 125, 101, 0.14);
+}
+
+.deliveriesButtonPrimary:hover {
+  border-color:
+    var(--g-color-brand-hover);
+  background:
+    var(--g-color-brand-hover);
+  color: #ffffff;
+}
+
+.deliveriesButton.isDisabled {
+  opacity: 0.52;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* Kennzahlen */
+
+.deliveriesMetrics {
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+}
+
+/* Filter */
+
+.deliveriesFilterSection {
+  padding: 18px 20px;
+}
+
+.deliveriesRangeTabs {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid
+    var(--g-color-border-subtle);
+  border-radius:
+    var(--g-radius-control);
+  background:
+    var(--g-color-surface-soft);
+}
+
+.deliveriesRangeTabs a {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius:
+    var(--g-radius-sm);
+  color:
+    var(--g-color-text-body);
+  font-size: 12px;
+  font-weight:
+    var(--g-font-weight-medium);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.deliveriesRangeTabs a:hover {
+  background:
+    var(--g-color-surface);
+  color:
+    var(--g-color-brand-hover);
+}
+
+.deliveriesRangeTabs
+  a[data-active="true"] {
+  border-color:
+    var(--g-color-border);
+  background:
+    var(--g-color-surface);
+  color:
+    var(--g-color-brand-hover);
+  box-shadow:
+    var(--g-shadow-xs);
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.deliveriesDateForm {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+  align-items: end;
+  gap: 10px;
+}
+
+.deliveriesDateField {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.deliveriesDateField > span {
+  color:
+    var(--g-color-text-body);
+  font-size: 11px;
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.deliveriesDateField select {
+  width: 100%;
+  min-height:
+    var(--g-input-height);
+  padding: 0 13px;
+  border: 1px solid
+    var(--g-color-border-strong);
+  border-radius:
+    var(--g-radius-control);
+  background:
+    var(--g-color-surface);
+  color:
+    var(--g-color-text);
+  box-shadow: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight:
+    var(--g-font-weight-medium);
+  outline: none;
+}
+
+.deliveriesDateField select:focus {
+  border-color:
+    var(--g-color-brand);
+  box-shadow:
+    0 0 0 4px
+    rgba(11, 125, 101, 0.1);
+}
+
+/* Hauptbereich */
+
+.deliveriesMainGrid {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(300px, 350px);
+  align-items: start;
+  gap: 16px;
+}
+
+.deliveriesSchedulePanel {
+  min-height: 520px;
+}
+
+.deliveriesRouteList {
+  display: grid;
+  gap: 10px;
+}
+
+.deliveriesEmptyState {
+  min-height: 190px;
+  display: grid;
+  grid-template-columns:
+    52px
+    minmax(0, 1fr)
+    auto;
+  align-items: center;
+  gap: 15px;
+  padding: 22px;
+  border: 1px dashed
+    var(--g-color-border-strong);
+  border-radius:
+    var(--g-radius-card);
+  background:
+    var(--g-color-surface-soft);
+}
+
+.deliveriesEmptyIcon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius:
+    var(--g-radius-control);
+  background:
+    var(--g-color-brand-soft);
+  color:
+    var(--g-color-brand);
+  font-size: 22px;
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.deliveriesEmptyState strong,
+.deliveriesEmptyState span {
+  display: block;
+}
+
+.deliveriesEmptyState strong {
+  color:
+    var(--g-color-text);
+  font-size: 15px;
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.deliveriesEmptyState span {
+  margin-top: 4px;
+  color:
+    var(--g-color-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Einzelne Lieferung */
+
+.deliveriesRouteCard {
+  min-width: 0;
+  display: grid;
+  grid-template-columns:
+    105px
+    minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid
+    var(--g-color-border);
+  border-radius:
+    var(--g-radius-card);
+  background:
+    var(--g-color-surface);
+  box-shadow:
+    var(--g-shadow-xs);
+  transition:
+    border-color var(--g-transition-fast),
+    box-shadow var(--g-transition-fast);
+}
+
+.deliveriesRouteCard:hover {
+  border-color:
+    var(--g-color-border-strong);
+  box-shadow:
+    var(--g-shadow-card);
+}
+
+.deliveriesRouteTime {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 18px 12px;
+  border-right: 1px solid
+    var(--g-color-border-subtle);
+  background:
+    linear-gradient(
+      180deg,
+      var(--g-color-brand-softer),
+      var(--g-color-surface-soft)
+    );
+  text-align: center;
+}
+
+.deliveriesRouteTime small {
+  margin-bottom: 10px;
+  color:
+    var(--g-color-brand);
+  font-size: 9px;
+  font-weight:
+    var(--g-font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.deliveriesRouteTime strong {
+  color:
+    var(--g-color-text);
+  font-size: 23px;
+  font-weight:
+    var(--g-font-weight-semibold);
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.deliveriesRouteTime span {
+  margin-top: 4px;
+  color:
+    var(--g-color-text-muted);
+  font-size: 10px;
+  font-weight:
+    var(--g-font-weight-medium);
+}
+
+.deliveriesRouteContent {
+  min-width: 0;
+  padding: 17px 18px;
+}
+
+.deliveriesRouteHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid
+    var(--g-color-border-subtle);
+}
+
+.deliveriesRouteHeader > div:first-child {
+  min-width: 0;
+}
+
+.deliveriesRouteHeader p {
+  margin: 0 0 4px;
+  color:
+    var(--g-color-brand);
+  font-size: 10px;
+  font-weight:
+    var(--g-font-weight-semibold);
+  line-height: 1.3;
+}
+
+.deliveriesRouteHeader h3 {
+  margin: 0;
+  color:
+    var(--g-color-text);
+  font-size: 17px;
+  font-weight:
+    var(--g-font-weight-semibold);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.deliveriesRouteHeader
+  > div:first-child
+  > span {
+  display: block;
+  margin-top: 5px;
+  overflow: hidden;
+  color:
+    var(--g-color-text-muted);
+  font-size: 11px;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deliveriesStatusArea {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.deliveriesStatusBadge,
+.deliveriesDataBadge {
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 9px;
+  border-radius:
+    var(--g-radius-pill);
+  font-size: 9px;
+  font-weight:
+    var(--g-font-weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.deliveriesStatusBadge {
+  border: 1px solid
+    var(--g-color-info-border);
+  background:
+    var(--g-color-info-bg);
+  color:
+    var(--g-color-info);
+}
+
+.deliveriesStatusBadge[
+  data-status="confirmed"
+] {
+  border-color:
+    var(--g-color-success-border);
+  background:
+    var(--g-color-success-bg);
+  color:
+    var(--g-color-success);
+}
+
+.deliveriesStatusBadge[
+  data-status="in_production"
+],
+.deliveriesStatusBadge[
+  data-status="packing_open"
+] {
+  border-color:
+    var(--g-color-warning-border);
+  background:
+    var(--g-color-warning-bg);
+  color:
+    var(--g-color-warning);
+}
+
+.deliveriesStatusBadge[
+  data-status="delivered"
+] {
+  border-color:
+    var(--g-color-border);
+  background:
+    var(--g-color-surface-soft);
+  color:
+    var(--g-color-text-muted);
+}
+
+.deliveriesDataBadge.isComplete {
+  border: 1px solid
+    var(--g-color-success-border);
+  background:
+    var(--g-color-success-bg);
+  color:
+    var(--g-color-success);
+}
+
+.deliveriesDataBadge.isIncomplete {
+  border: 1px solid
+    var(--g-color-danger-border);
+  background:
+    var(--g-color-danger-bg);
+  color:
+    var(--g-color-danger);
+}
+
+.deliveriesRouteDetails {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 15px 0;
+}
+
+.deliveriesRouteDetails > div {
+  min-width: 0;
+  min-height: 82px;
+  padding: 12px;
+  border: 1px solid
+    var(--g-color-border-subtle);
+  border-radius:
+    var(--g-radius-control);
+  background:
+    var(--g-color-surface-soft);
+}
+
+.deliveriesRouteDetails small,
+.deliveriesRouteDetails strong,
+.deliveriesRouteDetails span {
+  display: block;
+}
+
+.deliveriesRouteDetails small {
+  margin-bottom: 5px;
+  color:
+    var(--g-color-text-muted);
+  font-size: 9px;
+  font-weight:
+    var(--g-font-weight-bold);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.deliveriesRouteDetails strong {
+  overflow: hidden;
+  color:
+    var(--g-color-text);
+  font-size: 12px;
+  font-weight:
+    var(--g-font-weight-semibold);
+  line-height: 1.4;
+  text-overflow: ellipsis;
+}
+
+.deliveriesRouteDetails span {
+  margin-top: 3px;
+  overflow: hidden;
+  color:
+    var(--g-color-text-muted);
+  font-size: 10px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+}
+
+.deliveriesRouteActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.deliveriesRouteActions
+  .deliveriesButton {
+  min-height: 38px;
+  padding: 0 12px;
+  font-size: 11px;
+}
+
+/* Seitenleiste */
+
+.deliveriesSideStack {
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.deliveriesAppsPanel,
+.deliveriesDriverPanel {
+  padding: 18px;
+}
+
+.deliveriesUtilityList {
+  display: grid;
+  gap: 8px;
+}
+
+.deliveriesUtilityItem {
+  min-width: 0;
+  display: grid;
+  grid-template-columns:
+    38px
+    minmax(0, 1fr)
+    auto;
+  align-items: center;
+  gap: 10px;
+  padding: 11px;
+  border: 1px solid
+    var(--g-color-border-subtle);
+  border-radius:
+    var(--g-radius-control);
+  background:
+    var(--g-color-surface-soft);
+}
+
+.deliveriesUtilityIcon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius:
+    var(--g-radius-sm);
+  background:
+    var(--g-color-brand-soft);
+  color:
+    var(--g-color-brand);
+  font-size: 15px;
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.deliveriesUtilityItem strong,
+.deliveriesUtilityItem span {
+  display: block;
+}
+
+.deliveriesUtilityItem strong {
+  color:
+    var(--g-color-text);
+  font-size: 12px;
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.deliveriesUtilityItem span {
+  margin-top: 2px;
+  color:
+    var(--g-color-text-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.deliveriesUtilityItem > small {
+  color:
+    var(--g-color-brand);
+  font-size: 9px;
+  font-weight:
+    var(--g-font-weight-semibold);
+  white-space: nowrap;
+}
+
+.deliveriesDriverPreview {
+  padding: 15px;
+  border: 1px solid
+    var(--g-color-border);
+  border-radius:
+    var(--g-radius-control);
+  background:
+    var(--g-color-surface);
+}
+
+.deliveriesDriverPreview
+  > span {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border-radius:
+    var(--g-radius-pill);
+  background:
+    var(--g-color-accent-soft);
+  color:
+    var(--g-color-warning);
+  font-size: 9px;
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.deliveriesDriverPreview
+  > strong {
+  display: block;
+  margin-top: 12px;
+  color:
+    var(--g-color-text);
+  font-size: 14px;
+  font-weight:
+    var(--g-font-weight-semibold);
+}
+
+.deliveriesDriverPreview p {
+  margin: 7px 0 0;
+  color:
+    var(--g-color-text-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.deliveriesDriverPreview
+  > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 13px;
+}
+
+.deliveriesDriverPreview
+  > div
+  > small {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border: 1px solid
+    var(--g-color-border-subtle);
+  border-radius:
+    var(--g-radius-pill);
+  background:
+    var(--g-color-surface-soft);
+  color:
+    var(--g-color-text-body);
+  font-size: 9px;
+}
+
+/* Fehlerseite */
+
+.deliveriesErrorActions {
+  margin-top: 4px;
+}
+
+/* Responsive */
+
+@media (max-width: 1180px) {
+  .deliveriesMainGrid {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(270px, 310px);
+  }
+
+  .deliveriesRouteDetails {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .deliveriesRouteDetails
+    > div:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 980px) {
+  .deliveriesMainGrid {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .deliveriesSideStack {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .deliveriesMetrics {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .deliveriesRangeTabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .deliveriesRangeTabs a {
+    flex: 1 0 auto;
+  }
+
+  .deliveriesDateForm {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .deliveriesDateForm
+    .deliveriesButton {
+    width: 100%;
+  }
+
+  .deliveriesRouteCard {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .deliveriesRouteTime {
+    min-height: 68px;
+    align-items: center;
+    justify-content: flex-start;
+    flex-direction: row;
+    gap: 8px;
+    padding: 11px 14px;
+    border-right: 0;
+    border-bottom: 1px solid
+      var(--g-color-border-subtle);
+    text-align: left;
+  }
+
+  .deliveriesRouteTime small {
+    margin: 0 auto 0 0;
+  }
+
+  .deliveriesRouteTime span {
+    margin: 0;
+  }
+
+  .deliveriesRouteHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .deliveriesStatusArea {
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .deliveriesRouteDetails {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .deliveriesRouteDetails
+    > div:last-child {
+    grid-column: auto;
+  }
+
+  .deliveriesSideStack {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .deliveriesHeaderActions,
+  .deliveriesErrorActions {
+    width: 100%;
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .deliveriesHeaderActions
+    .deliveriesButton,
+  .deliveriesErrorActions
+    .deliveriesButton {
+    width: 100%;
+  }
+
+  .deliveriesMetrics {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .deliveriesFilterSection,
+  .deliveriesSchedulePanel,
+  .deliveriesAppsPanel,
+  .deliveriesDriverPanel {
+    padding: 15px;
+  }
+
+  .deliveriesEmptyState {
+    grid-template-columns:
+      minmax(0, 1fr);
+    text-align: center;
+  }
+
+  .deliveriesEmptyIcon {
+    margin: 0 auto;
+  }
+
+  .deliveriesEmptyState
+    .deliveriesButton {
+    width: 100%;
+  }
+
+  .deliveriesRouteContent {
+    padding: 14px;
+  }
+
+  .deliveriesRouteActions {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .deliveriesRouteActions
+    .deliveriesButton {
+    width: 100%;
+  }
+
+  .deliveriesUtilityItem {
+    grid-template-columns:
+      36px
+      minmax(0, 1fr);
+  }
+
+  .deliveriesUtilityItem
+    > small {
+    grid-column: 2;
+  }
+}
