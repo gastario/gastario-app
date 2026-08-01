@@ -470,6 +470,20 @@ export default function AppLayout({
     setIsMobileSidebarOpen(false);
   }, [currentPathWithSearch]);
 
+  /*
+   * Beim Wechsel zwischen Gastario-Modulen immer
+   * am Seitenanfang starten. Änderungen an Filtern
+   * und Query-Parametern derselben Route behalten
+   * ihre aktuelle Scrollposition.
+   */
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "auto",
+    });
+  }, [location.pathname]);
+
   useEffect(() => {
     if (!isMobileSidebarOpen) {
       return;
@@ -781,7 +795,6 @@ export default function AppLayout({
 
                         return (
                           <Link
-                            preventScrollReset
                             onClick={() =>
                               setIsMobileSidebarOpen(
                                 false
