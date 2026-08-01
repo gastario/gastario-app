@@ -1,7 +1,8 @@
 import { createCookieSessionStorage, redirect } from "react-router";
 import { prisma } from "./prisma.server";
 
-const sessionSecret = process.env.SESSION_SECRET || "gastario-dev-secret-change-me";
+const sessionSecret =
+  process.env.SESSION_SECRET || "gastario-dev-secret-change-me";
 
 const storage = createCookieSessionStorage({
   cookie: {
@@ -15,9 +16,26 @@ const storage = createCookieSessionStorage({
   },
 });
 
-export async function createUserSession(userId: string, redirectTo: string) {
+export async function createUserSession(
+  userId: string,
+  redirectTo: string
+) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      sessionVersion: true,
+    },
+  });
+
+  if (!user) {
+    return redirect("/login");
+  }
+
   const session = await storage.getSession();
-  session.set("userId", userId);
+
+  session.set("userId", user.id);
+  session.set("sessionVersion", user.sessionVersion);
 
   return redirect(redirectTo, {
     headers: {
@@ -27,14 +45,41 @@ export async function createUserSession(userId: string, redirectTo: string) {
 }
 
 export async function getUserId(request: Request) {
-  const session = await storage.getSession(request.headers.get("Cookie"));
+  const session = await storage.getSession(
+    request.headers.get("Cookie")
+  );
+
   const userId = session.get("userId");
+  const storedSessionVersion = session.get("sessionVersion");
 
   if (!userId || typeof userId !== "string") {
     return null;
   }
 
-  return userId;
+  /*
+   * Bestehende Sitzungen aus der Zeit vor sessionVersion
+   * werden wie Version 0 behandelt. Dadurch bleiben sie zunächst
+   * gültig, werden aber nach einem Passwortwechsel ungültig.
+   */
+  const sessionVersion =
+    typeof storedSessionVersion === "number" &&
+    Number.isInteger(storedSessionVersion)
+      ? storedSessionVersion
+      : 0;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      sessionVersion: true,
+    },
+  });
+
+  if (!user || user.sessionVersion !== sessionVersion) {
+    return null;
+  }
+
+  return user.id;
 }
 
 export async function requireUserId(request: Request) {
@@ -48,7 +93,9 @@ export async function requireUserId(request: Request) {
 }
 
 export async function logout(request: Request) {
-  const session = await storage.getSession(request.headers.get("Cookie"));
+  const session = await storage.getSession(
+    request.headers.get("Cookie")
+  );
 
   return redirect("/login", {
     headers: {
