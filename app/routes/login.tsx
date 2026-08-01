@@ -66,75 +66,78 @@ export default function Login() {
 
         .loginCard {
           width: 100%;
-          max-width: 470px;
-          padding: 34px;
-          border: 1px solid rgba(190, 211, 207, 0.72);
-          border-radius: 26px;
-          background: rgba(255, 255, 255, 0.96);
+          max-width: 480px;
+          padding: 40px 38px 36px;
+          border: 1px solid rgba(183, 208, 202, 0.72);
+          border-radius: 28px;
+          background: rgba(255, 255, 255, 0.97);
           box-shadow:
-            0 24px 70px rgba(25, 65, 59, 0.10),
-            0 4px 16px rgba(25, 65, 59, 0.05);
-          backdrop-filter: blur(16px);
+            0 30px 80px rgba(31, 68, 62, 0.11),
+            0 8px 24px rgba(31, 68, 62, 0.055);
+          backdrop-filter: blur(18px);
         }
 
         .loginBrand {
-          display: inline-flex;
+          width: 100%;
+          display: flex;
           align-items: center;
-          gap: 11px;
-          margin-bottom: 30px;
+          justify-content: center;
+          gap: 13px;
+          margin: 0 0 34px;
           color: #075f4c;
           text-decoration: none;
+          text-align: center;
         }
 
         .loginBrandIcon {
-          width: 46px;
-          height: 46px;
-          flex: 0 0 46px;
+          width: 54px;
+          height: 54px;
+          flex: 0 0 54px;
           display: grid;
           place-items: center;
-          border: 1px solid #cfe2dc;
-          border-radius: 15px;
-          background: linear-gradient(145deg, #f3fbf7 0%, #e5f3ed 100%);
-          box-shadow: 0 8px 22px rgba(13, 111, 87, 0.10);
+          border: 1px solid #c8e1da;
+          border-radius: 18px;
+          background: linear-gradient(145deg, #f5fcf9 0%, #e5f4ee 100%);
+          box-shadow: 0 10px 26px rgba(13, 111, 87, 0.11);
         }
 
         .loginBrandIcon svg {
           display: block;
-          width: 33px;
-          height: 33px;
+          width: 39px;
+          height: 39px;
         }
 
         .loginBrandName {
-          font-size: 24px;
-          font-weight: 700;
+          font-size: 27px;
+          font-weight: 650;
           letter-spacing: -0.035em;
         }
 
         .loginEyebrow {
-          margin: 0 0 8px;
+          margin: 0 0 9px;
           color: #0c8065;
           font-size: 12px;
-          font-weight: 650;
+          font-weight: 600;
           letter-spacing: 0.13em;
           text-transform: uppercase;
         }
 
         .loginTitle {
           margin: 0;
-          color: #163a35;
-          font-size: clamp(31px, 6vw, 39px);
-          font-weight: 700;
+          color: #173c36;
+          font-size: clamp(32px, 6vw, 39px);
+          font-weight: 650;
           line-height: 1.08;
-          letter-spacing: -0.045em;
+          letter-spacing: -0.042em;
         }
 
         .loginSubtitle {
-          max-width: 380px;
-          margin: 12px 0 27px;
-          color: #607571;
+          max-width: 390px;
+          margin: 13px 0 29px;
+          color: #667b77;
           font-size: 15px;
           font-weight: 400;
-          line-height: 1.55;
+          line-height: 1.6;
         }
 
         .loginForm {
@@ -148,20 +151,17 @@ export default function Login() {
         }
 
         .loginFieldHeader {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
+          display: block;
         }
 
         .loginFieldLabel {
-          color: #294843;
+          color: #31504b;
           font-size: 14px;
-          font-weight: 600;
+          font-weight: 500;
         }
 
         .loginForgotLink {
-          color: #0c8065;
+          color: #0b7b63;
           font-size: 13px;
           font-weight: 500;
           text-decoration: none;
@@ -170,6 +170,11 @@ export default function Login() {
         .loginForgotLink:hover {
           text-decoration: underline;
           text-underline-offset: 3px;
+        }
+
+        .loginForgotRow {
+          margin-top: -8px;
+          text-align: right;
         }
 
         .loginInput {
@@ -219,13 +224,13 @@ export default function Login() {
 
         .loginButton {
           min-height: 54px;
-          margin-top: 3px;
+          margin-top: 2px;
           border: 0;
           border-radius: 14px;
           cursor: pointer;
           color: #ffffff;
-          background: linear-gradient(135deg, #0f8b70 0%, #08715c 100%);
-          box-shadow: 0 12px 28px rgba(8, 113, 92, 0.20);
+          background: linear-gradient(135deg, #109174 0%, #08715c 100%);
+          box-shadow: 0 13px 30px rgba(8, 113, 92, 0.19);
           font: inherit;
           font-size: 15px;
           font-weight: 600;
@@ -379,13 +384,6 @@ export default function Login() {
           <label className="loginField">
             <span className="loginFieldHeader">
               <span className="loginFieldLabel">Passwort</span>
-
-              <a
-                className="loginForgotLink"
-                href="mailto:info@gastario.de?subject=Gastario%20Passwort%20zur%C3%BCcksetzen"
-              >
-                Passwort vergessen?
-              </a>
             </span>
 
             <input
@@ -396,6 +394,15 @@ export default function Login() {
               required
             />
           </label>
+
+          <div className="loginForgotRow">
+            <a
+              className="loginForgotLink"
+              href="mailto:info@gastario.de?subject=Gastario%20Passwort%20zur%C3%BCcksetzen"
+            >
+              Passwort vergessen?
+            </a>
+          </div>
 
           <button className="loginButton" type="submit">
             Einloggen
