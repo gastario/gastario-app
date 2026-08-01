@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-
+import { useMemo, useState, type ReactNode } from "react";
 import bcrypt from "bcryptjs";
 
 import {
@@ -11,6 +11,14 @@ import {
 } from "react-router";
 
 import { prisma } from "../lib/prisma.server";
+
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  getPasswordRequirements,
+  getPasswordValidationMessage,
+  isPasswordValid,
+} from "../lib/password-policy";
 
 function hashResetToken(token: string) {
   return createHash("sha256")
@@ -91,10 +99,28 @@ export async function action({
     };
   }
 
-  if (password.length < 8) {
+  if (
+    !password ||
+    !passwordConfirmation
+  ) {
     return {
       error:
-        "Das Passwort muss mindestens 8 Zeichen lang sein.",
+        "Bitte fülle beide Passwortfelder aus.",
+    };
+  }
+
+  if (password.length > PASSWORD_MAX_LENGTH) {
+    return {
+      error:
+        `Das Passwort darf höchstens ${PASSWORD_MAX_LENGTH} Zeichen lang sein.`,
+    };
+  }
+
+  if (!isPasswordValid(password)) {
+    return {
+      error:
+        getPasswordValidationMessage(password) ||
+        "Das Passwort erfüllt nicht alle Anforderungen.",
     };
   }
 
@@ -197,9 +223,7 @@ export async function action({
 }
 
 export default function ResetPasswordPage() {
-  const data = useLoaderData<
-    typeof loader
-  >();
+  const data = useLoaderData<typeof loader>();
 
   const actionData = useActionData<
     typeof action
@@ -212,14 +236,52 @@ export default function ResetPasswordPage() {
 
   const navigation = useNavigation();
 
+  const [password, setPassword] =
+    useState("");
+
+  const [
+    passwordConfirmation,
+    setPasswordConfirmation,
+  ] = useState("");
+
+  const [
+    showPassword,
+    setShowPassword,
+  ] = useState(false);
+
+  const [
+    showPasswordConfirmation,
+    setShowPasswordConfirmation,
+  ] = useState(false);
+
+  const passwordRequirements = useMemo(
+    () => getPasswordRequirements(password),
+    [password]
+  );
+
+  const passwordIsValid =
+    isPasswordValid(password);
+
+  const confirmationWasEntered =
+    passwordConfirmation.length > 0;
+
+  const passwordsMatch =
+    confirmationWasEntered &&
+    password === passwordConfirmation;
+
   const submitting =
     navigation.state === "submitting";
+
+  const canSubmit =
+    passwordIsValid &&
+    passwordsMatch &&
+    !submitting;
 
   if (actionData?.success) {
     return (
       <PasswordPageShell>
         <div
-          className="resetIcon"
+          className="resetSuccessIcon"
           aria-hidden="true"
         >
           ✓
@@ -253,7 +315,7 @@ export default function ResetPasswordPage() {
     return (
       <PasswordPageShell>
         <div
-          className="resetIcon"
+          className="resetWarningIcon"
           aria-hidden="true"
         >
           !
@@ -284,11 +346,11 @@ export default function ResetPasswordPage() {
 
   return (
     <PasswordPageShell>
-      <div
-        className="resetIcon"
-        aria-hidden="true"
-      >
-        🔑
+      <div className="resetBrand">
+        <img
+          src="/brand/gastario-logo-full.png"
+          alt="Gastario"
+        />
       </div>
 
       <p className="resetEyebrow">
@@ -300,8 +362,8 @@ export default function ResetPasswordPage() {
       </h1>
 
       <p className="resetText">
-        Wähle ein neues Passwort mit mindestens
-        acht Zeichen.
+        Erstelle ein sicheres Passwort. Alle
+        Anforderungen müssen erfüllt sein.
       </p>
 
       {actionData?.error ? (
@@ -326,33 +388,165 @@ export default function ResetPasswordPage() {
         <label className="resetLabel">
           Neues Passwort
 
-          <input
-            className="resetInput"
-            type="password"
-            name="password"
-            minLength={8}
-            autoComplete="new-password"
-            required
-          />
+          <div className="resetPasswordField">
+            <input
+              className="resetInput"
+              type={
+                showPassword
+                  ? "text"
+                  : "password"
+              }
+              name="password"
+              value={password}
+              minLength={PASSWORD_MIN_LENGTH}
+              maxLength={PASSWORD_MAX_LENGTH}
+              autoComplete="new-password"
+              onChange={(event) => {
+                setPassword(
+                  event.currentTarget.value
+                );
+              }}
+              required
+            />
+
+            <button
+              className="resetPasswordToggle"
+              type="button"
+              onClick={() => {
+                setShowPassword(
+                  (currentValue) =>
+                    !currentValue
+                );
+              }}
+              aria-label={
+                showPassword
+                  ? "Passwort verbergen"
+                  : "Passwort anzeigen"
+              }
+              aria-pressed={showPassword}
+            >
+              <EyeIcon
+                crossed={showPassword}
+              />
+            </button>
+          </div>
         </label>
+
+        <div
+          className="resetRequirements"
+          aria-live="polite"
+        >
+          <div className="resetRequirementsTitle">
+            Passwort-Anforderungen
+          </div>
+
+          <ul>
+            {passwordRequirements.map(
+              (requirement) => (
+                <li
+                  key={requirement.key}
+                  className={
+                    requirement.valid
+                      ? "isValid"
+                      : password.length > 0
+                        ? "isInvalid"
+                        : ""
+                  }
+                >
+                  <span
+                    className="resetRequirementIcon"
+                    aria-hidden="true"
+                  >
+                    {requirement.valid
+                      ? "✓"
+                      : "•"}
+                  </span>
+
+                  <span>
+                    {requirement.label}
+                  </span>
+                </li>
+              )
+            )}
+          </ul>
+        </div>
 
         <label className="resetLabel">
           Passwort wiederholen
 
-          <input
-            className="resetInput"
-            type="password"
-            name="passwordConfirmation"
-            minLength={8}
-            autoComplete="new-password"
-            required
-          />
+          <div className="resetPasswordField">
+            <input
+              className="resetInput"
+              type={
+                showPasswordConfirmation
+                  ? "text"
+                  : "password"
+              }
+              name="passwordConfirmation"
+              value={passwordConfirmation}
+              minLength={PASSWORD_MIN_LENGTH}
+              maxLength={PASSWORD_MAX_LENGTH}
+              autoComplete="new-password"
+              onChange={(event) => {
+                setPasswordConfirmation(
+                  event.currentTarget.value
+                );
+              }}
+              required
+            />
+
+            <button
+              className="resetPasswordToggle"
+              type="button"
+              onClick={() => {
+                setShowPasswordConfirmation(
+                  (currentValue) =>
+                    !currentValue
+                );
+              }}
+              aria-label={
+                showPasswordConfirmation
+                  ? "Passwortbestätigung verbergen"
+                  : "Passwortbestätigung anzeigen"
+              }
+              aria-pressed={
+                showPasswordConfirmation
+              }
+            >
+              <EyeIcon
+                crossed={
+                  showPasswordConfirmation
+                }
+              />
+            </button>
+          </div>
         </label>
+
+        {confirmationWasEntered ? (
+          <div
+            className={
+              passwordsMatch
+                ? "resetMatch resetMatchValid"
+                : "resetMatch resetMatchInvalid"
+            }
+            aria-live="polite"
+          >
+            <span aria-hidden="true">
+              {passwordsMatch ? "✓" : "!"}
+            </span>
+
+            <span>
+              {passwordsMatch
+                ? "Die Passwörter stimmen überein."
+                : "Die Passwörter stimmen nicht überein."}
+            </span>
+          </div>
+        ) : null}
 
         <button
           className="resetButton"
           type="submit"
-          disabled={submitting}
+          disabled={!canSubmit}
         >
           {submitting
             ? "Passwort wird gespeichert …"
@@ -363,10 +557,75 @@ export default function ResetPasswordPage() {
   );
 }
 
+function EyeIcon({
+  crossed,
+}: {
+  crossed: boolean;
+}) {
+  if (crossed) {
+    return (
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path
+          d="M3 3l18 18"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+
+        <path
+          d="M10.7 10.8a2 2 0 002.5 2.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+
+        <path
+          d="M9.9 5.2A10.4 10.4 0 0112 5c5.2 0 9 7 9 7a16 16 0 01-3.1 4.1M6.5 6.6C3.5 8.6 2 12 2 12s3.8 7 10 7c1.6 0 3-.3 4.2-.8"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        d="M2 12s3.8-7 10-7 10 7 10 7-3.8 7-10 7S2 12 2 12z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      <circle
+        cx="12"
+        cy="12"
+        r="3"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
 function PasswordPageShell({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <main className="resetPage">
@@ -405,7 +664,7 @@ function PasswordPageShell({
 
         .resetPage > section {
           width: 100%;
-          max-width: 480px;
+          max-width: 500px;
           padding: 38px;
           border: 1px solid rgba(183, 208, 202, 0.72);
           border-radius: 28px;
@@ -416,7 +675,21 @@ function PasswordPageShell({
           text-align: center;
         }
 
-        .resetIcon {
+        .resetBrand {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 25px;
+        }
+
+        .resetBrand img {
+          display: block;
+          width: 178px;
+          max-width: 70%;
+          height: auto;
+        }
+
+        .resetSuccessIcon,
+        .resetWarningIcon {
           width: 58px;
           height: 58px;
           display: grid;
@@ -428,6 +701,12 @@ function PasswordPageShell({
           color: #08715c;
           font-size: 27px;
           font-weight: 700;
+        }
+
+        .resetWarningIcon {
+          border-color: #f0d6ab;
+          background: #fff9ed;
+          color: #9a6414;
         }
 
         .resetEyebrow {
@@ -458,7 +737,7 @@ function PasswordPageShell({
 
         .resetForm {
           display: grid;
-          gap: 15px;
+          gap: 17px;
           text-align: left;
         }
 
@@ -470,10 +749,14 @@ function PasswordPageShell({
           font-weight: 500;
         }
 
+        .resetPasswordField {
+          position: relative;
+        }
+
         .resetInput {
           width: 100%;
           min-height: 52px;
-          padding: 0 16px;
+          padding: 0 50px 0 16px;
           border: 1px solid #cbdad7;
           border-radius: 13px;
           outline: none;
@@ -486,7 +769,126 @@ function PasswordPageShell({
         .resetInput:focus {
           border-color: #168c70;
           background: #ffffff;
-          box-shadow: 0 0 0 4px rgba(22, 140, 112, 0.11);
+          box-shadow:
+            0 0 0 4px
+            rgba(22, 140, 112, 0.11);
+        }
+
+        .resetPasswordToggle {
+          position: absolute;
+          top: 50%;
+          right: 14px;
+          width: 30px;
+          height: 30px;
+          display: grid;
+          place-items: center;
+          padding: 0;
+          border: 0;
+          border-radius: 8px;
+          transform: translateY(-50%);
+          background: transparent;
+          color: #607571;
+          cursor: pointer;
+        }
+
+        .resetPasswordToggle:hover {
+          background: #edf6f3;
+          color: #08715c;
+        }
+
+        .resetPasswordToggle:focus-visible {
+          outline: 3px solid rgba(22, 140, 112, 0.2);
+          outline-offset: 2px;
+        }
+
+        .resetPasswordToggle svg {
+          width: 20px;
+          height: 20px;
+        }
+
+        .resetRequirements {
+          padding: 15px 16px;
+          border: 1px solid #d9e7e2;
+          border-radius: 15px;
+          background: #f7fbfa;
+        }
+
+        .resetRequirementsTitle {
+          margin-bottom: 10px;
+          color: #31504b;
+          font-size: 12px;
+          font-weight: 650;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .resetRequirements ul {
+          display: grid;
+          gap: 8px;
+          margin: 0;
+          padding: 0;
+          list-style: none;
+        }
+
+        .resetRequirements li {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          color: #748783;
+          font-size: 13px;
+          font-weight: 400;
+          line-height: 1.4;
+          transition: color 150ms ease;
+        }
+
+        .resetRequirements li.isValid {
+          color: #08715c;
+        }
+
+        .resetRequirements li.isInvalid {
+          color: #8a5b56;
+        }
+
+        .resetRequirementIcon {
+          width: 18px;
+          height: 18px;
+          display: grid;
+          place-items: center;
+          flex: 0 0 18px;
+          border-radius: 50%;
+          background: #e5eeeb;
+          color: #748783;
+          font-size: 11px;
+          font-weight: 700;
+        }
+
+        .resetRequirements li.isValid
+        .resetRequirementIcon {
+          background: #dff3eb;
+          color: #08715c;
+        }
+
+        .resetRequirements li.isInvalid
+        .resetRequirementIcon {
+          background: #f7e9e7;
+          color: #a24d43;
+        }
+
+        .resetMatch {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          margin-top: -3px;
+          font-size: 13px;
+          font-weight: 500;
+        }
+
+        .resetMatchValid {
+          color: #08715c;
+        }
+
+        .resetMatchInvalid {
+          color: #a92d2d;
         }
 
         .resetButton {
@@ -503,7 +905,9 @@ function PasswordPageShell({
             #109174 0%,
             #08715c 100%
           );
-          box-shadow: 0 13px 30px rgba(8, 113, 92, 0.19);
+          box-shadow:
+            0 13px 30px
+            rgba(8, 113, 92, 0.19);
           font: inherit;
           font-size: 15px;
           font-weight: 600;
@@ -512,8 +916,9 @@ function PasswordPageShell({
         }
 
         .resetButton:disabled {
-          cursor: wait;
-          opacity: 0.7;
+          cursor: not-allowed;
+          opacity: 0.48;
+          box-shadow: none;
         }
 
         .resetError {
@@ -541,6 +946,10 @@ function PasswordPageShell({
 
           .resetTitle {
             font-size: 29px;
+          }
+
+          .resetBrand img {
+            width: 160px;
           }
         }
       `}</style>

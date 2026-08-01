@@ -72,6 +72,13 @@ export async function sendPasswordResetEmail(
   const safeName = escapeHtml(recipientName);
   const safeResetUrl = escapeHtml(input.resetUrl);
 
+  const logoUrl = new URL(
+    "/brand/gastario-logo-full.png",
+    input.resetUrl
+  ).toString();
+
+  const safeLogoUrl = escapeHtml(logoUrl);
+
   const textPart = [
     `Hallo ${recipientName},`,
     "",
@@ -89,50 +96,92 @@ export async function sendPasswordResetEmail(
   const htmlPart = `
     <!doctype html>
     <html lang="de">
-      <body style="margin:0;padding:0;background:#f3f8f6;font-family:Arial,sans-serif;color:#173c36;">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f8f6;padding:32px 14px;">
+      <body style="margin:0;padding:0;background:#eff6f3;font-family:Arial,Helvetica,sans-serif;color:#173c36;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#eff6f3;padding:32px 12px;">
           <tr>
             <td align="center">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #d8e7e3;border-radius:20px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:580px;background:#ffffff;border:1px solid #d7e7e2;border-radius:24px;overflow:hidden;">
                 <tr>
-                  <td style="padding:38px;">
-                    <div style="font-size:24px;font-weight:700;color:#08715c;margin-bottom:30px;">
-                      Gastario
+                  <td style="height:8px;background:#0c8065;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+
+                <tr>
+                  <td style="padding:38px 38px 34px;">
+                    <div style="text-align:center;margin-bottom:29px;">
+                      <img
+                        src="${safeLogoUrl}"
+                        alt="Gastario"
+                        width="184"
+                        style="display:block;width:184px;max-width:70%;height:auto;margin:0 auto;border:0;outline:none;text-decoration:none;"
+                      />
                     </div>
 
-                    <h1 style="margin:0 0 16px;font-size:29px;line-height:1.2;color:#173c36;">
+                    <div style="margin:0 0 10px;text-align:center;color:#0c8065;font-size:12px;line-height:18px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">
+                      Gastario Zugang
+                    </div>
+
+                    <h1 style="margin:0 0 18px;text-align:center;color:#173c36;font-size:30px;line-height:38px;font-weight:700;">
                       Passwort neu setzen
                     </h1>
 
-                    <p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:#607571;">
-                      Hallo ${safeName}, für dein Gastario-Konto wurde das Zurücksetzen des Passworts angefordert.
+                    <p style="margin:0 0 17px;color:#607571;font-size:15px;line-height:25px;">
+                      Hallo ${safeName},
                     </p>
 
-                    <p style="margin:0 0 25px;font-size:15px;line-height:1.65;color:#607571;">
-                      Der folgende Link ist einmalig verwendbar und läuft nach
-                      ${input.expiresInMinutes} Minuten ab.
+                    <p style="margin:0 0 20px;color:#607571;font-size:15px;line-height:25px;">
+                      für dein Gastario-Konto wurde das Zurücksetzen des Passworts angefordert. Über den folgenden Button kannst du ein neues Passwort festlegen.
                     </p>
 
-                    <a
-                      href="${safeResetUrl}"
-                      style="display:block;padding:16px 20px;border-radius:13px;background:#08715c;color:#ffffff;text-decoration:none;text-align:center;font-size:15px;font-weight:600;"
-                    >
-                      Neues Passwort festlegen
-                    </a>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 25px;">
+                      <tr>
+                        <td align="center">
+                          <a
+                            href="${safeResetUrl}"
+                            style="display:inline-block;min-width:230px;padding:16px 24px;border-radius:13px;background:#08715c;color:#ffffff;text-decoration:none;text-align:center;font-size:15px;line-height:20px;font-weight:700;"
+                          >
+                            Neues Passwort festlegen
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
 
-                    <p style="margin:26px 0 8px;font-size:12px;line-height:1.55;color:#81928f;">
-                      Funktioniert der Button nicht, kopiere diesen Link:
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 24px;background:#f5faf8;border:1px solid #dceae6;border-radius:15px;">
+                      <tr>
+                        <td style="padding:16px 18px;">
+                          <div style="margin:0 0 5px;color:#31504b;font-size:13px;line-height:20px;font-weight:700;">
+                            Sicherer Einmal-Link
+                          </div>
+
+                          <div style="color:#667b77;font-size:13px;line-height:21px;">
+                            Dieser Link ist nur einmal verwendbar und läuft nach
+                            <strong style="color:#31504b;">${input.expiresInMinutes} Minuten</strong>
+                            automatisch ab.
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <div style="height:1px;margin:0 0 23px;background:#e5efec;font-size:0;line-height:0;">&nbsp;</div>
+
+                    <p style="margin:0 0 8px;color:#81928f;font-size:12px;line-height:19px;">
+                      Funktioniert der Button nicht, kopiere diesen Link in deinen Browser:
                     </p>
 
-                    <p style="margin:0;font-size:12px;line-height:1.55;color:#08715c;word-break:break-all;">
-                      ${safeResetUrl}
+                    <p style="margin:0 0 24px;color:#08715c;font-size:12px;line-height:19px;word-break:break-all;">
+                      <a href="${safeResetUrl}" style="color:#08715c;text-decoration:none;">
+                        ${safeResetUrl}
+                      </a>
                     </p>
 
-                    <div style="height:1px;background:#e5efec;margin:30px 0;"></div>
-
-                    <p style="margin:0;font-size:13px;line-height:1.6;color:#81928f;">
-                      Falls du diese Anfrage nicht gestellt hast, kannst du diese E-Mail ignorieren.
+                    <p style="margin:0;color:#81928f;font-size:13px;line-height:21px;">
+                      Falls du diese Anfrage nicht gestellt hast, kannst du diese E-Mail einfach ignorieren. Dein bisheriges Passwort bleibt unverändert.
                     </p>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:18px 28px;background:#f7fbfa;text-align:center;color:#8a9b97;font-size:12px;line-height:19px;">
+                    Diese Nachricht wurde automatisch von Gastario versendet.
                   </td>
                 </tr>
               </table>
