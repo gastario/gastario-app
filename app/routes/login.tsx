@@ -396,12 +396,12 @@ export default function Login() {
           </label>
 
           <div className="loginForgotRow">
-            <a
+            <Link
               className="loginForgotLink"
-              href="mailto:info@gastario.de?subject=Gastario%20Passwort%20zur%C3%BCcksetzen"
+              to="/passwort-vergessen"
             >
               Passwort vergessen?
-            </a>
+            </Link>
           </div>
 
           <button className="loginButton" type="submit">
