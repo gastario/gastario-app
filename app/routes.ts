@@ -7,6 +7,7 @@ export default [
   route("login", "routes/login.tsx"),
   route("passwort-vergessen", "routes/passwort-vergessen.tsx"),
   route("passwort-zuruecksetzen", "routes/passwort-zuruecksetzen.tsx"),
+  route("design-lab", "routes/design-lab.tsx"),
   route("logout", "routes/logout.tsx"),
 
   route("auftraege", "routes/auftraege.tsx"),
