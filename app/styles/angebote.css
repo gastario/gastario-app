@@ -409,6 +409,13 @@
   min-width: 0;
   display: grid;
   gap: 16px;
+}
+
+.quoteBuilderSidebar {
+  position: static;
+}
+
+.quoteDetailSidebar {
   position: sticky;
   top: 20px;
 }
