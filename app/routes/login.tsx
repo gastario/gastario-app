@@ -1,4 +1,4 @@
-﻿import bcrypt from "bcryptjs";
+import bcrypt from "bcryptjs";
 import { Form, Link, redirect, useActionData } from "react-router";
 import { prisma } from "../lib/prisma.server";
 import { createUserSession } from "../lib/session.server";
@@ -40,140 +40,375 @@ export default function Login() {
   return (
     <main className="loginPage">
       <style>{`
+        .loginPage,
+        .loginPage * {
+          box-sizing: border-box;
+        }
+
         .loginPage {
           min-height: 100vh;
           display: grid;
           place-items: center;
-          background: linear-gradient(135deg, #eef8f7 0%, #f8fafc 45%, #ffffff 100%);
-          padding: 32px;
-          font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-          color: #0f172a;
+          padding: 32px 20px;
+          color: #173532;
+          font-family:
+            Inter,
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
+          background:
+            radial-gradient(circle at 12% 10%, rgba(205, 236, 229, 0.62), transparent 34%),
+            radial-gradient(circle at 88% 86%, rgba(231, 242, 239, 0.78), transparent 32%),
+            linear-gradient(145deg, #f5fbf9 0%, #f8fafb 48%, #ffffff 100%);
         }
 
-        .card {
+        .loginCard {
           width: 100%;
-          max-width: 460px;
-          background: white;
-          border: 1px solid #e2e8f0;
-          border-radius: 22px;
-          padding: 28px;
-          box-shadow: 0 24px 70px rgba(15, 23, 42, 0.11);
+          max-width: 470px;
+          padding: 34px;
+          border: 1px solid rgba(190, 211, 207, 0.72);
+          border-radius: 26px;
+          background: rgba(255, 255, 255, 0.96);
+          box-shadow:
+            0 24px 70px rgba(25, 65, 59, 0.10),
+            0 4px 16px rgba(25, 65, 59, 0.05);
+          backdrop-filter: blur(16px);
         }
 
-        .brand {
-          color: #0f766e;
-          font-size: 22px;
-          font-weight: 900;
-          margin-bottom: 10px;
+        .loginBrand {
+          display: inline-flex;
+          align-items: center;
+          gap: 11px;
+          margin-bottom: 30px;
+          color: #075f4c;
+          text-decoration: none;
         }
 
-        h1 {
+        .loginBrandIcon {
+          width: 46px;
+          height: 46px;
+          flex: 0 0 46px;
+          display: grid;
+          place-items: center;
+          border: 1px solid #cfe2dc;
+          border-radius: 15px;
+          background: linear-gradient(145deg, #f3fbf7 0%, #e5f3ed 100%);
+          box-shadow: 0 8px 22px rgba(13, 111, 87, 0.10);
+        }
+
+        .loginBrandIcon svg {
+          display: block;
+          width: 33px;
+          height: 33px;
+        }
+
+        .loginBrandName {
+          font-size: 24px;
+          font-weight: 700;
+          letter-spacing: -0.035em;
+        }
+
+        .loginEyebrow {
           margin: 0 0 8px;
-          font-size: 38px;
-          letter-spacing: -0.04em;
+          color: #0c8065;
+          font-size: 12px;
+          font-weight: 650;
+          letter-spacing: 0.13em;
+          text-transform: uppercase;
         }
 
-        .subtitle {
-          margin: 0 0 24px;
-          color: #334155;
-          font-weight: 650;
+        .loginTitle {
+          margin: 0;
+          color: #163a35;
+          font-size: clamp(31px, 6vw, 39px);
+          font-weight: 700;
+          line-height: 1.08;
+          letter-spacing: -0.045em;
+        }
+
+        .loginSubtitle {
+          max-width: 380px;
+          margin: 12px 0 27px;
+          color: #607571;
+          font-size: 15px;
+          font-weight: 400;
+          line-height: 1.55;
+        }
+
+        .loginForm {
+          display: grid;
+          gap: 18px;
+        }
+
+        .loginField {
+          display: grid;
+          gap: 8px;
+        }
+
+        .loginFieldHeader {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+        }
+
+        .loginFieldLabel {
+          color: #294843;
+          font-size: 14px;
+          font-weight: 600;
+        }
+
+        .loginForgotLink {
+          color: #0c8065;
+          font-size: 13px;
+          font-weight: 500;
+          text-decoration: none;
+        }
+
+        .loginForgotLink:hover {
+          text-decoration: underline;
+          text-underline-offset: 3px;
+        }
+
+        .loginInput {
+          width: 100%;
+          min-height: 52px;
+          padding: 0 16px;
+          border: 1px solid #cbdad7;
+          border-radius: 13px;
+          outline: none;
+          background: #fbfdfc;
+          color: #173532;
+          font: inherit;
+          font-size: 15px;
+          font-weight: 400;
+          transition:
+            border-color 160ms ease,
+            box-shadow 160ms ease,
+            background 160ms ease;
+        }
+
+        .loginInput::placeholder {
+          color: #94a7a3;
+          font-weight: 400;
+        }
+
+        .loginInput:hover {
+          border-color: #aac6bf;
+          background: #ffffff;
+        }
+
+        .loginInput:focus {
+          border-color: #168c70;
+          background: #ffffff;
+          box-shadow: 0 0 0 4px rgba(22, 140, 112, 0.11);
+        }
+
+        .loginError {
+          padding: 12px 14px;
+          border: 1px solid #fecaca;
+          border-radius: 12px;
+          background: #fff7f7;
+          color: #a92d2d;
+          font-size: 14px;
+          font-weight: 500;
           line-height: 1.45;
         }
 
-        form {
-          display: grid;
-          gap: 16px;
-        }
-
-        label {
-          display: grid;
-          gap: 7px;
-          font-size: 13px;
-          font-weight: 850;
-          color: #0f172a;
-        }
-
-        input {
-          width: 100%;
-          box-sizing: border-box;
-          border: 1px solid #cbd5e1;
-          background: #f8fafc;
-          border-radius: 12px;
-          padding: 13px 14px;
-          font-size: 15px;
-          outline: none;
-        }
-
-        input:focus {
-          border-color: #0f766e;
-          box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
-          background: white;
-        }
-
-        .error {
-          background: #fef2f2;
-          border: 1px solid #fecaca;
-          color: #991b1b;
+        .loginButton {
+          min-height: 54px;
+          margin-top: 3px;
+          border: 0;
           border-radius: 14px;
-          padding: 13px 15px;
-          font-weight: 800;
-        }
-
-        button {
-          border: none;
-          border-radius: 999px;
-          background: #0f766e;
-          color: white;
-          padding: 15px 18px;
-          font-size: 15px;
-          font-weight: 900;
           cursor: pointer;
-          box-shadow: 0 14px 30px rgba(15, 118, 110, 0.25);
+          color: #ffffff;
+          background: linear-gradient(135deg, #0f8b70 0%, #08715c 100%);
+          box-shadow: 0 12px 28px rgba(8, 113, 92, 0.20);
+          font: inherit;
+          font-size: 15px;
+          font-weight: 600;
+          transition:
+            transform 160ms ease,
+            box-shadow 160ms ease,
+            filter 160ms ease;
         }
 
-        .register {
-          margin-top: 4px;
+        .loginButton:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 16px 32px rgba(8, 113, 92, 0.24);
+          filter: brightness(1.02);
+        }
+
+        .loginButton:active {
+          transform: translateY(0);
+        }
+
+        .loginDivider {
+          height: 1px;
+          margin: 7px 0 0;
+          background: #e6eeec;
+        }
+
+        .loginRegister {
+          margin: 0;
+          color: #71827f;
           font-size: 14px;
-          color: #334155;
-          font-weight: 650;
+          font-weight: 400;
+          text-align: center;
         }
 
-        .register a {
-          color: #0f766e;
-          font-weight: 900;
+        .loginRegister a {
+          color: #08715c;
+          font-weight: 600;
+          text-decoration: none;
+        }
+
+        .loginRegister a:hover {
+          text-decoration: underline;
+          text-underline-offset: 3px;
+        }
+
+        @media (max-width: 600px) {
+          .loginPage {
+            align-items: start;
+            padding: 18px 14px;
+          }
+
+          .loginCard {
+            margin-top: 20px;
+            padding: 26px 20px;
+            border-radius: 21px;
+          }
+
+          .loginBrand {
+            margin-bottom: 25px;
+          }
+
+          .loginBrandIcon {
+            width: 42px;
+            height: 42px;
+            flex-basis: 42px;
+          }
+
+          .loginBrandName {
+            font-size: 22px;
+          }
+
+          .loginSubtitle {
+            margin-bottom: 24px;
+          }
         }
       `}</style>
 
-      <section className="card">
-        <div className="brand">Gastario</div>
-        <h1>Einloggen</h1>
-        <p className="subtitle">
-          Melde dich an, um AuftrÃ¤ge, Marken, E-Mails und Module zu verwalten.
+      <section className="loginCard">
+        <div className="loginBrand" aria-label="Gastario">
+          <span className="loginBrandIcon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <path
+                d="M39 10c2.5-5.5 7.2-7.9 13-8-1.1 6.4-5.1 10.2-12.2 11.2"
+                stroke="#579B39"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M13 26.5h38"
+                stroke="#08715C"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+              <path
+                d="M17 27v5c0 13 6.5 21 15 21s15-8 15-21v-5"
+                stroke="#08715C"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M24 35h16M23 42h18"
+                stroke="#E6A936"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M10 55h44"
+                stroke="#08715C"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+              <path
+                d="M32 18v8"
+                stroke="#579B39"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+            </svg>
+          </span>
+
+          <span className="loginBrandName">Gastario</span>
+        </div>
+
+        <p className="loginEyebrow">Willkommen zurück</p>
+        <h1 className="loginTitle">Einloggen</h1>
+
+        <p className="loginSubtitle">
+          Melde dich an, um Aufträge, Marken, E-Mails und Module zu verwalten.
         </p>
 
-        <Form method="post">
-          {actionData?.error ? <div className="error">{actionData.error}</div> : null}
+        <Form method="post" className="loginForm">
+          {actionData?.error ? (
+            <div className="loginError" role="alert">
+              {actionData.error}
+            </div>
+          ) : null}
 
-          <label>
-            E-Mail
-            <input name="email" type="email" placeholder="name@firma.de" required />
+          <label className="loginField">
+            <span className="loginFieldLabel">E-Mail</span>
+            <input
+              className="loginInput"
+              name="email"
+              type="email"
+              placeholder="name@firma.de"
+              autoComplete="email"
+              required
+            />
           </label>
 
-          <label>
-            Passwort
-            <input name="password" type="password" required />
+          <label className="loginField">
+            <span className="loginFieldHeader">
+              <span className="loginFieldLabel">Passwort</span>
+
+              <a
+                className="loginForgotLink"
+                href="mailto:info@gastario.de?subject=Gastario%20Passwort%20zur%C3%BCcksetzen"
+              >
+                Passwort vergessen?
+              </a>
+            </span>
+
+            <input
+              className="loginInput"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+            />
           </label>
 
-          <button type="submit">Einloggen</button>
+          <button className="loginButton" type="submit">
+            Einloggen
+          </button>
 
-          <div className="register">
-            Noch kein Account? <Link to="/registrieren">Account erstellen</Link>
-          </div>
+          <div className="loginDivider" />
+
+          <p className="loginRegister">
+            Noch kein Account?{" "}
+            <Link to="/registrieren">Account erstellen</Link>
+          </p>
         </Form>
       </section>
     </main>
   );
 }
-
-
-
