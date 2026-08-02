@@ -1,5 +1,13 @@
-import { Link, useLoaderData } from "react-router";
+import {
+  Form,
+  Link,
+  redirect,
+  useActionData,
+  useLoaderData,
+} from "react-router";
+
 import AppLayout from "../components/AppLayout";
+
 import {
   MetricCard,
   MetricGrid,
@@ -8,149 +16,576 @@ import {
   PageSection,
   PageShell,
 } from "../components/ui/PageShell";
+
 import "../styles/gastario-page-shell.css";
 import "../styles/gastario-operations.css";
 
+const OPERATIONAL_STATUSES = new Set([
+  "CONFIRMED",
+  "IN_PRODUCTION",
+  "PACKING_OPEN",
+  "DELIVERED",
+]);
+
 function todayInput() {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+
+  const localDate = new Date(
+    now.getTime() -
+      now.getTimezoneOffset() * 60_000
+  );
+
+  return localDate
+    .toISOString()
+    .slice(0, 10);
 }
 
-function normalizeDate(value: string | Date | null | undefined) {
-  if (!value) return "";
+function normalizeDate(
+  value: string | Date | null | undefined
+) {
+  if (!value) {
+    return "";
+  }
+
   try {
-    return new Date(value).toISOString().slice(0, 10);
+    return new Date(value)
+      .toISOString()
+      .slice(0, 10);
   } catch {
     return "";
   }
 }
 
-function formatDate(value: string | Date | null | undefined) {
-  if (!value) return "-";
+function formatDate(
+  value: string | Date | null | undefined
+) {
+  if (!value) {
+    return "-";
+  }
+
   try {
-    return new Date(value).toLocaleDateString("de-DE");
+    return new Date(value).toLocaleDateString(
+      "de-DE"
+    );
   } catch {
     return "-";
   }
 }
 
-function emptyData(error: string | null = null) {
+function selectedPlanningDate(
+  requestedDate: string | null,
+  availableDates: string[]
+) {
+  if (requestedDate) {
+    return requestedDate;
+  }
+
+  const today = todayInput();
+
+  if (availableDates.includes(today)) {
+    return today;
+  }
+
+  return (
+    availableDates.find(
+      (date) => date >= today
+    ) ||
+    availableDates[0] ||
+    today
+  );
+}
+
+function emptyData(
+  error: string | null = null
+) {
   return {
     tenantName: "Gastario",
     selectedDate: todayInput(),
-    orders: [],
-    productionItems: [],
+    availableDates: [] as string[],
+    orders: [] as any[],
+    productionItems: [] as any[],
     stats: {
       orders: 0,
       positions: 0,
       portions: 0,
+      confirmed: 0,
+      inProduction: 0,
+      packingOpen: 0,
     },
     error,
   };
 }
 
 function orderSummary(order: any) {
-  if (!order.items || order.items.length === 0) return "Keine Positionen";
+  if (
+    !order.items ||
+    order.items.length === 0
+  ) {
+    return "Keine Positionen";
+  }
 
   return order.items
-    .map((item: any) => `${item.quantity || 0} x ${item.name || "Position"}`)
+    .map(
+      (item: any) =>
+        `${item.quantity || 0} × ${
+          item.name || "Position"
+        }`
+    )
     .join(", ");
 }
 
-export function meta() {
-  return [{ title: "Produktion · Gastario" }];
+function orderStatusLabel(
+  order: any
+) {
+  const status = String(
+    order.status || ""
+  ).toUpperCase();
+
+  if (
+    order.packingCompletedAt ||
+    status === "DELIVERED"
+  ) {
+    return "Lieferbereit";
+  }
+
+  if (status === "PACKING_OPEN") {
+    return "An Packstation";
+  }
+
+  if (status === "IN_PRODUCTION") {
+    return "In Produktion";
+  }
+
+  return "Bestätigt";
 }
 
-export async function loader({ request }: { request: Request }) {
-  try {
-    const { prisma } = await import("../lib/prisma.server");
-    const { getTenantAccess } = await import("../lib/features.server");
+function groupedStatus(
+  statuses: Set<string>
+) {
+  if (statuses.has("CONFIRMED")) {
+    return {
+      label: "Offen",
+      className: "is-open",
+    };
+  }
 
-    const access = await getTenantAccess(request);
+  if (statuses.has("IN_PRODUCTION")) {
+    return {
+      label: "In Produktion",
+      className: "is-production",
+    };
+  }
+
+  if (statuses.has("PACKING_OPEN")) {
+    return {
+      label: "An Packstation",
+      className: "is-packing",
+    };
+  }
+
+  return {
+    label: "Abgeschlossen",
+    className: "is-ready",
+  };
+}
+
+export function meta() {
+  return [
+    {
+      title: "Produktion · Gastario",
+    },
+  ];
+}
+
+export async function loader({
+  request,
+}: {
+  request: Request;
+}) {
+  try {
+    const { prisma } =
+      await import(
+        "../lib/prisma.server"
+      );
+
+    const { getTenantAccess } =
+      await import(
+        "../lib/features.server"
+      );
+
+    const access =
+      await getTenantAccess(request);
 
     if (!access?.tenantId) {
-      return emptyData("Kein Mandant gefunden.");
+      return emptyData(
+        "Kein Mandant gefunden."
+      );
     }
 
     const url = new URL(request.url);
-    const selectedDate = url.searchParams.get("date") || todayInput();
 
-    const orders = await prisma.order.findMany({
-      where: {
-        tenantId: access.tenantId,
-      },
-      include: {
-        items: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 300,
-    });
+    const orders =
+      await prisma.order.findMany({
+        where: {
+          tenantId: access.tenantId,
+        },
+        include: {
+          items: true,
+        },
+        orderBy: [
+          {
+            deliveryDate: "asc",
+          },
+          {
+            createdAt: "asc",
+          },
+        ],
+        take: 500,
+      });
 
-    const relevantOrders = orders.filter((order: any) => {
-      const status = String(order.status || "").toUpperCase();
-      const date = normalizeDate(order.deliveryDate);
-
-      return (
-        date === selectedDate &&
-        (
-          status === "CONFIRMED" ||
-          status === "PAID" ||
-          status === "INVOICE_APPROVED" ||
-          status === "MANUAL"
+    const operationalOrders =
+      orders.filter((order: any) =>
+        OPERATIONAL_STATUSES.has(
+          String(
+            order.status || ""
+          ).toUpperCase()
         )
       );
-    });
 
-    const grouped = new Map<string, any>();
+    const availableDates =
+      Array.from(
+        new Set(
+          operationalOrders
+            .map((order: any) =>
+              normalizeDate(
+                order.deliveryDate
+              )
+            )
+            .filter(Boolean)
+        )
+      ).sort();
 
-    for (const order of relevantOrders as any[]) {
-      for (const item of order.items || []) {
-        const name = String(item.name || "Position");
-        const unit = String(item.unit || "Stueck");
-        const key = `${name}__${unit}`;
+    const selectedDate =
+      selectedPlanningDate(
+        url.searchParams.get("date"),
+        availableDates
+      );
+
+    const relevantOrders =
+      operationalOrders.filter(
+        (order: any) =>
+          normalizeDate(
+            order.deliveryDate
+          ) === selectedDate
+      );
+
+    const grouped =
+      new Map<string, any>();
+
+    for (
+      const order of relevantOrders as any[]
+    ) {
+      const orderStatus = String(
+        order.status || ""
+      ).toUpperCase();
+
+      for (
+        const item of order.items || []
+      ) {
+        const name = String(
+          item.name || "Position"
+        );
+
+        const unit = String(
+          item.unit || "Stück"
+        );
+
+        const key =
+          `${name}__${unit}`;
 
         if (!grouped.has(key)) {
           grouped.set(key, {
             name,
             unit,
             quantity: 0,
-            orders: [],
+            orders: [] as string[],
+            statuses:
+              new Set<string>(),
           });
         }
 
         const row = grouped.get(key);
-        row.quantity += Number(item.quantity || 0);
-        row.orders.push(order.orderNumber || order.id);
+
+        row.quantity += Number(
+          item.quantity || 0
+        );
+
+        row.orders.push(
+          order.orderNumber ||
+            order.id
+        );
+
+        row.statuses.add(
+          orderStatus
+        );
       }
     }
 
-    const productionItems = Array.from(grouped.values()).sort((a, b) =>
-      a.name.localeCompare(b.name, "de")
-    );
+    const productionItems =
+      Array.from(
+        grouped.values()
+      )
+        .map((item: any) => {
+          const status =
+            groupedStatus(
+              item.statuses
+            );
 
-    const portions = productionItems.reduce((sum: number, item: any) => sum + Number(item.quantity || 0), 0);
+          return {
+            name: item.name,
+            unit: item.unit,
+            quantity: item.quantity,
+            orders: Array.from(
+              new Set(item.orders)
+            ),
+            statusLabel:
+              status.label,
+            statusClassName:
+              status.className,
+          };
+        })
+        .sort((left, right) =>
+          left.name.localeCompare(
+            right.name,
+            "de"
+          )
+        );
+
+    const portions =
+      productionItems.reduce(
+        (
+          sum: number,
+          item: any
+        ) =>
+          sum +
+          Number(
+            item.quantity || 0
+          ),
+        0
+      );
 
     return {
-      tenantName: access.tenant?.name || "Gastario",
+      tenantName:
+        access.tenant?.name ||
+        "Gastario",
       selectedDate,
+      availableDates,
       orders: relevantOrders,
       productionItems,
       stats: {
-        orders: relevantOrders.length,
-        positions: productionItems.length,
+        orders:
+          relevantOrders.length,
+        positions:
+          productionItems.length,
         portions,
+        confirmed:
+          relevantOrders.filter(
+            (order: any) =>
+              order.status ===
+              "CONFIRMED"
+          ).length,
+        inProduction:
+          relevantOrders.filter(
+            (order: any) =>
+              order.status ===
+              "IN_PRODUCTION"
+          ).length,
+        packingOpen:
+          relevantOrders.filter(
+            (order: any) =>
+              order.status ===
+                "PACKING_OPEN" ||
+              Boolean(
+                order.packingCompletedAt
+              )
+          ).length,
       },
       error: null,
     };
   } catch (error: any) {
-    console.error("Produktion loader error:", error);
-    return emptyData(error?.message || "Produktion konnte nicht geladen werden.");
+    console.error(
+      "Produktion loader error:",
+      error
+    );
+
+    return emptyData(
+      error?.message ||
+        "Produktion konnte nicht geladen werden."
+    );
   }
 }
 
+export async function action({
+  request,
+}: {
+  request: Request;
+}) {
+  const { prisma } =
+    await import(
+      "../lib/prisma.server"
+    );
+
+  const { getTenantAccess } =
+    await import(
+      "../lib/features.server"
+    );
+
+  const access =
+    await getTenantAccess(request);
+
+  if (!access?.tenantId) {
+    return {
+      error:
+        "Kein Mandant gefunden.",
+    };
+  }
+
+  const formData =
+    await request.formData();
+
+  const intent = String(
+    formData.get("intent") || ""
+  );
+
+  const orderId = String(
+    formData.get("orderId") || ""
+  );
+
+  const requestedDate = String(
+    formData.get("date") || ""
+  );
+
+  if (!orderId) {
+    return {
+      error:
+        "Der Auftrag wurde nicht erkannt.",
+    };
+  }
+
+  const order =
+    await prisma.order.findFirst({
+      where: {
+        id: orderId,
+        tenantId: access.tenantId,
+      },
+    });
+
+  if (!order) {
+    return {
+      error:
+        "Der Auftrag wurde nicht gefunden.",
+    };
+  }
+
+  const returnDate =
+    requestedDate ||
+    normalizeDate(
+      order.deliveryDate
+    ) ||
+    todayInput();
+
+  const now = new Date();
+
+  if (
+    intent ===
+    "start-production"
+  ) {
+    if (
+      order.status !==
+      "CONFIRMED"
+    ) {
+      return redirect(
+        `/produktion?date=${encodeURIComponent(
+          returnDate
+        )}`
+      );
+    }
+
+    await prisma.order.update({
+      where: {
+        id: order.id,
+      },
+      data: {
+        status:
+          "IN_PRODUCTION",
+        productionStartedAt:
+          order.productionStartedAt ||
+          now,
+      },
+    });
+
+    return redirect(
+      `/produktion?date=${encodeURIComponent(
+        returnDate
+      )}`
+    );
+  }
+
+  if (
+    intent ===
+    "complete-production"
+  ) {
+    if (
+      order.status !==
+      "IN_PRODUCTION"
+    ) {
+      return {
+        error:
+          "Nur Aufträge in Produktion können an die Packstation übergeben werden.",
+      };
+    }
+
+    await prisma.order.update({
+      where: {
+        id: order.id,
+      },
+      data: {
+        status:
+          "PACKING_OPEN",
+        productionStartedAt:
+          order.productionStartedAt ||
+          now,
+        productionCompletedAt:
+          now,
+        packingStartedAt:
+          order.packingStartedAt ||
+          now,
+        packingCompletedAt:
+          null,
+      },
+    });
+
+    return redirect(
+      `/produktion?date=${encodeURIComponent(
+        returnDate
+      )}`
+    );
+  }
+
+  return {
+    error:
+      "Die Produktionsaktion ist unbekannt.",
+  };
+}
+
 export default function ProductionPage() {
-  const data = useLoaderData<typeof loader>();
+  const data =
+    useLoaderData<typeof loader>();
+
+  const actionData =
+    useActionData<
+      typeof action
+    >() as any;
 
   return (
     <AppLayout>
@@ -160,8 +595,11 @@ export default function ProductionPage() {
           title="Produktion"
           subtitle={
             <>
-              {data.tenantName} · Produktionsmengen, Auftragsbasis und
-              Planungstag in einem Arbeitsbereich.
+              {data.tenantName}
+              {" · "}
+              Bestätigte Aufträge werden
+              automatisch nach Planungstag
+              zusammengefasst.
             </>
           }
           actions={
@@ -169,7 +607,9 @@ export default function ProductionPage() {
               <button
                 className="g-ops-button g-ops-button--secondary"
                 type="button"
-                onClick={() => window.print()}
+                onClick={() =>
+                  window.print()
+                }
               >
                 Drucken
               </button>
@@ -186,8 +626,26 @@ export default function ProductionPage() {
 
         {data.error ? (
           <Notice type="danger">
-            <strong>Die Produktionsdaten konnten nicht vollständig geladen werden.</strong>
+            <strong>
+              Die Produktionsdaten
+              konnten nicht vollständig
+              geladen werden.
+            </strong>
+
             <span>{data.error}</span>
+          </Notice>
+        ) : null}
+
+        {actionData?.error ? (
+          <Notice type="danger">
+            <strong>
+              Aktion konnte nicht
+              ausgeführt werden.
+            </strong>
+
+            <span>
+              {actionData.error}
+            </span>
           </Notice>
         ) : null}
 
@@ -195,29 +653,36 @@ export default function ProductionPage() {
           <MetricCard
             label="Aufträge"
             value={data.stats.orders}
-            description="für die Produktion"
-            badge="Plan"
+            description="für diesen Planungstag"
+            badge="Automatisch"
           />
 
           <MetricCard
-            label="Positionen"
-            value={data.stats.positions}
-            description="nach Produkt gruppiert"
-            badge="Liste"
+            label="Noch offen"
+            value={data.stats.confirmed}
+            description="Produktion noch nicht gestartet"
+            badge="Start"
+            attention={
+              data.stats.confirmed > 0
+            }
           />
 
           <MetricCard
-            label="Gesamtmenge"
-            value={data.stats.portions}
-            description="über alle Positionen"
-            badge="Menge"
+            label="In Produktion"
+            value={
+              data.stats.inProduction
+            }
+            description="aktuell in Bearbeitung"
+            badge="Küche"
           />
 
           <MetricCard
-            label="Planungstag"
-            value={formatDate(data.selectedDate)}
-            description="aktuell ausgewählter Tag"
-            badge="Datum"
+            label="An Packstation"
+            value={
+              data.stats.packingOpen
+            }
+            description="Produktion abgeschlossen"
+            badge="Weiter"
           />
         </MetricGrid>
 
@@ -228,14 +693,45 @@ export default function ProductionPage() {
             title="Zu produzieren"
             description="Gleiche Produkte werden automatisch zusammengefasst. Die Auftragsnummern zeigen, woher die Mengen stammen."
             actions={
-              <form className="operationsDateFilter" method="get">
+              <form
+                className="operationsDateFilter"
+                method="get"
+              >
                 <label>
-                  <span>Planungstag</span>
-                  <input
-                    type="date"
+                  <span>
+                    Planungstag
+                  </span>
+
+                  <select
                     name="date"
-                    defaultValue={data.selectedDate}
-                  />
+                    defaultValue={
+                      data.selectedDate
+                    }
+                  >
+                    {data.availableDates
+                      .length > 0 ? (
+                      data.availableDates.map(
+                        (date: string) => (
+                          <option
+                            key={date}
+                            value={date}
+                          >
+                            {formatDate(
+                              date
+                            )}
+                          </option>
+                        )
+                      )
+                    ) : (
+                      <option
+                        value={
+                          data.selectedDate
+                        }
+                      >
+                        Keine Auftragsdaten
+                      </option>
+                    )}
+                  </select>
                 </label>
 
                 <button
@@ -247,69 +743,129 @@ export default function ProductionPage() {
               </form>
             }
           >
-            {data.productionItems.length === 0 ? (
+            {data.productionItems
+              .length === 0 ? (
               <div className="operationsEmptyState">
-                <span className="operationsEmptyIcon" aria-hidden="true">
+                <span
+                  className="operationsEmptyIcon"
+                  aria-hidden="true"
+                >
                   0
                 </span>
 
                 <div>
-                  <strong>Keine Produktionspositionen gefunden</strong>
+                  <strong>
+                    Keine Produktionspositionen
+                    gefunden
+                  </strong>
+
                   <p>
-                    Für den ausgewählten Tag sind noch keine passenden
-                    operativen Aufträge vorhanden.
+                    Für den ausgewählten Tag
+                    sind noch keine bestätigten
+                    oder laufenden Aufträge
+                    vorhanden.
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="operationsTable" role="table">
+              <div
+                className="operationsTable"
+                role="table"
+              >
                 <div
                   className="operationsTableHead operationsProductionColumns"
                   role="row"
                 >
-                  <span role="columnheader">Produkt</span>
-                  <span role="columnheader">Menge</span>
-                  <span role="columnheader">Einheit</span>
-                  <span role="columnheader">Aufträge</span>
-                  <span role="columnheader">Status</span>
+                  <span role="columnheader">
+                    Produkt
+                  </span>
+
+                  <span role="columnheader">
+                    Menge
+                  </span>
+
+                  <span role="columnheader">
+                    Einheit
+                  </span>
+
+                  <span role="columnheader">
+                    Aufträge
+                  </span>
+
+                  <span role="columnheader">
+                    Status
+                  </span>
                 </div>
 
-                {data.productionItems.map((item: any) => (
-                  <div
-                    className="operationsTableRow operationsProductionColumns"
-                    role="row"
-                    key={`${item.name}-${item.unit}`}
-                  >
-                    <div data-label="Produkt" role="cell">
-                      <strong>{item.name}</strong>
-                    </div>
+                {data.productionItems.map(
+                  (item: any) => (
+                    <div
+                      className="operationsTableRow operationsProductionColumns"
+                      role="row"
+                      key={`${item.name}-${item.unit}`}
+                    >
+                      <div
+                        data-label="Produkt"
+                        role="cell"
+                      >
+                        <strong>
+                          {item.name}
+                        </strong>
+                      </div>
 
-                    <div data-label="Menge" role="cell">
-                      <strong className="operationsQuantity">
-                        {item.quantity}
-                      </strong>
-                    </div>
+                      <div
+                        data-label="Menge"
+                        role="cell"
+                      >
+                        <strong className="operationsQuantity">
+                          {item.quantity}
+                        </strong>
+                      </div>
 
-                    <div data-label="Einheit" role="cell">
-                      {item.unit}
-                    </div>
+                      <div
+                        data-label="Einheit"
+                        role="cell"
+                      >
+                        {item.unit}
+                      </div>
 
-                    <div data-label="Aufträge" role="cell">
-                      <span className="operationsOrderReferences">
-                        {item.orders.slice(0, 3).join(", ")}
-                        {item.orders.length > 3
-                          ? ` +${item.orders.length - 3}`
-                          : ""}
-                      </span>
-                    </div>
+                      <div
+                        data-label="Aufträge"
+                        role="cell"
+                      >
+                        <span className="operationsOrderReferences">
+                          {item.orders
+                            .slice(0, 3)
+                            .join(", ")}
 
-                    <div data-label="Status" role="cell">
-                      <span className="operationsStatus is-open">
-                        Offen
-                      </span>
+                          {item.orders
+                            .length > 3
+                            ? ` +${
+                                item.orders
+                                  .length -
+                                3
+                              }`
+                            : ""}
+                        </span>
+                      </div>
+
+                      <div
+                        data-label="Status"
+                        role="cell"
+                      >
+                        <span
+                          className={
+                            `operationsStatus ${item.statusClassName}`
+                          }
+                        >
+                          {
+                            item.statusLabel
+                          }
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             )}
           </PageSection>
@@ -317,29 +873,165 @@ export default function ProductionPage() {
           <PageSection
             className="operationsSecondarySection"
             eyebrow="Auftragsbasis"
-            title="Verwendete Aufträge"
-            description="Diese Aufträge bilden die Grundlage der Produktionsmengen."
+            title="Arbeitsfortschritt"
+            description="Jeder Auftrag wird von bestätigt über Produktion bis zur Packstation weitergeführt."
           >
             {data.orders.length === 0 ? (
               <div className="operationsCompactEmpty">
-                <strong>Keine Aufträge</strong>
-                <span>Für diesen Tag wurde keine Auftragsbasis gefunden.</span>
+                <strong>
+                  Keine Aufträge
+                </strong>
+
+                <span>
+                  Für diesen Tag wurde
+                  keine Auftragsbasis
+                  gefunden.
+                </span>
               </div>
             ) : (
               <div className="operationsOrderList">
-                {data.orders.map((order: any) => (
-                  <article className="operationsOrderCard" key={order.id}>
-                    <div>
-                      <strong>{order.customerName || "Ohne Kunde"}</strong>
-                      <span>
-                        {formatDate(order.deliveryDate)} ·{" "}
-                        {orderSummary(order)}
-                      </span>
-                    </div>
+                {data.orders.map(
+                  (order: any) => {
+                    const status =
+                      String(
+                        order.status ||
+                          ""
+                      ).toUpperCase();
 
-                    <time>{order.deliveryTime || "-"}</time>
-                  </article>
-                ))}
+                    return (
+                      <article
+                        className="operationsOrderCard operationsOrderCard--workflow"
+                        key={order.id}
+                      >
+                        <div>
+                          <strong>
+                            {order.customerName ||
+                              "Ohne Kunde"}
+                          </strong>
+
+                          <span>
+                            {order.orderNumber}
+                            {" · "}
+                            {orderSummary(
+                              order
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="operationsOrderActions">
+                          <time>
+                            {order.deliveryTimeText ||
+                              "-"}
+                          </time>
+
+                          <span
+                            className={
+                              "operationsStatus " +
+                              (
+                                status ===
+                                "IN_PRODUCTION"
+                                  ? "is-production"
+                                  : status ===
+                                      "PACKING_OPEN"
+                                    ? "is-packing"
+                                    : status ===
+                                        "DELIVERED"
+                                      ? "is-ready"
+                                      : "is-open"
+                              )
+                            }
+                          >
+                            {orderStatusLabel(
+                              order
+                            )}
+                          </span>
+
+                          {status ===
+                          "CONFIRMED" ? (
+                            <Form
+                              method="post"
+                              className="operationsInlineForm"
+                            >
+                              <input
+                                type="hidden"
+                                name="intent"
+                                value="start-production"
+                              />
+
+                              <input
+                                type="hidden"
+                                name="orderId"
+                                value={order.id}
+                              />
+
+                              <input
+                                type="hidden"
+                                name="date"
+                                value={
+                                  data.selectedDate
+                                }
+                              />
+
+                              <button
+                                type="submit"
+                                className="g-ops-button g-ops-button--primary g-ops-button--compact"
+                              >
+                                Produktion starten
+                              </button>
+                            </Form>
+                          ) : null}
+
+                          {status ===
+                          "IN_PRODUCTION" ? (
+                            <Form
+                              method="post"
+                              className="operationsInlineForm"
+                            >
+                              <input
+                                type="hidden"
+                                name="intent"
+                                value="complete-production"
+                              />
+
+                              <input
+                                type="hidden"
+                                name="orderId"
+                                value={order.id}
+                              />
+
+                              <input
+                                type="hidden"
+                                name="date"
+                                value={
+                                  data.selectedDate
+                                }
+                              />
+
+                              <button
+                                type="submit"
+                                className="g-ops-button g-ops-button--primary g-ops-button--compact"
+                              >
+                                An Packstation
+                              </button>
+                            </Form>
+                          ) : null}
+
+                          {status ===
+                          "PACKING_OPEN" ? (
+                            <Link
+                              to={`/packlisten?date=${encodeURIComponent(
+                                data.selectedDate
+                              )}`}
+                              className="g-ops-button g-ops-button--secondary g-ops-button--compact"
+                            >
+                              Packliste öffnen
+                            </Link>
+                          ) : null}
+                        </div>
+                      </article>
+                    );
+                  }
+                )}
               </div>
             )}
           </PageSection>

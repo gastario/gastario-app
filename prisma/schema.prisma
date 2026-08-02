@@ -551,6 +551,12 @@ model Order {
   contactPhone     String?
   notes            String?
 
+  productionStartedAt   DateTime?
+  productionCompletedAt DateTime?
+  packingStartedAt      DateTime?
+  packingCompletedAt    DateTime?
+  packingChecklist      Json?
+
   billingMode           BillingMode     @default(UNDECIDED)
   billingStatus         BillingStatus   @default(NOT_BILLED)
   invoiceLanguage       InvoiceLanguage @default(DE)

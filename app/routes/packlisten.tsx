@@ -1,6 +1,14 @@
-import { useEffect, useState } from "react";
-import { Link, useLoaderData } from "react-router";
+import {
+  Form,
+  Link,
+  redirect,
+  useActionData,
+  useFetcher,
+  useLoaderData,
+} from "react-router";
+
 import AppLayout from "../components/AppLayout";
+
 import {
   MetricCard,
   MetricGrid,
@@ -9,155 +17,863 @@ import {
   PageSection,
   PageShell,
 } from "../components/ui/PageShell";
+
 import "../styles/gastario-page-shell.css";
 import "../styles/gastario-operations.css";
 
+const OPERATIONAL_STATUSES = new Set([
+  "CONFIRMED",
+  "IN_PRODUCTION",
+  "PACKING_OPEN",
+  "DELIVERED",
+]);
+
+const PACKING_TASKS = [
+  {
+    key: "goods-complete",
+    label: "Ware vollständig gepackt",
+  },
+  {
+    key: "delivery-note",
+    label: "Lieferschein beigelegt",
+  },
+  {
+    key: "cutlery",
+    label: "Besteck / Servietten geprüft",
+  },
+  {
+    key: "equipment",
+    label: "Equipment gezählt",
+  },
+];
+
 function todayInput() {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+
+  const localDate = new Date(
+    now.getTime() -
+      now.getTimezoneOffset() * 60_000
+  );
+
+  return localDate
+    .toISOString()
+    .slice(0, 10);
 }
 
-function normalizeDate(value: string | Date | null | undefined) {
-  if (!value) return "";
+function normalizeDate(
+  value: string | Date | null | undefined
+) {
+  if (!value) {
+    return "";
+  }
+
   try {
-    return new Date(value).toISOString().slice(0, 10);
+    return new Date(value)
+      .toISOString()
+      .slice(0, 10);
   } catch {
     return "";
   }
 }
 
-function formatDate(value: string | Date | null | undefined) {
-  if (!value) return "-";
+function formatDate(
+  value: string | Date | null | undefined
+) {
+  if (!value) {
+    return "-";
+  }
+
   try {
-    return new Date(value).toLocaleDateString("de-DE");
+    return new Date(value).toLocaleDateString(
+      "de-DE"
+    );
   } catch {
     return "-";
   }
 }
 
-function emptyData(error: string | null = null) {
+function selectedPlanningDate(
+  requestedDate: string | null,
+  availableDates: string[]
+) {
+  if (requestedDate) {
+    return requestedDate;
+  }
+
+  const today = todayInput();
+
+  if (availableDates.includes(today)) {
+    return today;
+  }
+
+  return (
+    availableDates.find(
+      (date) => date >= today
+    ) ||
+    availableDates[0] ||
+    today
+  );
+}
+
+function checklistObject(
+  value: unknown
+): Record<string, boolean> {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    Array.isArray(value)
+  ) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(
+      value as Record<string, unknown>
+    ).map(([key, checked]) => [
+      key,
+      Boolean(checked),
+    ])
+  );
+}
+
+function expectedCheckKeys(
+  order: any
+) {
+  return [
+    ...(order.items || []).map(
+      (item: any) =>
+        `item:${item.id}`
+    ),
+    ...PACKING_TASKS.map(
+      (task) =>
+        `task:${task.key}`
+    ),
+  ];
+}
+
+function packingStatusLabel(
+  order: any
+) {
+  const status = String(
+    order.status || ""
+  ).toUpperCase();
+
+  if (
+    order.packingCompletedAt ||
+    status === "DELIVERED"
+  ) {
+    return "Lieferbereit";
+  }
+
+  if (status === "PACKING_OPEN") {
+    return "Packen";
+  }
+
+  if (status === "IN_PRODUCTION") {
+    return "Produktion";
+  }
+
+  return "Bestätigt";
+}
+
+function packingStatusClass(
+  order: any
+) {
+  const status = String(
+    order.status || ""
+  ).toUpperCase();
+
+  if (
+    order.packingCompletedAt ||
+    status === "DELIVERED"
+  ) {
+    return "is-ready";
+  }
+
+  if (status === "PACKING_OPEN") {
+    return "is-packing";
+  }
+
+  if (status === "IN_PRODUCTION") {
+    return "is-production";
+  }
+
+  return "is-open";
+}
+
+function emptyData(
+  error: string | null = null
+) {
   return {
     tenantName: "Gastario",
     selectedDate: todayInput(),
-    orders: [],
-    packingItems: [],
+    availableDates: [] as string[],
+    orders: [] as any[],
+    packingItems: [] as any[],
     stats: {
       orders: 0,
       positions: 0,
       pieces: 0,
+      ready: 0,
     },
     error,
   };
 }
 
 export function meta() {
-  return [{ title: "Packlisten · Gastario" }];
+  return [
+    {
+      title: "Packlisten · Gastario",
+    },
+  ];
 }
 
-export async function loader({ request }: { request: Request }) {
+export async function loader({
+  request,
+}: {
+  request: Request;
+}) {
   try {
-    const { prisma } = await import("../lib/prisma.server");
-    const { getTenantAccess } = await import("../lib/features.server");
+    const { prisma } =
+      await import(
+        "../lib/prisma.server"
+      );
 
-    const access = await getTenantAccess(request);
+    const { getTenantAccess } =
+      await import(
+        "../lib/features.server"
+      );
+
+    const access =
+      await getTenantAccess(request);
 
     if (!access?.tenantId) {
-      return emptyData("Kein Mandant gefunden.");
+      return emptyData(
+        "Kein Mandant gefunden."
+      );
     }
 
     const url = new URL(request.url);
-    const selectedDate = url.searchParams.get("date") || todayInput();
 
-    const orders = await prisma.order.findMany({
+    const orders =
+      await prisma.order.findMany({
+        where: {
+          tenantId: access.tenantId,
+        },
+        include: {
+          items: true,
+        },
+        orderBy: [
+          {
+            deliveryDate: "asc",
+          },
+          {
+            createdAt: "asc",
+          },
+        ],
+        take: 500,
+      });
+
+    const operationalOrders =
+      orders.filter((order: any) =>
+        OPERATIONAL_STATUSES.has(
+          String(
+            order.status || ""
+          ).toUpperCase()
+        )
+      );
+
+    const availableDates =
+      Array.from(
+        new Set(
+          operationalOrders
+            .map((order: any) =>
+              normalizeDate(
+                order.deliveryDate
+              )
+            )
+            .filter(Boolean)
+        )
+      ).sort();
+
+    const selectedDate =
+      selectedPlanningDate(
+        url.searchParams.get("date"),
+        availableDates
+      );
+
+    const relevantOrders =
+      operationalOrders.filter(
+        (order: any) =>
+          normalizeDate(
+            order.deliveryDate
+          ) === selectedDate
+      );
+
+    const packingItems =
+      relevantOrders.map(
+        (order: any) => {
+          const checklist =
+            checklistObject(
+              order.packingChecklist
+            );
+
+          const items =
+            (order.items || []).map(
+              (item: any) => {
+                const checkKey =
+                  `item:${item.id}`;
+
+                return {
+                  ...item,
+                  checkKey,
+                  checked:
+                    Boolean(
+                      checklist[
+                        checkKey
+                      ]
+                    ),
+                };
+              }
+            );
+
+          const tasks =
+            PACKING_TASKS.map(
+              (task) => {
+                const checkKey =
+                  `task:${task.key}`;
+
+                return {
+                  ...task,
+                  checkKey,
+                  checked:
+                    Boolean(
+                      checklist[
+                        checkKey
+                      ]
+                    ),
+                };
+              }
+            );
+
+          const totalChecks =
+            items.length +
+            tasks.length;
+
+          const checkedCount = [
+            ...items,
+            ...tasks,
+          ].filter(
+            (entry) =>
+              entry.checked
+          ).length;
+
+          const status = String(
+            order.status || ""
+          ).toUpperCase();
+
+          const isPacked =
+            Boolean(
+              order.packingCompletedAt
+            ) ||
+            status ===
+              "DELIVERED";
+
+          const packingStarted =
+            status ===
+              "PACKING_OPEN" ||
+            Boolean(
+              order.packingStartedAt
+            );
+
+          return {
+            id: order.id,
+            orderNumber:
+              order.orderNumber ||
+              order.id,
+            customerName:
+              order.customerName ||
+              "Ohne Kunde",
+            deliveryDate:
+              order.deliveryDate,
+            deliveryTime:
+              order.deliveryTimeText,
+            deliveryAddress:
+              order.deliveryAddress,
+            contactName:
+              order.contactName,
+            contactPhone:
+              order.contactPhone,
+            status,
+            productionStartedAt:
+              order.productionStartedAt,
+            productionCompletedAt:
+              order.productionCompletedAt,
+            packingStartedAt:
+              order.packingStartedAt,
+            packingCompletedAt:
+              order.packingCompletedAt,
+            items,
+            tasks,
+            totalQuantity:
+              items.reduce(
+                (
+                  sum: number,
+                  item: any
+                ) =>
+                  sum +
+                  Number(
+                    item.quantity ||
+                      0
+                  ),
+                0
+              ),
+            totalChecks,
+            checkedCount,
+            progress:
+              totalChecks > 0
+                ? Math.round(
+                    checkedCount /
+                      totalChecks *
+                      100
+                  )
+                : 0,
+            packingStarted,
+            isPacked,
+            canCheck:
+              packingStarted &&
+              !isPacked &&
+              status !==
+                "DELIVERED",
+            canComplete:
+              packingStarted &&
+              !isPacked &&
+              totalChecks > 0 &&
+              checkedCount ===
+                totalChecks,
+          };
+        }
+      );
+
+    const pieces =
+      packingItems.reduce(
+        (
+          sum: number,
+          order: any
+        ) =>
+          sum +
+          Number(
+            order.totalQuantity ||
+              0
+          ),
+        0
+      );
+
+    return {
+      tenantName:
+        access.tenant?.name ||
+        "Gastario",
+      selectedDate,
+      availableDates,
+      orders: relevantOrders,
+      packingItems,
+      stats: {
+        orders:
+          relevantOrders.length,
+        positions:
+          packingItems.reduce(
+            (
+              sum: number,
+              order: any
+            ) =>
+              sum +
+              Number(
+                order.items.length ||
+                  0
+              ),
+            0
+          ),
+        pieces,
+        ready:
+          packingItems.filter(
+            (order: any) =>
+              order.isPacked
+          ).length,
+      },
+      error: null,
+    };
+  } catch (error: any) {
+    console.error(
+      "Packlisten loader error:",
+      error
+    );
+
+    return emptyData(
+      error?.message ||
+        "Packlisten konnten nicht geladen werden."
+    );
+  }
+}
+
+export async function action({
+  request,
+}: {
+  request: Request;
+}) {
+  const { prisma } =
+    await import(
+      "../lib/prisma.server"
+    );
+
+  const { getTenantAccess } =
+    await import(
+      "../lib/features.server"
+    );
+
+  const access =
+    await getTenantAccess(request);
+
+  if (!access?.tenantId) {
+    return {
+      error:
+        "Kein Mandant gefunden.",
+    };
+  }
+
+  const formData =
+    await request.formData();
+
+  const intent = String(
+    formData.get("intent") || ""
+  );
+
+  const orderId = String(
+    formData.get("orderId") || ""
+  );
+
+  const requestedDate = String(
+    formData.get("date") || ""
+  );
+
+  if (!orderId) {
+    return {
+      error:
+        "Der Auftrag wurde nicht erkannt.",
+    };
+  }
+
+  const order =
+    await prisma.order.findFirst({
       where: {
+        id: orderId,
         tenantId: access.tenantId,
       },
       include: {
         items: true,
       },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 300,
     });
 
-    const relevantOrders = orders.filter((order: any) => {
-      const status = String(order.status || "").toUpperCase();
-      const date = normalizeDate(order.deliveryDate);
+  if (!order) {
+    return {
+      error:
+        "Der Auftrag wurde nicht gefunden.",
+    };
+  }
 
-      return (
-        date === selectedDate &&
-        (
-          status === "CONFIRMED" ||
-          status === "PAID" ||
-          status === "INVOICE_APPROVED" ||
-          status === "MANUAL"
+  const returnDate =
+    requestedDate ||
+    normalizeDate(
+      order.deliveryDate
+    ) ||
+    todayInput();
+
+  const now = new Date();
+
+  if (
+    intent ===
+    "start-packing"
+  ) {
+    if (
+      order.status ===
+      "DELIVERED"
+    ) {
+      return {
+        error:
+          "Gelieferte Aufträge können nicht erneut gepackt werden.",
+      };
+    }
+
+    await prisma.order.update({
+      where: {
+        id: order.id,
+      },
+      data: {
+        status:
+          "PACKING_OPEN",
+        productionStartedAt:
+          order.productionStartedAt ||
+          now,
+        productionCompletedAt:
+          order.productionCompletedAt ||
+          now,
+        packingStartedAt:
+          order.packingStartedAt ||
+          now,
+        packingCompletedAt:
+          null,
+      },
+    });
+
+    return redirect(
+      `/packlisten?date=${encodeURIComponent(
+        returnDate
+      )}`
+    );
+  }
+
+  if (
+    intent ===
+    "toggle-check"
+  ) {
+    if (
+      order.status ===
+        "DELIVERED" ||
+      order.packingCompletedAt
+    ) {
+      return {
+        error:
+          "Die abgeschlossene Packliste ist schreibgeschützt.",
+      };
+    }
+
+    const checkKey = String(
+      formData.get("checkKey") ||
+        ""
+    );
+
+    const checked =
+      String(
+        formData.get("checked") ||
+          ""
+      ) === "true";
+
+    const allowedKeys =
+      new Set(
+        expectedCheckKeys(
+          order
         )
       );
+
+    if (
+      !allowedKeys.has(
+        checkKey
+      )
+    ) {
+      return {
+        error:
+          "Der Packlistenpunkt wurde nicht erkannt.",
+      };
+    }
+
+    const nextChecklist = {
+      ...checklistObject(
+        order.packingChecklist
+      ),
+      [checkKey]:
+        checked,
+    };
+
+    await prisma.order.update({
+      where: {
+        id: order.id,
+      },
+      data: {
+        status:
+          "PACKING_OPEN",
+        productionStartedAt:
+          order.productionStartedAt ||
+          now,
+        productionCompletedAt:
+          order.productionCompletedAt ||
+          now,
+        packingStartedAt:
+          order.packingStartedAt ||
+          now,
+        packingChecklist:
+          nextChecklist,
+      },
     });
 
-    const packingItems = relevantOrders.map((order: any) => ({
-      id: order.id,
-      orderNumber: order.orderNumber || order.id,
-      customerName: order.customerName || "Ohne Kunde",
-      deliveryDate: order.deliveryDate,
-      deliveryTime: order.deliveryTime,
-      deliveryAddress: order.deliveryAddress,
-      contactName: order.contactName,
-      contactPhone: order.contactPhone || order.customerPhone,
-      items: order.items || [],
-      totalQuantity: (order.items || []).reduce((sum: number, item: any) => sum + Number(item.quantity || 0), 0),
-    }));
-
-    const pieces = packingItems.reduce((sum: number, item: any) => sum + Number(item.totalQuantity || 0), 0);
-
     return {
-      tenantName: access.tenant?.name || "Gastario",
-      selectedDate,
-      orders: relevantOrders,
-      packingItems,
-      stats: {
-        orders: relevantOrders.length,
-        positions: packingItems.reduce((sum: number, order: any) => sum + Number(order.items.length || 0), 0),
-        pieces,
-      },
-      error: null,
+      ok: true,
     };
-  } catch (error: any) {
-    console.error("Packlisten loader error:", error);
-    return emptyData(error?.message || "Packlisten konnten nicht geladen werden.");
   }
+
+  if (
+    intent ===
+    "complete-packing"
+  ) {
+    const checklist =
+      checklistObject(
+        order.packingChecklist
+      );
+
+    const expectedKeys =
+      expectedCheckKeys(
+        order
+      );
+
+    const allChecked =
+      expectedKeys.length > 0 &&
+      expectedKeys.every(
+        (key) =>
+          checklist[key] ===
+          true
+      );
+
+    if (!allChecked) {
+      return {
+        error:
+          "Bitte zuerst alle Positionen und Packkontrollen abhaken.",
+      };
+    }
+
+    await prisma.order.update({
+      where: {
+        id: order.id,
+      },
+      data: {
+        status:
+          "PACKING_OPEN",
+        packingStartedAt:
+          order.packingStartedAt ||
+          now,
+        packingCompletedAt:
+          now,
+      },
+    });
+
+    return redirect(
+      `/packlisten?date=${encodeURIComponent(
+        returnDate
+      )}`
+    );
+  }
+
+  if (
+    intent ===
+    "reopen-packing"
+  ) {
+    if (
+      order.status ===
+      "DELIVERED"
+    ) {
+      return {
+        error:
+          "Gelieferte Aufträge können nicht wieder geöffnet werden.",
+      };
+    }
+
+    await prisma.order.update({
+      where: {
+        id: order.id,
+      },
+      data: {
+        status:
+          "PACKING_OPEN",
+        packingCompletedAt:
+          null,
+      },
+    });
+
+    return redirect(
+      `/packlisten?date=${encodeURIComponent(
+        returnDate
+      )}`
+    );
+  }
+
+  return {
+    error:
+      "Die Packlistenaktion ist unbekannt.",
+  };
 }
 
-function PackingCheckbox({ id }: { id: string }) {
-  const [checked, setChecked] = useState(false);
+type PackingCheckboxProps = {
+  orderId: string;
+  checkKey: string;
+  initialChecked: boolean;
+  disabled: boolean;
+  selectedDate: string;
+  label: string;
+};
 
-  useEffect(() => {
-    const value = window.localStorage.getItem(id);
-    setChecked(value === "1");
-  }, [id]);
+function PackingCheckbox({
+  orderId,
+  checkKey,
+  initialChecked,
+  disabled,
+  selectedDate,
+  label,
+}: PackingCheckboxProps) {
+  const fetcher =
+    useFetcher<
+      typeof action
+    >();
 
-  function toggle() {
-    const next = !checked;
-    setChecked(next);
-    window.localStorage.setItem(id, next ? "1" : "0");
-  }
+  const submittedValue =
+    fetcher.formData?.get(
+      "checked"
+    );
+
+  const checked =
+    submittedValue === null ||
+    submittedValue ===
+      undefined
+      ? initialChecked
+      : submittedValue ===
+        "true";
+
+  const busy =
+    fetcher.state !== "idle";
 
   return (
     <input
+      className="packingCheckbox"
       type="checkbox"
       checked={checked}
-      onChange={toggle}
-      style={{
-        width: 20,
-        height: 20,
-        accentColor: "#0f766e",
+      disabled={
+        disabled || busy
+      }
+      aria-label={label}
+      onChange={() => {
+        fetcher.submit(
+          {
+            intent:
+              "toggle-check",
+            orderId,
+            checkKey,
+            checked:
+              String(!checked),
+            date: selectedDate,
+          },
+          {
+            method: "post",
+          }
+        );
       }}
     />
   );
 }
 
 export default function PackingListsPage() {
-  const data = useLoaderData<typeof loader>();
+  const data =
+    useLoaderData<typeof loader>();
+
+  const actionData =
+    useActionData<
+      typeof action
+    >() as any;
 
   return (
     <AppLayout>
@@ -167,8 +883,12 @@ export default function PackingListsPage() {
           title="Packlisten"
           subtitle={
             <>
-              {data.tenantName} · Packlisten nach Auftrag mit dauerhaft
-              gespeicherten Pack- und Fahrerchecks.
+              {data.tenantName}
+              {" · "}
+              Jede bestätigte Bestellung
+              erhält automatisch eine
+              gemeinsame Packliste für
+              alle Arbeitsplätze.
             </>
           }
           actions={
@@ -176,7 +896,9 @@ export default function PackingListsPage() {
               <button
                 className="g-ops-button g-ops-button--secondary"
                 type="button"
-                onClick={() => window.print()}
+                onClick={() =>
+                  window.print()
+                }
               >
                 Drucken
               </button>
@@ -193,8 +915,26 @@ export default function PackingListsPage() {
 
         {data.error ? (
           <Notice type="danger">
-            <strong>Die Packlisten konnten nicht vollständig geladen werden.</strong>
+            <strong>
+              Die Packlisten konnten
+              nicht vollständig geladen
+              werden.
+            </strong>
+
             <span>{data.error}</span>
+          </Notice>
+        ) : null}
+
+        {actionData?.error ? (
+          <Notice type="danger">
+            <strong>
+              Packlistenaktion konnte
+              nicht ausgeführt werden.
+            </strong>
+
+            <span>
+              {actionData.error}
+            </span>
           </Notice>
         ) : null}
 
@@ -203,12 +943,14 @@ export default function PackingListsPage() {
             label="Aufträge"
             value={data.stats.orders}
             description="für diesen Planungstag"
-            badge="Packen"
+            badge="Automatisch"
           />
 
           <MetricCard
             label="Positionen"
-            value={data.stats.positions}
+            value={
+              data.stats.positions
+            }
             description="in allen Packlisten"
             badge="Liste"
           />
@@ -221,10 +963,10 @@ export default function PackingListsPage() {
           />
 
           <MetricCard
-            label="Planungstag"
-            value={formatDate(data.selectedDate)}
-            description="aktuell ausgewählter Tag"
-            badge="Datum"
+            label="Lieferbereit"
+            value={data.stats.ready}
+            description="vollständig gepackte Aufträge"
+            badge="Fertig"
           />
         </MetricGrid>
 
@@ -232,16 +974,47 @@ export default function PackingListsPage() {
           className="operationsPrimarySection packingOrdersSection"
           eyebrow="Packlisten"
           title="Nach Auftrag"
-          description="Positionen abhaken und anschließend die vollständige Packkontrolle durchführen."
+          description="Positionen und Zusatzkontrollen werden zentral gespeichert und sind für alle Mitarbeiter identisch sichtbar."
           actions={
-            <form className="operationsDateFilter" method="get">
+            <form
+              className="operationsDateFilter"
+              method="get"
+            >
               <label>
-                <span>Planungstag</span>
-                <input
-                  type="date"
+                <span>
+                  Planungstag
+                </span>
+
+                <select
                   name="date"
-                  defaultValue={data.selectedDate}
-                />
+                  defaultValue={
+                    data.selectedDate
+                  }
+                >
+                  {data.availableDates
+                    .length > 0 ? (
+                    data.availableDates.map(
+                      (date: string) => (
+                        <option
+                          key={date}
+                          value={date}
+                        >
+                          {formatDate(
+                            date
+                          )}
+                        </option>
+                      )
+                    )
+                  ) : (
+                    <option
+                      value={
+                        data.selectedDate
+                      }
+                    >
+                      Keine Auftragsdaten
+                    </option>
+                  )}
+                </select>
               </label>
 
               <button
@@ -253,113 +1026,414 @@ export default function PackingListsPage() {
             </form>
           }
         >
-          {data.packingItems.length === 0 ? (
+          {data.packingItems
+            .length === 0 ? (
             <div className="operationsEmptyState">
-              <span className="operationsEmptyIcon" aria-hidden="true">
+              <span
+                className="operationsEmptyIcon"
+                aria-hidden="true"
+              >
                 0
               </span>
 
               <div>
-                <strong>Keine Packlisten gefunden</strong>
+                <strong>
+                  Keine Packlisten
+                  gefunden
+                </strong>
+
                 <p>
-                  Für den ausgewählten Tag sind noch keine passenden
-                  operativen Aufträge vorhanden.
+                  Für den ausgewählten
+                  Tag sind noch keine
+                  bestätigten oder
+                  laufenden Aufträge
+                  vorhanden.
                 </p>
               </div>
             </div>
           ) : (
             <div className="packingOrderList">
-              {data.packingItems.map((order: any) => (
-                <article className="packingOrderCard" key={order.id}>
-                  <header className="packingOrderHeader">
-                    <div className="packingOrderTime">
-                      <strong>{order.deliveryTime || "-"}</strong>
-                      <span>Uhr</span>
-                    </div>
+              {data.packingItems.map(
+                (order: any) => (
+                  <article
+                    className={
+                      "packingOrderCard " +
+                      (
+                        order.isPacked
+                          ? "is-packed"
+                          : ""
+                      )
+                    }
+                    key={order.id}
+                  >
+                    <header className="packingOrderHeader">
+                      <div className="packingOrderTime">
+                        <strong>
+                          {order.deliveryTime ||
+                            "-"}
+                        </strong>
 
-                    <div className="packingOrderIdentity">
-                      <p>Auftrag {order.orderNumber}</p>
-                      <h3>{order.customerName}</h3>
-                      <span>
-                        {formatDate(order.deliveryDate)} ·{" "}
-                        {order.deliveryAddress || "Keine Adresse"}
-                      </span>
-                    </div>
-
-                    <span className="operationsStatus is-packing">
-                      Packen
-                    </span>
-                  </header>
-
-                  <div className="packingOrderMeta">
-                    <div>
-                      <span>Kontakt</span>
-                      <strong>
-                        {order.contactName || "-"} ·{" "}
-                        {order.contactPhone || "-"}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Lieferadresse</span>
-                      <strong>
-                        {order.deliveryAddress ||
-                          "Keine Adresse eingetragen"}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Gesamtmenge</span>
-                      <strong>{order.totalQuantity}</strong>
-                    </div>
-                  </div>
-
-                  <div className="packingItemsList">
-                    {order.items.length === 0 ? (
-                      <div className="operationsCompactEmpty">
-                        <strong>Keine Positionen</strong>
-                        <span>Dieser Auftrag hat keine Positionen.</span>
+                        <span>Uhr</span>
                       </div>
-                    ) : (
-                      order.items.map((item: any) => (
-                        <label
-                          className="packingItemRow"
-                          key={`${order.id}-${item.id || item.name}`}
+
+                      <div className="packingOrderIdentity">
+                        <p>
+                          Auftrag{" "}
+                          {order.orderNumber}
+                        </p>
+
+                        <h3>
+                          {order.customerName}
+                        </h3>
+
+                        <span>
+                          {formatDate(
+                            order.deliveryDate
+                          )}
+                          {" · "}
+                          {order.deliveryAddress ||
+                            "Keine Adresse"}
+                        </span>
+                      </div>
+
+                      <span
+                        className={
+                          `operationsStatus ${packingStatusClass(
+                            order
+                          )}`
+                        }
+                      >
+                        {packingStatusLabel(
+                          order
+                        )}
+                      </span>
+                    </header>
+
+                    <div className="packingOrderMeta">
+                      <div>
+                        <span>
+                          Kontakt
+                        </span>
+
+                        <strong>
+                          {order.contactName ||
+                            "-"}
+                          {" · "}
+                          {order.contactPhone ||
+                            "-"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>
+                          Lieferadresse
+                        </span>
+
+                        <strong>
+                          {order.deliveryAddress ||
+                            "Keine Adresse eingetragen"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>
+                          Gesamtmenge
+                        </span>
+
+                        <strong>
+                          {order.totalQuantity}
+                        </strong>
+                      </div>
+                    </div>
+
+                    {!order.packingStarted &&
+                    !order.isPacked ? (
+                      <div className="packingStartPanel">
+                        <div>
+                          <strong>
+                            Packliste ist
+                            vorbereitet
+                          </strong>
+
+                          <span>
+                            Starte den Packvorgang,
+                            damit alle Häkchen
+                            zentral gespeichert
+                            werden.
+                          </span>
+                        </div>
+
+                        <Form
+                          method="post"
+                          className="operationsInlineForm"
                         >
-                          <PackingCheckbox
-                            id={`pack-${order.id}-${item.id || item.name}`}
+                          <input
+                            type="hidden"
+                            name="intent"
+                            value="start-packing"
                           />
 
-                          <span className="packingItemName">
-                            <strong>{item.name || "Position"}</strong>
-                            <small>{item.unit || "Stück"}</small>
-                          </span>
+                          <input
+                            type="hidden"
+                            name="orderId"
+                            value={order.id}
+                          />
 
-                          <span className="packingItemQuantity">
-                            {item.quantity || 0} ×
-                          </span>
-                        </label>
-                      ))
-                    )}
-                  </div>
+                          <input
+                            type="hidden"
+                            name="date"
+                            value={
+                              data.selectedDate
+                            }
+                          />
 
-                  <div className="packingTaskGrid">
-                    {[
-                      "Ware vollständig gepackt",
-                      "Lieferschein beigelegt",
-                      "Besteck / Servietten geprüft",
-                      "Equipment gezählt",
-                    ].map((task) => (
-                      <label className="packingTaskCard" key={task}>
-                        <PackingCheckbox
-                          id={`task-${order.id}-${task}`}
-                        />
-                        <span>{task}</span>
-                      </label>
-                    ))}
-                  </div>
-                </article>
-              ))}
+                          <button
+                            type="submit"
+                            className="g-ops-button g-ops-button--primary"
+                          >
+                            Packen starten
+                          </button>
+                        </Form>
+                      </div>
+                    ) : null}
+
+                    <div
+                      className={
+                        "packingItemsList " +
+                        (
+                          !order.canCheck
+                            ? "is-readonly"
+                            : ""
+                        )
+                      }
+                    >
+                      {order.items
+                        .length === 0 ? (
+                        <div className="operationsCompactEmpty">
+                          <strong>
+                            Keine Positionen
+                          </strong>
+
+                          <span>
+                            Dieser Auftrag
+                            hat keine
+                            Positionen.
+                          </span>
+                        </div>
+                      ) : (
+                        order.items.map(
+                          (item: any) => (
+                            <label
+                              className="packingItemRow"
+                              key={
+                                item.checkKey
+                              }
+                            >
+                              <PackingCheckbox
+                                orderId={
+                                  order.id
+                                }
+                                checkKey={
+                                  item.checkKey
+                                }
+                                initialChecked={
+                                  item.checked
+                                }
+                                disabled={
+                                  !order.canCheck
+                                }
+                                selectedDate={
+                                  data.selectedDate
+                                }
+                                label={`${item.name || "Position"} gepackt`}
+                              />
+
+                              <span className="packingItemName">
+                                <strong>
+                                  {item.name ||
+                                    "Position"}
+                                </strong>
+
+                                <small>
+                                  {item.unit ||
+                                    "Stück"}
+                                </small>
+                              </span>
+
+                              <span className="packingItemQuantity">
+                                {item.quantity ||
+                                  0}
+                                {" ×"}
+                              </span>
+                            </label>
+                          )
+                        )
+                      )}
+                    </div>
+
+                    <div
+                      className={
+                        "packingTaskGrid " +
+                        (
+                          !order.canCheck
+                            ? "is-readonly"
+                            : ""
+                        )
+                      }
+                    >
+                      {order.tasks.map(
+                        (task: any) => (
+                          <label
+                            className="packingTaskCard"
+                            key={
+                              task.checkKey
+                            }
+                          >
+                            <PackingCheckbox
+                              orderId={
+                                order.id
+                              }
+                              checkKey={
+                                task.checkKey
+                              }
+                              initialChecked={
+                                task.checked
+                              }
+                              disabled={
+                                !order.canCheck
+                              }
+                              selectedDate={
+                                data.selectedDate
+                              }
+                              label={
+                                task.label
+                              }
+                            />
+
+                            <span>
+                              {task.label}
+                            </span>
+                          </label>
+                        )
+                      )}
+                    </div>
+
+                    <footer className="packingWorkflowFooter">
+                      <div className="packingProgress">
+                        <div>
+                          <strong>
+                            {order.checkedCount}
+                            {" / "}
+                            {order.totalChecks}
+                          </strong>
+
+                          <span>
+                            Prüfungen erledigt
+                          </span>
+                        </div>
+
+                        <div className="packingProgressTrack">
+                          <span
+                            style={{
+                              width:
+                                `${order.progress}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="packingActionArea">
+                        {order.isPacked ? (
+                          <>
+                            <span className="operationsStatus is-ready">
+                              Lieferbereit
+                            </span>
+
+                            {order.status !==
+                            "DELIVERED" ? (
+                              <Form
+                                method="post"
+                                className="operationsInlineForm"
+                              >
+                                <input
+                                  type="hidden"
+                                  name="intent"
+                                  value="reopen-packing"
+                                />
+
+                                <input
+                                  type="hidden"
+                                  name="orderId"
+                                  value={order.id}
+                                />
+
+                                <input
+                                  type="hidden"
+                                  name="date"
+                                  value={
+                                    data.selectedDate
+                                  }
+                                />
+
+                                <button
+                                  type="submit"
+                                  className="g-ops-button g-ops-button--secondary g-ops-button--compact"
+                                >
+                                  Wieder öffnen
+                                </button>
+                              </Form>
+                            ) : null}
+
+                            <Link
+                              to={`/lieferungen?range=date&date=${encodeURIComponent(
+                                data.selectedDate
+                              )}`}
+                              className="g-ops-button g-ops-button--primary g-ops-button--compact"
+                            >
+                              Zur Lieferung
+                            </Link>
+                          </>
+                        ) : order.packingStarted ? (
+                          <Form
+                            method="post"
+                            className="operationsInlineForm"
+                          >
+                            <input
+                              type="hidden"
+                              name="intent"
+                              value="complete-packing"
+                            />
+
+                            <input
+                              type="hidden"
+                              name="orderId"
+                              value={order.id}
+                            />
+
+                            <input
+                              type="hidden"
+                              name="date"
+                              value={
+                                data.selectedDate
+                              }
+                            />
+
+                            <button
+                              type="submit"
+                              className="g-ops-button g-ops-button--primary"
+                              disabled={
+                                !order.canComplete
+                              }
+                            >
+                              Als lieferbereit markieren
+                            </button>
+                          </Form>
+                        ) : null}
+                      </div>
+                    </footer>
+                  </article>
+                )
+              )}
             </div>
           )}
         </PageSection>

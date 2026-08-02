@@ -458,7 +458,14 @@ export async function loader({
           ).trim() ||
           !String(
             order.contactPhone || ""
-          ).trim()
+          ).trim() ||
+          (
+            !order.packingCompletedAt &&
+            String(
+              order.status || ""
+            ).toUpperCase() !==
+              "DELIVERED"
+          )
       ).length;
 
     return {
@@ -597,7 +604,7 @@ export default function DeliveriesPage() {
           <MetricCard
             label="Daten prüfen"
             value={data.stats.incomplete}
-            description="Adresse oder Telefon fehlt"
+            description="Lieferdaten oder Packstatus offen"
             badge={
               data.stats.incomplete > 0
                 ? "Prüfen"
@@ -810,10 +817,23 @@ export default function DeliveriesPage() {
                         map
                       );
 
-                    const complete =
+                    const deliveryDataComplete =
                       Boolean(
                         address && phone
                       );
+
+                    const packingReady =
+                      Boolean(
+                        order.packingCompletedAt
+                      ) ||
+                      String(
+                        order.status || ""
+                      ).toUpperCase() ===
+                        "DELIVERED";
+
+                    const complete =
+                      deliveryDataComplete &&
+                      packingReady;
 
                     return (
                       <article
@@ -862,9 +882,11 @@ export default function DeliveriesPage() {
                                     ""
                                 ).toLowerCase()}
                               >
-                                {statusLabel(
-                                  order.status
-                                )}
+                                {order.packingCompletedAt
+                                  ? "Lieferbereit"
+                                  : statusLabel(
+                                      order.status
+                                    )}
                               </span>
 
                               <span
@@ -879,7 +901,9 @@ export default function DeliveriesPage() {
                               >
                                 {complete
                                   ? "Fahrbereit"
-                                  : "Daten fehlen"}
+                                  : !deliveryDataComplete
+                                    ? "Daten fehlen"
+                                    : "Packen offen"}
                               </span>
                             </div>
                           </header>
