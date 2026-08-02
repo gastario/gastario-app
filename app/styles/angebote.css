@@ -1150,3 +1150,37 @@
     flex-direction: column;
   }
 }
+
+/*
+ * gastario-quote-builder-flow-fix-20260801-v2
+ *
+ * Die Kalkulationskarte bleibt im normalen Seitenfluss.
+ */
+
+.quoteBuilderGrid {
+  align-items: start !important;
+}
+
+.quoteBuilderSidebar {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  align-self: start !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  transform: none !important;
+  contain: none !important;
+}
+
+.quoteBuilderSidebar .quoteSummaryCard {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  transform: none !important;
+}

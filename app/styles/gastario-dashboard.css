@@ -3128,3 +3128,77 @@
     height: 40px;
   }
 }
+
+/*
+ * gastario-dashboard-reduced-workspace-20260801-v2
+ *
+ * Gastario Intelligence Workspace – Light.
+ */
+
+.dashWorkspaceTabs {
+  width: fit-content !important;
+  max-width: 100% !important;
+  min-height: 42px !important;
+  gap: 3px !important;
+  padding: 3px !important;
+  border-radius:
+    var(--g-radius-control) !important;
+}
+
+.dashWorkspaceTabs button {
+  min-height: 34px !important;
+  padding: 0 14px !important;
+  font-size: 12px !important;
+  font-weight:
+    var(--g-font-weight-semibold) !important;
+}
+
+.dashPage[data-view="overview"]
+  .dashFilterBar {
+  display: none !important;
+}
+
+.dashKpiBar {
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(195px, 1fr)
+    ) !important;
+}
+
+.dashKpiMoney {
+  max-width: 170px;
+  font-size: 20px !important;
+  white-space: nowrap;
+}
+
+.dashKpiWarning {
+  border-color:
+    var(--g-color-warning-border) !important;
+  background:
+    linear-gradient(
+      145deg,
+      var(--g-color-warning-bg),
+      var(--g-color-surface)
+    ) !important;
+}
+
+.dashKpiWarning::after {
+  background:
+    var(--g-color-warning) !important;
+}
+
+@media (max-width: 700px) {
+  .dashWorkspaceTabs {
+    width: 100% !important;
+  }
+
+  .dashWorkspaceTabs button {
+    flex: 1 0 auto !important;
+  }
+
+  .dashKpiMoney {
+    max-width: none;
+    font-size: 22px !important;
+  }
+}

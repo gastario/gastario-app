@@ -921,12 +921,8 @@ export default function Home() {
     dashboardTaskCounts.review +
     dashboardTaskCounts.incomplete +
     dashboardTaskCounts.duplicates +
-    dashboardTaskCounts.production +
-    dashboardTaskCounts.packing +
     dashboardTaskCounts.missingTime +
     dashboardTaskCounts.missingAddress +
-    dashboardTaskCounts.withoutInvoice +
-    dashboardTaskCounts.missingInvoiceSettings +
     dashboardTaskCounts.inventory;
 
   const nextPlannedOrder =
@@ -1056,7 +1052,7 @@ export default function Home() {
             </Link>
 
             <Link
-              to="/auftragseingang"
+              to="/neuer-auftrag"
               className="dashPrimaryAction"
             >
               Neuer Auftrag
@@ -1098,23 +1094,6 @@ export default function Home() {
             Lieferplan
           </button>
 
-          <button
-            type="button"
-            data-active={
-              dashboardView === "tasks"
-                ? "true"
-                : "false"
-            }
-            onClick={() =>
-              setDashboardView("tasks")
-            }
-          >
-            Offene Aufgaben
-
-            {openReviewCount > 0 ? (
-              <span>{openReviewCount}</span>
-            ) : null}
-          </button>
 
           <button
             type="button"
@@ -1131,8 +1110,7 @@ export default function Home() {
           </button>
         </nav>
 
-        {(dashboardView === "overview" ||
-          dashboardView === "planning") ? (
+        {dashboardView === "planning" ? (
           <section className="dashFilterBar">
             <div className="dashPeriodFilter">
               <button
@@ -1310,43 +1288,72 @@ export default function Home() {
           className="dashKpiBar"
           aria-label="Dashboard-Kennzahlen"
         >
-          <Link to="/auftraege">
+          <Link to="/lieferungen">
             <span>Heute</span>
+
             <strong>
               {todayOrdersSorted.length}
             </strong>
-            <small>Lieferungen</small>
+
+            <small>
+              Lieferungen
+            </small>
           </Link>
 
           <Link to="/auftraege">
             <span>Kommend</span>
+
             <strong>
               {upcomingOrdersSorted.length}
             </strong>
-            <small>geplante Aufträge</small>
+
+            <small>
+              geplante Aufträge
+            </small>
+          </Link>
+
+          <Link to="/rechnungen">
+            <span>Finanzen</span>
+
+            <strong className="dashKpiMoney">
+              {centsToEuro(
+                data.finance.currentMonthGrossCents
+              )}
+            </strong>
+
+            <small>
+              Monatsumsatz
+            </small>
           </Link>
 
           <Link to="/auftragseingang">
-            <span>Zu prüfen</span>
-            <strong>{openReviewCount}</strong>
-            <small>Aufträge und E-Mails</small>
+            <span>Offen</span>
+
+            <strong>
+              {openReviewCount}
+            </strong>
+
+            <small>
+              Prüfungen
+            </small>
           </Link>
 
-          <Link to="/auftraege">
-            <span>Bestätigt</span>
-            <strong>
-              {data.counts.confirmedOrders}
-            </strong>
-            <small>operative Aufträge</small>
-          </Link>
+          {data.counts.lowInventory > 0 ? (
+            <Link
+              to="/lager"
+              className="dashKpiWarning"
+            >
+              <span>Lager</span>
 
-          <Link to="/lager">
-            <span>Lager</span>
-            <strong>
-              {data.counts.lowInventory}
-            </strong>
-            <small>Warnungen</small>
-          </Link>
+              <strong>
+                {data.counts.lowInventory}
+              </strong>
+
+              <small>
+                Warnungen
+              </small>
+            </Link>
+          ) : null}
         </nav>
 
         {dashboardView === "overview" ? (
