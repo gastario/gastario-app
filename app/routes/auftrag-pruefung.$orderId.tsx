@@ -1,5 +1,23 @@
 import { useState } from "react";
-import { Form, Link, redirect, useLoaderData, useNavigation } from "react-router";
+import {
+  Form,
+  Link,
+  redirect,
+  useLoaderData,
+  useNavigation,
+} from "react-router";
+
+import AppLayout from "../components/AppLayout";
+
+import {
+  MetricCard,
+  MetricGrid,
+  Notice,
+  PageHeader,
+  PageSection,
+  PageShell,
+} from "../components/ui/PageShell";
+
 import orderReviewStyles from "../styles/auftrag-pruefung.css?url";
 
 function formatDate(value: string | Date | null | undefined) {
@@ -14,10 +32,6 @@ function centsToEuro(value: number | null | undefined) {
   });
 }
 
-function formatDateInput(value: string | Date | null | undefined) {
-  if (!value) return "";
-  return new Date(value).toISOString().slice(0, 10);
-}
 
 function normalizeText(value: unknown) {
   return String(value || "")
@@ -289,35 +303,87 @@ export async function action({ request, params }: { request: Request; params: { 
 }
 
 export default function AuftragPruefungPage() {
-  const { tenant, order, blocked } = useLoaderData<typeof loader>();
-  const total = order.items.reduce((sum, item) => sum + (item.totalCents || 0), 0);
-  const correctionItems = order.items.filter((item) => isHeycaterCorrectionItem(item));
-  const visibleItems = order.items.filter((item) => !isHeycaterCorrectionItem(item));
-  const visibleItemsTotal = visibleItems.reduce((sum, item) => sum + (item.totalCents || 0), 0);
-  const correctionTotal = correctionItems.reduce((sum, item) => sum + (item.totalCents || 0), 0);
-  const hasHeycaterCorrection = correctionTotal > 0;
-  const reviewState = getOrderReviewState(order);
-  const missingChecks = reviewState.missing;
-  const canConfirmOrder = missingChecks.length === 0;
+  const { tenant, order, blocked } =
+    useLoaderData<typeof loader>();
+
   const navigation = useNavigation();
 
-  const [reviewChecks, setReviewChecks] = useState({
-    customer: false,
-    deliveryAddress: false,
-    deliverySchedule: false,
-    items: false,
-    notes: false,
-  });
+  const total = order.items.reduce(
+    (sum, item) =>
+      sum + (item.totalCents || 0),
+    0
+  );
+
+  const correctionItems =
+    order.items.filter((item) =>
+      isHeycaterCorrectionItem(item)
+    );
+
+  const visibleItems =
+    order.items.filter((item) =>
+      !isHeycaterCorrectionItem(item)
+    );
+
+  const correctionTotal =
+    correctionItems.reduce(
+      (sum, item) =>
+        sum + (item.totalCents || 0),
+      0
+    );
+
+  const hasHeycaterCorrection =
+    correctionTotal > 0;
+
+  const reviewState =
+    getOrderReviewState(order);
+
+  const missingChecks =
+    reviewState.missing;
+
+  const canConfirmOrder =
+    missingChecks.length === 0;
+
+  const [reviewChecks, setReviewChecks] =
+    useState({
+      customer: false,
+      deliveryAddress: false,
+      deliverySchedule: false,
+      items: false,
+      notes: false,
+    });
 
   const completedReviewChecks =
-    Object.values(reviewChecks).filter(Boolean).length;
+    Object.values(reviewChecks).filter(
+      Boolean
+    ).length;
 
   const allReviewChecksCompleted =
     completedReviewChecks === 5;
 
   const isConfirming =
     navigation.state !== "idle" &&
-    navigation.formData?.get("_intent") === "confirmOrder";
+    navigation.formData?.get(
+      "_intent"
+    ) === "confirmOrder";
+
+  const isAlreadyConfirmed = [
+    "CONFIRMED",
+    "IN_PRODUCTION",
+    "PACKING_OPEN",
+    "DELIVERED",
+  ].includes(String(order.status));
+
+  const deliveryHref =
+    "/lieferscheine/" +
+    order.id +
+    "/pdf";
+
+  const sourceLabel =
+    order.platformName ||
+    String(order.source || "Direkt");
+
+  const statusLabel =
+    formatOrderStatus(order.status);
 
   function updateReviewCheck(
     key: keyof typeof reviewChecks,
@@ -329,1141 +395,647 @@ export default function AuftragPruefungPage() {
     }));
   }
 
-  /*
-   * gastario-confirmed-order-details-20260714
-   * Bereits übernommene Aufträge werden nur noch als
-   * Auftragsdetails angezeigt.
-   */
-  const isAlreadyConfirmed = [
-    "CONFIRMED",
-    "IN_PRODUCTION",
-    "PACKING_OPEN",
-    "DELIVERED",
-  ].includes(String(order.status));
-  const deliveryHref =
-    "/lieferscheine/" + order.id + "/pdf";
-
   return (
-    <main className="orderReviewPage g-mobile-order-detail-page" style={{ background: "linear-gradient(180deg, #eef6f8 0%, #f8fbfc 100%)", minHeight: "100vh", padding: 24 }}>
-      <div style={topbarStyle}>
-        <div>
-          <Link to="/auftraege" style={secondaryButtonStyle}>
-            Zurück zu den Aufträgen
-          </Link>
-        </div>
-
-        
-      </div>
-
-      {/* gastario-selected-order-details-view-20260714 */}
-      {isAlreadyConfirmed ? (
-        <section
-          className="g-mobile-order-detail-card"
-          style={{
-            maxWidth: 1180,
-            margin: "0 auto",
-            overflow: "hidden",
-            border: "1px solid #d9e5e0",
-            borderRadius: 24,
-            background: "#ffffff",
-            boxShadow: "0 20px 50px rgba(20, 42, 33, 0.08)",
-          }}
-        >
-          <header
-            className="g-mobile-order-detail-header"
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              gap: 24,
-              alignItems: "flex-start",
-              padding: "28px 30px 24px",
-              borderBottom: "1px solid #e3ebe7",
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  minHeight: 26,
-                  padding: "0 11px",
-                  border: "1px solid #bfe3d6",
-                  borderRadius: 999,
-                  background: "#eef9f5",
-                  color: "#087158",
-                  fontSize: 10,
-                  fontWeight: 900,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                }}
+    <AppLayout>
+      <PageShell className="orderReviewMasterPage">
+        <PageHeader
+          eyebrow={
+            isAlreadyConfirmed
+              ? "Auftragsdetails"
+              : "Auftragsprüfung"
+          }
+          title={
+            order.customerName ||
+            "Kunde unbekannt"
+          }
+          subtitle={
+            <>
+              {order.orderNumber}
+              {" · "}
+              {tenant?.name || "Gastario"}
+              {" · "}
+              {sourceLabel}
+            </>
+          }
+          actions={
+            <div className="orderReviewHeaderActions">
+              <Link
+                to="/auftraege"
+                className="orderReviewButton orderReviewButtonSecondary"
               >
-                Auftragsdetails
-              </div>
+                Zurück zu den Aufträgen
+              </Link>
 
-              <div
-                style={{
-                  marginTop: 17,
-                  color: "#557269",
-                  fontSize: 13,
-                  fontWeight: 900,
-                  letterSpacing: "0.045em",
-                }}
+              <span
+                className={
+                  "orderReviewStatus " +
+                  `orderReviewStatus--${String(
+                    order.status || "open"
+                  ).toLowerCase()}`
+                }
               >
-                {order.orderNumber}
-              </div>
-
-              <h1
-                style={{
-                  margin: "5px 0 0",
-                  color: "#102019",
-                  fontSize: 34,
-                  lineHeight: 1.08,
-                  letterSpacing: "-0.045em",
-                }}
-              >
-                {order.customerName || "Kunde unbekannt"}
-              </h1>
-
-              <p
-                style={{
-                  margin: "7px 0 0",
-                  color: "#71817a",
-                  fontSize: 13,
-                  fontWeight: 700,
-                }}
-              >
-                {order.contactName || "Keine Kontaktperson eingetragen"}
-              </p>
+                {statusLabel}
+              </span>
             </div>
+          }
+        />
 
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                minHeight: 30,
-                padding: "0 12px",
-                borderRadius: 999,
-                background: "#eaf6f1",
-                color: "#315c4f",
-                fontSize: 11,
-                fontWeight: 900,
-              }}
-            >
-              {order.platformName || String(order.source || "Direkt")}
-            </span>
-          </header>
-
-          <div
-            className="g-mobile-order-detail-content"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr) 280px",
-              gap: 24,
-              padding: "24px 30px 28px",
-            }}
-          >
-            <section>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 16,
-                  marginBottom: 14,
-                }}
-              >
-                <h2
-                  style={{
-                    margin: 0,
-                    color: "#172820",
-                    fontSize: 21,
-                    letterSpacing: "-0.035em",
-                  }}
-                >
-                  Positionen
-                </h2>
-
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    minHeight: 27,
-                    padding: "0 10px",
-                    border: "1px solid #c5e7db",
-                    borderRadius: 999,
-                    background: "#eff9f5",
-                    color: "#087158",
-                    fontSize: 10,
-                    fontWeight: 900,
-                  }}
-                >
-                  {visibleItems.length} Positionen
-                </span>
-              </div>
-
-              <div
-                className="g-mobile-order-items-list"
-                style={{
-                  overflow: "hidden",
-                  border: "1px solid #e0e8e4",
-                  borderRadius: 17,
-                  background: "#ffffff",
-                }}
-              >
-                {visibleItems.map((item, index) => (
-                  <div
-                    key={item.id}
-                    className="g-mobile-order-item-row"
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        "70px minmax(190px, .8fr) minmax(240px, 1.4fr) 100px",
-                      gap: 16,
-                      alignItems: "start",
-                      padding: "16px 17px",
-                      borderBottom:
-                        index === visibleItems.length - 1
-                          ? "none"
-                          : "1px solid #edf2ef",
-                    }}
-                  >
-                    <div>
-                      <strong
-                        style={{
-                          display: "block",
-                          color: "#102019",
-                          fontSize: 15,
-                        }}
-                      >
-                        {item.quantity}x
-                      </strong>
-
-                      <span
-                        style={{
-                          display: "block",
-                          marginTop: 3,
-                          color: "#829089",
-                          fontSize: 10,
-                          fontWeight: 700,
-                        }}
-                      >
-                        {item.unit}
-                      </span>
-                    </div>
-
-                    <strong
-                      style={{
-                        color: "#1b3027",
-                        fontSize: 14,
-                        lineHeight: 1.4,
-                      }}
-                    >
-                      {item.name}
-                    </strong>
-
-                    <p
-                      style={{
-                        margin: 0,
-                        color: "#65776f",
-                        fontSize: 11,
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {item.notes
-                        ? String(item.notes).length > 160
-                          ? String(item.notes).slice(0, 160) + "…"
-                          : item.notes
-                        : "Keine weiteren Hinweise"}
-                    </p>
-
-                    <strong
-                      style={{
-                        color: "#172820",
-                        fontSize: 14,
-                        textAlign: "right",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {centsToEuro(item.totalCents)}
-                    </strong>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <aside
-              className="g-mobile-order-summary"
-              style={{
-                display: "grid",
-                alignContent: "start",
-                gap: 10,
-              }}
-            >
-              <div
-                style={{
-                  padding: 17,
-                  border: "1px solid #dce7e2",
-                  borderRadius: 16,
-                  background: "#f8fbfa",
-                }}
-              >
-                <span
-                  style={{
-                    color: "#74877f",
-                    fontSize: 9,
-                    fontWeight: 900,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Lieferung
-                </span>
-
-                <strong
-                  style={{
-                    display: "block",
-                    marginTop: 7,
-                    color: "#172820",
-                    fontSize: 15,
-                  }}
-                >
-                  {formatDate(order.deliveryDate)}
-                </strong>
-
-                <small
-                  style={{
-                    display: "block",
-                    marginTop: 4,
-                    color: "#667970",
-                    fontSize: 12,
-                    fontWeight: 750,
-                  }}
-                >
-                  {order.deliveryTimeText || "Uhrzeit offen"}
-                </small>
-              </div>
-
-              <div
-                style={{
-                  padding: 17,
-                  border: "1px solid #dce7e2",
-                  borderRadius: 16,
-                  background: "#f8fbfa",
-                }}
-              >
-                <span
-                  style={{
-                    color: "#74877f",
-                    fontSize: 9,
-                    fontWeight: 900,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Lieferadresse
-                </span>
-
-                <strong
-                  style={{
-                    display: "block",
-                    marginTop: 7,
-                    color: "#172820",
-                    fontSize: 14,
-                  }}
-                >
-                  {order.customerName || "Kunde unbekannt"}
-                </strong>
-
-                <small
-                  style={{
-                    display: "block",
-                    marginTop: 5,
-                    color: "#667970",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    lineHeight: 1.45,
-                  }}
-                >
-                  {order.deliveryAddress || "Keine Lieferadresse eingetragen"}
-                </small>
-
-                {order.contactPhone ? (
-                  <small
-                    style={{
-                      display: "block",
-                      marginTop: 7,
-                      color: "#087158",
-                      fontSize: 11,
-                      fontWeight: 800,
-                    }}
-                  >
-                    Telefon: {order.contactPhone}
-                  </small>
-                ) : null}
-              </div>
-
-              <div
-                style={{
-                  padding: 17,
-                  border: "1px solid #c8e5da",
-                  borderRadius: 16,
-                  background: "#eef8f4",
-                }}
-              >
-                <span
-                  style={{
-                    color: "#548071",
-                    fontSize: 9,
-                    fontWeight: 900,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Gesamt
-                </span>
-
-                <strong
-                  style={{
-                    display: "block",
-                    marginTop: 7,
-                    color: "#0b664e",
-                    fontSize: 23,
-                    letterSpacing: "-0.035em",
-                  }}
-                >
-                  {centsToEuro(total)}
-                </strong>
-
-                <small
-                  style={{
-                    display: "block",
-                    marginTop: 4,
-                    color: "#5d786f",
-                    fontSize: 10,
-                    fontWeight: 800,
-                  }}
-                >
-                  Bestätigter Auftrag
-                </small>
-              </div>
-            </aside>
-          </div>
-
-          <footer
-            className="g-mobile-order-actions"
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "150px minmax(180px, 1fr) minmax(180px, 1fr) minmax(200px, 1fr)",
-              gap: 10,
-              padding: "16px 20px",
-              borderTop: "1px solid #e3ebe7",
-              background: "#f8fbfa",
-            }}
-          >
-            <Link
-              to="/auftraege"
-              style={{
-                ...secondaryButtonStyle,
-                justifyContent: "center",
-              }}
-            >
-              Zurück zur Liste
-            </Link>
-
-            <a
-              href={deliveryHref}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                ...secondaryButtonStyle,
-                justifyContent: "center",
-              }}
-            >
-              Lieferschein öffnen
-            </a>
-
-            <Link
-              to={"/auftraege/" + order.id + "/foodlabels"}
-              style={{
-                ...primaryButtonStyle,
-                justifyContent: "center",
-              }}
-            >
-              Foodlabels erstellen
-            </Link>
-
-            <button
-              type="button"
-              onClick={() => window.print()}
-              style={{
-                ...primaryButtonStyle,
-                justifyContent: "center",
-                border: "1px solid #087158",
-                cursor: "pointer",
-              }}
-            >
-              Drucken / als PDF speichern
-            </button>
-          </footer>
-        </section>
-      ) : (
-      <section className="orderReviewWorkspace" style={{ maxWidth: 1180, margin: "0 auto", background: "#fff", borderRadius: 22, padding: 34, boxShadow: "0 18px 45px rgba(15, 23, 42, 0.08)", border: "1px solid #dbe7ec" }}>
-        <p style={{ margin: 0, color: "#057a67", fontWeight: 900, textTransform: "uppercase", fontSize: 12 }}>
-          {isAlreadyConfirmed
-            ? "Auftragsdetails"
-            : "Auftragsprüfung"}
-        </p>
-
-        <h1 style={{ margin: "6px 0 4px", fontSize: 42, letterSpacing: "-0.04em", color: "#071633" }}>{order.orderNumber}</h1>
-        <p style={{ margin: 0, color: "#64748b", fontWeight: 700 }}>{tenant?.name || "Gastario"}</p>
-
-        {isAlreadyConfirmed ? (
-          <div
-            style={{
-              marginTop: 20,
-              padding: "14px 16px",
-              borderRadius: 14,
-              background: "#eef9f5",
-              color: "#087158",
-              fontWeight: 850,
-              border: "1px solid #bfe6d8",
-            }}
-          >
-            Dieser Auftrag wurde bereits übernommen und ist für die Ausführung eingeplant.
-          </div>
+        {!isAlreadyConfirmed ? (
+          <Notice type="warning">
+            Prüfe vor der Übernahme Kunde,
+            Lieferadresse, Termin,
+            Positionen und Hinweise.
+          </Notice>
         ) : (
-          <div
-            style={{
-              marginTop: 20,
-              padding: "14px 16px",
-              borderRadius: 14,
-              background: "#fff7ed",
-              color: "#9a3412",
-              fontWeight: 850,
-              border: "1px solid #fed7aa",
-            }}
-          >
-            Bitte vor Übernahme prüfen: Kunde, Lieferadresse, Datum, Uhrzeit und Positionen.
-          </div>
+          <Notice type="success">
+            Dieser Auftrag wurde bereits
+            übernommen und ist für die
+            Ausführung eingeplant.
+          </Notice>
         )}
 
-        {!isAlreadyConfirmed && !canConfirmOrder ? (
-          <div style={dangerBoxStyle}>
-            <strong>Nicht übernehmen: Erst Daten ergänzen.</strong>
-            <ul style={dangerListStyle}>
+        {!isAlreadyConfirmed &&
+        !canConfirmOrder ? (
+          <Notice
+            type="danger"
+            className="orderReviewMissingNotice"
+          >
+            <strong>
+              Auftrag noch nicht
+              freigabefähig
+            </strong>
+
+            <ul>
               {missingChecks.map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>
+
             {reviewState.hints.length > 0 ? (
-              <div style={dangerHintBoxStyle}>
-                {reviewState.hints.map((hint) => (
-                  <div key={hint}>{hint}</div>
-                ))}
+              <div className="orderReviewMissingHints">
+                {reviewState.hints.map(
+                  (hint) => (
+                    <p key={hint}>
+                      {hint}
+                    </p>
+                  )
+                )}
               </div>
             ) : null}
 
             {blocked ? (
-              <div style={dangerSmallStyle}>
-                Der Auftrag wurde nicht übernommen, weil wichtige Daten fehlen.
-              </div>
+              <p className="orderReviewBlockedHint">
+                Der Auftrag wurde nicht
+                übernommen, weil wichtige
+                Daten fehlen.
+              </p>
             ) : null}
-          </div>
+          </Notice>
         ) : null}
 
-        <div className="orderReviewInfoGrid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12, marginTop: 20 }}>
-          <Info label="Kunde" value={order.customerName} />
-          <Info label="Quelle" value={order.platformName || order.source} />
-          <Info label="Status" value={order.status} />
-          <Info label="Lieferdatum" value={formatDate(order.deliveryDate)} />
-          <Info label="Lieferzeit" value={order.deliveryTimeText || "-"} />
-          <Info label="Lieferadresse" value={order.deliveryAddress || "-"} />
-          <Info label="Kontakt" value={order.contactName || "-"} />
-          <Info label="Telefon" value={order.contactPhone || "-"} />
-          <Info label="Summe" value={centsToEuro(total)} />
-        </div>
+        <MetricGrid className="orderReviewMetrics">
+          <MetricCard
+            label="Lieferdatum"
+            value={formatDate(
+              order.deliveryDate
+            )}
+            description={
+              order.deliveryTimeText ||
+              "Uhrzeit offen"
+            }
+            badge="Termin"
+            attention={
+              !order.deliveryDate ||
+              !order.deliveryTimeText
+            }
+          />
 
-        <div className="orderReviewContentGrid" style={contentGridStyle}>
-          <section className="orderReviewPositionsCard" style={positionsCardStyle}>
-            <div style={sectionHeaderStyle}>
-              <h2 style={sectionTitleStyle}>Positionen</h2>
-              <span style={countBadgeStyle}>{visibleItems.length} Positionen</span>
-            </div>
+          <MetricCard
+            label="Positionen"
+            value={visibleItems.length}
+            description="bestellte Leistungen"
+            badge="Auftrag"
+            attention={
+              visibleItems.length === 0
+            }
+          />
 
-            <table className="orderReviewTable" style={tableStyle}>
-              <thead>
-                <tr>
-                  <th style={thStyle}>Menge</th>
-                  <th style={thStyle}>Position</th>
-                  <th style={thStyle}>Hinweis / Rohdaten</th>
-                  <th style={thRightStyle}>Betrag</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visibleItems.map((item) => (
-                  <tr key={item.id} style={tableRowStyle}>
-                    <td style={tdStyle}>
-                      <strong>{item.quantity}</strong>
-                      <div style={mutedCellStyle}>{item.unit}</div>
-                    </td>
-                    <td style={tdStyle}><strong>{item.name}</strong></td>
-                    <td style={tdMutedStyle}>
-                      {item.notes
-                        ? String(item.notes).length > 180
-                          ? String(item.notes).slice(0, 180) + "..."
-                          : item.notes
-                        : "-"}
-                    </td>
-                    <td style={tdRightStyle}>{centsToEuro(item.totalCents)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
+          <MetricCard
+            label="Auftragswert"
+            value={centsToEuro(total)}
+            description="Gesamtsumme"
+            badge="EUR"
+            attention={total <= 0}
+          />
 
-          {!isAlreadyConfirmed ? (
-            <aside
-              className="orderReviewChecklistCard"
-              style={checklistCardStyle}
+          <MetricCard
+            label="Kontakt"
+            value={
+              order.contactName || "–"
+            }
+            description={
+              order.contactPhone ||
+              "Kein Telefon hinterlegt"
+            }
+            badge="Kunde"
+            attention={!order.contactName}
+          />
+        </MetricGrid>
+
+        <div className="orderReviewLayout">
+          <div className="orderReviewMainColumn">
+            <PageSection
+              eyebrow="Auftragsdaten"
+              title="Lieferung und Kontakt"
+              description="Alle zentralen Angaben für die operative Ausführung."
             >
-              <div className="orderReviewChecklistHeader">
-                <div>
-                  <p className="orderReviewEyebrow">
-                    Freigabe
-                  </p>
+              <div className="orderReviewFacts">
+                <OrderFact
+                  label="Kunde"
+                  value={
+                    order.customerName || "–"
+                  }
+                />
 
-                  <h2 style={sectionTitleStyle}>
-                    Prüfung abschließen
-                  </h2>
+                <OrderFact
+                  label="Kontakt"
+                  value={
+                    order.contactName || "–"
+                  }
+                />
+
+                <OrderFact
+                  label="Telefon"
+                  value={
+                    order.contactPhone || "–"
+                  }
+                />
+
+                <OrderFact
+                  label="Quelle"
+                  value={sourceLabel}
+                />
+
+                <OrderFact
+                  label="Status"
+                  value={statusLabel}
+                />
+
+                <OrderFact
+                  label="Lieferdatum"
+                  value={formatDate(
+                    order.deliveryDate
+                  )}
+                />
+
+                <OrderFact
+                  label="Lieferzeit"
+                  value={
+                    order.deliveryTimeText ||
+                    "–"
+                  }
+                />
+
+                <OrderFact
+                  label="Lieferadresse"
+                  value={
+                    order.deliveryAddress ||
+                    "–"
+                  }
+                  wide
+                />
+              </div>
+            </PageSection>
+
+            <PageSection
+              eyebrow="Leistungen"
+              title="Positionen"
+              description={
+                visibleItems.length === 1
+                  ? "1 Position im Auftrag"
+                  : `${visibleItems.length} Positionen im Auftrag`
+              }
+              actions={
+                <span className="orderReviewCountBadge">
+                  {visibleItems.length}
+                </span>
+              }
+            >
+              {visibleItems.length > 0 ? (
+                <div className="orderReviewItems">
+                  <div className="orderReviewItemsHeader">
+                    <span>Menge</span>
+                    <span>Position</span>
+                    <span>Hinweis</span>
+                    <span>Betrag</span>
+                  </div>
+
+                  {visibleItems.map(
+                    (item, index) => (
+                      <article
+                        key={item.id}
+                        className="orderReviewItem"
+                      >
+                        <div className="orderReviewItemQuantity">
+                          <strong>
+                            {item.quantity}x
+                          </strong>
+
+                          <span>
+                            {item.unit}
+                          </span>
+                        </div>
+
+                        <div className="orderReviewItemName">
+                          <small>
+                            Position {index + 1}
+                          </small>
+
+                          <strong>
+                            {item.name}
+                          </strong>
+                        </div>
+
+                        <p className="orderReviewItemNotes">
+                          {item.notes
+                            ? String(
+                                item.notes
+                              ).length > 180
+                              ? String(
+                                  item.notes
+                                ).slice(
+                                  0,
+                                  180
+                                ) + "…"
+                              : item.notes
+                            : "Keine weiteren Hinweise"}
+                        </p>
+
+                        <strong className="orderReviewItemTotal">
+                          {centsToEuro(
+                            item.totalCents
+                          )}
+                        </strong>
+                      </article>
+                    )
+                  )}
                 </div>
+              ) : (
+                <div className="orderReviewEmptyState">
+                  Keine echten
+                  Auftragspositionen erkannt.
+                </div>
+              )}
 
-                <span
-                  className={
-                    allReviewChecksCompleted
-                      ? "orderReviewProgressBadge complete"
-                      : "orderReviewProgressBadge"
+              {hasHeycaterCorrection ? (
+                <div className="orderReviewCorrection">
+                  <div>
+                    <strong>
+                      Heycater-Summenabgleich
+                    </strong>
+
+                    <span>
+                      Der Korrekturwert wird in
+                      der Gesamtsumme
+                      berücksichtigt.
+                    </span>
+                  </div>
+
+                  <strong>
+                    {centsToEuro(
+                      correctionTotal
+                    )}
+                  </strong>
+                </div>
+              ) : null}
+            </PageSection>
+
+            {isAlreadyConfirmed ? (
+              <PageSection
+                eyebrow="Dokumente"
+                title="Auftrag weiterverarbeiten"
+                description="Lieferschein, Kennzeichnung und Ausdruck für den operativen Ablauf."
+              >
+                <div className="orderReviewActionGrid">
+                  <a
+                    href={deliveryHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="orderReviewButton orderReviewButtonSecondary"
+                  >
+                    Lieferschein öffnen
+                  </a>
+
+                  <Link
+                    to={
+                      "/auftraege/" +
+                      order.id +
+                      "/foodlabels"
+                    }
+                    className="orderReviewButton orderReviewButtonPrimary"
+                  >
+                    Foodlabels erstellen
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      window.print()
+                    }
+                    className="orderReviewButton orderReviewButtonPrimary"
+                  >
+                    Drucken / als PDF speichern
+                  </button>
+                </div>
+              </PageSection>
+            ) : null}
+          </div>
+
+          <aside className="orderReviewSideColumn">
+            {!isAlreadyConfirmed ? (
+              <PageSection
+                className="orderReviewApprovalCard"
+                eyebrow="Freigabe"
+                title="Prüfung abschließen"
+                description="Alle fünf Punkte bestätigen und anschließend die Abrechnung festlegen."
+                actions={
+                  <span
+                    className={
+                      allReviewChecksCompleted
+                        ? "orderReviewProgressBadge isComplete"
+                        : "orderReviewProgressBadge"
+                    }
+                  >
+                    {completedReviewChecks} von 5
+                  </span>
+                }
+              >
+                <progress
+                  className="orderReviewProgress"
+                  max={5}
+                  value={
+                    completedReviewChecks
                   }
                 >
                   {completedReviewChecks} von 5
-                </span>
-              </div>
+                </progress>
 
-              <div className="orderReviewProgress">
-                <span
-                  style={{
-                    width: completedReviewChecks * 20 + "%",
-                  }}
-                />
-              </div>
-
-              <div className="orderReviewChecks">
-                <label className="orderReviewCheck">
-                  <input
-                    type="checkbox"
-                    checked={reviewChecks.customer}
-                    onChange={(event) =>
+                <div className="orderReviewChecks">
+                  <ReviewCheck
+                    checked={
+                      reviewChecks.customer
+                    }
+                    title="Kunde stimmt"
+                    description="Firmenname und Kontakt wurden geprüft."
+                    onChange={(value) =>
                       updateReviewCheck(
                         "customer",
-                        event.currentTarget.checked
+                        value
                       )
                     }
                   />
 
-                  <span>
-                    <strong>Kunde stimmt</strong>
-                    <small>
-                      Firmenname und Kontakt wurden geprüft.
-                    </small>
-                  </span>
-                </label>
-
-                <label className="orderReviewCheck">
-                  <input
-                    type="checkbox"
-                    checked={reviewChecks.deliveryAddress}
-                    onChange={(event) =>
+                  <ReviewCheck
+                    checked={
+                      reviewChecks.deliveryAddress
+                    }
+                    title="Lieferadresse stimmt"
+                    description="Standort, Straße und PLZ sind korrekt."
+                    onChange={(value) =>
                       updateReviewCheck(
                         "deliveryAddress",
-                        event.currentTarget.checked
+                        value
                       )
                     }
                   />
 
-                  <span>
-                    <strong>Lieferadresse stimmt</strong>
-                    <small>
-                      Standort, Straße und PLZ sind korrekt.
-                    </small>
-                  </span>
-                </label>
-
-                <label className="orderReviewCheck">
-                  <input
-                    type="checkbox"
-                    checked={reviewChecks.deliverySchedule}
-                    onChange={(event) =>
+                  <ReviewCheck
+                    checked={
+                      reviewChecks.deliverySchedule
+                    }
+                    title="Datum und Uhrzeit stimmen"
+                    description="Der Liefertermin wurde abgeglichen."
+                    onChange={(value) =>
                       updateReviewCheck(
                         "deliverySchedule",
-                        event.currentTarget.checked
+                        value
                       )
                     }
                   />
 
-                  <span>
-                    <strong>
-                      Datum und Uhrzeit stimmen
-                    </strong>
-                    <small>
-                      Der Liefertermin wurde abgeglichen.
-                    </small>
-                  </span>
-                </label>
-
-                <label className="orderReviewCheck">
-                  <input
-                    type="checkbox"
-                    checked={reviewChecks.items}
-                    onChange={(event) =>
+                  <ReviewCheck
+                    checked={
+                      reviewChecks.items
+                    }
+                    title="Positionen und Mengen stimmen"
+                    description="Produkte, Anzahl und Preise wurden geprüft."
+                    onChange={(value) =>
                       updateReviewCheck(
                         "items",
-                        event.currentTarget.checked
+                        value
                       )
                     }
                   />
 
-                  <span>
-                    <strong>
-                      Positionen und Mengen stimmen
-                    </strong>
-                    <small>
-                      Produkte, Anzahl und Preise wurden geprüft.
-                    </small>
-                  </span>
-                </label>
-
-                <label className="orderReviewCheck">
-                  <input
-                    type="checkbox"
-                    checked={reviewChecks.notes}
-                    onChange={(event) =>
+                  <ReviewCheck
+                    checked={
+                      reviewChecks.notes
+                    }
+                    title="Hinweise und Allergene geprüft"
+                    description="Besonderheiten wurden berücksichtigt."
+                    onChange={(value) =>
                       updateReviewCheck(
                         "notes",
-                        event.currentTarget.checked
+                        value
                       )
                     }
                   />
+                </div>
 
-                  <span>
+                {!canConfirmOrder ? (
+                  <div className="orderReviewApprovalBlocked">
                     <strong>
-                      Hinweise und Allergene geprüft
+                      Noch nicht freigabefähig
                     </strong>
-                    <small>
-                      Besonderheiten wurden berücksichtigt.
-                    </small>
-                  </span>
-                </label>
-              </div>
 
-              {!canConfirmOrder ? (
-                <div className="orderReviewBlocked">
-                  <strong>
-                    Auftrag noch nicht freigabefähig
-                  </strong>
+                    <span>
+                      Fehlende Pflichtangaben
+                      müssen zuerst ergänzt
+                      werden.
+                    </span>
+                  </div>
+                ) : null}
 
-                  <span>
-                    Fehlende Pflichtangaben müssen zuerst
-                    ergänzt werden.
-                  </span>
-                </div>
-              ) : null}
-
-              <Form method="post">
-                <input
-                  type="hidden"
-                  name="_intent"
-                  value="confirmOrder"
-                />
-
-                <button
-                  type="submit"
-                  className="orderReviewConfirmButton"
-                  disabled={
-                    !canConfirmOrder ||
-                    !allReviewChecksCompleted ||
-                    isConfirming
-                  }
+                <Form
+                  method="post"
+                  className="orderReviewApprovalForm"
                 >
-                  {isConfirming
-                    ? "Auftrag wird übernommen..."
-                    : "Auftrag bestätigen und übernehmen"}
-                </button>
-              </Form>
+                  <input
+                    type="hidden"
+                    name="_intent"
+                    value="confirmOrder"
+                  />
 
-              <p className="orderReviewHint">
-                Nach der Bestätigung erscheint der Auftrag
-                unter den bevorstehenden Aufträgen.
-              </p>
-            </aside>
-          ) : (
-            <aside style={checklistCardStyle}>
-              <h2 style={sectionTitleStyle}>
-                Auftragsstatus
-              </h2>
+                  <label className="orderReviewField">
+                    <span>
+                      Abrechnung nach Übernahme
+                    </span>
 
-              <div
-                style={{
-                  marginTop: 18,
-                  padding: 18,
-                  borderRadius: 16,
-                  border: "1px solid #bfe6d8",
-                  background: "#eef9f5",
-                }}
-              >
-                <div
-                  style={{
-                    color: "#087158",
-                    fontSize: 13,
-                    fontWeight: 900,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.06em",
-                  }}
-                >
-                  Bestätigt
-                </div>
+                    <select
+                      name="billingMode"
+                      defaultValue="UNDECIDED"
+                    >
+                      <option value="UNDECIDED">
+                        Später entscheiden
+                      </option>
 
-                <p
-                  style={{
-                    margin: "8px 0 0",
-                    color: "#47675d",
-                    fontSize: 13,
-                    fontWeight: 700,
-                    lineHeight: 1.55,
-                  }}
-                >
-                  Der Auftrag wurde übernommen. Änderungen können über
-                  die Auftragsdaten vorgenommen werden.
+                      <option value="DIRECT_INVOICE">
+                        Gastario-Rechnung erstellen
+                      </option>
+
+                      <option value="EXTERNAL_INVOICE">
+                        Extern fakturiert
+                      </option>
+
+                      <option value="PLATFORM_CREDIT">
+                        Plattform-Gutschrift
+                      </option>
+
+                      <option value="NO_INVOICE">
+                        Keine Rechnung erforderlich
+                      </option>
+                    </select>
+                  </label>
+
+                  <button
+                    type="submit"
+                    className="orderReviewButton orderReviewButtonPrimary orderReviewConfirmButton"
+                    disabled={
+                      !canConfirmOrder ||
+                      !allReviewChecksCompleted ||
+                      isConfirming
+                    }
+                  >
+                    {isConfirming
+                      ? "Auftrag wird übernommen …"
+                      : "Auftrag bestätigen und übernehmen"}
+                  </button>
+                </Form>
+
+                <p className="orderReviewFinePrint">
+                  Nach der Bestätigung erscheint
+                  der Auftrag unter den
+                  bevorstehenden Aufträgen.
                 </p>
-              </div>
+              </PageSection>
+            ) : (
+              <PageSection
+                className="orderReviewStatusCard"
+                eyebrow="Auftragsstatus"
+                title={statusLabel}
+                description="Der Auftrag ist übernommen und steht für die operative Bearbeitung bereit."
+              >
+                <div className="orderReviewStatusSummary">
+                  <span>Auftragsnummer</span>
+                  <strong>
+                    {order.orderNumber}
+                  </strong>
+                </div>
 
-              
-            </aside>
-          )}
+                <div className="orderReviewStatusSummary">
+                  <span>Quelle</span>
+                  <strong>
+                    {sourceLabel}
+                  </strong>
+                </div>
+
+                <div className="orderReviewStatusSummary orderReviewStatusSummaryTotal">
+                  <span>Gesamt</span>
+                  <strong>
+                    {centsToEuro(total)}
+                  </strong>
+                </div>
+              </PageSection>
+            )}
+          </aside>
         </div>
-      </section>
-      )}
-    </main>
+      </PageShell>
+    </AppLayout>
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
-  const isStatus = label === "Status";
-
+function OrderFact({
+  label,
+  value,
+  wide = false,
+}: {
+  label: string;
+  value: string;
+  wide?: boolean;
+}) {
   return (
-    <div style={infoCardStyle}>
-      <div style={infoIconStyle}>{label.slice(0, 1)}</div>
-      <div style={{ minWidth: 0 }}>
-        <div style={infoLabelStyle}>{label}</div>
-        {isStatus ? (
-          <strong style={statusBadgeStyle}>{value || "-"}</strong>
-        ) : (
-          <strong style={infoValueStyle}>{value || "-"}</strong>
-        )}
-      </div>
+    <div
+      className={
+        wide
+          ? "orderReviewFact orderReviewFactWide"
+          : "orderReviewFact"
+      }
+    >
+      <span>{label}</span>
+      <strong>{value || "–"}</strong>
     </div>
   );
 }
 
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  borderBottom: "1px solid #cbd5e1",
-  padding: "10px 8px",
-  color: "#475569",
-  fontSize: 12,
-  fontWeight: 850,
-  textTransform: "uppercase",
-  letterSpacing: "0.03em",
-};
+function ReviewCheck({
+  checked,
+  title,
+  description,
+  onChange,
+}: {
+  checked: boolean;
+  title: string;
+  description: string;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <label className="orderReviewCheck">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) =>
+          onChange(
+            event.currentTarget.checked
+          )
+        }
+      />
 
-const tdStyle: React.CSSProperties = {
-  borderBottom: "1px solid #edf2f7",
-  padding: "14px 8px",
-  verticalAlign: "top",
-  fontSize: 13,
-  color: "#0f172a",
-};
+      <span>
+        <strong>{title}</strong>
+        <small>{description}</small>
+      </span>
+    </label>
+  );
+}
 
+function formatOrderStatus(
+  value: unknown
+) {
+  const status = String(value || "");
 
-const contentGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "minmax(0, 2.1fr) minmax(300px, 0.9fr)",
-  gap: 20,
-  alignItems: "start",
-  marginTop: 28,
-};
+  const labels: Record<string, string> = {
+    AUTO_CREATED: "Automatisch erkannt",
+    REVIEW_NEEDED: "Zu prüfen",
+    INCOMPLETE: "Unvollständig",
+    POSSIBLE_DUPLICATE:
+      "Mögliches Duplikat",
+    CONFIRMED: "Bestätigt",
+    IN_PRODUCTION: "In Produktion",
+    PACKING_OPEN: "Packen offen",
+    DELIVERED: "Geliefert",
+    CANCELLED: "Storniert",
+    REJECTED: "Abgelehnt",
+  };
 
-const positionsCardStyle: React.CSSProperties = {
-  border: "1px solid #dbe7ec",
-  borderRadius: 22,
-  padding: 20,
-  background: "#ffffff",
-  boxShadow: "0 14px 32px rgba(15, 23, 42, 0.06)",
-  overflow: "hidden",
-};
-
-const checklistCardStyle: React.CSSProperties = {
-  border: "1px solid #dbe7ec",
-  borderRadius: 22,
-  padding: 20,
-  background: "#ffffff",
-  boxShadow: "0 14px 32px rgba(15, 23, 42, 0.06)",
-  position: "sticky",
-  top: 20,
-};
-
-const tableStyle: React.CSSProperties = {
-  width: "100%",
-  borderCollapse: "separate",
-  borderSpacing: 0,
-};
-
-const sectionTitleStyle: React.CSSProperties = {
-  margin: 0,
-  fontSize: 24,
-  color: "#071633",
-  letterSpacing: "-0.03em",
-};
-
-const thRightStyle: React.CSSProperties = {
-  ...thStyle,
-  textAlign: "right",
-};
-
-const tdMutedStyle: React.CSSProperties = {
-  ...tdStyle,
-  color: "#334155",
-  lineHeight: 1.45,
-};
-
-const tdRightStyle: React.CSSProperties = {
-  ...tdStyle,
-  textAlign: "right",
-  fontWeight: 900,
-  whiteSpace: "nowrap",
-  color: "#071633",
-};
-
-const mutedCellStyle: React.CSSProperties = {
-  color: "#64748b",
-  fontSize: 12,
-  marginTop: 3,
-  fontWeight: 650,
-};
-
-const checkListStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 0,
-  fontWeight: 800,
-};
-
-const checkItemStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  padding: "14px 0",
-  borderBottom: "1px solid #e2e8f0",
-  color: "#0f172a",
-  fontWeight: 850,
-};
-
-const checkHintStyle: React.CSSProperties = {
-  margin: "18px 0 0",
-  color: "#64748b",
-  fontSize: 13,
-  lineHeight: 1.5,
-};
-
-
-const sectionHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 12,
-  marginBottom: 14,
-};
-
-const countBadgeStyle: React.CSSProperties = {
-  border: "1px solid #bbf7d0",
-  background: "#f0fdf4",
-  color: "#047857",
-  borderRadius: 999,
-  padding: "5px 10px",
-  fontSize: 12,
-  fontWeight: 900,
-};
-
-const tableRowStyle: React.CSSProperties = {
-  background: "#ffffff",
-};
-
-const checkBoxStyle: React.CSSProperties = {
-  width: 18,
-  height: 18,
-  borderRadius: 5,
-  border: "2px solid #cbd5e1",
-  background: "#ffffff",
-  display: "inline-block",
-  flex: "0 0 auto",
-};
-
-const infoCardStyle: React.CSSProperties = {
-  border: "1px solid #dbe7ec",
-  borderRadius: 16,
-  padding: 14,
-  background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
-  display: "grid",
-  gridTemplateColumns: "34px minmax(0, 1fr)",
-  gap: 12,
-  alignItems: "center",
-  boxShadow: "0 8px 20px rgba(15, 23, 42, 0.035)",
-};
-
-const infoIconStyle: React.CSSProperties = {
-  width: 34,
-  height: 34,
-  borderRadius: 12,
-  background: "#e6f7f3",
-  color: "#057a67",
-  display: "grid",
-  placeItems: "center",
-  fontWeight: 950,
-  fontSize: 13,
-};
-
-const infoLabelStyle: React.CSSProperties = {
-  color: "#64748b",
-  fontSize: 12,
-  fontWeight: 850,
-  marginBottom: 3,
-};
-
-const infoValueStyle: React.CSSProperties = {
-  color: "#071633",
-  fontSize: 16,
-  lineHeight: 1.25,
-  wordBreak: "break-word",
-};
-
-const statusBadgeStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  width: "fit-content",
-  borderRadius: 999,
-  padding: "4px 9px",
-  background: "#dcfce7",
-  color: "#047857",
-  border: "1px solid #86efac",
-  fontSize: 12,
-  fontWeight: 950,
-};
-
-
-const topbarStyle: React.CSSProperties = {
-  maxWidth: 1180,
-  margin: "0 auto 18px",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: 14,
-};
-
-const backLinkStyle: React.CSSProperties = {
-  fontWeight: 850,
-  color: "#057a67",
-  textDecoration: "none",
-};
-
-const actionBarStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  flexWrap: "wrap",
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  border: "1px solid #057a67",
-  background: "#057a67",
-  color: "#fff",
-  borderRadius: 12,
-  padding: "10px 14px",
-  fontWeight: 850,
-  cursor: "pointer",
-};
-
-const secondaryButtonStyle: React.CSSProperties = {
-  border: "1px solid #cbd5e1",
-  background: "#fff",
-  color: "#0f172a",
-  borderRadius: 12,
-  padding: "10px 14px",
-  fontWeight: 850,
-  textDecoration: "none",
-};
-
-const printButtonStyle: React.CSSProperties = {
-  border: "1px solid #0f766e",
-  background: "#0f766e",
-  color: "#fff",
-  borderRadius: 12,
-  padding: "10px 14px",
-  fontWeight: 850,
-  cursor: "pointer",
-};
-
-const disabledButtonStyle: React.CSSProperties = {
-  border: "1px solid #cbd5e1",
-  background: "#e2e8f0",
-  color: "#64748b",
-  borderRadius: 12,
-  padding: "10px 14px",
-  fontWeight: 850,
-  cursor: "not-allowed",
-};
-
-const dangerBoxStyle: React.CSSProperties = {
-  marginTop: 14,
-  padding: "14px 16px",
-  borderRadius: 14,
-  background: "#fef2f2",
-  color: "#991b1b",
-  fontWeight: 850,
-  border: "1px solid #fecaca",
-};
-
-const dangerListStyle: React.CSSProperties = {
-  margin: "8px 0 0",
-  paddingLeft: 20,
-  lineHeight: 1.6,
-};
-
-const dangerSmallStyle: React.CSSProperties = {
-  marginTop: 8,
-  fontSize: 13,
-  color: "#7f1d1d",
-};
-
-const dangerHintBoxStyle: React.CSSProperties = {
-  marginTop: 10,
-  padding: "10px 12px",
-  borderRadius: 12,
-  background: "#fff7ed",
-  border: "1px solid #fed7aa",
-  color: "#9a3412",
-  fontSize: 13,
-  lineHeight: 1.55,
-};
-
-
-
-
-
+  return labels[status] || status || "Offen";
+}

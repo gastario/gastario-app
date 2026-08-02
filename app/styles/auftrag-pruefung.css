@@ -1,298 +1,666 @@
-.orderReviewPage {
-  padding: 26px 30px 60px !important;
-  background:
-    linear-gradient(
-      180deg,
-      #edf7f4 0,
-      #f7faf9 330px,
-      #f8faf9 100%
-    ) !important;
+/*
+ * Gastario Masterdesign V1
+ * Auftragsprüfung und bestätigte Auftragsdetails
+ */
+
+.orderReviewMasterPage {
+  width: 100%;
 }
 
-.orderReviewWorkspace {
-  max-width: 1380px !important;
-  padding: 28px !important;
-  border-color: #d8e8e2 !important;
-  border-radius: 24px !important;
-  box-shadow:
-    0 22px 54px rgba(18, 59, 49, 0.075) !important;
-}
-
-.orderReviewInfoGrid {
-  grid-template-columns:
-    repeat(3, minmax(0, 1fr)) !important;
-  gap: 11px !important;
-}
-
-.orderReviewInfoGrid > div {
-  min-height: 76px;
-  border-color: #deebe7 !important;
-  box-shadow: none !important;
-}
-
-.orderReviewContentGrid {
-  grid-template-columns:
-    minmax(0, 1fr) 350px !important;
-  gap: 20px !important;
-  align-items: start !important;
-}
-
-.orderReviewPositionsCard {
-  min-width: 0;
-  border-color: #deebe7 !important;
-  box-shadow: none !important;
-}
-
-.orderReviewTable {
-  table-layout: fixed;
-}
-
-.orderReviewTable th {
-  background: #f1f8f5 !important;
-  color: #617870 !important;
-  font-size: 10px !important;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
-}
-
-.orderReviewTable th:first-child {
-  width: 78px;
-}
-
-.orderReviewTable th:nth-child(2) {
-  width: 29%;
-}
-
-.orderReviewTable th:last-child {
-  width: 110px;
-}
-
-.orderReviewChecklistCard {
-  position: sticky !important;
-  top: 18px !important;
-  padding: 20px !important;
-  border: 1px solid #cfe3dc !important;
-  border-radius: 19px !important;
-  background:
-    linear-gradient(
-      180deg,
-      #ffffff,
-      #f9fcfb
-    ) !important;
-  box-shadow:
-    0 15px 34px rgba(18, 73, 59, 0.07) !important;
-}
-
-.orderReviewChecklistHeader {
+.orderReviewHeaderActions {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 14px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
 }
 
-.orderReviewEyebrow {
-  margin: 0 0 5px;
-  color: #16866d;
-  font-size: 10px;
-  font-weight: 850;
-  letter-spacing: 0.075em;
-  text-transform: uppercase;
-}
-
-.orderReviewProgressBadge {
+.orderReviewButton {
+  min-height: var(--g-control-height);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 64px;
-  min-height: 30px;
-  padding: 0 9px;
-  border: 1px solid #d2e4de;
-  border-radius: 999px;
-  background: #f2f7f5;
-  color: #60766f;
-  font-size: 11px;
-  font-weight: 850;
+  gap: 7px;
+  padding: 0 15px;
+  border: 1px solid var(--g-color-border-strong);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface);
+  color: var(--g-color-text);
+  box-shadow: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: var(--g-font-weight-semibold);
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color var(--g-transition-fast),
+    background var(--g-transition-fast),
+    color var(--g-transition-fast),
+    box-shadow var(--g-transition-fast);
 }
 
-.orderReviewProgressBadge.complete {
-  border-color: #9dd3c2;
-  background: #e8f7f1;
-  color: #08705b;
+.orderReviewButton:hover {
+  background: var(--g-color-surface-soft);
+  color: var(--g-color-brand-hover);
+}
+
+.orderReviewButtonPrimary {
+  border-color: var(--g-color-brand);
+  background: var(--g-color-brand);
+  color: #ffffff;
+  box-shadow:
+    0 8px 20px rgba(11, 125, 101, 0.14);
+}
+
+.orderReviewButtonPrimary:hover {
+  border-color: var(--g-color-brand-hover);
+  background: var(--g-color-brand-hover);
+  color: #ffffff;
+}
+
+.orderReviewButtonSecondary {
+  background: var(--g-color-surface);
+}
+
+.orderReviewButton:disabled {
+  border-color: var(--g-color-border);
+  background: var(--g-color-surface-soft);
+  color: var(--g-color-text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.orderReviewStatus,
+.orderReviewCountBadge,
+.orderReviewProgressBadge {
+  min-height: 27px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border: 1px solid var(--g-color-border);
+  border-radius: var(--g-radius-pill);
+  background: var(--g-color-surface-soft);
+  color: var(--g-color-text-body);
+  font-size: 10px;
+  font-weight: var(--g-font-weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.orderReviewStatus--confirmed,
+.orderReviewStatus--in_production,
+.orderReviewStatus--packing_open,
+.orderReviewStatus--delivered,
+.orderReviewProgressBadge.isComplete {
+  border-color: var(--g-color-success-border);
+  background: var(--g-color-success-bg);
+  color: var(--g-color-success);
+}
+
+.orderReviewStatus--review_needed,
+.orderReviewStatus--incomplete,
+.orderReviewStatus--possible_duplicate,
+.orderReviewStatus--auto_created {
+  border-color: var(--g-color-warning-border);
+  background: var(--g-color-warning-bg);
+  color: var(--g-color-warning);
+}
+
+.orderReviewStatus--cancelled,
+.orderReviewStatus--rejected {
+  border-color: var(--g-color-danger-border);
+  background: var(--g-color-danger-bg);
+  color: var(--g-color-danger);
+}
+
+.orderReviewMissingNotice strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.orderReviewMissingNotice ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.orderReviewMissingHints {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--g-color-warning-border);
+  border-radius: var(--g-radius-sm);
+  background: var(--g-color-warning-bg);
+  color: var(--g-color-warning);
+}
+
+.orderReviewMissingHints p,
+.orderReviewBlockedHint {
+  margin: 0;
+}
+
+.orderReviewBlockedHint {
+  margin-top: 10px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.orderReviewMetrics .g-ui-metric-card > div > strong {
+  font-size: clamp(20px, 2.1vw, 27px);
+}
+
+.orderReviewLayout {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(310px, 360px);
+  align-items: start;
+  gap: 16px;
+}
+
+.orderReviewMainColumn,
+.orderReviewSideColumn {
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.orderReviewApprovalCard,
+.orderReviewStatusCard {
+  position: sticky;
+  top: 20px;
+}
+
+.orderReviewFacts {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.orderReviewFact {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  padding: 11px 12px;
+  border: 1px solid var(--g-color-border-subtle);
+  border-radius: var(--g-radius-sm);
+  background: var(--g-color-surface-soft);
+}
+
+.orderReviewFactWide {
+  grid-column: span 2;
+}
+
+.orderReviewFact span,
+.orderReviewStatusSummary span {
+  color: var(--g-color-text-muted);
+  font-size: 8px;
+  font-weight: var(--g-font-weight-bold);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.orderReviewFact strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--g-color-text);
+  font-size: 11px;
+  font-weight: var(--g-font-weight-semibold);
+  line-height: 1.45;
+}
+
+.orderReviewItems {
+  overflow: hidden;
+  border: 1px solid var(--g-color-border-subtle);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface);
+}
+
+.orderReviewItemsHeader,
+.orderReviewItem {
+  display: grid;
+  grid-template-columns:
+    82px
+    minmax(190px, 0.85fr)
+    minmax(230px, 1.35fr)
+    110px;
+  align-items: center;
+  gap: 14px;
+}
+
+.orderReviewItemsHeader {
+  min-height: 38px;
+  padding: 0 14px;
+  background: var(--g-color-surface-soft);
+  color: var(--g-color-text-muted);
+  font-size: 8px;
+  font-weight: var(--g-font-weight-bold);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.orderReviewItemsHeader span:last-child {
+  text-align: right;
+}
+
+.orderReviewItem {
+  min-height: 78px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--g-color-border-subtle);
+  background: var(--g-color-surface);
+}
+
+.orderReviewItemQuantity strong,
+.orderReviewItemQuantity span,
+.orderReviewItemName small,
+.orderReviewItemName strong {
+  display: block;
+}
+
+.orderReviewItemQuantity strong {
+  color: var(--g-color-text);
+  font-size: 14px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.orderReviewItemQuantity span {
+  margin-top: 3px;
+  color: var(--g-color-text-muted);
+  font-size: 10px;
+}
+
+.orderReviewItemName {
+  min-width: 0;
+}
+
+.orderReviewItemName small {
+  color: var(--g-color-brand);
+  font-size: 8px;
+  font-weight: var(--g-font-weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.orderReviewItemName strong {
+  margin-top: 4px;
+  color: var(--g-color-text);
+  font-size: 12px;
+  font-weight: var(--g-font-weight-semibold);
+  line-height: 1.4;
+}
+
+.orderReviewItemNotes {
+  margin: 0;
+  color: var(--g-color-text-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.orderReviewItemTotal {
+  color: var(--g-color-text);
+  font-size: 13px;
+  font-weight: var(--g-font-weight-semibold);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.orderReviewCorrection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--g-color-info-border);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-info-bg);
+  color: var(--g-color-info);
+}
+
+.orderReviewCorrection div > strong,
+.orderReviewCorrection div > span {
+  display: block;
+}
+
+.orderReviewCorrection div > strong {
+  font-size: 11px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.orderReviewCorrection div > span {
+  margin-top: 3px;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.orderReviewCorrection > strong {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.orderReviewEmptyState {
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  border: 1px dashed var(--g-color-border-strong);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface-soft);
+  color: var(--g-color-text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.orderReviewActionGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .orderReviewProgress {
-  height: 6px;
-  margin-top: 15px;
+  width: 100%;
+  height: 7px;
+  display: block;
   overflow: hidden;
-  border-radius: 999px;
-  background: #e6efec;
+  border: 0;
+  border-radius: var(--g-radius-pill);
+  background: var(--g-color-border-subtle);
+  appearance: none;
 }
 
-.orderReviewProgress span {
-  display: block;
-  height: 100%;
+.orderReviewProgress::-webkit-progress-bar {
   border-radius: inherit;
-  background:
-    linear-gradient(
-      90deg,
-      #22a884,
-      #76c9af
-    );
-  transition: width 180ms ease;
+  background: var(--g-color-border-subtle);
+}
+
+.orderReviewProgress::-webkit-progress-value {
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--g-color-brand),
+    var(--g-color-brand-hover)
+  );
+}
+
+.orderReviewProgress::-moz-progress-bar {
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--g-color-brand),
+    var(--g-color-brand-hover)
+  );
 }
 
 .orderReviewChecks {
   display: grid;
   gap: 8px;
-  margin-top: 17px;
+  margin-top: 16px;
 }
 
 .orderReviewCheck {
   display: grid;
-  grid-template-columns: 21px minmax(0, 1fr);
-  gap: 11px;
+  grid-template-columns:
+    20px minmax(0, 1fr);
   align-items: start;
-  padding: 12px;
-  border: 1px solid #e0ebe7;
-  border-radius: 13px;
-  background: #ffffff;
+  gap: 10px;
+  padding: 11px;
+  border: 1px solid var(--g-color-border-subtle);
+  border-radius: var(--g-radius-sm);
+  background: var(--g-color-surface);
   cursor: pointer;
   transition:
-    border-color 140ms ease,
-    background-color 140ms ease,
-    transform 140ms ease;
+    border-color var(--g-transition-fast),
+    background var(--g-transition-fast);
 }
 
 .orderReviewCheck:hover {
-  border-color: #add5c8;
-  background: #f6fbf9;
-  transform: translateY(-1px);
+  border-color: var(--g-color-success-border);
+  background: var(--g-color-brand-softer);
 }
 
 .orderReviewCheck:has(input:checked) {
-  border-color: #9bcfbe;
-  background: #eef9f5;
+  border-color: var(--g-color-success-border);
+  background: var(--g-color-success-bg);
 }
 
 .orderReviewCheck input {
-  width: 19px;
-  height: 19px;
+  width: 18px;
+  height: 18px;
   margin: 1px 0 0;
-  accent-color: #159579;
+  accent-color: var(--g-color-brand);
   cursor: pointer;
 }
 
 .orderReviewCheck > span {
+  min-width: 0;
   display: grid;
   gap: 3px;
 }
 
 .orderReviewCheck strong {
-  color: #244b42;
-  font-size: 12px;
+  color: var(--g-color-text);
+  font-size: 11px;
+  font-weight: var(--g-font-weight-semibold);
   line-height: 1.35;
 }
 
 .orderReviewCheck small {
-  color: #748780;
-  font-size: 10px;
-  font-weight: 650;
+  color: var(--g-color-text-muted);
+  font-size: 9px;
   line-height: 1.45;
 }
 
-.orderReviewBlocked {
+.orderReviewApprovalBlocked {
   display: grid;
   gap: 3px;
   margin-top: 14px;
   padding: 11px 12px;
-  border: 1px solid #efc9a7;
-  border-radius: 11px;
-  background: #fff8f1;
-  color: #9b4e15;
-  font-size: 11px;
+  border: 1px solid var(--g-color-warning-border);
+  border-radius: var(--g-radius-sm);
+  background: var(--g-color-warning-bg);
+  color: var(--g-color-warning);
+  font-size: 10px;
+}
+
+.orderReviewApprovalForm {
+  display: grid;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.orderReviewField {
+  display: grid;
+  gap: 7px;
+  color: var(--g-color-text-body);
+  font-size: 10px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.orderReviewField select {
+  width: 100%;
+  min-height: var(--g-input-height);
+  box-sizing: border-box;
+  border: 1px solid var(--g-color-border-strong);
+  border-radius: var(--g-radius-control);
+  padding: 0 12px;
+  background: var(--g-color-surface);
+  color: var(--g-color-text);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.orderReviewField select:focus {
+  border-color: var(--g-color-brand);
+  box-shadow:
+    0 0 0 4px rgba(11, 125, 101, 0.1);
 }
 
 .orderReviewConfirmButton {
   width: 100%;
-  min-height: 49px;
-  margin-top: 16px;
-  padding: 0 16px;
-  border: 1px solid #159579;
-  border-radius: 12px;
-  background: #159579;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 850;
-  cursor: pointer;
-  box-shadow:
-    0 10px 22px rgba(21, 149, 121, 0.2);
-  transition:
-    background-color 140ms ease,
-    border-color 140ms ease,
-    transform 140ms ease,
-    box-shadow 140ms ease;
+  min-height: 48px;
+  white-space: normal;
+  line-height: 1.3;
 }
 
-.orderReviewConfirmButton:hover:not(:disabled) {
-  border-color: #0e7e66;
-  background: #0e7e66;
-  transform: translateY(-1px);
-  box-shadow:
-    0 13px 27px rgba(21, 149, 121, 0.25);
-}
-
-.orderReviewConfirmButton:disabled {
-  border-color: #d3dfdb;
-  background: #e8efed;
-  color: #899993;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.orderReviewHint {
-  margin: 11px 2px 0;
-  color: #758781;
-  font-size: 10px;
-  font-weight: 650;
+.orderReviewFinePrint {
+  margin: 10px 2px 0;
+  color: var(--g-color-text-muted);
+  font-size: 9px;
   line-height: 1.5;
 }
 
-@media (max-width: 1100px) {
-  .orderReviewContentGrid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .orderReviewChecklistCard {
-    position: static !important;
-  }
+.orderReviewStatusSummary {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  padding: 11px 12px;
+  border: 1px solid var(--g-color-border-subtle);
+  border-radius: var(--g-radius-sm);
+  background: var(--g-color-surface-soft);
 }
 
-@media (max-width: 800px) {
-  .orderReviewPage {
-    padding: 16px 12px 44px !important;
-  }
+.orderReviewStatusSummary +
+.orderReviewStatusSummary {
+  margin-top: 8px;
+}
 
-  .orderReviewWorkspace {
-    padding: 19px !important;
-    border-radius: 19px !important;
-  }
+.orderReviewStatusSummary strong {
+  overflow-wrap: anywhere;
+  color: var(--g-color-text);
+  font-size: 12px;
+  font-weight: var(--g-font-weight-semibold);
+}
 
-  .orderReviewInfoGrid {
+.orderReviewStatusSummaryTotal {
+  border-color: var(--g-color-success-border);
+  background: var(--g-color-success-bg);
+}
+
+.orderReviewStatusSummaryTotal strong {
+  color: var(--g-color-success);
+  font-size: 21px;
+  letter-spacing: -0.03em;
+}
+
+@media (max-width: 1120px) {
+  .orderReviewLayout {
     grid-template-columns:
-      repeat(2, minmax(0, 1fr)) !important;
+      minmax(0, 1fr)
+      minmax(280px, 320px);
   }
 
-  .orderReviewPositionsCard {
-    overflow-x: auto;
-  }
-
-  .orderReviewTable {
-    min-width: 760px;
+  .orderReviewFacts {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 560px) {
-  .orderReviewInfoGrid {
-    grid-template-columns: 1fr !important;
+@media (max-width: 920px) {
+  .orderReviewLayout {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .orderReviewApprovalCard,
+  .orderReviewStatusCard {
+    position: static;
+  }
+
+  .orderReviewActionGrid {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .orderReviewHeaderActions {
+    width: 100%;
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr);
+    justify-content: stretch;
+  }
+
+  .orderReviewHeaderActions > * {
+    width: 100%;
+  }
+
+  .orderReviewFacts {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .orderReviewFactWide {
+    grid-column: auto;
+  }
+
+  .orderReviewItemsHeader {
+    display: none;
+  }
+
+  .orderReviewItem {
+    grid-template-columns:
+      70px minmax(0, 1fr);
+    gap: 9px 12px;
+  }
+
+  .orderReviewItemName {
+    align-self: center;
+  }
+
+  .orderReviewItemNotes {
+    grid-column: 1 / -1;
+    padding-top: 8px;
+    border-top: 1px solid var(--g-color-border-subtle);
+  }
+
+  .orderReviewItemTotal {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+
+  .orderReviewCorrection {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media print {
+  .sidebar,
+  .mobileAppBar,
+  .mobileSidebarBackdrop,
+  .orderReviewHeaderActions,
+  .orderReviewActionGrid,
+  .orderReviewApprovalCard {
+    display: none !important;
+  }
+
+  .appShell,
+  .appContent,
+  .orderReviewMasterPage {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .orderReviewLayout {
+    display: block !important;
+  }
+
+  .g-ui-card,
+  .g-ui-metric-card {
+    box-shadow: none !important;
+    break-inside: avoid;
   }
 }
