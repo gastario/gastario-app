@@ -1,6 +1,17 @@
-﻿import type { CSSProperties } from "react";
 import { Form, Link, useActionData } from "react-router";
+
 import AppLayout from "../components/AppLayout";
+
+import {
+  MetricCard,
+  MetricGrid,
+  Notice,
+  PageHeader,
+  PageSection,
+  PageShell,
+} from "../components/ui/PageShell";
+
+import "../styles/gastario-product-import.css";
 
 type ImportRow = {
   rowNumber: number;
@@ -278,185 +289,400 @@ export async function action({ request }: { request: Request }) {
 }
 
 export default function ProduktImport() {
-  const actionData = useActionData<typeof action>() as any;
+  /*
+   * gastario-product-import-masterdesign-v1-20260802
+   *
+   * Ausschließlich die Oberfläche wurde vereinheitlicht.
+   * CSV-Prüfung und Importlogik bleiben unverändert.
+   */
+  const actionData =
+    useActionData<typeof action>() as any;
+
+  const hasPreview =
+    Boolean(actionData?.preview);
+
+  const importFinished =
+    Boolean(actionData?.success);
+
+  const validCount =
+    Number(
+      actionData?.summary?.valid || 0
+    );
 
   return (
     <AppLayout>
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">Produkte</p>
-          <h1>CSV-Import</h1>
-          <span className="pageSubline">
-            Produktliste hochladen, prüfen und nur saubere Zeilen importieren.
-          </span>
-        </div>
+      <PageShell className="productImportPage">
+        <PageHeader
+          eyebrow="Produkte"
+          title="Produkt-Import"
+          subtitle="Produktlisten strukturiert hochladen, automatisch prüfen und ausschließlich saubere Datensätze übernehmen."
+          actions={
+            <Link
+              to="/produkte"
+              className="productImportSecondaryButton"
+            >
+              Zurück zu Produkten
+            </Link>
+          }
+        />
 
-        <div className="topActions">
-          <Link className="secondaryButton" to="/produkte">Zurück zu Produkten</Link>
-        </div>
-      </header>
+        <section
+          className="productImportSteps"
+          aria-label="Importablauf"
+        >
+          <article
+            className={[
+              "productImportStep",
+              hasPreview || importFinished
+                ? "productImportStep--done"
+                : "productImportStep--active",
+            ].join(" ")}
+          >
+            <span>1</span>
 
-      {actionData?.error ? (
-        <div className="noteBox" style={{ borderColor: "#fecaca", background: "#fff1f2", color: "#991b1b" }}>
-          <strong>Fehler</strong>
-          <p>{actionData.error}</p>
-        </div>
-      ) : null}
-
-      {actionData?.success ? (
-        <div className="noteBox" style={{ borderColor: "#bbf7d0", background: "#f0fdf4", color: "#166534" }}>
-          <strong>Import abgeschlossen</strong>
-          <p>{actionData.success}</p>
-        </div>
-      ) : null}
-
-      <section className="panel">
-        <div className="panelHeader">
-          <div>
-            <p className="eyebrow">Schritt 1</p>
-            <h2>CSV-Datei hochladen</h2>
-          </div>
-        </div>
-
-        <Form method="post" encType="multipart/form-data" style={{ display: "grid", gap: 14 }}>
-          <input type="hidden" name="intent" value="preview" />
-
-          <div className="noteBox">
-            <strong>Erlaubte Spalten</strong>
-            <p>name, kategorie, einheit, preis, mwst, aktiv. Komma oder Semikolon geht beides.</p>
-            <p style={{ marginTop: 10 }}>
-              <a href="/produkte/import/vorlage" className="secondaryButton">
-                CSV-Vorlage herunterladen
-              </a>
-            </p>
-          </div>
-
-          <input
-            type="file"
-            name="file"
-            accept=".csv,text/csv"
-            required
-            style={{
-              border: "1px solid #cbd5e1",
-              borderRadius: 16,
-              padding: 14,
-              background: "#ffffff",
-              fontWeight: 800,
-            }}
-          />
-
-          <button className="primaryButton" type="submit">CSV prüfen</button>
-        </Form>
-      </section>
-
-      {actionData?.preview ? (
-        <section className="panel" style={{ marginTop: 18 }}>
-          <div className="panelHeader">
             <div>
-              <p className="eyebrow">Schritt 2</p>
-              <h2>Import-Vorschau</h2>
-              <span className="pageSubline">
-                {actionData.summary.valid} sauber · {actionData.summary.warnings} mit Warnung · {actionData.summary.errors} mit Fehler
-              </span>
+              <small>Datei</small>
+              <strong>CSV auswählen</strong>
+              <p>
+                Produktliste und Spaltenstruktur
+                bereitstellen.
+              </p>
+            </div>
+          </article>
+
+          <article
+            className={[
+              "productImportStep",
+              hasPreview
+                ? "productImportStep--active"
+                : importFinished
+                  ? "productImportStep--done"
+                  : "",
+            ].join(" ")}
+          >
+            <span>2</span>
+
+            <div>
+              <small>Prüfung</small>
+              <strong>Daten kontrollieren</strong>
+              <p>
+                Fehler, Warnungen und Duplikate
+                vor dem Import erkennen.
+              </p>
+            </div>
+          </article>
+
+          <article
+            className={[
+              "productImportStep",
+              importFinished
+                ? "productImportStep--done"
+                : hasPreview
+                  ? "productImportStep--active"
+                  : "",
+            ].join(" ")}
+          >
+            <span>3</span>
+
+            <div>
+              <small>Übernahme</small>
+              <strong>Produkte importieren</strong>
+              <p>
+                Nur geprüfte und fehlerfreie
+                Zeilen werden gespeichert.
+              </p>
+            </div>
+          </article>
+        </section>
+
+        {actionData?.error ? (
+          <Notice type="danger">
+            <strong>Import konnte nicht ausgeführt werden.</strong>
+            <span>{actionData.error}</span>
+          </Notice>
+        ) : null}
+
+        {actionData?.success ? (
+          <Notice type="success">
+            <strong>Import abgeschlossen.</strong>
+            <span>{actionData.success}</span>
+          </Notice>
+        ) : null}
+
+        <PageSection
+          eyebrow="Schritt 1"
+          title="CSV-Datei auswählen"
+          description="Nutze die Gastario-Vorlage oder eine eigene CSV-Datei mit den unterstützten Spalten."
+          actions={
+            <a
+              href="/produkte/import/vorlage"
+              className="productImportSecondaryButton"
+            >
+              CSV-Vorlage herunterladen
+            </a>
+          }
+        >
+          <Form
+            method="post"
+            encType="multipart/form-data"
+            className="productImportUploadForm"
+          >
+            <input
+              type="hidden"
+              name="intent"
+              value="preview"
+            />
+
+            <div className="productImportRequirements">
+              <article>
+                <small>Pflichtfelder</small>
+                <strong>Name und Preis</strong>
+                <p>
+                  Ohne Produktname oder gültigen
+                  Nettopreis wird eine Zeile nicht
+                  importiert.
+                </p>
+              </article>
+
+              <article>
+                <small>Unterstützte Spalten</small>
+                <strong>
+                  name · kategorie · einheit
+                </strong>
+                <p>
+                  Zusätzlich werden preis, mwst
+                  und aktiv unterstützt.
+                </p>
+              </article>
+
+              <article>
+                <small>Dateiformat</small>
+                <strong>CSV mit , oder ;</strong>
+                <p>
+                  Gastario erkennt sowohl Komma
+                  als auch Semikolon als Trennzeichen.
+                </p>
+              </article>
             </div>
 
-            <Form method="post">
-              <input type="hidden" name="intent" value="import" />
-              <input type="hidden" name="payload" value={actionData.payload} />
-              <button className="primaryButton" type="submit" disabled={actionData.summary.valid === 0}>
-                Saubere Produkte importieren
-              </button>
-            </Form>
-          </div>
+            <label className="productImportDropzone">
+              <span className="productImportFileIcon">
+                CSV
+              </span>
 
-          <div style={{ overflowX: "auto", border: "1px solid #e2e8f0", borderRadius: 16 }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", background: "#ffffff" }}>
-              <thead>
-                <tr>
-                  <th style={thStyle}>Zeile</th>
-                  <th style={thStyle}>Name</th>
-                  <th style={thStyle}>Kategorie</th>
-                  <th style={thStyle}>Einheit</th>
-                  <th style={thStyle}>Preis</th>
-                  <th style={thStyle}>MwSt</th>
-                  <th style={thStyle}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {actionData.rows.map((row: ImportRow) => (
-                  <tr key={row.rowNumber}>
-                    <td style={tdStyle}>{row.rowNumber}</td>
-                    <td style={tdStyle}><strong>{row.name || "-"}</strong></td>
-                    <td style={tdStyle}>{row.category || "-"}</td>
-                    <td style={tdStyle}>{row.unit || "-"}</td>
-                    <td style={tdStyle}>{centsToEuro(row.priceCents)}</td>
-                    <td style={tdStyle}>{row.taxRate}%</td>
-                    <td style={tdStyle}>
-                      {row.errors.length > 0 ? (
-                        <span style={errorPillStyle}>{row.errors.join(" · ")}</span>
-                      ) : row.warnings.length > 0 ? (
-                        <span style={warningPillStyle}>{row.warnings.join(" · ")}</span>
-                      ) : (
-                        <span style={okPillStyle}>bereit</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      ) : null}
+              <span className="productImportFileText">
+                <strong>
+                  Produktliste auswählen
+                </strong>
+
+                <small>
+                  Unterstützt werden CSV-Dateien
+                  aus Excel, LibreOffice oder
+                  anderen Warenwirtschaftssystemen.
+                </small>
+              </span>
+
+              <input
+                type="file"
+                name="file"
+                accept=".csv,text/csv"
+                required
+              />
+            </label>
+
+            <div className="productImportFormFooter">
+              <p>
+                Die Datei wird zunächst nur
+                geprüft. Produkte werden erst
+                nach deiner Bestätigung angelegt.
+              </p>
+
+              <button
+                type="submit"
+                className="productImportPrimaryButton"
+              >
+                CSV prüfen
+              </button>
+            </div>
+          </Form>
+        </PageSection>
+
+        {hasPreview ? (
+          <>
+            <MetricGrid className="productImportMetricGrid">
+              <MetricCard
+                label="Zeilen gesamt"
+                value={actionData.summary.total}
+                description="erkannte Produktzeilen"
+                badge="CSV"
+              />
+
+              <MetricCard
+                label="Importbereit"
+                value={actionData.summary.valid}
+                description="ohne blockierende Fehler"
+                badge="Bereit"
+              />
+
+              <MetricCard
+                label="Mit Warnung"
+                value={actionData.summary.warnings}
+                description="können trotzdem importiert werden"
+                badge="Prüfen"
+                attention={
+                  actionData.summary.warnings > 0
+                }
+              />
+
+              <MetricCard
+                label="Mit Fehler"
+                value={actionData.summary.errors}
+                description="werden nicht importiert"
+                badge="Gesperrt"
+                attention={
+                  actionData.summary.errors > 0
+                }
+              />
+            </MetricGrid>
+
+            <PageSection
+              eyebrow="Schritt 2"
+              title="Prüfergebnis"
+              description="Kontrolliere die erkannten Produkte. Zeilen mit Fehlern werden beim Import automatisch ausgelassen."
+              actions={
+                <Form method="post">
+                  <input
+                    type="hidden"
+                    name="intent"
+                    value="import"
+                  />
+
+                  <input
+                    type="hidden"
+                    name="payload"
+                    value={actionData.payload}
+                  />
+
+                  <button
+                    type="submit"
+                    className="productImportPrimaryButton"
+                    disabled={validCount === 0}
+                  >
+                    {validCount > 0
+                      ? `${validCount} saubere Produkte importieren`
+                      : "Keine Produkte importierbar"}
+                  </button>
+                </Form>
+              }
+            >
+              <div className="productImportTableWrap">
+                <table className="productImportTable">
+                  <thead>
+                    <tr>
+                      <th>Zeile</th>
+                      <th>Produkt</th>
+                      <th>Kategorie</th>
+                      <th>Einheit</th>
+                      <th>Preis netto</th>
+                      <th>MwSt.</th>
+                      <th>Prüfstatus</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {actionData.rows.map(
+                      (row: ImportRow) => {
+                        const rowState =
+                          row.errors.length > 0
+                            ? "error"
+                            : row.warnings.length > 0
+                              ? "warning"
+                              : "ready";
+
+                        return (
+                          <tr
+                            key={row.rowNumber}
+                            className={
+                              `productImportRow productImportRow--${rowState}`
+                            }
+                          >
+                            <td>
+                              <span className="productImportRowNumber">
+                                {row.rowNumber}
+                              </span>
+                            </td>
+
+                            <td>
+                              <strong>
+                                {row.name || "Ohne Produktname"}
+                              </strong>
+
+                              <small>
+                                {row.active
+                                  ? "Aktiv"
+                                  : "Inaktiv"}
+                              </small>
+                            </td>
+
+                            <td>
+                              {row.category || "Nicht angegeben"}
+                            </td>
+
+                            <td>
+                              {row.unit || "Portion"}
+                            </td>
+
+                            <td>
+                              <strong>
+                                {centsToEuro(
+                                  row.priceCents
+                                )}
+                              </strong>
+                            </td>
+
+                            <td>
+                              {row.taxRate} %
+                            </td>
+
+                            <td>
+                              {row.errors.length > 0 ? (
+                                <span className="productImportStatus productImportStatus--error">
+                                  {row.errors.join(" · ")}
+                                </span>
+                              ) : row.warnings.length > 0 ? (
+                                <span className="productImportStatus productImportStatus--warning">
+                                  {row.warnings.join(" · ")}
+                                </span>
+                              ) : (
+                                <span className="productImportStatus productImportStatus--ready">
+                                  Importbereit
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      }
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="productImportTableFooter">
+                <p>
+                  Fehlerhafte Zeilen bleiben
+                  vollständig außerhalb des Imports.
+                </p>
+
+                <strong>
+                  {validCount} von{" "}
+                  {actionData.summary.total} Zeilen
+                  können übernommen werden.
+                </strong>
+              </div>
+            </PageSection>
+          </>
+        ) : null}
+      </PageShell>
     </AppLayout>
   );
 }
-
-const thStyle: CSSProperties = {
-  textAlign: "left",
-  padding: "12px 14px",
-  background: "#f8fafc",
-  color: "#64748b",
-  fontSize: 12,
-  fontWeight: 900,
-  textTransform: "uppercase",
-  letterSpacing: "0.04em",
-  borderBottom: "1px solid #e2e8f0",
-};
-
-const tdStyle: CSSProperties = {
-  padding: "13px 14px",
-  borderBottom: "1px solid #e2e8f0",
-  color: "#0f172a",
-  fontWeight: 700,
-  verticalAlign: "top",
-};
-
-const okPillStyle: CSSProperties = {
-  display: "inline-flex",
-  borderRadius: 999,
-  padding: "5px 9px",
-  background: "#f0fdf4",
-  color: "#166534",
-  fontWeight: 900,
-  fontSize: 12,
-};
-
-const warningPillStyle: CSSProperties = {
-  display: "inline-flex",
-  borderRadius: 999,
-  padding: "5px 9px",
-  background: "#fff7ed",
-  color: "#9a3412",
-  fontWeight: 900,
-  fontSize: 12,
-};
-
-const errorPillStyle: CSSProperties = {
-  display: "inline-flex",
-  borderRadius: 999,
-  padding: "5px 9px",
-  background: "#fff1f2",
-  color: "#991b1b",
-  fontWeight: 900,
-  fontSize: 12,
-};

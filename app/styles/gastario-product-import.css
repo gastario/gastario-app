@@ -1,0 +1,462 @@
+/*
+ * Gastario Masterdesign V1
+ * Produkt-Import
+ */
+
+.productImportPage {
+  width: 100%;
+}
+
+.productImportSecondaryButton,
+.productImportPrimaryButton {
+  min-height: var(--g-control-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 17px;
+  border-radius: var(--g-radius-control);
+  font: inherit;
+  font-size: 12px;
+  font-weight: var(--g-font-weight-semibold);
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.productImportSecondaryButton {
+  border: 1px solid var(--g-color-border-strong);
+  background: var(--g-color-surface);
+  color: var(--g-color-text);
+}
+
+.productImportPrimaryButton {
+  border: 1px solid var(--g-color-brand);
+  background: var(--g-color-brand);
+  color: #ffffff;
+  box-shadow:
+    0 8px 20px
+    rgba(11, 125, 101, 0.15);
+}
+
+.productImportSecondaryButton:hover,
+.productImportPrimaryButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.productImportSecondaryButton:hover {
+  border-color: var(--g-color-brand);
+  color: var(--g-color-brand-hover);
+}
+
+.productImportPrimaryButton:hover:not(:disabled) {
+  background: var(--g-color-brand-hover);
+  border-color: var(--g-color-brand-hover);
+}
+
+.productImportPrimaryButton:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.productImportSteps {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.productImportStep {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 17px;
+  border: 1px solid var(--g-color-border);
+  border-radius: var(--g-radius-card);
+  background: var(--g-color-surface);
+  box-shadow: var(--g-shadow-card);
+}
+
+.productImportStep > span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: var(--g-radius-sm);
+  background: var(--g-color-surface-soft);
+  color: var(--g-color-text-muted);
+  font-size: 12px;
+  font-weight: var(--g-font-weight-semibold);
+  box-shadow:
+    inset 0 0 0 1px
+    var(--g-color-border-subtle);
+}
+
+.productImportStep small {
+  display: block;
+  color: var(--g-color-text-muted);
+  font-size: 9px;
+  font-weight: var(--g-font-weight-semibold);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.productImportStep strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--g-color-text);
+  font-size: 13px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.productImportStep p {
+  margin: 5px 0 0;
+  color: var(--g-color-text-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.productImportStep--active {
+  border-color: var(--g-color-brand);
+  background:
+    linear-gradient(
+      145deg,
+      var(--g-color-brand-softer),
+      var(--g-color-surface)
+    );
+}
+
+.productImportStep--active > span,
+.productImportStep--done > span {
+  background: var(--g-color-brand);
+  color: #ffffff;
+}
+
+.productImportStep--done {
+  border-color: var(--g-color-success-border);
+}
+
+.productImportPage .g-ui-notice {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.productImportPage .g-ui-notice strong {
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.productImportRequirements {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.productImportRequirements article {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid var(--g-color-border-subtle);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface-soft);
+}
+
+.productImportRequirements small {
+  display: block;
+  color: var(--g-color-brand);
+  font-size: 9px;
+  font-weight: var(--g-font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.productImportRequirements strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--g-color-text);
+  font-size: 12px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.productImportRequirements p {
+  margin: 6px 0 0;
+  color: var(--g-color-text-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.productImportUploadForm {
+  display: grid;
+  gap: 14px;
+}
+
+.productImportDropzone {
+  min-height: 145px;
+  display: grid;
+  grid-template-columns:
+    auto minmax(0, 1fr) minmax(250px, 360px);
+  align-items: center;
+  gap: 18px;
+  padding: 22px;
+  border: 1px dashed var(--g-color-border-strong);
+  border-radius: var(--g-radius-control);
+  background:
+    linear-gradient(
+      145deg,
+      var(--g-color-brand-softer),
+      var(--g-color-surface)
+    );
+  cursor: pointer;
+}
+
+.productImportDropzone:hover {
+  border-color: var(--g-color-brand);
+}
+
+.productImportFileIcon {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-brand);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: var(--g-font-weight-bold);
+  letter-spacing: 0.05em;
+  box-shadow:
+    0 10px 24px
+    rgba(11, 125, 101, 0.17);
+}
+
+.productImportFileText strong {
+  display: block;
+  color: var(--g-color-text);
+  font-size: 14px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.productImportFileText small {
+  display: block;
+  max-width: 620px;
+  margin-top: 6px;
+  color: var(--g-color-text-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.productImportDropzone input[type="file"] {
+  width: 100%;
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid var(--g-color-border);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface);
+  color: var(--g-color-text-muted);
+  font: inherit;
+  font-size: 11px;
+}
+
+.productImportDropzone input[type="file"]::file-selector-button {
+  min-height: 34px;
+  margin-right: 10px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: var(--g-radius-sm);
+  background: var(--g-color-brand-soft);
+  color: var(--g-color-brand-hover);
+  font: inherit;
+  font-size: 11px;
+  font-weight: var(--g-font-weight-semibold);
+  cursor: pointer;
+}
+
+.productImportFormFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.productImportFormFooter p {
+  margin: 0;
+  color: var(--g-color-text-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.productImportMetricGrid {
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+}
+
+.productImportTableWrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--g-color-border);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface);
+}
+
+.productImportTable {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+}
+
+.productImportTable th {
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--g-color-border);
+  background: var(--g-color-surface-soft);
+  color: var(--g-color-text-muted);
+  font-size: 9px;
+  font-weight: var(--g-font-weight-semibold);
+  letter-spacing: 0.07em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.productImportTable td {
+  padding: 13px;
+  border-bottom: 1px solid var(--g-color-border-subtle);
+  color: var(--g-color-text);
+  font-size: 11px;
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+.productImportTable tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.productImportTable td > strong {
+  display: block;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.productImportTable td > small {
+  display: block;
+  margin-top: 4px;
+  color: var(--g-color-text-muted);
+  font-size: 9px;
+}
+
+.productImportRow--error {
+  background: var(--g-color-danger-bg);
+}
+
+.productImportRow--warning {
+  background: var(--g-color-warning-bg);
+}
+
+.productImportRowNumber {
+  min-width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--g-radius-sm);
+  background: var(--g-color-surface-soft);
+  color: var(--g-color-text-muted);
+  font-size: 10px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.productImportStatus {
+  max-width: 310px;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 9px;
+  border-radius: var(--g-radius-pill);
+  font-size: 10px;
+  font-weight: var(--g-font-weight-semibold);
+  line-height: 1.35;
+}
+
+.productImportStatus--ready {
+  background: var(--g-color-success-bg);
+  color: var(--g-color-success);
+}
+
+.productImportStatus--warning {
+  background: var(--g-color-warning-bg);
+  color: var(--g-color-warning);
+}
+
+.productImportStatus--error {
+  background: var(--g-color-danger-bg);
+  color: var(--g-color-danger);
+}
+
+.productImportTableFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 13px;
+  padding: 13px 15px;
+  border: 1px solid var(--g-color-border-subtle);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface-soft);
+}
+
+.productImportTableFooter p {
+  margin: 0;
+  color: var(--g-color-text-muted);
+  font-size: 10px;
+}
+
+.productImportTableFooter strong {
+  color: var(--g-color-text);
+  font-size: 11px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+@media (max-width: 1100px) {
+  .productImportSteps,
+  .productImportRequirements {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .productImportDropzone {
+    grid-template-columns:
+      auto minmax(0, 1fr);
+  }
+
+  .productImportDropzone input[type="file"] {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .productImportDropzone {
+    grid-template-columns:
+      minmax(0, 1fr);
+    text-align: center;
+  }
+
+  .productImportFileIcon {
+    margin: 0 auto;
+  }
+
+  .productImportFormFooter,
+  .productImportTableFooter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .productImportFormFooter .productImportPrimaryButton {
+    width: 100%;
+  }
+}
