@@ -1,0 +1,758 @@
+/*
+ * Gastario Masterdesign V1
+ * Lieferanten, Lager und Rezepte
+ */
+
+.supplyPage {
+  width: 100%;
+}
+
+.supplyButton {
+  min-height: var(--g-control-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 17px;
+  border-radius: var(--g-radius-control);
+  font: inherit;
+  font-size: 12px;
+  font-weight: var(--g-font-weight-semibold);
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.supplyButton:hover {
+  transform: translateY(-1px);
+}
+
+.supplyButton--primary {
+  border: 1px solid var(--g-color-brand);
+  background: var(--g-color-brand);
+  color: #ffffff;
+  box-shadow:
+    0 8px 20px
+    rgba(11, 125, 101, 0.15);
+}
+
+.supplyButton--primary:hover {
+  border-color: var(--g-color-brand-hover);
+  background: var(--g-color-brand-hover);
+}
+
+.supplyButton--secondary {
+  border: 1px solid var(--g-color-border-strong);
+  background: var(--g-color-surface);
+  color: var(--g-color-text);
+}
+
+.supplyButton--secondary:hover {
+  border-color: var(--g-color-brand);
+  color: var(--g-color-brand-hover);
+}
+
+.supplyButton--danger {
+  border: 1px solid var(--g-color-danger-border);
+  background: var(--g-color-danger-bg);
+  color: var(--g-color-danger);
+}
+
+.supplyButton--compact {
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 10px;
+}
+
+.supplyForm {
+  display: grid;
+  gap: 12px;
+  align-items: end;
+}
+
+.supplyForm--supplier {
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+}
+
+.supplyField {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.supplyField > span {
+  color: var(--g-color-text-muted);
+  font-size: 9px;
+  font-weight: var(--g-font-weight-semibold);
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.supplyField input,
+.supplyField select,
+.supplyEditGrid input,
+.inventoryEditGrid input {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--g-control-height);
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid var(--g-color-border);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface);
+  color: var(--g-color-text);
+  font: inherit;
+  font-size: 12px;
+}
+
+.supplyField input:focus,
+.supplyField select:focus,
+.supplyEditGrid input:focus,
+.inventoryEditGrid input:focus {
+  outline: none;
+  border-color: var(--g-color-brand);
+  box-shadow:
+    0 0 0 3px
+    rgba(11, 125, 101, 0.1);
+}
+
+.supplyField--wide {
+  grid-column: span 2;
+}
+
+.supplyField--grow {
+  grid-column: 1 / -2;
+}
+
+.supplyPortalSetup {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr))
+    minmax(210px, 1.1fr)
+    auto;
+  gap: 12px;
+  align-items: end;
+  padding: 16px;
+  border: 1px solid var(--g-color-border-subtle);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface-soft);
+}
+
+.supplyPortalHint {
+  min-height: var(--g-control-height);
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  padding: 8px 11px;
+  border: 1px solid var(--g-color-brand-soft);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-brand-softer);
+}
+
+.supplyPortalHint strong {
+  color: var(--g-color-brand-hover);
+  font-size: 10px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.supplyPortalHint span {
+  color: var(--g-color-text-muted);
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.supplyConnectionList {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.supplyConnectionCard {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--g-color-border);
+  border-radius: var(--g-radius-card);
+  background: var(--g-color-surface);
+  box-shadow:
+    0 7px 20px
+    rgba(15, 35, 27, 0.035);
+}
+
+.supplyConnectionTop,
+.supplySupplierTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.supplyConnectionTop > div,
+.supplySupplierTop > div {
+  min-width: 0;
+}
+
+.supplyConnectionTop small,
+.supplySupplierTop small {
+  display: block;
+  color: var(--g-color-brand);
+  font-size: 9px;
+  font-weight: var(--g-font-weight-semibold);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.supplyConnectionTop strong,
+.supplySupplierTop strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--g-color-text);
+  font-size: 15px;
+  font-weight: var(--g-font-weight-semibold);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.supplyConnectionTop > div > span {
+  display: block;
+  margin-top: 5px;
+  color: var(--g-color-text-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.supplyStatus {
+  min-height: 27px;
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  padding: 0 10px;
+  border-radius: var(--g-radius-pill);
+  font-size: 9px;
+  font-weight: var(--g-font-weight-semibold);
+  white-space: nowrap;
+}
+
+.supplyStatus--success {
+  border: 1px solid var(--g-color-success-border);
+  background: var(--g-color-success-bg);
+  color: var(--g-color-success);
+}
+
+.supplyStatus--warning {
+  border: 1px solid var(--g-color-warning-border);
+  background: var(--g-color-warning-bg);
+  color: var(--g-color-warning);
+}
+
+.supplyStatus--danger {
+  border: 1px solid var(--g-color-danger-border);
+  background: var(--g-color-danger-bg);
+  color: var(--g-color-danger);
+}
+
+.supplyConnectionFacts {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.supplyConnectionFacts > div {
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid var(--g-color-border-subtle);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface-soft);
+}
+
+.supplyConnectionFacts small {
+  display: block;
+  color: var(--g-color-text-muted);
+  font-size: 8px;
+  font-weight: var(--g-font-weight-semibold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.supplyConnectionFacts strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--g-color-text);
+  font-size: 10px;
+  font-weight: var(--g-font-weight-semibold);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.supplyConnectionError {
+  margin-top: 11px;
+  padding: 10px 12px;
+  border: 1px solid var(--g-color-danger-border);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-danger-bg);
+  color: var(--g-color-danger);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.supplyConnectionActions,
+.supplySupplierActions,
+.inventoryDangerActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.supplyDetails {
+  min-width: 0;
+}
+
+.supplyDetails > summary {
+  list-style: none;
+}
+
+.supplyDetails > summary::-webkit-details-marker {
+  display: none;
+}
+
+.supplyInlineForm,
+.supplyEditGrid,
+.inventoryEditGrid,
+.inventoryStockForm {
+  display: grid;
+  gap: 9px;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--g-color-border);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface-soft);
+}
+
+.supplyInlineForm {
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr)) auto;
+}
+
+.supplySupplierGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.supplySupplierCard {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--g-color-border);
+  border-radius: var(--g-radius-card);
+  background: var(--g-color-surface);
+}
+
+.supplySupplierFacts {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+.supplySupplierFacts > div {
+  min-width: 0;
+  padding: 10px 11px;
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface-soft);
+}
+
+.supplySupplierFacts dt {
+  color: var(--g-color-text-muted);
+  font-size: 8px;
+  font-weight: var(--g-font-weight-semibold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.supplySupplierFacts dd {
+  margin: 5px 0 0;
+  color: var(--g-color-text);
+  font-size: 10px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.supplySupplierFactWide {
+  grid-column: 1 / -1;
+}
+
+.supplyEditGrid {
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+}
+
+.supplyEditWide,
+.inventoryEditWide {
+  grid-column: 1 / -1;
+}
+
+.supplyEmpty {
+  min-height: 78px;
+  display: grid;
+  align-content: center;
+  padding: 15px;
+  border: 1px dashed var(--g-color-border-strong);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface-soft);
+}
+
+.supplyEmpty strong {
+  color: var(--g-color-text);
+  font-size: 11px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.supplyEmpty p {
+  margin: 5px 0 0;
+  color: var(--g-color-text-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+/* Lager */
+
+.inventoryCreateForm {
+  display: grid;
+  grid-template-columns:
+    1.35fr repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.inventoryField--note {
+  grid-column: 1 / -2;
+}
+
+.inventoryMasterTableWrap,
+.recipesMasterTableWrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--g-color-border);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface);
+}
+
+.inventoryMasterTable,
+.recipesMasterTable {
+  width: 100%;
+  min-width: 1040px;
+  border-collapse: collapse;
+}
+
+.inventoryMasterTable th,
+.recipesMasterTable th {
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--g-color-border);
+  background: var(--g-color-surface-soft);
+  color: var(--g-color-text-muted);
+  font-size: 9px;
+  font-weight: var(--g-font-weight-semibold);
+  letter-spacing: 0.07em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.inventoryMasterTable td,
+.recipesMasterTable td {
+  padding: 13px;
+  border-bottom: 1px solid var(--g-color-border-subtle);
+  color: var(--g-color-text);
+  font-size: 10px;
+  line-height: 1.45;
+  vertical-align: top;
+}
+
+.inventoryMasterTable tbody tr:last-child td,
+.recipesMasterTable tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.inventoryMasterTable td > strong,
+.recipesMasterTable td > strong {
+  display: block;
+  font-size: 11px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.inventoryMasterTable td > small {
+  display: block;
+  margin-top: 4px;
+  color: var(--g-color-text-muted);
+  font-size: 9px;
+}
+
+.inventoryMasterQuantity {
+  color: var(--g-color-brand-hover) !important;
+  font-size: 14px !important;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.inventoryMasterQuantity small {
+  display: inline !important;
+  color: inherit !important;
+}
+
+.inventoryActions {
+  min-width: 110px;
+}
+
+.inventoryActionPanel {
+  width: min(720px, 75vw);
+  display: grid;
+  gap: 12px;
+}
+
+.inventoryStockForm {
+  grid-template-columns:
+    minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+.inventoryEditGrid {
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+}
+
+.inventoryDangerActions {
+  margin-top: 0;
+}
+
+/* Rezepte */
+
+.recipesWorkspace {
+  min-width: 0;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) minmax(300px, 350px);
+  gap: 16px;
+  align-items: start;
+}
+
+.recipesMainSection,
+.recipesSideStack {
+  min-width: 0;
+}
+
+.recipesSideStack {
+  display: grid;
+  gap: 16px;
+}
+
+.recipeIngredientList {
+  display: grid;
+  gap: 9px;
+}
+
+.recipeIngredientRow {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 13px;
+  border: 1px solid var(--g-color-border-subtle);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface);
+}
+
+.recipeIngredientRow > div {
+  min-width: 0;
+}
+
+.recipeIngredientRow strong {
+  display: block;
+  color: var(--g-color-text);
+  font-size: 11px;
+  font-weight: var(--g-font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.recipeIngredientRow span {
+  display: block;
+  margin-top: 4px;
+  color: var(--g-color-text-muted);
+  font-size: 9px;
+}
+
+.recipeIngredientRow small {
+  flex: 0 0 auto;
+  color: var(--g-color-brand-hover);
+  font-size: 10px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.recipeAutomationInfo {
+  padding: 14px;
+  border: 1px solid var(--g-color-border-subtle);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface);
+}
+
+.recipeAutomationInfo strong {
+  color: var(--g-color-text);
+  font-size: 11px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.recipeAutomationInfo p {
+  margin: 7px 0 12px;
+  color: var(--g-color-text-muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+@media (max-width: 1250px) {
+  .supplyPortalSetup {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .supplyPortalSetup .supplyPortalHint {
+    grid-column: span 2;
+  }
+
+  .inventoryCreateForm {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+  }
+
+  .inventoryField--note {
+    grid-column: span 3;
+  }
+}
+
+@media (max-width: 1100px) {
+  .supplyConnectionList,
+  .supplySupplierGrid {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .recipesWorkspace {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .recipesSideStack {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 800px) {
+  .supplyForm--supplier,
+  .supplyPortalSetup,
+  .inventoryCreateForm,
+  .supplyInlineForm,
+  .supplyEditGrid,
+  .inventoryEditGrid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .supplyField--wide,
+  .supplyField--grow,
+  .supplyPortalSetup .supplyPortalHint,
+  .inventoryField--note,
+  .supplyEditWide,
+  .inventoryEditWide {
+    grid-column: 1 / -1;
+  }
+
+  .inventoryActionPanel {
+    width: min(620px, 80vw);
+  }
+}
+
+@media (max-width: 700px) {
+  .supplyForm--supplier,
+  .supplyPortalSetup,
+  .inventoryCreateForm,
+  .supplyInlineForm,
+  .supplyEditGrid,
+  .inventoryEditGrid,
+  .inventoryStockForm,
+  .recipesSideStack {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .supplyField--wide,
+  .supplyField--grow,
+  .supplyPortalSetup .supplyPortalHint,
+  .inventoryField--note,
+  .supplyEditWide,
+  .inventoryEditWide {
+    grid-column: auto;
+  }
+
+  .supplyConnectionFacts,
+  .supplySupplierFacts {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .supplySupplierFactWide {
+    grid-column: auto;
+  }
+
+  .supplyConnectionActions,
+  .supplySupplierActions,
+  .inventoryDangerActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .supplyConnectionActions > *,
+  .supplySupplierActions > *,
+  .inventoryDangerActions > * {
+    width: 100%;
+  }
+
+  .supplyConnectionActions .supplyButton,
+  .supplySupplierActions .supplyButton,
+  .inventoryDangerActions .supplyButton {
+    width: 100%;
+  }
+
+  .inventoryActionPanel {
+    width: 100%;
+  }
+}
+
+@media print {
+  .supplyPrintButton,
+  .supplyPage .g-ui-header-actions,
+  .supplySupplierActions,
+  .supplyConnectionActions,
+  .inventoryActions {
+    display: none !important;
+  }
+
+  .supplyPage .g-ui-card,
+  .supplyPage .g-ui-metric-card {
+    box-shadow: none !important;
+  }
+}

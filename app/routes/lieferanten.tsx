@@ -1,5 +1,18 @@
 import { Form, useActionData, useLoaderData } from "react-router";
+
 import AppLayout from "../components/AppLayout";
+
+import {
+  MetricCard,
+  MetricGrid,
+  Notice,
+  PageHeader,
+  PageSection,
+  PageShell,
+} from "../components/ui/PageShell";
+
+import "../styles/gastario-page-shell.css";
+import "../styles/gastario-supply-masterdesign.css";
 
 export function meta() {
   return [{ title: "Lieferanten · Gastario" }];
@@ -494,684 +507,748 @@ const automaticSupplierProviders = [
     internalType: "API",
   },
 ] as const;
-const inputStyle = {
-  border: "1px solid #cbd5e1",
-  borderRadius: 12,
-  padding: "11px 12px",
-  fontWeight: 750,
-  width: "100%",
-};
-
 export default function SuppliersPage() {
+  /*
+   * gastario-suppliers-masterdesign-v1-20260802
+   *
+   * Stammdaten- und Verbindungslogik bleiben unverändert.
+   * Die Oberfläche nennt vorbereitete Konten bewusst
+   * Lieferantenportale statt fertiger API-Schnittstellen.
+   */
   const data = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
+  const actionData =
+    useActionData<typeof action>() as any;
+
+  const printPage = () => {
+    window.print();
+  };
 
   return (
     <AppLayout>
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">Einkauf & Lager</p>
-          <h1>Lieferanten</h1>
-          <span className="pageSubline">
-            Lieferantenverwaltung fuer {data.tenant.name}: Ansprechpartner, Bestelltage und Artikelgruppen.
-          </span>
-        </div>
+      <PageShell className="supplyPage">
+        <PageHeader
+          eyebrow="Einkauf & Lager"
+          title="Lieferanten"
+          subtitle={
+            <>
+              Lieferantenstammdaten, Portalverbindungen,
+              Katalogartikel und Preisstände für{" "}
+              {data.tenant.name}.
+            </>
+          }
+          actions={
+            <button
+              className="supplyButton supplyButton--secondary supplyPrintButton"
+              type="button"
+              onClick={printPage}
+            >
+              Drucken
+            </button>
+          }
+        />
 
-        <div className="topActions">
-          <button className="secondaryButton" type="button" onClick={() => window.print()}>
-            Drucken
-          </button>
-        </div>
-      </header>
+        {actionData?.success ? (
+          <Notice type="success">
+            {actionData.success}
+          </Notice>
+        ) : null}
 
-      {actionData?.success ? (
-        <div style={{ background: "#ecfdf5", border: "1px solid #a7f3d0", color: "#065f46", padding: 16, borderRadius: 16, fontWeight: 900, marginBottom: 16 }}>
-          {actionData.success}
-        </div>
-      ) : null}
+        {actionData?.error ? (
+          <Notice type="danger">
+            {actionData.error}
+          </Notice>
+        ) : null}
 
-      {actionData?.error ? (
-        <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", padding: 16, borderRadius: 16, fontWeight: 900, marginBottom: 16 }}>
-          {actionData.error}
-        </div>
-      ) : null}
+        <MetricGrid>
+          <MetricCard
+            label="Lieferanten"
+            value={data.stats.total}
+            description={`${data.stats.active} aktiv`}
+            badge="Stammdaten"
+          />
 
-      <section
-        className="orderSummaryGrid"
-        style={{
-          gridTemplateColumns:
-            "repeat(5, minmax(0, 1fr))",
-        }}
-      >
-        <article className="metricCard">
-          <div>
-            <p>Lieferanten</p>
-            <strong>{data.stats.total}</strong>
-            <span>{data.stats.active} aktiv</span>
-          </div>
-          <small data-trend="aktiv">Stammdaten</small>
-        </article>
+          <MetricCard
+            label="Portalverbindungen"
+            value={data.stats.connections}
+            description={`${data.stats.activeConnections} aktiv verbunden`}
+            badge="Konten"
+          />
 
-        <article className="metricCard">
-          <div>
-            <p>Verbindungen</p>
-            <strong>{data.stats.connections}</strong>
-            <span>
-              {data.stats.activeConnections} live aktiv
-            </span>
-          </div>
-          <small data-trend="bereit">Schnittstellen</small>
-        </article>
+          <MetricCard
+            label="Katalogartikel"
+            value={data.stats.catalogItems}
+            description="erkannte Lieferantenartikel"
+            badge="Sortiment"
+          />
 
-        <article className="metricCard">
-          <div>
-            <p>Katalogartikel</p>
-            <strong>{data.stats.catalogItems}</strong>
-            <span>zugeordnete Lieferantenartikel</span>
-          </div>
-          <small data-trend="bereit">Katalog</small>
-        </article>
+          <MetricCard
+            label="Aktuelle Preise"
+            value={data.stats.currentPrices}
+            description={`${data.stats.stalePrices} Preisstände älter als 24 Stunden`}
+            badge={
+              data.stats.stalePrices > 0
+                ? "Prüfen"
+                : "Aktuell"
+            }
+            attention={data.stats.stalePrices > 0}
+          />
+        </MetricGrid>
 
-        <article className="metricCard">
-          <div>
-            <p>Aktuelle Preise</p>
-            <strong>{data.stats.currentPrices}</strong>
-            <span>innerhalb der letzten 24 Stunden</span>
-          </div>
-          <small data-trend="aktiv">Aktuell</small>
-        </article>
-
-        <article className="metricCard">
-          <div>
-            <p>Veraltete Preise</p>
-            <strong>{data.stats.stalePrices}</strong>
-            <span>älter als 24 Stunden</span>
-          </div>
-          <small data-trend="pruefen">Prüfen</small>
-        </article>
-      </section>
-      <section className="panel">
-        <div className="panelHeader">
-          <div>
-            <p className="eyebrow">Neuer Lieferant</p>
-            <h2>Lieferant anlegen</h2>
-          </div>
-        </div>
-
-        <Form method="post" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12, alignItems: "end" }}>
-          <input type="hidden" name="intent" value="createSupplier" />
-
-          <label>
-            Name
-            <input name="name" placeholder="Metro" style={inputStyle} required />
-          </label>
-
-          <label>
-            Kategorie
-            <input name="category" placeholder="Lebensmittel" style={inputStyle} />
-          </label>
-
-          <label>
-            Ansprechpartner
-            <input name="contactName" placeholder="Herr/Frau..." style={inputStyle} />
-          </label>
-
-          <label>
-            Bestelltage
-            <input name="orderDays" placeholder="Mo-Fr" style={inputStyle} />
-          </label>
-
-          <label>
-            E-Mail
-            <input name="email" type="email" placeholder="bestellung@..." style={inputStyle} />
-          </label>
-
-          <label>
-            Telefon
-            <input name="phone" placeholder="030..." style={inputStyle} />
-          </label>
-
-          <label style={{ gridColumn: "span 2" }}>
-            Artikel / Sortiment
-            <input name="items" placeholder="Reis, Huhn, Gemuese..." style={inputStyle} />
-          </label>
-
-          <label style={{ gridColumn: "1 / -2" }}>
-            Notiz
-            <input name="notes" placeholder="optional" style={inputStyle} />
-          </label>
-
-          <button className="primaryButton" type="submit">
-            Anlegen
-          </button>
-        </Form>
-      </section>
-
-      <section className="panel">
-        <div className="panelHeader">
-          <div>
-            <p className="eyebrow">
-              Tagespreise & Schnittstellen
-            </p>
-            <h2>Lieferantenverbindungen</h2>
-            <span className="pageSubline">
-              Verbinde Lieferantenkonten, Preislisten oder
-              manuelle Kataloge mit Gastario.
-            </span>
-          </div>
-        </div>
-
-        {data.suppliers.length === 0 ? (
-          <div className="noteBox">
-            <strong>
-              Zuerst einen Lieferanten anlegen
-            </strong>
-            <p>
-              Eine Verbindung kann erst einem vorhandenen
-              Lieferanten zugeordnet werden.
-            </p>
-          </div>
-        ) : (
+        <PageSection
+          eyebrow="Stammdaten"
+          title="Lieferant anlegen"
+          description="Kontaktdaten, Bestelltage und das typische Sortiment zentral erfassen."
+        >
           <Form
             method="post"
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "1.1fr 1fr 1fr 1fr 1fr auto",
-              gap: 12,
-              alignItems: "end",
-              padding: 18,
-              border: "1px solid #dbe7e2",
-              borderRadius: 16,
-              background: "#f8fbfa",
-            }}
+            className="supplyForm supplyForm--supplier"
           >
             <input
               type="hidden"
               name="intent"
-              value="createConnection"
+              value="createSupplier"
             />
 
-            <label>
-              Lieferant
-              <select
-                name="supplierId"
-                style={inputStyle}
-                required
-              >
-                <option value="">
-                  Lieferant auswählen
-                </option>
-
-                {data.suppliers
-                  .filter((supplier: any) => supplier.active)
-                  .map((supplier: any) => (
-                    <option
-                      key={supplier.id}
-                      value={supplier.id}
-                    >
-                      {supplier.name}
-                    </option>
-                  ))}
-              </select>
-            </label>
-
-            <label>
-              Anbieter
-              <select
-                name="providerCode"
-                style={inputStyle}
-                defaultValue=""
-                required
-              >
-                <option value="" disabled>
-                  Anbieter auswählen
-                </option>
-
-                {automaticSupplierProviders.map(
-                  (provider) => (
-                    <option
-                      key={provider.code}
-                      value={provider.code}
-                    >
-                      {provider.name}
-                    </option>
-                  )
-                )}
-              </select>
-            </label>
-
-            <label>
-              Standort / Markt
+            <label className="supplyField">
+              <span>Name</span>
               <input
-                name="locationName"
-                placeholder="z. B. Berlin-Marienfelde"
-                style={inputStyle}
+                name="name"
+                placeholder="z. B. METRO"
+                required
               />
             </label>
 
-            <label>
-              Kundennummer
+            <label className="supplyField">
+              <span>Kategorie</span>
               <input
-                name="customerNumber"
+                name="category"
+                placeholder="Lebensmittel"
+              />
+            </label>
+
+            <label className="supplyField">
+              <span>Ansprechpartner</span>
+              <input
+                name="contactName"
+                placeholder="Herr / Frau …"
+              />
+            </label>
+
+            <label className="supplyField">
+              <span>Bestelltage</span>
+              <input
+                name="orderDays"
+                placeholder="Mo–Fr"
+              />
+            </label>
+
+            <label className="supplyField">
+              <span>E-Mail</span>
+              <input
+                name="email"
+                type="email"
+                placeholder="bestellung@…"
+              />
+            </label>
+
+            <label className="supplyField">
+              <span>Telefon</span>
+              <input
+                name="phone"
+                placeholder="030 …"
+              />
+            </label>
+
+            <label className="supplyField supplyField--wide">
+              <span>Artikel / Sortiment</span>
+              <input
+                name="items"
+                placeholder="Reis, Hähnchen, Gemüse …"
+              />
+            </label>
+
+            <label className="supplyField supplyField--grow">
+              <span>Notiz</span>
+              <input
+                name="notes"
                 placeholder="optional"
-                style={inputStyle}
               />
             </label>
-
-            <div
-              style={{
-                display: "grid",
-                gap: 5,
-                padding: "11px 12px",
-                border: "1px solid #cfe3dc",
-                borderRadius: 12,
-                background: "#f1f8f5",
-              }}
-            >
-              <strong
-                style={{
-                  color: "#087b59",
-                  fontSize: 12,
-                }}
-              >
-                Automatische Aktualisierung
-              </strong>
-
-              <span
-                style={{
-                  color: "#60766e",
-                  fontSize: 10,
-                  lineHeight: 1.4,
-                }}
-              >
-                Mehrmals täglich und erneut vor dem Einkauf.
-              </span>
-            </div>
 
             <button
-              className="primaryButton"
+              className="supplyButton supplyButton--primary"
               type="submit"
             >
-              Automatisch verbinden
+              Lieferant anlegen
             </button>
           </Form>
-        )}
+        </PageSection>
 
-        <div
-          style={{
-            display: "grid",
-            gap: 12,
-            marginTop: 18,
-          }}
+        <PageSection
+          eyebrow="Lieferantenportale"
+          title="Portalzugang vorbereiten"
+          description="Gastario legt die Verbindung an. Die sichere Anmeldung und der automatische Browserabruf werden anschließend lieferantenspezifisch eingerichtet."
         >
-          {data.connections.length === 0 ? (
-            <div className="noteBox">
+          {data.suppliers.length === 0 ? (
+            <div className="supplyEmpty">
               <strong>
-                Noch keine Verbindung eingerichtet
+                Zuerst einen Lieferanten anlegen
               </strong>
               <p>
-                Lege zunächst eine manuelle Verbindung oder
-                einen Preislisten-Import an.
+                Ein Portalzugang kann erst einem
+                vorhandenen Lieferanten zugeordnet
+                werden.
               </p>
             </div>
           ) : (
-            data.connections.map((connection: any) => {
-              const lastSync =
-                connection.syncRuns[0] || null;
+            <Form
+              method="post"
+              className="supplyPortalSetup"
+            >
+              <input
+                type="hidden"
+                name="intent"
+                value="createConnection"
+              />
 
-              const statusLabel =
-                connection.status === "ACTIVE"
-                  ? "Aktiv"
-                  : connection.status === "CONFIGURED"
-                    ? "Zugang wird eingerichtet"
-                    : connection.status === "ERROR"
-                      ? "Fehler"
-                      : connection.status === "PAUSED"
-                        ? "Pausiert"
-                        : "Nicht verbunden";
-
-              return (
-                <article
-                  key={connection.id}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns:
-                      "minmax(210px, 1.2fr) 120px 150px 130px minmax(190px, 1fr) auto",
-                    gap: 16,
-                    alignItems: "center",
-                    padding: 16,
-                    border: "1px solid #dbe7e2",
-                    borderRadius: 14,
-                    background: "#ffffff",
-                  }}
+              <label className="supplyField">
+                <span>Lieferant</span>
+                <select
+                  name="supplierId"
+                  defaultValue=""
+                  required
                 >
-                  <div
-                    style={{
-                      display: "grid",
-                      gap: 4,
-                    }}
-                  >
-                    <strong>
-                      {connection.supplierName}
-                    </strong>
-                    <span>
-                      {connection.label ||
-                        connection.type}
-                    </span>
-                    <small>
-                      Kundennummer:{" "}
-                      {connection.customerNumber ||
-                        connection.settingsJson?.customerNumber ||
-                        "-"}
-                    </small>
+                  <option value="" disabled>
+                    Lieferant auswählen
+                  </option>
 
-                    <small>
-                      Standort:{" "}
-                      {connection.settingsJson?.locationName ||
-                        "-"}
-                    </small>
-                  </div>
+                  {data.suppliers
+                    .filter(
+                      (supplier: any) =>
+                        supplier.active
+                    )
+                    .map((supplier: any) => (
+                      <option
+                        key={supplier.id}
+                        value={supplier.id}
+                      >
+                        {supplier.name}
+                      </option>
+                    ))}
+                </select>
+              </label>
 
-                  <div>
-                    <small>Anbieter</small>
-                    <strong
-                      style={{
-                        display: "block",
-                        marginTop: 4,
-                      }}
-                    >
-                      {connection.settingsJson?.providerName ||
-                        connection.label ||
-                        connection.supplierName}
-                    </strong>
-                  </div>
+              <label className="supplyField">
+                <span>Portal</span>
+                <select
+                  name="providerCode"
+                  defaultValue=""
+                  required
+                >
+                  <option value="" disabled>
+                    Portal auswählen
+                  </option>
 
-                  <div>
-                    <small>Status</small>
-                    <strong
-                      style={{
-                        display: "block",
-                        marginTop: 4,
-                        color:
-                          connection.status === "ACTIVE"
-                            ? "#087b59"
-                            : connection.status === "ERROR"
-                              ? "#b91c1c"
-                              : "#596d66",
-                      }}
-                    >
-                      {statusLabel}
-                    </strong>
-                  </div>
+                  {automaticSupplierProviders.map(
+                    (provider) => (
+                      <option
+                        key={provider.code}
+                        value={provider.code}
+                      >
+                        {provider.name}
+                      </option>
+                    )
+                  )}
+                </select>
+              </label>
 
-                  <div>
-                    <small>Katalogartikel</small>
-                    <strong
-                      style={{
-                        display: "block",
-                        marginTop: 4,
-                      }}
-                    >
-                      {connection._count.catalogItems}
-                    </strong>
-                  </div>
+              <label className="supplyField">
+                <span>Standort / Markt</span>
+                <input
+                  name="locationName"
+                  placeholder="z. B. Berlin-Marienfelde"
+                />
+              </label>
 
-                  <div>
-                    <small>Letzte Synchronisierung</small>
-                    <strong
-                      style={{
-                        display: "block",
-                        marginTop: 4,
-                      }}
-                    >
-                      {connection.lastSyncAt
+              <label className="supplyField">
+                <span>Kundennummer</span>
+                <input
+                  name="customerNumber"
+                  placeholder="optional"
+                />
+              </label>
+
+              <div className="supplyPortalHint">
+                <strong>
+                  Anmeldung folgt im nächsten Schritt
+                </strong>
+                <span>
+                  Zugangsdaten werden nicht in diesem
+                  Formular gespeichert.
+                </span>
+              </div>
+
+              <button
+                className="supplyButton supplyButton--primary"
+                type="submit"
+              >
+                Portal vorbereiten
+              </button>
+            </Form>
+          )}
+
+          <div className="supplyConnectionList">
+            {data.connections.length === 0 ? (
+              <div className="supplyEmpty">
+                <strong>
+                  Noch kein Lieferantenportal vorbereitet
+                </strong>
+                <p>
+                  Lege oben die erste Verbindung an.
+                  Danach kann die sichere Anmeldung
+                  eingerichtet werden.
+                </p>
+              </div>
+            ) : (
+              data.connections.map(
+                (connection: any) => {
+                  const lastSync =
+                    connection.syncRuns[0] || null;
+
+                  const statusLabel =
+                    connection.status === "ACTIVE"
+                      ? "Verbunden"
+                      : connection.status ===
+                          "CONFIGURED"
+                        ? "Anmeldung erforderlich"
+                        : connection.status === "ERROR"
+                          ? "Fehler"
+                          : connection.status ===
+                              "PAUSED"
+                            ? "Pausiert"
+                            : "Nicht verbunden";
+
+                  const statusTone =
+                    connection.status === "ACTIVE"
+                      ? "success"
+                      : connection.status === "ERROR"
+                        ? "danger"
+                        : "warning";
+
+                  const lastSyncText =
+                    connection.lastSyncAt
+                      ? new Date(
+                          connection.lastSyncAt
+                        ).toLocaleString("de-DE")
+                      : lastSync?.startedAt
                         ? new Date(
-                            connection.lastSyncAt
+                            lastSync.startedAt
                           ).toLocaleString("de-DE")
-                        : lastSync?.startedAt
-                          ? new Date(
-                              lastSync.startedAt
-                            ).toLocaleString("de-DE")
-                          : "Noch nicht synchronisiert"}
-                    </strong>
+                        : "Noch nicht synchronisiert";
 
-                    {connection.lastSuccessfulSyncAt ? (
-                      <span
-                        style={{
-                          display: "block",
-                          marginTop: 4,
-                          color: "#087b59",
-                          fontSize: 11,
-                        }}
-                      >
-                        Erfolgreich:{" "}
-                        {new Date(
-                          connection.lastSuccessfulSyncAt
-                        ).toLocaleString("de-DE")}
-                      </span>
-                    ) : null}
+                  return (
+                    <article
+                      className="supplyConnectionCard"
+                      key={connection.id}
+                    >
+                      <div className="supplyConnectionTop">
+                        <div>
+                          <small>
+                            {connection.settingsJson
+                              ?.providerName ||
+                              connection.label ||
+                              "Lieferantenportal"}
+                          </small>
 
-                    {connection.lastError ||
-                    lastSync?.errorMessage ? (
-                      <span
-                        style={{
-                          display: "block",
-                          marginTop: 5,
-                          color: "#b91c1c",
-                          fontSize: 11,
-                          lineHeight: 1.4,
-                        }}
-                      >
-                        {connection.lastError ||
-                          lastSync?.errorMessage}
-                      </span>
-                    ) : null}
-                  </div>
+                          <strong>
+                            {connection.supplierName}
+                          </strong>
 
-                  <div
-                    style={{
-                      display: "grid",
-                      gap: 8,
-                      minWidth: 210,
-                    }}
+                          <span>
+                            {connection.settingsJson
+                              ?.locationName ||
+                              "Kein Standort hinterlegt"}
+                          </span>
+                        </div>
+
+                        <span
+                          className={[
+                            "supplyStatus",
+                            `supplyStatus--${statusTone}`,
+                          ].join(" ")}
+                        >
+                          {statusLabel}
+                        </span>
+                      </div>
+
+                      <div className="supplyConnectionFacts">
+                        <div>
+                          <small>Kundennummer</small>
+                          <strong>
+                            {connection.customerNumber ||
+                              connection.settingsJson
+                                ?.customerNumber ||
+                              "–"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <small>Katalogartikel</small>
+                          <strong>
+                            {
+                              connection._count
+                                .catalogItems
+                            }
+                          </strong>
+                        </div>
+
+                        <div>
+                          <small>Letzter Abruf</small>
+                          <strong>
+                            {lastSyncText}
+                          </strong>
+                        </div>
+                      </div>
+
+                      {connection.lastError ||
+                      lastSync?.errorMessage ? (
+                        <div className="supplyConnectionError">
+                          {connection.lastError ||
+                            lastSync?.errorMessage}
+                        </div>
+                      ) : null}
+
+                      <div className="supplyConnectionActions">
+                        <details className="supplyDetails">
+                          <summary className="supplyButton supplyButton--secondary">
+                            Verbindung bearbeiten
+                          </summary>
+
+                          <Form
+                            method="post"
+                            className="supplyInlineForm"
+                          >
+                            <input
+                              type="hidden"
+                              name="intent"
+                              value="updateSupplierConnection"
+                            />
+
+                            <input
+                              type="hidden"
+                              name="connectionId"
+                              value={connection.id}
+                            />
+
+                            <label className="supplyField">
+                              <span>Kundennummer</span>
+                              <input
+                                name="customerNumber"
+                                defaultValue={
+                                  connection.customerNumber ||
+                                  connection.settingsJson
+                                    ?.customerNumber ||
+                                  ""
+                                }
+                                required
+                              />
+                            </label>
+
+                            <label className="supplyField">
+                              <span>Standort / Markt</span>
+                              <input
+                                name="locationName"
+                                defaultValue={
+                                  connection.settingsJson
+                                    ?.locationName ||
+                                  ""
+                                }
+                              />
+                            </label>
+
+                            <button
+                              className="supplyButton supplyButton--secondary"
+                              type="submit"
+                            >
+                              Zugang speichern
+                            </button>
+                          </Form>
+                        </details>
+
+                        <Form method="post">
+                          <input
+                            type="hidden"
+                            name="intent"
+                            value="syncSupplierConnection"
+                          />
+
+                          <input
+                            type="hidden"
+                            name="connectionId"
+                            value={connection.id}
+                          />
+
+                          <button
+                            className="supplyButton supplyButton--primary"
+                            type="submit"
+                          >
+                            Preise abrufen
+                          </button>
+                        </Form>
+                      </div>
+                    </article>
+                  );
+                }
+              )
+            )}
+          </div>
+        </PageSection>
+
+        <PageSection
+          eyebrow="Übersicht"
+          title="Alle Lieferanten"
+          description="Stammdaten bearbeiten, aktivieren oder bei Bedarf entfernen."
+        >
+          {data.suppliers.length === 0 ? (
+            <div className="supplyEmpty">
+              <strong>
+                Noch keine Lieferanten angelegt
+              </strong>
+              <p>
+                Beginne mit deinem wichtigsten
+                Lebensmittel- oder Verpackungslieferanten.
+              </p>
+            </div>
+          ) : (
+            <div className="supplySupplierGrid">
+              {data.suppliers.map(
+                (supplier: any) => (
+                  <article
+                    className="supplySupplierCard"
+                    key={supplier.id}
                   >
-                    <details>
-                      <summary
-                        className="ghostButton"
-                        style={{
-                          listStyle: "none",
-                          cursor: "pointer",
-                          textAlign: "center",
-                        }}
-                      >
-                        Zugang bearbeiten
-                      </summary>
+                    <div className="supplySupplierTop">
+                      <div>
+                        <small>
+                          {supplier.category ||
+                            "Ohne Kategorie"}
+                        </small>
+                        <strong>
+                          {supplier.name}
+                        </strong>
+                      </div>
 
-                      <Form
-                        method="post"
-                        style={{
-                          display: "grid",
-                          gap: 8,
-                          marginTop: 8,
-                          padding: 12,
-                          border: "1px solid #dbe7e2",
-                          borderRadius: 12,
-                          background: "#f8fbfa",
-                        }}
+                      <span
+                        className={[
+                          "supplyStatus",
+                          supplier.active
+                            ? "supplyStatus--success"
+                            : "supplyStatus--warning",
+                        ].join(" ")}
                       >
+                        {supplier.active
+                          ? "Aktiv"
+                          : "Inaktiv"}
+                      </span>
+                    </div>
+
+                    <dl className="supplySupplierFacts">
+                      <div>
+                        <dt>Ansprechpartner</dt>
+                        <dd>
+                          {supplier.contactName ||
+                            "–"}
+                        </dd>
+                      </div>
+
+                      <div>
+                        <dt>Bestelltage</dt>
+                        <dd>
+                          {supplier.orderDays || "–"}
+                        </dd>
+                      </div>
+
+                      <div>
+                        <dt>E-Mail</dt>
+                        <dd>
+                          {supplier.email || "–"}
+                        </dd>
+                      </div>
+
+                      <div>
+                        <dt>Telefon</dt>
+                        <dd>
+                          {supplier.phone || "–"}
+                        </dd>
+                      </div>
+
+                      <div className="supplySupplierFactWide">
+                        <dt>Sortiment</dt>
+                        <dd>
+                          {supplier.items || "–"}
+                        </dd>
+                      </div>
+                    </dl>
+
+                    <div className="supplySupplierActions">
+                      <Form method="post">
                         <input
                           type="hidden"
                           name="intent"
-                          value="updateSupplierConnection"
+                          value="toggleActive"
                         />
 
                         <input
                           type="hidden"
-                          name="connectionId"
-                          value={connection.id}
+                          name="supplierId"
+                          value={supplier.id}
                         />
 
                         <input
-                          name="customerNumber"
-                          defaultValue={
-                            connection.customerNumber ||
-                            connection.settingsJson?.customerNumber ||
-                            ""
+                          type="hidden"
+                          name="active"
+                          value={
+                            supplier.active
+                              ? "false"
+                              : "true"
                           }
-                          placeholder="Kundennummer"
-                          style={inputStyle}
-                          required
-                        />
-
-                        <input
-                          name="locationName"
-                          defaultValue={
-                            connection.settingsJson?.locationName ||
-                            ""
-                          }
-                          placeholder="Standort / Markt"
-                          style={inputStyle}
                         />
 
                         <button
-                          className="secondaryButton"
+                          className="supplyButton supplyButton--secondary"
                           type="submit"
                         >
-                          Zugang speichern
+                          {supplier.active
+                            ? "Deaktivieren"
+                            : "Aktivieren"}
                         </button>
                       </Form>
-                    </details>
 
-                    <Form method="post">
-                      <input
-                        type="hidden"
-                        name="intent"
-                        value="syncSupplierConnection"
-                      />
+                      <details className="supplyDetails">
+                        <summary className="supplyButton supplyButton--secondary">
+                          Bearbeiten
+                        </summary>
 
-                      <input
-                        type="hidden"
-                        name="connectionId"
-                        value={connection.id}
-                      />
+                        <Form
+                          method="post"
+                          className="supplyEditGrid"
+                        >
+                          <input
+                            type="hidden"
+                            name="intent"
+                            value="updateSupplier"
+                          />
 
-                      <button
-                        className="primaryButton"
-                        type="submit"
-                        style={{
-                          whiteSpace: "nowrap",
-                          width: "100%",
-                        }}
-                      >
-                        Preise aktualisieren
-                      </button>
-                    </Form>
-                  </div>
-                </article>
-              );
-            })
+                          <input
+                            type="hidden"
+                            name="supplierId"
+                            value={supplier.id}
+                          />
+
+                          <input
+                            name="name"
+                            defaultValue={
+                              supplier.name
+                            }
+                          />
+
+                          <input
+                            name="category"
+                            defaultValue={
+                              supplier.category || ""
+                            }
+                            placeholder="Kategorie"
+                          />
+
+                          <input
+                            name="contactName"
+                            defaultValue={
+                              supplier.contactName ||
+                              ""
+                            }
+                            placeholder="Ansprechpartner"
+                          />
+
+                          <input
+                            name="orderDays"
+                            defaultValue={
+                              supplier.orderDays || ""
+                            }
+                            placeholder="Bestelltage"
+                          />
+
+                          <input
+                            name="email"
+                            type="email"
+                            defaultValue={
+                              supplier.email || ""
+                            }
+                            placeholder="E-Mail"
+                          />
+
+                          <input
+                            name="phone"
+                            defaultValue={
+                              supplier.phone || ""
+                            }
+                            placeholder="Telefon"
+                          />
+
+                          <input
+                            className="supplyEditWide"
+                            name="items"
+                            defaultValue={
+                              supplier.items || ""
+                            }
+                            placeholder="Sortiment"
+                          />
+
+                          <input
+                            className="supplyEditWide"
+                            name="notes"
+                            defaultValue={
+                              supplier.notes || ""
+                            }
+                            placeholder="Notiz"
+                          />
+
+                          <button
+                            className="supplyButton supplyButton--primary supplyEditWide"
+                            type="submit"
+                          >
+                            Speichern
+                          </button>
+                        </Form>
+                      </details>
+
+                      <Form method="post">
+                        <input
+                          type="hidden"
+                          name="intent"
+                          value="deleteSupplier"
+                        />
+
+                        <input
+                          type="hidden"
+                          name="supplierId"
+                          value={supplier.id}
+                        />
+
+                        <button
+                          className="supplyButton supplyButton--danger"
+                          type="submit"
+                        >
+                          Löschen
+                        </button>
+                      </Form>
+                    </div>
+                  </article>
+                )
+              )}
+            </div>
           )}
-        </div>
-      </section>
-
-      <section className="panel">
-        <div className="panelHeader">
-          <div>
-            <p className="eyebrow">Lieferantenuebersicht</p>
-            <h2>Alle Lieferanten</h2>
-          </div>
-        </div>
-
-        {data.suppliers.length === 0 ? (
-          <div className="noteBox">
-            <strong>Noch keine Lieferanten angelegt.</strong>
-            <p>Lege oben deinen ersten Lieferanten an, zum Beispiel Metro, Verpackung24 oder Baeckerei.</p>
-          </div>
-        ) : (
-          <div className="suppliersGrid">
-            {data.suppliers.map((supplier: any) => (
-              <article className="supplierCard" key={supplier.id}>
-                <div className="supplierTop">
-                  <div>
-                    <strong>{supplier.name}</strong>
-                    <span>
-                      {supplier.category || "Ohne Kategorie"} · {supplier.active ? "Aktiv" : "Inaktiv"}
-                    </span>
-                  </div>
-                  <small>{supplier.orderDays || "-"}</small>
-                </div>
-
-                <div className="supplierDetails">
-                  <p>
-                    <b>Ansprechpartner</b>
-                    <span>{supplier.contactName || "-"}</span>
-                  </p>
-                  <p>
-                    <b>E-Mail</b>
-                    <span>{supplier.email || "-"}</span>
-                  </p>
-                  <p>
-                    <b>Telefon</b>
-                    <span>{supplier.phone || "-"}</span>
-                  </p>
-                  <p>
-                    <b>Artikel</b>
-                    <span>{supplier.items || "-"}</span>
-                  </p>
-                  <p>
-                    <b>Notiz</b>
-                    <span>{supplier.notes || "-"}</span>
-                  </p>
-                </div>
-
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16 }}>
-                  <Form method="post">
-                    <input type="hidden" name="intent" value="toggleActive" />
-                    <input type="hidden" name="supplierId" value={supplier.id} />
-                    <input type="hidden" name="active" value={supplier.active ? "false" : "true"} />
-                    <button className="ghostButton" type="submit">
-                      {supplier.active ? "Deaktivieren" : "Aktivieren"}
-                    </button>
-                  </Form>
-
-                  <details>
-                    <summary className="ghostButton" style={{ listStyle: "none", cursor: "pointer" }}>
-                      Bearbeiten
-                    </summary>
-
-                    <Form method="post" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
-                      <input type="hidden" name="intent" value="updateSupplier" />
-                      <input type="hidden" name="supplierId" value={supplier.id} />
-
-                      <input name="name" defaultValue={supplier.name} style={inputStyle} />
-                      <input name="category" defaultValue={supplier.category || ""} style={inputStyle} />
-                      <input name="contactName" defaultValue={supplier.contactName || ""} style={inputStyle} />
-                      <input name="orderDays" defaultValue={supplier.orderDays || ""} style={inputStyle} />
-                      <input name="email" type="email" defaultValue={supplier.email || ""} style={inputStyle} />
-                      <input name="phone" defaultValue={supplier.phone || ""} style={inputStyle} />
-                      <input name="items" defaultValue={supplier.items || ""} style={{ ...inputStyle, gridColumn: "1 / -1" }} />
-                      <input name="notes" defaultValue={supplier.notes || ""} style={{ ...inputStyle, gridColumn: "1 / -1" }} />
-
-                      <button className="primaryButton" type="submit" style={{ gridColumn: "1 / -1" }}>
-                        Speichern
-                      </button>
-                    </Form>
-                  </details>
-
-                  <Form method="post">
-                    <input type="hidden" name="intent" value="deleteSupplier" />
-                    <input type="hidden" name="supplierId" value={supplier.id} />
-                    <button className="ghostButton" type="submit" style={{ color: "#b91c1c" }}>
-                      Loeschen
-                    </button>
-                  </Form>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
+        </PageSection>
+      </PageShell>
     </AppLayout>
   );
 }
