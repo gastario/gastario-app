@@ -1161,3 +1161,199 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/*
+ * gastario-production-masterdesign-v1-safe-stack-20260802
+ *
+ * Stabiler Produktionsaufbau:
+ * Produktionsliste oben, Arbeitsfortschritt darunter.
+ * Keine Änderung an Workflow oder Geschäftslogik.
+ */
+
+.productionMasterPage .operationsWorkspaceGrid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.productionMasterPage
+.operationsPrimarySection
+.g-ui-section-header {
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.productionMasterPage
+.operationsPrimarySection
+.g-ui-section-header
+> div:first-child {
+  min-width: 0;
+  flex: 1 1 520px;
+}
+
+.productionMasterPage
+.operationsPrimarySection
+.g-ui-header-actions {
+  max-width: 100%;
+  flex: 0 1 auto;
+}
+
+.productionMasterPage .operationsDateFilter {
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+.productionMasterPage .operationsSecondarySection {
+  width: 100%;
+}
+
+.productionMasterPage
+.operationsSecondarySection
+.g-ui-section-header {
+  margin-bottom: 16px;
+}
+
+.productionMasterPage .operationsOrderList {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.productionMasterPage
+.operationsOrderCard--workflow {
+  min-width: 0;
+  min-height: 132px;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) 180px;
+  gap: 16px;
+  align-items: stretch;
+  padding: 16px;
+  border: 1px solid var(--ops-border);
+  border-radius: 16px;
+  background: var(--ops-surface);
+  box-shadow:
+    0 7px 20px
+    rgba(15, 35, 27, 0.04);
+}
+
+.productionMasterPage
+.operationsOrderCard--workflow
+> div:first-child {
+  min-width: 0;
+  align-self: center;
+}
+
+.productionMasterPage
+.operationsOrderCard--workflow
+> div:first-child
+> strong {
+  overflow: visible;
+  color: var(--ops-text);
+  font-size: 14px;
+  line-height: 1.3;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.productionMasterPage
+.operationsOrderCard--workflow
+> div:first-child
+> span {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 7px;
+  color: var(--ops-muted);
+  font-size: 10px;
+  line-height: 1.5;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.productionMasterPage .operationsOrderActions {
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 16px;
+  border-left: 1px solid #e2ebe7;
+}
+
+.productionMasterPage
+.operationsOrderActions time {
+  min-height: 20px;
+  color: var(--ops-brand-dark);
+  font-size: 14px;
+  font-weight: 750;
+  text-align: right;
+}
+
+.productionMasterPage
+.operationsOrderActions
+.operationsStatus {
+  max-width: 100%;
+  align-self: flex-end;
+  margin-top: 0;
+}
+
+.productionMasterPage
+.operationsOrderActions
+.operationsInlineForm,
+.productionMasterPage
+.operationsOrderActions
+.operationsInlineForm
+.g-ops-button,
+.productionMasterPage
+.operationsOrderActions
+> .g-ops-button {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 1150px) {
+  .productionMasterPage .operationsOrderList {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .productionMasterPage
+  .operationsOrderCard--workflow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .productionMasterPage
+  .operationsOrderActions {
+    padding-top: 12px;
+    padding-left: 0;
+    border-top: 1px solid #e2ebe7;
+    border-left: 0;
+  }
+
+  .productionMasterPage
+  .operationsOrderActions time {
+    text-align: left;
+  }
+
+  .productionMasterPage
+  .operationsOrderActions
+  .operationsStatus {
+    align-self: flex-start;
+  }
+
+  .productionMasterPage
+  .operationsDateFilter,
+  .productionMasterPage
+  .operationsDateFilter label,
+  .productionMasterPage
+  .operationsDateFilter select,
+  .productionMasterPage
+  .operationsDateFilter .g-ops-button {
+    width: 100%;
+  }
+}
