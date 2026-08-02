@@ -269,6 +269,9 @@ export default function AppLayout({
   const sidebarRef =
     useRef<HTMLElement | null>(null);
 
+  const sidebarScrollReadyRef =
+    useRef(false);
+
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] =
     useState(false);
 
@@ -303,31 +306,76 @@ export default function AppLayout({
   const isNavigationItemActive = (
     to: string
   ) => {
-    const itemPath = to.split("?")[0];
-    const itemHasQuery = to.includes("?");
+    const itemPath =
+      to.split("?")[0];
+
+    const itemHasQuery =
+      to.includes("?");
 
     if (to === "/") {
-      return location.pathname === "/";
+      return (
+        location.pathname === "/"
+      );
     }
 
     if (itemHasQuery) {
-      return currentPathWithSearch === to;
+      return (
+        currentPathWithSearch === to
+      );
     }
 
     if (
       to === "/auftraege" &&
-      location.pathname === "/auftraege"
+      location.pathname ===
+        "/auftraege"
     ) {
       return !new URLSearchParams(
         location.search
       ).has("view");
     }
 
-    return (
-      location.pathname === itemPath ||
-      location.pathname.startsWith(
-        itemPath + "/"
-      )
+    if (
+      location.pathname === itemPath
+    ) {
+      return true;
+    }
+
+    const hasMoreSpecificItem =
+      navigationGroups.some(
+        (group) =>
+          group.items.some(
+            (candidateItem) => {
+              const candidatePath =
+                candidateItem.to.split(
+                  "?"
+                )[0];
+
+              if (
+                candidatePath === itemPath ||
+                !candidatePath.startsWith(
+                  itemPath + "/"
+                )
+              ) {
+                return false;
+              }
+
+              return (
+                location.pathname ===
+                  candidatePath ||
+                location.pathname.startsWith(
+                  candidatePath + "/"
+                )
+              );
+            }
+          )
+      );
+
+    if (hasMoreSpecificItem) {
+      return false;
+    }
+
+    return location.pathname.startsWith(
+      itemPath + "/"
     );
   };
 
@@ -435,15 +483,42 @@ export default function AppLayout({
     });
   }, [activeGroupId]);
 
+  const sidebarScrollStorageKey =
+    "gastario-sidebar-scroll-top-v3";
+
+  const rememberSidebarScrollPosition =
+    () => {
+      if (isMobileNavigation) {
+        return;
+      }
+
+      const sidebar =
+        sidebarRef.current;
+
+      if (!sidebar) {
+        return;
+      }
+
+      window.sessionStorage.setItem(
+        sidebarScrollStorageKey,
+        String(sidebar.scrollTop)
+      );
+    };
+
   /*
-   * gastario-sidebar-scroll-memory-v2-20260802
+   * gastario-sidebar-scroll-memory-v3-20260802
    *
-   * Die Sidebar-Position wird direkt beim Scrollen gespeichert.
-   * Nach einem Routenwechsel wird sie erst wiederhergestellt,
-   * nachdem die Navigationsgruppen gerendert wurden.
+   * Beim Routenwechsel wird die Position vor dem
+   * Navigieren gespeichert. Während des neuen
+   * Renderings ignoriert die Sidebar eigene
+   * Scroll-Ereignisse, damit der gespeicherte Wert
+   * nicht versehentlich mit 0 überschrieben wird.
    */
   useLayoutEffect(() => {
     if (isMobileNavigation) {
+      sidebarScrollReadyRef.current =
+        false;
+
       return;
     }
 
@@ -454,26 +529,26 @@ export default function AppLayout({
       return;
     }
 
-    const storageKey =
-      "gastario-sidebar-scroll-top-v2";
+    sidebarScrollReadyRef.current =
+      false;
 
     const storedScrollTop =
       Number(
-        window.localStorage.getItem(
-          storageKey
+        window.sessionStorage.getItem(
+          sidebarScrollStorageKey
         ) || "0"
       );
 
-    if (
-      !Number.isFinite(
-        storedScrollTop
-      ) ||
-      storedScrollTop <= 0
-    ) {
-      return;
-    }
-
     const restorePosition = () => {
+      if (
+        !Number.isFinite(
+          storedScrollTop
+        ) ||
+        storedScrollTop < 0
+      ) {
+        return;
+      }
+
       const maximumScrollTop =
         Math.max(
           0,
@@ -493,6 +568,8 @@ export default function AppLayout({
     const firstFrame =
       window.requestAnimationFrame(
         () => {
+          restorePosition();
+
           secondFrame =
             window.requestAnimationFrame(
               restorePosition
@@ -500,15 +577,21 @@ export default function AppLayout({
         }
       );
 
-    /*
-     * Die Navigationsgruppen werden teilweise erst
-     * durch nachgelagerte Effects geöffnet. Deshalb
-     * erfolgt eine zweite Wiederherstellung.
-     */
-    const delayedRestore =
+    const shortRestore =
       window.setTimeout(
         restorePosition,
-        180
+        120
+      );
+
+    const finalRestore =
+      window.setTimeout(
+        () => {
+          restorePosition();
+
+          sidebarScrollReadyRef.current =
+            true;
+        },
+        360
       );
 
     return () => {
@@ -523,7 +606,11 @@ export default function AppLayout({
       }
 
       window.clearTimeout(
-        delayedRestore
+        shortRestore
+      );
+
+      window.clearTimeout(
+        finalRestore
       );
     };
   }, [
@@ -742,12 +829,11 @@ export default function AppLayout({
         ref={sidebarRef}
         onScroll={(event) => {
           if (
-            window.matchMedia(
-              "(min-width: 981px)"
-            ).matches
+            !isMobileNavigation &&
+            sidebarScrollReadyRef.current
           ) {
-            window.localStorage.setItem(
-              "gastario-sidebar-scroll-top-v2",
+            window.sessionStorage.setItem(
+              sidebarScrollStorageKey,
               String(
                 event.currentTarget.scrollTop
               )
@@ -768,9 +854,10 @@ export default function AppLayout({
             to="/"
             className="sidebarBrandLink"
             aria-label="Zum Dashboard"
-            onClick={() =>
-              setIsMobileSidebarOpen(false)
-            }
+            onClick={() => {
+              rememberSidebarScrollPosition();
+              setIsMobileSidebarOpen(false);
+            }}
           >
             <img
               className="brandLogo"
@@ -782,9 +869,10 @@ export default function AppLayout({
           <button
             type="button"
             className="mobileSidebarClose"
-            onClick={() =>
-              setIsMobileSidebarOpen(false)
-            }
+            onClick={() => {
+              rememberSidebarScrollPosition();
+              setIsMobileSidebarOpen(false);
+            }}
             aria-label="Navigation schließen"
           >
             ×
@@ -910,11 +998,12 @@ export default function AppLayout({
 
                         return (
                           <Link
-                            onClick={() =>
+                            onClick={() => {
+                              rememberSidebarScrollPosition();
                               setIsMobileSidebarOpen(
                                 false
-                              )
-                            }
+                              );
+                            }}
                             className={
                               isActive
                                 ? "active"
