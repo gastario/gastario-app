@@ -22,8 +22,10 @@ export default function DeliveryNoteButton({
         href={href}
         target="_blank"
         rel="noreferrer"
+        aria-label="Lieferschein-PDF mit aktuellen Auftragsdaten aktualisieren"
+        title="PDF mit aktuellen Auftragsdaten aktualisieren"
       >
-        Neu erzeugen
+        PDF aktualisieren
       </a>
     );
   }

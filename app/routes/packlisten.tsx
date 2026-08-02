@@ -1,6 +1,16 @@
-﻿import { Link, useLoaderData } from "react-router";
-import AppLayout from "../components/AppLayout";
 import { useEffect, useState } from "react";
+import { Link, useLoaderData } from "react-router";
+import AppLayout from "../components/AppLayout";
+import {
+  MetricCard,
+  MetricGrid,
+  Notice,
+  PageHeader,
+  PageSection,
+  PageShell,
+} from "../components/ui/PageShell";
+import "../styles/gastario-page-shell.css";
+import "../styles/gastario-operations.css";
 
 function todayInput() {
   return new Date().toISOString().slice(0, 10);
@@ -27,6 +37,7 @@ function formatDate(value: string | Date | null | undefined) {
 function emptyData(error: string | null = null) {
   return {
     tenantName: "Gastario",
+    selectedDate: todayInput(),
     orders: [],
     packingItems: [],
     stats: {
@@ -150,178 +161,209 @@ export default function PackingListsPage() {
 
   return (
     <AppLayout>
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">Betrieb</p>
-          <h1>Packlisten</h1>
-          <span className="pageSubline">
-            {data.tenantName} · Packlisten je Auftrag mit abhakbarer Fahrer- und Pack-Checkliste.
-          </span>
-        </div>
+      <PageShell className="operationsMasterPage packingMasterPage">
+        <PageHeader
+          eyebrow="Betrieb"
+          title="Packlisten"
+          subtitle={
+            <>
+              {data.tenantName} · Packlisten nach Auftrag mit dauerhaft
+              gespeicherten Pack- und Fahrerchecks.
+            </>
+          }
+          actions={
+            <>
+              <button
+                className="g-ops-button g-ops-button--secondary"
+                type="button"
+                onClick={() => window.print()}
+              >
+                Drucken
+              </button>
 
-        <div className="topActions">
-          <button className="secondaryButton" type="button" onClick={() => window.print()}>
-            Drucken
-          </button>
-          <Link className="primaryButton" to="/lieferungen">
-            Zu Lieferungen
-          </Link>
-        </div>
-      </header>
+              <Link
+                className="g-ops-button g-ops-button--primary"
+                to="/lieferungen"
+              >
+                Zu Lieferungen
+              </Link>
+            </>
+          }
+        />
 
-      {data.error ? (
-        <section className="panel">
-          <div className="noteBox">
-            <strong>Hinweis</strong>
-            <p>{data.error}</p>
-          </div>
-        </section>
-      ) : null}
+        {data.error ? (
+          <Notice type="danger">
+            <strong>Die Packlisten konnten nicht vollständig geladen werden.</strong>
+            <span>{data.error}</span>
+          </Notice>
+        ) : null}
 
-      <section className="orderSummaryGrid">
-        <article className="metricCard">
-          <div>
-            <p>Auftraege</p>
-            <strong>{data.stats.orders}</strong>
-            <span>zu packen</span>
-          </div>
-          <small data-trend="aktiv">Packen</small>
-        </article>
+        <MetricGrid className="operationsMetricGrid">
+          <MetricCard
+            label="Aufträge"
+            value={data.stats.orders}
+            description="für diesen Planungstag"
+            badge="Packen"
+          />
 
-        <article className="metricCard">
-          <div>
-            <p>Positionen</p>
-            <strong>{data.stats.positions}</strong>
-            <span>in Packlisten</span>
-          </div>
-          <small data-trend="bereit">Liste</small>
-        </article>
+          <MetricCard
+            label="Positionen"
+            value={data.stats.positions}
+            description="in allen Packlisten"
+            badge="Liste"
+          />
 
-        <article className="metricCard">
-          <div>
-            <p>Menge</p>
-            <strong>{data.stats.pieces}</strong>
-            <span>gesamt</span>
-          </div>
-          <small data-trend="pruefen">Check</small>
-        </article>
-      </section>
+          <MetricCard
+            label="Gesamtmenge"
+            value={data.stats.pieces}
+            description="über alle Positionen"
+            badge="Check"
+          />
 
-      <section className="panel">
-        <div className="panelHeader">
-          <div>
-            <p className="eyebrow">Packlisten</p>
-            <h2>Nach Auftrag</h2>
-          </div>
-        </div>
+          <MetricCard
+            label="Planungstag"
+            value={formatDate(data.selectedDate)}
+            description="aktuell ausgewählter Tag"
+            badge="Datum"
+          />
+        </MetricGrid>
 
-        <div className="deliveryRouteList">
+        <PageSection
+          className="operationsPrimarySection packingOrdersSection"
+          eyebrow="Packlisten"
+          title="Nach Auftrag"
+          description="Positionen abhaken und anschließend die vollständige Packkontrolle durchführen."
+          actions={
+            <form className="operationsDateFilter" method="get">
+              <label>
+                <span>Planungstag</span>
+                <input
+                  type="date"
+                  name="date"
+                  defaultValue={data.selectedDate}
+                />
+              </label>
+
+              <button
+                className="g-ops-button g-ops-button--secondary"
+                type="submit"
+              >
+                Anzeigen
+              </button>
+            </form>
+          }
+        >
           {data.packingItems.length === 0 ? (
-            <article className="deliveryRouteCard">
-              <div className="routeTime">
-                <strong>-</strong>
-                <span>Uhr</span>
+            <div className="operationsEmptyState">
+              <span className="operationsEmptyIcon" aria-hidden="true">
+                0
+              </span>
+
+              <div>
+                <strong>Keine Packlisten gefunden</strong>
+                <p>
+                  Für den ausgewählten Tag sind noch keine passenden
+                  operativen Aufträge vorhanden.
+                </p>
               </div>
-              <div className="routeContent">
-                <div className="routeHeader">
-                  <div>
-                    <strong>Keine Packlisten gefunden</strong>
-                    <span>Keine passenden Auftraege fuer diesen Tag.</span>
-                  </div>
-                  <em className="warning">Leer</em>
-                </div>
-              </div>
-            </article>
+            </div>
           ) : (
-            data.packingItems.map((order: any) => (
-              <article className="deliveryRouteCard" key={order.id}>
-                <div className="routeTime">
-                  <strong>{order.deliveryTime || "-"}</strong>
-                  <span>Uhr</span>
-                </div>
-
-                <div className="routeContent">
-                  <div className="routeHeader">
-                    <div>
-                      <strong>{order.customerName}</strong>
-                      <span>{formatDate(order.deliveryDate)} · {order.deliveryAddress || "Keine Adresse"}</span>
+            <div className="packingOrderList">
+              {data.packingItems.map((order: any) => (
+                <article className="packingOrderCard" key={order.id}>
+                  <header className="packingOrderHeader">
+                    <div className="packingOrderTime">
+                      <strong>{order.deliveryTime || "-"}</strong>
+                      <span>Uhr</span>
                     </div>
-                    <em className="warning">Packen</em>
+
+                    <div className="packingOrderIdentity">
+                      <p>Auftrag {order.orderNumber}</p>
+                      <h3>{order.customerName}</h3>
+                      <span>
+                        {formatDate(order.deliveryDate)} ·{" "}
+                        {order.deliveryAddress || "Keine Adresse"}
+                      </span>
+                    </div>
+
+                    <span className="operationsStatus is-packing">
+                      Packen
+                    </span>
+                  </header>
+
+                  <div className="packingOrderMeta">
+                    <div>
+                      <span>Kontakt</span>
+                      <strong>
+                        {order.contactName || "-"} ·{" "}
+                        {order.contactPhone || "-"}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>Lieferadresse</span>
+                      <strong>
+                        {order.deliveryAddress ||
+                          "Keine Adresse eingetragen"}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>Gesamtmenge</span>
+                      <strong>{order.totalQuantity}</strong>
+                    </div>
                   </div>
 
-                  <div className="routeDetails">
-                    <p>
-                      <b>Auftrag</b>
-                      <span>{order.orderNumber}</span>
-                    </p>
-                    <p>
-                      <b>Kontakt</b>
-                      <span>{order.contactName || "-"} · {order.contactPhone || "-"}</span>
-                    </p>
-                    <p>
-                      <b>Adresse</b>
-                      <span>{order.deliveryAddress || "Keine Adresse eingetragen"}</span>
-                    </p>
-                  </div>
-
-                  <div className="compactList" style={{ marginTop: 12 }}>
+                  <div className="packingItemsList">
                     {order.items.length === 0 ? (
-                      <div className="compactItem">
-                        <div>
-                          <strong>Keine Positionen</strong>
-                          <span>Dieser Auftrag hat keine Positionen.</span>
-                        </div>
-                        <small>-</small>
+                      <div className="operationsCompactEmpty">
+                        <strong>Keine Positionen</strong>
+                        <span>Dieser Auftrag hat keine Positionen.</span>
                       </div>
                     ) : (
                       order.items.map((item: any) => (
-                        <div className="compactItem" key={`${order.id}-${item.id || item.name}`}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                            <PackingCheckbox id={`pack-${order.id}-${item.id || item.name}`} />
-                            <div>
-                              <strong>{item.name || "Position"}</strong>
-                              <span>{item.unit || "Stueck"}</span>
-                            </div>
-                          </div>
-                          <small>{item.quantity || 0} x</small>
-                        </div>
+                        <label
+                          className="packingItemRow"
+                          key={`${order.id}-${item.id || item.name}`}
+                        >
+                          <PackingCheckbox
+                            id={`pack-${order.id}-${item.id || item.name}`}
+                          />
+
+                          <span className="packingItemName">
+                            <strong>{item.name || "Position"}</strong>
+                            <small>{item.unit || "Stück"}</small>
+                          </span>
+
+                          <span className="packingItemQuantity">
+                            {item.quantity || 0} ×
+                          </span>
+                        </label>
                       ))
                     )}
                   </div>
 
-                  <div style={{
-                    marginTop: 14,
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 12
-                  }}>
+                  <div className="packingTaskGrid">
                     {[
-                      "Ware vollstaendig gepackt",
+                      "Ware vollständig gepackt",
                       "Lieferschein beigelegt",
-                      "Besteck / Servietten geprueft",
-                      "Equipment gezaehlt",
+                      "Besteck / Servietten geprüft",
+                      "Equipment gezählt",
                     ].map((task) => (
-                      <label key={task} style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        background: "#f8fafc",
-                        border: "1px solid #dbe5ee",
-                        borderRadius: 14,
-                        padding: 12,
-                        fontWeight: 850
-                      }}>
-                        <PackingCheckbox id={`task-${order.id}-${task}`} />
+                      <label className="packingTaskCard" key={task}>
+                        <PackingCheckbox
+                          id={`task-${order.id}-${task}`}
+                        />
                         <span>{task}</span>
                       </label>
                     ))}
                   </div>
-                </div>
-              </article>
-            ))
+                </article>
+              ))}
+            </div>
           )}
-        </div>
-      </section>
+        </PageSection>
+      </PageShell>
     </AppLayout>
   );
 }

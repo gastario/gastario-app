@@ -1,5 +1,15 @@
-﻿import { Link, useLoaderData } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
+import {
+  MetricCard,
+  MetricGrid,
+  Notice,
+  PageHeader,
+  PageSection,
+  PageShell,
+} from "../components/ui/PageShell";
+import "../styles/gastario-page-shell.css";
+import "../styles/gastario-operations.css";
 
 function todayInput() {
   return new Date().toISOString().slice(0, 10);
@@ -26,6 +36,7 @@ function formatDate(value: string | Date | null | undefined) {
 function emptyData(error: string | null = null) {
   return {
     tenantName: "Gastario",
+    selectedDate: todayInput(),
     orders: [],
     productionItems: [],
     stats: {
@@ -143,136 +154,197 @@ export default function ProductionPage() {
 
   return (
     <AppLayout>
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">Betrieb</p>
-          <h1>Produktion</h1>
-          <span className="pageSubline">
-            {data.tenantName} · Produktionsliste aus Auftraegen fuer den gewaehlten Tag.
-          </span>
-        </div>
+      <PageShell className="operationsMasterPage productionMasterPage">
+        <PageHeader
+          eyebrow="Betrieb"
+          title="Produktion"
+          subtitle={
+            <>
+              {data.tenantName} · Produktionsmengen, Auftragsbasis und
+              Planungstag in einem Arbeitsbereich.
+            </>
+          }
+          actions={
+            <>
+              <button
+                className="g-ops-button g-ops-button--secondary"
+                type="button"
+                onClick={() => window.print()}
+              >
+                Drucken
+              </button>
 
-        <div className="topActions">
-          <button className="secondaryButton" type="button" onClick={() => window.print()}>
-            Drucken
-          </button>
-          <Link className="primaryButton" to="/auftragseingang">
-            Auftrag anlegen
-          </Link>
-        </div>
-      </header>
+              <Link
+                className="g-ops-button g-ops-button--primary"
+                to="/auftragseingang"
+              >
+                Auftrag anlegen
+              </Link>
+            </>
+          }
+        />
 
-      {data.error ? (
-        <section className="panel">
-          <div className="noteBox">
-            <strong>Hinweis</strong>
-            <p>{data.error}</p>
-          </div>
-        </section>
-      ) : null}
+        {data.error ? (
+          <Notice type="danger">
+            <strong>Die Produktionsdaten konnten nicht vollständig geladen werden.</strong>
+            <span>{data.error}</span>
+          </Notice>
+        ) : null}
 
-      <section className="orderSummaryGrid">
-        <article className="metricCard">
-          <div>
-            <p>Auftraege</p>
-            <strong>{data.stats.orders}</strong>
-            <span>fuer Produktion</span>
-          </div>
-          <small data-trend="aktiv">heute</small>
-        </article>
+        <MetricGrid className="operationsMetricGrid">
+          <MetricCard
+            label="Aufträge"
+            value={data.stats.orders}
+            description="für die Produktion"
+            badge="Plan"
+          />
 
-        <article className="metricCard">
-          <div>
-            <p>Positionen</p>
-            <strong>{data.stats.positions}</strong>
-            <span>gruppiert</span>
-          </div>
-          <small data-trend="bereit">Liste</small>
-        </article>
+          <MetricCard
+            label="Positionen"
+            value={data.stats.positions}
+            description="nach Produkt gruppiert"
+            badge="Liste"
+          />
 
-        <article className="metricCard">
-          <div>
-            <p>Mengen</p>
-            <strong>{data.stats.portions}</strong>
-            <span>gesamt</span>
-          </div>
-          <small data-trend="pruefen">Produktion</small>
-        </article>
-      </section>
+          <MetricCard
+            label="Gesamtmenge"
+            value={data.stats.portions}
+            description="über alle Positionen"
+            badge="Menge"
+          />
 
-      <section className="mainGrid">
-        <article className="panel schedulePanel">
-          <div className="panelHeader">
-            <div>
-              <p className="eyebrow">Produktionsliste</p>
-              <h2>Zu produzieren</h2>
-            </div>
-          </div>
+          <MetricCard
+            label="Planungstag"
+            value={formatDate(data.selectedDate)}
+            description="aktuell ausgewählter Tag"
+            badge="Datum"
+          />
+        </MetricGrid>
 
-          <div className="purchaseDemandTable">
-            <div className="purchaseDemandHead">
-              <span>Produkt</span>
-              <span>Menge</span>
-              <span>Einheit</span>
-              <span>Auftraege</span>
-              <span>Status</span>
-            </div>
+        <div className="operationsWorkspaceGrid">
+          <PageSection
+            className="operationsPrimarySection"
+            eyebrow="Produktionsliste"
+            title="Zu produzieren"
+            description="Gleiche Produkte werden automatisch zusammengefasst. Die Auftragsnummern zeigen, woher die Mengen stammen."
+            actions={
+              <form className="operationsDateFilter" method="get">
+                <label>
+                  <span>Planungstag</span>
+                  <input
+                    type="date"
+                    name="date"
+                    defaultValue={data.selectedDate}
+                  />
+                </label>
 
+                <button
+                  className="g-ops-button g-ops-button--secondary"
+                  type="submit"
+                >
+                  Anzeigen
+                </button>
+              </form>
+            }
+          >
             {data.productionItems.length === 0 ? (
-              <div className="purchaseDemandRow">
-                <strong>Keine Produktionspositionen gefunden</strong>
-                <span>-</span>
-                <span>-</span>
-                <span>-</span>
-                <span>-</span>
+              <div className="operationsEmptyState">
+                <span className="operationsEmptyIcon" aria-hidden="true">
+                  0
+                </span>
+
+                <div>
+                  <strong>Keine Produktionspositionen gefunden</strong>
+                  <p>
+                    Für den ausgewählten Tag sind noch keine passenden
+                    operativen Aufträge vorhanden.
+                  </p>
+                </div>
               </div>
             ) : (
-              data.productionItems.map((item: any) => (
-                <div className="purchaseDemandRow" key={`${item.name}-${item.unit}`}>
-                  <strong>{item.name}</strong>
-                  <span>{item.quantity}</span>
-                  <span>{item.unit}</span>
-                  <span>{item.orders.slice(0, 3).join(", ")}</span>
-                  <em className="warning">Offen</em>
+              <div className="operationsTable" role="table">
+                <div
+                  className="operationsTableHead operationsProductionColumns"
+                  role="row"
+                >
+                  <span role="columnheader">Produkt</span>
+                  <span role="columnheader">Menge</span>
+                  <span role="columnheader">Einheit</span>
+                  <span role="columnheader">Aufträge</span>
+                  <span role="columnheader">Status</span>
                 </div>
-              ))
-            )}
-          </div>
-        </article>
 
-        <aside className="sideStack">
-          <article className="panel">
-            <div className="panelHeader compact">
-              <div>
-                <p className="eyebrow">Auftraege</p>
-                <h2>Basis</h2>
-              </div>
-            </div>
+                {data.productionItems.map((item: any) => (
+                  <div
+                    className="operationsTableRow operationsProductionColumns"
+                    role="row"
+                    key={`${item.name}-${item.unit}`}
+                  >
+                    <div data-label="Produkt" role="cell">
+                      <strong>{item.name}</strong>
+                    </div>
 
-            <div className="compactList">
-              {data.orders.length === 0 ? (
-                <div className="compactItem">
-                  <div>
-                    <strong>Keine Auftraege</strong>
-                    <span>Keine passenden Auftraege gefunden.</span>
+                    <div data-label="Menge" role="cell">
+                      <strong className="operationsQuantity">
+                        {item.quantity}
+                      </strong>
+                    </div>
+
+                    <div data-label="Einheit" role="cell">
+                      {item.unit}
+                    </div>
+
+                    <div data-label="Aufträge" role="cell">
+                      <span className="operationsOrderReferences">
+                        {item.orders.slice(0, 3).join(", ")}
+                        {item.orders.length > 3
+                          ? ` +${item.orders.length - 3}`
+                          : ""}
+                      </span>
+                    </div>
+
+                    <div data-label="Status" role="cell">
+                      <span className="operationsStatus is-open">
+                        Offen
+                      </span>
+                    </div>
                   </div>
-                  <small>-</small>
-                </div>
-              ) : (
-                data.orders.map((order: any) => (
-                  <div className="compactItem" key={order.id}>
+                ))}
+              </div>
+            )}
+          </PageSection>
+
+          <PageSection
+            className="operationsSecondarySection"
+            eyebrow="Auftragsbasis"
+            title="Verwendete Aufträge"
+            description="Diese Aufträge bilden die Grundlage der Produktionsmengen."
+          >
+            {data.orders.length === 0 ? (
+              <div className="operationsCompactEmpty">
+                <strong>Keine Aufträge</strong>
+                <span>Für diesen Tag wurde keine Auftragsbasis gefunden.</span>
+              </div>
+            ) : (
+              <div className="operationsOrderList">
+                {data.orders.map((order: any) => (
+                  <article className="operationsOrderCard" key={order.id}>
                     <div>
                       <strong>{order.customerName || "Ohne Kunde"}</strong>
-                      <span>{formatDate(order.deliveryDate)} · {orderSummary(order)}</span>
+                      <span>
+                        {formatDate(order.deliveryDate)} ·{" "}
+                        {orderSummary(order)}
+                      </span>
                     </div>
-                    <small>{order.deliveryTime || "-"}</small>
-                  </div>
-                ))
-              )}
-            </div>
-          </article>
-        </aside>
-      </section>
+
+                    <time>{order.deliveryTime || "-"}</time>
+                  </article>
+                ))}
+              </div>
+            )}
+          </PageSection>
+        </div>
+      </PageShell>
     </AppLayout>
   );
 }

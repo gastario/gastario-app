@@ -1,4 +1,4 @@
-﻿import { Link, useLoaderData } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 import DeliveryNoteButton from "../components/DeliveryNoteButton";
 import {
@@ -12,6 +12,7 @@ import {
 import lieferscheineStyles from "../styles/lieferscheine.css?url";
 import deliveryNoteDocumentStyles from "../styles/delivery-note-document.css?url";
 import "../styles/gastario-documents.css";
+import "../styles/gastario-operations.css";
 
 function todayInput() {
   return new Date().toISOString().slice(0, 10);

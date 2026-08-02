@@ -1,0 +1,884 @@
+/*
+ * Gastario Masterdesign V1
+ * Gemeinsamer Arbeitsbereich für Produktion, Packlisten und Lieferscheine.
+ */
+
+.operationsMasterPage,
+.deliveryNotesMasterPage {
+  --ops-border: var(--g-color-border, #d8e4df);
+  --ops-border-strong: #c7d9d2;
+  --ops-text: var(--g-color-text, #10231c);
+  --ops-muted: var(--g-color-text-muted, #6d7e77);
+  --ops-brand: var(--g-color-brand, #0a8063);
+  --ops-brand-dark: #07624d;
+  --ops-brand-soft: var(--g-color-brand-soft, #eaf7f2);
+  --ops-surface: var(--g-color-surface, #ffffff);
+  --ops-surface-soft: var(--g-color-surface-soft, #f6f9f8);
+  --ops-shadow: var(--g-shadow-card, 0 14px 34px rgba(16, 35, 28, 0.06));
+}
+
+.operationsMasterPage .g-ui-page-header,
+.deliveryNotesMasterPage .g-ui-page-header {
+  min-height: 92px;
+}
+
+.g-ops-button,
+.deliveryNotesMasterPage .g-doc-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 17px;
+  border: 1px solid var(--ops-border-strong);
+  border-radius: 12px;
+  background: var(--ops-surface);
+  color: var(--ops-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.g-ops-button:hover,
+.deliveryNotesMasterPage .g-doc-button:hover {
+  transform: translateY(-1px);
+  border-color: #9cc8b9;
+  background: #f8fbfa;
+  color: var(--ops-brand-dark);
+  box-shadow: 0 8px 18px rgba(8, 112, 90, 0.08);
+}
+
+.g-ops-button:focus-visible,
+.deliveryNotesMasterPage .g-doc-button:focus-visible {
+  outline: 3px solid rgba(14, 151, 112, 0.18);
+  outline-offset: 2px;
+}
+
+.g-ops-button--primary,
+.deliveryNotesMasterPage .g-doc-button--primary {
+  border-color: var(--ops-brand);
+  background: linear-gradient(180deg, #0e9672 0%, #08775c 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(8, 119, 92, 0.16);
+}
+
+.g-ops-button--primary:hover,
+.deliveryNotesMasterPage .g-doc-button--primary:hover {
+  border-color: var(--ops-brand-dark);
+  background: linear-gradient(180deg, #0a8666 0%, #066149 100%);
+  color: #ffffff;
+}
+
+.g-ops-button--secondary,
+.deliveryNotesMasterPage .g-doc-button--secondary {
+  background: #ffffff;
+  color: var(--ops-text);
+}
+
+.operationsMetricGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.operationsMetricGrid .g-ui-metric-card > div > strong {
+  font-size: clamp(22px, 2vw, 28px);
+}
+
+.operationsWorkspaceGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.75fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.operationsPrimarySection,
+.operationsSecondarySection,
+.packingOrdersSection,
+.deliveryNotesArchiveSection {
+  min-width: 0;
+}
+
+.operationsDateFilter {
+  display: flex;
+  align-items: flex-end;
+  gap: 9px;
+}
+
+.operationsDateFilter label {
+  display: grid;
+  gap: 5px;
+}
+
+.operationsDateFilter label > span {
+  color: var(--ops-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.operationsDateFilter input {
+  width: 158px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--ops-border-strong);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--ops-text);
+  font: inherit;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+
+.operationsDateFilter input:focus {
+  outline: none;
+  border-color: #74bca6;
+  box-shadow: 0 0 0 3px rgba(14, 151, 112, 0.12);
+}
+
+.operationsTable {
+  overflow: hidden;
+  border: 1px solid var(--ops-border);
+  border-radius: 16px;
+  background: var(--ops-surface);
+}
+
+.operationsProductionColumns {
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 1.4fr)
+    minmax(82px, 0.45fr)
+    minmax(100px, 0.55fr)
+    minmax(190px, 1fr)
+    minmax(90px, 0.5fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.operationsTableHead {
+  min-height: 44px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--ops-border);
+  background: #f4f7f6;
+  color: var(--ops-muted);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.operationsTableRow {
+  min-height: 66px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e4ece8;
+  color: var(--ops-text);
+  font-size: 12px;
+}
+
+.operationsTableRow:last-child {
+  border-bottom: 0;
+}
+
+.operationsTableRow:hover {
+  background: #fbfdfc;
+}
+
+.operationsTableRow > div {
+  min-width: 0;
+}
+
+.operationsTableRow strong {
+  color: var(--ops-text);
+  font-weight: 700;
+}
+
+.operationsQuantity {
+  font-size: 18px;
+  letter-spacing: -0.025em;
+}
+
+.operationsOrderReferences {
+  display: block;
+  overflow: hidden;
+  color: var(--ops-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.operationsStatus {
+  width: fit-content;
+  min-height: 29px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border: 1px solid #badfd2;
+  border-radius: 999px;
+  background: #edf9f4;
+  color: #08705a;
+  font-size: 9px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.operationsStatus.is-open {
+  border-color: #ead5a1;
+  background: #fff8e7;
+  color: #8b6518;
+}
+
+.operationsStatus.is-packing {
+  border-color: #b8ddd0;
+  background: #edf9f4;
+  color: #08705a;
+}
+
+.operationsOrderList {
+  display: grid;
+  gap: 9px;
+}
+
+.operationsOrderCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--ops-border);
+  border-radius: 14px;
+  background: var(--ops-surface-soft);
+}
+
+.operationsOrderCard > div {
+  min-width: 0;
+}
+
+.operationsOrderCard strong {
+  display: block;
+  overflow: hidden;
+  color: var(--ops-text);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.operationsOrderCard span {
+  display: block;
+  overflow: hidden;
+  margin-top: 5px;
+  color: var(--ops-muted);
+  font-size: 10px;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.operationsOrderCard time {
+  color: var(--ops-brand-dark);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.operationsEmptyState,
+.g-doc-empty-state {
+  min-height: 118px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 20px;
+  border: 1px dashed #c8dad3;
+  border-radius: 16px;
+  background: #f8fbfa;
+}
+
+.operationsEmptyIcon,
+.g-doc-empty-state > span:first-child {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: var(--ops-brand-soft);
+  color: var(--ops-brand-dark);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.operationsEmptyState strong,
+.g-doc-empty-state strong,
+.operationsCompactEmpty strong {
+  display: block;
+  color: var(--ops-text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.operationsEmptyState p,
+.g-doc-empty-state p {
+  margin: 5px 0 0;
+  color: var(--ops-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.operationsCompactEmpty {
+  padding: 16px;
+  border: 1px dashed #cbdad4;
+  border-radius: 14px;
+  background: #f8fbfa;
+}
+
+.operationsCompactEmpty span {
+  display: block;
+  margin-top: 5px;
+  color: var(--ops-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.packingOrderList {
+  display: grid;
+  gap: 14px;
+}
+
+.packingOrderCard {
+  overflow: hidden;
+  border: 1px solid var(--ops-border);
+  border-radius: 18px;
+  background: var(--ops-surface);
+  box-shadow: 0 7px 20px rgba(15, 35, 27, 0.04);
+}
+
+.packingOrderHeader {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--ops-border);
+  background: linear-gradient(180deg, #fbfdfc 0%, #f6faf8 100%);
+}
+
+.packingOrderTime {
+  min-height: 58px;
+  display: grid;
+  place-content: center;
+  border-radius: 14px;
+  background: var(--ops-brand-soft);
+  text-align: center;
+}
+
+.packingOrderTime strong {
+  color: var(--ops-brand-dark);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.packingOrderTime span {
+  margin-top: 4px;
+  color: var(--ops-muted);
+  font-size: 9px;
+}
+
+.packingOrderIdentity {
+  min-width: 0;
+}
+
+.packingOrderIdentity p {
+  margin: 0 0 4px;
+  color: var(--ops-brand-dark);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.packingOrderIdentity h3 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--ops-text);
+  font-size: 17px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.packingOrderIdentity > span {
+  display: block;
+  overflow: hidden;
+  margin-top: 5px;
+  color: var(--ops-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.packingOrderMeta {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr 0.45fr;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5ece9;
+}
+
+.packingOrderMeta > div {
+  min-width: 0;
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: var(--ops-surface-soft);
+}
+
+.packingOrderMeta span {
+  display: block;
+  color: var(--ops-muted);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.packingOrderMeta strong {
+  display: block;
+  overflow: hidden;
+  margin-top: 5px;
+  color: var(--ops-text);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.packingItemsList {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+}
+
+.packingItemRow {
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid #dfe9e5;
+  border-radius: 13px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.packingItemRow:hover {
+  border-color: #b8d6cb;
+  background: #fbfdfc;
+}
+
+.packingItemName {
+  min-width: 0;
+}
+
+.packingItemName strong {
+  display: block;
+  overflow: hidden;
+  color: var(--ops-text);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.packingItemName small {
+  display: block;
+  margin-top: 3px;
+  color: var(--ops-muted);
+  font-size: 9px;
+}
+
+.packingItemQuantity {
+  color: var(--ops-brand-dark);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.packingTaskGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0 16px 16px;
+}
+
+.packingTaskCard {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--ops-border);
+  border-radius: 13px;
+  background: var(--ops-surface-soft);
+  color: var(--ops-text);
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.packingItemRow input,
+.packingTaskCard input {
+  flex: 0 0 auto;
+}
+
+.deliveryNotesMasterPage .deliveryNotesArchiveList {
+  overflow: hidden;
+  border: 1px solid var(--ops-border);
+  border-radius: 16px;
+  background: var(--ops-surface);
+}
+
+.deliveryNotesMasterPage .deliveryNotesArchiveHead,
+.deliveryNotesMasterPage .deliveryNotesArchiveRow {
+  display: grid;
+  grid-template-columns:
+    minmax(205px, 1.15fr)
+    minmax(180px, 1fr)
+    120px
+    110px
+    115px
+    minmax(180px, 0.8fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.deliveryNotesMasterPage .deliveryNotesArchiveHead {
+  min-height: 44px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--ops-border);
+  background: #f4f7f6;
+  color: var(--ops-muted);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.deliveryNotesMasterPage .deliveryNotesArchiveRow {
+  position: relative;
+  min-height: 82px;
+  padding: 13px 16px;
+  border-bottom: 1px solid #e4ece8;
+  background: #ffffff;
+  color: var(--ops-text);
+}
+
+.deliveryNotesMasterPage .deliveryNotesArchiveRow:last-child {
+  border-bottom: 0;
+}
+
+.deliveryNotesMasterPage .deliveryNotesArchiveRow::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: #18a17b;
+}
+
+.deliveryNotesMasterPage .deliveryNotesArchiveRow > div {
+  min-width: 0;
+}
+
+.deliveryNotesMasterPage .deliveryNotesArchiveRow strong {
+  display: block;
+  overflow: hidden;
+  color: var(--ops-text);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deliveryNotesMasterPage .deliveryNotesArchiveRow small {
+  display: block;
+  overflow: hidden;
+  margin-top: 4px;
+  color: var(--ops-muted);
+  font-size: 9px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deliveryNotesMasterPage .deliveryNoteArchiveActions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 5px;
+}
+
+.deliveryNotesMasterPage .deliveryDocumentButton {
+  width: 100%;
+  min-height: 38px;
+  border-color: var(--ops-brand);
+  background: linear-gradient(180deg, #0e9672 0%, #08775c 100%);
+  color: #ffffff;
+  box-shadow: 0 7px 15px rgba(8, 119, 92, 0.13);
+}
+
+.deliveryNotesMasterPage .deliveryDocumentButton:hover {
+  border-color: var(--ops-brand-dark);
+  background: linear-gradient(180deg, #0a8666 0%, #066149 100%);
+  color: #ffffff;
+}
+
+.deliveryNotesMasterPage .deliveryDocumentIcon {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+.deliveryNotesMasterPage .deliveryDocumentRefreshLink {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--ops-border-strong);
+  border-radius: 9px;
+  background: #ffffff;
+  color: var(--ops-muted);
+  font-size: 9px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.deliveryNotesMasterPage .deliveryDocumentRefreshLink:hover {
+  border-color: #9cc8b9;
+  background: #f4faf7;
+  color: var(--ops-brand-dark);
+  text-decoration: none;
+}
+
+.deliveryNotesMasterPage .g-doc-count {
+  min-width: 94px;
+  display: grid;
+  justify-items: end;
+  padding: 11px 14px;
+  border: 1px solid var(--ops-border-strong);
+  border-radius: 14px;
+  background: var(--ops-surface-soft);
+  color: var(--ops-brand-dark);
+  font-size: 22px;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.deliveryNotesMasterPage .g-doc-count small {
+  margin-top: 6px;
+  color: var(--ops-muted);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 1180px) {
+  .operationsWorkspaceGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .deliveryNotesMasterPage .deliveryNotesArchiveHead {
+    display: none;
+  }
+
+  .deliveryNotesMasterPage .deliveryNotesArchiveRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .deliveryNotesMasterPage .deliveryNoteArchiveActions {
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .operationsMetricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .operationsProductionColumns {
+    grid-template-columns:
+      minmax(180px, 1.2fr)
+      80px
+      95px
+      minmax(150px, 1fr)
+      85px;
+  }
+
+  .operationsTable {
+    overflow-x: auto;
+  }
+
+  .operationsTableHead,
+  .operationsTableRow {
+    min-width: 760px;
+  }
+
+  .packingOrderMeta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .packingOrderMeta > div:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .operationsMasterPage .g-ui-page-header,
+  .deliveryNotesMasterPage .g-ui-page-header {
+    min-height: 0;
+  }
+
+  .operationsMetricGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .operationsDateFilter {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .operationsDateFilter input,
+  .operationsDateFilter .g-ops-button {
+    width: 100%;
+  }
+
+  .operationsTable {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .operationsTableHead {
+    display: none;
+  }
+
+  .operationsTableRow {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 14px;
+    border: 1px solid var(--ops-border);
+    border-radius: 14px;
+    background: #ffffff;
+  }
+
+  .operationsTableRow > div {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+  }
+
+  .operationsTableRow > div::before {
+    content: attr(data-label);
+    color: var(--ops-muted);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .operationsOrderReferences {
+    white-space: normal;
+  }
+
+  .operationsEmptyState,
+  .g-doc-empty-state {
+    grid-template-columns: minmax(0, 1fr);
+    text-align: left;
+  }
+
+  .packingOrderHeader {
+    grid-template-columns: 74px minmax(0, 1fr);
+  }
+
+  .packingOrderHeader .operationsStatus {
+    grid-column: 1 / -1;
+  }
+
+  .packingOrderMeta {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .packingOrderMeta > div:last-child {
+    grid-column: auto;
+  }
+
+  .packingTaskGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .deliveryNotesMasterPage .deliveryNotesArchiveList {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .deliveryNotesMasterPage .deliveryNotesArchiveRow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 11px;
+    margin-bottom: 10px;
+    padding: 15px;
+    border: 1px solid var(--ops-border);
+    border-radius: 15px;
+  }
+
+  .deliveryNotesMasterPage .deliveryNoteArchiveActions {
+    grid-column: auto;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .deliveryNotesMasterPage .g-doc-count {
+    width: 100%;
+    justify-items: start;
+  }
+}
+
+@media print {
+  .operationsMasterPage .g-ui-page-header,
+  .operationsMasterPage .operationsMetricGrid,
+  .operationsMasterPage .operationsDateFilter,
+  .deliveryNotesMasterPage .g-ui-page-header,
+  .deliveryNotesMasterPage .g-ui-metric-grid {
+    display: none !important;
+  }
+
+  .operationsMasterPage .g-ui-card,
+  .deliveryNotesMasterPage .g-ui-card {
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .operationsWorkspaceGrid {
+    display: block;
+  }
+
+  .operationsSecondarySection {
+    margin-top: 20px;
+  }
+
+  .packingOrderCard,
+  .operationsTableRow,
+  .deliveryNotesMasterPage .deliveryNotesArchiveRow {
+    page-break-inside: avoid;
+  }
+}
