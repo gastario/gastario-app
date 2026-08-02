@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import {
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -277,82 +278,6 @@ export default function AppLayout({
   const currentPathWithSearch =
     location.pathname + location.search;
 
-  /*
-   * gastario-sidebar-scroll-memory-20260802
-   *
-   * Die Desktop-Sidebar behält beim Wechsel zwischen
-   * Gastario-Modulen ihre vertikale Scrollposition.
-   * Mobile Drawer bleiben davon unberührt.
-   */
-  useEffect(() => {
-    const sidebar =
-      sidebarRef.current;
-
-    if (!sidebar) {
-      return;
-    }
-
-    const desktopMedia =
-      window.matchMedia(
-        "(min-width: 981px)"
-      );
-
-    if (!desktopMedia.matches) {
-      return;
-    }
-
-    const storageKey =
-      "gastario-sidebar-scroll-top";
-
-    const storedScrollTop =
-      Number(
-        window.sessionStorage.getItem(
-          storageKey
-        ) || "0"
-      );
-
-    const restoreFrame =
-      window.requestAnimationFrame(
-        () => {
-          sidebar.scrollTop =
-            Number.isFinite(
-              storedScrollTop
-            ) &&
-            storedScrollTop > 0
-              ? storedScrollTop
-              : 0;
-        }
-      );
-
-    const rememberScroll = () => {
-      window.sessionStorage.setItem(
-        storageKey,
-        String(sidebar.scrollTop)
-      );
-    };
-
-    sidebar.addEventListener(
-      "scroll",
-      rememberScroll,
-      {
-        passive: true,
-      }
-    );
-
-    return () => {
-      window.cancelAnimationFrame(
-        restoreFrame
-      );
-
-      rememberScroll();
-
-      sidebar.removeEventListener(
-        "scroll",
-        rememberScroll
-      );
-    };
-  }, []);
-
   const navigationCounts =
     (
       countFetcher.data as
@@ -510,6 +435,101 @@ export default function AppLayout({
     });
   }, [activeGroupId]);
 
+  /*
+   * gastario-sidebar-scroll-memory-v2-20260802
+   *
+   * Die Sidebar-Position wird direkt beim Scrollen gespeichert.
+   * Nach einem Routenwechsel wird sie erst wiederhergestellt,
+   * nachdem die Navigationsgruppen gerendert wurden.
+   */
+  useLayoutEffect(() => {
+    if (isMobileNavigation) {
+      return;
+    }
+
+    const sidebar =
+      sidebarRef.current;
+
+    if (!sidebar) {
+      return;
+    }
+
+    const storageKey =
+      "gastario-sidebar-scroll-top-v2";
+
+    const storedScrollTop =
+      Number(
+        window.localStorage.getItem(
+          storageKey
+        ) || "0"
+      );
+
+    if (
+      !Number.isFinite(
+        storedScrollTop
+      ) ||
+      storedScrollTop <= 0
+    ) {
+      return;
+    }
+
+    const restorePosition = () => {
+      const maximumScrollTop =
+        Math.max(
+          0,
+          sidebar.scrollHeight -
+            sidebar.clientHeight
+        );
+
+      sidebar.scrollTop =
+        Math.min(
+          storedScrollTop,
+          maximumScrollTop
+        );
+    };
+
+    let secondFrame = 0;
+
+    const firstFrame =
+      window.requestAnimationFrame(
+        () => {
+          secondFrame =
+            window.requestAnimationFrame(
+              restorePosition
+            );
+        }
+      );
+
+    /*
+     * Die Navigationsgruppen werden teilweise erst
+     * durch nachgelagerte Effects geöffnet. Deshalb
+     * erfolgt eine zweite Wiederherstellung.
+     */
+    const delayedRestore =
+      window.setTimeout(
+        restorePosition,
+        180
+      );
+
+    return () => {
+      window.cancelAnimationFrame(
+        firstFrame
+      );
+
+      if (secondFrame) {
+        window.cancelAnimationFrame(
+          secondFrame
+        );
+      }
+
+      window.clearTimeout(
+        delayedRestore
+      );
+    };
+  }, [
+    currentPathWithSearch,
+    isMobileNavigation,
+  ]);
   useEffect(() => {
     const mediaQuery =
       window.matchMedia(
@@ -720,6 +740,20 @@ export default function AppLayout({
 
       <aside
         ref={sidebarRef}
+        onScroll={(event) => {
+          if (
+            window.matchMedia(
+              "(min-width: 981px)"
+            ).matches
+          ) {
+            window.localStorage.setItem(
+              "gastario-sidebar-scroll-top-v2",
+              String(
+                event.currentTarget.scrollTop
+              )
+            );
+          }
+        }}
         className={
           "sidebar" +
           (
