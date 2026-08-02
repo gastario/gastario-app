@@ -1184,3 +1184,37 @@
   overflow: visible !important;
   transform: none !important;
 }
+
+/*
+ * gastario-quote-builder-sticky-sidebar-20260802-v1
+ *
+ * Rechte Angebots-Kalkulation soll beim Scrollen sichtbar bleiben.
+ * Auf Mobile wieder normal im Seitenfluss.
+ */
+
+.quoteBuilderGrid {
+  align-items: start !important;
+}
+
+.quoteBuilderSidebar {
+  position: sticky !important;
+  top: 24px !important;
+  align-self: start !important;
+  height: fit-content !important;
+  max-height: calc(100vh - 48px) !important;
+  overflow: visible !important;
+}
+
+.quoteBuilderSidebar .quoteSummaryCard {
+  position: relative !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+@media (max-width: 1100px) {
+  .quoteBuilderSidebar {
+    position: relative !important;
+    top: auto !important;
+    max-height: none !important;
+  }
+}
