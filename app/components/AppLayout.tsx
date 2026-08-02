@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -264,6 +265,9 @@ export default function AppLayout({
   const location = useLocation();
   const countFetcher = useFetcher();
 
+  const sidebarRef =
+    useRef<HTMLElement | null>(null);
+
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] =
     useState(false);
 
@@ -272,6 +276,82 @@ export default function AppLayout({
 
   const currentPathWithSearch =
     location.pathname + location.search;
+
+  /*
+   * gastario-sidebar-scroll-memory-20260802
+   *
+   * Die Desktop-Sidebar behält beim Wechsel zwischen
+   * Gastario-Modulen ihre vertikale Scrollposition.
+   * Mobile Drawer bleiben davon unberührt.
+   */
+  useEffect(() => {
+    const sidebar =
+      sidebarRef.current;
+
+    if (!sidebar) {
+      return;
+    }
+
+    const desktopMedia =
+      window.matchMedia(
+        "(min-width: 981px)"
+      );
+
+    if (!desktopMedia.matches) {
+      return;
+    }
+
+    const storageKey =
+      "gastario-sidebar-scroll-top";
+
+    const storedScrollTop =
+      Number(
+        window.sessionStorage.getItem(
+          storageKey
+        ) || "0"
+      );
+
+    const restoreFrame =
+      window.requestAnimationFrame(
+        () => {
+          sidebar.scrollTop =
+            Number.isFinite(
+              storedScrollTop
+            ) &&
+            storedScrollTop > 0
+              ? storedScrollTop
+              : 0;
+        }
+      );
+
+    const rememberScroll = () => {
+      window.sessionStorage.setItem(
+        storageKey,
+        String(sidebar.scrollTop)
+      );
+    };
+
+    sidebar.addEventListener(
+      "scroll",
+      rememberScroll,
+      {
+        passive: true,
+      }
+    );
+
+    return () => {
+      window.cancelAnimationFrame(
+        restoreFrame
+      );
+
+      rememberScroll();
+
+      sidebar.removeEventListener(
+        "scroll",
+        rememberScroll
+      );
+    };
+  }, []);
 
   const navigationCounts =
     (
@@ -639,6 +719,7 @@ export default function AppLayout({
       />
 
       <aside
+        ref={sidebarRef}
         className={
           "sidebar" +
           (
