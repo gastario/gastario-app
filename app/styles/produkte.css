@@ -437,8 +437,8 @@
 .productsFilters {
   display: grid;
   grid-template-columns:
-    minmax(300px, 1.8fr)
-    repeat(3, minmax(150px, 0.7fr));
+    minmax(280px, 1.65fr)
+    repeat(4, minmax(140px, 0.7fr));
   gap: 10px;
   padding: 15px 20px;
   border-bottom: 1px solid #e4ebe9;
@@ -1303,3 +1303,52 @@
 /*
  * gastario-products-reference-final-polish-20260716
  */
+/*
+ * gastario-operational-product-assignment-v1-20260802
+ */
+
+.productOperationalBadge {
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 9px;
+  border: 1px solid #d3dfdc;
+  border-radius: 999px;
+  background: #f5f8f7;
+  color: #526963;
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.productOperationalBadge.is-kitchen {
+  border-color: #adddcc;
+  background: #eaf8f2;
+  color: #087158;
+}
+
+.productOperationalBadge.is-packing {
+  border-color: #bfd8ed;
+  background: #edf6fd;
+  color: #245f89;
+}
+
+.productOperationalBadge.is-logistics {
+  border-color: #d5c9ec;
+  background: #f5f0fc;
+  color: #684792;
+}
+
+.productOperationalBadge.is-non_operational {
+  border-color: #d7ddda;
+  background: #f1f4f3;
+  color: #697873;
+}
+
+.productOperationalBadge.is-review {
+  border-color: #efcf96;
+  background: #fff7e8;
+  color: #9a5c06;
+}

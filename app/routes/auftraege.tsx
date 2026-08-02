@@ -1022,6 +1022,21 @@ export default function OrdersPage() {
                 ) : null}
               </div>
 
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  marginTop: 12,
+                }}
+              >
+                <Link
+                  className="secondaryButton g-ui-button g-ui-button--secondary"
+                  to={`/auftrag-pruefung/${selectedOrder.id}`}
+                >
+                  Operative Zuordnung bearbeiten
+                </Link>
+              </div>
+
               <section className="orderBillingPanel g-ui-card g-ui-card--flat g-ui-card--soft">
                 <div className="orderBillingHeader">
                   <div>

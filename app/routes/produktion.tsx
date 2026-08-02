@@ -27,6 +27,74 @@ const OPERATIONAL_STATUSES = new Set([
   "DELIVERED",
 ]);
 
+type OperationalAreaCode =
+  | "REVIEW"
+  | "KITCHEN"
+  | "PACKING"
+  | "LOGISTICS"
+  | "NON_OPERATIONAL";
+
+function effectiveOperationalArea(
+  item: any
+): OperationalAreaCode {
+  const value = String(
+    item?.operationalArea ||
+      item?.product?.operationalArea ||
+      "REVIEW"
+  ).toUpperCase();
+
+  if (
+    value === "KITCHEN" ||
+    value === "PACKING" ||
+    value === "LOGISTICS" ||
+    value === "NON_OPERATIONAL"
+  ) {
+    return value;
+  }
+
+  return "REVIEW";
+}
+
+function effectiveOperationalName(
+  item: any
+) {
+  return String(
+    item?.product?.name ||
+      item?.name ||
+      "Position"
+  ).trim();
+}
+
+function effectiveOperationalQuantity(
+  item: any
+) {
+  const override =
+    item?.operationalQuantity;
+
+  if (
+    override !== null &&
+    override !== undefined &&
+    Number.isFinite(Number(override))
+  ) {
+    return Number(override);
+  }
+
+  return Number(
+    item?.quantity || 0
+  );
+}
+
+function effectiveOperationalUnit(
+  item: any
+) {
+  return String(
+    item?.operationalUnit ||
+      item?.product?.unit ||
+      item?.unit ||
+      "Stück"
+  ).trim();
+}
+
 function todayInput() {
   const now = new Date();
 
@@ -104,6 +172,7 @@ function emptyData(
     availableDates: [] as string[],
     orders: [] as any[],
     productionItems: [] as any[],
+    reviewItems: [] as any[],
     stats: {
       orders: 0,
       positions: 0,
@@ -111,6 +180,7 @@ function emptyData(
       confirmed: 0,
       inProduction: 0,
       packingOpen: 0,
+      review: 0,
     },
     error,
   };
@@ -125,11 +195,19 @@ function orderSummary(order: any) {
   }
 
   return order.items
+    .filter(
+      (item: any) =>
+        effectiveOperationalArea(
+          item
+        ) !== "NON_OPERATIONAL"
+    )
     .map(
       (item: any) =>
-        `${item.quantity || 0} × ${
-          item.name || "Position"
-        }`
+        `${effectiveOperationalQuantity(
+          item
+        )} × ${effectiveOperationalName(
+          item
+        )}`
     )
     .join(", ");
 }
@@ -230,7 +308,11 @@ export async function loader({
           tenantId: access.tenantId,
         },
         include: {
-          items: true,
+          items: {
+            include: {
+              product: true,
+            },
+          },
         },
         orderBy: [
           {
@@ -282,6 +364,8 @@ export async function loader({
     const grouped =
       new Map<string, any>();
 
+    const reviewItems: any[] = [];
+
     for (
       const order of relevantOrders as any[]
     ) {
@@ -292,16 +376,55 @@ export async function loader({
       for (
         const item of order.items || []
       ) {
-        const name = String(
-          item.name || "Position"
-        );
+        const area =
+          effectiveOperationalArea(
+            item
+          );
 
-        const unit = String(
-          item.unit || "Stück"
-        );
+        if (area === "REVIEW") {
+          reviewItems.push({
+            id: item.id,
+            orderId: order.id,
+            orderNumber:
+              order.orderNumber ||
+              order.id,
+            customerName:
+              order.customerName ||
+              "Ohne Kunde",
+            name:
+              effectiveOperationalName(
+                item
+              ),
+          });
+
+          continue;
+        }
+
+        if (area !== "KITCHEN") {
+          continue;
+        }
+
+        const name =
+          effectiveOperationalName(
+            item
+          );
+
+        const unit =
+          effectiveOperationalUnit(
+            item
+          );
+
+        const quantity =
+          effectiveOperationalQuantity(
+            item
+          );
+
+        if (quantity <= 0) {
+          continue;
+        }
 
         const key =
-          `${name}__${unit}`;
+          `${item.productId || name}__${unit}`;
 
         if (!grouped.has(key)) {
           grouped.set(key, {
@@ -316,9 +439,7 @@ export async function loader({
 
         const row = grouped.get(key);
 
-        row.quantity += Number(
-          item.quantity || 0
-        );
+        row.quantity += quantity;
 
         row.orders.push(
           order.orderNumber ||
@@ -330,6 +451,20 @@ export async function loader({
         );
       }
     }
+
+    const ordersWithOperationalState =
+      relevantOrders.map(
+        (order: any) => ({
+          ...order,
+          unresolvedOperationalItems:
+            (order.items || []).filter(
+              (item: any) =>
+                effectiveOperationalArea(
+                  item
+                ) === "REVIEW"
+            ).length,
+        })
+      );
 
     const productionItems =
       Array.from(
@@ -380,8 +515,10 @@ export async function loader({
         "Gastario",
       selectedDate,
       availableDates,
-      orders: relevantOrders,
+      orders:
+        ordersWithOperationalState,
       productionItems,
+      reviewItems,
       stats: {
         orders:
           relevantOrders.length,
@@ -409,6 +546,8 @@ export async function loader({
                 order.packingCompletedAt
               )
           ).length,
+        review:
+          reviewItems.length,
       },
       error: null,
     };
@@ -478,12 +617,43 @@ export async function action({
         id: orderId,
         tenantId: access.tenantId,
       },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
     });
 
   if (!order) {
     return {
       error:
         "Der Auftrag wurde nicht gefunden.",
+    };
+  }
+
+  const unresolvedOperationalItems =
+    (order.items || []).filter(
+      (item: any) =>
+        effectiveOperationalArea(
+          item
+        ) === "REVIEW"
+    );
+
+  if (
+    unresolvedOperationalItems.length >
+      0 &&
+    (
+      intent ===
+        "start-production" ||
+      intent ===
+        "complete-production"
+    )
+  ) {
+    return {
+      error:
+        `${unresolvedOperationalItems.length} Position(en) müssen zuerst einem Arbeitsbereich zugeordnet werden.`,
     };
   }
 
@@ -649,6 +819,30 @@ export default function ProductionPage() {
           </Notice>
         ) : null}
 
+        {data.reviewItems.length > 0 ? (
+          <Notice type="warning">
+            <strong>
+              Operative Zuordnung erforderlich.
+            </strong>
+
+            <span>
+              {data.reviewItems.length} Position(en)
+              sind noch nicht als Küche,
+              Packstation, Logistik oder
+              nicht operativ eingeordnet.
+            </span>
+
+            <Link
+              className="g-ops-button g-ops-button--secondary g-ops-button--compact"
+              to={`/auftrag-pruefung/${
+                data.reviewItems[0].orderId
+              }`}
+            >
+              Zuordnungen prüfen
+            </Link>
+          </Notice>
+        ) : null}
+
         <MetricGrid className="operationsMetricGrid">
           <MetricCard
             label="Aufträge"
@@ -691,7 +885,7 @@ export default function ProductionPage() {
             className="operationsPrimarySection"
             eyebrow="Produktionsliste"
             title="Zu produzieren"
-            description="Gleiche Produkte werden automatisch zusammengefasst. Die Auftragsnummern zeigen, woher die Mengen stammen."
+            description="Nur als Küche zugeordnete Positionen werden zusammengefasst. Produktnamen und operative Mengen stammen aus der bestätigten Zuordnung."
             actions={
               <form
                 className="operationsDateFilter"
@@ -761,9 +955,8 @@ export default function ProductionPage() {
 
                   <p>
                     Für den ausgewählten Tag
-                    sind noch keine bestätigten
-                    oder laufenden Aufträge
-                    vorhanden.
+                    gibt es noch keine als Küche
+                    zugeordneten Positionen.
                   </p>
                 </div>
               </div>
@@ -946,7 +1139,15 @@ export default function ProductionPage() {
                             )}
                           </span>
 
-                          {status ===
+                          {order.unresolvedOperationalItems >
+                          0 ? (
+                            <Link
+                              to={`/auftrag-pruefung/${order.id}`}
+                              className="g-ops-button g-ops-button--secondary g-ops-button--compact"
+                            >
+                              {order.unresolvedOperationalItems} Zuordnung(en) prüfen
+                            </Link>
+                          ) : status ===
                           "CONFIRMED" ? (
                             <Form
                               method="post"
@@ -981,7 +1182,9 @@ export default function ProductionPage() {
                             </Form>
                           ) : null}
 
-                          {status ===
+                          {order.unresolvedOperationalItems ===
+                            0 &&
+                          status ===
                           "IN_PRODUCTION" ? (
                             <Form
                               method="post"

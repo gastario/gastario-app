@@ -50,6 +50,59 @@ function optionalEuroToCents(value: FormDataEntryValue | null) {
   return Math.round(number * 100);
 }
 
+const OPERATIONAL_AREAS = [
+  {
+    value: "REVIEW",
+    label: "Zuordnung prüfen",
+  },
+  {
+    value: "KITCHEN",
+    label: "Küche / Produktion",
+  },
+  {
+    value: "PACKING",
+    label: "Packstation / Equipment",
+  },
+  {
+    value: "LOGISTICS",
+    label: "Logistik / Lieferung",
+  },
+  {
+    value: "NON_OPERATIONAL",
+    label: "Nicht operativ",
+  },
+] as const;
+
+function normalizedOperationalArea(
+  value: unknown
+) {
+  const requested = String(
+    value || "REVIEW"
+  ).toUpperCase();
+
+  return OPERATIONAL_AREAS.some(
+    (area) =>
+      area.value === requested
+  )
+    ? requested
+    : "REVIEW";
+}
+
+function operationalAreaLabel(
+  value: unknown
+) {
+  const normalized =
+    normalizedOperationalArea(value);
+
+  return (
+    OPERATIONAL_AREAS.find(
+      (area) =>
+        area.value === normalized
+    )?.label ||
+    "Zuordnung prüfen"
+  );
+}
+
 export function links() {
   return [
     {
@@ -79,6 +132,7 @@ export async function loader({ request }: { request: Request }) {
         active: 0,
         categories: 0,
         recipeItems: 0,
+        review: 0,
       },
     };
   }
@@ -147,6 +201,12 @@ export async function loader({ request }: { request: Request }) {
         active: products.filter((product) => product.active).length,
         categories: categories.length,
         recipeItems: products.reduce((sum, product: any) => sum + product.recipeItems.length, 0),
+        review: products.filter(
+          (product: any) =>
+            normalizedOperationalArea(
+              product.operationalArea
+            ) === "REVIEW"
+        ).length,
       },
     };
   } catch (error) {
@@ -161,6 +221,7 @@ export async function loader({ request }: { request: Request }) {
         active: 0,
         categories: 0,
         recipeItems: 0,
+        review: 0,
       },
     };
   }
@@ -195,6 +256,10 @@ export async function action({ request }: { request: Request }) {
         priceCents: euroToCents(formData.get("priceEuro")),
         taxRate: toNumber(formData.get("taxRate"), 7),
         notes: String(formData.get("notes") || "").trim() || null,
+        operationalArea:
+          normalizedOperationalArea(
+            formData.get("operationalArea")
+          ),
         active: true,
       } as any,
     });
@@ -235,6 +300,10 @@ export async function action({ request }: { request: Request }) {
         priceCents: euroToCents(formData.get("priceEuro")),
         taxRate: toNumber(formData.get("taxRate"), 7),
         notes: String(formData.get("notes") || "").trim() || null,
+        operationalArea:
+          normalizedOperationalArea(
+            formData.get("operationalArea")
+          ),
       } as any,
     });
 
@@ -412,6 +481,8 @@ export default function ProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [recipeFilter, setRecipeFilter] = useState("all");
+  const [operationalFilter, setOperationalFilter] =
+    useState("all");
 
   const products = Array.isArray(data.products) ? data.products : [];
 
@@ -440,6 +511,9 @@ export default function ProductsPage() {
           product.category,
           product.unit,
           product.notes,
+          operationalAreaLabel(
+            product.operationalArea
+          ),
           ...recipeItems.map((item: any) => item.ingredientName),
         ]
           .filter(Boolean)
@@ -471,11 +545,18 @@ export default function ProductsPage() {
           requiresRecipe &&
           recipeItems.length === 0);
 
+      const matchesOperational =
+        operationalFilter === "all" ||
+        normalizedOperationalArea(
+          product.operationalArea
+        ) === operationalFilter;
+
       return (
         matchesSearch &&
         matchesCategory &&
         matchesStatus &&
-        matchesRecipe
+        matchesRecipe &&
+        matchesOperational
       );
     });
   }, [
@@ -484,6 +565,7 @@ export default function ProductsPage() {
     categoryFilter,
     statusFilter,
     recipeFilter,
+    operationalFilter,
   ]);
 
   const selectedProduct = products.find(
@@ -581,19 +663,11 @@ export default function ProductsPage() {
 
           <article className="productsMetricCard productsMetricAttention">
             <div>
-              <p>Ohne Rezeptur</p>
-              <strong>
-                {
-                  products.filter(
-                    (product: any) =>
-                      (product.procurementType || "RECIPE") ===
-                        "RECIPE" &&
-                      (!Array.isArray(product.recipeItems) ||
-                        product.recipeItems.length === 0)
-                  ).length
-                }
-              </strong>
-              <span>Noch zu vervollständigen</span>
+              <p>Operativ zu prüfen</p>
+              <strong>{data.stats.review}</strong>
+              <span>
+                Noch keinem Arbeitsbereich zugeordnet
+              </span>
             </div>
             <small>Prüfen</small>
           </article>
@@ -634,6 +708,25 @@ export default function ProductsPage() {
                   name="category"
                   placeholder="Zum Beispiel Bowls"
                 />
+              </label>
+
+              <label className="productsField g-ui-field">
+                <span>Arbeitsbereich</span>
+                <select
+                  name="operationalArea"
+                  defaultValue="REVIEW"
+                >
+                  {OPERATIONAL_AREAS.map(
+                    (area) => (
+                      <option
+                        key={area.value}
+                        value={area.value}
+                      >
+                        {area.label}
+                      </option>
+                    )
+                  )}
+                </select>
               </label>
 
               <label className="productsField g-ui-field">
@@ -731,6 +824,19 @@ export default function ProductsPage() {
                       }
                     >
                       {selectedProduct.active ? "Aktiv" : "Inaktiv"}
+                    </span>
+
+                    <span
+                      className={
+                        "productOperationalBadge " +
+                        `is-${normalizedOperationalArea(
+                          selectedProduct.operationalArea
+                        ).toLowerCase()}`
+                      }
+                    >
+                      {operationalAreaLabel(
+                        selectedProduct.operationalArea
+                      )}
                     </span>
                   </div>
 
@@ -1038,6 +1144,27 @@ export default function ProductsPage() {
                       name="category"
                       defaultValue={selectedProduct.category || ""}
                     />
+                  </label>
+
+                  <label className="productsField g-ui-field">
+                    <span>Arbeitsbereich</span>
+                    <select
+                      name="operationalArea"
+                      defaultValue={normalizedOperationalArea(
+                        selectedProduct.operationalArea
+                      )}
+                    >
+                      {OPERATIONAL_AREAS.map(
+                        (area) => (
+                          <option
+                            key={area.value}
+                            value={area.value}
+                          >
+                            {area.label}
+                          </option>
+                        )
+                      )}
+                    </select>
                   </label>
 
                   <label className="productsField g-ui-field">
@@ -1422,6 +1549,32 @@ export default function ProductsPage() {
               </label>
 
               <label className="productsFilterField">
+                <span>Arbeitsbereich</span>
+                <select
+                  value={operationalFilter}
+                  onChange={(event) =>
+                    setOperationalFilter(
+                      event.target.value
+                    )
+                  }
+                >
+                  <option value="all">
+                    Alle Arbeitsbereiche
+                  </option>
+                  {OPERATIONAL_AREAS.map(
+                    (area) => (
+                      <option
+                        key={area.value}
+                        value={area.value}
+                      >
+                        {area.label}
+                      </option>
+                    )
+                  )}
+                </select>
+              </label>
+
+              <label className="productsFilterField">
                 <span>Rezeptur</span>
                 <select
                   value={recipeFilter}
@@ -1455,6 +1608,7 @@ export default function ProductsPage() {
                     setCategoryFilter("all");
                     setStatusFilter("all");
                     setRecipeFilter("all");
+                    setOperationalFilter("all");
                   }}
                 >
                   Filter zurücksetzen
@@ -1525,6 +1679,19 @@ export default function ProductsPage() {
                               {product.active
                                 ? "Aktiv"
                                 : "Inaktiv"}
+                            </span>
+
+                            <span
+                              className={
+                                "productOperationalBadge " +
+                                `is-${normalizedOperationalArea(
+                                  product.operationalArea
+                                ).toLowerCase()}`
+                              }
+                            >
+                              {operationalAreaLabel(
+                                product.operationalArea
+                              )}
                             </span>
                           </div>
 

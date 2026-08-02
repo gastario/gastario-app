@@ -170,32 +170,20 @@ function isConservativeDuplicate(
   );
 }
 
-function isNonProductPosition(
+export type OperationalAreaCode =
+  | "REVIEW"
+  | "KITCHEN"
+  | "PACKING"
+  | "LOGISTICS"
+  | "NON_OPERATIONAL";
+
+function isIgnoredOperationalPosition(
   value: unknown
 ) {
   const name =
     normalizeProductKey(value);
 
   if (!name) return true;
-
-  const exactServiceNames = new Set([
-    "lieferung",
-    "abholung",
-    "lieferung und abholung",
-    "transport",
-    "aufbau",
-    "abbau",
-    "aufbau und abbau",
-    "servicepersonal",
-    "personal",
-    "pfand",
-    "standgebuhr",
-    "standgebuehr",
-  ]);
-
-  if (exactServiceNames.has(name)) {
-    return true;
-  }
 
   return [
     "fehlende position",
@@ -205,6 +193,85 @@ function isNonProductPosition(
   ].some((phrase) =>
     name.includes(phrase)
   );
+}
+
+export function inferOperationalArea(
+  value: unknown
+): OperationalAreaCode {
+  const name =
+    normalizeProductKey(value);
+
+  if (!name) {
+    return "REVIEW";
+  }
+
+  const logisticsNames = new Set([
+    "lieferung",
+    "abholung",
+    "lieferung und abholung",
+    "transport",
+    "aufbau",
+    "abbau",
+    "aufbau und abbau",
+    "servicepersonal",
+    "personal",
+  ]);
+
+  if (
+    logisticsNames.has(name) ||
+    name.includes("lieferpauschale") ||
+    name.includes("transportpauschale")
+  ) {
+    return "LOGISTICS";
+  }
+
+  const nonOperationalTerms = [
+    "rabatt",
+    "gutschein",
+    "pfand",
+    "standgebuhr",
+    "standgebuehr",
+    "servicegebuhr",
+    "servicegebuehr",
+    "bearbeitungsgebuhr",
+    "bearbeitungsgebuehr",
+  ];
+
+  if (
+    nonOperationalTerms.some(
+      (term) => name.includes(term)
+    )
+  ) {
+    return "NON_OPERATIONAL";
+  }
+
+  const packingTerms = [
+    "chafing dish",
+    "chaving dish",
+    "menuteller",
+    "menu teller",
+    "besteck",
+    "serviette",
+    "glaeser",
+    "becher",
+    "transportbox",
+    "thermobox",
+    "buffetbesteck",
+  ];
+
+  if (
+    packingTerms.some(
+      (term) => name.includes(term)
+    )
+  ) {
+    return "PACKING";
+  }
+
+  /*
+   * Speisen werden nicht automatisch als Küche eingestuft.
+   * Erst eine bewusste Produktzuordnung macht sie produktionsbereit.
+   */
+  return "REVIEW";
 }
 
 function normalizeUnit(value: unknown) {
@@ -218,6 +285,13 @@ function normalizeUnit(value: unknown) {
     lower === "stück" ||
     lower === "stueck" ||
     lower === "stk"
+  ) {
+    return "Stück";
+  }
+
+  if (
+    lower === "portion" ||
+    lower === "portionen"
   ) {
     return "Portion";
   }
@@ -284,7 +358,7 @@ export async function ensureProductsForOrder(
       cleanText(item.name);
 
     if (
-      isNonProductPosition(externalName)
+      isIgnoredOperationalPosition(externalName)
     ) {
       skippedItems += 1;
       continue;
@@ -354,6 +428,10 @@ export async function ensureProductsForOrder(
             ),
             taxRate: 7,
             active: true,
+            operationalArea:
+              inferOperationalArea(
+                externalName
+              ),
           },
           select: {
             id: true,

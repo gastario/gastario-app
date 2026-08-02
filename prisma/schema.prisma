@@ -353,6 +353,14 @@ enum ProductProcurementType {
   EXTERNAL
 }
 
+enum ProductOperationalArea {
+  REVIEW
+  KITCHEN
+  PACKING
+  LOGISTICS
+  NON_OPERATIONAL
+}
+
 model Product {
   id         String  @id @default(cuid())
   tenantId   String
@@ -362,6 +370,8 @@ model Product {
   priceCents Int     @default(0)
   taxRate    Int     @default(7)
   active     Boolean @default(true)
+
+  operationalArea ProductOperationalArea @default(REVIEW)
 
   procurementType         ProductProcurementType @default(RECIPE)
   supplierName            String?
@@ -388,6 +398,7 @@ model Product {
 
   @@index([tenantId])
   @@index([name])
+  @@index([tenantId, operationalArea])
 }
 
 model ProductMapping {
@@ -623,9 +634,12 @@ model OrderItem {
   unit       String   @default("Stueck")
   unitCents  Int      @default(0)
   totalCents Int      @default(0)
-  notes      String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  notes               String?
+  operationalQuantity Float?
+  operationalUnit     String?
+  operationalArea     ProductOperationalArea?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product   Product? @relation(fields: [productId], references: [id])

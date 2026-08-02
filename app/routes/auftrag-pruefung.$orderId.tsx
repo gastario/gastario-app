@@ -3,6 +3,7 @@ import {
   Form,
   Link,
   redirect,
+  useActionData,
   useLoaderData,
   useNavigation,
 } from "react-router";
@@ -19,6 +20,7 @@ import {
 } from "../components/ui/PageShell";
 
 import orderReviewStyles from "../styles/auftrag-pruefung.css?url";
+import "../styles/gastario-operations.css";
 
 function formatDate(value: string | Date | null | undefined) {
   if (!value) return "-";
@@ -38,6 +40,92 @@ function normalizeText(value: unknown) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
+}
+
+const OPERATIONAL_AREAS = [
+  {
+    value: "REVIEW",
+    label: "Zuordnung prüfen",
+  },
+  {
+    value: "KITCHEN",
+    label: "Küche / Produktion",
+  },
+  {
+    value: "PACKING",
+    label: "Packstation / Equipment",
+  },
+  {
+    value: "LOGISTICS",
+    label: "Logistik / Lieferung",
+  },
+  {
+    value: "NON_OPERATIONAL",
+    label: "Nicht operativ",
+  },
+] as const;
+
+function effectiveOperationalArea(
+  item: any
+) {
+  const value = String(
+    item?.operationalArea ||
+      item?.product?.operationalArea ||
+      "REVIEW"
+  ).toUpperCase();
+
+  return OPERATIONAL_AREAS.some(
+    (area) =>
+      area.value === value
+  )
+    ? value
+    : "REVIEW";
+}
+
+function effectiveOperationalQuantity(
+  item: any
+) {
+  if (
+    item?.operationalQuantity !== null &&
+    item?.operationalQuantity !==
+      undefined &&
+    Number.isFinite(
+      Number(
+        item.operationalQuantity
+      )
+    )
+  ) {
+    return Number(
+      item.operationalQuantity
+    );
+  }
+
+  return Number(
+    item?.quantity || 0
+  );
+}
+
+function effectiveOperationalUnit(
+  item: any
+) {
+  return String(
+    item?.operationalUnit ||
+      item?.product?.unit ||
+      item?.unit ||
+      "Stück"
+  ).trim();
+}
+
+function operationalAreaLabel(
+  value: unknown
+) {
+  return (
+    OPERATIONAL_AREAS.find(
+      (area) =>
+        area.value === value
+    )?.label ||
+    "Zuordnung prüfen"
+  );
 }
 
 function isHeycaterCorrectionItem(item: any) {
@@ -91,6 +179,27 @@ function getOrderReviewState(order: any) {
     missing.push("Keine echten bestellten Produkte erkannt");
   }
 
+  const unresolvedOperationalItems =
+    realItems.filter(
+      (item: any) =>
+        effectiveOperationalArea(
+          item
+        ) === "REVIEW"
+    );
+
+  if (
+    unresolvedOperationalItems.length >
+      0
+  ) {
+    missing.push(
+      `${unresolvedOperationalItems.length} Position(en) operativ zuordnen`
+    );
+
+    hints.push(
+      "Jede Position muss als Küche, Packstation, Logistik oder nicht operativ eingeordnet sein."
+    );
+  }
+
   if (totalCents <= 0) {
     if (isHeycater && realItems.length > 0) {
       missing.push("Preise fehlen");
@@ -106,6 +215,7 @@ function getOrderReviewState(order: any) {
     hints,
     totalCents,
     realItemCount: realItems.length,
+    unresolvedOperationalItems,
     isHeycater,
   };
 }
@@ -146,13 +256,30 @@ export async function loader({ request, params }: { request: Request; params: { 
     throw new Response("Kein Mandant gefunden", { status: 404 });
   }
 
+  if (params.orderId) {
+    const {
+      ensureProductsForOrder,
+    } = await import(
+      "../lib/order-products.server"
+    );
+
+    await ensureProductsForOrder(
+      String(params.orderId),
+      tenantUser.tenantId
+    );
+  }
+
   const order = await prisma.order.findFirst({
     where: {
       id: params.orderId,
       tenantId: tenantUser.tenantId,
     },
     include: {
-      items: true,
+      items: {
+        include: {
+          product: true,
+        },
+      },
       customer: true,
     },
   });
@@ -161,11 +288,35 @@ export async function loader({ request, params }: { request: Request; params: { 
     throw new Response("Auftrag nicht gefunden", { status: 404 });
   }
 
+  const products =
+    await prisma.product.findMany({
+      where: {
+        tenantId:
+          tenantUser.tenantId,
+      },
+      select: {
+        id: true,
+        name: true,
+        unit: true,
+        operationalArea: true,
+        active: true,
+      },
+      orderBy: [
+        {
+          active: "desc",
+        },
+        {
+          name: "asc",
+        },
+      ],
+    });
+
   const url = new URL(request.url);
 
   return {
     tenant: tenantUser.tenant,
     order,
+    products,
     blocked: url.searchParams.get("blocked") === "1",
   };
 }
@@ -190,6 +341,205 @@ export async function action({ request, params }: { request: Request; params: { 
 
   const formData = await request.formData();
   const intent = String(formData.get("_intent") || "");
+
+  if (intent === "updateOperationalItem") {
+    const itemId = String(
+      formData.get("itemId") || ""
+    );
+
+    if (!params.orderId || !itemId) {
+      return {
+        error:
+          "Die Auftragsposition wurde nicht erkannt.",
+      };
+    }
+
+    const order =
+      await prisma.order.findFirst({
+        where: {
+          id: params.orderId,
+          tenantId:
+            tenantUser.tenantId,
+        },
+        include: {
+          items: true,
+        },
+      });
+
+    if (!order) {
+      throw new Response(
+        "Auftrag nicht gefunden",
+        {
+          status: 404,
+        }
+      );
+    }
+
+    const item =
+      order.items.find(
+        (entry: any) =>
+          entry.id === itemId
+      );
+
+    if (!item) {
+      return {
+        error:
+          "Die Position gehört nicht zu diesem Auftrag.",
+      };
+    }
+
+    const requestedProductId =
+      String(
+        formData.get("productId") ||
+          ""
+      ).trim();
+
+    const product =
+      requestedProductId
+        ? await prisma.product.findFirst({
+            where: {
+              id: requestedProductId,
+              tenantId:
+                tenantUser.tenantId,
+            },
+          })
+        : null;
+
+    if (
+      requestedProductId &&
+      !product
+    ) {
+      return {
+        error:
+          "Das ausgewählte Produkt wurde nicht gefunden.",
+      };
+    }
+
+    const requestedArea =
+      String(
+        formData.get(
+          "operationalArea"
+        ) || "INHERIT"
+      ).toUpperCase();
+
+    const allowedAreas =
+      new Set([
+        "REVIEW",
+        "KITCHEN",
+        "PACKING",
+        "LOGISTICS",
+        "NON_OPERATIONAL",
+      ]);
+
+    const operationalArea =
+      requestedArea === "INHERIT"
+        ? null
+        : allowedAreas.has(
+              requestedArea
+            )
+          ? requestedArea
+          : "REVIEW";
+
+    const quantityRaw =
+      String(
+        formData.get(
+          "operationalQuantity"
+        ) || ""
+      )
+        .replace(",", ".")
+        .trim();
+
+    const operationalQuantity =
+      quantityRaw === ""
+        ? null
+        : Number(quantityRaw);
+
+    if (
+      operationalQuantity !== null &&
+      (
+        !Number.isFinite(
+          operationalQuantity
+        ) ||
+        operationalQuantity < 0
+      )
+    ) {
+      return {
+        error:
+          "Die operative Menge ist ungültig.",
+      };
+    }
+
+    const operationalUnit =
+      String(
+        formData.get(
+          "operationalUnit"
+        ) || ""
+      ).trim() || null;
+
+    await prisma.orderItem.update({
+      where: {
+        id: item.id,
+      },
+      data: {
+        productId:
+          product?.id || null,
+        operationalArea:
+          operationalArea as any,
+        operationalQuantity,
+        operationalUnit,
+      } as any,
+    });
+
+    if (
+      product &&
+      String(item.name || "").trim()
+    ) {
+      const existingMapping =
+        await prisma.productMapping.findFirst({
+          where: {
+            tenantId:
+              tenantUser.tenantId,
+            source:
+              order.source,
+            externalName:
+              String(
+                item.name
+              ).trim(),
+          },
+        });
+
+      if (existingMapping) {
+        await prisma.productMapping.update({
+          where: {
+            id: existingMapping.id,
+          },
+          data: {
+            productId: product.id,
+          },
+        });
+      } else {
+        await prisma.productMapping.create({
+          data: {
+            tenantId:
+              tenantUser.tenantId,
+            source:
+              order.source,
+            externalName:
+              String(
+                item.name
+              ).trim(),
+            productId: product.id,
+          },
+        });
+      }
+    }
+
+    return redirect(
+      "/auftrag-pruefung/" +
+        params.orderId +
+        "#operative-zuordnung"
+    );
+  }
 
   if (intent === "confirmOrder") {
     const requestedBillingMode = String(
@@ -228,13 +578,29 @@ export async function action({ request, params }: { request: Request; params: { 
     const billingSelection =
       billingConfiguration[requestedBillingMode] ||
       billingConfiguration.UNDECIDED;
+
+    const {
+      ensureProductsForOrder,
+    } = await import(
+      "../lib/order-products.server"
+    );
+
+    await ensureProductsForOrder(
+      String(params.orderId),
+      tenantUser.tenantId
+    );
+
     const order = await prisma.order.findFirst({
       where: {
         id: params.orderId,
         tenantId: tenantUser.tenantId,
       },
       include: {
-        items: true,
+        items: {
+          include: {
+            product: true,
+          },
+        },
       },
     });
 
@@ -263,18 +629,9 @@ export async function action({ request, params }: { request: Request; params: { 
     });
 
     /*
-     * gastario-auto-products-on-confirm-20260714
-     * Fehlende Produkte automatisch anlegen,
-     * Mappings speichern und Auftragspositionen verbinden.
+     * Produkte und Mappings wurden vor der
+     * Freigabe bereits synchronisiert.
      */
-    const {
-      ensureProductsForOrder,
-    } = await import("../lib/order-products.server");
-
-    await ensureProductsForOrder(
-      String(params.orderId),
-      tenantUser.tenantId
-    );
 
     const {
       ensureDeliveryNoteForOrder,
@@ -303,8 +660,17 @@ export async function action({ request, params }: { request: Request; params: { 
 }
 
 export default function AuftragPruefungPage() {
-  const { tenant, order, blocked } =
-    useLoaderData<typeof loader>();
+  const {
+    tenant,
+    order,
+    products,
+    blocked,
+  } = useLoaderData<typeof loader>();
+
+  const actionData =
+    useActionData<
+      typeof action
+    >() as any;
 
   const navigation = useNavigation();
 
@@ -439,6 +805,18 @@ export default function AuftragPruefungPage() {
             </div>
           }
         />
+
+        {actionData?.error ? (
+          <Notice type="danger">
+            <strong>
+              Operative Zuordnung konnte
+              nicht gespeichert werden.
+            </strong>
+            <span>
+              {actionData.error}
+            </span>
+          </Notice>
+        ) : null}
 
         {!isAlreadyConfirmed ? (
           <Notice type="warning">
@@ -709,6 +1087,208 @@ export default function AuftragPruefungPage() {
                 </div>
               ) : null}
             </PageSection>
+
+            <div id="operative-zuordnung">
+              <PageSection
+                eyebrow="Operative Zuordnung"
+                title="Arbeitsbereich, Produkt und Menge"
+                description="Die Originalposition bleibt unverändert. Hier legst du fest, was Küche, Packstation und Logistik tatsächlich bearbeiten."
+                actions={
+                  <Link
+                    to="/produkte"
+                    className="orderReviewButton orderReviewButtonSecondary"
+                  >
+                    Produktstammdaten öffnen
+                  </Link>
+                }
+              >
+                <div className="orderOperationalList">
+                  {visibleItems.map(
+                    (item: any, index: number) => {
+                      const effectiveArea =
+                        effectiveOperationalArea(
+                          item
+                        );
+
+                      return (
+                        <Form
+                          method="post"
+                          className={
+                            "orderOperationalRow " +
+                            (
+                              effectiveArea ===
+                              "REVIEW"
+                                ? "is-review"
+                                : ""
+                            )
+                          }
+                          key={item.id}
+                        >
+                          <input
+                            type="hidden"
+                            name="_intent"
+                            value="updateOperationalItem"
+                          />
+
+                          <input
+                            type="hidden"
+                            name="itemId"
+                            value={item.id}
+                          />
+
+                          <div className="orderOperationalOriginal">
+                            <small>
+                              Originalposition {index + 1}
+                            </small>
+
+                            <strong>
+                              {item.quantity} ×{" "}
+                              {item.name}
+                            </strong>
+
+                            <span>
+                              {item.unit || "Stück"}
+                              {" · "}
+                              {centsToEuro(
+                                item.totalCents
+                              )}
+                            </span>
+                          </div>
+
+                          <label className="orderOperationalField orderOperationalProductField">
+                            <span>
+                              Gastario-Produkt
+                            </span>
+
+                            <select
+                              name="productId"
+                              defaultValue={
+                                item.productId || ""
+                              }
+                            >
+                              <option value="">
+                                Noch keinem Produkt zugeordnet
+                              </option>
+
+                              {products.map(
+                                (product: any) => (
+                                  <option
+                                    key={product.id}
+                                    value={product.id}
+                                  >
+                                    {product.name}
+                                    {product.active
+                                      ? ""
+                                      : " (inaktiv)"}
+                                  </option>
+                                )
+                              )}
+                            </select>
+                          </label>
+
+                          <label className="orderOperationalField">
+                            <span>
+                              Arbeitsbereich
+                            </span>
+
+                            <select
+                              name="operationalArea"
+                              defaultValue={
+                                item.operationalArea ||
+                                "INHERIT"
+                              }
+                            >
+                              <option value="INHERIT">
+                                Vom Produkt übernehmen
+                              </option>
+
+                              {OPERATIONAL_AREAS.map(
+                                (area) => (
+                                  <option
+                                    key={area.value}
+                                    value={area.value}
+                                  >
+                                    {area.label}
+                                  </option>
+                                )
+                              )}
+                            </select>
+                          </label>
+
+                          <label className="orderOperationalField">
+                            <span>
+                              Operative Menge
+                            </span>
+
+                            <input
+                              name="operationalQuantity"
+                              inputMode="decimal"
+                              defaultValue={
+                                item.operationalQuantity ??
+                                ""
+                              }
+                              placeholder={String(
+                                item.quantity || 0
+                              )}
+                            />
+                          </label>
+
+                          <label className="orderOperationalField">
+                            <span>
+                              Operative Einheit
+                            </span>
+
+                            <input
+                              name="operationalUnit"
+                              defaultValue={
+                                item.operationalUnit ||
+                                ""
+                              }
+                              placeholder={
+                                effectiveOperationalUnit(
+                                  item
+                                )
+                              }
+                            />
+                          </label>
+
+                          <div className="orderOperationalResult">
+                            <small>
+                              Aktuell wirksam
+                            </small>
+
+                            <strong>
+                              {effectiveOperationalQuantity(
+                                item
+                              )}{" "}
+                              {effectiveOperationalUnit(
+                                item
+                              )}
+                            </strong>
+
+                            <span>
+                              {operationalAreaLabel(
+                                effectiveArea
+                              )}
+                              {" · "}
+                              {item.product?.name ||
+                                item.name}
+                            </span>
+                          </div>
+
+                          <button
+                            type="submit"
+                            className="orderReviewButton orderReviewButtonPrimary orderOperationalSaveButton"
+                          >
+                            Zuordnung speichern
+                          </button>
+                        </Form>
+                      );
+                    }
+                  )}
+                </div>
+              </PageSection>
+            </div>
 
             {isAlreadyConfirmed ? (
               <PageSection

@@ -45,6 +45,86 @@ const PACKING_TASKS = [
   },
 ];
 
+type OperationalAreaCode =
+  | "REVIEW"
+  | "KITCHEN"
+  | "PACKING"
+  | "LOGISTICS"
+  | "NON_OPERATIONAL";
+
+function effectiveOperationalArea(
+  item: any
+): OperationalAreaCode {
+  const value = String(
+    item?.operationalArea ||
+      item?.product?.operationalArea ||
+      "REVIEW"
+  ).toUpperCase();
+
+  if (
+    value === "KITCHEN" ||
+    value === "PACKING" ||
+    value === "LOGISTICS" ||
+    value === "NON_OPERATIONAL"
+  ) {
+    return value;
+  }
+
+  return "REVIEW";
+}
+
+function effectiveOperationalName(
+  item: any
+) {
+  return String(
+    item?.product?.name ||
+      item?.name ||
+      "Position"
+  ).trim();
+}
+
+function effectiveOperationalQuantity(
+  item: any
+) {
+  const override =
+    item?.operationalQuantity;
+
+  if (
+    override !== null &&
+    override !== undefined &&
+    Number.isFinite(Number(override))
+  ) {
+    return Number(override);
+  }
+
+  return Number(
+    item?.quantity || 0
+  );
+}
+
+function effectiveOperationalUnit(
+  item: any
+) {
+  return String(
+    item?.operationalUnit ||
+      item?.product?.unit ||
+      item?.unit ||
+      "Stück"
+  ).trim();
+}
+
+function isPackableItem(
+  item: any
+) {
+  const area =
+    effectiveOperationalArea(item);
+
+  return (
+    area === "KITCHEN" ||
+    area === "PACKING"
+  );
+}
+
 function todayInput() {
   const now = new Date();
 
@@ -138,10 +218,12 @@ function expectedCheckKeys(
   order: any
 ) {
   return [
-    ...(order.items || []).map(
-      (item: any) =>
-        `item:${item.id}`
-    ),
+    ...(order.items || [])
+      .filter(isPackableItem)
+      .map(
+        (item: any) =>
+          `item:${item.id}`
+      ),
     ...PACKING_TASKS.map(
       (task) =>
         `task:${task.key}`
@@ -259,7 +341,11 @@ export async function loader({
           tenantId: access.tenantId,
         },
         include: {
-          items: true,
+          items: {
+            include: {
+              product: true,
+            },
+          },
         },
         orderBy: [
           {
@@ -320,24 +406,76 @@ export async function loader({
               order.packingChecklist
             );
 
-          const items =
-            (order.items || []).map(
-              (item: any) => {
-                const checkKey =
-                  `item:${item.id}`;
-
-                return {
-                  ...item,
-                  checkKey,
-                  checked:
-                    Boolean(
-                      checklist[
-                        checkKey
-                      ]
-                    ),
-                };
-              }
+          const unresolvedItems =
+            (order.items || []).filter(
+              (item: any) =>
+                effectiveOperationalArea(
+                  item
+                ) === "REVIEW"
             );
+
+          const items =
+            (order.items || [])
+              .filter(isPackableItem)
+              .map(
+                (item: any) => {
+                  const checkKey =
+                    `item:${item.id}`;
+
+                  return {
+                    ...item,
+                    name:
+                      effectiveOperationalName(
+                        item
+                      ),
+                    quantity:
+                      effectiveOperationalQuantity(
+                        item
+                      ),
+                    unit:
+                      effectiveOperationalUnit(
+                        item
+                      ),
+                    operationalArea:
+                      effectiveOperationalArea(
+                        item
+                      ),
+                    checkKey,
+                    checked:
+                      Boolean(
+                        checklist[
+                          checkKey
+                        ]
+                      ),
+                  };
+                }
+              );
+
+          const logisticsItems =
+            (order.items || [])
+              .filter(
+                (item: any) =>
+                  effectiveOperationalArea(
+                    item
+                  ) === "LOGISTICS"
+              )
+              .map(
+                (item: any) => ({
+                  ...item,
+                  name:
+                    effectiveOperationalName(
+                      item
+                    ),
+                  quantity:
+                    effectiveOperationalQuantity(
+                      item
+                    ),
+                  unit:
+                    effectiveOperationalUnit(
+                      item
+                    ),
+                })
+              );
 
           const tasks =
             PACKING_TASKS.map(
@@ -417,6 +555,8 @@ export async function loader({
               order.packingCompletedAt,
             items,
             tasks,
+            logisticsItems,
+            unresolvedItems,
             totalQuantity:
               items.reduce(
                 (
@@ -446,13 +586,15 @@ export async function loader({
               packingStarted &&
               !isPacked &&
               status !==
-                "DELIVERED",
+                "DELIVERED" &&
+              unresolvedItems.length === 0,
             canComplete:
               packingStarted &&
               !isPacked &&
               totalChecks > 0 &&
               checkedCount ===
-                totalChecks,
+                totalChecks &&
+              unresolvedItems.length === 0,
           };
         }
       );
@@ -571,7 +713,11 @@ export async function action({
         tenantId: access.tenantId,
       },
       include: {
-        items: true,
+        items: {
+          include: {
+            product: true,
+          },
+        },
       },
     });
 
@@ -579,6 +725,28 @@ export async function action({
     return {
       error:
         "Der Auftrag wurde nicht gefunden.",
+    };
+  }
+
+  const unresolvedOperationalItems =
+    (order.items || []).filter(
+      (item: any) =>
+        effectiveOperationalArea(
+          item
+        ) === "REVIEW"
+    );
+
+  if (
+    unresolvedOperationalItems.length >
+      0 &&
+    (
+      intent === "start-packing" ||
+      intent === "complete-packing"
+    )
+  ) {
+    return {
+      error:
+        `${unresolvedOperationalItems.length} Position(en) müssen zuerst operativ zugeordnet werden.`,
     };
   }
 
@@ -1146,6 +1314,43 @@ export default function PackingListsPage() {
                       </div>
                     </div>
 
+                    {order.unresolvedItems.length > 0 ? (
+                      <div className="packingOperationalWarning">
+                        <div>
+                          <strong>
+                            Operative Zuordnung fehlt
+                          </strong>
+                          <span>
+                            {order.unresolvedItems.length} Position(en)
+                            müssen vor dem Packstart geprüft werden.
+                          </span>
+                        </div>
+
+                        <Link
+                          to={`/auftrag-pruefung/${order.id}`}
+                          className="g-ops-button g-ops-button--secondary g-ops-button--compact"
+                        >
+                          Zuordnungen prüfen
+                        </Link>
+                      </div>
+                    ) : null}
+
+                    {order.logisticsItems.length > 0 ? (
+                      <div className="packingLogisticsInfo">
+                        <strong>
+                          Logistik
+                        </strong>
+                        <span>
+                          {order.logisticsItems
+                            .map(
+                              (item: any) =>
+                                `${item.quantity} × ${item.name}`
+                            )
+                            .join(", ")}
+                        </span>
+                      </div>
+                    ) : null}
+
                     {!order.packingStarted &&
                     !order.isPacked ? (
                       <div className="packingStartPanel">
@@ -1163,37 +1368,46 @@ export default function PackingListsPage() {
                           </span>
                         </div>
 
-                        <Form
-                          method="post"
-                          className="operationsInlineForm"
-                        >
-                          <input
-                            type="hidden"
-                            name="intent"
-                            value="start-packing"
-                          />
-
-                          <input
-                            type="hidden"
-                            name="orderId"
-                            value={order.id}
-                          />
-
-                          <input
-                            type="hidden"
-                            name="date"
-                            value={
-                              data.selectedDate
-                            }
-                          />
-
-                          <button
-                            type="submit"
-                            className="g-ops-button g-ops-button--primary"
+                        {order.unresolvedItems.length > 0 ? (
+                          <Link
+                            to={`/auftrag-pruefung/${order.id}`}
+                            className="g-ops-button g-ops-button--secondary"
                           >
-                            Packen starten
-                          </button>
-                        </Form>
+                            Erst Zuordnung prüfen
+                          </Link>
+                        ) : (
+                          <Form
+                            method="post"
+                            className="operationsInlineForm"
+                          >
+                            <input
+                              type="hidden"
+                              name="intent"
+                              value="start-packing"
+                            />
+
+                            <input
+                              type="hidden"
+                              name="orderId"
+                              value={order.id}
+                            />
+
+                            <input
+                              type="hidden"
+                              name="date"
+                              value={
+                                data.selectedDate
+                              }
+                            />
+
+                            <button
+                              type="submit"
+                              className="g-ops-button g-ops-button--primary"
+                            >
+                              Packen starten
+                            </button>
+                          </Form>
+                        )}
                       </div>
                     ) : null}
 
@@ -1257,6 +1471,11 @@ export default function PackingListsPage() {
                                 <small>
                                   {item.unit ||
                                     "Stück"}
+                                  {" · "}
+                                  {item.operationalArea ===
+                                  "PACKING"
+                                    ? "Equipment"
+                                    : "Küche"}
                                 </small>
                               </span>
 

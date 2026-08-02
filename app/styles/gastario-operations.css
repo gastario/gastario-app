@@ -1357,3 +1357,198 @@
     width: 100%;
   }
 }
+/*
+ * gastario-operational-product-assignment-v1-20260802
+ */
+
+.productionMasterPage
+.operationsTableRow
+[data-label="Produkt"]
+strong {
+  display: block;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.packingOperationalWarning,
+.packingLogisticsInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 14px 16px 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+}
+
+.packingOperationalWarning {
+  border: 1px solid #efcf96;
+  background: #fff8ea;
+  color: #7e4c09;
+}
+
+.packingLogisticsInfo {
+  border: 1px solid #d6cbed;
+  background: #f7f3fc;
+  color: #5e4380;
+}
+
+.packingOperationalWarning strong,
+.packingOperationalWarning span,
+.packingLogisticsInfo strong,
+.packingLogisticsInfo span {
+  display: block;
+}
+
+.packingOperationalWarning span,
+.packingLogisticsInfo span {
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.orderOperationalList {
+  display: grid;
+  gap: 12px;
+}
+
+.orderOperationalRow {
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 1.2fr)
+    minmax(220px, 1.15fr)
+    minmax(165px, 0.8fr)
+    minmax(105px, 0.45fr)
+    minmax(105px, 0.45fr)
+    minmax(170px, 0.8fr)
+    auto;
+  gap: 12px;
+  align-items: end;
+  padding: 16px;
+  border: 1px solid #dce6e2;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.orderOperationalRow.is-review {
+  border-color: #efcf96;
+  background:
+    linear-gradient(
+      145deg,
+      #fff9ed 0%,
+      #ffffff 72%
+    );
+}
+
+.orderOperationalOriginal,
+.orderOperationalResult {
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.orderOperationalOriginal small,
+.orderOperationalResult small,
+.orderOperationalField > span {
+  color: #6b7e77;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.orderOperationalOriginal strong,
+.orderOperationalResult strong {
+  margin-top: 5px;
+  color: #123a31;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.orderOperationalOriginal span,
+.orderOperationalResult span {
+  margin-top: 5px;
+  color: #6b7e77;
+  font-size: 10px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.orderOperationalField {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.orderOperationalField input,
+.orderOperationalField select {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 0 11px;
+  border: 1px solid #cddbd6;
+  border-radius: 11px;
+  background: #ffffff;
+  color: #183b32;
+  font: inherit;
+  font-size: 11px;
+}
+
+.orderOperationalField input:focus,
+.orderOperationalField select:focus {
+  outline: none;
+  border-color: #6eb49f;
+  box-shadow: 0 0 0 3px rgba(10, 128, 99, 0.1);
+}
+
+.orderOperationalSaveButton {
+  min-width: 128px;
+  align-self: end;
+}
+
+@media (max-width: 1380px) {
+  .orderOperationalRow {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .orderOperationalOriginal,
+  .orderOperationalProductField,
+  .orderOperationalResult {
+    grid-column: span 2;
+  }
+
+  .orderOperationalSaveButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .packingOperationalWarning,
+  .packingLogisticsInfo {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .orderOperationalRow {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .orderOperationalOriginal,
+  .orderOperationalProductField,
+  .orderOperationalResult {
+    grid-column: auto;
+  }
+
+  .orderOperationalSaveButton {
+    width: 100%;
+  }
+}
