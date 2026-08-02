@@ -870,259 +870,164 @@ export default function ProductionPage() {
             )}
           </PageSection>
 
-                    <PageSection
-            className="operationsSecondarySection productionWorkflowSection"
+          <PageSection
+            className="operationsSecondarySection"
             eyebrow="Auftragsbasis"
-            title="AuftrÃ¤ge im Ablauf"
-            description="Jeden Auftrag einzeln von der BestÃ¤tigung bis zur Packstation weiterfÃ¼hren."
+            title="Arbeitsfortschritt"
+            description="Jeder Auftrag wird von bestätigt über Produktion bis zur Packstation weitergeführt."
           >
             {data.orders.length === 0 ? (
               <div className="operationsCompactEmpty">
-                <strong>Keine AuftrÃ¤ge</strong>
+                <strong>
+                  Keine Aufträge
+                </strong>
 
                 <span>
-                  FÃ¼r diesen Tag wurde keine
-                  Auftragsbasis gefunden.
+                  Für diesen Tag wurde
+                  keine Auftragsbasis
+                  gefunden.
                 </span>
               </div>
             ) : (
-              <div className="productionWorkflowList">
+              <div className="operationsOrderList">
                 {data.orders.map(
                   (order: any) => {
-                    const status = String(
-                      order.status || ""
-                    ).toUpperCase();
-
-                    const isReady =
-                      Boolean(
-                        order.packingCompletedAt
-                      ) ||
-                      status === "DELIVERED";
-
-                    const statusRank = isReady
-                      ? 4
-                      : status === "PACKING_OPEN"
-                        ? 3
-                        : status === "IN_PRODUCTION"
-                          ? 2
-                          : 1;
-
-                    const statusClassName =
-                      isReady
-                        ? "is-ready"
-                        : status === "PACKING_OPEN"
-                          ? "is-packing"
-                          : status === "IN_PRODUCTION"
-                            ? "is-production"
-                            : "is-open";
-
-                    const itemCount =
-                      Array.isArray(order.items)
-                        ? order.items.length
-                        : 0;
-
-                    const totalQuantity =
-                      (order.items || []).reduce(
-                        (
-                          sum: number,
-                          item: any
-                        ) =>
-                          sum +
-                          Number(
-                            item.quantity || 0
-                          ),
-                        0
-                      );
+                    const status =
+                      String(
+                        order.status ||
+                          ""
+                      ).toUpperCase();
 
                     return (
                       <article
-                        className={
-                          "productionWorkflowCard " +
-                          (isReady
-                            ? "is-ready"
-                            : "")
-                        }
+                        className="operationsOrderCard operationsOrderCard--workflow"
                         key={order.id}
                       >
-                        <header className="productionWorkflowCardHeader">
-                          <div className="productionWorkflowIdentity">
-                            <p>
-                              Auftrag {order.orderNumber}
-                            </p>
+                        <div>
+                          <strong>
+                            {order.customerName ||
+                              "Ohne Kunde"}
+                          </strong>
 
-                            <h3>
-                              {order.customerName ||
-                                "Ohne Kunde"}
-                            </h3>
-
-                            <span>
-                              {itemCount} {itemCount === 1
-                                ? "Position"
-                                : "Positionen"}
-                              {" Â· "}
-                              {totalQuantity} Einheiten
-                            </span>
-                          </div>
-
-                          <time className="productionWorkflowTime">
-                            <strong>
-                              {order.deliveryTimeText ||
-                                "â€“"}
-                            </strong>
-                            <span>Uhr</span>
-                          </time>
-                        </header>
-
-                        <div
-                          className="productionWorkflowSteps"
-                          aria-label="Arbeitsfortschritt"
-                        >
-                          <div
-                            className="productionWorkflowStep"
-                            data-state={
-                              statusRank > 1
-                                ? "done"
-                                : "active"
-                            }
-                          >
-                            <span className="productionWorkflowStepIndex">
-                              1
-                            </span>
-
-                            <div>
-                              <strong>BestÃ¤tigt</strong>
-                              <small>Auftrag geprÃ¼ft</small>
-                            </div>
-                          </div>
-
-                          <div
-                            className="productionWorkflowStep"
-                            data-state={
-                              statusRank > 2
-                                ? "done"
-                                : statusRank === 2
-                                  ? "active"
-                                  : "pending"
-                            }
-                          >
-                            <span className="productionWorkflowStepIndex">
-                              2
-                            </span>
-
-                            <div>
-                              <strong>Produktion</strong>
-                              <small>KÃ¼che arbeitet</small>
-                            </div>
-                          </div>
-
-                          <div
-                            className="productionWorkflowStep"
-                            data-state={
-                              statusRank > 3
-                                ? "done"
-                                : statusRank === 3
-                                  ? "active"
-                                  : "pending"
-                            }
-                          >
-                            <span className="productionWorkflowStepIndex">
-                              3
-                            </span>
-
-                            <div>
-                              <strong>Packstation</strong>
-                              <small>Packliste prÃ¼fen</small>
-                            </div>
-                          </div>
+                          <span>
+                            {order.orderNumber}
+                            {" · "}
+                            {orderSummary(
+                              order
+                            )}
+                          </span>
                         </div>
 
-                        <footer className="productionWorkflowFooter">
+                        <div className="operationsOrderActions">
+                          <time>
+                            {order.deliveryTimeText ||
+                              "-"}
+                          </time>
+
                           <span
                             className={
-                              `operationsStatus ${statusClassName}`
+                              "operationsStatus " +
+                              (
+                                status ===
+                                "IN_PRODUCTION"
+                                  ? "is-production"
+                                  : status ===
+                                      "PACKING_OPEN"
+                                    ? "is-packing"
+                                    : status ===
+                                        "DELIVERED"
+                                      ? "is-ready"
+                                      : "is-open"
+                              )
                             }
                           >
-                            {orderStatusLabel(order)}
+                            {orderStatusLabel(
+                              order
+                            )}
                           </span>
 
-                          <div className="productionWorkflowActions">
-                            {status === "CONFIRMED" ? (
-                              <Form
-                                method="post"
-                                className="operationsInlineForm"
-                              >
-                                <input
-                                  type="hidden"
-                                  name="intent"
-                                  value="start-production"
-                                />
+                          {status ===
+                          "CONFIRMED" ? (
+                            <Form
+                              method="post"
+                              className="operationsInlineForm"
+                            >
+                              <input
+                                type="hidden"
+                                name="intent"
+                                value="start-production"
+                              />
 
-                                <input
-                                  type="hidden"
-                                  name="orderId"
-                                  value={order.id}
-                                />
+                              <input
+                                type="hidden"
+                                name="orderId"
+                                value={order.id}
+                              />
 
-                                <input
-                                  type="hidden"
-                                  name="date"
-                                  value={data.selectedDate}
-                                />
-
-                                <button
-                                  type="submit"
-                                  className="g-ops-button g-ops-button--primary g-ops-button--compact"
-                                >
-                                  Produktion starten
-                                </button>
-                              </Form>
-                            ) : null}
-
-                            {status === "IN_PRODUCTION" ? (
-                              <Form
-                                method="post"
-                                className="operationsInlineForm"
-                              >
-                                <input
-                                  type="hidden"
-                                  name="intent"
-                                  value="complete-production"
-                                />
-
-                                <input
-                                  type="hidden"
-                                  name="orderId"
-                                  value={order.id}
-                                />
-
-                                <input
-                                  type="hidden"
-                                  name="date"
-                                  value={data.selectedDate}
-                                />
-
-                                <button
-                                  type="submit"
-                                  className="g-ops-button g-ops-button--primary g-ops-button--compact"
-                                >
-                                  An Packstation
-                                </button>
-                              </Form>
-                            ) : null}
-
-                            {status === "PACKING_OPEN" ||
-                            isReady ? (
-                              <Link
-                                to={`/packlisten?date=${encodeURIComponent(
+                              <input
+                                type="hidden"
+                                name="date"
+                                value={
                                   data.selectedDate
-                                )}`}
-                                className="g-ops-button g-ops-button--secondary g-ops-button--compact"
+                                }
+                              />
+
+                              <button
+                                type="submit"
+                                className="g-ops-button g-ops-button--primary g-ops-button--compact"
                               >
-                                Packliste Ã¶ffnen
-                              </Link>
-                            ) : null}
-                          </div>
-                        </footer>
+                                Produktion starten
+                              </button>
+                            </Form>
+                          ) : null}
+
+                          {status ===
+                          "IN_PRODUCTION" ? (
+                            <Form
+                              method="post"
+                              className="operationsInlineForm"
+                            >
+                              <input
+                                type="hidden"
+                                name="intent"
+                                value="complete-production"
+                              />
+
+                              <input
+                                type="hidden"
+                                name="orderId"
+                                value={order.id}
+                              />
+
+                              <input
+                                type="hidden"
+                                name="date"
+                                value={
+                                  data.selectedDate
+                                }
+                              />
+
+                              <button
+                                type="submit"
+                                className="g-ops-button g-ops-button--primary g-ops-button--compact"
+                              >
+                                An Packstation
+                              </button>
+                            </Form>
+                          ) : null}
+
+                          {status ===
+                          "PACKING_OPEN" ? (
+                            <Link
+                              to={`/packlisten?date=${encodeURIComponent(
+                                data.selectedDate
+                              )}`}
+                              className="g-ops-button g-ops-button--secondary g-ops-button--compact"
+                            >
+                              Packliste öffnen
+                            </Link>
+                          ) : null}
+                        </div>
                       </article>
                     );
                   }
