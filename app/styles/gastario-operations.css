@@ -1161,3 +1161,232 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+/*
+ * gastario-production-masterdesign-v1-polish-20260802
+ * Premium-Arbeitskarten fÃ¼r den Produktionsablauf.
+ */
+
+.productionMasterPage .operationsWorkspaceGrid {
+  grid-template-columns:
+    minmax(0, 1.55fr)
+    minmax(390px, 0.85fr);
+  gap: 18px;
+}
+
+.productionWorkflowSection .g-ui-section-header {
+  margin-bottom: 16px;
+}
+
+.productionWorkflowList {
+  display: grid;
+  gap: 12px;
+}
+
+.productionWorkflowCard {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--ops-border);
+  border-radius: 16px;
+  background: var(--ops-surface);
+  box-shadow: 0 8px 22px rgba(15, 35, 27, 0.045);
+}
+
+.productionWorkflowCard.is-ready {
+  border-color: #a9d9c8;
+  box-shadow: 0 9px 24px rgba(8, 112, 90, 0.075);
+}
+
+.productionWorkflowCardHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 16px 16px 13px;
+}
+
+.productionWorkflowIdentity {
+  min-width: 0;
+}
+
+.productionWorkflowIdentity p {
+  margin: 0;
+  overflow: hidden;
+  color: var(--ops-brand-dark);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.055em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.productionWorkflowIdentity h3 {
+  margin: 6px 0 0;
+  color: var(--ops-text);
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.productionWorkflowIdentity > span {
+  display: block;
+  margin-top: 6px;
+  color: var(--ops-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.productionWorkflowTime {
+  min-width: 62px;
+  min-height: 54px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  padding: 0 10px;
+  border-radius: 13px;
+  background: var(--ops-brand-soft);
+  color: var(--ops-brand-dark);
+}
+
+.productionWorkflowTime strong {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.productionWorkflowTime span {
+  margin-top: 4px;
+  color: var(--ops-muted);
+  font-size: 8px;
+}
+
+.productionWorkflowSteps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  padding: 0 16px 14px;
+}
+
+.productionWorkflowStep {
+  min-width: 0;
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 9px;
+  border: 1px solid #e0e8e5;
+  border-radius: 12px;
+  background: #f8faf9;
+}
+
+.productionWorkflowStepIndex {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #e6ece9;
+  color: var(--ops-muted);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.productionWorkflowStep strong,
+.productionWorkflowStep small {
+  display: block;
+  min-width: 0;
+}
+
+.productionWorkflowStep strong {
+  color: var(--ops-text);
+  font-size: 9px;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.productionWorkflowStep small {
+  margin-top: 3px;
+  color: var(--ops-muted);
+  font-size: 8px;
+  line-height: 1.3;
+}
+
+.productionWorkflowStep[data-state="active"] {
+  border-color: #e2c98b;
+  background: #fff9eb;
+}
+
+.productionWorkflowStep[data-state="active"]
+.productionWorkflowStepIndex {
+  background: #f3d894;
+  color: #75530e;
+}
+
+.productionWorkflowStep[data-state="done"] {
+  border-color: #b8ddd0;
+  background: #edf9f4;
+}
+
+.productionWorkflowStep[data-state="done"]
+.productionWorkflowStepIndex {
+  background: var(--ops-brand);
+  color: #ffffff;
+}
+
+.productionWorkflowStep[data-state="pending"] {
+  opacity: 0.68;
+}
+
+.productionWorkflowFooter {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 16px;
+  border-top: 1px solid #e5ece9;
+  background: #fbfdfc;
+}
+
+.productionWorkflowActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.productionWorkflowActions .g-ops-button {
+  min-width: 132px;
+}
+
+@media (max-width: 1250px) {
+  .productionMasterPage .operationsWorkspaceGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .productionWorkflowList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .productionWorkflowList,
+  .productionWorkflowSteps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .productionWorkflowFooter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .productionWorkflowActions,
+  .productionWorkflowActions > *,
+  .productionWorkflowActions .g-ops-button,
+  .productionWorkflowActions .operationsInlineForm {
+    width: 100%;
+  }
+}
