@@ -1,60 +1,177 @@
-﻿import { Form, Link, useLoaderData } from "react-router";
+import { Form, Link, useLoaderData } from "react-router";
+
 import AppLayout from "../components/AppLayout";
 
+import {
+  MetricCard,
+  MetricGrid,
+  Notice,
+  PageHeader,
+  PageSection,
+  PageShell,
+} from "../components/ui/PageShell";
+
+import "../styles/gastario-page-shell.css";
+import "../styles/gastario-procurement.css";
+
+const PURCHASING_STATUSES = [
+  "CONFIRMED",
+  "IN_PRODUCTION",
+  "PACKING_OPEN",
+] as const;
+
 function todayInput() {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+
+  const localDate = new Date(
+    now.getTime() -
+      now.getTimezoneOffset() * 60_000
+  );
+
+  return localDate
+    .toISOString()
+    .slice(0, 10);
 }
 
-function normalizeDate(value: string | Date | null | undefined) {
-  if (!value) return "";
-  return new Date(value).toISOString().slice(0, 10);
+function normalizeDate(
+  value: string | Date | null | undefined
+) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toISOString().slice(0, 10);
+}
+
+function formatDateOption(value: string) {
+  if (value === "ohne-datum") {
+    return "Ohne Datum";
+  }
+
+  return new Date(
+    `${value}T00:00:00`
+  ).toLocaleDateString("de-DE");
 }
 
 function formatQty(value: number) {
-  if (Number.isInteger(value)) return String(value);
-  return value.toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
+  if (!Number.isFinite(value)) {
+    return "0";
+  }
+
+  if (Number.isInteger(value)) {
+    return String(value);
+  }
+
+  return value
+    .toFixed(3)
+    .replace(/0+$/, "")
+    .replace(/\.$/, "");
+}
+
+function effectiveOperationalArea(item: any) {
+  return String(
+    item?.operationalArea ||
+      item?.product?.operationalArea ||
+      "REVIEW"
+  ).toUpperCase();
+}
+
+function effectiveOperationalQuantity(item: any) {
+  const value = Number(
+    item?.operationalQuantity ??
+      item?.quantity ??
+      0
+  );
+
+  return Number.isFinite(value)
+    ? value
+    : 0;
+}
+
+function effectiveOperationalUnit(item: any) {
+  return String(
+    item?.operationalUnit ||
+      item?.product?.unit ||
+      item?.unit ||
+      "Stueck"
+  ).trim();
 }
 
 export function meta() {
-  return [{ title: "Einkauf · Gastario" }];
+  return [{ title: "Einkaufsplanung · Gastario" }];
 }
 
-export async function loader({ request }: { request: Request }) {
-  const { prisma } = await import("../lib/prisma.server");
-  const { requireTenantFeature } = await import("../lib/features.server");
+export async function loader({
+  request,
+}: {
+  request: Request;
+}) {
+  const { prisma } =
+    await import("../lib/prisma.server");
 
-  const access = await requireTenantFeature(request, "PURCHASING");
+  const { requireTenantFeature } =
+    await import("../lib/features.server");
+
+  const access = await requireTenantFeature(
+    request,
+    "PURCHASING"
+  );
 
   const url = new URL(request.url);
-  const selectedDate = url.searchParams.get("date") || todayInput();
 
+  const selectedDate =
+    url.searchParams.get("date") ||
+    todayInput();
+
+  /*
+   * gastario-purchasing-masterdesign-v1-20260802
+   *
+   * deliveryTimeText ist das echte Order-Feld.
+   * Die bisherige Abfrage auf deliveryTime verursachte
+   * den Laufzeitfehler der Einkaufsseite.
+   */
   const orders = await prisma.order.findMany({
     where: {
       tenantId: access.tenantId,
-      status: "CONFIRMED" as any,
+      status: {
+        in: [...PURCHASING_STATUSES] as any,
+      },
     },
     include: {
-      items: true,
+      items: {
+        include: {
+          product: {
+            include: {
+              recipeItems: true,
+            },
+          },
+        },
+      },
       customer: true,
     },
     orderBy: [
       { deliveryDate: "asc" },
-      { deliveryTime: "asc" },
+      { deliveryTimeText: "asc" },
       { createdAt: "desc" },
     ],
-    take: 300,
-  });
-
-  const filteredOrders = orders.filter((order) => {
-    if (!order.deliveryDate) return selectedDate === "ohne-datum";
-    return normalizeDate(order.deliveryDate) === selectedDate;
+    take: 500,
   });
 
   const availableDates = Array.from(
     new Set(
-      orders.map((order) =>
-        order.deliveryDate ? normalizeDate(order.deliveryDate) : "ohne-datum"
-      )
+      (orders as any[])
+        .map((order) =>
+          order.deliveryDate
+            ? normalizeDate(order.deliveryDate)
+            : "ohne-datum"
+        )
+        .filter(Boolean)
     )
   ).sort();
 
@@ -62,45 +179,82 @@ export async function loader({ request }: { request: Request }) {
     availableDates.unshift(selectedDate);
   }
 
-  const products = await prisma.product.findMany({
-    where: {
-      tenantId: access.tenantId,
-      active: true,
-    },
-    include: {
-      recipeItems: true,
-    },
-  }).catch(() => []);
+  const filteredOrders = (orders as any[]).filter(
+    (order) => {
+      if (!order.deliveryDate) {
+        return selectedDate === "ohne-datum";
+      }
 
-  const productMap = new Map<string, any>();
-
-  for (const product of products as any[]) {
-    productMap.set(product.name.trim().toLowerCase(), product);
-  }
+      return (
+        normalizeDate(order.deliveryDate) ===
+        selectedDate
+      );
+    }
+  );
 
   const demandMap = new Map<string, any>();
-  const missingRecipes = new Map<string, any>();
+  const missingMap = new Map<string, any>();
 
-  for (const order of filteredOrders as any[]) {
-    for (const orderItem of order.items) {
-      const orderItemName = String(orderItem.name || "").trim();
-      const product = productMap.get(orderItemName.toLowerCase());
-      const orderQty = Number(orderItem.quantity || 0);
+  for (const order of filteredOrders) {
+    for (const orderItem of order.items || []) {
+      const area =
+        effectiveOperationalArea(orderItem);
 
-      if (!product || !product.recipeItems || product.recipeItems.length === 0) {
-        const key = orderItemName || "Unbekannte Position";
+      if (
+        area === "PACKING" ||
+        area === "LOGISTICS" ||
+        area === "NON_OPERATIONAL"
+      ) {
+        continue;
+      }
 
-        if (!missingRecipes.has(key)) {
-          missingRecipes.set(key, {
-            name: key,
+      const product = orderItem.product;
+      const orderQty =
+        effectiveOperationalQuantity(orderItem);
+
+      const productName = String(
+        product?.name ||
+          orderItem.name ||
+          "Unbekannte Position"
+      ).trim();
+
+      const unit =
+        effectiveOperationalUnit(orderItem);
+
+      let missingReason = "";
+
+      if (area === "REVIEW") {
+        missingReason =
+          "Operative Zuordnung fehlt";
+      } else if (!product) {
+        missingReason =
+          "Kein Gastario-Produkt verknüpft";
+      } else if (
+        !Array.isArray(product.recipeItems) ||
+        product.recipeItems.length === 0
+      ) {
+        missingReason =
+          "Keine Rezeptur hinterlegt";
+      }
+
+      if (missingReason) {
+        const key =
+          `${product?.id || productName}__${missingReason}`;
+
+        if (!missingMap.has(key)) {
+          missingMap.set(key, {
+            name: productName,
             quantity: 0,
-            unit: orderItem.unit || "Stueck",
+            unit,
+            reason: missingReason,
             orders: [],
           });
         }
 
-        const row = missingRecipes.get(key);
+        const row = missingMap.get(key);
+
         row.quantity += orderQty;
+
         row.orders.push({
           id: order.id,
           orderNumber: order.orderNumber,
@@ -111,60 +265,111 @@ export async function loader({ request }: { request: Request }) {
       }
 
       for (const recipeItem of product.recipeItems) {
-        const ingredientName = String(recipeItem.ingredientName || "").trim();
-        const unit = recipeItem.unit || "g";
-        const supplierName = recipeItem.supplierName || "Ohne Lieferant";
-        const requiredQty = Number(recipeItem.quantityPerUnit || 0) * orderQty;
+        const ingredientName = String(
+          recipeItem.ingredientName || ""
+        ).trim();
 
-        const key = `${supplierName}__${ingredientName}__${unit}`;
+        if (!ingredientName) {
+          continue;
+        }
+
+        const recipeUnit = String(
+          recipeItem.unit || "g"
+        ).trim();
+
+        const supplierName = String(
+          recipeItem.supplierName ||
+            "Ohne Lieferant"
+        ).trim();
+
+        const requiredQty =
+          Number(
+            recipeItem.quantityPerUnit || 0
+          ) * orderQty;
+
+        const key = [
+          supplierName.toLocaleLowerCase("de-DE"),
+          ingredientName.toLocaleLowerCase("de-DE"),
+          recipeUnit.toLocaleLowerCase("de-DE"),
+        ].join("__");
 
         if (!demandMap.has(key)) {
           demandMap.set(key, {
             supplierName,
             ingredientName,
-            unit,
+            unit: recipeUnit,
             quantity: 0,
             sources: [],
           });
         }
 
         const row = demandMap.get(key);
+
         row.quantity += requiredQty;
+
         row.sources.push({
           orderId: order.id,
           orderNumber: order.orderNumber,
           customerName: order.customerName,
-          productName: product.name,
+          productName,
           productQuantity: orderQty,
         });
       }
     }
   }
 
-  const demandItems = Array.from(demandMap.values()).sort((a, b) => {
-    const supplierCompare = a.supplierName.localeCompare(b.supplierName, "de");
-    if (supplierCompare !== 0) return supplierCompare;
-    return a.ingredientName.localeCompare(b.ingredientName, "de");
-  });
+  const demandItems = Array.from(
+    demandMap.values()
+  ).sort((left, right) => {
+    const supplierCompare =
+      left.supplierName.localeCompare(
+        right.supplierName,
+        "de"
+      );
 
-  const missingRecipeItems = Array.from(missingRecipes.values()).sort((a, b) =>
-    a.name.localeCompare(b.name, "de")
-  );
-
-  const supplierGroups = demandItems.reduce((groups: any[], item: any) => {
-    let group = groups.find((entry) => entry.supplierName === item.supplierName);
-
-    if (!group) {
-      group = {
-        supplierName: item.supplierName,
-        items: [],
-      };
-      groups.push(group);
+    if (supplierCompare !== 0) {
+      return supplierCompare;
     }
 
-    group.items.push(item);
-    return groups;
-  }, []);
+    return left.ingredientName.localeCompare(
+      right.ingredientName,
+      "de"
+    );
+  });
+
+  const missingRecipeItems = Array.from(
+    missingMap.values()
+  ).sort((left, right) =>
+    left.name.localeCompare(right.name, "de")
+  );
+
+  const supplierGroups =
+    demandItems.reduce(
+      (groups: any[], item: any) => {
+        let group = groups.find(
+          (entry) =>
+            entry.supplierName ===
+            item.supplierName
+        );
+
+        if (!group) {
+          group = {
+            supplierName: item.supplierName,
+            items: [],
+          };
+
+          groups.push(group);
+        }
+
+        group.items.push(item);
+
+        return groups;
+      },
+      []
+    );
+
+  const unresolvedCount =
+    missingRecipeItems.length;
 
   return {
     tenant: access.tenant,
@@ -174,6 +379,7 @@ export async function loader({ request }: { request: Request }) {
     demandItems,
     supplierGroups,
     missingRecipeItems,
+    unresolvedCount,
   };
 }
 
@@ -182,217 +388,336 @@ export default function PurchasingPage() {
 
   return (
     <AppLayout>
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">Einkauf & Lager</p>
-          <h1>Einkauf</h1>
-          <span className="pageSubline">
-            Einkaufsvorschlaege aus bestaetigten Auftraegen und Produkt-Rezepturen fuer {data.tenant.name}.
-          </span>
-        </div>
+      <PageShell className="procurementPage">
+        <PageHeader
+          eyebrow="Einkauf & Lager"
+          title="Einkaufsplanung"
+          subtitle={
+            <>
+              Automatisch berechneter Bedarf aus
+              bestätigten Aufträgen, operativen
+              Produktzuordnungen und Rezepturen für{" "}
+              {data.tenant.name}.
+            </>
+          }
+          actions={
+            <>
+              <Form
+                method="get"
+                className="procurementDateFilter"
+              >
+                <label>
+                  <span>Planungstag</span>
 
-        <div className="topActions">
-          <Form method="get" style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <select
-              name="date"
-              defaultValue={data.selectedDate}
-              style={{
-                border: "1px solid #cbd5e1",
-                borderRadius: 12,
-                padding: "11px 12px",
-                font: "inherit",
-                background: "white",
-              }}
+                  <select
+                    name="date"
+                    defaultValue={
+                      data.selectedDate
+                    }
+                  >
+                    {data.availableDates.map(
+                      (date: string) => (
+                        <option
+                          key={date}
+                          value={date}
+                        >
+                          {formatDateOption(date)}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </label>
+
+                <button
+                  className="procurementButton procurementButton--secondary"
+                  type="submit"
+                >
+                  Anzeigen
+                </button>
+              </Form>
+
+              <button
+                className="procurementButton procurementButton--secondary procurementPrintButton"
+                type="button"
+                onClick={() => window.print()}
+              >
+                Drucken
+              </button>
+            </>
+          }
+        />
+
+        <MetricGrid>
+          <MetricCard
+            label="Aufträge"
+            value={data.orders.length}
+            description="für den ausgewählten Planungstag"
+            badge="Operativ"
+          />
+
+          <MetricCard
+            label="Einkaufspositionen"
+            value={data.demandItems.length}
+            description="aus gepflegten Rezepturen"
+            badge="Bedarf"
+          />
+
+          <MetricCard
+            label="Lieferanten"
+            value={data.supplierGroups.length}
+            description="im aktuellen Bedarf"
+            badge="Gruppiert"
+          />
+
+          <MetricCard
+            label="Zu prüfen"
+            value={data.unresolvedCount}
+            description="fehlende Zuordnung oder Rezeptur"
+            badge={
+              data.unresolvedCount > 0
+                ? "Offen"
+                : "Sauber"
+            }
+            attention={
+              data.unresolvedCount > 0
+            }
+          />
+        </MetricGrid>
+
+        {data.unresolvedCount > 0 ? (
+          <Notice type="warning">
+            <strong>
+              Einkaufsbedarf ist noch nicht
+              vollständig.
+            </strong>{" "}
+            {data.unresolvedCount} Position(en)
+            benötigen eine operative Zuordnung
+            oder Rezeptur.
+          </Notice>
+        ) : null}
+
+        <div className="procurementWorkspace">
+          <PageSection
+            className="procurementMainSection"
+            eyebrow="Bedarf"
+            title="Automatische Einkaufsliste"
+            description="Auftragsmenge × Rezepturmenge. Packstation, Logistik und nicht operative Positionen werden nicht als Küchenbedarf gerechnet."
+            actions={
+              <Link
+                className="procurementButton procurementButton--secondary"
+                to="/produkte"
+              >
+                Produkte & Rezepturen
+              </Link>
+            }
+          >
+            <div className="procurementTableWrap">
+              <table className="procurementTable">
+                <thead>
+                  <tr>
+                    <th>Zutat / Material</th>
+                    <th>Menge</th>
+                    <th>Einheit</th>
+                    <th>Lieferant</th>
+                    <th>Quelle</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {data.demandItems.length === 0 ? (
+                    <tr>
+                      <td colSpan={5}>
+                        <div className="procurementEmpty">
+                          <span>0</span>
+
+                          <div>
+                            <strong>
+                              Keine Einkaufsvorschläge
+                              vorhanden
+                            </strong>
+
+                            <p>
+                              Für diesen Planungstag
+                              wurde noch kein Bedarf aus
+                              vollständigen Rezepturen
+                              berechnet.
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    data.demandItems.map(
+                      (item: any) => (
+                        <tr
+                          key={[
+                            item.supplierName,
+                            item.ingredientName,
+                            item.unit,
+                          ].join("-")}
+                        >
+                          <td>
+                            <strong>
+                              {item.ingredientName}
+                            </strong>
+                          </td>
+
+                          <td className="procurementQuantity">
+                            {formatQty(item.quantity)}
+                          </td>
+
+                          <td>{item.unit}</td>
+
+                          <td>
+                            <span className="procurementSupplierBadge">
+                              {item.supplierName}
+                            </span>
+                          </td>
+
+                          <td>
+                            <div className="procurementSources">
+                              {item.sources
+                                .slice(0, 3)
+                                .map(
+                                  (source: any) => (
+                                    <span
+                                      key={[
+                                        source.orderId,
+                                        source.productName,
+                                      ].join("-")}
+                                    >
+                                      {formatQty(
+                                        source.productQuantity
+                                      )}{" "}
+                                      ×{" "}
+                                      {source.productName} ·{" "}
+                                      {source.orderNumber}
+                                    </span>
+                                  )
+                                )}
+
+                              {item.sources.length >
+                              3 ? (
+                                <small>
+                                  +{" "}
+                                  {item.sources.length -
+                                    3}{" "}
+                                  weitere Quellen
+                                </small>
+                              ) : null}
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    )
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </PageSection>
+
+          <aside className="procurementSideStack">
+            <PageSection
+              eyebrow="Gruppiert"
+              title="Nach Lieferant"
+              description="Welche Einkaufspositionen aktuell welchem Lieferanten zugeordnet sind."
+              soft
             >
-              {data.availableDates.map((date: string) => (
-                <option key={date} value={date}>
-                  {date === "ohne-datum"
-                    ? "Ohne Datum"
-                    : new Date(date + "T00:00:00").toLocaleDateString("de-DE")}
-                </option>
-              ))}
-            </select>
+              <div className="procurementSupplierList">
+                {data.supplierGroups.length ===
+                0 ? (
+                  <div className="procurementCompactEmpty">
+                    Noch keine Lieferantenzuordnung
+                    aus Rezepturen gefunden.
+                  </div>
+                ) : (
+                  data.supplierGroups.map(
+                    (group: any) => (
+                      <article
+                        key={group.supplierName}
+                        className="procurementSupplierRow"
+                      >
+                        <div>
+                          <strong>
+                            {group.supplierName}
+                          </strong>
 
-            <button className="secondaryButton" type="submit">
-              Anzeigen
-            </button>
-          </Form>
+                          <span>
+                            {group.items.length}{" "}
+                            Position(en)
+                          </span>
+                        </div>
 
-          <button className="primaryButton" type="button" onClick={() => window.print()}>
-            Drucken
-          </button>
+                        <small>Einkauf</small>
+                      </article>
+                    )
+                  )
+                )}
+              </div>
+            </PageSection>
+
+            <PageSection
+              eyebrow="Berechnung"
+              title="So entsteht der Bedarf"
+              soft
+            >
+              <div className="procurementFormula">
+                <strong>
+                  Operative Auftragsmenge ×
+                  Rezepturmenge
+                </strong>
+
+                <p>
+                  Beispiel: 80 Chicken Bowls ×
+                  100 g Hähnchen = 8.000 g
+                  Einkaufsbedarf.
+                </p>
+              </div>
+            </PageSection>
+          </aside>
         </div>
-      </header>
 
-      <section className="orderSummaryGrid">
-        <article className="metricCard">
-          <div>
-            <p>Auftraege</p>
-            <strong>{data.orders.length}</strong>
-            <span>bestaetigt fuer dieses Datum</span>
-          </div>
-          <small data-trend="aktiv">echt</small>
-        </article>
-
-        <article className="metricCard">
-          <div>
-            <p>Einkaufspositionen</p>
-            <strong>{data.demandItems.length}</strong>
-            <span>aus Rezepturen berechnet</span>
-          </div>
-          <small data-trend="bereit">Rezeptur</small>
-        </article>
-
-        <article className="metricCard">
-          <div>
-            <p>Lieferanten</p>
-            <strong>{data.supplierGroups.length}</strong>
-            <span>automatisch gruppiert</span>
-          </div>
-          <small data-trend="bereit">Gruppe</small>
-        </article>
-
-        <article className="metricCard">
-          <div>
-            <p>Ohne Rezeptur</p>
-            <strong>{data.missingRecipeItems.length}</strong>
-            <span>Produkte bitte pflegen</span>
-          </div>
-          <small data-trend="kritisch">Pruefen</small>
-        </article>
-      </section>
-
-      {data.missingRecipeItems.length > 0 ? (
-        <section className="panel">
-          <div className="panelHeader">
-            <div>
-              <p className="eyebrow">Pruefung</p>
-              <h2>Positionen ohne Rezeptur</h2>
-            </div>
-
-            <Link className="ghostButton" to="/produkte">
-              Rezepturen pflegen
-            </Link>
-          </div>
-
-          <div className="compactList">
-            {data.missingRecipeItems.map((item: any) => (
-              <div className="compactItem" key={item.name}>
-                <div>
-                  <strong>{item.name}</strong>
-                  <span>
-                    {formatQty(item.quantity)} {item.unit} in Auftraegen vorhanden, aber kein passendes Produkt mit Rezeptur gefunden.
-                  </span>
-                </div>
-                <small>Fehlt</small>
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      <section className="mainGrid">
-        <article className="panel schedulePanel">
-          <div className="panelHeader">
-            <div>
-              <p className="eyebrow">Bedarf</p>
-              <h2>Automatische Einkaufsliste</h2>
-            </div>
-            <Link className="ghostButton" to="/produkte">
-              Produkte / Rezepturen
-            </Link>
-          </div>
-
-          <div className="purchaseDemandTable">
-            <div className="purchaseDemandHead">
-              <span>Zutat / Material</span>
-              <span>Menge</span>
-              <span>Einheit</span>
-              <span>Lieferant</span>
-              <span>Quelle</span>
-            </div>
-
-            {data.demandItems.length === 0 ? (
-              <div className="purchaseDemandRow">
-                <strong>Keine Einkaufsvorschlaege vorhanden.</strong>
-                <span>-</span>
-                <span>-</span>
-                <span>-</span>
-                <span>-</span>
-              </div>
-            ) : (
-              data.demandItems.map((item: any) => (
-                <div className="purchaseDemandRow" key={`${item.supplierName}-${item.ingredientName}-${item.unit}`}>
-                  <strong>{item.ingredientName}</strong>
-                  <span>{formatQty(item.quantity)}</span>
-                  <span>{item.unit}</span>
-                  <em>{item.supplierName}</em>
-                  <span>
-                    {item.sources.slice(0, 3).map((source: any) => (
-                      <span key={`${source.orderId}-${source.productName}`} style={{ display: "block" }}>
-                        {source.productQuantity} x {source.productName} · {source.orderNumber}
-                      </span>
-                    ))}
-                    {item.sources.length > 3 ? (
-                      <span style={{ display: "block" }}>+ {item.sources.length - 3} weitere</span>
-                    ) : null}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        </article>
-
-        <aside className="sideStack">
-          <article className="panel">
-            <div className="panelHeader compact">
-              <div>
-                <p className="eyebrow">Gruppiert</p>
-                <h2>Nach Lieferant</h2>
-              </div>
-            </div>
-
-            <div className="compactList">
-              {data.supplierGroups.length === 0 ? (
-                <div className="compactItem">
-                  <div>
-                    <strong>Keine Lieferanten</strong>
-                    <span>Noch keine Rezeptur-Lieferanten gefunden.</span>
-                  </div>
-                  <small>-</small>
-                </div>
-              ) : (
-                data.supplierGroups.map((group: any) => (
-                  <div className="compactItem" key={group.supplierName}>
+        {data.missingRecipeItems.length > 0 ? (
+          <PageSection
+            eyebrow="Prüfung"
+            title="Noch nicht berechenbare Positionen"
+            description="Diese Positionen werden nicht geraten. Erst nach Zuordnung und Rezeptur fließen sie in den Einkauf ein."
+            actions={
+              <Link
+                className="procurementButton procurementButton--primary"
+                to="/produkte"
+              >
+                Zuordnungen pflegen
+              </Link>
+            }
+          >
+            <div className="procurementIssueList">
+              {data.missingRecipeItems.map(
+                (item: any) => (
+                  <article
+                    className="procurementIssueRow"
+                    key={[
+                      item.name,
+                      item.reason,
+                    ].join("-")}
+                  >
                     <div>
-                      <strong>{group.supplierName}</strong>
-                      <span>{group.items.length} Positionen</span>
+                      <strong>{item.name}</strong>
+
+                      <span>
+                        {formatQty(item.quantity)}{" "}
+                        {item.unit} · {item.reason}
+                      </span>
                     </div>
-                    <small>Einkauf</small>
-                  </div>
-                ))
+
+                    <small>Prüfen</small>
+                  </article>
+                )
               )}
             </div>
-          </article>
-
-          <article className="panel">
-            <div className="panelHeader compact">
-              <div>
-                <p className="eyebrow">Ablauf</p>
-                <h2>So rechnet Gastario</h2>
-              </div>
-            </div>
-
-            <div className="noteBox">
-              <strong>Auftragsmenge x Rezepturmenge</strong>
-              <p>
-                Beispiel: 80 Chicken Bowls x 100 g Huhn = 8.000 g Huhn.
-                Die Rezeptur pflegst du direkt beim Produkt.
-              </p>
-            </div>
-          </article>
-        </aside>
-      </section>
+          </PageSection>
+        ) : null}
+      </PageShell>
     </AppLayout>
   );
 }

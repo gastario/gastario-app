@@ -1,0 +1,372 @@
+/*
+ * Gastario Masterdesign V1
+ * Einkauf, Lieferanten, Lager und Rezepte
+ */
+
+.procurementPage {
+  width: 100%;
+}
+
+.procurementButton {
+  min-height: var(--g-control-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 17px;
+  border-radius: var(--g-radius-control);
+  font: inherit;
+  font-size: 12px;
+  font-weight: var(--g-font-weight-semibold);
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.procurementButton:hover {
+  transform: translateY(-1px);
+}
+
+.procurementButton--primary {
+  border: 1px solid var(--g-color-brand);
+  background: var(--g-color-brand);
+  color: #ffffff;
+  box-shadow:
+    0 8px 20px
+    rgba(11, 125, 101, 0.15);
+}
+
+.procurementButton--primary:hover {
+  border-color: var(--g-color-brand-hover);
+  background: var(--g-color-brand-hover);
+}
+
+.procurementButton--secondary {
+  border: 1px solid var(--g-color-border-strong);
+  background: var(--g-color-surface);
+  color: var(--g-color-text);
+}
+
+.procurementButton--secondary:hover {
+  border-color: var(--g-color-brand);
+  color: var(--g-color-brand-hover);
+}
+
+.procurementDateFilter {
+  display: flex;
+  align-items: flex-end;
+  gap: 9px;
+}
+
+.procurementDateFilter label {
+  min-width: 180px;
+  display: grid;
+  gap: 6px;
+}
+
+.procurementDateFilter label > span {
+  color: var(--g-color-text-muted);
+  font-size: 9px;
+  font-weight: var(--g-font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.procurementDateFilter select {
+  width: 100%;
+  min-height: var(--g-control-height);
+  padding: 0 36px 0 12px;
+  border: 1px solid var(--g-color-border);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface);
+  color: var(--g-color-text);
+  font: inherit;
+  font-size: 12px;
+}
+
+.procurementWorkspace {
+  min-width: 0;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) minmax(280px, 340px);
+  gap: 16px;
+  align-items: start;
+}
+
+.procurementMainSection,
+.procurementSideStack {
+  min-width: 0;
+}
+
+.procurementSideStack {
+  display: grid;
+  gap: 16px;
+}
+
+.procurementTableWrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--g-color-border);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface);
+}
+
+.procurementTable {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+}
+
+.procurementTable th {
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--g-color-border);
+  background: var(--g-color-surface-soft);
+  color: var(--g-color-text-muted);
+  font-size: 9px;
+  font-weight: var(--g-font-weight-semibold);
+  letter-spacing: 0.07em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.procurementTable td {
+  padding: 14px 13px;
+  border-bottom: 1px solid var(--g-color-border-subtle);
+  color: var(--g-color-text);
+  font-size: 11px;
+  line-height: 1.45;
+  vertical-align: top;
+}
+
+.procurementTable tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.procurementTable td > strong {
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.procurementQuantity {
+  color: var(--g-color-brand-hover) !important;
+  font-size: 15px !important;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.procurementSupplierBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border-radius: var(--g-radius-pill);
+  background: var(--g-color-brand-soft);
+  color: var(--g-color-brand-hover);
+  font-size: 10px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.procurementSources {
+  display: grid;
+  gap: 4px;
+  color: var(--g-color-text-muted);
+}
+
+.procurementSources span,
+.procurementSources small {
+  overflow-wrap: anywhere;
+}
+
+.procurementEmpty {
+  min-height: 110px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px dashed var(--g-color-border-strong);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface-soft);
+}
+
+.procurementEmpty > span {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-brand-soft);
+  color: var(--g-color-brand-hover);
+  font-size: 14px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.procurementEmpty strong {
+  display: block;
+  color: var(--g-color-text);
+  font-size: 12px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.procurementEmpty p {
+  margin: 5px 0 0;
+  color: var(--g-color-text-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.procurementSupplierList,
+.procurementIssueList {
+  display: grid;
+  gap: 9px;
+}
+
+.procurementSupplierRow,
+.procurementIssueRow {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid var(--g-color-border-subtle);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface);
+}
+
+.procurementSupplierRow > div,
+.procurementIssueRow > div {
+  min-width: 0;
+}
+
+.procurementSupplierRow strong,
+.procurementIssueRow strong {
+  display: block;
+  color: var(--g-color-text);
+  font-size: 11px;
+  font-weight: var(--g-font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.procurementSupplierRow span,
+.procurementIssueRow span {
+  display: block;
+  margin-top: 4px;
+  color: var(--g-color-text-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.procurementSupplierRow small,
+.procurementIssueRow small {
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  padding: 0 9px;
+  border-radius: var(--g-radius-pill);
+  background: var(--g-color-brand-soft);
+  color: var(--g-color-brand-hover);
+  font-size: 9px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.procurementIssueRow {
+  border-color: var(--g-color-warning-border);
+  background: var(--g-color-warning-bg);
+}
+
+.procurementIssueRow small {
+  background: #fff0cb;
+  color: var(--g-color-warning);
+}
+
+.procurementCompactEmpty {
+  padding: 15px;
+  border: 1px dashed var(--g-color-border-strong);
+  border-radius: var(--g-radius-control);
+  color: var(--g-color-text-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.procurementFormula {
+  padding: 15px;
+  border: 1px solid var(--g-color-border-subtle);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface);
+}
+
+.procurementFormula strong {
+  color: var(--g-color-text);
+  font-size: 11px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.procurementFormula p {
+  margin: 7px 0 0;
+  color: var(--g-color-text-muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+@media (max-width: 1100px) {
+  .procurementWorkspace {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .procurementSideStack {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .procurementDateFilter,
+  .procurementSideStack {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .procurementDateFilter {
+    width: 100%;
+    display: grid;
+  }
+
+  .procurementDateFilter label,
+  .procurementDateFilter select,
+  .procurementDateFilter .procurementButton,
+  .procurementPrintButton {
+    width: 100%;
+  }
+
+  .procurementSupplierRow,
+  .procurementIssueRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media print {
+  .procurementPrintButton,
+  .procurementDateFilter,
+  .procurementPage .g-ui-header-actions {
+    display: none !important;
+  }
+
+  .procurementWorkspace {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .procurementPage .g-ui-card,
+  .procurementPage .g-ui-metric-card {
+    box-shadow: none !important;
+  }
+}
