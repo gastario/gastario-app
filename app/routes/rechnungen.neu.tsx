@@ -1,6 +1,12 @@
 import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import { useMemo, useState } from "react";
 import AppLayout from "../components/AppLayout";
+import {
+  Notice,
+  PageHeader,
+  PageShell,
+} from "../components/ui/PageShell";
+import "../styles/gastario-documents.css";
 
 type PositionRow =
   | {
@@ -745,20 +751,28 @@ export default function NeueRechnungPage() {
 
   return (
     <AppLayout>
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">Verkauf</p>
-          <h1>Rechnung erstellen</h1>
-
-        </div>
-
-        <Link className="button secondary" to="/rechnungen">
-          Zur Übersicht
-        </Link>
-      </header>
+      <PageShell className="documentsPage invoiceEditorPage">
+        <PageHeader
+          eyebrow="Finanzen"
+          title="Neue Rechnung"
+          subtitle={
+            <>
+              {data.tenantName} · Rechnungsempfänger, Positionen,
+              Steuern und Zahlungsbedingungen in einem Arbeitsbereich.
+            </>
+          }
+          actions={
+            <Link
+              className="g-doc-button g-doc-button--secondary"
+              to="/rechnungen"
+            >
+              Zur Übersicht
+            </Link>
+          }
+        />
 
       {sourceOrder ? (
-        <section style={sourceOrderNoticeStyle}>
+        <section className="invoiceSourceNotice" style={sourceOrderNoticeStyle}>
           <div style={sourceOrderNoticeContentStyle}>
             <span style={sourceOrderNoticeLabelStyle}>
               Aus Auftrag übernommen
@@ -777,6 +791,7 @@ export default function NeueRechnungPage() {
 
           <Link
             to="/auftraege"
+            className="g-doc-button g-doc-button--secondary"
             style={secondaryButtonStyle}
           >
             Zurück zu den Aufträgen
@@ -785,7 +800,7 @@ export default function NeueRechnungPage() {
       ) : null}
 
       {existingInvoice ? (
-        <section style={existingInvoiceNoticeStyle}>
+        <section className="invoiceExistingNotice" style={existingInvoiceNoticeStyle}>
           <div>
             <strong>
               Für diesen Auftrag existiert bereits eine Rechnung.
@@ -795,6 +810,7 @@ export default function NeueRechnungPage() {
 
           <Link
             to={"/rechnungen/" + existingInvoice.id}
+            className="g-doc-button g-doc-button--primary"
             style={primaryButtonStyle}
           >
             Rechnung öffnen
@@ -802,11 +818,15 @@ export default function NeueRechnungPage() {
         </section>
       ) : null}
 
-      {actionData && "error" in actionData ? <div style={errorStyle}>{actionData.error}</div> : null}
-      {actionData && "success" in actionData ? <div style={successStyle}>{actionData.success}</div> : null}
+      {actionData && "error" in actionData ? (
+        <Notice type="danger">{actionData.error}</Notice>
+      ) : null}
+      {actionData && "success" in actionData ? (
+        <Notice type="success">{actionData.success}</Notice>
+      ) : null}
 
       {existingInvoice ? null : !data.invoiceSettingsComplete ? (
-        <div style={blockedPageStyle}>
+        <div className="invoiceBlockedState" style={blockedPageStyle}>
           <div style={blockedIconStyle}>!</div>
           <div>
             <p style={sectionLabelStyle}>Rechnungserstellung gesperrt</p>
@@ -816,12 +836,20 @@ export default function NeueRechnungPage() {
               IBAN und Bankname hinterlegt sein. Danach wird der Rechnungseditor automatisch freigeschaltet.
             </p>
           </div>
-          <Link to="/einstellungen/rechnungen" style={primaryButtonStyle}>
+          <Link
+            className="g-doc-button g-doc-button--primary"
+            to="/einstellungen/rechnungen"
+            style={primaryButtonStyle}
+          >
             Rechnungsdaten vervollständigen
           </Link>
         </div>
       ) : (
-      <Form method="post" style={pageStyle} className="invoiceEditorForm">
+      <Form
+        method="post"
+        style={pageStyle}
+        className="invoiceEditorForm invoiceMasterEditorForm"
+      >
         <style>
           {`
             .invoiceEditorForm {
@@ -930,7 +958,7 @@ export default function NeueRechnungPage() {
         <input type="hidden" name="globalDiscountMode" value={discountMode} />
         <input type="hidden" name="globalDiscountValue" value={globalDiscount} />
 
-        <div style={topSwitchStyle}>
+        <div className="invoicePriceModeSwitch" style={topSwitchStyle}>
           <button type="button" onClick={() => setPriceMode("GROSS")} style={priceMode === "GROSS" ? activeSwitchButtonStyle : switchButtonStyle}>
             Brutto
           </button>
@@ -939,7 +967,7 @@ export default function NeueRechnungPage() {
           </button>
         </div>
 
-        <section style={cardStyle}>
+        <section className="invoiceMasterCard invoiceCustomerCard" style={cardStyle}>
           <div style={twoColStyle}>
             <div style={gridStyle}>
               <FloatingInput name="customerName" label={isEnglish ? "Customer" : "Kunde"} placeholder={isEnglish ? "Customer name" : "Name des Kunden"} defaultValue={sourceOrder?.customerName || ""} required />
@@ -1021,7 +1049,7 @@ export default function NeueRechnungPage() {
           </div>
         </section>
 
-        <section style={cardStyle}>
+        <section className="invoiceMasterCard invoiceSellerCard" style={cardStyle}>
           <p style={sectionLabelStyle}>{isEnglish ? "Seller details" : "Eigene Rechnungsdaten"}</p>
           <div style={sellerInfoStyle}>
             <div style={sellerBlockStyle}>
@@ -1039,7 +1067,7 @@ export default function NeueRechnungPage() {
           </div>
         </section>
 
-        <section key={`text-${language}`} style={simpleTextCardStyle}>
+        <section className="invoiceMasterCard invoiceTextCard" key={`text-${language}`} style={simpleTextCardStyle}>
           <div style={sectionHeaderStyle}>
             <p style={sectionLabelStyle}>{isEnglish ? "Text" : "Text"}</p>
             <h2 style={sectionTitleStyle}>{isEnglish ? "Document text" : "Belegtext"}</h2>
@@ -1055,7 +1083,7 @@ export default function NeueRechnungPage() {
           </div>
         </section>
 
-        <section style={positionCardStyle} className="positionCardClean">
+        <section style={positionCardStyle} className="positionCardClean invoiceMasterPositions">
           <div style={positionHeaderStyle} className="positionHeaderClean">
             <span></span>
             <span>{isEnglish ? "Item" : "Artikel"}</span>
@@ -1152,7 +1180,7 @@ export default function NeueRechnungPage() {
           </div>
         </section>
 
-        <section key={`terms-${language}`} style={cardStyle}>
+        <section className="invoiceMasterCard invoiceTermsCard" key={`terms-${language}`} style={cardStyle}>
           <FloatingInput
             name="paymentTerms"
             label={isEnglish ? "Payment terms" : "Zahlungsbedingung"}
@@ -1165,14 +1193,21 @@ export default function NeueRechnungPage() {
           />
         </section>
 
-        <div style={footerActionsStyle}>
-          <Link to="/rechnungen" style={secondaryButtonStyle}>{isEnglish ? "Cancel" : "Abbrechen"}</Link>
-          <button type="submit" disabled={!data.invoiceSettingsComplete} style={data.invoiceSettingsComplete ? primaryButtonStyle : disabledButtonStyle} className="primarySoft">
+        <div className="invoiceEditorFooter" style={footerActionsStyle}>
+          <Link
+            className="g-doc-button g-doc-button--secondary"
+            to="/rechnungen"
+            style={secondaryButtonStyle}
+          >
+            {isEnglish ? "Cancel" : "Abbrechen"}
+          </Link>
+          <button type="submit" disabled={!data.invoiceSettingsComplete} style={data.invoiceSettingsComplete ? primaryButtonStyle : disabledButtonStyle} className="primarySoft g-doc-button g-doc-button--primary">
             {isEnglish ? "Save invoice draft" : "Rechnungsentwurf speichern"}
           </button>
         </div>
       </Form>
       )}
+      </PageShell>
     </AppLayout>
   );
 }

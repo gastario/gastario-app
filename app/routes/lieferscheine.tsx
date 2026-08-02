@@ -1,8 +1,17 @@
 ﻿import { Link, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 import DeliveryNoteButton from "../components/DeliveryNoteButton";
+import {
+  MetricCard,
+  MetricGrid,
+  Notice,
+  PageHeader,
+  PageSection,
+  PageShell,
+} from "../components/ui/PageShell";
 import lieferscheineStyles from "../styles/lieferscheine.css?url";
 import deliveryNoteDocumentStyles from "../styles/delivery-note-document.css?url";
+import "../styles/gastario-documents.css";
 
 function todayInput() {
   return new Date().toISOString().slice(0, 10);
@@ -29,6 +38,7 @@ function formatDate(value: string | Date | null | undefined) {
 function emptyData(error: string | null = null) {
   return {
     tenantName: "Gastario",
+    selectedDate: todayInput(),
     orders: [],
     savedNotes: [],
     stats: {
@@ -218,288 +228,217 @@ export async function loader({ request }: { request: Request }) {
   }
 }
 
-function CheckItem({ text }: { text: string }) {
-  return (
-    <div style={checkItemStyle}>
-      <span style={checkBoxStyle}></span>
-      <span>{text}</span>
-    </div>
-  );
-}
-
 export default function DeliveryNotesPage() {
   const data = useLoaderData<typeof loader>();
 
   return (
     <AppLayout>
-      <div className="deliveryNotesPrintRoot deliveryNotesPage">
-      <style>{printCss}</style>
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">Betrieb</p>
-          <h1>Lieferscheine</h1>
-          <span className="pageSubline">
-            {data.tenantName} · einfache Lieferscheine aus Auftraegen.
-          </span>
-        </div>
+      <PageShell className="documentsPage deliveryNotesMasterPage">
+        <PageHeader
+          eyebrow="Betrieb"
+          title="Lieferscheine"
+          subtitle={
+            <>
+              {data.tenantName} · Gespeicherte Lieferscheine für
+              bevorstehende und vergangene Aufträge.
+            </>
+          }
+          actions={
+            <>
+              <Link
+                className="g-doc-button g-doc-button--secondary"
+                to="/lieferscheine?refresh=1"
+              >
+                Dokumente aktualisieren
+              </Link>
 
-        <div className="topActions">
-          <Link className="primaryButton" to="/lieferungen">
-            Zu Lieferungen
-          </Link>
-        </div>
-      </header>
+              <Link
+                className="g-doc-button g-doc-button--primary"
+                to="/lieferungen"
+              >
+                Zu Lieferungen
+              </Link>
+            </>
+          }
+        />
 
-      {data.error ? (
-        <section className="panel">
-          <div className="noteBox">
-            <strong>Hinweis</strong>
-            <p>{data.error}</p>
-          </div>
-        </section>
-      ) : null}
+        {data.error ? (
+          <Notice type="danger">
+            <strong>Lieferscheine konnten nicht vollständig geladen werden.</strong>
+            <span>{data.error}</span>
+          </Notice>
+        ) : null}
 
-      <section className="orderSummaryGrid">
-        <article className="metricCard">
-          <div>
-            <p>Lieferscheine</p>
-            <strong>{data.stats.orders}</strong>
-            <span>fuer diesen Tag</span>
-          </div>
-          <small data-trend="aktiv">Dokument</small>
-        </article>
+        <MetricGrid>
+          <MetricCard
+            label="Aufträge am ausgewählten Tag"
+            value={data.stats.orders}
+            description={
+              data.selectedDate
+                ? formatDate(data.selectedDate)
+                : "Kein Datum ausgewählt"
+            }
+            badge="Tag"
+          />
 
-        <article className="metricCard">
-          <div>
-            <p>Positionen</p>
-            <strong>{data.stats.positions}</strong>
-            <span>gesamt</span>
-          </div>
-          <small data-trend="bereit">Liste</small>
-        </article>
-      </section>
+          <MetricCard
+            label="Positionen"
+            value={data.stats.positions}
+            description="Positionen der Tagesauswahl"
+            badge="Liste"
+          />
 
+          <MetricCard
+            label="Gespeicherte Dokumente"
+            value={data.savedNotes.length}
+            description="Dauerhaft im PDF-Archiv"
+            badge="Archiv"
+          />
 
-      {/* gastario-delivery-note-archive-v3-20260713 */}
-      <section className="panel deliveryNoteArchivePanel">
-        <div className="deliveryNoteArchiveHeader">
-          <div>
-            <p className="eyebrow">PDF-Archiv</p>
-            <h2>Gespeicherte Lieferscheine</h2>
-            <p>
-              Dauerhaft archivierte Lieferscheine aus bevorstehenden
-              und vergangenen Aufträgen.
-            </p>
-          </div>
+          <MetricCard
+            label="Automatische Erzeugung"
+            value="Aktiv"
+            description="Für operative, bevorstehende Aufträge"
+            badge="System"
+          />
+        </MetricGrid>
 
-          <div className="deliveryNoteArchiveCount">
-            <strong>{data.savedNotes.length}</strong>
-            <span>Dokumente</span>
-          </div>
-        </div>
-
-        {data.savedNotes.length === 0 ? (
-          <div className="deliveryNoteArchiveEmpty">
-            <strong>Noch keine PDF-Lieferscheine gespeichert.</strong>
-            <p>
-              Beim Übernehmen eines Auftrags wird der Lieferschein
-              automatisch erzeugt und hier angezeigt.
-            </p>
-          </div>
-        ) : (
-          <div className="deliveryNoteArchiveList">
-            <div className="deliveryNoteArchiveHead">
-              <span>Lieferschein</span>
-              <span>Kunde</span>
-              <span>Lieferung</span>
-              <span>Status</span>
-              <span>Erstellt</span>
-              <span>Aktion</span>
+        <PageSection
+          className="deliveryNotesArchiveSection"
+          eyebrow="PDF-Archiv"
+          title="Gespeicherte Lieferscheine"
+          description="Alle automatisch erzeugten Lieferscheine mit Lieferdatum, Status und direktem PDF-Zugriff."
+          actions={
+            <span className="g-doc-count">
+              {data.savedNotes.length}
+              <small>Dokumente</small>
+            </span>
+          }
+        >
+          {data.savedNotes.length === 0 ? (
+            <div className="g-doc-empty-state">
+              <span aria-hidden="true">PDF</span>
+              <div>
+                <strong>Noch keine Lieferscheine gespeichert</strong>
+                <p>
+                  Beim Übernehmen eines operativen Auftrags wird der
+                  Lieferschein automatisch erzeugt und hier archiviert.
+                </p>
+              </div>
+              <Link
+                className="g-doc-button g-doc-button--primary"
+                to="/lieferungen"
+              >
+                Lieferungen öffnen
+              </Link>
             </div>
+          ) : (
+            <div className="deliveryNotesArchiveList">
+              <div className="deliveryNotesArchiveHead">
+                <span>Lieferschein</span>
+                <span>Kunde</span>
+                <span>Lieferung</span>
+                <span>Status</span>
+                <span>Erstellt</span>
+                <span>Aktionen</span>
+              </div>
 
-            {data.savedNotes.map((note: any) => {
-              const status = String(note.order?.status || "");
+              {data.savedNotes.map((note: any) => {
+                const status = String(
+                  note.order?.status || ""
+                );
 
-              const statusLabel =
-                status === "CONFIRMED"
-                  ? "Bestätigt"
-                  : status === "IN_PRODUCTION"
-                    ? "In Produktion"
-                    : status === "PACKING_OPEN"
-                      ? "Packen"
-                      : status === "DELIVERED"
-                        ? "Ausgeliefert"
-                        : status || "-";
+                const readableStatus =
+                  status === "CONFIRMED"
+                    ? "Bestätigt"
+                    : status === "IN_PRODUCTION"
+                      ? "In Produktion"
+                      : status === "PACKING_OPEN"
+                        ? "Packen"
+                        : status === "DELIVERED"
+                          ? "Ausgeliefert"
+                          : status || "-";
 
-              return (
-                <article
-                  className="deliveryNoteArchiveRow"
-                  key={note.id}
-                >
-                  <div>
-                    <strong>{note.number}</strong>
-                    <small>
-                      Auftrag {note.order?.orderNumber || "-"}
-                    </small>
-                  </div>
-
-                  <div>
-                    <strong>
-                      {note.order?.customerName || "Ohne Kunde"}
-                    </strong>
-                    <small>
-                      {note.order?.deliveryAddress || "-"}
-                    </small>
-                  </div>
-
-                  <div>
-                    <strong>
-                      {formatDate(note.order?.deliveryDate)}
-                    </strong>
-                    <small>
-                      {note.order?.deliveryTimeText || "-"} Uhr
-                    </small>
-                  </div>
-
-                  <span
-                    className={
-                      "deliveryNoteArchiveStatus status-" +
-                      status.toLowerCase().replace(/_/g, "-")
-                    }
+                return (
+                  <article
+                    className="deliveryNotesArchiveRow"
+                    key={note.id}
                   >
-                    {statusLabel}
-                  </span>
+                    <div className="deliveryNotesPrimaryCell">
+                      <strong>{note.number}</strong>
+                      <small>
+                        Auftrag {note.order?.orderNumber || "-"}
+                      </small>
+                    </div>
 
-                  <div>
-                    <strong>
-                      {new Date(
-                        note.generatedAt
-                      ).toLocaleDateString("de-DE")}
-                    </strong>
-                    <small>
-                      {new Date(
-                        note.generatedAt
-                      ).toLocaleTimeString("de-DE", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })} Uhr
-                    </small>
-                  </div>
+                    <div>
+                      <strong>
+                        {note.order?.customerName || "Ohne Kunde"}
+                      </strong>
+                      <small>
+                        {note.order?.deliveryAddress || "-"}
+                      </small>
+                    </div>
 
-                  <div className="deliveryNoteArchiveActions">
-                    <DeliveryNoteButton
-                      orderId={note.orderId}
-                    />
+                    <div>
+                      <strong>
+                        {formatDate(note.order?.deliveryDate)}
+                      </strong>
+                      <small>
+                        {note.order?.deliveryTimeText
+                          ? note.order.deliveryTimeText + " Uhr"
+                          : "-"}
+                      </small>
+                    </div>
 
-                    <DeliveryNoteButton
-                      orderId={note.orderId}
-                      refresh
-                      compact
-                    />
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
+                    <div>
+                      <span
+                        className={
+                          "g-doc-status is-" +
+                          status
+                            .toLowerCase()
+                            .replace(/_/g, "-")
+                        }
+                      >
+                        {readableStatus}
+                      </span>
+                    </div>
 
+                    <div>
+                      <strong>
+                        {new Date(
+                          note.generatedAt
+                        ).toLocaleDateString("de-DE")}
+                      </strong>
+                      <small>
+                        {new Date(
+                          note.generatedAt
+                        ).toLocaleTimeString("de-DE", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        Uhr
+                      </small>
+                    </div>
 
-            {/* gastario-remove-legacy-delivery-note-view-20260713 */}
-      </div>
-</AppLayout>
+                    <div className="deliveryNoteArchiveActions">
+                      <DeliveryNoteButton
+                        orderId={note.orderId}
+                      />
+
+                      <DeliveryNoteButton
+                        orderId={note.orderId}
+                        refresh
+                        compact
+                      />
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </PageSection>
+      </PageShell>
+    </AppLayout>
   );
 }
-
-
-const deliveryCheckSectionStyle: React.CSSProperties = {
-  marginTop: 22,
-  border: "1px solid #e2e8f0",
-  borderRadius: 16,
-  padding: 16,
-  background: "#ffffff",
-};
-
-const checkTitleStyle: React.CSSProperties = {
-  margin: "0 0 12px",
-  color: "#0f172a",
-  fontSize: 16,
-  fontWeight: 900,
-};
-
-const checkGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 10,
-};
-
-const checkItemStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  color: "#0f172a",
-  fontWeight: 750,
-  fontSize: 13,
-};
-
-const checkBoxStyle: React.CSSProperties = {
-  width: 16,
-  height: 16,
-  border: "2px solid #0f766e",
-  borderRadius: 4,
-  display: "inline-block",
-  flex: "0 0 auto",
-};
-
-const signatureGridStyle: React.CSSProperties = {
-  marginTop: 30,
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 24,
-};
-
-const signatureBoxStyle: React.CSSProperties = {
-  borderTop: "1px solid #64748b",
-  paddingTop: 10,
-  minHeight: 54,
-  color: "#475569",
-  fontWeight: 850,
-};
-
-
-const printCss = `
-@media print {
-  body {
-    background: #ffffff !important;
-  }
-
-  aside,
-  nav,
-  .sidebar,
-  .topActions,
-  .orderSummaryGrid,
-  .panelHeader {
-    display: none !important;
-  }
-
-  main,
-  section,
-  article {
-    box-shadow: none !important;
-  }
-
-  article {
-    page-break-inside: avoid;
-  }
-
-  .panel {
-    border: none !important;
-    padding: 0 !important;
-  }
-
-  @page {
-    size: A4;
-    margin: 14mm;
-  }
-}
-`;
