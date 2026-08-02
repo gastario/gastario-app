@@ -73,14 +73,41 @@ export async function loader({ request }: { request: Request }) {
     ],
   });
 
-  const activeSuppliers = suppliers.filter((supplier) => supplier.active);
+  /*
+   * Zugangsdaten duerfen niemals ueber den Loader
+   * an den Browser ausgeliefert werden.
+   */
+  const safeSuppliers = suppliers.map((supplier: any) => ({
+    ...supplier,
+    supplierConnections:
+      supplier.supplierConnections.map(
+        (connection: any) => {
+          const {
+            credentialsEncrypted:
+              _credentialsEncrypted,
+            ...safeConnection
+          } = connection;
+
+          return {
+            ...safeConnection,
+            hasPortalCredentials: Boolean(
+              connection.credentialsEncrypted
+            ),
+          };
+        }
+      ),
+  }));
+
+  const activeSuppliers = safeSuppliers.filter(
+    (supplier: any) => supplier.active
+  );
   const mainCategories = Array.from(
     new Set(activeSuppliers.map((supplier) => supplier.category).filter(Boolean))
   );
 
   const freshnessLimit = Date.now() - 24 * 60 * 60 * 1000;
 
-  const connections = suppliers.flatMap((supplier: any) => {
+  const connections = safeSuppliers.flatMap((supplier: any) => {
     return supplier.supplierConnections.map((connection: any) => ({
       ...connection,
       supplierName: supplier.name,
@@ -88,7 +115,7 @@ export async function loader({ request }: { request: Request }) {
     }));
   });
 
-  const catalogItems = suppliers.flatMap((supplier: any) => {
+  const catalogItems = safeSuppliers.flatMap((supplier: any) => {
     return supplier.supplierCatalogItems.map((item: any) => ({
       ...item,
       supplierName: supplier.name,
@@ -113,7 +140,7 @@ export async function loader({ request }: { request: Request }) {
 
   return {
     tenant: access.tenant,
-    suppliers,
+    suppliers: safeSuppliers,
     connections,
     catalogItems,
     currentPriceItems,
@@ -261,6 +288,224 @@ export async function action({ request }: { request: Request }) {
     };
   }
   /*
+   * gastario-supplier-portal-credentials-20260802
+   * Zugangsdaten werden ausschliesslich verschluesselt gespeichert.
+   */
+  if (intent === "savePortalCredentials") {
+    const connectionId = String(
+      formData.get("connectionId") || ""
+    ).trim();
+
+    const customerNumber = String(
+      formData.get("customerNumber") || ""
+    ).trim();
+
+    const locationName = String(
+      formData.get("locationName") || ""
+    ).trim();
+
+    const username = String(
+      formData.get("username") || ""
+    ).trim();
+
+    const password = String(
+      formData.get("password") || ""
+    );
+
+    if (!connectionId) {
+      return {
+        error: "Lieferantenverbindung fehlt.",
+      };
+    }
+
+    if (!customerNumber) {
+      return {
+        error: "Bitte die METRO-Kundennummer eintragen.",
+      };
+    }
+
+    if (!username || !password) {
+      return {
+        error:
+          "Bitte METRO-Benutzername und Passwort vollständig eintragen.",
+      };
+    }
+
+    const connection =
+      await prisma.supplierConnection.findFirst({
+        where: {
+          id: connectionId,
+          tenantId: access.tenantId,
+        },
+        include: {
+          supplier: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
+    if (!connection) {
+      return {
+        error: "Lieferantenverbindung nicht gefunden.",
+      };
+    }
+
+    const previousSettings =
+      connection.settingsJson &&
+      typeof connection.settingsJson === "object" &&
+      !Array.isArray(connection.settingsJson)
+        ? connection.settingsJson
+        : {};
+
+    const providerCode = String(
+      (previousSettings as any).providerCode ||
+        connection.label ||
+        connection.supplier.name
+    )
+      .trim()
+      .toUpperCase();
+
+    if (providerCode !== "METRO") {
+      return {
+        error:
+          "Der sichere Portal-Login wird zuerst für METRO eingerichtet.",
+      };
+    }
+
+    try {
+      const {
+        createSupplierPortalAccountHint,
+        encryptSupplierPortalCredentials,
+      } = await import(
+        "../lib/supplier-portal-credentials.server"
+      );
+
+      const credentialsEncrypted =
+        encryptSupplierPortalCredentials({
+          providerCode: "METRO",
+          username,
+          password,
+          portalUrl:
+            "https://lieferservice.metro.de/",
+          savedAt: new Date().toISOString(),
+        });
+
+      await prisma.supplierConnection.update({
+        where: {
+          id: connection.id,
+        },
+        data: {
+          customerNumber,
+          endpointUrl:
+            "https://lieferservice.metro.de/",
+          credentialsEncrypted,
+          status: "CONFIGURED",
+          lastError: null,
+          settingsJson: {
+            ...(previousSettings as Record<
+              string,
+              unknown
+            >),
+            providerCode: "METRO",
+            providerName: "METRO",
+            connectionMode: "PORTAL_BROWSER",
+            portalUrl:
+              "https://lieferservice.metro.de/",
+            customerNumber,
+            locationName: locationName || null,
+            accountHint:
+              createSupplierPortalAccountHint(
+                username
+              ),
+            credentialsSavedAt:
+              new Date().toISOString(),
+            onboardingStatus:
+              "CREDENTIALS_SAVED",
+            sessionStatus: "LOGIN_PENDING",
+            automaticSync: false,
+          },
+        },
+      });
+    } catch (error: any) {
+      return {
+        error: String(
+          error?.message || error
+        ),
+      };
+    }
+
+    return {
+      success:
+        "Der METRO-Zugang wurde verschlüsselt gespeichert. Der Preisabruf bleibt bis zum erfolgreichen Browser-Login gesperrt.",
+    };
+  }
+
+  if (intent === "clearPortalCredentials") {
+    const connectionId = String(
+      formData.get("connectionId") || ""
+    ).trim();
+
+    if (!connectionId) {
+      return {
+        error: "Lieferantenverbindung fehlt.",
+      };
+    }
+
+    const connection =
+      await prisma.supplierConnection.findFirst({
+        where: {
+          id: connectionId,
+          tenantId: access.tenantId,
+        },
+        select: {
+          id: true,
+          settingsJson: true,
+        },
+      });
+
+    if (!connection) {
+      return {
+        error: "Lieferantenverbindung nicht gefunden.",
+      };
+    }
+
+    const previousSettings =
+      connection.settingsJson &&
+      typeof connection.settingsJson === "object" &&
+      !Array.isArray(connection.settingsJson)
+        ? connection.settingsJson
+        : {};
+
+    await prisma.supplierConnection.update({
+      where: {
+        id: connection.id,
+      },
+      data: {
+        credentialsEncrypted: null,
+        status: "CONFIGURED",
+        lastError: null,
+        settingsJson: {
+          ...(previousSettings as Record<
+            string,
+            unknown
+          >),
+          accountHint: null,
+          credentialsSavedAt: null,
+          onboardingStatus: "ACCESS_REQUIRED",
+          sessionStatus: "LOGIN_REQUIRED",
+          automaticSync: false,
+        },
+      },
+    });
+
+    return {
+      success: "Der gespeicherte Portalzugang wurde entfernt.",
+    };
+  }
+
+  /*
    * gastario-update-supplier-connection-20260729
    * Speichert Kundennummer und Standort einer bestehenden
    * automatischen Lieferantenverbindung.
@@ -362,12 +607,28 @@ export async function action({ request }: { request: Request }) {
         },
         select: {
           id: true,
+          status: true,
+          credentialsEncrypted: true,
         },
       });
 
     if (!connection) {
       return {
         error: "Lieferantenverbindung nicht gefunden.",
+      };
+    }
+
+    if (!connection.credentialsEncrypted) {
+      return {
+        error:
+          "Bitte zuerst den METRO-Zugang sicher speichern.",
+      };
+    }
+
+    if (connection.status !== "ACTIVE") {
+      return {
+        error:
+          "Die METRO-Sitzung ist noch nicht aktiv. Bitte zuerst den Browser-Login abschließen.",
       };
     }
 
@@ -686,8 +947,8 @@ export default function SuppliersPage() {
 
         <PageSection
           eyebrow="Lieferantenportale"
-          title="Portalzugang vorbereiten"
-          description="Gastario legt die Verbindung an. Die sichere Anmeldung und der automatische Browserabruf werden anschließend lieferantenspezifisch eingerichtet."
+          title="Lieferantenportal anlegen"
+          description="Lege das Portal mit Kundennummer und Lieferdepot an. Benutzername und Passwort werden anschließend direkt an der Verbindung verschlüsselt gespeichert."
         >
           {data.suppliers.length === 0 ? (
             <div className="supplyEmpty">
@@ -780,11 +1041,10 @@ export default function SuppliersPage() {
 
               <div className="supplyPortalHint">
                 <strong>
-                  Anmeldung folgt im nächsten Schritt
+                  Sicherer Login an der Verbindung
                 </strong>
                 <span>
-                  Zugangsdaten werden nicht in diesem
-                  Formular gespeichert.
+                  Nach dem Anlegen erscheint die verschlüsselte METRO-Anmeldung in der Verbindungskarte.
                 </span>
               </div>
 
@@ -792,7 +1052,7 @@ export default function SuppliersPage() {
                 className="supplyButton supplyButton--primary"
                 type="submit"
               >
-                Portal vorbereiten
+                Portal anlegen
               </button>
             </Form>
           )}
@@ -819,8 +1079,12 @@ export default function SuppliersPage() {
                     connection.status === "ACTIVE"
                       ? "Verbunden"
                       : connection.status ===
-                          "CONFIGURED"
-                        ? "Anmeldung erforderlich"
+                          "CONFIGURED" &&
+                          connection.hasPortalCredentials
+                        ? "Zugang gespeichert"
+                        : connection.status ===
+                            "CONFIGURED"
+                          ? "Anmeldung erforderlich"
                         : connection.status === "ERROR"
                           ? "Fehler"
                           : connection.status ===
@@ -918,20 +1182,40 @@ export default function SuppliersPage() {
                         </div>
                       ) : null}
 
+                      <div className="supplyPortalState">
+                        <strong>
+                          {connection.status === "ACTIVE"
+                            ? "METRO-Sitzung ist aktiv"
+                            : connection.hasPortalCredentials
+                              ? "Zugangsdaten verschlüsselt gespeichert"
+                              : "METRO-Anmeldung erforderlich"}
+                        </strong>
+
+                        <span>
+                          {connection.status === "ACTIVE"
+                            ? "Gastario kann die zugeordneten Artikel und Preise synchronisieren."
+                            : connection.hasPortalCredentials
+                              ? "Der automatische Browser-Login wird im nächsten Schritt mit diesem Zugang gestartet."
+                              : "Benutzername und Passwort werden verschlüsselt gespeichert und niemals an den Browser ausgeliefert."}
+                        </span>
+                      </div>
+
                       <div className="supplyConnectionActions">
-                        <details className="supplyDetails">
+                        <details className="supplyDetails supplyDetails--portal">
                           <summary className="supplyButton supplyButton--secondary">
-                            Verbindung bearbeiten
+                            {connection.hasPortalCredentials
+                              ? "Zugang verwalten"
+                              : "Bei METRO anmelden"}
                           </summary>
 
                           <Form
                             method="post"
-                            className="supplyInlineForm"
+                            className="supplyPortalLoginForm"
                           >
                             <input
                               type="hidden"
                               name="intent"
-                              value="updateSupplierConnection"
+                              value="savePortalCredentials"
                             />
 
                             <input
@@ -939,6 +1223,20 @@ export default function SuppliersPage() {
                               name="connectionId"
                               value={connection.id}
                             />
+
+                            <div className="supplyPortalLoginIntro">
+                              <strong>
+                                METRO Lieferservice verbinden
+                              </strong>
+
+                              <span>
+                                Zielportal: lieferservice.metro.de
+                                {connection.settingsJson
+                                  ?.accountHint
+                                  ? ` · Konto ${connection.settingsJson.accountHint}`
+                                  : ""}
+                              </span>
+                            </div>
 
                             <label className="supplyField">
                               <span>Kundennummer</span>
@@ -950,12 +1248,13 @@ export default function SuppliersPage() {
                                     ?.customerNumber ||
                                   ""
                                 }
+                                autoComplete="off"
                                 required
                               />
                             </label>
 
                             <label className="supplyField">
-                              <span>Standort / Markt</span>
+                              <span>Lieferdepot / Standort</span>
                               <input
                                 name="locationName"
                                 defaultValue={
@@ -963,16 +1262,72 @@ export default function SuppliersPage() {
                                     ?.locationName ||
                                   ""
                                 }
+                                placeholder="z. B. METRO Lieferdepot Berlin"
                               />
                             </label>
 
+                            <label className="supplyField">
+                              <span>METRO-Benutzername / E-Mail</span>
+                              <input
+                                name="username"
+                                type="text"
+                                autoComplete="username"
+                                required
+                              />
+                            </label>
+
+                            <label className="supplyField">
+                              <span>METRO-Passwort</span>
+                              <input
+                                name="password"
+                                type="password"
+                                autoComplete="current-password"
+                                required
+                              />
+                            </label>
+
+                            <div className="supplyCredentialNotice">
+                              <strong>Verschlüsselte Speicherung</strong>
+                              <span>
+                                Das Passwort wird mit dem Railway-Schlüssel verschlüsselt. Es wird weder angezeigt noch über den Loader an den Browser zurückgegeben.
+                              </span>
+                            </div>
+
                             <button
-                              className="supplyButton supplyButton--secondary"
+                              className="supplyButton supplyButton--primary"
                               type="submit"
                             >
-                              Zugang speichern
+                              {connection.hasPortalCredentials
+                                ? "Zugang neu speichern"
+                                : "Zugang sicher speichern"}
                             </button>
                           </Form>
+
+                          {connection.hasPortalCredentials ? (
+                            <Form
+                              method="post"
+                              className="supplyCredentialRemoveForm"
+                            >
+                              <input
+                                type="hidden"
+                                name="intent"
+                                value="clearPortalCredentials"
+                              />
+
+                              <input
+                                type="hidden"
+                                name="connectionId"
+                                value={connection.id}
+                              />
+
+                              <button
+                                className="supplyButton supplyButton--dangerGhost"
+                                type="submit"
+                              >
+                                Gespeicherten Zugang entfernen
+                              </button>
+                            </Form>
+                          ) : null}
                         </details>
 
                         <Form method="post">
@@ -991,8 +1346,18 @@ export default function SuppliersPage() {
                           <button
                             className="supplyButton supplyButton--primary"
                             type="submit"
+                            disabled={
+                              connection.status !== "ACTIVE"
+                            }
+                            title={
+                              connection.status === "ACTIVE"
+                                ? "Aktuelle METRO-Preise abrufen"
+                                : "Erst nach erfolgreicher Portal-Anmeldung verfügbar"
+                            }
                           >
-                            Preise abrufen
+                            {connection.status === "ACTIVE"
+                              ? "Preise synchronisieren"
+                              : "Preisabruf gesperrt"}
                           </button>
                         </Form>
                       </div>

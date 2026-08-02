@@ -44,6 +44,7 @@ async function runDueSupplierConnections() {
     await prisma.supplierConnection.findMany({
       where: {
         active: true,
+        status: "ACTIVE",
         supplier: {
           active: true,
         },

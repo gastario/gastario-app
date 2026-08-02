@@ -756,3 +756,113 @@
     box-shadow: none !important;
   }
 }
+
+
+/*
+ * gastario-supplier-portal-login-foundation-20260802
+ */
+
+.supplyPortalState {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 11px 12px;
+  border: 1px solid var(--g-color-border-subtle);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface-soft);
+}
+
+.supplyPortalState strong {
+  color: var(--g-color-text);
+  font-size: 10px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.supplyPortalState span {
+  color: var(--g-color-text-muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.supplyDetails--portal {
+  flex: 1 1 300px;
+}
+
+.supplyPortalLoginForm {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px solid var(--g-color-border);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-surface-soft);
+}
+
+.supplyPortalLoginIntro,
+.supplyCredentialNotice {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 4px;
+  padding: 11px 12px;
+  border-radius: var(--g-radius-control);
+}
+
+.supplyPortalLoginIntro {
+  border: 1px solid var(--g-color-brand-soft);
+  background: var(--g-color-brand-softer);
+}
+
+.supplyCredentialNotice {
+  border: 1px solid var(--g-color-warning-border);
+  background: var(--g-color-warning-bg);
+}
+
+.supplyPortalLoginIntro strong,
+.supplyCredentialNotice strong {
+  color: var(--g-color-text);
+  font-size: 10px;
+  font-weight: var(--g-font-weight-semibold);
+}
+
+.supplyPortalLoginIntro span,
+.supplyCredentialNotice span {
+  color: var(--g-color-text-muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.supplyPortalLoginForm > .supplyButton {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.supplyCredentialRemoveForm {
+  margin-top: 8px;
+}
+
+.supplyButton:disabled {
+  transform: none !important;
+  opacity: 0.48;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.supplyButton--dangerGhost {
+  border: 1px solid var(--g-color-danger-border);
+  background: var(--g-color-danger-bg);
+  color: var(--g-color-danger);
+}
+
+@media (max-width: 700px) {
+  .supplyPortalLoginForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .supplyPortalLoginIntro,
+  .supplyCredentialNotice,
+  .supplyPortalLoginForm > .supplyButton {
+    grid-column: auto;
+  }
+}
