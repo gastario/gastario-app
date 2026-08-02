@@ -98,7 +98,24 @@ export async function loader({ request, params }: { request: Request; params: { 
 export default function FoodLabelPrintPage() {
   const data = useLoaderData<typeof loader>();
   const label = data.label as any;
-  const preset = getPrintPreset(label.printPreset || "a4-3", "auto");
+  const preset = getPrintPreset(
+    label.printPreset || "a4-3",
+    label.labelSize || "auto"
+  );
+
+  const isRollPreset =
+    label.printPreset === "roll-76x51" ||
+    label.printPreset === "roll-57x32";
+
+  const pageSize =
+    isRollPreset
+      ? `${preset.width} ${preset.height}`
+      : "A4 portrait";
+
+  const pageMargin =
+    isRollPreset
+      ? "0"
+      : "8mm";
   const count = Math.max(1, Math.min(Number(label.labelCount || 1), 200));
   const labels = Array.from({ length: count }, (_, index) => index);
 
@@ -108,7 +125,13 @@ export default function FoodLabelPrintPage() {
   }, []);
 
   return (
-    <main>
+    <main
+      className={
+        isRollPreset
+          ? "rollPrintPage"
+          : "a4PrintPage"
+      }
+    >
       <style>
         {`
           html,
@@ -120,9 +143,9 @@ export default function FoodLabelPrintPage() {
             font-family: Arial, Helvetica, sans-serif;
           }
 
-          @page {
-            size: A4 portrait;
-            margin: 8mm;
+                    @page {
+            size: ${pageSize};
+            margin: ${pageMargin};
           }
 
           .toolbar {
@@ -268,6 +291,58 @@ export default function FoodLabelPrintPage() {
               page-break-inside: avoid !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
+            }
+          }
+        `}
+      </style>
+
+      <style>
+        {`
+          /*
+           * gastario-manual-zebra-roll-print-20260802
+           *
+           * Gilt ausschließlich für manuell gespeicherte
+           * Foodlabels. Der Heycater-PDF-Druck ist unabhängig.
+           */
+
+          @media print {
+            .rollPrintPage {
+              width: ${preset.width} !important;
+              min-width: ${preset.width} !important;
+              max-width: ${preset.width} !important;
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+
+            .rollPrintPage .sheet {
+              width: ${preset.width} !important;
+              min-width: ${preset.width} !important;
+              max-width: ${preset.width} !important;
+              display: block !important;
+              grid-template-columns: none !important;
+              gap: 0 !important;
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+
+            .rollPrintPage .label {
+              width: ${preset.width} !important;
+              min-width: ${preset.width} !important;
+              max-width: ${preset.width} !important;
+              height: ${preset.height} !important;
+              min-height: ${preset.height} !important;
+              max-height: ${preset.height} !important;
+              margin: 0 !important;
+              box-sizing: border-box !important;
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+              page-break-after: always !important;
+              break-after: page !important;
+            }
+
+            .rollPrintPage .label:last-child {
+              page-break-after: auto !important;
+              break-after: auto !important;
             }
           }
         `}
