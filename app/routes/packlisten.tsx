@@ -21,9 +21,7 @@ import {
 import "../styles/gastario-page-shell.css";
 import "../styles/gastario-operations.css";
 
-const OPERATIONAL_STATUSES = new Set([
-  "CONFIRMED",
-  "IN_PRODUCTION",
+const PACKING_STATUSES = new Set([
   "PACKING_OPEN",
   "DELIVERED",
 ]);
@@ -274,19 +272,23 @@ export async function loader({
         take: 500,
       });
 
-    const operationalOrders =
-      orders.filter((order: any) =>
-        OPERATIONAL_STATUSES.has(
-          String(
-            order.status || ""
-          ).toUpperCase()
-        )
-      );
+        const packingOrders =
+      orders.filter((order: any) => {
+        const status = String(
+          order.status || ""
+        ).toUpperCase();
+
+        return (
+          PACKING_STATUSES.has(status) ||
+          Boolean(order.packingStartedAt) ||
+          Boolean(order.packingCompletedAt)
+        );
+      });
 
     const availableDates =
       Array.from(
         new Set(
-          operationalOrders
+          packingOrders
             .map((order: any) =>
               normalizeDate(
                 order.deliveryDate
@@ -303,7 +305,7 @@ export async function loader({
       );
 
     const relevantOrders =
-      operationalOrders.filter(
+      packingOrders.filter(
         (order: any) =>
           normalizeDate(
             order.deliveryDate
@@ -885,10 +887,9 @@ export default function PackingListsPage() {
             <>
               {data.tenantName}
               {" · "}
-              Jede bestätigte Bestellung
-              erhält automatisch eine
-              gemeinsame Packliste für
-              alle Arbeitsplätze.
+                            Aufträge erscheinen hier automatisch,
+              sobald sie aus der Produktion an
+              die Packstation übergeben wurden.
             </>
           }
           actions={
@@ -1043,11 +1044,10 @@ export default function PackingListsPage() {
                 </strong>
 
                 <p>
-                  Für den ausgewählten
-                  Tag sind noch keine
-                  bestätigten oder
-                  laufenden Aufträge
-                  vorhanden.
+                                    Für den ausgewählten
+                  Tag wurden noch keine
+                  Aufträge an die
+                  Packstation übergeben.
                 </p>
               </div>
             </div>

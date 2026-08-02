@@ -1104,3 +1104,60 @@
     width: 100%;
   }
 }
+/*
+ * gastario-packing-layout-and-filter-fix-20260802
+ *
+ * Checkboxen unabhängig von globalen Input-Regeln darstellen.
+ */
+
+.packingItemRow > .packingCheckbox,
+.packingTaskCard > .packingCheckbox {
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  flex: 0 0 20px !important;
+  display: inline-block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 4px;
+  box-sizing: border-box !important;
+  transform: none !important;
+  accent-color: var(--ops-brand);
+}
+
+.packingTaskCard {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  overflow: hidden;
+}
+
+.packingTaskCard > span {
+  min-width: 0;
+  display: block;
+  margin: 0;
+  overflow: visible;
+  color: var(--ops-text);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.4;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.packingItemRow {
+  grid-template-columns:
+    20px minmax(0, 1fr) auto;
+}
+
+@media (max-width: 700px) {
+  .packingTaskGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
