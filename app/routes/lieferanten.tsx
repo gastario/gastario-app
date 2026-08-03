@@ -1133,26 +1133,41 @@ export default function SuppliersPage() {
 
   return (
     <AppLayout>
-      <PageShell className="supplyPage supplyMasterV1Page">
-        <PageHeader
-          eyebrow="Einkauf & Lager"
-          title="Lieferanten"
-          subtitle={
-            <>
-              Lieferanten verwalten, Portale verbinden und
-              Einkaufspreise für {data.tenant.name} vorbereiten.
-            </>
-          }
-          actions={
+            <PageShell className="supplyPage supplyDashboardV1Page">
+        <header className="supplyV1PageHeader">
+          <div>
+            <p>Einkauf & Lager</p>
+            <h1>Lieferanten</h1>
+            <span>
+              Lieferanten, Portale und Einkaufspreise für {data.tenant.name} verwalten.
+            </span>
+          </div>
+
+          <div className="supplyV1HeaderActions">
             <button
-              className="supplyButton supplyButton--secondary supplyPrintButton"
+              className="supplyV1Button supplyV1Button--secondary"
               type="button"
               onClick={printPage}
             >
               Drucken
             </button>
-          }
-        />
+
+            <a
+              className="supplyV1Button supplyV1Button--secondary"
+              href="#portal-new"
+            >
+              Portal verbinden
+            </a>
+
+            <a
+              className="supplyV1Button supplyV1Button--primary"
+              href="#supplier-new"
+            >
+              <span aria-hidden="true">+</span>
+              Neuer Lieferant
+            </a>
+          </div>
+        </header>
 
         {actionData?.success ? (
           <Notice type="success">
@@ -1166,149 +1181,351 @@ export default function SuppliersPage() {
           </Notice>
         ) : null}
 
-        <MetricGrid>
-          <MetricCard
-            label="Lieferanten"
-            value={data.stats.total}
-            description={`${data.stats.active} aktiv`}
-            badge="Stammdaten"
-          />
+        <section className="supplyV1Intelligence">
+          <div className="supplyV1IntelligenceIcon" aria-hidden="true">
+            ✦
+          </div>
 
-          <MetricCard
-            label="Verbundene Portale"
-            value={data.stats.connections}
-            description={`${data.stats.activeConnections} aktiv`}
-            badge="Verbindungen"
-          />
+          <div>
+            <span>Gastario Intelligence</span>
+            <strong>
+              {data.stats.stalePrices > 0
+                ? `${data.stats.stalePrices} Preisstände benötigen deine Aufmerksamkeit.`
+                : "Lieferanten und Einkaufsdaten sind übersichtlich vorbereitet."}
+            </strong>
+            <p>
+              {data.stats.connections === 0
+                ? "Verbinde zuerst ein Lieferantenportal, damit Gastario Sortimente und Preise übernehmen kann."
+                : `${data.stats.activeConnections} von ${data.stats.connections} Portalverbindungen sind aktiv. ${data.stats.currentPrices} Preise sind aktuell.`}
+            </p>
+          </div>
 
-          <MetricCard
-            label="Einkaufsdaten"
-            value={data.stats.catalogItems}
-            description={`${data.stats.currentPrices} aktuelle Preise · ${data.stats.stalePrices} zu prüfen`}
-            badge={
-              data.stats.stalePrices > 0
-                ? "Prüfen"
-                : "Aktuell"
-            }
-            attention={data.stats.stalePrices > 0}
-          />
-        </MetricGrid>
+          <a href="#portal-workspace">
+            Hinweise prüfen
+          </a>
+        </section>
 
-        <div className="supplierMasterWorkspace">
-          <PageSection
-            className="supplierMasterCreate"
-            eyebrow="Stammdaten"
-            title="Neuer Lieferant"
-            description="Neue Stammdaten bei Bedarf kompakt erfassen."
-          >
-          <details className="supplyDisclosure">
-            <summary>
-              <span>
-                <strong>Neuen Lieferanten anlegen</strong>
-                <small>
-                  Kontaktdaten, Bestelltage und Sortiment erfassen
-                </small>
-              </span>
-
-              <span className="supplyDisclosureAction">
-                Formular öffnen
-              </span>
-            </summary>
-
-            <div className="supplyDisclosureBody">          <Form
-            method="post"
-            className="supplyForm supplyForm--supplier"
-          >
-            <input
-              type="hidden"
-              name="intent"
-              value="createSupplier"
-            />
-
-            <label className="supplyField">
-              <span>Name</span>
-              <input
-                name="name"
-                placeholder="z. B. METRO"
-                required
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>Kategorie</span>
-              <input
-                name="category"
-                placeholder="Lebensmittel"
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>Ansprechpartner</span>
-              <input
-                name="contactName"
-                placeholder="Herr / Frau …"
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>Bestelltage</span>
-              <input
-                name="orderDays"
-                placeholder="Mo–Fr"
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>E-Mail</span>
-              <input
-                name="email"
-                type="email"
-                placeholder="bestellung@…"
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>Telefon</span>
-              <input
-                name="phone"
-                placeholder="030 …"
-              />
-            </label>
-
-            <label className="supplyField supplyField--wide">
-              <span>Artikel / Sortiment</span>
-              <input
-                name="items"
-                placeholder="Reis, Hähnchen, Gemüse …"
-              />
-            </label>
-
-            <label className="supplyField supplyField--grow">
-              <span>Notiz</span>
-              <input
-                name="notes"
-                placeholder="optional"
-              />
-            </label>
-
-            <button
-              className="supplyButton supplyButton--primary"
-              type="submit"
-            >
-              Lieferant anlegen
-            </button>
-          </Form>
+        <section className="supplyV1Metrics">
+          <article>
+            <div>
+              <span>Lieferanten</span>
+              <small>{data.stats.active} aktiv</small>
             </div>
-          </details>
-        </PageSection>
+            <strong>{data.stats.total}</strong>
+            <i />
+          </article>
 
-          <PageSection
-            className="supplierMasterMain"
-            eyebrow="Einkaufsdaten"
-            title="Portal & Preise"
-            description="Portalstatus, Katalogartikel, Preisübertragungen und Connector verwalten."
-          >
-          <details className="supplyDisclosure supplyDisclosure--compact">
+          <article>
+            <div>
+              <span>Verbundene Portale</span>
+              <small>{data.stats.activeConnections} aktiv</small>
+            </div>
+            <strong>{data.stats.connections}</strong>
+            <i />
+          </article>
+
+          <article>
+            <div>
+              <span>Katalogartikel</span>
+              <small>Einkaufsdaten</small>
+            </div>
+            <strong>{data.stats.catalogItems}</strong>
+            <i />
+          </article>
+
+          <article>
+            <div>
+              <span>Aktuelle Preise</span>
+              <small>
+                {data.stats.stalePrices > 0
+                  ? `${data.stats.stalePrices} prüfen`
+                  : "Aktuell"}
+              </small>
+            </div>
+            <strong>{data.stats.currentPrices}</strong>
+            <i />
+          </article>
+        </section>
+
+        <div className="supplyV1ContentGrid">
+          <main className="supplyV1MainColumn">
+            <section className="supplyV1Panel supplyV1SupplierPanel">
+              <header className="supplyV1PanelHeader">
+                <div>
+                  <span>Lieferanten</span>
+                  <h2>Lieferantenübersicht</h2>
+                  <p>
+                    Stammdaten, Status und Ansprechpartner zentral verwalten.
+                  </p>
+                </div>
+
+                <a href="#supplier-new">
+                  Lieferant hinzufügen
+                </a>
+              </header>
+
+              <div className="supplyV1PanelBody supplyV1SupplierBody">
+{data.suppliers.length === 0 ? (
+            <div className="supplyEmpty">
+              <strong>
+                Noch keine Lieferanten angelegt
+              </strong>
+              <p>
+                Beginne mit deinem wichtigsten
+                Lebensmittel- oder Verpackungslieferanten.
+              </p>
+            </div>
+          ) : (
+            <div className="supplySupplierGrid">
+              {data.suppliers.map(
+                (supplier: any) => (
+                  <article
+                    className="supplySupplierCard"
+                    key={supplier.id}
+                  >
+                    <div className="supplySupplierTop">
+                      <div>
+                        <small>
+                          {supplier.category ||
+                            "Ohne Kategorie"}
+                        </small>
+                        <strong>
+                          {supplier.name}
+                        </strong>
+                      </div>
+
+                      <span
+                        className={[
+                          "supplyStatus",
+                          supplier.active
+                            ? "supplyStatus--success"
+                            : "supplyStatus--warning",
+                        ].join(" ")}
+                      >
+                        {supplier.active
+                          ? "Aktiv"
+                          : "Inaktiv"}
+                      </span>
+                    </div>
+
+                    <dl className="supplySupplierFacts">
+                      <div>
+                        <dt>Ansprechpartner</dt>
+                        <dd>
+                          {supplier.contactName ||
+                            "–"}
+                        </dd>
+                      </div>
+
+                      <div>
+                        <dt>Bestelltage</dt>
+                        <dd>
+                          {supplier.orderDays || "–"}
+                        </dd>
+                      </div>
+
+                      <div>
+                        <dt>E-Mail</dt>
+                        <dd>
+                          {supplier.email || "–"}
+                        </dd>
+                      </div>
+
+                      <div>
+                        <dt>Telefon</dt>
+                        <dd>
+                          {supplier.phone || "–"}
+                        </dd>
+                      </div>
+
+                      <div className="supplySupplierFactWide">
+                        <dt>Sortiment</dt>
+                        <dd>
+                          {supplier.items || "–"}
+                        </dd>
+                      </div>
+                    </dl>
+
+                    <div className="supplySupplierActions">
+                      <Form method="post">
+                        <input
+                          type="hidden"
+                          name="intent"
+                          value="toggleActive"
+                        />
+
+                        <input
+                          type="hidden"
+                          name="supplierId"
+                          value={supplier.id}
+                        />
+
+                        <input
+                          type="hidden"
+                          name="active"
+                          value={
+                            supplier.active
+                              ? "false"
+                              : "true"
+                          }
+                        />
+
+                        <button
+                          className="supplyButton supplyButton--secondary"
+                          type="submit"
+                        >
+                          {supplier.active
+                            ? "Deaktivieren"
+                            : "Aktivieren"}
+                        </button>
+                      </Form>
+
+                      <details className="supplyDetails">
+                        <summary className="supplyButton supplyButton--secondary">
+                          Bearbeiten
+                        </summary>
+
+                        <Form
+                          method="post"
+                          className="supplyEditGrid"
+                        >
+                          <input
+                            type="hidden"
+                            name="intent"
+                            value="updateSupplier"
+                          />
+
+                          <input
+                            type="hidden"
+                            name="supplierId"
+                            value={supplier.id}
+                          />
+
+                          <input
+                            name="name"
+                            defaultValue={
+                              supplier.name
+                            }
+                          />
+
+                          <input
+                            name="category"
+                            defaultValue={
+                              supplier.category || ""
+                            }
+                            placeholder="Kategorie"
+                          />
+
+                          <input
+                            name="contactName"
+                            defaultValue={
+                              supplier.contactName ||
+                              ""
+                            }
+                            placeholder="Ansprechpartner"
+                          />
+
+                          <input
+                            name="orderDays"
+                            defaultValue={
+                              supplier.orderDays || ""
+                            }
+                            placeholder="Bestelltage"
+                          />
+
+                          <input
+                            name="email"
+                            type="email"
+                            defaultValue={
+                              supplier.email || ""
+                            }
+                            placeholder="E-Mail"
+                          />
+
+                          <input
+                            name="phone"
+                            defaultValue={
+                              supplier.phone || ""
+                            }
+                            placeholder="Telefon"
+                          />
+
+                          <input
+                            className="supplyEditWide"
+                            name="items"
+                            defaultValue={
+                              supplier.items || ""
+                            }
+                            placeholder="Sortiment"
+                          />
+
+                          <input
+                            className="supplyEditWide"
+                            name="notes"
+                            defaultValue={
+                              supplier.notes || ""
+                            }
+                            placeholder="Notiz"
+                          />
+
+                          <button
+                            className="supplyButton supplyButton--primary supplyEditWide"
+                            type="submit"
+                          >
+                            Speichern
+                          </button>
+                        </Form>
+                      </details>
+
+                      <Form method="post">
+                        <input
+                          type="hidden"
+                          name="intent"
+                          value="deleteSupplier"
+                        />
+
+                        <input
+                          type="hidden"
+                          name="supplierId"
+                          value={supplier.id}
+                        />
+
+                        <button
+                          className="supplyButton supplyButton--danger"
+                          type="submit"
+                        >
+                          Löschen
+                        </button>
+                      </Form>
+                    </div>
+                  </article>
+                )
+              )}
+            </div>
+          )}
+              </div>
+            </section>
+
+            <section
+              className="supplyV1Panel supplyV1PortalPanel"
+              id="portal-workspace"
+            >
+              <header className="supplyV1PanelHeader">
+                <div>
+                  <span>Portale & Preise</span>
+                  <h2>Lieferantenverbindungen</h2>
+                  <p>
+                    Katalog, Preisstand und lokale Browser-Verbindungen prüfen.
+                  </p>
+                </div>
+
+                <a href="#portal-new">
+                  Portal hinzufügen
+                </a>
+              </header>
+
+              <div className="supplyV1PanelBody supplyV1PortalBody">
+<details className="supplyDisclosure supplyDisclosure--compact">
             <summary>
               <span>
                 <strong>Weiteres Lieferantenportal anlegen</strong>
@@ -1833,253 +2050,215 @@ export default function SuppliersPage() {
               )
             )}
           </div>
-        </PageSection>
+              </div>
+            </section>
+          </main>
 
-          <PageSection
-            className="supplierMasterList"
-            eyebrow="Lieferanten"
-            title="Lieferantenliste"
-            description="Stammdaten bearbeiten, aktivieren oder entfernen."
+          <aside className="supplyV1Aside">
+            <section className="supplyV1Panel supplyV1ActivityPanel">
+              <header className="supplyV1PanelHeader">
+                <div>
+                  <span>Live</span>
+                  <h2>Status & Aktivität</h2>
+                </div>
+              </header>
+
+              <div className="supplyV1ActivityList">
+                <article>
+                  <b data-tone={data.stats.activeConnections > 0 ? "success" : "warning"} />
+                  <div>
+                    <small>Portalstatus</small>
+                    <strong>
+                      {data.stats.activeConnections > 0
+                        ? "Mindestens ein Portal ist aktiv"
+                        : "Noch kein Portal aktiv"}
+                    </strong>
+                    <p>
+                      {data.stats.connections} Verbindungen insgesamt.
+                    </p>
+                  </div>
+                </article>
+
+                <article>
+                  <b data-tone={data.stats.stalePrices > 0 ? "warning" : "success"} />
+                  <div>
+                    <small>Preisstatus</small>
+                    <strong>
+                      {data.stats.stalePrices > 0
+                        ? "Preisprüfung erforderlich"
+                        : "Preise aktuell"}
+                    </strong>
+                    <p>
+                      {data.stats.currentPrices} aktuelle und {data.stats.stalePrices} zu prüfende Preise.
+                    </p>
+                  </div>
+                </article>
+
+                <article>
+                  <b data-tone={data.stats.catalogItems > 0 ? "success" : "neutral"} />
+                  <div>
+                    <small>Katalog</small>
+                    <strong>
+                      {data.stats.catalogItems > 0
+                        ? "Einkaufsdaten vorhanden"
+                        : "Noch keine Katalogdaten"}
+                    </strong>
+                    <p>
+                      {data.stats.catalogItems} Artikel wurden erfasst.
+                    </p>
+                  </div>
+                </article>
+              </div>
+
+              <a
+                className="supplyV1ActivityAction"
+                href="#portal-workspace"
+              >
+                Portale und Preise öffnen
+              </a>
+            </section>
+
+            <details
+              className="supplyV1Panel supplyV1FormPanel"
+              id="supplier-new"
+            >
+              <summary>
+                <span>
+                  <small>Stammdaten</small>
+                  <strong>Neuen Lieferanten anlegen</strong>
+                </span>
+                <b>+</b>
+              </summary>
+
+              <div className="supplyV1FormPanelBody">
+<details className="supplyDisclosure">
+            <summary>
+              <span>
+                <strong>Neuen Lieferanten anlegen</strong>
+                <small>
+                  Kontaktdaten, Bestelltage und Sortiment erfassen
+                </small>
+              </span>
+
+              <span className="supplyDisclosureAction">
+                Formular öffnen
+              </span>
+            </summary>
+
+            <div className="supplyDisclosureBody">          <Form
+            method="post"
+            className="supplyForm supplyForm--supplier"
           >
-          {data.suppliers.length === 0 ? (
-            <div className="supplyEmpty">
-              <strong>
-                Noch keine Lieferanten angelegt
-              </strong>
-              <p>
-                Beginne mit deinem wichtigsten
-                Lebensmittel- oder Verpackungslieferanten.
-              </p>
+            <input
+              type="hidden"
+              name="intent"
+              value="createSupplier"
+            />
+
+            <label className="supplyField">
+              <span>Name</span>
+              <input
+                name="name"
+                placeholder="z. B. METRO"
+                required
+              />
+            </label>
+
+            <label className="supplyField">
+              <span>Kategorie</span>
+              <input
+                name="category"
+                placeholder="Lebensmittel"
+              />
+            </label>
+
+            <label className="supplyField">
+              <span>Ansprechpartner</span>
+              <input
+                name="contactName"
+                placeholder="Herr / Frau …"
+              />
+            </label>
+
+            <label className="supplyField">
+              <span>Bestelltage</span>
+              <input
+                name="orderDays"
+                placeholder="Mo–Fr"
+              />
+            </label>
+
+            <label className="supplyField">
+              <span>E-Mail</span>
+              <input
+                name="email"
+                type="email"
+                placeholder="bestellung@…"
+              />
+            </label>
+
+            <label className="supplyField">
+              <span>Telefon</span>
+              <input
+                name="phone"
+                placeholder="030 …"
+              />
+            </label>
+
+            <label className="supplyField supplyField--wide">
+              <span>Artikel / Sortiment</span>
+              <input
+                name="items"
+                placeholder="Reis, Hähnchen, Gemüse …"
+              />
+            </label>
+
+            <label className="supplyField supplyField--grow">
+              <span>Notiz</span>
+              <input
+                name="notes"
+                placeholder="optional"
+              />
+            </label>
+
+            <button
+              className="supplyButton supplyButton--primary"
+              type="submit"
+            >
+              Lieferant anlegen
+            </button>
+          </Form>
             </div>
-          ) : (
-            <div className="supplySupplierGrid">
-              {data.suppliers.map(
-                (supplier: any) => (
-                  <article
-                    className="supplySupplierCard"
-                    key={supplier.id}
-                  >
-                    <div className="supplySupplierTop">
-                      <div>
-                        <small>
-                          {supplier.category ||
-                            "Ohne Kategorie"}
-                        </small>
-                        <strong>
-                          {supplier.name}
-                        </strong>
-                      </div>
+          </details>
+              </div>
+            </details>
 
-                      <span
-                        className={[
-                          "supplyStatus",
-                          supplier.active
-                            ? "supplyStatus--success"
-                            : "supplyStatus--warning",
-                        ].join(" ")}
-                      >
-                        {supplier.active
-                          ? "Aktiv"
-                          : "Inaktiv"}
-                      </span>
-                    </div>
+            <details
+              className="supplyV1Panel supplyV1FormPanel"
+              id="portal-new"
+            >
+              <summary>
+                <span>
+                  <small>Portalverbindung</small>
+                  <strong>Weiteres Portal verbinden</strong>
+                </span>
+                <b>+</b>
+              </summary>
 
-                    <dl className="supplySupplierFacts">
-                      <div>
-                        <dt>Ansprechpartner</dt>
-                        <dd>
-                          {supplier.contactName ||
-                            "–"}
-                        </dd>
-                      </div>
-
-                      <div>
-                        <dt>Bestelltage</dt>
-                        <dd>
-                          {supplier.orderDays || "–"}
-                        </dd>
-                      </div>
-
-                      <div>
-                        <dt>E-Mail</dt>
-                        <dd>
-                          {supplier.email || "–"}
-                        </dd>
-                      </div>
-
-                      <div>
-                        <dt>Telefon</dt>
-                        <dd>
-                          {supplier.phone || "–"}
-                        </dd>
-                      </div>
-
-                      <div className="supplySupplierFactWide">
-                        <dt>Sortiment</dt>
-                        <dd>
-                          {supplier.items || "–"}
-                        </dd>
-                      </div>
-                    </dl>
-
-                    <div className="supplySupplierActions">
-                      <Form method="post">
-                        <input
-                          type="hidden"
-                          name="intent"
-                          value="toggleActive"
-                        />
-
-                        <input
-                          type="hidden"
-                          name="supplierId"
-                          value={supplier.id}
-                        />
-
-                        <input
-                          type="hidden"
-                          name="active"
-                          value={
-                            supplier.active
-                              ? "false"
-                              : "true"
-                          }
-                        />
-
-                        <button
-                          className="supplyButton supplyButton--secondary"
-                          type="submit"
-                        >
-                          {supplier.active
-                            ? "Deaktivieren"
-                            : "Aktivieren"}
-                        </button>
-                      </Form>
-
-                      <details className="supplyDetails">
-                        <summary className="supplyButton supplyButton--secondary">
-                          Bearbeiten
-                        </summary>
-
-                        <Form
-                          method="post"
-                          className="supplyEditGrid"
-                        >
-                          <input
-                            type="hidden"
-                            name="intent"
-                            value="updateSupplier"
-                          />
-
-                          <input
-                            type="hidden"
-                            name="supplierId"
-                            value={supplier.id}
-                          />
-
-                          <input
-                            name="name"
-                            defaultValue={
-                              supplier.name
-                            }
-                          />
-
-                          <input
-                            name="category"
-                            defaultValue={
-                              supplier.category || ""
-                            }
-                            placeholder="Kategorie"
-                          />
-
-                          <input
-                            name="contactName"
-                            defaultValue={
-                              supplier.contactName ||
-                              ""
-                            }
-                            placeholder="Ansprechpartner"
-                          />
-
-                          <input
-                            name="orderDays"
-                            defaultValue={
-                              supplier.orderDays || ""
-                            }
-                            placeholder="Bestelltage"
-                          />
-
-                          <input
-                            name="email"
-                            type="email"
-                            defaultValue={
-                              supplier.email || ""
-                            }
-                            placeholder="E-Mail"
-                          />
-
-                          <input
-                            name="phone"
-                            defaultValue={
-                              supplier.phone || ""
-                            }
-                            placeholder="Telefon"
-                          />
-
-                          <input
-                            className="supplyEditWide"
-                            name="items"
-                            defaultValue={
-                              supplier.items || ""
-                            }
-                            placeholder="Sortiment"
-                          />
-
-                          <input
-                            className="supplyEditWide"
-                            name="notes"
-                            defaultValue={
-                              supplier.notes || ""
-                            }
-                            placeholder="Notiz"
-                          />
-
-                          <button
-                            className="supplyButton supplyButton--primary supplyEditWide"
-                            type="submit"
-                          >
-                            Speichern
-                          </button>
-                        </Form>
-                      </details>
-
-                      <Form method="post">
-                        <input
-                          type="hidden"
-                          name="intent"
-                          value="deleteSupplier"
-                        />
-
-                        <input
-                          type="hidden"
-                          name="supplierId"
-                          value={supplier.id}
-                        />
-
-                        <button
-                          className="supplyButton supplyButton--danger"
-                          type="submit"
-                        >
-                          Löschen
-                        </button>
-                      </Form>
-                    </div>
-                  </article>
-                )
-              )}
-            </div>
-          )}
-          </PageSection>
+              <div className="supplyV1FormPanelBody">
+                <p>
+                  Die Portalanlage befindet sich im Bereich
+                  „Lieferantenverbindungen“.
+                </p>
+                <a
+                  className="supplyV1Button supplyV1Button--primary"
+                  href="#portal-workspace"
+                >
+                  Zum Portalbereich
+                </a>
+              </div>
+            </details>
+          </aside>
         </div>
       </PageShell>
     </AppLayout>
