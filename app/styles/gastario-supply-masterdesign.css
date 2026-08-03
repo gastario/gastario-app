@@ -2314,3 +2314,195 @@
     border-bottom: 1px solid var(--supply-v1-border-soft);
   }
 }
+/*
+ * gastario-supplier-masterdesign-v1-readable-type-20260803
+ * Lesbarkeit und Typografie im Lieferanten-Dashboard erhöhen.
+ */
+
+.supplyDashboardV1Page .supplyV1PageHeader p,
+.supplyDashboardV1Page .supplyV1PanelHeader span,
+.supplyDashboardV1Page .supplyV1FormPanel summary small {
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page .supplyV1PageHeader h1 {
+  font-size: clamp(30px, 3.2vw, 40px);
+}
+
+.supplyDashboardV1Page .supplyV1PageHeader > div > span {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.supplyDashboardV1Page .supplyV1Button {
+  min-height: 42px;
+  padding-inline: 17px;
+  font-size: 12px;
+}
+
+.supplyDashboardV1Page .supplyV1Intelligence {
+  min-height: 82px;
+  padding: 15px 18px;
+}
+
+.supplyDashboardV1Page .supplyV1IntelligenceIcon {
+  width: 42px;
+  height: 42px;
+  font-size: 19px;
+}
+
+.supplyDashboardV1Page .supplyV1Intelligence span {
+  font-size: 10px;
+}
+
+.supplyDashboardV1Page .supplyV1Intelligence strong {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.supplyDashboardV1Page .supplyV1Intelligence p {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.supplyDashboardV1Page .supplyV1Intelligence > a {
+  min-height: 38px;
+  padding-inline: 15px;
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page .supplyV1Metrics article {
+  padding: 16px 17px 13px;
+}
+
+.supplyDashboardV1Page .supplyV1Metrics span {
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page .supplyV1Metrics small {
+  font-size: 10px;
+}
+
+.supplyDashboardV1Page .supplyV1Metrics strong {
+  font-size: 28px;
+}
+
+.supplyDashboardV1Page .supplyV1PanelHeader {
+  min-height: 76px;
+  padding: 15px 18px;
+}
+
+.supplyDashboardV1Page .supplyV1PanelHeader h2 {
+  font-size: 18px;
+}
+
+.supplyDashboardV1Page .supplyV1PanelHeader p {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.supplyDashboardV1Page .supplyV1PanelHeader > a {
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page .supplyV1PanelBody {
+  padding-inline: 18px;
+  padding-bottom: 18px;
+}
+
+.supplyDashboardV1Page .supplySupplierTop small,
+.supplyDashboardV1Page .supplyConnectionTop small {
+  font-size: 10px;
+}
+
+.supplyDashboardV1Page .supplySupplierTop strong,
+.supplyDashboardV1Page .supplyConnectionTop strong {
+  font-size: 16px;
+}
+
+.supplyDashboardV1Page .supplyConnectionTop span {
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page .supplySupplierFacts dt,
+.supplyDashboardV1Page .supplyConnectionFacts small {
+  font-size: 9px;
+}
+
+.supplyDashboardV1Page .supplySupplierFacts dd,
+.supplyDashboardV1Page .supplyConnectionFacts strong {
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.supplyDashboardV1Page .supplyPortalState strong {
+  font-size: 12px;
+}
+
+.supplyDashboardV1Page .supplyPortalState span {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.supplyDashboardV1Page .supplyDisclosure > summary strong {
+  font-size: 13px;
+}
+
+.supplyDashboardV1Page .supplyDisclosure > summary small,
+.supplyDashboardV1Page .supplyDisclosureAction {
+  font-size: 10px;
+}
+
+.supplyDashboardV1Page .supplyV1ActivityList {
+  padding-inline: 18px;
+}
+
+.supplyDashboardV1Page .supplyV1ActivityList article {
+  padding-block: 15px;
+}
+
+.supplyDashboardV1Page .supplyV1ActivityList small {
+  font-size: 10px;
+}
+
+.supplyDashboardV1Page .supplyV1ActivityList strong {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.supplyDashboardV1Page .supplyV1ActivityList p {
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.supplyDashboardV1Page .supplyV1ActivityAction {
+  min-height: 40px;
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page .supplyV1FormPanel summary strong {
+  font-size: 14px;
+}
+
+.supplyDashboardV1Page .supplyField > span,
+.supplyDashboardV1Page .supplyEditGrid input,
+.supplyDashboardV1Page .supplyField input,
+.supplyDashboardV1Page .supplyField select {
+  font-size: 12px;
+}
+
+.supplyDashboardV1Page .supplyButton {
+  min-height: 38px;
+  padding-inline: 13px;
+  font-size: 10px;
+}
+
+@media (max-width: 700px) {
+  .supplyDashboardV1Page .supplyV1PageHeader h1 {
+    font-size: 30px;
+  }
+
+  .supplyDashboardV1Page .supplyV1PanelHeader h2 {
+    font-size: 17px;
+  }
+}
