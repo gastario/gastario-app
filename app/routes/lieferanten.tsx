@@ -1194,11 +1194,13 @@ export default function SuppliersPage() {
           />
         </MetricGrid>
 
-        <PageSection
-          eyebrow="Stammdaten"
-          title="Lieferanten verwalten"
-          description="Bestehende Lieferanten im Blick behalten und bei Bedarf neue Stammdaten erfassen."
-        >
+        <div className="supplierMasterWorkspace">
+          <PageSection
+            className="supplierMasterCreate"
+            eyebrow="Stammdaten"
+            title="Neuer Lieferant"
+            description="Neue Stammdaten bei Bedarf kompakt erfassen."
+          >
           <details className="supplyDisclosure">
             <summary>
               <span>
@@ -1300,11 +1302,12 @@ export default function SuppliersPage() {
           </details>
         </PageSection>
 
-        <PageSection
-          eyebrow="Portalverbindungen"
-          title="Verbundene Lieferanten"
-          description="Status, Katalog und Preisübertragungen prüfen. Weitere Portale können bei Bedarf hinzugefügt werden."
-        >
+          <PageSection
+            className="supplierMasterMain"
+            eyebrow="Einkaufsdaten"
+            title="Portal & Preise"
+            description="Portalstatus, Katalogartikel, Preisübertragungen und Connector verwalten."
+          >
           <details className="supplyDisclosure supplyDisclosure--compact">
             <summary>
               <span>
@@ -1832,11 +1835,12 @@ export default function SuppliersPage() {
           </div>
         </PageSection>
 
-        <PageSection
-          eyebrow="Übersicht"
-          title="Alle Lieferanten"
-          description="Stammdaten bearbeiten, aktivieren oder bei Bedarf entfernen."
-        >
+          <PageSection
+            className="supplierMasterList"
+            eyebrow="Lieferanten"
+            title="Lieferantenliste"
+            description="Stammdaten bearbeiten, aktivieren oder entfernen."
+          >
           {data.suppliers.length === 0 ? (
             <div className="supplyEmpty">
               <strong>
@@ -2075,7 +2079,8 @@ export default function SuppliersPage() {
               )}
             </div>
           )}
-        </PageSection>
+          </PageSection>
+        </div>
       </PageShell>
     </AppLayout>
   );

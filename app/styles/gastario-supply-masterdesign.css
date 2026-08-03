@@ -1234,3 +1234,109 @@
     padding: 10px;
   }
 }
+/*
+ * gastario-supplier-master-workspace-20260803
+ */
+
+.supplierMasterWorkspace {
+  min-width: 0;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(300px, 360px);
+  grid-template-areas:
+    "main create"
+    "main list";
+  gap: 16px;
+  align-items: start;
+}
+
+.supplierMasterMain,
+.supplierMasterCreate,
+.supplierMasterList {
+  min-width: 0;
+}
+
+.supplierMasterMain {
+  grid-area: main;
+}
+
+.supplierMasterCreate {
+  grid-area: create;
+}
+
+.supplierMasterList {
+  grid-area: list;
+}
+
+.supplierMasterMain .supplyConnectionList,
+.supplierMasterList .supplySupplierGrid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.supplierMasterMain .supplyConnectionCard {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.supplierMasterCreate .supplyDisclosure,
+.supplierMasterList .supplySupplierCard {
+  border-radius: var(--g-radius-control);
+}
+
+.supplierMasterCreate .supplyDisclosure > summary {
+  min-height: 58px;
+  padding: 12px 14px;
+}
+
+.supplierMasterList .supplySupplierCard {
+  padding: 14px;
+}
+
+.supplierMasterList .supplySupplierFacts {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.supplierMasterList .supplySupplierFactWide {
+  grid-column: auto;
+}
+
+.supplierMasterList .supplySupplierActions {
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.supplierMasterList .supplySupplierActions .supplyButton {
+  min-height: 34px;
+  padding-inline: 11px;
+  font-size: 9px;
+}
+
+.supplierMasterMain .supplyConnectionFacts {
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1180px) {
+  .supplierMasterWorkspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "create"
+      "main"
+      "list";
+  }
+
+  .supplierMasterList .supplySupplierGrid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .supplierMasterList .supplySupplierGrid,
+  .supplierMasterMain .supplyConnectionFacts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
