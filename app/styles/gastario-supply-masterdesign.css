@@ -2844,3 +2844,136 @@
     margin-top: 8px;
   }
 }
+/*
+ * gastario-supplier-endlevel-polish-20260803
+ * Technischen Bereich beruhigen und über die volle Breite führen.
+ */
+
+.supplyDashboardV1Page .supplyV1TechnicalBody {
+  padding: 18px;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyConnectionList {
+  display: block;
+  margin: 0;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyConnectionCard {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyConnectionTop {
+  padding: 0 0 16px;
+  border-bottom: 1px solid var(--supply-v1-border-soft);
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyConnectionFacts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  border-bottom: 1px solid var(--supply-v1-border-soft);
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyConnectionFacts > div {
+  min-height: 72px;
+  padding: 15px 16px;
+  border: 0;
+  border-right: 1px solid var(--supply-v1-border-soft);
+  border-radius: 0;
+  background: transparent;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyConnectionFacts > div:last-child {
+  border-right: 0;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyConnectionError {
+  margin: 14px 0 0;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyPortalState {
+  margin: 0;
+  padding: 16px 0;
+  border: 0;
+  border-bottom: 1px solid var(--supply-v1-border-soft);
+  border-radius: 0;
+  background: transparent;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyDisclosure--connector {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyDisclosure--connector > summary {
+  min-height: 62px;
+  padding-inline: 0;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyBrowserConnectorPanel {
+  width: 100%;
+  max-width: none;
+  border: 1px solid var(--supply-v1-border);
+  border-radius: 13px;
+  background: var(--supply-v1-surface-soft);
+}
+
+.supplyDashboardV1Page
+.supplyV1SupplierRowActions {
+  align-items: center;
+}
+
+.supplyDashboardV1Page
+.supplyV1SupplierRowActions form {
+  margin: 0;
+}
+
+.supplyDashboardV1Page
+.supplyV1SupplierRowActions .supplyV1RowButton {
+  min-width: 78px;
+}
+
+@media (max-width: 760px) {
+  .supplyDashboardV1Page
+  .supplyV1TechnicalBody
+  .supplyConnectionFacts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .supplyDashboardV1Page
+  .supplyV1TechnicalBody
+  .supplyConnectionFacts > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--supply-v1-border-soft);
+  }
+}

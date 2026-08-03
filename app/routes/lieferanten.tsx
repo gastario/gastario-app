@@ -109,9 +109,20 @@ export async function loader({ request }: { request: Request }) {
             unknown
           >;
 
+          const effectiveCustomerNumber = String(
+            safeConnection.customerNumber ||
+              (safeSettings as Record<string, unknown>)
+                .customerNumber ||
+              ""
+          ).trim();
+
           return {
             ...safeConnection,
-            settingsJson: safeSettings,
+            settingsJson: {
+              ...safeSettings,
+              customerNumber:
+                effectiveCustomerNumber || null,
+            },
             hasPortalCredentials: Boolean(
               connection.credentialsEncrypted
             ),
@@ -293,6 +304,7 @@ export async function action({ request }: { request: Request }) {
         settingsJson: {
           providerCode: provider.code,
           providerName: provider.name,
+          customerNumber: customerNumber || null,
           locationName: locationName || null,
           automaticSync: true,
           fullCatalogSyncHour: 4,
