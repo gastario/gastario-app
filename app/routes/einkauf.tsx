@@ -74,6 +74,22 @@ function formatQty(value: number) {
     .replace(/\.$/, "");
 }
 
+function formatMoney(cents: number) {
+  return new Intl.NumberFormat("de-DE", {
+    style: "currency",
+    currency: "EUR",
+  }).format(Number(cents || 0) / 100);
+}
+
+function formatPriceAge(value: string | Date) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Zeitpunkt unbekannt";
+  }
+
+  return date.toLocaleString("de-DE");
+}
 function effectiveOperationalArea(item: any) {
   return String(
     item?.operationalArea ||
@@ -368,6 +384,18 @@ export async function loader({
       []
     );
 
+  const {
+    buildProcurementComparisons,
+  } = await import(
+    "../lib/procurement-comparison.server"
+  );
+
+  const comparisonResult =
+    await buildProcurementComparisons({
+      prisma,
+      tenantId: access.tenantId,
+      demandItems,
+    });
   const unresolvedCount =
     missingRecipeItems.length;
 
@@ -376,10 +404,11 @@ export async function loader({
     selectedDate,
     availableDates,
     orders: filteredOrders,
-    demandItems,
+    demandItems: comparisonResult.items,
     supplierGroups,
     missingRecipeItems,
     unresolvedCount,
+    comparisonStats: comparisonResult.stats,
   };
 }
 
@@ -496,6 +525,17 @@ export default function PurchasingPage() {
           </Notice>
         ) : null}
 
+        {data.comparisonStats.unmatched > 0 ? (
+          <Notice type="info">
+            <strong>
+              Preisvergleich vorbereitet.
+            </strong>{" "}
+            {data.comparisonStats.unmatched} Zutat(en)
+            benötigen noch eine Zuordnung zu einem
+            Lieferantenartikel. Diese werden nicht
+            automatisch geraten.
+          </Notice>
+        ) : null}
         <div className="procurementWorkspace">
           <PageSection
             className="procurementMainSection"
@@ -518,7 +558,8 @@ export default function PurchasingPage() {
                     <th>Zutat / Material</th>
                     <th>Menge</th>
                     <th>Einheit</th>
-                    <th>Lieferant</th>
+                    <th>Preisvorschlag</th>
+                    <th>Kosten netto</th>
                     <th>Quelle</th>
                   </tr>
                 </thead>
@@ -526,7 +567,7 @@ export default function PurchasingPage() {
                 <tbody>
                   {data.demandItems.length === 0 ? (
                     <tr>
-                      <td colSpan={5}>
+                      <td colSpan={6}>
                         <div className="procurementEmpty">
                           <span>0</span>
 
@@ -566,12 +607,81 @@ export default function PurchasingPage() {
                             {formatQty(item.quantity)}
                           </td>
 
-                          <td>{item.unit}</td>
+                          <td>{item.unit}</td>                          <td>
+                            {item.bestOffer ? (
+                              <div className="procurementOffer">
+                                <strong>
+                                  {
+                                    item.bestOffer
+                                      .supplierName
+                                  }
+                                </strong>
+
+                                <span>
+                                  {
+                                    item.bestOffer
+                                      .catalogItemName
+                                  }
+                                </span>
+
+                                <small>
+                                  {
+                                    item.bestOffer
+                                      .packageCount
+                                  }{" "}
+                                  ×{" "}
+                                  {formatQty(
+                                    item.bestOffer
+                                      .packContent
+                                  )}{" "}
+                                  {
+                                    item.bestOffer
+                                      .baseUnit
+                                  }
+                                  {" · "}
+                                  {
+                                    item.offersCount
+                                  }{" "}
+                                  Angebot(e)
+                                </small>
+                              </div>
+                            ) : (
+                              <div className="procurementOffer procurementOffer--missing">
+                                <strong>
+                                  Noch keine Zuordnung
+                                </strong>
+
+                                <span>
+                                  Lieferantenartikel
+                                  zuordnen
+                                </span>
+                              </div>
+                            )}
+                          </td>
 
                           <td>
-                            <span className="procurementSupplierBadge">
-                              {item.supplierName}
-                            </span>
+                            {item.bestOffer ? (
+                              <div className="procurementCost">
+                                <strong>
+                                  {formatMoney(
+                                    item.bestOffer
+                                      .netTotalCents
+                                  )}
+                                </strong>
+
+                                <small>
+                                  Preisstand:{" "}
+                                  {formatPriceAge(
+                                    item.bestOffer
+                                      .fetchedAt
+                                  )}
+                                </small>
+                              </div>
+                            ) : (
+                              <span className="procurementNoPrice">
+                                –
+                              </span>
+                            )}
                           </td>
 
                           <td>
