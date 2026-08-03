@@ -2977,3 +2977,392 @@
     border-bottom: 1px solid var(--supply-v1-border-soft);
   }
 }
+/*
+ * gastario-supplier-focus-scale-v1-20260803
+ * Größer, ruhiger und klarer gegliedert.
+ */
+
+.supplyDashboardV1Page {
+  max-width: 1460px;
+  margin-inline: auto;
+}
+
+.supplyDashboardV1Page .supplyV1PageHeader {
+  margin-bottom: 24px;
+}
+
+.supplyDashboardV1Page .supplyV1PageHeader h1 {
+  font-size: clamp(36px, 3.4vw, 46px);
+}
+
+.supplyDashboardV1Page .supplyV1PageHeader > div > span {
+  max-width: 760px;
+  font-size: 16px;
+}
+
+.supplyDashboardV1Page .supplyV1HeaderActions {
+  gap: 12px;
+}
+
+.supplyDashboardV1Page .supplyV1Button {
+  min-height: 46px;
+  padding-inline: 20px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.supplyDashboardV1Page .supplyV1Intelligence {
+  min-height: 92px;
+  margin-bottom: 20px;
+  padding: 18px 20px;
+  border-radius: 18px;
+}
+
+.supplyDashboardV1Page .supplyV1IntelligenceIcon {
+  width: 48px;
+  height: 48px;
+  font-size: 22px;
+}
+
+.supplyDashboardV1Page .supplyV1Intelligence span {
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page .supplyV1Intelligence strong {
+  font-size: 16px;
+}
+
+.supplyDashboardV1Page .supplyV1Intelligence p {
+  font-size: 12px;
+}
+
+.supplyDashboardV1Page .supplyV1Metrics {
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.supplyDashboardV1Page .supplyV1Metrics article {
+  min-height: 118px;
+  padding: 20px 20px 16px;
+  border-radius: 16px;
+}
+
+.supplyDashboardV1Page .supplyV1Metrics span {
+  font-size: 12px;
+}
+
+.supplyDashboardV1Page .supplyV1Metrics small {
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page .supplyV1Metrics strong {
+  margin-top: 14px;
+  font-size: 34px;
+}
+
+.supplyDashboardV1Page .supplyV1InlineForm {
+  margin-bottom: 18px;
+  border-radius: 18px;
+}
+
+.supplyDashboardV1Page .supplyV1InlineForm > summary {
+  min-height: 82px;
+  padding: 18px 20px;
+}
+
+.supplyDashboardV1Page .supplyV1InlineForm summary small,
+.supplyDashboardV1Page .supplyV1TechnicalPanel summary small {
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page .supplyV1InlineForm summary strong,
+.supplyDashboardV1Page .supplyV1TechnicalPanel summary strong {
+  font-size: 17px;
+}
+
+.supplyDashboardV1Page .supplyV1InlineForm summary p,
+.supplyDashboardV1Page .supplyV1TechnicalPanel summary p {
+  font-size: 12px;
+}
+
+.supplyDashboardV1Page .supplyV1UnifiedGrid {
+  grid-template-columns: minmax(0, 1.9fr) minmax(300px, 0.65fr);
+  gap: 18px;
+}
+
+.supplyDashboardV1Page .supplyV1PanelHeader {
+  min-height: 88px;
+  padding: 18px 20px;
+}
+
+.supplyDashboardV1Page .supplyV1PanelHeader h2 {
+  font-size: 22px;
+}
+
+.supplyDashboardV1Page .supplyV1PanelHeader p {
+  font-size: 12px;
+}
+
+.supplyDashboardV1Page .supplyV1PanelHeader > a {
+  font-size: 12px;
+}
+
+.supplyDashboardV1Page .supplyV1SupplierTable {
+  padding: 8px 20px 20px;
+}
+
+.supplyDashboardV1Page .supplyV1SupplierTableHead {
+  display: none;
+}
+
+.supplyDashboardV1Page .supplyV1SupplierRow {
+  min-height: 0;
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 1.3fr)
+    minmax(180px, 1fr)
+    minmax(160px, 0.9fr);
+  gap: 0;
+  margin: 14px 0 0;
+  padding: 18px;
+  border: 1px solid var(--supply-v1-border);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(23, 63, 55, 0.04);
+}
+
+.supplyDashboardV1Page .supplyV1SupplierIdentity,
+.supplyDashboardV1Page .supplyV1SupplierCell,
+.supplyDashboardV1Page .supplyV1SupplierRowActions {
+  min-height: 76px;
+  padding: 10px 16px;
+  border-right: 1px solid var(--supply-v1-border-soft);
+}
+
+.supplyDashboardV1Page .supplyV1SupplierIdentity {
+  padding-left: 0;
+}
+
+.supplyDashboardV1Page .supplyV1SupplierCell:nth-of-type(3),
+.supplyDashboardV1Page .supplyV1SupplierCell:nth-of-type(5),
+.supplyDashboardV1Page .supplyV1SupplierRowActions {
+  border-right: 0;
+}
+
+.supplyDashboardV1Page .supplyV1SupplierRowActions {
+  min-height: auto;
+  grid-column: 1 / -1;
+  justify-content: flex-start;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--supply-v1-border-soft);
+}
+
+.supplyDashboardV1Page .supplyV1SupplierIdentity > span {
+  font-size: 10px;
+}
+
+.supplyDashboardV1Page .supplyV1SupplierIdentity strong,
+.supplyDashboardV1Page .supplyV1SupplierCell strong {
+  font-size: 15px;
+}
+
+.supplyDashboardV1Page .supplyV1SupplierIdentity small,
+.supplyDashboardV1Page .supplyV1SupplierCell small,
+.supplyDashboardV1Page .supplyV1SupplierCell > span {
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page .supplyV1RowButton {
+  min-height: 40px;
+  min-width: 96px;
+  padding-inline: 14px;
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page .supplyV1UnifiedAside {
+  position: sticky;
+  top: 18px;
+}
+
+.supplyDashboardV1Page .supplyV1ActivityList {
+  padding-inline: 20px;
+}
+
+.supplyDashboardV1Page .supplyV1ActivityList article {
+  padding-block: 18px;
+}
+
+.supplyDashboardV1Page .supplyV1ActivityList small {
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page .supplyV1ActivityList strong {
+  font-size: 14px;
+}
+
+.supplyDashboardV1Page .supplyV1ActivityList p {
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page .supplyV1ActivityAction {
+  min-height: 44px;
+  margin: 16px 20px 20px;
+  font-size: 12px;
+}
+
+.supplyDashboardV1Page .supplyV1TechnicalPanel {
+  margin: 22px 20px 20px;
+  border-radius: 15px;
+}
+
+.supplyDashboardV1Page .supplyV1TechnicalPanel > summary {
+  min-height: 84px;
+  padding: 18px 20px;
+}
+
+.supplyDashboardV1Page .supplyV1TechnicalBody {
+  padding: 20px;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyDisclosure--compact > summary {
+  min-height: 70px;
+  padding: 16px 18px;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyDisclosure > summary strong {
+  font-size: 15px;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyDisclosure > summary small,
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyDisclosureAction {
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyConnectionTop {
+  padding: 18px 0;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyConnectionTop strong {
+  font-size: 18px;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyConnectionTop span {
+  font-size: 12px;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyConnectionFacts > div {
+  min-height: 82px;
+  padding: 18px;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyConnectionFacts small {
+  font-size: 10px;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyConnectionFacts strong {
+  font-size: 13px;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyPortalState {
+  padding: 18px 0;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyPortalState strong {
+  font-size: 14px;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyPortalState span {
+  font-size: 12px;
+}
+
+.supplyDashboardV1Page
+.supplyV1TechnicalBody
+.supplyBrowserConnectorPanel {
+  padding: 18px;
+}
+
+.supplyDashboardV1Page .supplyField > span {
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page .supplyField input,
+.supplyDashboardV1Page .supplyField select,
+.supplyDashboardV1Page .supplyEditGrid input {
+  min-height: 44px;
+  font-size: 13px;
+}
+
+.supplyDashboardV1Page .supplyButton {
+  min-height: 42px;
+  padding-inline: 16px;
+  font-size: 11px;
+}
+
+@media (max-width: 1180px) {
+  .supplyDashboardV1Page .supplyV1UnifiedGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .supplyDashboardV1Page .supplyV1UnifiedAside {
+    position: static;
+  }
+}
+
+@media (max-width: 900px) {
+  .supplyDashboardV1Page .supplyV1Metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .supplyDashboardV1Page .supplyV1SupplierRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .supplyDashboardV1Page .supplyV1SupplierIdentity,
+  .supplyDashboardV1Page .supplyV1SupplierRowActions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .supplyDashboardV1Page .supplyV1Metrics,
+  .supplyDashboardV1Page .supplyV1SupplierRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .supplyDashboardV1Page .supplyV1SupplierIdentity,
+  .supplyDashboardV1Page .supplyV1SupplierRowActions {
+    grid-column: auto;
+  }
+
+  .supplyDashboardV1Page .supplyV1SupplierIdentity,
+  .supplyDashboardV1Page .supplyV1SupplierCell {
+    border-right: 0;
+    border-bottom: 1px solid var(--supply-v1-border-soft);
+  }
+}
