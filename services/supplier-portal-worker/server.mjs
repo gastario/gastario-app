@@ -144,34 +144,211 @@ async function loadConnection(
   return connection;
 }
 
-async function firstVisible(page, selectors) {
-  for (const selector of selectors) {
-    const locator = page.locator(selector).first();
+function getPageSurfaces(page) {
+  return [
+    page,
+    ...page
+      .frames()
+      .filter((frame) => frame !== page.mainFrame()),
+  ];
+}
 
-    try {
-      if (await locator.isVisible({ timeout: 500 })) {
-        return locator;
+async function firstVisible(
+  page,
+  selectors,
+  timeout = 900
+) {
+  for (const surface of getPageSurfaces(page)) {
+    for (const selector of selectors) {
+      const locator = surface
+        .locator(selector)
+        .first();
+
+      try {
+        if (
+          await locator.isVisible({
+            timeout,
+          })
+        ) {
+          return {
+            locator,
+            surface,
+            selector,
+          };
+        }
+      } catch {
+        // Nächsten stabilen Selektor prüfen.
       }
-    } catch {
-      // Nächsten stabilen Selektor prüfen.
     }
   }
 
   return null;
 }
 
+async function getNewestPage(context, fallbackPage) {
+  const pages = context.pages();
+
+  if (pages.length === 0) {
+    return fallbackPage;
+  }
+
+  return pages[pages.length - 1];
+}
+
 async function clickFirst(page, selectors) {
-  const locator = await firstVisible(
+  const match = await firstVisible(
     page,
     selectors
   );
 
-  if (!locator) {
-    return false;
+  if (!match) {
+    return {
+      clicked: false,
+      page,
+    };
   }
 
-  await locator.click({ timeout: 5_000 });
-  return true;
+  const context = page.context();
+
+  const popupPromise = context
+    .waitForEvent("page", {
+      timeout: 5_000,
+    })
+    .catch(() => null);
+
+  const navigationPromise = page
+    .waitForNavigation({
+      waitUntil: "domcontentloaded",
+      timeout: 5_000,
+    })
+    .catch(() => null);
+
+  await match.locator.click({
+    timeout: 5_000,
+  });
+
+  const popup = await popupPromise;
+
+  if (popup) {
+    await popup
+      .waitForLoadState("domcontentloaded", {
+        timeout: 15_000,
+      })
+      .catch(() => {});
+
+    return {
+      clicked: true,
+      page: popup,
+      selector: match.selector,
+    };
+  }
+
+  await navigationPromise;
+
+  return {
+    clicked: true,
+    page:
+      await getNewestPage(
+        context,
+        page
+      ),
+    selector: match.selector,
+  };
+}
+
+async function collectLoginDiagnosis(page) {
+  const context = page.context();
+  const pages = context.pages();
+
+  const pageDetails = [];
+
+  for (const currentPage of pages) {
+    const frameDetails = [];
+
+    for (const frame of currentPage.frames()) {
+      const inputs = await frame
+        .locator("input")
+        .evaluateAll((nodes) =>
+          nodes.slice(0, 30).map((node) => ({
+            type:
+              node.getAttribute("type") ||
+              "text",
+            name:
+              node.getAttribute("name") ||
+              "",
+            id:
+              node.getAttribute("id") ||
+              "",
+            autocomplete:
+              node.getAttribute("autocomplete") ||
+              "",
+            placeholder:
+              node.getAttribute("placeholder") ||
+              "",
+            ariaLabel:
+              node.getAttribute("aria-label") ||
+              "",
+            visible: Boolean(
+              node.offsetWidth ||
+              node.offsetHeight ||
+              node.getClientRects().length
+            ),
+          }))
+        )
+        .catch(() => []);
+
+      const buttons = await frame
+        .locator(
+          'button, input[type="submit"], a[role="button"]'
+        )
+        .evaluateAll((nodes) =>
+          nodes.slice(0, 30).map((node) => ({
+            tag:
+              node.tagName.toLowerCase(),
+            type:
+              node.getAttribute("type") ||
+              "",
+            text: String(
+              node.innerText ||
+              node.getAttribute("value") ||
+              node.getAttribute("aria-label") ||
+              ""
+            )
+              .replace(/\s+/g, " ")
+              .trim()
+              .slice(0, 120),
+            visible: Boolean(
+              node.offsetWidth ||
+              node.offsetHeight ||
+              node.getClientRects().length
+            ),
+          }))
+        )
+        .catch(() => []);
+
+      frameDetails.push({
+        url: frame.url(),
+        name: frame.name(),
+        inputs,
+        buttons,
+      });
+    }
+
+    pageDetails.push({
+      url: currentPage.url(),
+      title:
+        await currentPage
+          .title()
+          .catch(() => ""),
+      frames: frameDetails,
+    });
+  }
+
+  return {
+    capturedAt:
+      new Date().toISOString(),
+    pages: pageDetails,
+  };
 }
 
 async function acceptCookies(page) {
@@ -180,7 +357,10 @@ async function acceptCookies(page) {
     'button:has-text("Akzeptieren")',
     'button:has-text("Zustimmen")',
     '#onetrust-accept-btn-handler',
-  ]).catch(() => false);
+  ]).catch(() => ({
+    clicked: false,
+    page,
+  }));
 }
 
 async function isCaptchaPage(page) {
@@ -224,7 +404,7 @@ async function isLoggedIn(page) {
 }
 
 async function findOtpInput(page) {
-  return firstVisible(page, [
+  const match = await firstVisible(page, [
     'input[autocomplete="one-time-code"]',
     'input[name*="otp" i]',
     'input[id*="otp" i]',
@@ -232,105 +412,268 @@ async function findOtpInput(page) {
     'input[id*="code" i]',
     'input[inputmode="numeric"]',
   ]);
+
+  return match?.locator || null;
 }
 
 async function fillLogin(page, credentials) {
-  await acceptCookies(page);
+  let activePage = page;
 
-  if (await isLoggedIn(page)) {
-    return { loggedIn: true };
-  }
+  await acceptCookies(activePage);
 
-  await clickFirst(page, [
-    'a:has-text("Anmelden")',
-    'button:has-text("Anmelden")',
-    'a:has-text("Login")',
-    'button:has-text("Login")',
-  ]).catch(() => false);
-
-  await page.waitForTimeout(1_000);
-
-  const usernameInput = await firstVisible(
-    page,
-    [
-      'input[autocomplete="username"]',
-      'input[type="email"]',
-      'input[name*="email" i]',
-      'input[name*="user" i]',
-      'input[id*="email" i]',
-      'input[id*="user" i]',
-    ]
-  );
-
-  if (usernameInput) {
-    await usernameInput.fill(credentials.username);
-
-    const passwordAlreadyVisible =
-      await firstVisible(page, [
-        'input[autocomplete="current-password"]',
-        'input[type="password"]',
-      ]);
-
-    if (!passwordAlreadyVisible) {
-      await clickFirst(page, [
-        'button[type="submit"]',
-        'button:has-text("Weiter")',
-        'button:has-text("Next")',
-        'input[type="submit"]',
-      ]);
-
-      await page.waitForTimeout(1_000);
-    }
-  }
-
-  const passwordInput = await firstVisible(
-    page,
-    [
-      'input[autocomplete="current-password"]',
-      'input[type="password"]',
-    ]
-  );
-
-  if (!passwordInput) {
-    if (await isCaptchaPage(page)) {
-      return { captcha: true };
-    }
-
+  if (await isLoggedIn(activePage)) {
     return {
-      error:
-        "Das METRO-Passwortfeld wurde nicht erkannt. Der Login-Ablauf muss anhand der Worker-Diagnose angepasst werden.",
+      loggedIn: true,
+      page: activePage,
     };
   }
 
-  await passwordInput.fill(credentials.password);
+  const loginClick = await clickFirst(
+    activePage,
+    [
+      'a:has-text("Anmelden")',
+      'button:has-text("Anmelden")',
+      'a:has-text("Login")',
+      'button:has-text("Login")',
+      'a[href*="login" i]',
+      'a[href*="auth" i]',
+    ]
+  ).catch(() => ({
+    clicked: false,
+    page: activePage,
+  }));
 
-  await clickFirst(page, [
-    'button[type="submit"]',
-    'button:has-text("Anmelden")',
-    'button:has-text("Einloggen")',
-    'button:has-text("Login")',
-    'input[type="submit"]',
-  ]);
+  activePage =
+    loginClick.page || activePage;
 
-  await page.waitForTimeout(2_500);
+  await activePage
+    .waitForLoadState("domcontentloaded", {
+      timeout: 15_000,
+    })
+    .catch(() => {});
 
-  const otpInput = await findOtpInput(page);
+  await activePage.waitForTimeout(1_500);
+  await acceptCookies(activePage);
+
+  const usernameMatch = await firstVisible(
+    activePage,
+    [
+      'input[autocomplete="username"]',
+      'input[type="email"]',
+      'input[name="identifier"]',
+      'input[name*="email" i]',
+      'input[name*="user" i]',
+      'input[name*="login" i]',
+      'input[id*="email" i]',
+      'input[id*="user" i]',
+      'input[id*="login" i]',
+      'input[placeholder*="E-Mail" i]',
+      'input[placeholder*="Email" i]',
+      'input[placeholder*="Benutzer" i]',
+      'input[aria-label*="E-Mail" i]',
+      'input[aria-label*="Email" i]',
+      'input[aria-label*="Benutzer" i]',
+    ],
+    1_200
+  );
+
+  if (usernameMatch) {
+    await usernameMatch.locator.fill(
+      credentials.username
+    );
+
+    let passwordMatch =
+      await firstVisible(
+        activePage,
+        [
+          'input[autocomplete="current-password"]',
+          'input[type="password"]',
+          'input[name="password"]',
+          'input[name="passwd"]',
+          'input[name*="password" i]',
+          'input[id*="password" i]',
+          'input[placeholder*="Passwort" i]',
+          'input[placeholder*="Password" i]',
+          'input[aria-label*="Passwort" i]',
+          'input[aria-label*="Password" i]',
+        ],
+        700
+      );
+
+    if (!passwordMatch) {
+      const continueClick = await clickFirst(
+        activePage,
+        [
+          'button:has-text("Weiter")',
+          'button:has-text("Next")',
+          'button:has-text("Fortfahren")',
+          'button:has-text("Continue")',
+          'button[type="submit"]',
+          'input[type="submit"]',
+        ]
+      ).catch(() => ({
+        clicked: false,
+        page: activePage,
+      }));
+
+      if (!continueClick.clicked) {
+        await usernameMatch.locator
+          .press("Enter")
+          .catch(() => {});
+      }
+
+      activePage =
+        continueClick.page ||
+        await getNewestPage(
+          activePage.context(),
+          activePage
+        );
+
+      await activePage
+        .waitForLoadState(
+          "domcontentloaded",
+          {
+            timeout: 15_000,
+          }
+        )
+        .catch(() => {});
+
+      await activePage.waitForTimeout(2_500);
+      await acceptCookies(activePage);
+
+      passwordMatch =
+        await firstVisible(
+          activePage,
+          [
+            'input[autocomplete="current-password"]',
+            'input[type="password"]',
+            'input[name="password"]',
+            'input[name="passwd"]',
+            'input[name*="password" i]',
+            'input[id*="password" i]',
+            'input[placeholder*="Passwort" i]',
+            'input[placeholder*="Password" i]',
+            'input[aria-label*="Passwort" i]',
+            'input[aria-label*="Password" i]',
+          ],
+          1_500
+        );
+    }
+
+    if (!passwordMatch) {
+      if (await isCaptchaPage(activePage)) {
+        return {
+          captcha: true,
+          page: activePage,
+        };
+      }
+
+      return {
+        error:
+          "Das METRO-Passwortfeld wurde nicht erkannt. Die sichere Worker-Diagnose wurde gespeichert.",
+        diagnosis:
+          await collectLoginDiagnosis(
+            activePage
+          ),
+        page: activePage,
+      };
+    }
+
+    await passwordMatch.locator.fill(
+      credentials.password
+    );
+  } else {
+    const directPasswordMatch =
+      await firstVisible(
+        activePage,
+        [
+          'input[autocomplete="current-password"]',
+          'input[type="password"]',
+          'input[name="password"]',
+          'input[name="passwd"]',
+        ],
+        1_000
+      );
+
+    if (!directPasswordMatch) {
+      return {
+        error:
+          "Das METRO-Benutzerfeld wurde nicht erkannt. Die sichere Worker-Diagnose wurde gespeichert.",
+        diagnosis:
+          await collectLoginDiagnosis(
+            activePage
+          ),
+        page: activePage,
+      };
+    }
+
+    await directPasswordMatch.locator.fill(
+      credentials.password
+    );
+  }
+
+  const submitClick = await clickFirst(
+    activePage,
+    [
+      'button:has-text("Anmelden")',
+      'button:has-text("Einloggen")',
+      'button:has-text("Login")',
+      'button:has-text("Sign in")',
+      'button[type="submit"]',
+      'input[type="submit"]',
+    ]
+  ).catch(() => ({
+    clicked: false,
+    page: activePage,
+  }));
+
+  activePage =
+    submitClick.page ||
+    await getNewestPage(
+      activePage.context(),
+      activePage
+    );
+
+  await activePage
+    .waitForLoadState("domcontentloaded", {
+      timeout: 15_000,
+    })
+    .catch(() => {});
+
+  await activePage.waitForTimeout(3_000);
+
+  const otpInput =
+    await findOtpInput(activePage);
 
   if (otpInput) {
-    return { mfaRequired: true };
+    return {
+      mfaRequired: true,
+      page: activePage,
+    };
   }
 
-  if (await isCaptchaPage(page)) {
-    return { captcha: true };
+  if (await isCaptchaPage(activePage)) {
+    return {
+      captcha: true,
+      page: activePage,
+    };
   }
 
-  if (await isLoggedIn(page)) {
-    return { loggedIn: true };
+  if (await isLoggedIn(activePage)) {
+    return {
+      loggedIn: true,
+      page: activePage,
+    };
   }
 
   return {
     error:
-      "METRO hat die Anmeldung nicht bestätigt. Bitte Zugangsdaten prüfen oder die Worker-Diagnose senden.",
+      "METRO hat die Anmeldung nicht bestätigt. Die sichere Worker-Diagnose wurde gespeichert.",
+    diagnosis:
+      await collectLoginDiagnosis(
+        activePage
+      ),
+    page: activePage,
   };
 }
 
@@ -433,12 +776,15 @@ async function startLogin(payload) {
       credentials
     );
 
+    const resultPage =
+      result.page || page;
+
     if (result.loggedIn) {
       await saveActiveSession(
         connection,
         browser,
         context,
-        page
+        resultPage
       );
 
       return {
@@ -467,7 +813,7 @@ async function startLogin(payload) {
       pendingSessions.set(connection.id, {
         browser,
         context,
-        page,
+        page: resultPage,
         connection,
         timer,
         expiresAt:
@@ -505,11 +851,25 @@ async function startLogin(payload) {
         sessionStatus: result.captcha
           ? "MANUAL_REQUIRED"
           : "LOGIN_FAILED",
-        lastLoginUrl: page.url(),
+        lastLoginUrl:
+          resultPage.url(),
         lastLoginTitle:
-          await page.title().catch(() => ""),
+          await resultPage
+            .title()
+            .catch(() => ""),
+        loginDiagnosis:
+          result.diagnosis || null,
       },
     });
+
+    if (result.diagnosis) {
+      console.log(
+        "[METRO_LOGIN_DIAGNOSIS]",
+        JSON.stringify(
+          result.diagnosis
+        )
+      );
+    }
 
     await browser.close();
 
