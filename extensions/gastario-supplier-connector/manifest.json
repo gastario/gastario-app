@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "Gastario Lieferanten-Connector",
+  "version": "1.0.0",
+  "description": "Überträgt sichtbare METRO-Lieferservice-Artikel und kundenspezifische Preise an Gastario.",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://lieferservice.metro.de/*",
+    "https://gastario-app-production.up.railway.app/*",
+    "https://*.up.railway.app/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Gastario Lieferanten-Connector",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://lieferservice.metro.de/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

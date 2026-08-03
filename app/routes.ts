@@ -4,7 +4,8 @@ export default [
   index("routes/home.tsx"),
 
   route("registrieren", "routes/registrieren.tsx"),
-  route("login", "routes/login.tsx"),
+  route("login", "routes/login.tsx"),
+
   route("passwort-vergessen", "routes/passwort-vergessen.tsx"),
   route("passwort-zuruecksetzen", "routes/passwort-zuruecksetzen.tsx"),
   route("design-lab", "routes/design-lab.tsx"),
@@ -56,6 +57,7 @@ export default [
   route("api/mailjet/inbound", "routes/api.mailjet.inbound.tsx"),
   route("api/email-import/run", "routes/api.email-import.run.tsx"),
   route("api/navigation-counts", "routes/api.navigation-counts.tsx"),
+  route("api/supplier-browser-connector", "routes/api.supplier-browser-connector.tsx"),
 
   route("gastario-control", "routes/gastario-control.tsx"),
   route("gastario-control/mandanten", "routes/gastario-control.mandanten.tsx"),

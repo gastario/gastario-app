@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1"
+    />
+    <title>Gastario Connector</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <div class="brand">Gastario</div>
+      <h1>Lieferanten-Connector</h1>
+      <p class="intro">
+        Liest ausschließlich die sichtbaren METRO-Produktkarten
+        aus deinem angemeldeten Browser. Passwörter und Cookies
+        werden nicht übertragen.
+      </p>
+
+      <label>
+        <span>Gastario-Adresse</span>
+        <input
+          id="apiBaseUrl"
+          type="url"
+          value="https://gastario-app-production.up.railway.app"
+        />
+      </label>
+
+      <label>
+        <span>Verbindungscode</span>
+        <textarea
+          id="connectorCode"
+          rows="4"
+          placeholder="Code aus Gastario einfügen"
+        ></textarea>
+      </label>
+
+      <div class="buttonGrid">
+        <button id="saveButton" type="button">
+          Speichern
+        </button>
+        <button
+          id="testButton"
+          class="secondary"
+          type="button"
+        >
+          Verbindung testen
+        </button>
+      </div>
+
+      <button
+        id="captureButton"
+        class="capture"
+        type="button"
+      >
+        Sichtbare METRO-Produkte senden
+      </button>
+
+      <div id="status" role="status"></div>
+
+      <p class="hint">
+        Öffne zuerst eine Suche oder Kategorie auf
+        lieferservice.metro.de. Es werden nur bereits geladene und
+        sichtbare Produktkarten übertragen.
+      </p>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

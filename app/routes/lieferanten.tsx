@@ -88,8 +88,30 @@ export async function loader({ request }: { request: Request }) {
             ...safeConnection
           } = connection;
 
+          const rawSettings =
+            connection.settingsJson &&
+            typeof connection.settingsJson ===
+              "object" &&
+            !Array.isArray(
+              connection.settingsJson
+            )
+              ? connection.settingsJson
+              : {};
+
+          const {
+            browserConnectorTokenHash:
+              _browserConnectorTokenHash,
+            portalSessionEncrypted:
+              _portalSessionEncrypted,
+            ...safeSettings
+          } = rawSettings as Record<
+            string,
+            unknown
+          >;
+
           return {
             ...safeConnection,
+            settingsJson: safeSettings,
             hasPortalCredentials: Boolean(
               connection.credentialsEncrypted
             ),
@@ -508,6 +530,196 @@ export async function action({ request }: { request: Request }) {
 
     return {
       success: "Der gespeicherte Portalzugang wurde entfernt.",
+    };
+  }
+
+  /*
+   * gastario-local-supplier-browser-connector-20260803
+   * Erstellt einen einmal sichtbaren Verbindungscode fuer die
+   * lokale Chrome-Erweiterung. In der Datenbank wird nur der
+   * SHA-256-Hash des geheimen Codeanteils gespeichert.
+   */
+  if (intent === "generateBrowserConnectorCode") {
+    const connectionId = String(
+      formData.get("connectionId") || ""
+    ).trim();
+
+    if (!connectionId) {
+      return {
+        error: "Lieferantenverbindung fehlt.",
+      };
+    }
+
+    const connection =
+      await prisma.supplierConnection.findFirst({
+        where: {
+          id: connectionId,
+          tenantId: access.tenantId,
+        },
+        include: {
+          supplier: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
+    if (!connection) {
+      return {
+        error: "Lieferantenverbindung nicht gefunden.",
+      };
+    }
+
+    const previousSettings =
+      connection.settingsJson &&
+      typeof connection.settingsJson === "object" &&
+      !Array.isArray(connection.settingsJson)
+        ? connection.settingsJson
+        : {};
+
+    const providerCode = String(
+      (previousSettings as any).providerCode ||
+        connection.label ||
+        connection.supplier.name
+    )
+      .trim()
+      .toUpperCase();
+
+    if (providerCode !== "METRO") {
+      return {
+        error:
+          "Der lokale Browser-Connector wird zuerst für METRO eingerichtet.",
+      };
+    }
+
+    const {
+      createSupplierBrowserConnectorCode,
+    } = await import(
+      "../lib/supplier-browser-connector.server"
+    );
+
+    const generated =
+      createSupplierBrowserConnectorCode(
+        connection.id
+      );
+
+    await prisma.supplierConnection.update({
+      where: {
+        id: connection.id,
+      },
+      data: {
+        status: "CONFIGURED",
+        credentialsEncrypted: null,
+        lastError: null,
+        nextSyncAt: null,
+        settingsJson: {
+          ...(previousSettings as Record<
+            string,
+            unknown
+          >),
+          connectionMode:
+            "LOCAL_BROWSER_EXTENSION",
+          browserConnectorStatus:
+            "PAIRING_READY",
+          browserConnectorTokenHash:
+            generated.tokenHash,
+          browserConnectorTokenLastFour:
+            generated.tokenLastFour,
+          browserConnectorTokenCreatedAt:
+            generated.createdAt,
+          browserConnectorRevokedAt: null,
+          browserConnectorLastSeenAt: null,
+          browserConnectorLastCaptureAt: null,
+          browserConnectorLastCaptureItems: 0,
+          onboardingStatus:
+            "BROWSER_CONNECTOR_READY",
+          sessionStatus:
+            "LOCAL_BROWSER_READY",
+          portalSessionEncrypted: null,
+          sessionSavedAt: null,
+          sessionExpiresAt: null,
+          automaticSync: false,
+        },
+      },
+    });
+
+    return {
+      success:
+        "Der Chrome-Connector wurde vorbereitet. Der nicht mehr benötigte Server-Zugang wurde entfernt. Kopiere den Verbindungscode jetzt in die Erweiterung.",
+      browserConnectorCode: generated.code,
+      browserConnectorConnectionId:
+        connection.id,
+    };
+  }
+
+  if (intent === "revokeBrowserConnectorCode") {
+    const connectionId = String(
+      formData.get("connectionId") || ""
+    ).trim();
+
+    if (!connectionId) {
+      return {
+        error: "Lieferantenverbindung fehlt.",
+      };
+    }
+
+    const connection =
+      await prisma.supplierConnection.findFirst({
+        where: {
+          id: connectionId,
+          tenantId: access.tenantId,
+        },
+        select: {
+          id: true,
+          settingsJson: true,
+        },
+      });
+
+    if (!connection) {
+      return {
+        error: "Lieferantenverbindung nicht gefunden.",
+      };
+    }
+
+    const previousSettings =
+      connection.settingsJson &&
+      typeof connection.settingsJson === "object" &&
+      !Array.isArray(connection.settingsJson)
+        ? connection.settingsJson
+        : {};
+
+    await prisma.supplierConnection.update({
+      where: {
+        id: connection.id,
+      },
+      data: {
+        status: "CONFIGURED",
+        lastError: null,
+        settingsJson: {
+          ...(previousSettings as Record<
+            string,
+            unknown
+          >),
+          browserConnectorStatus:
+            "REVOKED",
+          browserConnectorTokenHash: null,
+          browserConnectorTokenLastFour: null,
+          browserConnectorTokenCreatedAt: null,
+          browserConnectorRevokedAt:
+            new Date().toISOString(),
+          onboardingStatus:
+            "BROWSER_CONNECTOR_REQUIRED",
+          sessionStatus:
+            "LOCAL_BROWSER_REVOKED",
+          automaticSync: false,
+        },
+      },
+    });
+
+    return {
+      success:
+        "Der Chrome-Verbindungscode wurde widerrufen.",
     };
   }
 
@@ -1083,7 +1295,7 @@ export default function SuppliersPage() {
         <PageSection
           eyebrow="Lieferantenportale"
           title="Lieferantenportal anlegen"
-          description="Lege das Portal mit Kundennummer und Lieferdepot an. Benutzername und Passwort werden anschließend direkt an der Verbindung verschlüsselt gespeichert."
+          description="Lege das Portal mit Kundennummer und Lieferdepot an. Die Preisübertragung erfolgt anschließend über den lokalen Gastario Chrome-Connector."
         >
           {data.suppliers.length === 0 ? (
             <div className="supplyEmpty">
@@ -1176,10 +1388,10 @@ export default function SuppliersPage() {
 
               <div className="supplyPortalHint">
                 <strong>
-                  Sicherer Login an der Verbindung
+                  Lokaler Chrome-Connector
                 </strong>
                 <span>
-                  Nach dem Anlegen erscheint die verschlüsselte METRO-Anmeldung in der Verbindungskarte.
+                  Nach dem Anlegen kannst du die Erweiterung herunterladen und einen sicheren Verbindungscode erzeugen.
                 </span>
               </div>
 
@@ -1215,47 +1427,82 @@ export default function SuppliersPage() {
                       ?.sessionStatus || ""
                   ).toUpperCase();
 
+                  const browserConnectorStatus =
+                    String(
+                      connection.settingsJson
+                        ?.browserConnectorStatus ||
+                        ""
+                    ).toUpperCase();
+
+                  const browserConnectorReady =
+                    Boolean(
+                      connection.settingsJson
+                        ?.browserConnectorTokenCreatedAt
+                    );
+
+                  const browserConnectorActive =
+                    browserConnectorStatus ===
+                      "ACTIVE" ||
+                    sessionStatus ===
+                      "LOCAL_BROWSER_ACTIVE";
+
                   const statusLabel =
+                    browserConnectorActive &&
                     connection.status === "ACTIVE"
-                      ? "Verbunden"
-                      : sessionStatus ===
-                          "MFA_REQUIRED"
-                        ? "Sicherheitscode erforderlich"
-                        : sessionStatus ===
-                            "LOGIN_FAILED"
-                          ? "Anmeldung fehlgeschlagen"
+                      ? "Browser-Connector aktiv"
+                      : browserConnectorReady
+                        ? "Chrome-Connector bereit"
+                        : connection.status === "ERROR"
+                          ? "Fehler"
                           : connection.status ===
-                                "CONFIGURED" &&
-                              connection.hasPortalCredentials
-                            ? "Zugang gespeichert"
-                            : connection.status ===
-                                "CONFIGURED"
-                              ? "Anmeldung erforderlich"
-                              : connection.status === "ERROR"
-                                ? "Fehler"
-                                : connection.status ===
-                                    "PAUSED"
-                                  ? "Pausiert"
-                                  : "Nicht verbunden";
+                              "PAUSED"
+                            ? "Pausiert"
+                            : "Einrichtung erforderlich";
 
                   const statusTone =
+                    browserConnectorActive &&
                     connection.status === "ACTIVE"
                       ? "success"
-                      : connection.status === "ERROR" ||
-                          sessionStatus === "LOGIN_FAILED"
+                      : connection.status === "ERROR"
                         ? "danger"
                         : "warning";
 
+                  const lastBrowserCaptureAt =
+                    connection.settingsJson
+                      ?.browserConnectorLastCaptureAt;
+
                   const lastSyncText =
-                    connection.lastSyncAt
+                    lastBrowserCaptureAt
                       ? new Date(
-                          connection.lastSyncAt
+                          lastBrowserCaptureAt
                         ).toLocaleString("de-DE")
-                      : lastSync?.startedAt
+                      : connection.lastSyncAt
                         ? new Date(
-                            lastSync.startedAt
+                            connection.lastSyncAt
                           ).toLocaleString("de-DE")
-                        : "Noch nicht synchronisiert";
+                        : lastSync?.startedAt
+                          ? new Date(
+                              lastSync.startedAt
+                            ).toLocaleString("de-DE")
+                          : "Noch keine Browserübertragung";
+
+                  const generatedBrowserConnectorCode =
+                    actionData
+                      ?.browserConnectorConnectionId ===
+                    connection.id
+                      ? String(
+                          actionData
+                            ?.browserConnectorCode ||
+                            ""
+                        )
+                      : "";
+
+                  const lastBrowserCaptureItems =
+                    Number(
+                      connection.settingsJson
+                        ?.browserConnectorLastCaptureItems ||
+                        0
+                    );
 
                   return (
                     <article
@@ -1331,177 +1578,78 @@ export default function SuppliersPage() {
 
                       <div className="supplyPortalState">
                         <strong>
-                          {connection.status === "ACTIVE"
-                            ? "METRO-Sitzung ist aktiv"
-                            : sessionStatus ===
-                                "MFA_REQUIRED"
-                              ? "METRO wartet auf einen Sicherheitscode"
-                              : sessionStatus ===
-                                  "LOGIN_FAILED"
-                                ? "Die letzte Anmeldung ist fehlgeschlagen"
-                                : connection.hasPortalCredentials
-                                  ? "Zugangsdaten verschlüsselt gespeichert"
-                                  : "METRO-Anmeldung erforderlich"}
+                          {browserConnectorActive &&
+                          connection.status === "ACTIVE"
+                            ? "Lokaler Chrome-Connector ist aktiv"
+                            : browserConnectorReady
+                              ? "Chrome-Erweiterung kann gekoppelt werden"
+                              : "Chrome-Connector einrichten"}
                         </strong>
 
                         <span>
-                          {connection.status === "ACTIVE"
-                            ? `Letzte Anmeldung: ${
-                                connection.settingsJson
-                                  ?.sessionSavedAt
-                                  ? new Date(
-                                      connection.settingsJson.sessionSavedAt
-                                    ).toLocaleString(
-                                      "de-DE"
-                                    )
-                                  : "aktiv"
-                              }`
-                            : sessionStatus ===
-                                "MFA_REQUIRED"
-                              ? "Gib den Code aus E-Mail, SMS oder Authenticator unten ein. Die wartende Browsersitzung bleibt nur wenige Minuten geöffnet."
-                              : connection.hasPortalCredentials
-                                ? "Starte jetzt den geschützten Railway-Browser. Gastario prüft den Login und speichert anschließend nur die verschlüsselte Sitzung."
-                                : "Benutzername und Passwort werden verschlüsselt gespeichert und niemals über den Loader an den Browser zurückgegeben."}
+                          {browserConnectorActive &&
+                          connection.status === "ACTIVE"
+                            ? `${lastBrowserCaptureItems} Artikel wurden bei der letzten Browserübertragung erkannt. METRO-Passwörter und Browser-Cookies bleiben vollständig auf deinem Rechner.`
+                            : browserConnectorReady
+                              ? "Installiere die Gastario-Erweiterung, füge den einmal erzeugten Verbindungscode ein und übertrage anschließend sichtbare Produktkarten aus deinem normal angemeldeten METRO-Browser."
+                              : "Der Railway-Login wird nicht weiter verwendet. Der lokale Connector liest nur sichtbare Produktdaten aus deinem eigenen Chrome-Browser."}
                         </span>
                       </div>
 
-                      <div className="supplyConnectionActions">
-                        <details className="supplyDetails supplyDetails--portal">
-                          <summary className="supplyButton supplyButton--secondary">
-                            {connection.hasPortalCredentials
-                              ? "Zugang verwalten"
-                              : "Bei METRO anmelden"}
-                          </summary>
+                      <div className="supplyBrowserConnectorPanel">
+                        <div className="supplyBrowserConnectorHeader">
+                          <div>
+                            <small>Lokale Verbindung</small>
+                            <strong>
+                              Gastario Chrome-Connector
+                            </strong>
+                            <span>
+                              Kein METRO-Passwort und keine METRO-Sitzung werden an Railway übertragen.
+                            </span>
+                          </div>
 
-                          <Form
-                            method="post"
-                            className="supplyPortalLoginForm"
+                          <span
+                            className={[
+                              "supplyStatus",
+                              browserConnectorActive
+                                ? "supplyStatus--success"
+                                : "supplyStatus--warning",
+                            ].join(" ")}
                           >
-                            <input
-                              type="hidden"
-                              name="intent"
-                              value="savePortalCredentials"
-                            />
+                            {browserConnectorActive
+                              ? "Aktiv"
+                              : browserConnectorReady
+                                ? "Kopplung bereit"
+                                : "Nicht eingerichtet"}
+                          </span>
+                        </div>
 
-                            <input
-                              type="hidden"
-                              name="connectionId"
-                              value={connection.id}
-                            />
+                        <ol className="supplyBrowserConnectorSteps">
+                          <li>
+                            Erweiterung herunterladen und in Chrome entpackt laden.
+                          </li>
+                          <li>
+                            Verbindungscode erzeugen und einmalig in die Erweiterung kopieren.
+                          </li>
+                          <li>
+                            Bei lieferservice.metro.de normal anmelden und sichtbare Preise senden.
+                          </li>
+                        </ol>
 
-                            <div className="supplyPortalLoginIntro">
-                              <strong>
-                                METRO Lieferservice verbinden
-                              </strong>
+                        <div className="supplyBrowserConnectorActions">
+                          <a
+                            className="supplyButton supplyButton--secondary"
+                            href="/downloads/gastario-supplier-connector.zip"
+                            download
+                          >
+                            Chrome-Erweiterung herunterladen
+                          </a>
 
-                              <span>
-                                Zielportal: lieferservice.metro.de
-                                {connection.settingsJson
-                                  ?.accountHint
-                                  ? ` · Konto ${connection.settingsJson.accountHint}`
-                                  : ""}
-                              </span>
-                            </div>
-
-                            <label className="supplyField">
-                              <span>Kundennummer</span>
-                              <input
-                                name="customerNumber"
-                                defaultValue={
-                                  connection.customerNumber ||
-                                  connection.settingsJson
-                                    ?.customerNumber ||
-                                  ""
-                                }
-                                autoComplete="off"
-                                required
-                              />
-                            </label>
-
-                            <label className="supplyField">
-                              <span>Lieferdepot / Standort</span>
-                              <input
-                                name="locationName"
-                                defaultValue={
-                                  connection.settingsJson
-                                    ?.locationName ||
-                                  ""
-                                }
-                                placeholder="z. B. METRO Lieferdepot Berlin"
-                              />
-                            </label>
-
-                            <label className="supplyField">
-                              <span>METRO-Benutzername / E-Mail</span>
-                              <input
-                                name="username"
-                                type="text"
-                                autoComplete="username"
-                                required
-                              />
-                            </label>
-
-                            <label className="supplyField">
-                              <span>METRO-Passwort</span>
-                              <input
-                                name="password"
-                                type="password"
-                                autoComplete="current-password"
-                                required
-                              />
-                            </label>
-
-                            <div className="supplyCredentialNotice">
-                              <strong>Verschlüsselte Speicherung</strong>
-                              <span>
-                                Das Passwort wird mit dem Railway-Schlüssel verschlüsselt. Es wird weder angezeigt noch über den Loader an den Browser zurückgegeben.
-                              </span>
-                            </div>
-
-                            <button
-                              className="supplyButton supplyButton--primary"
-                              type="submit"
-                            >
-                              {connection.hasPortalCredentials
-                                ? "Zugang neu speichern"
-                                : "Zugang sicher speichern"}
-                            </button>
-                          </Form>
-
-                          {connection.hasPortalCredentials ? (
-                            <Form
-                              method="post"
-                              className="supplyCredentialRemoveForm"
-                            >
-                              <input
-                                type="hidden"
-                                name="intent"
-                                value="clearPortalCredentials"
-                              />
-
-                              <input
-                                type="hidden"
-                                name="connectionId"
-                                value={connection.id}
-                              />
-
-                              <button
-                                className="supplyButton supplyButton--dangerGhost"
-                                type="submit"
-                              >
-                                Gespeicherten Zugang entfernen
-                              </button>
-                            </Form>
-                          ) : null}
-                        </details>
-
-                        {connection.hasPortalCredentials &&
-                        connection.status !== "ACTIVE" ? (
                           <Form method="post">
                             <input
                               type="hidden"
                               name="intent"
-                              value="testPortalLogin"
+                              value="generateBrowserConnectorCode"
                             />
 
                             <input
@@ -1514,21 +1662,88 @@ export default function SuppliersPage() {
                               className="supplyButton supplyButton--primary"
                               type="submit"
                             >
-                              METRO-Anmeldung testen
+                              {browserConnectorReady
+                                ? "Verbindungscode erneuern"
+                                : "Verbindungscode erzeugen"}
                             </button>
                           </Form>
+                        </div>
+
+                        {generatedBrowserConnectorCode ? (
+                          <div className="supplyBrowserConnectorCode">
+                            <div>
+                              <strong>
+                                Verbindungscode – nur jetzt sichtbar
+                              </strong>
+                              <span>
+                                Nach dem Verlassen der Seite wird der Code nicht erneut angezeigt. Bei Verlust einfach einen neuen erzeugen.
+                              </span>
+                            </div>
+
+                            <div className="supplyBrowserConnectorCodeRow">
+                              <input
+                                value={
+                                  generatedBrowserConnectorCode
+                                }
+                                readOnly
+                                aria-label="Gastario Verbindungscode"
+                              />
+
+                              <button
+                                className="supplyButton supplyButton--secondary"
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard
+                                    .writeText(
+                                      generatedBrowserConnectorCode
+                                    )
+                                    .catch(() => {});
+                                }}
+                              >
+                                Code kopieren
+                              </button>
+                            </div>
+                          </div>
                         ) : null}
 
-                        {sessionStatus ===
-                        "MFA_REQUIRED" ? (
-                          <Form
-                            method="post"
-                            className="supplyOtpForm"
-                          >
+                        <div className="supplyBrowserConnectorFacts">
+                          <div>
+                            <small>Letzte Übertragung</small>
+                            <strong>
+                              {lastBrowserCaptureAt
+                                ? new Date(
+                                    lastBrowserCaptureAt
+                                  ).toLocaleString(
+                                    "de-DE"
+                                  )
+                                : "Noch keine"}
+                            </strong>
+                          </div>
+
+                          <div>
+                            <small>Übertragene Artikel</small>
+                            <strong>
+                              {lastBrowserCaptureItems}
+                            </strong>
+                          </div>
+
+                          <div>
+                            <small>Code-Endung</small>
+                            <strong>
+                              {connection.settingsJson
+                                ?.browserConnectorTokenLastFour
+                                ? `••••${connection.settingsJson.browserConnectorTokenLastFour}`
+                                : "–"}
+                            </strong>
+                          </div>
+                        </div>
+
+                        {browserConnectorReady ? (
+                          <Form method="post">
                             <input
                               type="hidden"
                               name="intent"
-                              value="submitPortalOtp"
+                              value="revokeBrowserConnectorCode"
                             />
 
                             <input
@@ -1537,56 +1752,37 @@ export default function SuppliersPage() {
                               value={connection.id}
                             />
 
-                            <label className="supplyField">
-                              <span>Sicherheitscode</span>
-                              <input
-                                name="code"
-                                inputMode="numeric"
-                                autoComplete="one-time-code"
-                                placeholder="Code eingeben"
-                                required
-                              />
-                            </label>
-
                             <button
-                              className="supplyButton supplyButton--primary"
+                              className="supplyButton supplyButton--dangerGhost"
                               type="submit"
                             >
-                              Code bestätigen
+                              Chrome-Verbindung widerrufen
                             </button>
                           </Form>
                         ) : null}
 
-                        <Form method="post">
-                          <input
-                            type="hidden"
-                            name="intent"
-                            value="syncSupplierConnection"
-                          />
+                        {connection.hasPortalCredentials ? (
+                          <Form method="post">
+                            <input
+                              type="hidden"
+                              name="intent"
+                              value="clearPortalCredentials"
+                            />
 
-                          <input
-                            type="hidden"
-                            name="connectionId"
-                            value={connection.id}
-                          />
+                            <input
+                              type="hidden"
+                              name="connectionId"
+                              value={connection.id}
+                            />
 
-                          <button
-                            className="supplyButton supplyButton--primary"
-                            type="submit"
-                            disabled={
-                              connection.status !== "ACTIVE"
-                            }
-                            title={
-                              connection.status === "ACTIVE"
-                                ? "Aktuelle METRO-Preise abrufen"
-                                : "Erst nach erfolgreicher Portal-Anmeldung verfügbar"
-                            }
-                          >
-                            {connection.status === "ACTIVE"
-                              ? "Preise synchronisieren"
-                              : "Preisabruf gesperrt"}
-                          </button>
-                        </Form>
+                            <button
+                              className="supplyButton supplyButton--dangerGhost"
+                              type="submit"
+                            >
+                              Alten Server-Zugang entfernen
+                            </button>
+                          </Form>
+                        ) : null}
                       </div>
                     </article>
                   );
