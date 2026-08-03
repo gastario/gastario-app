@@ -1340,3 +1340,380 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+/*
+ * gastario-supplier-true-masterdesign-v1-20260803
+ * Visuelle Angleichung an das Intelligence Workspace aus dem Design-Lab.
+ */
+
+.supplyMasterV1Page {
+  --supplier-v1-border: #d9e5e2;
+  --supplier-v1-border-soft: #e7efed;
+  --supplier-v1-surface: #ffffff;
+  --supplier-v1-surface-soft: #f5f9f7;
+  --supplier-v1-text: #0d312c;
+  --supplier-v1-muted: #6d817d;
+  --supplier-v1-accent: #087b62;
+  --supplier-v1-shadow:
+    0 12px 30px rgba(23, 63, 55, 0.055);
+}
+
+.supplyMasterV1Page .supplierMasterWorkspace {
+  grid-template-columns:
+    minmax(0, 1.7fr)
+    minmax(280px, 0.8fr);
+  gap: 14px;
+}
+
+.supplyMasterV1Page .supplierMasterMain,
+.supplyMasterV1Page .supplierMasterCreate,
+.supplyMasterV1Page .supplierMasterList {
+  overflow: hidden;
+  border: 1px solid var(--supplier-v1-border);
+  border-radius: 18px;
+  background: var(--supplier-v1-surface);
+  box-shadow: var(--supplier-v1-shadow);
+}
+
+.supplyMasterV1Page
+.supplierMasterWorkspace
+.g-ui-section-header {
+  min-height: 68px;
+  margin: 0;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--supplier-v1-border);
+}
+
+.supplyMasterV1Page
+.supplierMasterWorkspace
+.g-ui-section-header h2 {
+  color: var(--supplier-v1-text);
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.supplyMasterV1Page
+.supplierMasterWorkspace
+.g-ui-section-header p {
+  color: var(--supplier-v1-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.supplyMasterV1Page
+.supplierMasterWorkspace
+.g-ui-section-header small {
+  color: var(--supplier-v1-accent);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.supplyMasterV1Page .supplierMasterMain > :not(.g-ui-section-header),
+.supplyMasterV1Page .supplierMasterCreate > :not(.g-ui-section-header),
+.supplyMasterV1Page .supplierMasterList > :not(.g-ui-section-header) {
+  margin-left: 18px;
+  margin-right: 18px;
+}
+
+.supplyMasterV1Page .supplierMasterMain > :last-child,
+.supplyMasterV1Page .supplierMasterCreate > :last-child,
+.supplyMasterV1Page .supplierMasterList > :last-child {
+  margin-bottom: 18px;
+}
+
+.supplyMasterV1Page .supplierMasterMain .supplyDisclosure--compact,
+.supplyMasterV1Page .supplierMasterCreate .supplyDisclosure {
+  margin-top: 14px;
+  border-color: var(--supplier-v1-border-soft);
+  border-radius: 11px;
+  box-shadow: none;
+}
+
+.supplyMasterV1Page .supplyDisclosure > summary {
+  min-height: 56px;
+  padding: 11px 13px;
+}
+
+.supplyMasterV1Page .supplyDisclosure > summary strong {
+  color: var(--supplier-v1-text);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.supplyMasterV1Page .supplyDisclosure > summary small,
+.supplyMasterV1Page .supplyDisclosureAction {
+  font-size: 8px;
+}
+
+.supplyMasterV1Page .supplyDisclosureAction {
+  color: var(--supplier-v1-accent);
+}
+
+.supplyMasterV1Page .supplyConnectionList {
+  gap: 0;
+  margin-top: 0;
+}
+
+.supplyMasterV1Page .supplyConnectionCard {
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.supplyMasterV1Page .supplyConnectionTop {
+  min-height: 70px;
+  padding: 15px 0 13px;
+  border-bottom: 1px solid var(--supplier-v1-border-soft);
+}
+
+.supplyMasterV1Page .supplyConnectionTop small {
+  color: var(--supplier-v1-accent);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.supplyMasterV1Page .supplyConnectionTop strong {
+  color: var(--supplier-v1-text);
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.supplyMasterV1Page .supplyConnectionTop span {
+  color: var(--supplier-v1-muted);
+  font-size: 9px;
+}
+
+.supplyMasterV1Page .supplyConnectionFacts {
+  gap: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--supplier-v1-border-soft);
+}
+
+.supplyMasterV1Page .supplyConnectionFacts > div {
+  min-height: 64px;
+  padding: 13px 14px;
+  border: 0;
+  border-right: 1px solid var(--supplier-v1-border-soft);
+  border-radius: 0;
+  background: transparent;
+}
+
+.supplyMasterV1Page .supplyConnectionFacts > div:last-child {
+  border-right: 0;
+}
+
+.supplyMasterV1Page .supplyConnectionFacts small {
+  color: var(--supplier-v1-muted);
+  font-size: 8px;
+}
+
+.supplyMasterV1Page .supplyConnectionFacts strong {
+  color: var(--supplier-v1-text);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.supplyMasterV1Page .supplyConnectionError {
+  margin: 12px 0 0;
+  border-radius: 10px;
+  font-size: 9px;
+}
+
+.supplyMasterV1Page .supplyPortalState {
+  margin: 0;
+  padding: 14px 0;
+  border: 0;
+  border-bottom: 1px solid var(--supplier-v1-border-soft);
+  border-radius: 0;
+  background: transparent;
+}
+
+.supplyMasterV1Page .supplyPortalState strong {
+  color: var(--supplier-v1-text);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.supplyMasterV1Page .supplyPortalState span {
+  color: var(--supplier-v1-muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.supplyMasterV1Page .supplyDisclosure--connector {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--supplier-v1-border-soft);
+}
+
+.supplyMasterV1Page .supplyDisclosure--connector > summary {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.supplyMasterV1Page .supplyDisclosure--connector[open] > summary {
+  background: transparent;
+}
+
+.supplyMasterV1Page .supplierMasterList .supplySupplierGrid {
+  gap: 0;
+  margin-top: 0;
+}
+
+.supplyMasterV1Page .supplierMasterList .supplySupplierCard {
+  padding: 14px 0;
+  border: 0;
+  border-bottom: 1px solid var(--supplier-v1-border-soft);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.supplyMasterV1Page
+.supplierMasterList
+.supplySupplierCard:last-child {
+  border-bottom: 0;
+}
+
+.supplyMasterV1Page .supplySupplierTop small {
+  color: var(--supplier-v1-accent);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.supplyMasterV1Page .supplySupplierTop strong {
+  color: var(--supplier-v1-text);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.supplyMasterV1Page .supplierMasterList .supplySupplierFacts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 12px;
+  border-top: 1px solid var(--supplier-v1-border-soft);
+  border-left: 1px solid var(--supplier-v1-border-soft);
+}
+
+.supplyMasterV1Page
+.supplierMasterList
+.supplySupplierFacts > div {
+  min-height: 52px;
+  padding: 10px;
+  border-right: 1px solid var(--supplier-v1-border-soft);
+  border-bottom: 1px solid var(--supplier-v1-border-soft);
+  border-radius: 0;
+  background: transparent;
+}
+
+.supplyMasterV1Page
+.supplierMasterList
+.supplySupplierFactWide {
+  grid-column: 1 / -1;
+}
+
+.supplyMasterV1Page .supplySupplierFacts dt {
+  color: var(--supplier-v1-muted);
+  font-size: 7px;
+}
+
+.supplyMasterV1Page .supplySupplierFacts dd {
+  color: var(--supplier-v1-text);
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.supplyMasterV1Page .supplierMasterList .supplySupplierActions {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+  gap: 7px;
+}
+
+.supplyMasterV1Page
+.supplierMasterList
+.supplySupplierActions form,
+.supplyMasterV1Page
+.supplierMasterList
+.supplySupplierActions details,
+.supplyMasterV1Page
+.supplierMasterList
+.supplySupplierActions .supplyButton {
+  width: 100%;
+}
+
+.supplyMasterV1Page .supplyButton {
+  min-height: 36px;
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.supplyMasterV1Page .supplyButton--primary,
+.supplyMasterV1Page .supplyButton--danger {
+  box-shadow: 0 7px 16px rgba(8, 123, 98, 0.12);
+}
+
+@media (max-width: 1180px) {
+  .supplyMasterV1Page .supplierMasterWorkspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .supplyMasterV1Page
+  .supplierMasterList
+  .supplySupplierGrid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding-top: 14px;
+  }
+
+  .supplyMasterV1Page
+  .supplierMasterList
+  .supplySupplierCard {
+    padding: 14px;
+    border: 1px solid var(--supplier-v1-border-soft);
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 760px) {
+  .supplyMasterV1Page
+  .supplierMasterList
+  .supplySupplierGrid,
+  .supplyMasterV1Page
+  .supplierMasterList
+  .supplySupplierFacts,
+  .supplyMasterV1Page
+  .supplierMasterList
+  .supplySupplierActions,
+  .supplyMasterV1Page
+  .supplyConnectionFacts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .supplyMasterV1Page
+  .supplyConnectionFacts > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--supplier-v1-border-soft);
+  }
+
+  .supplyMasterV1Page
+  .supplyConnectionFacts > div:last-child {
+    border-bottom: 0;
+  }
+}
