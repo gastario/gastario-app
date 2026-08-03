@@ -393,3 +393,222 @@ export async function buildProcurementComparisons(params: {
     },
   };
 }
+/*
+ * gastario-procurement-candidate-suggestions-v1-20260803
+ * Lokale Kandidatensuche im bereits importierten
+ * Lieferantenkatalog. Keine automatische Zuordnung.
+ */
+
+function candidateTokens(value: unknown) {
+  const stopWords = new Set([
+    "frisch",
+    "fresh",
+    "bio",
+    "classic",
+    "premium",
+    "roh",
+    "gegart",
+    "geschnitten",
+    "scheiben",
+    "stueck",
+    "stück",
+    "packung",
+    "kg",
+    "g",
+    "ml",
+    "l",
+  ]);
+
+  return normalizeIngredientName(value)
+    .split(" ")
+    .map((token) => token.trim())
+    .filter(
+      (token) =>
+        token.length >= 3 &&
+        !stopWords.has(token)
+    );
+}
+
+function candidateUnitScore(
+  ingredientUnitRaw: unknown,
+  catalogItem: any
+) {
+  const ingredientUnit =
+    cleanUnit(ingredientUnitRaw);
+
+  const candidateUnits = [
+    catalogItem?.baseUnit,
+    catalogItem?.orderUnit,
+    catalogItem?.prices?.[0]?.priceUnit,
+  ]
+    .map(cleanUnit)
+    .filter(Boolean);
+
+  if (candidateUnits.length === 0) {
+    return 4;
+  }
+
+  if (
+    candidateUnits.some(
+      (unit) => unit === ingredientUnit
+    )
+  ) {
+    return 24;
+  }
+
+  if (
+    candidateUnits.some(
+      (unit) =>
+        unitFamily(unit) ===
+        unitFamily(ingredientUnit)
+    )
+  ) {
+    return 14;
+  }
+
+  return -18;
+}
+
+function scoreCatalogCandidate(params: {
+  ingredient: {
+    displayName: string;
+    baseUnit: string;
+  };
+  catalogItem: any;
+}) {
+  const { ingredient, catalogItem } = params;
+
+  const ingredientName =
+    normalizeIngredientName(
+      ingredient.displayName
+    );
+
+  const searchableText =
+    normalizeIngredientName(
+      [
+        catalogItem.name,
+        catalogItem.brand,
+        catalogItem.description,
+        catalogItem.articleNumber,
+      ]
+        .filter(Boolean)
+        .join(" ")
+    );
+
+  if (!ingredientName || !searchableText) {
+    return 0;
+  }
+
+  const tokens =
+    candidateTokens(ingredientName);
+
+  let score = 0;
+  let matchedTokens = 0;
+
+  if (searchableText === ingredientName) {
+    score += 75;
+  } else if (
+    searchableText.includes(ingredientName)
+  ) {
+    score += 55;
+  }
+
+  for (const token of tokens) {
+    if (searchableText.includes(token)) {
+      matchedTokens += 1;
+      score += token.length >= 7 ? 18 : 12;
+    }
+  }
+
+  if (
+    tokens.length > 0 &&
+    matchedTokens === tokens.length
+  ) {
+    score += 20;
+  }
+
+  score += candidateUnitScore(
+    ingredient.baseUnit,
+    catalogItem
+  );
+
+  const latestPrice =
+    catalogItem?.prices?.[0] || null;
+
+  if (latestPrice) {
+    score += 8;
+  }
+
+  if (latestPrice?.available === false) {
+    score -= 35;
+  }
+
+  if (catalogItem.active === false) {
+    score -= 50;
+  }
+
+  return Math.max(0, Math.round(score));
+}
+
+export function buildProcurementCandidateSuggestions(params: {
+  ingredients: any[];
+  catalogItems: any[];
+  limit?: number;
+}) {
+  const {
+    ingredients,
+    catalogItems,
+    limit = 5,
+  } = params;
+
+  const result: Record<string, any[]> = {};
+
+  for (const ingredient of ingredients) {
+    result[ingredient.id] = catalogItems
+      .map((catalogItem) => {
+        const latestPrice =
+          catalogItem?.prices?.[0] || null;
+
+        return {
+          catalogItemId: catalogItem.id,
+          supplierName:
+            catalogItem.supplier?.name ||
+            "Unbekannter Lieferant",
+          catalogItemName:
+            catalogItem.name,
+          netPriceCents:
+            latestPrice?.netPriceCents ?? null,
+          fetchedAt:
+            latestPrice?.fetchedAt ?? null,
+          available:
+            latestPrice?.available ?? null,
+          score: scoreCatalogCandidate({
+            ingredient,
+            catalogItem,
+          }),
+        };
+      })
+      .filter(
+        (candidate) =>
+          candidate.score >= 24
+      )
+      .sort((left, right) => {
+        if (right.score !== left.score) {
+          return right.score - left.score;
+        }
+
+        const leftPrice =
+          left.netPriceCents ??
+          Number.MAX_SAFE_INTEGER;
+
+        const rightPrice =
+          right.netPriceCents ??
+          Number.MAX_SAFE_INTEGER;
+
+        return leftPrice - rightPrice;
+      })
+      .slice(0, limit);
+  }
+
+  return result;
+}

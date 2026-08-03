@@ -546,6 +546,7 @@ export async function loader({
 
   const {
     buildProcurementComparisons,
+    buildProcurementCandidateSuggestions,
   } = await import(
     "../lib/procurement-comparison.server"
   );
@@ -637,6 +638,12 @@ export async function loader({
       take: 750,
     }),
   ]);
+  const candidateSuggestions =
+    buildProcurementCandidateSuggestions({
+      ingredients: ingredientMappings,
+      catalogItems,
+      limit: 5,
+    });
   const unresolvedCount =
     missingRecipeItems.length;
 
@@ -652,6 +659,7 @@ export async function loader({
     comparisonStats: comparisonResult.stats,
     ingredientMappings,
     catalogItems,
+    candidateSuggestions,
   };
 }
 
@@ -1067,6 +1075,17 @@ export default function PurchasingPage() {
                         Basiseinheit:{" "}
                         {ingredient.baseUnit}
                       </span>
+
+                      <div className="procurementSuggestionSummary">
+                        <strong>
+                          {(data.candidateSuggestions[
+                            ingredient.id
+                          ] || []).length}
+                        </strong>
+                        <span>
+                          passende Katalogkandidaten
+                        </span>
+                      </div>
                     </div>
 
                     <div className="procurementMappingMatches">
@@ -1189,6 +1208,37 @@ export default function PurchasingPage() {
                             Artikel auswählen …
                           </option>
 
+                          {(data.candidateSuggestions[
+                            ingredient.id
+                          ] || []).length > 0 ? (
+                            <optgroup label="Gastario Vorschläge">
+                              {(data.candidateSuggestions[
+                                ingredient.id
+                              ] || []).map(
+                                (suggestion: any) => (
+                                  <option
+                                    key={`suggestion-${suggestion.catalogItemId}`}
+                                    value={
+                                      suggestion.catalogItemId
+                                    }
+                                  >
+                                    {suggestion.supplierName}
+                                    {" · "}
+                                    {suggestion.catalogItemName}
+                                    {suggestion.netPriceCents !==
+                                    null
+                                      ? ` · ${formatMoney(
+                                          suggestion.netPriceCents
+                                        )}`
+                                      : " · ohne Preis"}
+                                    {` · Treffer ${suggestion.score}%`}
+                                  </option>
+                                )
+                              )}
+                            </optgroup>
+                          ) : null}
+
+                          <optgroup label="Alle Katalogartikel">
                           {data.catalogItems.map(
                             (catalogItem: any) => {
                               const latestPrice =
@@ -1221,6 +1271,7 @@ export default function PurchasingPage() {
                               );
                             }
                           )}
+                          </optgroup>
                         </select>
                       </label>
 

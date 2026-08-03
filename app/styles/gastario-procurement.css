@@ -611,3 +611,39 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+/*
+ * gastario-procurement-candidate-suggestions-v1-20260803
+ */
+
+.procurementSuggestionSummary {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 7px;
+  margin-top: 4px;
+  padding: 7px 9px;
+  border-radius: 999px;
+  background: #eef8f4;
+  color: #19705e;
+}
+
+.procurementSuggestionSummary strong {
+  color: inherit;
+  font-size: 12px;
+}
+
+.procurementSuggestionSummary span {
+  color: inherit;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.procurementMappingForm select optgroup {
+  color: #0d705c;
+  font-weight: 800;
+}
+
+.procurementMappingForm select option {
+  color: #173f37;
+  font-weight: 500;
+}
