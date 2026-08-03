@@ -11,6 +11,105 @@ const PORT = Number(process.env.PORT || 3000);
 const HOST = "::";
 const SESSION_TTL_MS = 10 * 60 * 1000;
 
+
+const MAX_RUNTIME_DIAGNOSTIC_ENTRIES = 40;
+
+function sanitizeDiagnosticUrl(value) {
+  try {
+    const url = new URL(String(value || ""));
+    return `${url.origin}${url.pathname}`;
+  } catch {
+    return String(value || "")
+      .replace(/\?.*$/, "")
+      .slice(0, 300);
+  }
+}
+
+function redactDiagnosticText(value) {
+  return String(value || "")
+    .replace(
+      /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
+      "[email]"
+    )
+    .replace(
+      /(?:password|passwd|pwd|token|secret|code)\s*[:=]\s*[^\s,;]+/gi,
+      "$1=[redacted]"
+    )
+    .replace(
+      /\b[A-Za-z0-9_-]{40,}\b/g,
+      "[long-value-redacted]"
+    )
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 500);
+}
+
+function createRuntimeDiagnosis() {
+  return {
+    console: [],
+    pageErrors: [],
+    requestFailures: [],
+    responseErrors: [],
+  };
+}
+
+function pushRuntimeDiagnosis(list, value) {
+  if (list.length >= MAX_RUNTIME_DIAGNOSTIC_ENTRIES) {
+    return;
+  }
+
+  list.push(value);
+}
+
+function attachRuntimeDiagnosis(page, diagnosis) {
+  if (page.__gastarioDiagnosisAttached) {
+    return;
+  }
+
+  page.__gastarioDiagnosisAttached = true;
+
+  page.on("console", (message) => {
+    pushRuntimeDiagnosis(diagnosis.console, {
+      type: message.type(),
+      text: redactDiagnosticText(message.text()),
+    });
+  });
+
+  page.on("pageerror", (error) => {
+    pushRuntimeDiagnosis(
+      diagnosis.pageErrors,
+      redactDiagnosticText(error?.message || error)
+    );
+  });
+
+  page.on("requestfailed", (request) => {
+    pushRuntimeDiagnosis(
+      diagnosis.requestFailures,
+      {
+        method: request.method(),
+        url: sanitizeDiagnosticUrl(request.url()),
+        failure: redactDiagnosticText(
+          request.failure()?.errorText || ""
+        ),
+      }
+    );
+  });
+
+  page.on("response", (response) => {
+    if (response.status() < 400) {
+      return;
+    }
+
+    pushRuntimeDiagnosis(
+      diagnosis.responseErrors,
+      {
+        status: response.status(),
+        url: sanitizeDiagnosticUrl(response.url()),
+      }
+    );
+  });
+}
+
 function json(response, status, payload) {
   response.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
@@ -256,7 +355,10 @@ async function clickFirst(page, selectors) {
   };
 }
 
-async function collectLoginDiagnosis(page) {
+async function collectLoginDiagnosis(
+  page,
+  runtimeDiagnosis = null
+) {
   const context = page.context();
   const pages = context.pages();
 
@@ -326,20 +428,84 @@ async function collectLoginDiagnosis(page) {
         )
         .catch(() => []);
 
+      const documentDetails = await frame
+        .evaluate(() => {
+          const bodyText = String(
+            document.body?.innerText || ""
+          )
+            .replace(/\s+/g, " ")
+            .trim()
+            .slice(0, 1_000);
+
+          const scriptSources = Array.from(
+            document.scripts || []
+          )
+            .map((script) => script.src || "")
+            .filter(Boolean)
+            .slice(0, 25);
+
+          const customElements = Array.from(
+            document.querySelectorAll("*")
+          )
+            .map((element) =>
+              element.tagName.toLowerCase()
+            )
+            .filter((tagName) =>
+              tagName.includes("-")
+            )
+            .slice(0, 30);
+
+          return {
+            readyState: document.readyState,
+            bodyText,
+            htmlLength:
+              document.documentElement?.outerHTML
+                ?.length || 0,
+            bodyChildCount:
+              document.body?.children?.length || 0,
+            scriptCount:
+              document.scripts?.length || 0,
+            scriptSources,
+            customElements,
+          };
+        })
+        .catch(() => ({
+          readyState: "",
+          bodyText: "",
+          htmlLength: 0,
+          bodyChildCount: 0,
+          scriptCount: 0,
+          scriptSources: [],
+          customElements: [],
+        }));
+
       frameDetails.push({
-        url: frame.url(),
+        url: sanitizeDiagnosticUrl(frame.url()),
         name: frame.name(),
         inputs,
         buttons,
+        document: {
+          ...documentDetails,
+          bodyText: redactDiagnosticText(
+            documentDetails.bodyText
+          ),
+          scriptSources:
+            documentDetails.scriptSources.map(
+              sanitizeDiagnosticUrl
+            ),
+        },
       });
     }
 
     pageDetails.push({
-      url: currentPage.url(),
-      title:
+      url: sanitizeDiagnosticUrl(
+        currentPage.url()
+      ),
+      title: redactDiagnosticText(
         await currentPage
           .title()
-          .catch(() => ""),
+          .catch(() => "")
+      ),
       frames: frameDetails,
     });
   }
@@ -348,7 +514,82 @@ async function collectLoginDiagnosis(page) {
     capturedAt:
       new Date().toISOString(),
     pages: pageDetails,
+    runtime: runtimeDiagnosis || undefined,
   };
+}
+
+async function hasLoginUi(page) {
+  for (const surface of getPageSurfaces(page)) {
+    const count = await surface
+      .locator(
+        'input, button, input[type="submit"], a[role="button"]'
+      )
+      .count()
+      .catch(() => 0);
+
+    if (count > 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+async function waitForMetroLoginUi(
+  page,
+  timeout = 20_000
+) {
+  let activePage = page;
+  const deadline = Date.now() + timeout;
+
+  while (Date.now() < deadline) {
+    activePage = await getNewestPage(
+      activePage.context(),
+      activePage
+    );
+
+    if (
+      await isLoggedIn(activePage) ||
+      await hasLoginUi(activePage)
+    ) {
+      return activePage;
+    }
+
+    await activePage
+      .waitForTimeout(750)
+      .catch(() => {});
+  }
+
+  if (
+    activePage
+      .url()
+      .toLowerCase()
+      .includes("idam.metro.de")
+  ) {
+    await activePage
+      .reload({
+        waitUntil: "domcontentloaded",
+        timeout: 30_000,
+      })
+      .catch(() => {});
+
+    const reloadDeadline = Date.now() + 12_000;
+
+    while (Date.now() < reloadDeadline) {
+      if (
+        await isLoggedIn(activePage) ||
+        await hasLoginUi(activePage)
+      ) {
+        return activePage;
+      }
+
+      await activePage
+        .waitForTimeout(750)
+        .catch(() => {});
+    }
+  }
+
+  return activePage;
 }
 
 async function acceptCookies(page) {
@@ -416,7 +657,11 @@ async function findOtpInput(page) {
   return match?.locator || null;
 }
 
-async function fillLogin(page, credentials) {
+async function fillLogin(
+  page,
+  credentials,
+  runtimeDiagnosis
+) {
   let activePage = page;
 
   await acceptCookies(activePage);
@@ -454,6 +699,10 @@ async function fillLogin(page, credentials) {
 
   await activePage.waitForTimeout(1_500);
   await acceptCookies(activePage);
+
+  activePage = await waitForMetroLoginUi(
+    activePage
+  );
 
   const usernameMatch = await firstVisible(
     activePage,
@@ -573,7 +822,8 @@ async function fillLogin(page, credentials) {
           "Das METRO-Passwortfeld wurde nicht erkannt. Die sichere Worker-Diagnose wurde gespeichert.",
         diagnosis:
           await collectLoginDiagnosis(
-            activePage
+            activePage,
+            runtimeDiagnosis
           ),
         page: activePage,
       };
@@ -601,7 +851,8 @@ async function fillLogin(page, credentials) {
           "Das METRO-Benutzerfeld wurde nicht erkannt. Die sichere Worker-Diagnose wurde gespeichert.",
         diagnosis:
           await collectLoginDiagnosis(
-            activePage
+            activePage,
+            runtimeDiagnosis
           ),
         page: activePage,
       };
@@ -671,7 +922,8 @@ async function fillLogin(page, credentials) {
       "METRO hat die Anmeldung nicht bestätigt. Die sichere Worker-Diagnose wurde gespeichert.",
     diagnosis:
       await collectLoginDiagnosis(
-        activePage
+        activePage,
+        runtimeDiagnosis
       ),
     page: activePage,
   };
@@ -747,9 +999,30 @@ async function startLogin(payload) {
     locale: "de-DE",
     timezoneId: "Europe/Berlin",
     viewport: { width: 1440, height: 1000 },
+    colorScheme: "light",
+    javaScriptEnabled: true,
+    extraHTTPHeaders: {
+      "Accept-Language":
+        "de-DE,de;q=0.9,en;q=0.7",
+    },
+  });
+
+  const runtimeDiagnosis =
+    createRuntimeDiagnosis();
+
+  context.on("page", (newPage) => {
+    attachRuntimeDiagnosis(
+      newPage,
+      runtimeDiagnosis
+    );
   });
 
   const page = await context.newPage();
+
+  attachRuntimeDiagnosis(
+    page,
+    runtimeDiagnosis
+  );
   const portalUrl = String(
     credentials.portalUrl ||
       "https://lieferservice.metro.de/"
@@ -773,7 +1046,8 @@ async function startLogin(payload) {
 
     const result = await fillLogin(
       page,
-      credentials
+      credentials,
+      runtimeDiagnosis
     );
 
     const resultPage =
@@ -885,12 +1159,26 @@ async function startLogin(payload) {
       "METRO-Browserlogin fehlgeschlagen: " +
       String(error?.message || error);
 
+    const diagnosis =
+      await collectLoginDiagnosis(
+        page,
+        runtimeDiagnosis
+      ).catch(() => null);
+
+    if (diagnosis) {
+      console.log(
+        "[METRO_LOGIN_DIAGNOSIS]",
+        JSON.stringify(diagnosis)
+      );
+    }
+
     await updateConnection(connection, {
       status: "CONFIGURED",
       lastError: message,
       settings: {
         sessionStatus: "LOGIN_FAILED",
         lastLoginUrl: page.url(),
+        loginDiagnosis: diagnosis,
       },
     }).catch(() => {});
 
