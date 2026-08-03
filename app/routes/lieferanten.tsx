@@ -1139,9 +1139,8 @@ export default function SuppliersPage() {
           title="Lieferanten"
           subtitle={
             <>
-              Lieferantenstammdaten, Portalverbindungen,
-              Katalogartikel und Preisstände für{" "}
-              {data.tenant.name}.
+              Lieferanten verwalten, Portale verbinden und
+              Einkaufspreise für {data.tenant.name} vorbereiten.
             </>
           }
           actions={
@@ -1176,23 +1175,16 @@ export default function SuppliersPage() {
           />
 
           <MetricCard
-            label="Portalverbindungen"
+            label="Verbundene Portale"
             value={data.stats.connections}
-            description={`${data.stats.activeConnections} aktiv verbunden`}
-            badge="Konten"
+            description={`${data.stats.activeConnections} aktiv`}
+            badge="Verbindungen"
           />
 
           <MetricCard
-            label="Katalogartikel"
+            label="Einkaufsdaten"
             value={data.stats.catalogItems}
-            description="erkannte Lieferantenartikel"
-            badge="Sortiment"
-          />
-
-          <MetricCard
-            label="Aktuelle Preise"
-            value={data.stats.currentPrices}
-            description={`${data.stats.stalePrices} Preisstände älter als 24 Stunden`}
+            description={`${data.stats.currentPrices} aktuelle Preise · ${data.stats.stalePrices} zu prüfen`}
             badge={
               data.stats.stalePrices > 0
                 ? "Prüfen"
@@ -1204,10 +1196,24 @@ export default function SuppliersPage() {
 
         <PageSection
           eyebrow="Stammdaten"
-          title="Lieferant anlegen"
-          description="Kontaktdaten, Bestelltage und das typische Sortiment zentral erfassen."
+          title="Lieferanten verwalten"
+          description="Bestehende Lieferanten im Blick behalten und bei Bedarf neue Stammdaten erfassen."
         >
-          <Form
+          <details className="supplyDisclosure">
+            <summary>
+              <span>
+                <strong>Neuen Lieferanten anlegen</strong>
+                <small>
+                  Kontaktdaten, Bestelltage und Sortiment erfassen
+                </small>
+              </span>
+
+              <span className="supplyDisclosureAction">
+                Formular öffnen
+              </span>
+            </summary>
+
+            <div className="supplyDisclosureBody">          <Form
             method="post"
             className="supplyForm supplyForm--supplier"
           >
@@ -1290,14 +1296,30 @@ export default function SuppliersPage() {
               Lieferant anlegen
             </button>
           </Form>
+            </div>
+          </details>
         </PageSection>
 
         <PageSection
-          eyebrow="Lieferantenportale"
-          title="Lieferantenportal anlegen"
-          description="Lege das Portal mit Kundennummer und Lieferdepot an. Die Preisübertragung erfolgt anschließend über den lokalen Gastario Chrome-Connector."
+          eyebrow="Portalverbindungen"
+          title="Verbundene Lieferanten"
+          description="Status, Katalog und Preisübertragungen prüfen. Weitere Portale können bei Bedarf hinzugefügt werden."
         >
-          {data.suppliers.length === 0 ? (
+          <details className="supplyDisclosure supplyDisclosure--compact">
+            <summary>
+              <span>
+                <strong>Weiteres Lieferantenportal anlegen</strong>
+                <small>
+                  Lieferant, Portal, Standort und Kundennummer zuordnen
+                </small>
+              </span>
+
+              <span className="supplyDisclosureAction">
+                Portal hinzufügen
+              </span>
+            </summary>
+
+            <div className="supplyDisclosureBody">          {data.suppliers.length === 0 ? (
             <div className="supplyEmpty">
               <strong>
                 Zuerst einen Lieferanten anlegen
@@ -1403,7 +1425,8 @@ export default function SuppliersPage() {
               </button>
             </Form>
           )}
-
+            </div>
+          </details>
           <div className="supplyConnectionList">
             {data.connections.length === 0 ? (
               <div className="supplyEmpty">
@@ -1596,7 +1619,22 @@ export default function SuppliersPage() {
                         </span>
                       </div>
 
-                      <div className="supplyBrowserConnectorPanel">
+                      <details className="supplyDisclosure supplyDisclosure--connector">
+                        <summary>
+                          <span>
+                            <strong>Chrome-Connector einrichten und verwalten</strong>
+                            <small>
+                              Erweiterung, Verbindungscode und technische Angaben
+                            </small>
+                          </span>
+
+                          <span className="supplyDisclosureAction">
+                            Einrichtung & Details
+                          </span>
+                        </summary>
+
+                        <div className="supplyDisclosureBody">
+                          <div className="supplyBrowserConnectorPanel">
                         <div className="supplyBrowserConnectorHeader">
                           <div>
                             <small>Lokale Verbindung</small>
@@ -1783,7 +1821,9 @@ export default function SuppliersPage() {
                             </button>
                           </Form>
                         ) : null}
-                      </div>
+                          </div>
+                        </div>
+                      </details>
                     </article>
                   );
                 }

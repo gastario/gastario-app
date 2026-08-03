@@ -1113,3 +1113,124 @@
     width: 100%;
   }
 }
+/*
+ * gastario-supplier-simplified-disclosures-20260803
+ */
+
+.supplyDisclosure {
+  border: 1px solid var(--g-color-border);
+  border-radius: var(--g-radius-card);
+  background: var(--g-color-surface);
+  overflow: hidden;
+}
+
+.supplyDisclosure + .supplyConnectionList {
+  margin-top: 16px;
+}
+
+.supplyDisclosure > summary {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+  background: var(--g-color-surface);
+}
+
+.supplyDisclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.supplyDisclosure > summary > span:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.supplyDisclosure > summary strong {
+  color: var(--g-color-text);
+  font-size: 14px;
+  font-weight: var(--g-font-weight-semibold);
+  line-height: 1.35;
+}
+
+.supplyDisclosure > summary small {
+  color: var(--g-color-text-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.supplyDisclosureAction {
+  flex: 0 0 auto;
+  color: var(--g-color-brand-hover);
+  font-size: 10px;
+  font-weight: var(--g-font-weight-semibold);
+  white-space: nowrap;
+}
+
+.supplyDisclosureAction::after {
+  content: "↓";
+  display: inline-block;
+  margin-left: 7px;
+  transition: transform 160ms ease;
+}
+
+.supplyDisclosure[open] .supplyDisclosureAction::after {
+  transform: rotate(180deg);
+}
+
+.supplyDisclosure[open] > summary {
+  border-bottom: 1px solid var(--g-color-border-subtle);
+  background: var(--g-color-surface-soft);
+}
+
+.supplyDisclosureBody {
+  padding: 16px;
+}
+
+.supplyDisclosure--compact {
+  margin-bottom: 16px;
+}
+
+.supplyDisclosure--connector {
+  margin-top: 14px;
+  border-radius: var(--g-radius-control);
+}
+
+.supplyDisclosure--connector > summary {
+  min-height: 58px;
+  padding: 12px 14px;
+}
+
+.supplyDisclosure--connector .supplyDisclosureBody {
+  padding: 12px;
+}
+
+.supplyDisclosure--connector .supplyBrowserConnectorPanel {
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+@media (max-width: 700px) {
+  .supplyDisclosure > summary {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .supplyDisclosureAction {
+    white-space: normal;
+  }
+
+  .supplyDisclosureBody {
+    padding: 12px;
+  }
+
+  .supplyDisclosure--connector .supplyDisclosureBody {
+    padding: 10px;
+  }
+}
