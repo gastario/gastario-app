@@ -3366,3 +3366,120 @@
     border-bottom: 1px solid var(--supply-v1-border-soft);
   }
 }
+/*
+ * gastario-supplier-balance-and-form-fix-20260803
+ * Formular sichtbar machen, KPI-Karten kompakter,
+ * zentrale Arbeitsinhalte etwas stärker gewichten.
+ */
+
+.supplyDashboardV1Page .supplyV1Metrics article {
+  min-height: 98px;
+  padding: 16px 18px 13px;
+}
+
+.supplyDashboardV1Page .supplyV1Metrics strong {
+  margin-top: 10px;
+  font-size: 30px;
+}
+
+.supplyDashboardV1Page .supplyV1Metrics i {
+  margin-top: 8px;
+}
+
+.supplyDashboardV1Page .supplyV1PanelHeader h2 {
+  font-size: 24px;
+}
+
+.supplyDashboardV1Page .supplyV1PanelHeader p {
+  font-size: 13px;
+}
+
+.supplyDashboardV1Page .supplyV1SupplierIdentity strong,
+.supplyDashboardV1Page .supplyV1SupplierCell strong {
+  font-size: 16px;
+}
+
+.supplyDashboardV1Page .supplyV1SupplierIdentity small,
+.supplyDashboardV1Page .supplyV1SupplierCell small,
+.supplyDashboardV1Page .supplyV1SupplierCell > span {
+  font-size: 12px;
+}
+
+.supplyDashboardV1Page .supplyV1SupplierIdentity > span {
+  font-size: 11px;
+}
+
+.supplyDashboardV1Page .supplyV1RowStatus {
+  min-height: 28px;
+  padding-inline: 10px;
+  font-size: 10px !important;
+}
+
+.supplyDashboardV1Page .supplyV1RowButton {
+  min-height: 42px;
+  min-width: 104px;
+  font-size: 12px;
+}
+
+.supplyDashboardV1Page .supplyV1InlineForm > summary {
+  min-height: 76px;
+}
+
+.supplyDashboardV1Page .supplyV1InlineFormBody {
+  padding: 18px 20px 20px;
+}
+
+.supplyDashboardV1Page
+.supplyV1InlineFormBody
+.supplyDisclosure {
+  display: block;
+}
+
+.supplyDashboardV1Page
+.supplyV1InlineFormBody
+.supplyDisclosureBody {
+  display: block;
+}
+
+.supplyDashboardV1Page
+.supplyV1InlineFormBody
+.supplyForm--supplier {
+  gap: 14px;
+}
+
+.supplyDashboardV1Page
+.supplyV1InlineFormBody
+.supplyField > span {
+  font-size: 12px;
+}
+
+.supplyDashboardV1Page
+.supplyV1InlineFormBody
+.supplyField input,
+.supplyDashboardV1Page
+.supplyV1InlineFormBody
+.supplyField select {
+  min-height: 46px;
+  font-size: 14px;
+}
+
+.supplyDashboardV1Page
+.supplyV1InlineFormBody
+.supplyButton {
+  min-height: 46px;
+  font-size: 12px;
+}
+
+.supplyDashboardV1Page .supplyV1TechnicalPanel summary strong {
+  font-size: 18px;
+}
+
+.supplyDashboardV1Page .supplyV1ActivityList strong {
+  font-size: 15px;
+}
+
+@media (max-width: 900px) {
+  .supplyDashboardV1Page .supplyV1Metrics article {
+    min-height: 92px;
+  }
+}

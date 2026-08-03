@@ -1273,7 +1273,7 @@ export default function SuppliersPage() {
           </summary>
 
           <div className="supplyV1InlineFormBody">
-<details className="supplyDisclosure">
+<details className="supplyDisclosure" open>
             <summary>
               <span>
                 <strong>Neuen Lieferanten anlegen</strong>
