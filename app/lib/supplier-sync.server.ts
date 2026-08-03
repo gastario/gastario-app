@@ -354,6 +354,14 @@ async function savePriceRecord(params: {
         String(record.currency || "EUR")
           .trim()
           .toUpperCase() || "EUR",
+      priceUnitQuantity:
+        cleanPositiveNumber(
+          (record as any).priceUnitQuantity,
+          1
+        ) || 1,
+      priceUnit: cleanOptionalText(
+        (record as any).priceUnit
+      ),
       minimumQuantity: cleanPositiveNumber(
         record.minimumOrderQuantity
       ),

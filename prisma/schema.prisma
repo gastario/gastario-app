@@ -170,28 +170,30 @@ model Tenant {
   lockedAt    DateTime?
   lockReason  String?
 
-  users                  TenantUser[]
-  brands                 Brand[]
-  emailAccounts          EmailAccount[]
-  enabledFeatures        TenantFeature[]
-  customers              Customer[]
-  products               Product[]
-  quotes                 Quote[]
-  orders                 Order[]
-  deliveryNotes          DeliveryNote[]
-  incomingEmails         IncomingEmail[]
-  deliveryTours          DeliveryTour[]
-  deliveryStops          DeliveryStop[]
-  productMappings        ProductMapping[]
-  recipeItems            ProductRecipeItem[]
-  suppliers              Supplier[]
-  inventoryItems         InventoryItem[]
-  supplierConnections    SupplierConnection[]
-  supplierCatalogItems   SupplierCatalogItem[]
-  supplierPriceSnapshots SupplierPriceSnapshot[]
-  supplierSyncRuns       SupplierSyncRun[]
-  productSupplierMatches ProductSupplierMatch[]
-  accountingConnections  AccountingConnection[]
+  users                        TenantUser[]
+  brands                       Brand[]
+  emailAccounts                EmailAccount[]
+  enabledFeatures              TenantFeature[]
+  customers                    Customer[]
+  products                     Product[]
+  quotes                       Quote[]
+  orders                       Order[]
+  deliveryNotes                DeliveryNote[]
+  incomingEmails               IncomingEmail[]
+  deliveryTours                DeliveryTour[]
+  deliveryStops                DeliveryStop[]
+  productMappings              ProductMapping[]
+  recipeItems                  ProductRecipeItem[]
+  suppliers                    Supplier[]
+  inventoryItems               InventoryItem[]
+  supplierConnections          SupplierConnection[]
+  supplierCatalogItems         SupplierCatalogItem[]
+  supplierPriceSnapshots       SupplierPriceSnapshot[]
+  supplierSyncRuns             SupplierSyncRun[]
+  productSupplierMatches       ProductSupplierMatch[]
+  procurementIngredients       ProcurementIngredient[]
+  procurementIngredientMatches ProcurementIngredientMatch[]
+  accountingConnections        AccountingConnection[]
 }
 
 model TenantUser {
@@ -627,19 +629,19 @@ model DeliveryNote {
 }
 
 model OrderItem {
-  id         String   @id @default(cuid())
-  orderId    String
-  name       String
-  quantity   Int      @default(1)
-  unit       String   @default("Stueck")
-  unitCents  Int      @default(0)
-  totalCents Int      @default(0)
+  id                  String                  @id @default(cuid())
+  orderId             String
+  name                String
+  quantity            Int                     @default(1)
+  unit                String                  @default("Stueck")
+  unitCents           Int                     @default(0)
+  totalCents          Int                     @default(0)
   notes               String?
   operationalQuantity Float?
   operationalUnit     String?
   operationalArea     ProductOperationalArea?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
 
   order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product   Product? @relation(fields: [productId], references: [id])
@@ -1139,8 +1141,9 @@ model SupplierCatalogItem {
   supplier   Supplier            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
   connection SupplierConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
 
-  prices  SupplierPriceSnapshot[]
-  matches ProductSupplierMatch[]
+  prices            SupplierPriceSnapshot[]
+  matches           ProductSupplierMatch[]
+  ingredientMatches ProcurementIngredientMatch[]
 
   @@unique([supplierId, articleNumber])
   @@index([tenantId])
@@ -1240,4 +1243,51 @@ model ProductSupplierMatch {
   @@index([productId])
   @@index([catalogItemId])
   @@index([preferred])
+}
+
+model ProcurementIngredient {
+  id             String   @id @default(cuid())
+  tenantId       String
+  normalizedName String
+  displayName    String
+  baseUnit       String
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant  Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  matches ProcurementIngredientMatch[]
+
+  @@unique([tenantId, normalizedName, baseUnit])
+  @@index([tenantId])
+  @@index([normalizedName])
+  @@index([active])
+}
+
+model ProcurementIngredientMatch {
+  id            String @id @default(cuid())
+  tenantId      String
+  ingredientId  String
+  catalogItemId String
+
+  method           SupplierMatchMethod @default(MANUAL)
+  confidence       Int                 @default(100)
+  preferred        Boolean             @default(false)
+  active           Boolean             @default(true)
+  conversionFactor Float               @default(1)
+  notes            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant      Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ingredient  ProcurementIngredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  catalogItem SupplierCatalogItem   @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+
+  @@unique([ingredientId, catalogItemId])
+  @@index([tenantId])
+  @@index([ingredientId])
+  @@index([catalogItemId])
+  @@index([preferred])
+  @@index([active])
 }
