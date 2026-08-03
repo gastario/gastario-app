@@ -435,3 +435,179 @@
     min-width: 145px;
   }
 }
+/*
+ * gastario-procurement-ingredient-mapping-v1-20260803
+ */
+
+.procurementMappingSection {
+  margin-top: 22px;
+}
+
+.procurementMappingList {
+  display: grid;
+  gap: 14px;
+}
+
+.procurementMappingRow {
+  display: grid;
+  grid-template-columns:
+    minmax(170px, 0.7fr)
+    minmax(260px, 1.35fr)
+    minmax(300px, 1.15fr);
+  gap: 18px;
+  align-items: start;
+  padding: 18px;
+  border: 1px solid #dce9e5;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.procurementMappingIdentity,
+.procurementMappingMatches,
+.procurementMappingForm {
+  display: grid;
+  gap: 8px;
+}
+
+.procurementMappingIdentity small,
+.procurementMappingForm label > span {
+  color: #6e8780;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.procurementMappingIdentity strong {
+  color: #123a33;
+  font-size: 16px;
+}
+
+.procurementMappingIdentity span {
+  color: #6e8780;
+  font-size: 11px;
+}
+
+.procurementMappingMatches {
+  gap: 10px;
+}
+
+.procurementMappedArticle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e0ece8;
+  border-radius: 11px;
+  background: #f8fbfa;
+}
+
+.procurementMappedArticle > div {
+  display: grid;
+  gap: 3px;
+}
+
+.procurementMappedArticle strong {
+  color: #0c765f;
+  font-size: 12px;
+}
+
+.procurementMappedArticle span {
+  color: #244b43;
+  font-size: 12px;
+}
+
+.procurementMappedArticle small {
+  color: #758b86;
+  font-size: 10px;
+}
+
+.procurementPreferredBadge {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  padding-inline: 9px;
+  border-radius: 999px;
+  background: #e6f6ef;
+  color: #08745e !important;
+  font-size: 9px !important;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.procurementMappingRemove {
+  border: 0;
+  background: transparent;
+  color: #a34b42;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.procurementMappingEmpty {
+  padding: 12px;
+  border: 1px dashed #d7a835;
+  border-radius: 10px;
+  background: #fffaf0;
+  color: #946714;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.procurementMappingForm label {
+  display: grid;
+  gap: 6px;
+}
+
+.procurementMappingForm select {
+  min-height: 44px;
+  width: 100%;
+  padding: 0 12px;
+  border: 1px solid #cfe0db;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #163d35;
+  font-size: 12px;
+}
+
+.procurementMappingCheck {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.procurementMappingCheck input {
+  width: 16px;
+  height: 16px;
+}
+
+.procurementMappingCheck span {
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+@media (max-width: 1180px) {
+  .procurementMappingRow {
+    grid-template-columns:
+      minmax(160px, 0.65fr)
+      minmax(230px, 1fr);
+  }
+
+  .procurementMappingForm {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .procurementMappingRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .procurementMappingForm {
+    grid-column: auto;
+  }
+
+  .procurementMappedArticle {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

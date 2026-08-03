@@ -1,4 +1,4 @@
-import { Form, Link, useLoaderData } from "react-router";
+import { Form, Link, redirect, useLoaderData } from "react-router";
 
 import AppLayout from "../components/AppLayout";
 
@@ -119,6 +119,166 @@ function effectiveOperationalUnit(item: any) {
   ).trim();
 }
 
+/*
+ * gastario-procurement-ingredient-mapping-v1-20260803
+ * Manuelle und nachvollziehbare Zuordnung von Zutaten
+ * zu echten Lieferantenartikeln.
+ */
+export async function action({
+  request,
+}: {
+  request: Request;
+}) {
+  const { prisma } =
+    await import("../lib/prisma.server");
+
+  const { requireTenantFeature } =
+    await import("../lib/features.server");
+
+  const access = await requireTenantFeature(
+    request,
+    "PURCHASING"
+  );
+
+  const formData = await request.formData();
+  const intent = String(
+    formData.get("intent") || ""
+  ).trim();
+
+  const returnDate = String(
+    formData.get("returnDate") || ""
+  ).trim();
+
+  const redirectTarget = returnDate
+    ? `/einkauf?date=${encodeURIComponent(
+        returnDate
+      )}#ingredient-mapping`
+    : "/einkauf#ingredient-mapping";
+
+  if (intent === "save-ingredient-match") {
+    const ingredientId = String(
+      formData.get("ingredientId") || ""
+    ).trim();
+
+    const catalogItemId = String(
+      formData.get("catalogItemId") || ""
+    ).trim();
+
+    const preferred =
+      String(
+        formData.get("preferred") || ""
+      ) === "true";
+
+    if (!ingredientId || !catalogItemId) {
+      throw new Response(
+        "Zutat und Lieferantenartikel sind erforderlich.",
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const [ingredient, catalogItem] =
+      await Promise.all([
+        prisma.procurementIngredient.findFirst({
+          where: {
+            id: ingredientId,
+            tenantId: access.tenantId,
+            active: true,
+          },
+        }),
+        prisma.supplierCatalogItem.findFirst({
+          where: {
+            id: catalogItemId,
+            tenantId: access.tenantId,
+            active: true,
+          },
+        }),
+      ]);
+
+    if (!ingredient || !catalogItem) {
+      throw new Response(
+        "Zutat oder Lieferantenartikel wurde nicht gefunden.",
+        {
+          status: 404,
+        }
+      );
+    }
+
+    if (preferred) {
+      await prisma.procurementIngredientMatch.updateMany({
+        where: {
+          tenantId: access.tenantId,
+          ingredientId,
+        },
+        data: {
+          preferred: false,
+        },
+      });
+    }
+
+    await prisma.procurementIngredientMatch.upsert({
+      where: {
+        ingredientId_catalogItemId: {
+          ingredientId,
+          catalogItemId,
+        },
+      },
+      update: {
+        active: true,
+        preferred,
+        method: "MANUAL",
+        confidence: 100,
+      },
+      create: {
+        tenantId: access.tenantId,
+        ingredientId,
+        catalogItemId,
+        active: true,
+        preferred,
+        method: "MANUAL",
+        confidence: 100,
+      },
+    });
+
+    return redirect(redirectTarget);
+  }
+
+  if (intent === "remove-ingredient-match") {
+    const matchId = String(
+      formData.get("matchId") || ""
+    ).trim();
+
+    if (!matchId) {
+      throw new Response(
+        "Zuordnung fehlt.",
+        {
+          status: 400,
+        }
+      );
+    }
+
+    await prisma.procurementIngredientMatch.updateMany({
+      where: {
+        id: matchId,
+        tenantId: access.tenantId,
+      },
+      data: {
+        active: false,
+        preferred: false,
+      },
+    });
+
+    return redirect(redirectTarget);
+  }
+
+  throw new Response(
+    "Unbekannte Aktion.",
+    {
+      status: 400,
+    }
+  );
+}
 export function meta() {
   return [{ title: "Einkaufsplanung · Gastario" }];
 }
@@ -396,6 +556,87 @@ export async function loader({
       tenantId: access.tenantId,
       demandItems,
     });
+  const currentIngredientIds =
+    comparisonResult.items
+      .map(
+        (item: any) =>
+          item.procurementIngredientId
+      )
+      .filter(Boolean);
+
+  const [
+    ingredientMappings,
+    catalogItems,
+  ] = await Promise.all([
+    currentIngredientIds.length > 0
+      ? prisma.procurementIngredient.findMany({
+          where: {
+            tenantId: access.tenantId,
+            id: {
+              in: currentIngredientIds,
+            },
+            active: true,
+          },
+          include: {
+            matches: {
+              where: {
+                active: true,
+              },
+              include: {
+                catalogItem: {
+                  include: {
+                    supplier: true,
+                    prices: {
+                      orderBy: {
+                        fetchedAt: "desc",
+                      },
+                      take: 1,
+                    },
+                  },
+                },
+              },
+              orderBy: [
+                {
+                  preferred: "desc",
+                },
+                {
+                  createdAt: "asc",
+                },
+              ],
+            },
+          },
+          orderBy: {
+            displayName: "asc",
+          },
+        })
+      : [],
+    prisma.supplierCatalogItem.findMany({
+      where: {
+        tenantId: access.tenantId,
+        active: true,
+      },
+      include: {
+        supplier: true,
+        prices: {
+          orderBy: {
+            fetchedAt: "desc",
+          },
+          take: 1,
+        },
+      },
+      orderBy: [
+        {
+          supplier: {
+            name: "asc",
+          },
+        },
+        {
+          name: "asc",
+        },
+      ],
+      take: 750,
+    }),
+  ]);
   const unresolvedCount =
     missingRecipeItems.length;
 
@@ -409,6 +650,8 @@ export async function loader({
     missingRecipeItems,
     unresolvedCount,
     comparisonStats: comparisonResult.stats,
+    ingredientMappings,
+    catalogItems,
   };
 }
 
@@ -787,6 +1030,225 @@ export default function PurchasingPage() {
           </aside>
         </div>
 
+        <PageSection
+          className="procurementMappingSection"
+          eyebrow="Artikelzuordnung"
+          title="Zutaten mit Lieferantenartikeln verbinden"
+          description="Ordne jede Zutat einem oder mehreren echten Katalogartikeln zu. Gastario vergleicht anschließend automatisch Packungsgrößen und aktuelle Preise."
+          id="ingredient-mapping"
+          actions={
+            <Link
+              className="procurementButton procurementButton--secondary"
+              to="/lieferanten"
+            >
+              Lieferantenkataloge
+            </Link>
+          }
+        >
+          {data.ingredientMappings.length === 0 ? (
+            <div className="procurementCompactEmpty">
+              Für den gewählten Planungstag gibt es
+              noch keine berechenbaren Zutaten.
+            </div>
+          ) : (
+            <div className="procurementMappingList">
+              {data.ingredientMappings.map(
+                (ingredient: any) => (
+                  <article
+                    className="procurementMappingRow"
+                    key={ingredient.id}
+                  >
+                    <div className="procurementMappingIdentity">
+                      <small>Zutat</small>
+                      <strong>
+                        {ingredient.displayName}
+                      </strong>
+                      <span>
+                        Basiseinheit:{" "}
+                        {ingredient.baseUnit}
+                      </span>
+                    </div>
+
+                    <div className="procurementMappingMatches">
+                      {ingredient.matches.length === 0 ? (
+                        <div className="procurementMappingEmpty">
+                          Noch kein Lieferantenartikel
+                          zugeordnet
+                        </div>
+                      ) : (
+                        ingredient.matches.map(
+                          (match: any) => {
+                            const price =
+                              match.catalogItem
+                                .prices?.[0] || null;
+
+                            return (
+                              <div
+                                className="procurementMappedArticle"
+                                key={match.id}
+                              >
+                                <div>
+                                  <strong>
+                                    {
+                                      match
+                                        .catalogItem
+                                        .supplier
+                                        .name
+                                    }
+                                  </strong>
+
+                                  <span>
+                                    {
+                                      match
+                                        .catalogItem
+                                        .name
+                                    }
+                                  </span>
+
+                                  <small>
+                                    {price
+                                      ? `${formatMoney(
+                                          price.netPriceCents
+                                        )} · ${formatPriceAge(
+                                          price.fetchedAt
+                                        )}`
+                                      : "Noch kein Preis vorhanden"}
+                                  </small>
+                                </div>
+
+                                {match.preferred ? (
+                                  <span className="procurementPreferredBadge">
+                                    Bevorzugt
+                                  </span>
+                                ) : null}
+
+                                <Form method="post">
+                                  <input
+                                    type="hidden"
+                                    name="intent"
+                                    value="remove-ingredient-match"
+                                  />
+                                  <input
+                                    type="hidden"
+                                    name="matchId"
+                                    value={match.id}
+                                  />
+                                  <input
+                                    type="hidden"
+                                    name="returnDate"
+                                    value={
+                                      data.selectedDate
+                                    }
+                                  />
+
+                                  <button
+                                    type="submit"
+                                    className="procurementMappingRemove"
+                                  >
+                                    Entfernen
+                                  </button>
+                                </Form>
+                              </div>
+                            );
+                          }
+                        )
+                      )}
+                    </div>
+
+                    <Form
+                      method="post"
+                      className="procurementMappingForm"
+                    >
+                      <input
+                        type="hidden"
+                        name="intent"
+                        value="save-ingredient-match"
+                      />
+                      <input
+                        type="hidden"
+                        name="ingredientId"
+                        value={ingredient.id}
+                      />
+                      <input
+                        type="hidden"
+                        name="returnDate"
+                        value={data.selectedDate}
+                      />
+
+                      <label>
+                        <span>
+                          Lieferantenartikel
+                        </span>
+
+                        <select
+                          name="catalogItemId"
+                          required
+                          defaultValue=""
+                        >
+                          <option value="" disabled>
+                            Artikel auswählen …
+                          </option>
+
+                          {data.catalogItems.map(
+                            (catalogItem: any) => {
+                              const latestPrice =
+                                catalogItem
+                                  .prices?.[0] ||
+                                null;
+
+                              return (
+                                <option
+                                  key={
+                                    catalogItem.id
+                                  }
+                                  value={
+                                    catalogItem.id
+                                  }
+                                >
+                                  {
+                                    catalogItem
+                                      .supplier.name
+                                  }
+                                  {" · "}
+                                  {catalogItem.name}
+                                  {latestPrice
+                                    ? ` · ${formatMoney(
+                                        latestPrice
+                                          .netPriceCents
+                                      )}`
+                                    : " · ohne Preis"}
+                                </option>
+                              );
+                            }
+                          )}
+                        </select>
+                      </label>
+
+                      <label className="procurementMappingCheck">
+                        <input
+                          type="checkbox"
+                          name="preferred"
+                          value="true"
+                        />
+                        <span>
+                          Als bevorzugten Artikel
+                          markieren
+                        </span>
+                      </label>
+
+                      <button
+                        className="procurementButton procurementButton--primary"
+                        type="submit"
+                      >
+                        Zuordnen
+                      </button>
+                    </Form>
+                  </article>
+                )
+              )}
+            </div>
+          )}
+        </PageSection>
         {data.missingRecipeItems.length > 0 ? (
           <PageSection
             eyebrow="Prüfung"
