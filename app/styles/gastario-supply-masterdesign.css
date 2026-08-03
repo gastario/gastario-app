@@ -866,3 +866,39 @@
     grid-column: auto;
   }
 }
+
+
+/*
+ * gastario-metro-browser-worker-login-20260802
+ */
+
+.supplyOtpForm {
+  min-width: 250px;
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--g-color-warning-border);
+  border-radius: var(--g-radius-control);
+  background: var(--g-color-warning-bg);
+}
+
+.supplyOtpForm .supplyField {
+  min-width: 0;
+}
+
+.supplyOtpForm .supplyButton {
+  min-height: 42px;
+}
+
+@media (max-width: 700px) {
+  .supplyOtpForm {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .supplyOtpForm .supplyButton {
+    width: 100%;
+  }
+}

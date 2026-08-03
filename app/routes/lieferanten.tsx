@@ -423,7 +423,10 @@ export async function action({ request }: { request: Request }) {
               new Date().toISOString(),
             onboardingStatus:
               "CREDENTIALS_SAVED",
-            sessionStatus: "LOGIN_PENDING",
+            sessionStatus: "CREDENTIALS_SAVED",
+            portalSessionEncrypted: null,
+            sessionSavedAt: null,
+            sessionExpiresAt: null,
             automaticSync: false,
           },
         },
@@ -495,6 +498,9 @@ export async function action({ request }: { request: Request }) {
           credentialsSavedAt: null,
           onboardingStatus: "ACCESS_REQUIRED",
           sessionStatus: "LOGIN_REQUIRED",
+          portalSessionEncrypted: null,
+          sessionSavedAt: null,
+          sessionExpiresAt: null,
           automaticSync: false,
         },
       },
@@ -583,6 +589,135 @@ export async function action({ request }: { request: Request }) {
         "Kundennummer und Standort wurden gespeichert.",
     };
   }
+  /*
+   * gastario-metro-browser-login-worker-20260802
+   * Der Railway-Browserworker testet den verschluesselten Zugang
+   * und speichert nur eine verschluesselte Portalsitzung.
+   */
+  if (intent === "testPortalLogin") {
+    const connectionId = String(
+      formData.get("connectionId") || ""
+    ).trim();
+
+    if (!connectionId) {
+      return {
+        error: "Lieferantenverbindung fehlt.",
+      };
+    }
+
+    const connection =
+      await prisma.supplierConnection.findFirst({
+        where: {
+          id: connectionId,
+          tenantId: access.tenantId,
+        },
+        select: {
+          id: true,
+          credentialsEncrypted: true,
+        },
+      });
+
+    if (!connection) {
+      return {
+        error: "Lieferantenverbindung nicht gefunden.",
+      };
+    }
+
+    if (!connection.credentialsEncrypted) {
+      return {
+        error:
+          "Bitte zuerst den METRO-Zugang sicher speichern.",
+      };
+    }
+
+    try {
+      const { startSupplierPortalLogin } =
+        await import(
+          "../lib/supplier-portal-worker.server"
+        );
+
+      const result =
+        await startSupplierPortalLogin({
+          connectionId: connection.id,
+          tenantId: access.tenantId,
+        });
+
+      if (!result.ok) {
+        return {
+          error: result.message,
+        };
+      }
+
+      return {
+        success: result.mfaRequired
+          ? "METRO verlangt einen Sicherheitscode. Bitte den Code in der Verbindungskarte eingeben."
+          : "Die METRO-Anmeldung war erfolgreich. Die verschlüsselte Portalsitzung wurde gespeichert.",
+      };
+    } catch (error: any) {
+      return {
+        error: String(
+          error?.message || error
+        ),
+      };
+    }
+  }
+
+  if (intent === "submitPortalOtp") {
+    const connectionId = String(
+      formData.get("connectionId") || ""
+    ).trim();
+
+    const code = String(
+      formData.get("code") || ""
+    )
+      .replace(/\s+/g, "")
+      .trim();
+
+    if (!connectionId) {
+      return {
+        error: "Lieferantenverbindung fehlt.",
+      };
+    }
+
+    if (!/^[0-9A-Za-z-]{4,12}$/.test(code)) {
+      return {
+        error:
+          "Bitte den vollständigen METRO-Sicherheitscode eingeben.",
+      };
+    }
+
+    try {
+      const { submitSupplierPortalOtp } =
+        await import(
+          "../lib/supplier-portal-worker.server"
+        );
+
+      const result =
+        await submitSupplierPortalOtp({
+          connectionId,
+          tenantId: access.tenantId,
+          code,
+        });
+
+      if (!result.ok) {
+        return {
+          error: result.message,
+        };
+      }
+
+      return {
+        success:
+          "Der Sicherheitscode wurde bestätigt. Die METRO-Sitzung ist jetzt aktiv.",
+      };
+    } catch (error: any) {
+      return {
+        error: String(
+          error?.message || error
+        ),
+      };
+    }
+  }
+
   /*
    * gastario-supplier-sync-actions-20260729
    * Startet ausschliesslich den echten serverseitigen Connector.
@@ -1075,27 +1210,39 @@ export default function SuppliersPage() {
                   const lastSync =
                     connection.syncRuns[0] || null;
 
+                  const sessionStatus = String(
+                    connection.settingsJson
+                      ?.sessionStatus || ""
+                  ).toUpperCase();
+
                   const statusLabel =
                     connection.status === "ACTIVE"
                       ? "Verbunden"
-                      : connection.status ===
-                          "CONFIGURED" &&
-                          connection.hasPortalCredentials
-                        ? "Zugang gespeichert"
-                        : connection.status ===
-                            "CONFIGURED"
-                          ? "Anmeldung erforderlich"
-                        : connection.status === "ERROR"
-                          ? "Fehler"
+                      : sessionStatus ===
+                          "MFA_REQUIRED"
+                        ? "Sicherheitscode erforderlich"
+                        : sessionStatus ===
+                            "LOGIN_FAILED"
+                          ? "Anmeldung fehlgeschlagen"
                           : connection.status ===
-                              "PAUSED"
-                            ? "Pausiert"
-                            : "Nicht verbunden";
+                                "CONFIGURED" &&
+                              connection.hasPortalCredentials
+                            ? "Zugang gespeichert"
+                            : connection.status ===
+                                "CONFIGURED"
+                              ? "Anmeldung erforderlich"
+                              : connection.status === "ERROR"
+                                ? "Fehler"
+                                : connection.status ===
+                                    "PAUSED"
+                                  ? "Pausiert"
+                                  : "Nicht verbunden";
 
                   const statusTone =
                     connection.status === "ACTIVE"
                       ? "success"
-                      : connection.status === "ERROR"
+                      : connection.status === "ERROR" ||
+                          sessionStatus === "LOGIN_FAILED"
                         ? "danger"
                         : "warning";
 
@@ -1186,17 +1333,35 @@ export default function SuppliersPage() {
                         <strong>
                           {connection.status === "ACTIVE"
                             ? "METRO-Sitzung ist aktiv"
-                            : connection.hasPortalCredentials
-                              ? "Zugangsdaten verschlüsselt gespeichert"
-                              : "METRO-Anmeldung erforderlich"}
+                            : sessionStatus ===
+                                "MFA_REQUIRED"
+                              ? "METRO wartet auf einen Sicherheitscode"
+                              : sessionStatus ===
+                                  "LOGIN_FAILED"
+                                ? "Die letzte Anmeldung ist fehlgeschlagen"
+                                : connection.hasPortalCredentials
+                                  ? "Zugangsdaten verschlüsselt gespeichert"
+                                  : "METRO-Anmeldung erforderlich"}
                         </strong>
 
                         <span>
                           {connection.status === "ACTIVE"
-                            ? "Gastario kann die zugeordneten Artikel und Preise synchronisieren."
-                            : connection.hasPortalCredentials
-                              ? "Der automatische Browser-Login wird im nächsten Schritt mit diesem Zugang gestartet."
-                              : "Benutzername und Passwort werden verschlüsselt gespeichert und niemals an den Browser ausgeliefert."}
+                            ? `Letzte Anmeldung: ${
+                                connection.settingsJson
+                                  ?.sessionSavedAt
+                                  ? new Date(
+                                      connection.settingsJson.sessionSavedAt
+                                    ).toLocaleString(
+                                      "de-DE"
+                                    )
+                                  : "aktiv"
+                              }`
+                            : sessionStatus ===
+                                "MFA_REQUIRED"
+                              ? "Gib den Code aus E-Mail, SMS oder Authenticator unten ein. Die wartende Browsersitzung bleibt nur wenige Minuten geöffnet."
+                              : connection.hasPortalCredentials
+                                ? "Starte jetzt den geschützten Railway-Browser. Gastario prüft den Login und speichert anschließend nur die verschlüsselte Sitzung."
+                                : "Benutzername und Passwort werden verschlüsselt gespeichert und niemals über den Loader an den Browser zurückgegeben."}
                         </span>
                       </div>
 
@@ -1329,6 +1494,68 @@ export default function SuppliersPage() {
                             </Form>
                           ) : null}
                         </details>
+
+                        {connection.hasPortalCredentials &&
+                        connection.status !== "ACTIVE" ? (
+                          <Form method="post">
+                            <input
+                              type="hidden"
+                              name="intent"
+                              value="testPortalLogin"
+                            />
+
+                            <input
+                              type="hidden"
+                              name="connectionId"
+                              value={connection.id}
+                            />
+
+                            <button
+                              className="supplyButton supplyButton--primary"
+                              type="submit"
+                            >
+                              METRO-Anmeldung testen
+                            </button>
+                          </Form>
+                        ) : null}
+
+                        {sessionStatus ===
+                        "MFA_REQUIRED" ? (
+                          <Form
+                            method="post"
+                            className="supplyOtpForm"
+                          >
+                            <input
+                              type="hidden"
+                              name="intent"
+                              value="submitPortalOtp"
+                            />
+
+                            <input
+                              type="hidden"
+                              name="connectionId"
+                              value={connection.id}
+                            />
+
+                            <label className="supplyField">
+                              <span>Sicherheitscode</span>
+                              <input
+                                name="code"
+                                inputMode="numeric"
+                                autoComplete="one-time-code"
+                                placeholder="Code eingeben"
+                                required
+                              />
+                            </label>
+
+                            <button
+                              className="supplyButton supplyButton--primary"
+                              type="submit"
+                            >
+                              Code bestätigen
+                            </button>
+                          </Form>
+                        ) : null}
 
                         <Form method="post">
                           <input

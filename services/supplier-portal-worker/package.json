@@ -1,0 +1,11 @@
+{
+  "name": "gastario-supplier-portal-worker",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "dependencies": {
+    "@prisma/client": "6.19.3",
+    "playwright": "1.62.0",
+    "prisma": "6.19.3"
+  }
+}
