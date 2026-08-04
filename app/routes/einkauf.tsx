@@ -90,6 +90,116 @@ function formatPriceAge(value: string | Date) {
 
   return date.toLocaleString("de-DE");
 }
+/*
+ * gastario-procurement-export-v1-20260804
+ */
+
+function escapeCsvValue(value: unknown) {
+  const text = String(value ?? "");
+
+  if (
+    text.includes(";") ||
+    text.includes('"') ||
+    text.includes("\n")
+  ) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+
+  return text;
+}
+
+function buildProcurementCsv(params: {
+  plan: any;
+  selectedDate: string;
+  planLabel: string;
+}) {
+  const { plan, selectedDate, planLabel } = params;
+
+  const rows = [
+    [
+      "Plan",
+      "Planungstag",
+      "Lieferant",
+      "Zutat",
+      "Lieferantenartikel",
+      "Artikelnummer",
+      "Packungen",
+      "Packungsinhalt",
+      "Basiseinheit",
+      "Einzelpreis netto",
+      "Gesamt netto",
+    ],
+  ];
+
+  for (const group of plan.groups || []) {
+    for (const item of group.items || []) {
+      rows.push([
+        planLabel,
+        selectedDate,
+        group.supplierName,
+        item.ingredientName,
+        item.catalogItemName,
+        item.articleNumber || "",
+        String(item.packageCount ?? ""),
+        String(item.packContent ?? ""),
+        item.baseUnit || "",
+        (
+          Number(item.netUnitPriceCents || 0) /
+          100
+        )
+          .toFixed(2)
+          .replace(".", ","),
+        (
+          Number(item.netTotalCents || 0) /
+          100
+        )
+          .toFixed(2)
+          .replace(".", ","),
+      ]);
+    }
+  }
+
+  return rows
+    .map((row) =>
+      row.map(escapeCsvValue).join(";")
+    )
+    .join("\r\n");
+}
+
+function downloadProcurementCsv(params: {
+  plan: any;
+  selectedDate: string;
+  planLabel: string;
+  fileSuffix: string;
+}) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const csv = buildProcurementCsv(params);
+  const blob = new Blob(
+    [`\uFEFF${csv}`],
+    {
+      type: "text/csv;charset=utf-8",
+    }
+  );
+
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = [
+    "gastario-einkauf",
+    params.selectedDate,
+    params.fileSuffix,
+  ].join("-") + ".csv";
+
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+
+  URL.revokeObjectURL(url);
+}
 function effectiveOperationalArea(item: any) {
   return String(
     item?.operationalArea ||
@@ -1060,15 +1170,46 @@ export default function PurchasingPage() {
           eyebrow="Einkaufsvorschlag"
           title="Günstigster Einkaufsplan"
           description="Je Zutat wird das günstigste bestätigte und aktuell bepreiste Angebot verwendet. Der Plan ist nach Lieferanten gruppiert."
-          id="procurement-plan"
           actions={
-            <div className="procurementPlanTotal">
-              <small>Gesamtsumme netto</small>
-              <strong>
-                {formatMoney(
-                  data.procurementPlan.totalNetCents
-                )}
-              </strong>
+            <div className="procurementPlanActions">
+              <button
+                type="button"
+                className="procurementButton procurementButton--secondary"
+                onClick={() =>
+                  downloadProcurementCsv({
+                    plan: data.procurementPlan,
+                    selectedDate:
+                      data.selectedDate,
+                    planLabel:
+                      "Günstigster Einkaufsplan",
+                    fileSuffix: "guenstig",
+                  })
+                }
+                disabled={
+                  data.procurementPlan.groups
+                    .length === 0
+                }
+              >
+                CSV herunterladen
+              </button>
+
+              <button
+                type="button"
+                className="procurementButton procurementButton--secondary"
+                onClick={() => window.print()}
+              >
+                Drucken
+              </button>
+
+              <div className="procurementPlanTotal">
+                <small>Gesamtsumme netto</small>
+                <strong>
+                  {formatMoney(
+                    data.procurementPlan
+                      .totalNetCents
+                  )}
+                </strong>
+              </div>
             </div>
           }
         >
@@ -1184,14 +1325,46 @@ export default function PurchasingPage() {
           title="Praktischer Einkaufsplan"
           description={`Bevorzugt möglichst wenige Lieferanten. Ein Artikel darf dabei höchstens ${data.practicalProcurementPlan.tolerancePercent}% teurer als das günstigste Angebot sein.`}
           actions={
-            <div className="procurementPlanTotal">
-              <small>Gesamtsumme netto</small>
-              <strong>
-                {formatMoney(
+            <div className="procurementPlanActions">
+              <button
+                type="button"
+                className="procurementButton procurementButton--secondary"
+                onClick={() =>
+                  downloadProcurementCsv({
+                    plan:
+                      data.practicalProcurementPlan,
+                    selectedDate:
+                      data.selectedDate,
+                    planLabel:
+                      "Praktischer Einkaufsplan",
+                    fileSuffix: "praktisch",
+                  })
+                }
+                disabled={
                   data.practicalProcurementPlan
-                    .totalNetCents
-                )}
-              </strong>
+                    .groups.length === 0
+                }
+              >
+                CSV herunterladen
+              </button>
+
+              <button
+                type="button"
+                className="procurementButton procurementButton--secondary"
+                onClick={() => window.print()}
+              >
+                Drucken
+              </button>
+
+              <div className="procurementPlanTotal">
+                <small>Gesamtsumme netto</small>
+                <strong>
+                  {formatMoney(
+                    data.practicalProcurementPlan
+                      .totalNetCents
+                  )}
+                </strong>
+              </div>
             </div>
           }
         >

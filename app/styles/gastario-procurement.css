@@ -846,3 +846,58 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+/*
+ * gastario-procurement-export-v1-20260804
+ */
+
+.procurementPlanActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.procurementPlanActions .procurementButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@media print {
+  .procurementPage
+    .procurementButton,
+  .procurementPage
+    .procurementDateFilter,
+  .procurementMappingSection,
+  .procurementPracticalSection
+    ~ .procurementMappingSection {
+    display: none !important;
+  }
+
+  .procurementPage {
+    background: #ffffff !important;
+  }
+
+  .procurementPlanSupplier,
+  .procurementPlanItem {
+    break-inside: avoid;
+  }
+
+  .procurementPlanSection,
+  .procurementPracticalSection {
+    box-shadow: none !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .procurementPlanActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .procurementPlanActions
+    .procurementPlanTotal {
+    width: 100%;
+    text-align: left;
+  }
+}
