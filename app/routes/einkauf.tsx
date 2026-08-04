@@ -265,6 +265,315 @@ export async function action({
       )}#ingredient-mapping`
     : "/einkauf#ingredient-mapping";
 
+  /*
+   * gastario-procurement-draft-save-v1-20260804
+   */
+  if (intent === "save-procurement-drafts") {
+    const selectedDate = String(
+      formData.get("selectedDate") || ""
+    ).trim();
+
+    const planTypeRaw = String(
+      formData.get("planType") || ""
+    ).trim();
+
+    const groupsJson = String(
+      formData.get("groupsJson") || ""
+    ).trim();
+
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(selectedDate)
+    ) {
+      throw new Response(
+        "Ungültiger Planungstag.",
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (
+      planTypeRaw !== "CHEAPEST" &&
+      planTypeRaw !== "PRACTICAL"
+    ) {
+      throw new Response(
+        "Ungültige Planart.",
+        {
+          status: 400,
+        }
+      );
+    }
+
+    let groups: any[] = [];
+
+    try {
+      groups = JSON.parse(groupsJson);
+    } catch {
+      throw new Response(
+        "Der Einkaufsplan konnte nicht gelesen werden.",
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (
+      !Array.isArray(groups) ||
+      groups.length === 0
+    ) {
+      throw new Response(
+        "Der Einkaufsplan enthält keine Lieferanten.",
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const planningDate = new Date(
+      `${selectedDate}T00:00:00.000Z`
+    );
+
+    const existingDraftCount =
+      await prisma.procurementOrderDraft.count({
+        where: {
+          tenantId: access.tenantId,
+          planningDate,
+          planType: planTypeRaw,
+          status: {
+            not: "CANCELLED",
+          },
+        },
+      });
+
+    if (existingDraftCount > 0) {
+      return redirect(
+        `/einkauf?date=${encodeURIComponent(
+          selectedDate
+        )}&draft=exists#saved-procurement-drafts`
+      );
+    }
+
+    const catalogItemIds = Array.from(
+      new Set(
+        groups.flatMap((group: any) =>
+          Array.isArray(group?.items)
+            ? group.items
+                .map(
+                  (item: any) =>
+                    item?.catalogItemId
+                )
+                .filter(Boolean)
+            : []
+        )
+      )
+    );
+
+    const validCatalogItems =
+      catalogItemIds.length > 0
+        ? await prisma.supplierCatalogItem.findMany({
+            where: {
+              tenantId: access.tenantId,
+              id: {
+                in: catalogItemIds,
+              },
+              active: true,
+            },
+            select: {
+              id: true,
+              supplierId: true,
+              supplier: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          })
+        : [];
+
+    const catalogItemMap = new Map(
+      validCatalogItems.map((item: any) => [
+        item.id,
+        item,
+      ])
+    );
+
+    const sanitizedGroups = groups
+      .map((group: any) => {
+        const items = Array.isArray(group?.items)
+          ? group.items
+              .map((item: any) => {
+                const catalogItem =
+                  catalogItemMap.get(
+                    item?.catalogItemId
+                  );
+
+                if (!catalogItem) {
+                  return null;
+                }
+
+                const packageCount = Number(
+                  item?.packageCount || 0
+                );
+
+                const packContent = Number(
+                  item?.packContent || 0
+                );
+
+                const netUnitPriceCents =
+                  Math.max(
+                    0,
+                    Math.round(
+                      Number(
+                        item?.netUnitPriceCents ||
+                          0
+                      )
+                    )
+                  );
+
+                const netTotalCents =
+                  Math.max(
+                    0,
+                    Math.round(
+                      Number(
+                        item?.netTotalCents || 0
+                      )
+                    )
+                  );
+
+                if (
+                  !Number.isFinite(packageCount) ||
+                  packageCount <= 0 ||
+                  !Number.isFinite(packContent) ||
+                  packContent < 0
+                ) {
+                  return null;
+                }
+
+                return {
+                  catalogItemId:
+                    catalogItem.id,
+                  ingredientName: String(
+                    item?.ingredientName || ""
+                  ).trim(),
+                  catalogItemName: String(
+                    item?.catalogItemName || ""
+                  ).trim(),
+                  articleNumber:
+                    item?.articleNumber
+                      ? String(
+                          item.articleNumber
+                        ).trim()
+                      : null,
+                  packageCount,
+                  packContent:
+                    packContent > 0
+                      ? packContent
+                      : null,
+                  baseUnit:
+                    item?.baseUnit
+                      ? String(
+                          item.baseUnit
+                        ).trim()
+                      : null,
+                  netUnitPriceCents,
+                  netTotalCents,
+                };
+              })
+              .filter(Boolean)
+          : [];
+
+        if (items.length === 0) {
+          return null;
+        }
+
+        const firstCatalogItem =
+          catalogItemMap.get(
+            items[0].catalogItemId
+          );
+
+        return {
+          supplierId:
+            firstCatalogItem?.supplierId ||
+            null,
+          supplierName:
+            firstCatalogItem?.supplier
+              ?.name ||
+            String(
+              group?.supplierName ||
+                "Unbekannter Lieferant"
+            ).trim(),
+          netTotalCents: items.reduce(
+            (sum: number, item: any) =>
+              sum +
+              Number(
+                item.netTotalCents || 0
+              ),
+            0
+          ),
+          items,
+        };
+      })
+      .filter(Boolean);
+
+    if (sanitizedGroups.length === 0) {
+      throw new Response(
+        "Es konnten keine gültigen Bestellpositionen übernommen werden.",
+        {
+          status: 400,
+        }
+      );
+    }
+
+    await prisma.$transaction(
+      sanitizedGroups.map((group: any) =>
+        prisma.procurementOrderDraft.create({
+          data: {
+            tenantId: access.tenantId,
+            supplierId: group.supplierId,
+            supplierName:
+              group.supplierName,
+            planningDate,
+            planType: planTypeRaw,
+            status: "DRAFT",
+            netTotalCents:
+              group.netTotalCents,
+            items: {
+              create: group.items.map(
+                (item: any) => ({
+                  tenantId:
+                    access.tenantId,
+                  catalogItemId:
+                    item.catalogItemId,
+                  ingredientName:
+                    item.ingredientName,
+                  catalogItemName:
+                    item.catalogItemName,
+                  articleNumber:
+                    item.articleNumber,
+                  packageCount:
+                    item.packageCount,
+                  packContent:
+                    item.packContent,
+                  baseUnit:
+                    item.baseUnit,
+                  netUnitPriceCents:
+                    item.netUnitPriceCents,
+                  netTotalCents:
+                    item.netTotalCents,
+                })
+              ),
+            },
+          },
+        })
+      )
+    );
+
+    return redirect(
+      `/einkauf?date=${encodeURIComponent(
+        selectedDate
+      )}&draft=created#saved-procurement-drafts`
+    );
+  }
   if (intent === "save-ingredient-match") {
     const ingredientId = String(
       formData.get("ingredientId") || ""
@@ -766,6 +1075,31 @@ export async function loader({
       catalogItems,
       limit: 5,
     });
+  const savedProcurementDrafts =
+    await prisma.procurementOrderDraft.findMany({
+      where: {
+        tenantId: access.tenantId,
+        planningDate: new Date(
+          `${selectedDate}T00:00:00.000Z`
+        ),
+      },
+      include: {
+        items: {
+          orderBy: {
+            ingredientName: "asc",
+          },
+        },
+      },
+      orderBy: [
+        {
+          createdAt: "desc",
+        },
+        {
+          supplierName: "asc",
+        },
+      ],
+      take: 100,
+    });
   const unresolvedCount =
     missingRecipeItems.length;
 
@@ -784,6 +1118,7 @@ export async function loader({
     candidateSuggestions,
     procurementPlan,
     practicalProcurementPlan,
+    savedProcurementDrafts,
   };
 }
 
@@ -1172,6 +1507,41 @@ export default function PurchasingPage() {
           description="Je Zutat wird das günstigste bestätigte und aktuell bepreiste Angebot verwendet. Der Plan ist nach Lieferanten gruppiert."
           actions={
             <div className="procurementPlanActions">
+              <Form method="post">
+                <input
+                  type="hidden"
+                  name="intent"
+                  value="save-procurement-drafts"
+                />
+                <input
+                  type="hidden"
+                  name="selectedDate"
+                  value={data.selectedDate}
+                />
+                <input
+                  type="hidden"
+                  name="planType"
+                  value="CHEAPEST"
+                />
+                <input
+                  type="hidden"
+                  name="groupsJson"
+                  value={JSON.stringify(
+                    data.procurementPlan.groups
+                  )}
+                />
+
+                <button
+                  type="submit"
+                  className="procurementButton procurementButton--primary"
+                  disabled={
+                    data.procurementPlan.groups
+                      .length === 0
+                  }
+                >
+                  Bestellentwürfe erstellen
+                </button>
+              </Form>
               <button
                 type="button"
                 className="procurementButton procurementButton--secondary"
@@ -1326,6 +1696,42 @@ export default function PurchasingPage() {
           description={`Bevorzugt möglichst wenige Lieferanten. Ein Artikel darf dabei höchstens ${data.practicalProcurementPlan.tolerancePercent}% teurer als das günstigste Angebot sein.`}
           actions={
             <div className="procurementPlanActions">
+              <Form method="post">
+                <input
+                  type="hidden"
+                  name="intent"
+                  value="save-procurement-drafts"
+                />
+                <input
+                  type="hidden"
+                  name="selectedDate"
+                  value={data.selectedDate}
+                />
+                <input
+                  type="hidden"
+                  name="planType"
+                  value="PRACTICAL"
+                />
+                <input
+                  type="hidden"
+                  name="groupsJson"
+                  value={JSON.stringify(
+                    data.practicalProcurementPlan
+                      .groups
+                  )}
+                />
+
+                <button
+                  type="submit"
+                  className="procurementButton procurementButton--primary"
+                  disabled={
+                    data.practicalProcurementPlan
+                      .groups.length === 0
+                  }
+                >
+                  Bestellentwürfe erstellen
+                </button>
+              </Form>
               <button
                 type="button"
                 className="procurementButton procurementButton--secondary"
@@ -1479,6 +1885,85 @@ export default function PurchasingPage() {
                           </div>
                         )
                       )}
+                    </div>
+                  </article>
+                )
+              )}
+            </div>
+          )}
+        </PageSection>
+        <PageSection
+          className="procurementDraftSection"
+          eyebrow="Gespeichert"
+          title="Bestellentwürfe"
+          description="Dauerhaft gespeicherte Lieferantenentwürfe für den gewählten Planungstag."
+          id="saved-procurement-drafts"
+        >
+          {data.savedProcurementDrafts.length ===
+          0 ? (
+            <div className="procurementCompactEmpty">
+              Für diesen Planungstag wurden noch keine
+              Bestellentwürfe gespeichert.
+            </div>
+          ) : (
+            <div className="procurementDraftGrid">
+              {data.savedProcurementDrafts.map(
+                (draft: any) => (
+                  <article
+                    className="procurementDraftCard"
+                    key={draft.id}
+                  >
+                    <header>
+                      <div>
+                        <small>
+                          {draft.planType ===
+                          "PRACTICAL"
+                            ? "Praktischer Plan"
+                            : "Günstigster Plan"}
+                        </small>
+                        <strong>
+                          {draft.supplierName}
+                        </strong>
+                        <span>
+                          {draft.items.length} Position(en)
+                        </span>
+                      </div>
+
+                      <div className="procurementDraftStatus">
+                        <span>
+                          {draft.status}
+                        </span>
+                        <strong>
+                          {formatMoney(
+                            draft.netTotalCents
+                          )}
+                        </strong>
+                      </div>
+                    </header>
+
+                    <div className="procurementDraftItems">
+                      {draft.items
+                        .slice(0, 5)
+                        .map((item: any) => (
+                          <div key={item.id}>
+                            <span>
+                              {item.ingredientName}
+                            </span>
+                            <strong>
+                              {formatQty(
+                                item.packageCount
+                              )}{" "}
+                              Packung(en)
+                            </strong>
+                          </div>
+                        ))}
+
+                      {draft.items.length > 5 ? (
+                        <small>
+                          + {draft.items.length - 5} weitere
+                          Position(en)
+                        </small>
+                      ) : null}
                     </div>
                   </article>
                 )
