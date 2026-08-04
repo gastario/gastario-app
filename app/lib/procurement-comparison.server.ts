@@ -729,3 +729,239 @@ export function buildCheapestProcurementPlan(
     })),
   };
 }
+/*
+ * gastario-procurement-practical-plan-v1-20260804
+ * Reduziert die Zahl der Lieferanten, solange ein Artikel
+ * beim gleichen Lieferanten höchstens 10 Prozent teurer ist.
+ */
+export function buildPracticalProcurementPlan(
+  items: any[],
+  tolerancePercent = 10
+) {
+  const pricedItems = items.filter(
+    (item) =>
+      Array.isArray(item.offers) &&
+      item.offers.length > 0
+  );
+
+  const supplierCoverage = new Map<
+    string,
+    {
+      supplierId: string;
+      supplierName: string;
+      coveredItems: number;
+      totalNetCents: number;
+    }
+  >();
+
+  for (const item of pricedItems) {
+    const seenSuppliers = new Set<string>();
+
+    for (const offer of item.offers) {
+      const supplierKey =
+        offer.supplierId ||
+        offer.supplierName;
+
+      if (seenSuppliers.has(supplierKey)) {
+        continue;
+      }
+
+      seenSuppliers.add(supplierKey);
+
+      const current =
+        supplierCoverage.get(supplierKey) || {
+          supplierId: offer.supplierId,
+          supplierName: offer.supplierName,
+          coveredItems: 0,
+          totalNetCents: 0,
+        };
+
+      current.coveredItems += 1;
+      current.totalNetCents += Number(
+        offer.netTotalCents || 0
+      );
+
+      supplierCoverage.set(
+        supplierKey,
+        current
+      );
+    }
+  }
+
+  const preferredSupplier =
+    Array.from(supplierCoverage.values())
+      .sort((left, right) => {
+        if (
+          right.coveredItems !==
+          left.coveredItems
+        ) {
+          return (
+            right.coveredItems -
+            left.coveredItems
+          );
+        }
+
+        return (
+          left.totalNetCents -
+          right.totalNetCents
+        );
+      })[0] || null;
+
+  const selectedItems = items.map((item) => {
+    const offers = Array.isArray(item.offers)
+      ? [...item.offers].sort(
+          (left: any, right: any) =>
+            Number(left.netTotalCents || 0) -
+            Number(right.netTotalCents || 0)
+        )
+      : [];
+
+    const cheapestOffer = offers[0] || null;
+
+    if (!cheapestOffer) {
+      return {
+        ingredientName: item.ingredientName,
+        demandQuantity: Number(
+          item.quantity || 0
+        ),
+        demandUnit: item.unit,
+        offer: null,
+      };
+    }
+
+    const practicalOffer =
+      preferredSupplier
+        ? offers.find(
+            (offer: any) =>
+              (
+                offer.supplierId ||
+                offer.supplierName
+              ) ===
+              (
+                preferredSupplier.supplierId ||
+                preferredSupplier.supplierName
+              )
+          ) || null
+        : null;
+
+    const maximumAcceptedCost =
+      Number(cheapestOffer.netTotalCents || 0) *
+      (1 + tolerancePercent / 100);
+
+    const selectedOffer =
+      practicalOffer &&
+      Number(
+        practicalOffer.netTotalCents || 0
+      ) <= maximumAcceptedCost
+        ? practicalOffer
+        : cheapestOffer;
+
+    return {
+      ingredientName: item.ingredientName,
+      demandQuantity: Number(
+        item.quantity || 0
+      ),
+      demandUnit: item.unit,
+      offer: selectedOffer,
+      cheapestNetTotalCents: Number(
+        cheapestOffer.netTotalCents || 0
+      ),
+    };
+  });
+
+  const groupMap = new Map<string, any>();
+
+  for (const item of selectedItems.filter(
+    (entry) => entry.offer
+  )) {
+    const offer = item.offer;
+    const supplierKey =
+      offer.supplierId ||
+      offer.supplierName;
+
+    let group = groupMap.get(supplierKey);
+
+    if (!group) {
+      group = {
+        supplierId: offer.supplierId,
+        supplierName: offer.supplierName,
+        netTotalCents: 0,
+        itemCount: 0,
+        items: [],
+      };
+
+      groupMap.set(supplierKey, group);
+    }
+
+    group.items.push({
+      ingredientName: item.ingredientName,
+      catalogItemId: offer.catalogItemId,
+      catalogItemName: offer.catalogItemName,
+      articleNumber: offer.articleNumber,
+      packageCount: offer.packageCount,
+      packContent: offer.packContent,
+      baseUnit: offer.baseUnit,
+      netUnitPriceCents:
+        offer.netUnitPriceCents,
+      netTotalCents:
+        offer.netTotalCents,
+      surchargeCents: Math.max(
+        0,
+        Number(offer.netTotalCents || 0) -
+          Number(
+            item.cheapestNetTotalCents || 0
+          )
+      ),
+    });
+
+    group.itemCount += 1;
+    group.netTotalCents += Number(
+      offer.netTotalCents || 0
+    );
+  }
+
+  const groups = Array.from(
+    groupMap.values()
+  ).sort((left: any, right: any) =>
+    left.supplierName.localeCompare(
+      right.supplierName,
+      "de"
+    )
+  );
+
+  const totalNetCents = groups.reduce(
+    (sum: number, group: any) =>
+      sum + group.netTotalCents,
+    0
+  );
+
+  const cheapestTotalNetCents =
+    selectedItems.reduce(
+      (sum, item) =>
+        sum +
+        Number(
+          item.cheapestNetTotalCents || 0
+        ),
+      0
+    );
+
+  return {
+    groups,
+    supplierCount: groups.length,
+    totalNetCents,
+    cheapestTotalNetCents,
+    surchargeCents: Math.max(
+      0,
+      totalNetCents -
+        cheapestTotalNetCents
+    ),
+    tolerancePercent,
+    missingItemCount:
+      selectedItems.filter(
+        (item) => !item.offer
+      ).length,
+    preferredSupplierName:
+      preferredSupplier?.supplierName ||
+      null,
+  };
+}

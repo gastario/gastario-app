@@ -548,6 +548,7 @@ export async function loader({
     buildProcurementComparisons,
     buildProcurementCandidateSuggestions,
     buildCheapestProcurementPlan,
+    buildPracticalProcurementPlan,
   } = await import(
     "../lib/procurement-comparison.server"
   );
@@ -561,6 +562,12 @@ export async function loader({
   const procurementPlan =
     buildCheapestProcurementPlan(
       comparisonResult.items
+    );
+
+  const practicalProcurementPlan =
+    buildPracticalProcurementPlan(
+      comparisonResult.items,
+      10
     );
   const currentIngredientIds =
     comparisonResult.items
@@ -666,6 +673,7 @@ export async function loader({
     catalogItems,
     candidateSuggestions,
     procurementPlan,
+    practicalProcurementPlan,
   };
 }
 
@@ -1166,6 +1174,144 @@ export default function PurchasingPage() {
               </span>
             </div>
           ) : null}
+        </PageSection>
+        {/*
+         * gastario-procurement-practical-plan-v1-20260804
+         */}
+        <PageSection
+          className="procurementPracticalSection"
+          eyebrow="Alternative"
+          title="Praktischer Einkaufsplan"
+          description={`Bevorzugt möglichst wenige Lieferanten. Ein Artikel darf dabei höchstens ${data.practicalProcurementPlan.tolerancePercent}% teurer als das günstigste Angebot sein.`}
+          actions={
+            <div className="procurementPlanTotal">
+              <small>Gesamtsumme netto</small>
+              <strong>
+                {formatMoney(
+                  data.practicalProcurementPlan
+                    .totalNetCents
+                )}
+              </strong>
+            </div>
+          }
+        >
+          <div className="procurementPracticalSummary">
+            <div>
+              <small>Lieferanten</small>
+              <strong>
+                {
+                  data.practicalProcurementPlan
+                    .supplierCount
+                }
+              </strong>
+            </div>
+
+            <div>
+              <small>Mehrkosten</small>
+              <strong>
+                {formatMoney(
+                  data.practicalProcurementPlan
+                    .surchargeCents
+                )}
+              </strong>
+            </div>
+
+            <div>
+              <small>Schwerpunkt</small>
+              <strong>
+                {data.practicalProcurementPlan
+                  .preferredSupplierName ||
+                  "Noch offen"}
+              </strong>
+            </div>
+          </div>
+
+          {data.practicalProcurementPlan.groups
+            .length === 0 ? (
+            <div className="procurementCompactEmpty">
+              Noch kein praktischer Einkaufsplan
+              berechenbar.
+            </div>
+          ) : (
+            <div className="procurementPlanGrid">
+              {data.practicalProcurementPlan.groups.map(
+                (group: any) => (
+                  <article
+                    className="procurementPlanSupplier"
+                    key={`practical-${
+                      group.supplierId ||
+                      group.supplierName
+                    }`}
+                  >
+                    <header>
+                      <div>
+                        <small>Lieferant</small>
+                        <strong>
+                          {group.supplierName}
+                        </strong>
+                        <span>
+                          {group.itemCount} Position(en)
+                        </span>
+                      </div>
+
+                      <div className="procurementPlanSupplierTotal">
+                        <small>Netto</small>
+                        <strong>
+                          {formatMoney(
+                            group.netTotalCents
+                          )}
+                        </strong>
+                      </div>
+                    </header>
+
+                    <div className="procurementPlanItems">
+                      {group.items.map(
+                        (item: any) => (
+                          <div
+                            className="procurementPlanItem"
+                            key={[
+                              "practical",
+                              item.catalogItemId,
+                              item.ingredientName,
+                            ].join("-")}
+                          >
+                            <div>
+                              <strong>
+                                {item.ingredientName}
+                              </strong>
+                              <span>
+                                {item.catalogItemName}
+                              </span>
+                              <small>
+                                {item.packageCount} ×{" "}
+                                {formatQty(
+                                  item.packContent
+                                )}{" "}
+                                {item.baseUnit}
+                                {item.surchargeCents > 0
+                                  ? ` · ${formatMoney(
+                                      item.surchargeCents
+                                    )} über Bestpreis`
+                                  : " · Bestpreis"}
+                              </small>
+                            </div>
+
+                            <div className="procurementPlanItemPrice">
+                              <strong>
+                                {formatMoney(
+                                  item.netTotalCents
+                                )}
+                              </strong>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </article>
+                )
+              )}
+            </div>
+          )}
         </PageSection>
         <PageSection
           className="procurementMappingSection"
