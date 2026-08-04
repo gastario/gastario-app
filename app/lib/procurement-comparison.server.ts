@@ -612,3 +612,120 @@ export function buildProcurementCandidateSuggestions(params: {
 
   return result;
 }
+/*
+ * gastario-procurement-cheapest-plan-v1-20260804
+ * Erstellt aus den bestätigten Artikelzuordnungen
+ * einen nach Lieferanten gruppierten günstigsten Einkaufsplan.
+ */
+export function buildCheapestProcurementPlan(
+  items: any[]
+) {
+  const selectedItems = items
+    .map((item) => {
+      const cheapestOffer = Array.isArray(item.offers)
+        ? [...item.offers].sort(
+            (left: any, right: any) =>
+              Number(left.netTotalCents || 0) -
+              Number(right.netTotalCents || 0)
+          )[0] || null
+        : null;
+
+      return {
+        ingredientName: item.ingredientName,
+        demandQuantity: Number(item.quantity || 0),
+        demandUnit: item.unit,
+        sources: item.sources || [],
+        offer: cheapestOffer,
+      };
+    });
+
+  const pricedItems = selectedItems.filter(
+    (item) => item.offer
+  );
+
+  const missingItems = selectedItems.filter(
+    (item) => !item.offer
+  );
+
+  const groupMap = new Map<string, any>();
+
+  for (const item of pricedItems) {
+    const offer = item.offer;
+    const supplierKey =
+      offer.supplierId ||
+      offer.supplierName;
+
+    let group = groupMap.get(supplierKey);
+
+    if (!group) {
+      group = {
+        supplierId: offer.supplierId,
+        supplierName: offer.supplierName,
+        netTotalCents: 0,
+        itemCount: 0,
+        items: [],
+      };
+
+      groupMap.set(supplierKey, group);
+    }
+
+    group.items.push({
+      ingredientName: item.ingredientName,
+      demandQuantity: item.demandQuantity,
+      demandUnit: item.demandUnit,
+      catalogItemId: offer.catalogItemId,
+      catalogItemName: offer.catalogItemName,
+      articleNumber: offer.articleNumber,
+      packageCount: offer.packageCount,
+      packContent: offer.packContent,
+      baseUnit: offer.baseUnit,
+      plannedQuantity: offer.plannedQuantity,
+      netUnitPriceCents: offer.netUnitPriceCents,
+      netTotalCents: offer.netTotalCents,
+      fetchedAt: offer.fetchedAt,
+      promotional: offer.promotional,
+    });
+
+    group.itemCount += 1;
+    group.netTotalCents += Number(
+      offer.netTotalCents || 0
+    );
+  }
+
+  const groups = Array.from(
+    groupMap.values()
+  )
+    .map((group: any) => ({
+      ...group,
+      items: group.items.sort(
+        (left: any, right: any) =>
+          left.ingredientName.localeCompare(
+            right.ingredientName,
+            "de"
+          )
+      ),
+    }))
+    .sort((left: any, right: any) =>
+      left.supplierName.localeCompare(
+        right.supplierName,
+        "de"
+      )
+    );
+
+  return {
+    groups,
+    totalNetCents: groups.reduce(
+      (sum: number, group: any) =>
+        sum + group.netTotalCents,
+      0
+    ),
+    supplierCount: groups.length,
+    pricedItemCount: pricedItems.length,
+    missingItemCount: missingItems.length,
+    missingItems: missingItems.map((item) => ({
+      ingredientName: item.ingredientName,
+      quantity: item.demandQuantity,
+      unit: item.demandUnit,
+    })),
+  };
+}

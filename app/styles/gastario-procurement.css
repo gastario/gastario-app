@@ -647,3 +647,157 @@
   color: #173f37;
   font-weight: 500;
 }
+/*
+ * gastario-procurement-cheapest-plan-v1-20260804
+ */
+
+.procurementPlanSection {
+  margin-top: 22px;
+}
+
+.procurementPlanTotal,
+.procurementPlanSupplierTotal,
+.procurementPlanItemPrice {
+  display: grid;
+  gap: 3px;
+  text-align: right;
+}
+
+.procurementPlanTotal small,
+.procurementPlanSupplierTotal small,
+.procurementPlanItemPrice small {
+  color: #718a84;
+  font-size: 10px;
+}
+
+.procurementPlanTotal strong {
+  color: #0a755f;
+  font-size: 20px;
+}
+
+.procurementPlanGrid {
+  display: grid;
+  gap: 16px;
+}
+
+.procurementPlanSupplier {
+  overflow: hidden;
+  border: 1px solid #dce9e5;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.procurementPlanSupplier > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  padding: 16px 18px;
+  border-bottom: 1px solid #e4eeeb;
+  background: #f7fbf9;
+}
+
+.procurementPlanSupplier > header > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.procurementPlanSupplier > header small {
+  color: #718a84;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.procurementPlanSupplier > header strong {
+  color: #123a33;
+  font-size: 16px;
+}
+
+.procurementPlanSupplier > header span {
+  color: #718a84;
+  font-size: 11px;
+}
+
+.procurementPlanSupplierTotal strong {
+  color: #0a755f;
+  font-size: 16px;
+}
+
+.procurementPlanItems {
+  display: grid;
+}
+
+.procurementPlanItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid #edf3f1;
+}
+
+.procurementPlanItem:last-child {
+  border-bottom: 0;
+}
+
+.procurementPlanItem > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.procurementPlanItem > div:first-child strong {
+  color: #173f37;
+  font-size: 13px;
+}
+
+.procurementPlanItem > div:first-child span {
+  color: #496760;
+  font-size: 12px;
+}
+
+.procurementPlanItem > div:first-child small {
+  color: #7a908b;
+  font-size: 10px;
+}
+
+.procurementPlanItemPrice strong {
+  color: #173f37;
+  font-size: 13px;
+}
+
+.procurementPlanMissing {
+  display: grid;
+  gap: 4px;
+  margin-top: 14px;
+  padding: 13px 15px;
+  border: 1px dashed #d7a835;
+  border-radius: 11px;
+  background: #fffaf0;
+}
+
+.procurementPlanMissing strong {
+  color: #946714;
+  font-size: 12px;
+}
+
+.procurementPlanMissing span {
+  color: #806a3e;
+  font-size: 11px;
+}
+
+@media (max-width: 700px) {
+  .procurementPlanSupplier > header,
+  .procurementPlanItem {
+    align-items: start;
+  }
+
+  .procurementPlanItem {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .procurementPlanItemPrice {
+    text-align: left;
+  }
+}

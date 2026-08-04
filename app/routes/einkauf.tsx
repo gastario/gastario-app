@@ -547,6 +547,7 @@ export async function loader({
   const {
     buildProcurementComparisons,
     buildProcurementCandidateSuggestions,
+    buildCheapestProcurementPlan,
   } = await import(
     "../lib/procurement-comparison.server"
   );
@@ -557,6 +558,10 @@ export async function loader({
       tenantId: access.tenantId,
       demandItems,
     });
+  const procurementPlan =
+    buildCheapestProcurementPlan(
+      comparisonResult.items
+    );
   const currentIngredientIds =
     comparisonResult.items
       .map(
@@ -660,6 +665,7 @@ export async function loader({
     ingredientMappings,
     catalogItems,
     candidateSuggestions,
+    procurementPlan,
   };
 }
 
@@ -744,9 +750,9 @@ export default function PurchasingPage() {
 
           <MetricCard
             label="Lieferanten"
-            value={data.supplierGroups.length}
-            description="im aktuellen Bedarf"
-            badge="Gruppiert"
+            value={data.procurementPlan.supplierCount}
+            description="im günstigsten Einkaufsplan"
+            badge="Preisplan"
           />
 
           <MetricCard
@@ -1038,6 +1044,129 @@ export default function PurchasingPage() {
           </aside>
         </div>
 
+        {/*
+         * gastario-procurement-cheapest-plan-v1-20260804
+         */}
+        <PageSection
+          className="procurementPlanSection"
+          eyebrow="Einkaufsvorschlag"
+          title="Günstigster Einkaufsplan"
+          description="Je Zutat wird das günstigste bestätigte und aktuell bepreiste Angebot verwendet. Der Plan ist nach Lieferanten gruppiert."
+          id="procurement-plan"
+          actions={
+            <div className="procurementPlanTotal">
+              <small>Gesamtsumme netto</small>
+              <strong>
+                {formatMoney(
+                  data.procurementPlan.totalNetCents
+                )}
+              </strong>
+            </div>
+          }
+        >
+          {data.procurementPlan.groups.length === 0 ? (
+            <div className="procurementCompactEmpty">
+              Noch kein vollständiger Preisplan vorhanden.
+              Ordne Zutaten zuerst passenden
+              Lieferantenartikeln zu.
+            </div>
+          ) : (
+            <div className="procurementPlanGrid">
+              {data.procurementPlan.groups.map(
+                (group: any) => (
+                  <article
+                    className="procurementPlanSupplier"
+                    key={
+                      group.supplierId ||
+                      group.supplierName
+                    }
+                  >
+                    <header>
+                      <div>
+                        <small>Lieferant</small>
+                        <strong>
+                          {group.supplierName}
+                        </strong>
+                        <span>
+                          {group.itemCount} Position(en)
+                        </span>
+                      </div>
+
+                      <div className="procurementPlanSupplierTotal">
+                        <small>Netto</small>
+                        <strong>
+                          {formatMoney(
+                            group.netTotalCents
+                          )}
+                        </strong>
+                      </div>
+                    </header>
+
+                    <div className="procurementPlanItems">
+                      {group.items.map(
+                        (item: any) => (
+                          <div
+                            className="procurementPlanItem"
+                            key={[
+                              item.catalogItemId,
+                              item.ingredientName,
+                            ].join("-")}
+                          >
+                            <div>
+                              <strong>
+                                {item.ingredientName}
+                              </strong>
+                              <span>
+                                {item.catalogItemName}
+                              </span>
+                              <small>
+                                {item.articleNumber
+                                  ? `Art.-Nr. ${item.articleNumber} · `
+                                  : ""}
+                                {item.packageCount} ×{" "}
+                                {formatQty(
+                                  item.packContent
+                                )}{" "}
+                                {item.baseUnit}
+                              </small>
+                            </div>
+
+                            <div className="procurementPlanItemPrice">
+                              <strong>
+                                {formatMoney(
+                                  item.netTotalCents
+                                )}
+                              </strong>
+                              <small>
+                                {formatMoney(
+                                  item.netUnitPriceCents
+                                )} je Packung
+                              </small>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </article>
+                )
+              )}
+            </div>
+          )}
+
+          {data.procurementPlan.missingItemCount > 0 ? (
+            <div className="procurementPlanMissing">
+              <strong>
+                {data.procurementPlan.missingItemCount} Position(en)
+                fehlen noch im Preisplan.
+              </strong>
+              <span>
+                Dafür fehlt eine bestätigte Zuordnung,
+                ein aktueller Preis oder eine passende
+                Einheit.
+              </span>
+            </div>
+          ) : null}
+        </PageSection>
         <PageSection
           className="procurementMappingSection"
           eyebrow="Artikelzuordnung"
