@@ -200,6 +200,23 @@ function downloadProcurementCsv(params: {
 
   URL.revokeObjectURL(url);
 }
+/*
+ * gastario-procurement-draft-management-v1-20260804
+ */
+
+function procurementDraftStatusLabel(
+  status: string
+) {
+  const labels: Record<string, string> = {
+    DRAFT: "Entwurf",
+    ORDERED: "Bestellt",
+    PARTIALLY_RECEIVED: "Teilweise geliefert",
+    RECEIVED: "Geliefert",
+    CANCELLED: "Storniert",
+  };
+
+  return labels[status] || status;
+}
 function effectiveOperationalArea(item: any) {
   return String(
     item?.operationalArea ||
@@ -572,6 +589,203 @@ export async function action({
       `/einkauf?date=${encodeURIComponent(
         selectedDate
       )}&draft=created#saved-procurement-drafts`
+    );
+  }
+  if (intent === "update-procurement-draft") {
+    const draftId = String(
+      formData.get("draftId") || ""
+    ).trim();
+
+    const selectedDate = String(
+      formData.get("selectedDate") || ""
+    ).trim();
+
+    const statusRaw = String(
+      formData.get("status") || ""
+    ).trim();
+
+    const allowedStatuses = new Set([
+      "DRAFT",
+      "ORDERED",
+      "PARTIALLY_RECEIVED",
+      "RECEIVED",
+      "CANCELLED",
+    ]);
+
+    if (
+      !draftId ||
+      !allowedStatuses.has(statusRaw)
+    ) {
+      throw new Response(
+        "Ungültiger Bestellentwurf oder Status.",
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const draft =
+      await prisma.procurementOrderDraft.findFirst({
+        where: {
+          id: draftId,
+          tenantId: access.tenantId,
+        },
+        include: {
+          items: true,
+        },
+      });
+
+    if (!draft) {
+      throw new Response(
+        "Bestellentwurf wurde nicht gefunden.",
+        {
+          status: 404,
+        }
+      );
+    }
+
+    const itemUpdates: any[] = [];
+
+    for (const item of draft.items) {
+      const packageCountRaw = String(
+        formData.get(
+          `packageCount_${item.id}`
+        ) || item.packageCount
+      )
+        .trim()
+        .replace(",", ".");
+
+      const receivedCountRaw = String(
+        formData.get(
+          `receivedPackageCount_${item.id}`
+        ) || item.receivedPackageCount
+      )
+        .trim()
+        .replace(",", ".");
+
+      const packageCount = Number(
+        packageCountRaw
+      );
+
+      const receivedPackageCount = Number(
+        receivedCountRaw
+      );
+
+      if (
+        !Number.isFinite(packageCount) ||
+        packageCount <= 0 ||
+        !Number.isFinite(
+          receivedPackageCount
+        ) ||
+        receivedPackageCount < 0 ||
+        receivedPackageCount > packageCount
+      ) {
+        throw new Response(
+          `Ungültige Menge bei ${item.ingredientName}.`,
+          {
+            status: 400,
+          }
+        );
+      }
+
+      const netTotalCents = Math.round(
+        packageCount *
+          Number(
+            item.netUnitPriceCents || 0
+          )
+      );
+
+      itemUpdates.push({
+        id: item.id,
+        packageCount,
+        receivedPackageCount,
+        netTotalCents,
+      });
+    }
+
+    const allReceived =
+      itemUpdates.length > 0 &&
+      itemUpdates.every(
+        (item) =>
+          item.receivedPackageCount >=
+          item.packageCount
+      );
+
+    const anyReceived = itemUpdates.some(
+      (item) =>
+        item.receivedPackageCount > 0
+    );
+
+    let resolvedStatus = statusRaw;
+
+    if (
+      statusRaw !== "CANCELLED" &&
+      statusRaw !== "DRAFT"
+    ) {
+      if (allReceived) {
+        resolvedStatus = "RECEIVED";
+      } else if (anyReceived) {
+        resolvedStatus =
+          "PARTIALLY_RECEIVED";
+      } else if (
+        statusRaw ===
+        "PARTIALLY_RECEIVED" ||
+        statusRaw === "RECEIVED"
+      ) {
+        resolvedStatus = "ORDERED";
+      }
+    }
+
+    const now = new Date();
+
+    await prisma.$transaction([
+      ...itemUpdates.map((item) =>
+        prisma.procurementOrderDraftItem.update({
+          where: {
+            id: item.id,
+          },
+          data: {
+            packageCount:
+              item.packageCount,
+            receivedPackageCount:
+              item.receivedPackageCount,
+            netTotalCents:
+              item.netTotalCents,
+          },
+        })
+      ),
+      prisma.procurementOrderDraft.update({
+        where: {
+          id: draft.id,
+        },
+        data: {
+          status: resolvedStatus,
+          netTotalCents:
+            itemUpdates.reduce(
+              (sum, item) =>
+                sum +
+                item.netTotalCents,
+              0
+            ),
+          orderedAt:
+            resolvedStatus === "ORDERED" ||
+            resolvedStatus ===
+              "PARTIALLY_RECEIVED" ||
+            resolvedStatus === "RECEIVED"
+              ? draft.orderedAt || now
+              : null,
+          receivedAt:
+            resolvedStatus === "RECEIVED"
+              ? draft.receivedAt || now
+              : null,
+        },
+      }),
+    ]);
+
+    return redirect(
+      `/einkauf?date=${encodeURIComponent(
+        selectedDate
+      )}&draft=updated#saved-procurement-drafts`
     );
   }
   if (intent === "save-ingredient-match") {
@@ -1931,7 +2145,9 @@ export default function PurchasingPage() {
 
                       <div className="procurementDraftStatus">
                         <span>
-                          {draft.status}
+                          {procurementDraftStatusLabel(
+                            draft.status
+                          )}
                         </span>
                         <strong>
                           {formatMoney(
@@ -1941,30 +2157,124 @@ export default function PurchasingPage() {
                       </div>
                     </header>
 
-                    <div className="procurementDraftItems">
-                      {draft.items
-                        .slice(0, 5)
-                        .map((item: any) => (
-                          <div key={item.id}>
-                            <span>
-                              {item.ingredientName}
-                            </span>
-                            <strong>
-                              {formatQty(
-                                item.packageCount
-                              )}{" "}
-                              Packung(en)
-                            </strong>
-                          </div>
-                        ))}
+                    <Form
+                      method="post"
+                      className="procurementDraftForm"
+                    >
+                      <input
+                        type="hidden"
+                        name="intent"
+                        value="update-procurement-draft"
+                      />
+                      <input
+                        type="hidden"
+                        name="draftId"
+                        value={draft.id}
+                      />
+                      <input
+                        type="hidden"
+                        name="selectedDate"
+                        value={data.selectedDate}
+                      />
 
-                      {draft.items.length > 5 ? (
-                        <small>
-                          + {draft.items.length - 5} weitere
-                          Position(en)
-                        </small>
-                      ) : null}
-                    </div>
+                      <div className="procurementDraftControls">
+                        <label>
+                          <span>Status</span>
+                          <select
+                            name="status"
+                            defaultValue={
+                              draft.status
+                            }
+                          >
+                            <option value="DRAFT">
+                              Entwurf
+                            </option>
+                            <option value="ORDERED">
+                              Bestellt
+                            </option>
+                            <option value="PARTIALLY_RECEIVED">
+                              Teilweise geliefert
+                            </option>
+                            <option value="RECEIVED">
+                              Geliefert
+                            </option>
+                            <option value="CANCELLED">
+                              Storniert
+                            </option>
+                          </select>
+                        </label>
+
+                        <button
+                          type="submit"
+                          className="procurementButton procurementButton--primary"
+                        >
+                          Änderungen speichern
+                        </button>
+                      </div>
+
+                      <div className="procurementDraftEditor">
+                        {draft.items.map(
+                          (item: any) => (
+                            <div
+                              className="procurementDraftEditorRow"
+                              key={item.id}
+                            >
+                              <div>
+                                <strong>
+                                  {item.ingredientName}
+                                </strong>
+                                <span>
+                                  {item.catalogItemName}
+                                </span>
+                                <small>
+                                  {item.articleNumber
+                                    ? `Art.-Nr. ${item.articleNumber}`
+                                    : "Keine Artikelnummer"}
+                                </small>
+                              </div>
+
+                              <label>
+                                <span>Bestellt</span>
+                                <input
+                                  type="number"
+                                  name={`packageCount_${item.id}`}
+                                  min="0.01"
+                                  step="0.01"
+                                  defaultValue={
+                                    item.packageCount
+                                  }
+                                />
+                              </label>
+
+                              <label>
+                                <span>Geliefert</span>
+                                <input
+                                  type="number"
+                                  name={`receivedPackageCount_${item.id}`}
+                                  min="0"
+                                  step="0.01"
+                                  max={
+                                    item.packageCount
+                                  }
+                                  defaultValue={
+                                    item.receivedPackageCount
+                                  }
+                                />
+                              </label>
+
+                              <div className="procurementDraftEditorPrice">
+                                <small>Netto</small>
+                                <strong>
+                                  {formatMoney(
+                                    item.netTotalCents
+                                  )}
+                                </strong>
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </Form>
                   </article>
                 )
               )}

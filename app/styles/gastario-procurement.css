@@ -1010,3 +1010,125 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+/*
+ * gastario-procurement-draft-management-v1-20260804
+ */
+
+.procurementDraftForm {
+  display: grid;
+}
+
+.procurementDraftControls {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: end;
+  padding: 14px 16px;
+  border-bottom: 1px solid #edf3f1;
+}
+
+.procurementDraftControls label,
+.procurementDraftEditorRow label {
+  display: grid;
+  gap: 5px;
+}
+
+.procurementDraftControls label > span,
+.procurementDraftEditorRow label > span,
+.procurementDraftEditorPrice small {
+  color: #718a84;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.procurementDraftControls select,
+.procurementDraftEditorRow input {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid #cfe0db;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #173f37;
+  font-size: 11px;
+}
+
+.procurementDraftEditor {
+  display: grid;
+}
+
+.procurementDraftEditorRow {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    100px
+    100px
+    90px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #edf3f1;
+}
+
+.procurementDraftEditorRow:last-child {
+  border-bottom: 0;
+}
+
+.procurementDraftEditorRow > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.procurementDraftEditorRow strong {
+  color: #173f37;
+  font-size: 11px;
+}
+
+.procurementDraftEditorRow span {
+  color: #496760;
+  font-size: 10px;
+}
+
+.procurementDraftEditorRow small {
+  color: #7a908b;
+  font-size: 9px;
+}
+
+.procurementDraftEditorPrice {
+  display: grid;
+  gap: 4px;
+  text-align: right;
+}
+
+.procurementDraftEditorPrice strong {
+  color: #0a755f;
+}
+
+@media (max-width: 900px) {
+  .procurementDraftControls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .procurementDraftEditorRow {
+    grid-template-columns:
+      minmax(0, 1fr)
+      repeat(2, minmax(90px, 1fr));
+  }
+
+  .procurementDraftEditorPrice {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+}
+
+@media (max-width: 620px) {
+  .procurementDraftEditorRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .procurementDraftEditorPrice {
+    grid-column: auto;
+  }
+}
