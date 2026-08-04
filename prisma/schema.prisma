@@ -193,6 +193,8 @@ model Tenant {
   productSupplierMatches       ProductSupplierMatch[]
   procurementIngredients       ProcurementIngredient[]
   procurementIngredientMatches ProcurementIngredientMatch[]
+  procurementOrderDrafts       ProcurementOrderDraft[]
+  procurementOrderDraftItems   ProcurementOrderDraftItem[]
   accountingConnections        AccountingConnection[]
 }
 
@@ -1145,6 +1147,8 @@ model SupplierCatalogItem {
   matches           ProductSupplierMatch[]
   ingredientMatches ProcurementIngredientMatch[]
 
+  procurementDraftItems ProcurementOrderDraftItem[]
+
   @@unique([supplierId, articleNumber])
   @@index([tenantId])
   @@index([supplierId])
@@ -1262,6 +1266,74 @@ model ProcurementIngredient {
   @@index([tenantId])
   @@index([normalizedName])
   @@index([active])
+}
+
+enum ProcurementOrderDraftStatus {
+  DRAFT
+  ORDERED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+enum ProcurementPlanType {
+  CHEAPEST
+  PRACTICAL
+}
+
+model ProcurementOrderDraft {
+  id            String                      @id @default(cuid())
+  tenantId      String
+  supplierId    String?
+  supplierName  String
+  planningDate  DateTime
+  planType      ProcurementPlanType
+  status        ProcurementOrderDraftStatus @default(DRAFT)
+  currency      String                      @default("EUR")
+  netTotalCents Int                         @default(0)
+  notes         String?
+  orderedAt     DateTime?
+  receivedAt    DateTime?
+  createdAt     DateTime                    @default(now())
+  updatedAt     DateTime                    @updatedAt
+
+  tenant Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  items  ProcurementOrderDraftItem[]
+
+  @@index([tenantId])
+  @@index([supplierId])
+  @@index([planningDate])
+  @@index([status])
+  @@index([planType])
+  @@index([createdAt])
+}
+
+model ProcurementOrderDraftItem {
+  id                   String   @id @default(cuid())
+  tenantId             String
+  draftId              String
+  catalogItemId        String?
+  ingredientName       String
+  catalogItemName      String
+  articleNumber        String?
+  packageCount         Float
+  packContent          Float?
+  baseUnit             String?
+  netUnitPriceCents    Int
+  netTotalCents        Int
+  receivedPackageCount Float    @default(0)
+  notes                String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  tenant      Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  draft       ProcurementOrderDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+  catalogItem SupplierCatalogItem?  @relation(fields: [catalogItemId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([draftId])
+  @@index([catalogItemId])
+  @@index([ingredientName])
 }
 
 model ProcurementIngredientMatch {
