@@ -196,6 +196,7 @@ model Tenant {
   procurementOrderDrafts       ProcurementOrderDraft[]
   procurementOrderDraftItems   ProcurementOrderDraftItem[]
   accountingConnections        AccountingConnection[]
+  procurementOrderEmailLogs    ProcurementOrderEmailLog[]
 }
 
 model TenantUser {
@@ -1305,6 +1306,8 @@ model ProcurementOrderDraft {
   tenant Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   items  ProcurementOrderDraftItem[]
 
+  emailLogs ProcurementOrderEmailLog[]
+
   @@index([tenantId])
   @@index([supplierId])
   @@index([planningDate])
@@ -1339,6 +1342,27 @@ model ProcurementOrderDraftItem {
   @@index([draftId])
   @@index([catalogItemId])
   @@index([ingredientName])
+}
+
+model ProcurementOrderEmailLog {
+  id        String   @id @default(cuid())
+  tenantId  String
+  draftId   String
+  recipient String
+  subject   String
+  message   String?
+  status    String
+  messageId String?
+  error     String?
+  createdAt DateTime @default(now())
+
+  tenant Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  draft  ProcurementOrderDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([draftId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model ProcurementIngredientMatch {

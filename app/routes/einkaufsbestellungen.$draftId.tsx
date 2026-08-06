@@ -98,6 +98,12 @@ export async function loader({
             ingredientName: "asc",
           },
         },
+        emailLogs: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 20,
+        },
       },
     });
 
@@ -138,10 +144,15 @@ export async function loader({
         },
       });
 
+  const url = new URL(request.url);
+
   return {
     tenant: access.tenant,
     draft,
     supplier,
+    mailStatus: String(
+      url.searchParams.get("mail") || ""
+    ),
     mailConfigured: Boolean(
       String(
         process.env.MAILJET_API_KEY || ""
@@ -283,25 +294,41 @@ export async function action({
           draft,
         });
 
-      await prisma.procurementOrderDraft.update({
-        where: {
-          id: draft.id,
-        },
-        data: {
-          emailedAt: new Date(),
-          emailedTo: recipientEmail,
-          emailSubject: subject,
-          emailMessageId:
-            result.messageId || null,
-          emailError: null,
-          status:
-            draft.status === "DRAFT"
-              ? "ORDERED"
-              : draft.status,
-          orderedAt:
-            draft.orderedAt || new Date(),
-        },
-      });
+      const sentAt = new Date();
+
+      await prisma.$transaction([
+        prisma.procurementOrderEmailLog.create({
+          data: {
+            tenantId: access.tenantId,
+            draftId: draft.id,
+            recipient: recipientEmail,
+            subject,
+            message,
+            status: "SENT",
+            messageId:
+              result.messageId || null,
+          },
+        }),
+        prisma.procurementOrderDraft.update({
+          where: {
+            id: draft.id,
+          },
+          data: {
+            emailedAt: sentAt,
+            emailedTo: recipientEmail,
+            emailSubject: subject,
+            emailMessageId:
+              result.messageId || null,
+            emailError: null,
+            status:
+              draft.status === "DRAFT"
+                ? "ORDERED"
+                : draft.status,
+            orderedAt:
+              draft.orderedAt || sentAt,
+          },
+        }),
+      ]);
 
       return redirect(
         `/einkaufsbestellungen/${draft.id}?mail=sent`
@@ -312,15 +339,29 @@ export async function action({
           ? error.message
           : "Unbekannter Versandfehler.";
 
-      await prisma.procurementOrderDraft.update({
-        where: {
-          id: draft.id,
-        },
-        data: {
-          emailError:
-            errorMessage.slice(0, 1000),
-        },
-      });
+      await prisma.$transaction([
+        prisma.procurementOrderEmailLog.create({
+          data: {
+            tenantId: access.tenantId,
+            draftId: draft.id,
+            recipient: recipientEmail,
+            subject,
+            message,
+            status: "FAILED",
+            error:
+              errorMessage.slice(0, 1000),
+          },
+        }),
+        prisma.procurementOrderDraft.update({
+          where: {
+            id: draft.id,
+          },
+          data: {
+            emailError:
+              errorMessage.slice(0, 1000),
+          },
+        }),
+      ]);
 
       throw new Response(
         `E-Mail-Versand fehlgeschlagen: ${errorMessage}`,
@@ -511,6 +552,11 @@ export default function ProcurementOrderDetailPage() {
   return (
     <AppLayout>
       <PageShell className="procurementOrderDetailPage">
+        {data.mailStatus === "sent" ? (
+          <div className="procurementOrderNotice procurementOrderNotice--success">
+            Die Bestellung wurde erfolgreich per E-Mail versendet.
+          </div>
+        ) : null}
         <PageHeader
           eyebrow="Einkaufsbestellung"
           title={draft.supplierName}
@@ -730,6 +776,64 @@ export default function ProcurementOrderDetailPage() {
               </button>
             </div>
           </Form>
+        </PageSection>
+        <PageSection
+          eyebrow="Verlauf"
+          title="E-Mail-Versandhistorie"
+          description="Erfolgreiche und fehlgeschlagene Versandversuche dieser Bestellung."
+        >
+          {draft.emailLogs.length === 0 ? (
+            <div className="procurementOrdersEmpty">
+              Noch keine E-Mail-Versände vorhanden.
+            </div>
+          ) : (
+            <div className="procurementOrderMailHistory">
+              {draft.emailLogs.map(
+                (entry: any) => (
+                  <article
+                    key={entry.id}
+                    className="procurementOrderMailHistoryItem"
+                  >
+                    <div>
+                      <strong>
+                        {entry.status === "SENT"
+                          ? "Erfolgreich versendet"
+                          : "Versand fehlgeschlagen"}
+                      </strong>
+                      <span>
+                        {formatDateTime(
+                          entry.createdAt
+                        )}
+                      </span>
+                    </div>
+
+                    <dl>
+                      <div>
+                        <dt>Empfänger</dt>
+                        <dd>{entry.recipient}</dd>
+                      </div>
+                      <div>
+                        <dt>Betreff</dt>
+                        <dd>{entry.subject}</dd>
+                      </div>
+                      {entry.messageId ? (
+                        <div>
+                          <dt>Message-ID</dt>
+                          <dd>{entry.messageId}</dd>
+                        </div>
+                      ) : null}
+                    </dl>
+
+                    {entry.error ? (
+                      <p className="procurementOrderMailError">
+                        {entry.error}
+                      </p>
+                    ) : null}
+                  </article>
+                )
+              )}
+            </div>
+          )}
         </PageSection>
         <PageSection
           eyebrow="Positionen"
