@@ -405,9 +405,37 @@ export async function loader({
   }
 
   const {
+    prisma,
     connection,
     settings,
   } = authorization;
+
+  const heartbeatAt = new Date();
+
+  const updatedSettings = {
+    ...settings,
+    connectionMode:
+      "LOCAL_BROWSER_EXTENSION",
+    browserConnectorStatus: "ACTIVE",
+    browserConnectorLastSeenAt:
+      heartbeatAt.toISOString(),
+    onboardingStatus:
+      "BROWSER_CONNECTOR_ACTIVE",
+    sessionStatus:
+      "LOCAL_BROWSER_ACTIVE",
+    automaticSync: false,
+  };
+
+  await prisma.supplierConnection.update({
+    where: {
+      id: connection.id,
+    },
+    data: {
+      status: "ACTIVE",
+      lastError: null,
+      settingsJson: updatedSettings as any,
+    },
+  });
 
   return json({
     ok: true,
@@ -423,11 +451,9 @@ export async function loader({
           settings.locationName,
           160
         ) || null,
-      status:
-        readText(
-          settings.browserConnectorStatus,
-          60
-        ) || "PAIRING_READY",
+      status: "ACTIVE",
+      lastSeenAt:
+        heartbeatAt.toISOString(),
       lastCaptureAt:
         readText(
           settings.browserConnectorLastCaptureAt,
