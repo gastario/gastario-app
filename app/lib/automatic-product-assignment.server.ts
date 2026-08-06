@@ -80,8 +80,22 @@ function normalizeName(value: unknown) {
     .replace(/\s+/g, " ");
 }
 
+function canonicalDishName(value: unknown) {
+  return normalizeName(value)
+    .replace(
+      /\b(vegan|vegetarisch|vegetarian|halal|glutenfrei|laktosefrei)\b/g,
+      " "
+    )
+    .replace(
+      /\b\d+\s*(x|stk|stueck|portion|portionen)\b/g,
+      " "
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function compactName(value: unknown) {
-  return normalizeName(value).replace(/\s+/g, "");
+  return canonicalDishName(value).replace(/\s+/g, "");
 }
 
 function meaningfulTokens(value: unknown) {
@@ -185,10 +199,10 @@ function productScore(
   productName: string
 ) {
   const sourceNormalized =
-    normalizeName(sourceName);
+    canonicalDishName(sourceName);
 
   const productNormalized =
-    normalizeName(productName);
+    canonicalDishName(productName);
 
   if (
     !sourceNormalized ||
@@ -426,7 +440,14 @@ export async function automaticallyAssignOrderItems({
             },
             data: {
               productId: product.id,
-              operationalArea: null,
+              operationalArea:
+                String(
+                  product.operationalArea ||
+                    "REVIEW"
+                ).toUpperCase() ===
+                "REVIEW"
+                  ? "KITCHEN"
+                  : null,
               operationalQuantity:
                 item.operationalQuantity ??
                 Number(
@@ -444,7 +465,13 @@ export async function automaticallyAssignOrderItems({
         item.productId = product.id;
         item.product =
           cloneProductForOrder(product);
-        item.operationalArea = null;
+        item.operationalArea =
+          String(
+            product.operationalArea ||
+              "REVIEW"
+          ).toUpperCase() === "REVIEW"
+            ? "KITCHEN"
+            : null;
 
         decisions.push({
           itemId: item.id,
@@ -483,8 +510,8 @@ export async function automaticallyAssignOrderItems({
         Number(second?.score || 0);
 
       const exact =
-        normalizeName(itemName) ===
-          normalizeName(
+        canonicalDishName(itemName) ===
+          canonicalDishName(
             best.product.name
           ) ||
         compactName(itemName) ===
@@ -522,7 +549,14 @@ export async function automaticallyAssignOrderItems({
           },
           data: {
             productId: product.id,
-            operationalArea: null,
+            operationalArea:
+                String(
+                  product.operationalArea ||
+                    "REVIEW"
+                ).toUpperCase() ===
+                "REVIEW"
+                  ? "KITCHEN"
+                  : null,
             operationalQuantity:
               item.operationalQuantity ??
               Number(
@@ -540,7 +574,13 @@ export async function automaticallyAssignOrderItems({
       item.productId = product.id;
       item.product =
         cloneProductForOrder(product);
-      item.operationalArea = null;
+      item.operationalArea =
+          String(
+            product.operationalArea ||
+              "REVIEW"
+          ).toUpperCase() === "REVIEW"
+            ? "KITCHEN"
+            : null;
 
       decisions.push({
         itemId: item.id,
