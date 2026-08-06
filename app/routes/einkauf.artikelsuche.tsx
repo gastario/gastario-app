@@ -64,12 +64,132 @@ function normalizedText(value: unknown) {
     .trim();
 }
 
-function resultScore(item: any, query: string) {
+const SEARCH_SYNONYM_GROUPS = [
+  [
+    "marmelade",
+    "konfitüre",
+    "konfituere",
+    "fruchtaufstrich",
+    "fruchtgelee",
+    "gelee",
+  ],
+  [
+    "sahne",
+    "schlagsahne",
+    "schlagrahm",
+    "kochsa​​hne",
+    "küchensahne",
+    "kuechensahne",
+    "rahm",
+  ],
+  [
+    "croissant",
+    "buttercroissant",
+    "croissantteigling",
+    "teigling",
+    "plunder",
+  ],
+  [
+    "hackfleisch",
+    "rinderhack",
+    "gemischtes hack",
+    "hack",
+  ],
+  [
+    "tomatensoße",
+    "tomatensosse",
+    "pastasauce",
+    "tomatensauce",
+    "sugo",
+  ],
+  [
+    "cola",
+    "coca-cola",
+    "coca cola",
+    "pepsi",
+  ],
+  [
+    "kartoffelpüree",
+    "kartoffelpueree",
+    "kartoffelstampf",
+    "püree",
+    "pueree",
+  ],
+  [
+    "brötchen",
+    "broetchen",
+    "semmel",
+    "schrippe",
+  ],
+] as const;
+
+const PREFERRED_PORTAL_TERMS: Record<string, string> = {
+  marmelade: "konfitüre",
+  konfituere: "konfitüre",
+  fruchtaufstrich: "konfitüre",
+  sahne: "sahne",
+  rahm: "sahne",
+  croissants: "croissant",
+  croissant: "croissant",
+  hackfleisch: "hackfleisch",
+  tomatensosse: "tomatensauce",
+  "tomatensoße": "tomatensauce",
+  broetchen: "brötchen",
+};
+
+function expandSearchTerms(query: string) {
+  const normalizedQuery = normalizedText(query);
+
+  if (!normalizedQuery) {
+    return [];
+  }
+
+  const matchingGroup =
+    SEARCH_SYNONYM_GROUPS.find((group) =>
+      group.some(
+        (term) =>
+          normalizedText(term) === normalizedQuery
+      )
+    );
+
+  const terms = matchingGroup
+    ? [query, ...matchingGroup]
+    : [query];
+
+  return Array.from(
+    new Set(
+      terms
+        .map((term) => String(term || "").trim())
+        .filter((term) => term.length >= 2)
+    )
+  ).slice(0, 12);
+}
+
+function preferredPortalQuery(query: string) {
+  const normalizedQuery = normalizedText(query);
+
+  return (
+    PREFERRED_PORTAL_TERMS[normalizedQuery] ||
+    query.trim()
+  );
+}
+
+function resultScore(
+  item: any,
+  query: string,
+  searchTerms: string[]
+) {
   if (!query) {
     return 0;
   }
 
-  const normalizedQuery = normalizedText(query);
+  const normalizedQueries = Array.from(
+    new Set(
+      [query, ...searchTerms]
+        .map(normalizedText)
+        .filter(Boolean)
+    )
+  );
   const fields = [
     item.name,
     item.brand,
@@ -85,29 +205,37 @@ function resultScore(item: any, query: string) {
   let score = 0;
 
   for (const field of fields) {
-    if (field === normalizedQuery) {
-      score = Math.max(score, 100);
-    } else if (field.startsWith(normalizedQuery)) {
-      score = Math.max(score, 85);
-    } else if (field.includes(normalizedQuery)) {
-      score = Math.max(score, 70);
-    }
+    for (const normalizedQuery of normalizedQueries) {
+      if (field === normalizedQuery) {
+        score = Math.max(score, 100);
+      } else if (
+        field.startsWith(normalizedQuery)
+      ) {
+        score = Math.max(score, 85);
+      } else if (
+        field.includes(normalizedQuery)
+      ) {
+        score = Math.max(score, 70);
+      }
 
-    const queryTokens = normalizedQuery
-      .split(/\s+/)
-      .filter(Boolean);
+      const queryTokens = normalizedQuery
+        .split(/\s+/)
+        .filter(Boolean);
 
-    const tokenMatches = queryTokens.filter(
-      (token) => field.includes(token)
-    ).length;
+      const tokenMatches = queryTokens.filter(
+        (token) => field.includes(token)
+      ).length;
 
-    if (queryTokens.length > 0) {
-      score = Math.max(
-        score,
-        Math.round(
-          (tokenMatches / queryTokens.length) * 60
-        )
-      );
+      if (queryTokens.length > 0) {
+        score = Math.max(
+          score,
+          Math.round(
+            (tokenMatches /
+              queryTokens.length) *
+              60
+          )
+        );
+      }
     }
   }
 
@@ -167,6 +295,12 @@ export async function loader({
   const query = String(
     url.searchParams.get("q") || ""
   ).trim();
+
+  const searchTerms =
+    expandSearchTerms(query);
+
+  const portalQuery =
+    preferredPortalQuery(query);
 
   const supplierId = String(
     url.searchParams.get("supplier") || ""
@@ -289,44 +423,46 @@ export async function loader({
                   supplierId,
                 }
               : {}),
-            OR: [
-              {
-                name: {
-                  contains: query,
-                  mode: "insensitive",
+            OR: searchTerms.flatMap(
+              (term) => [
+                {
+                  name: {
+                    contains: term,
+                    mode: "insensitive" as const,
+                  },
                 },
-              },
-              {
-                brand: {
-                  contains: query,
-                  mode: "insensitive",
+                {
+                  brand: {
+                    contains: term,
+                    mode: "insensitive" as const,
+                  },
                 },
-              },
-              {
-                description: {
-                  contains: query,
-                  mode: "insensitive",
+                {
+                  description: {
+                    contains: term,
+                    mode: "insensitive" as const,
+                  },
                 },
-              },
-              {
-                articleNumber: {
-                  contains: query,
-                  mode: "insensitive",
+                {
+                  articleNumber: {
+                    contains: term,
+                    mode: "insensitive" as const,
+                  },
                 },
-              },
-              {
-                ean: {
-                  contains: query,
-                  mode: "insensitive",
+                {
+                  ean: {
+                    contains: term,
+                    mode: "insensitive" as const,
+                  },
                 },
-              },
-              {
-                gtin: {
-                  contains: query,
-                  mode: "insensitive",
+                {
+                  gtin: {
+                    contains: term,
+                    mode: "insensitive" as const,
+                  },
                 },
-              },
-            ],
+              ]
+            ),
           },
           include: {
             supplier: {
@@ -350,7 +486,11 @@ export async function loader({
     .map((item: any) => ({
       ...item,
       latestPrice: item.prices?.[0] || null,
-      score: resultScore(item, query),
+      score: resultScore(
+        item,
+        query,
+        searchTerms
+      ),
       basePriceCents: basePrice(item),
     }))
     .filter(
@@ -377,6 +517,8 @@ export async function loader({
   return {
     tenant: access.tenant,
     query,
+    searchTerms,
+    portalQuery,
     supplierId,
     availableOnly,
     suppliers,
@@ -478,6 +620,12 @@ export async function action({
       formData.get("query") || ""
     ).trim();
 
+    const queryTerms =
+      expandSearchTerms(query);
+
+    const portalQuery =
+      preferredPortalQuery(query);
+
     if (query.length < 2) {
       return {
         error:
@@ -551,7 +699,9 @@ export async function action({
           ...settings,
           browserConnectorSearchRequest: {
             id: requestId,
-            query,
+            query: portalQuery,
+            originalQuery: query,
+            queryTerms,
             requestedAt:
               new Date().toISOString(),
             status: "PENDING",
@@ -790,7 +940,7 @@ export default function ProcurementSearchPage() {
         <PageSection
           eyebrow="Lieferantenübergreifend"
           title="Was möchtest du einkaufen?"
-          description="Gastario prüft zuerst die vorhandenen Kataloge. Fehlen Treffer, wird die Suche automatisch an aktive Lieferanten-Connectoren übergeben."
+          description={`Gastario durchsucht vorhandene Kataloge intelligent und berücksichtigt verwandte Begriffe wie ${data.searchTerms.slice(0, 4).join(", ") || data.query}. Fehlen Treffer, startet automatisch die Live-Suche.`}
         >
           <Form
             method="get"
