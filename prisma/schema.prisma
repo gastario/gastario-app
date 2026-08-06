@@ -1282,20 +1282,25 @@ enum ProcurementPlanType {
 }
 
 model ProcurementOrderDraft {
-  id            String                      @id @default(cuid())
-  tenantId      String
-  supplierId    String?
-  supplierName  String
-  planningDate  DateTime
-  planType      ProcurementPlanType
-  status        ProcurementOrderDraftStatus @default(DRAFT)
-  currency      String                      @default("EUR")
-  netTotalCents Int                         @default(0)
-  notes         String?
-  orderedAt     DateTime?
-  receivedAt    DateTime?
-  createdAt     DateTime                    @default(now())
-  updatedAt     DateTime                    @updatedAt
+  id             String                      @id @default(cuid())
+  tenantId       String
+  supplierId     String?
+  supplierName   String
+  planningDate   DateTime
+  planType       ProcurementPlanType
+  status         ProcurementOrderDraftStatus @default(DRAFT)
+  currency       String                      @default("EUR")
+  netTotalCents  Int                         @default(0)
+  notes          String?
+  orderedAt      DateTime?
+  receivedAt     DateTime?
+  emailedAt      DateTime?
+  emailedTo      String?
+  emailSubject   String?
+  emailMessageId String?
+  emailError     String?
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
 
   tenant Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   items  ProcurementOrderDraftItem[]

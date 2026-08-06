@@ -247,3 +247,114 @@
     background: transparent;
   }
 }
+/*
+ * gastario-procurement-order-email-v1-20260806
+ */
+
+.procurementOrderMailForm {
+  display: grid;
+  gap: 16px;
+}
+
+.procurementOrderMailGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.procurementOrderMailGrid label {
+  display: grid;
+  gap: 6px;
+}
+
+.procurementOrderMailGrid label > span {
+  color: #6a827c;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.procurementOrderMailGrid input,
+.procurementOrderMailGrid textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cfe0db;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #173f37;
+  font: inherit;
+  font-size: 11px;
+}
+
+.procurementOrderMailGrid input {
+  min-height: 40px;
+}
+
+.procurementOrderMailGrid textarea {
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.procurementOrderMailWide {
+  grid-column: 1 / -1;
+}
+
+.procurementOrderMailFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.procurementOrderMailFooter > div {
+  display: grid;
+  gap: 5px;
+}
+
+.procurementOrderMailSuccess,
+.procurementOrderMailError,
+.procurementOrderMailWarning {
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.procurementOrderMailSuccess {
+  color: #08745f;
+}
+
+.procurementOrderMailError {
+  color: #a02c2c;
+}
+
+.procurementOrderMailWarning {
+  color: #8a5a00;
+}
+
+.procurementOrdersButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@media (max-width: 700px) {
+  .procurementOrderMailGrid {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .procurementOrderMailWide {
+    grid-column: auto;
+  }
+
+  .procurementOrderMailFooter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+@media print {
+  .procurementOrderMailForm {
+    display: none !important;
+  }
+}

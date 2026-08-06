@@ -110,9 +110,51 @@ export async function loader({
     );
   }
 
+  const supplier = draft.supplierId
+    ? await prisma.supplier.findFirst({
+        where: {
+          id: draft.supplierId,
+          tenantId: access.tenantId,
+          active: true,
+        },
+        select: {
+          id: true,
+          name: true,
+          contactName: true,
+          email: true,
+        },
+      })
+    : await prisma.supplier.findFirst({
+        where: {
+          tenantId: access.tenantId,
+          name: draft.supplierName,
+          active: true,
+        },
+        select: {
+          id: true,
+          name: true,
+          contactName: true,
+          email: true,
+        },
+      });
+
   return {
     tenant: access.tenant,
     draft,
+    supplier,
+    mailConfigured: Boolean(
+      String(
+        process.env.MAILJET_API_KEY || ""
+      ).trim() &&
+        String(
+          process.env.MAILJET_SECRET_KEY || ""
+        ).trim() &&
+        String(
+          process.env.MAILJET_FROM_EMAIL ||
+            process.env.MAIL_FROM_EMAIL ||
+            ""
+        ).trim()
+    ),
   };
 }
 
@@ -141,6 +183,154 @@ export async function action({
   ).trim();
 
   const formData = await request.formData();
+  const intent = String(
+    formData.get("intent") || "update-order"
+  ).trim();
+
+  if (intent === "send-procurement-order-email") {
+    const draft =
+      await prisma.procurementOrderDraft.findFirst({
+        where: {
+          id: draftId,
+          tenantId: access.tenantId,
+        },
+        include: {
+          items: {
+            orderBy: {
+              ingredientName: "asc",
+            },
+          },
+        },
+      });
+
+    if (!draft) {
+      throw new Response(
+        "Einkaufsbestellung nicht gefunden.",
+        {
+          status: 404,
+        }
+      );
+    }
+
+    const supplier = draft.supplierId
+      ? await prisma.supplier.findFirst({
+          where: {
+            id: draft.supplierId,
+            tenantId: access.tenantId,
+            active: true,
+          },
+          select: {
+            contactName: true,
+            email: true,
+          },
+        })
+      : null;
+
+    const recipientEmail = String(
+      formData.get("recipientEmail") ||
+        supplier?.email ||
+        ""
+    ).trim();
+
+    const recipientName = String(
+      formData.get("recipientName") ||
+        supplier?.contactName ||
+        draft.supplierName
+    ).trim();
+
+    const subject = String(
+      formData.get("emailSubject") ||
+        `Einkaufsbestellung für ${new Date(
+          draft.planningDate
+        ).toLocaleDateString("de-DE")}`
+    ).trim();
+
+    const message = String(
+      formData.get("emailMessage") || ""
+    ).trim();
+
+    if (
+      !recipientEmail ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        recipientEmail
+      )
+    ) {
+      throw new Response(
+        "Bitte eine gültige Lieferanten-E-Mail-Adresse eintragen.",
+        {
+          status: 400,
+        }
+      );
+    }
+
+    try {
+      const {
+        sendProcurementOrderEmail,
+      } = await import(
+        "../lib/procurement-order-mail.server"
+      );
+
+      const result =
+        await sendProcurementOrderEmail({
+          tenantName: access.tenant.name,
+          replyTo:
+            access.tenant.invoiceEmail ||
+            null,
+          recipientEmail,
+          recipientName,
+          subject,
+          message,
+          draft,
+        });
+
+      await prisma.procurementOrderDraft.update({
+        where: {
+          id: draft.id,
+        },
+        data: {
+          emailedAt: new Date(),
+          emailedTo: recipientEmail,
+          emailSubject: subject,
+          emailMessageId:
+            result.messageId || null,
+          emailError: null,
+          status:
+            draft.status === "DRAFT"
+              ? "ORDERED"
+              : draft.status,
+          orderedAt:
+            draft.orderedAt || new Date(),
+        },
+      });
+
+      return redirect(
+        `/einkaufsbestellungen/${draft.id}?mail=sent`
+      );
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Unbekannter Versandfehler.";
+
+      await prisma.procurementOrderDraft.update({
+        where: {
+          id: draft.id,
+        },
+        data: {
+          emailError:
+            errorMessage.slice(0, 1000),
+        },
+      });
+
+      throw new Response(
+        `E-Mail-Versand fehlgeschlagen: ${errorMessage}`,
+        {
+          status: 502,
+        }
+      );
+    }
+  }
+
   const statusRaw = String(
     formData.get("status") || ""
   ).trim();
@@ -407,9 +597,140 @@ export default function ProcurementOrderDetailPage() {
                 )}
               </strong>
             </div>
+            <div>
+              <span>Letzter E-Mail-Versand</span>
+              <strong>
+                {draft.emailedAt
+                  ? formatDateTime(
+                      draft.emailedAt
+                    )
+                  : "Noch nicht versendet"}
+              </strong>
+            </div>
           </div>
         </PageSection>
 
+        <PageSection
+          eyebrow="Versand"
+          title="Bestellung per E-Mail senden"
+          description="Die aktuelle Bestellung wird als PDF-Anhang an den Lieferanten gesendet."
+        >
+          <Form
+            method="post"
+            className="procurementOrderMailForm"
+          >
+            <input
+              type="hidden"
+              name="intent"
+              value="send-procurement-order-email"
+            />
+
+            <div className="procurementOrderMailGrid">
+              <label>
+                <span>Empfänger</span>
+                <input
+                  type="email"
+                  name="recipientEmail"
+                  defaultValue={
+                    data.supplier?.email ||
+                    draft.emailedTo ||
+                    ""
+                  }
+                  placeholder="bestellung@lieferant.de"
+                  required
+                />
+              </label>
+
+              <label>
+                <span>Ansprechpartner</span>
+                <input
+                  name="recipientName"
+                  defaultValue={
+                    data.supplier
+                      ?.contactName ||
+                    draft.supplierName
+                  }
+                  placeholder="Ansprechpartner"
+                />
+              </label>
+
+              <label className="procurementOrderMailWide">
+                <span>Betreff</span>
+                <input
+                  name="emailSubject"
+                  defaultValue={
+                    draft.emailSubject ||
+                    `Einkaufsbestellung für ${formatDate(
+                      draft.planningDate
+                    )}`
+                  }
+                  required
+                />
+              </label>
+
+              <label className="procurementOrderMailWide">
+                <span>Nachricht</span>
+                <textarea
+                  name="emailMessage"
+                  rows={6}
+                  defaultValue={[
+                    `Guten Tag${
+                      data.supplier
+                        ?.contactName
+                        ? ` ${data.supplier.contactName}`
+                        : ""
+                    },`,
+                    "",
+                    `anbei erhalten Sie unsere Einkaufsbestellung für den ${formatDate(
+                      draft.planningDate
+                    )}.`,
+                    "",
+                    "Bitte bestätigen Sie uns kurz den Erhalt und die Liefermöglichkeit.",
+                    "",
+                    "Vielen Dank und freundliche Grüße",
+                    data.tenant.name,
+                  ].join("\n")}
+                />
+              </label>
+            </div>
+
+            <div className="procurementOrderMailFooter">
+              <div>
+                {draft.emailedAt ? (
+                  <span className="procurementOrderMailSuccess">
+                    Zuletzt an {draft.emailedTo} am{" "}
+                    {formatDateTime(
+                      draft.emailedAt
+                    )} versendet.
+                  </span>
+                ) : null}
+
+                {draft.emailError ? (
+                  <span className="procurementOrderMailError">
+                    Letzter Fehler:{" "}
+                    {draft.emailError}
+                  </span>
+                ) : null}
+
+                {!data.mailConfigured ? (
+                  <span className="procurementOrderMailWarning">
+                    Mailjet ist noch nicht vollständig konfiguriert.
+                  </span>
+                ) : null}
+              </div>
+
+              <button
+                type="submit"
+                className="procurementOrdersButton procurementOrdersButton--primary"
+                disabled={
+                  !data.mailConfigured
+                }
+              >
+                Bestellung mit PDF senden
+              </button>
+            </div>
+          </Form>
+        </PageSection>
         <PageSection
           eyebrow="Positionen"
           title="Bestellpositionen"
