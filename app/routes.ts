@@ -44,6 +44,7 @@ export default [
   route("einkauf", "routes/einkauf.tsx"),
   route("einkaufsbestellungen", "routes/einkaufsbestellungen.tsx"),
   route("einkaufsbestellungen/:draftId", "routes/einkaufsbestellungen.$draftId.tsx"),
+  route("einkaufsbestellungen/:draftId/pdf", "routes/einkaufsbestellungen.$draftId.pdf.tsx"),
   route("lager", "routes/lager.tsx"),
   route("lieferanten", "routes/lieferanten.tsx"),
   route("rezepte", "routes/rezepte.tsx"),

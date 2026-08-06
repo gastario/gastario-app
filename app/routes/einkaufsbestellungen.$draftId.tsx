@@ -331,6 +331,15 @@ export default function ProcurementOrderDetailPage() {
           )}`}
           actions={
             <>
+              <a
+                className="procurementOrdersButton procurementOrdersButton--primary"
+                href={`/einkaufsbestellungen/${draft.id}/pdf`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                PDF herunterladen
+              </a>
+
               <button
                 type="button"
                 className="procurementOrdersButton procurementOrdersButton--secondary"
@@ -338,7 +347,7 @@ export default function ProcurementOrderDetailPage() {
                   window.print()
                 }
               >
-                Drucken / PDF
+                Drucken
               </button>
 
               <Link
