@@ -1,9 +1,13 @@
+import { useEffect } from "react";
+
 import {
   Form,
   Link,
   redirect,
   useActionData,
+  useFetcher,
   useLoaderData,
+  useRevalidator,
 } from "react-router";
 
 import AppLayout from "../components/AppLayout";
@@ -243,6 +247,19 @@ export async function loader({
           unknown
         >)
       : null;
+
+  const lastMetroSearch =
+    metroSettings.browserConnectorLastSearch &&
+    typeof metroSettings.browserConnectorLastSearch ===
+      "object" &&
+    !Array.isArray(
+      metroSettings.browserConnectorLastSearch
+    )
+      ? (metroSettings.browserConnectorLastSearch as Record<
+          string,
+          unknown
+        >)
+      : null;
   const products =
     await prisma.product.findMany({
       where: {
@@ -395,6 +412,22 @@ export async function loader({
                 status: String(
                   pendingMetroSearch.status ||
                     "PENDING"
+                ),
+              }
+            : null,
+          lastSearch: lastMetroSearch
+            ? {
+                id: String(
+                  lastMetroSearch.id || ""
+                ),
+                query: String(
+                  lastMetroSearch.query || ""
+                ),
+                completedAt: String(
+                  lastMetroSearch.completedAt || ""
+                ),
+                items: Number(
+                  lastMetroSearch.items || 0
                 ),
               }
             : null,
@@ -649,6 +682,79 @@ export default function ProcurementSearchPage() {
   const actionData =
     useActionData<typeof action>();
 
+  const metroFetcher =
+    useFetcher<typeof action>();
+
+  const revalidator = useRevalidator();
+
+  const shouldStartMetroSearch =
+    data.query.length >= 2 &&
+    data.results.length === 0 &&
+    Boolean(data.metroConnector) &&
+    !data.metroConnector?.pendingSearch &&
+    data.metroConnector?.lastSearch?.query
+      ?.trim()
+      .toLocaleLowerCase("de-DE") !==
+      data.query
+        .trim()
+        .toLocaleLowerCase("de-DE");
+
+  useEffect(() => {
+    if (
+      !shouldStartMetroSearch ||
+      metroFetcher.state !== "idle"
+    ) {
+      return;
+    }
+
+    const formData = new FormData();
+
+    formData.set(
+      "intent",
+      "request-metro-search"
+    );
+
+    formData.set("query", data.query);
+
+    metroFetcher.submit(formData, {
+      method: "post",
+    });
+  }, [
+    data.query,
+    metroFetcher,
+    shouldStartMetroSearch,
+  ]);
+
+  useEffect(() => {
+    if (
+      metroFetcher.state === "idle" &&
+      metroFetcher.data
+    ) {
+      revalidator.revalidate();
+    }
+  }, [
+    metroFetcher.data,
+    metroFetcher.state,
+    revalidator,
+  ]);
+
+  useEffect(() => {
+    if (!data.metroConnector?.pendingSearch) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      revalidator.revalidate();
+    }, 3000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [
+    data.metroConnector?.pendingSearch?.id,
+    revalidator,
+  ]);
+
   return (
     <AppLayout>
       <PageShell className="procurementSearchPage">
@@ -684,7 +790,7 @@ export default function ProcurementSearchPage() {
         <PageSection
           eyebrow="Lieferantenübergreifend"
           title="Was möchtest du einkaufen?"
-          description="Die Suche verwendet aktuell alle bereits synchronisierten Kataloge. Spätere Portal-Connectoren liefern ihre Ergebnisse in dieselbe Ansicht."
+          description="Gastario prüft zuerst die vorhandenen Kataloge. Fehlen Treffer, wird die Suche automatisch an aktive Lieferanten-Connectoren übergeben."
         >
           <Form
             method="get"
@@ -820,7 +926,7 @@ export default function ProcurementSearchPage() {
 
                   {data.metroConnector.pendingSearch ? (
                     <div className="procurementSearchMetroPending">
-                      <span>Suchauftrag wartet</span>
+                      <span>Automatische Suche läuft</span>
                       <strong>
                         {
                           data.metroConnector
@@ -836,27 +942,33 @@ export default function ProcurementSearchPage() {
                         )}
                       </small>
                     </div>
-                  ) : (
-                    <Form method="post">
-                      <input
-                        type="hidden"
-                        name="intent"
-                        value="request-metro-search"
-                      />
-                      <input
-                        type="hidden"
-                        name="query"
-                        value={data.query}
-                      />
-
-                      <button
-                        type="submit"
-                        className="procurementSearchButton procurementSearchButton--primary"
-                      >
-                        Jetzt bei METRO suchen
-                      </button>
-                    </Form>
-                  )}
+                  ) : shouldStartMetroSearch ||
+                    metroFetcher.state !== "idle" ? (
+                    <div className="procurementSearchMetroPending">
+                      <span>Automatische Suche startet</span>
+                      <strong>{data.query}</strong>
+                      <small>
+                        Gastario übergibt den Suchbegriff an METRO.
+                      </small>
+                    </div>
+                  ) : data.metroConnector.lastSearch ? (
+                    <div className="procurementSearchMetroStatus">
+                      <span>Letzte METRO-Suche</span>
+                      <strong>
+                        {
+                          data.metroConnector
+                            .lastSearch.query
+                        }
+                      </strong>
+                      <small>
+                        {
+                          data.metroConnector
+                            .lastSearch.items
+                        }{" "}
+                        Artikel übertragen
+                      </small>
+                    </div>
+                  ) : null}
                 </>
               ) : (
                 <Link
