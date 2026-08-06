@@ -186,6 +186,63 @@ export async function loader({
       },
     });
 
+  const metroConnection =
+    await prisma.supplierConnection.findFirst({
+      where: {
+        tenantId: access.tenantId,
+        active: true,
+        OR: [
+          {
+            label: {
+              equals: "METRO",
+              mode: "insensitive",
+            },
+          },
+          {
+            supplier: {
+              name: {
+                equals: "METRO",
+                mode: "insensitive",
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        supplier: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+  const metroSettings =
+    metroConnection?.settingsJson &&
+    typeof metroConnection.settingsJson === "object" &&
+    !Array.isArray(metroConnection.settingsJson)
+      ? (metroConnection.settingsJson as Record<
+          string,
+          unknown
+        >)
+      : {};
+
+  const pendingMetroSearch =
+    metroSettings.browserConnectorSearchRequest &&
+    typeof metroSettings.browserConnectorSearchRequest ===
+      "object" &&
+    !Array.isArray(
+      metroSettings.browserConnectorSearchRequest
+    )
+      ? (metroSettings.browserConnectorSearchRequest as Record<
+          string,
+          unknown
+        >)
+      : null;
   const products =
     await prisma.product.findMany({
       where: {
@@ -308,6 +365,41 @@ export async function loader({
     suppliers,
     products,
     results,
+    metroConnector: metroConnection
+      ? {
+          id: metroConnection.id,
+          supplierName:
+            metroConnection.supplier.name,
+          status:
+            String(
+              metroSettings.browserConnectorStatus ||
+                metroConnection.status ||
+                "CONFIGURED"
+            ),
+          lastSeenAt:
+            String(
+              metroSettings.browserConnectorLastSeenAt ||
+                ""
+            ) || null,
+          pendingSearch: pendingMetroSearch
+            ? {
+                id: String(
+                  pendingMetroSearch.id || ""
+                ),
+                query: String(
+                  pendingMetroSearch.query || ""
+                ),
+                requestedAt: String(
+                  pendingMetroSearch.requestedAt || ""
+                ),
+                status: String(
+                  pendingMetroSearch.status ||
+                    "PENDING"
+                ),
+              }
+            : null,
+        }
+      : null,
     stats: {
       resultCount: results.length,
       supplierCount: new Set(
@@ -347,6 +439,100 @@ export async function action({
   const intent = String(
     formData.get("intent") || ""
   ).trim();
+
+  if (intent === "request-metro-search") {
+    const query = String(
+      formData.get("query") || ""
+    ).trim();
+
+    if (query.length < 2) {
+      return {
+        error:
+          "Bitte mindestens zwei Zeichen für die METRO-Suche eingeben.",
+      };
+    }
+
+    const connection =
+      await prisma.supplierConnection.findFirst({
+        where: {
+          tenantId: access.tenantId,
+          active: true,
+          OR: [
+            {
+              label: {
+                equals: "METRO",
+                mode: "insensitive",
+              },
+            },
+            {
+              supplier: {
+                name: {
+                  equals: "METRO",
+                  mode: "insensitive",
+                },
+              },
+            },
+          ],
+        },
+        include: {
+          supplier: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+    if (!connection) {
+      return {
+        error:
+          "Es wurde keine aktive METRO-Verbindung gefunden.",
+      };
+    }
+
+    const settings =
+      connection.settingsJson &&
+      typeof connection.settingsJson === "object" &&
+      !Array.isArray(connection.settingsJson)
+        ? (connection.settingsJson as Record<
+            string,
+            unknown
+          >)
+        : {};
+
+    const requestId =
+      "metro-search-" +
+      Date.now().toString(36) +
+      "-" +
+      Math.random().toString(36).slice(2, 10);
+
+    await prisma.supplierConnection.update({
+      where: {
+        id: connection.id,
+      },
+      data: {
+        settingsJson: {
+          ...settings,
+          browserConnectorSearchRequest: {
+            id: requestId,
+            query,
+            requestedAt:
+              new Date().toISOString(),
+            status: "PENDING",
+          },
+        } as any,
+      },
+    });
+
+    return redirect(
+      `/einkauf/artikelsuche?q=${encodeURIComponent(
+        query
+      )}&metroRequested=1`
+    );
+  }
 
   if (intent !== "apply-catalog-item") {
     return {
@@ -604,8 +790,82 @@ export default function ProcurementSearchPage() {
               Gib mindestens zwei Zeichen ein. Gastario durchsucht Produktnamen, Marken, Beschreibungen, Artikelnummern, EAN und GTIN.
             </div>
           ) : data.results.length === 0 ? (
-            <div className="procurementSearchEmpty">
-              In den bisher verbundenen Katalogen wurde kein passender Artikel gefunden.
+            <div className="procurementSearchEmpty procurementSearchMetroEmpty">
+              <strong>
+                Noch kein gespeicherter Treffer
+              </strong>
+
+              <span>
+                Gastario kann die Suche jetzt an den lokalen
+                METRO-Connector übergeben. Die Erweiterung
+                übernimmt den Suchbegriff beim nächsten Abruf
+                und sendet die sichtbaren Treffer zurück.
+              </span>
+
+              {data.metroConnector ? (
+                <>
+                  <div className="procurementSearchMetroStatus">
+                    <span>METRO-Connector</span>
+                    <strong>
+                      {data.metroConnector.status}
+                    </strong>
+                    <small>
+                      {data.metroConnector.lastSeenAt
+                        ? `Zuletzt gesehen: ${formatDateTime(
+                            data.metroConnector.lastSeenAt
+                          )}`
+                        : "Noch keine aktive Rückmeldung"}
+                    </small>
+                  </div>
+
+                  {data.metroConnector.pendingSearch ? (
+                    <div className="procurementSearchMetroPending">
+                      <span>Suchauftrag wartet</span>
+                      <strong>
+                        {
+                          data.metroConnector
+                            .pendingSearch.query
+                        }
+                      </strong>
+                      <small>
+                        Angefordert am{" "}
+                        {formatDateTime(
+                          data.metroConnector
+                            .pendingSearch
+                            .requestedAt
+                        )}
+                      </small>
+                    </div>
+                  ) : (
+                    <Form method="post">
+                      <input
+                        type="hidden"
+                        name="intent"
+                        value="request-metro-search"
+                      />
+                      <input
+                        type="hidden"
+                        name="query"
+                        value={data.query}
+                      />
+
+                      <button
+                        type="submit"
+                        className="procurementSearchButton procurementSearchButton--primary"
+                      >
+                        Jetzt bei METRO suchen
+                      </button>
+                    </Form>
+                  )}
+                </>
+              ) : (
+                <Link
+                  className="procurementSearchButton procurementSearchButton--secondary"
+                  to="/lieferanten"
+                >
+                  METRO-Verbindung prüfen
+                </Link>
+              )}
             </div>
           ) : (
             <div className="procurementSearchResults">

@@ -439,6 +439,15 @@ export async function loader({
           0,
           100_000
         ) || 0,
+      searchRequest:
+        settings.browserConnectorSearchRequest &&
+        typeof settings.browserConnectorSearchRequest ===
+          "object" &&
+        !Array.isArray(
+          settings.browserConnectorSearchRequest
+        )
+          ? settings.browserConnectorSearchRequest
+          : null,
     },
   });
 }
@@ -511,6 +520,17 @@ export async function action({
   }
 
   const payload = asRecord(body);
+
+  const searchRequestId = readText(
+    payload.searchRequestId,
+    160
+  );
+
+  const searchQuery = readText(
+    payload.searchQuery,
+    240
+  );
+
   const sourceUrl = normalizePortalUrl(
     payload.sourceUrl
   );
@@ -772,6 +792,36 @@ export async function action({
       locationName ||
       settings.browserConnectorLocationName ||
       null,
+    browserConnectorLastSearch:
+      searchQuery
+        ? {
+            id: searchRequestId || null,
+            query: searchQuery,
+            completedAt:
+              capturedAt.toISOString(),
+            items: products.length,
+          }
+        : settings.browserConnectorLastSearch ||
+          null,
+    browserConnectorSearchRequest:
+      searchRequestId &&
+      settings.browserConnectorSearchRequest &&
+      typeof settings.browserConnectorSearchRequest ===
+        "object" &&
+      !Array.isArray(
+        settings.browserConnectorSearchRequest
+      ) &&
+      String(
+        (
+          settings.browserConnectorSearchRequest as Record<
+            string,
+            unknown
+          >
+        ).id || ""
+      ) === searchRequestId
+        ? null
+        : settings.browserConnectorSearchRequest ||
+          null,
     onboardingStatus:
       "BROWSER_CONNECTOR_ACTIVE",
     sessionStatus:

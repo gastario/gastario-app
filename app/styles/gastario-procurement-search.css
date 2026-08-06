@@ -247,3 +247,68 @@
     width: 100%;
   }
 }
+.procurementSearchMetroEmpty {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+.procurementSearchMetroEmpty > strong {
+  color: #173f37;
+  font-size: 17px;
+}
+
+.procurementSearchMetroEmpty > span {
+  max-width: 720px;
+  line-height: 1.55;
+}
+
+.procurementSearchMetroStatus,
+.procurementSearchMetroPending {
+  width: min(100%, 620px);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #d4e5df;
+  border-radius: 12px;
+  background: #f5faf8;
+  text-align: left;
+}
+
+.procurementSearchMetroStatus span,
+.procurementSearchMetroPending span {
+  color: #688078;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.procurementSearchMetroStatus strong,
+.procurementSearchMetroPending strong {
+  color: #0f765f;
+}
+
+.procurementSearchMetroStatus small,
+.procurementSearchMetroPending small {
+  color: #6c817b;
+  text-align: right;
+}
+
+.procurementSearchMetroPending {
+  border-color: #f0d6a4;
+  background: #fff9ed;
+}
+
+@media (max-width: 700px) {
+  .procurementSearchMetroStatus,
+  .procurementSearchMetroPending {
+    grid-template-columns: 1fr;
+  }
+
+  .procurementSearchMetroStatus small,
+  .procurementSearchMetroPending small {
+    text-align: left;
+  }
+}
