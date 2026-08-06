@@ -1,0 +1,249 @@
+.procurementOrdersButton {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.procurementOrdersButton--primary {
+  border-color: #08745f;
+  background: #08745f;
+  color: #ffffff;
+}
+
+.procurementOrdersButton--secondary {
+  border-color: #cfe0db;
+  background: #ffffff;
+  color: #174a40;
+}
+
+.procurementOrdersFilters {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr))
+    auto
+    auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.procurementOrdersFilters label,
+.procurementOrderStatusBar label {
+  display: grid;
+  gap: 6px;
+}
+
+.procurementOrdersFilters label > span,
+.procurementOrderStatusBar label > span {
+  color: #6a827c;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.procurementOrdersFilters input,
+.procurementOrdersFilters select,
+.procurementOrderStatusBar select,
+.procurementOrderDetailTable input {
+  min-height: 40px;
+  width: 100%;
+  padding: 0 10px;
+  border: 1px solid #cfe0db;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #173f37;
+  font: inherit;
+  font-size: 11px;
+}
+
+.procurementOrdersTableWrap,
+.procurementOrderDetailTableWrap {
+  overflow-x: auto;
+}
+
+.procurementOrdersTable,
+.procurementOrderDetailTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.procurementOrdersTable th,
+.procurementOrdersTable td,
+.procurementOrderDetailTable th,
+.procurementOrderDetailTable td {
+  padding: 12px;
+  border-bottom: 1px solid #e7efed;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 11px;
+}
+
+.procurementOrdersTable th,
+.procurementOrderDetailTable th {
+  color: #6a827c;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.procurementOrdersTable .isNumeric {
+  text-align: right;
+}
+
+.procurementOrdersTable .isAction {
+  text-align: right;
+}
+
+.procurementOrdersStatus {
+  display: inline-flex;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #eef4f2;
+  color: #496760;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.procurementOrdersStatus--ordered,
+.procurementOrdersStatus--partially_received {
+  background: #fff4d8;
+  color: #8a5a00;
+}
+
+.procurementOrdersStatus--received {
+  background: #e4f5ee;
+  color: #08745f;
+}
+
+.procurementOrdersStatus--cancelled {
+  background: #fbe8e8;
+  color: #9d2d2d;
+}
+
+.procurementOrdersEmpty {
+  padding: 28px;
+  border: 1px dashed #cfe0db;
+  border-radius: 12px;
+  color: #6a827c;
+  text-align: center;
+}
+
+.procurementOrderFacts {
+  display: grid;
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.procurementOrderFacts > div {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border: 1px solid #dce9e5;
+  border-radius: 12px;
+  background: #f8fbfa;
+}
+
+.procurementOrderFacts span {
+  color: #718a84;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.procurementOrderFacts strong {
+  color: #173f37;
+  font-size: 12px;
+}
+
+.procurementOrderDetailForm {
+  display: grid;
+  gap: 14px;
+}
+
+.procurementOrderStatusBar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: end;
+}
+
+.procurementOrderStatusBar label {
+  min-width: 220px;
+}
+
+.procurementOrderDetailTable td:first-child {
+  min-width: 240px;
+}
+
+.procurementOrderDetailTable td:first-child strong,
+.procurementOrderDetailTable td:first-child span {
+  display: block;
+}
+
+.procurementOrderDetailTable td:first-child span {
+  margin-top: 3px;
+  color: #6a827c;
+  font-size: 10px;
+}
+
+.procurementOrderDetailTable input {
+  min-width: 90px;
+}
+
+@media (max-width: 1050px) {
+  .procurementOrdersFilters {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .procurementOrderFacts {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .procurementOrdersFilters,
+  .procurementOrderFacts {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .procurementOrderStatusBar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .procurementOrderStatusBar label {
+    min-width: 0;
+  }
+}
+
+@media print {
+  .procurementOrderDetailPage
+    .procurementOrdersButton,
+  .procurementOrderDetailPage
+    .procurementOrderStatusBar {
+    display: none !important;
+  }
+
+  .procurementOrderDetailPage {
+    background: #ffffff !important;
+  }
+
+  .procurementOrderDetailTable input {
+    border: 0;
+    padding: 0;
+    background: transparent;
+  }
+}

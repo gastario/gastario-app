@@ -188,6 +188,10 @@ const navigationGroups: NavigationGroup[] = [
         to: "/einkauf",
       },
       {
+        label: "Bestellungen",
+        to: "/einkaufsbestellungen",
+      },
+      {
         label: "Lager",
         to: "/lager",
         countKey: "inventoryWarnings",
