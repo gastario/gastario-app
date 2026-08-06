@@ -972,6 +972,26 @@ export async function loader({
     take: 500,
   });
 
+  /*
+   * gastario-automatic-product-assignment-v1-20260806
+   *
+   * Wiederkehrende Plattformnamen, eindeutige Produktnamen und
+   * Servicepositionen werden vor der Bedarfsberechnung automatisch
+   * operativ eingeordnet. Nur unsichere Treffer bleiben auf REVIEW.
+   */
+  const {
+    automaticallyAssignOrderItems,
+  } = await import(
+    "../lib/automatic-product-assignment.server"
+  );
+
+  const automaticAssignmentResult =
+    await automaticallyAssignOrderItems({
+      prisma,
+      tenantId: access.tenantId,
+      orders: orders as any[],
+    });
+
   const availableDates = Array.from(
     new Set(
       (orders as any[])
@@ -1333,6 +1353,7 @@ export async function loader({
     procurementPlan,
     practicalProcurementPlan,
     savedProcurementDrafts,
+    automaticAssignmentResult,
   };
 }
 
@@ -1399,6 +1420,25 @@ export default function PurchasingPage() {
             </>
           }
         />
+
+        {data.automaticAssignmentResult.assignedCount >
+        0 ? (
+          <Notice type="success">
+            <strong>
+              Automatische Zuordnung ausgeführt.
+            </strong>{" "}
+            {
+              data.automaticAssignmentResult
+                .assignedCount
+            }{" "}
+            Position(en) wurden automatisch einem
+            Produkt oder Arbeitsbereich zugeordnet.
+            {data.automaticAssignmentResult
+              .serviceCount > 0
+              ? ` ${data.automaticAssignmentResult.serviceCount} Serviceposition(en) wurden vom Wareneinkauf ausgeschlossen.`
+              : ""}
+          </Notice>
+        ) : null}
 
         <MetricGrid>
           <MetricCard
