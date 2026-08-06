@@ -496,6 +496,22 @@ export async function loader({
     tenant: access.tenant,
     drafts: enrichedDrafts,
     supplierBundles,
+    bundleMailStatus: String(
+      url.searchParams.get("bundleMail") || ""
+    ),
+    mailConfigured: Boolean(
+      String(
+        process.env.MAILJET_API_KEY || ""
+      ).trim() &&
+        String(
+          process.env.MAILJET_SECRET_KEY || ""
+        ).trim() &&
+        String(
+          process.env.MAILJET_FROM_EMAIL ||
+            process.env.MAIL_FROM_EMAIL ||
+            ""
+        ).trim()
+    ),
     suppliers: supplierRows.map(
       (row: any) => row.supplierName
     ),
@@ -540,6 +556,317 @@ export async function action({
   const intent = String(
     formData.get("intent") || ""
   ).trim();
+
+  if (
+    intent ===
+    "send-supplier-bundle-email"
+  ) {
+    const bundleDraftIds = Array.from(
+      new Set(
+        String(
+          formData.get("draftIds") || ""
+        )
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean)
+      )
+    );
+
+    const recipientEmail = String(
+      formData.get("recipientEmail") || ""
+    ).trim();
+
+    const recipientName = String(
+      formData.get("recipientName") || ""
+    ).trim();
+
+    const subject = String(
+      formData.get("emailSubject") || ""
+    ).trim();
+
+    const message = String(
+      formData.get("emailMessage") || ""
+    ).trim();
+
+    if (
+      bundleDraftIds.length === 0 ||
+      !recipientEmail ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        recipientEmail
+      ) ||
+      !subject
+    ) {
+      throw new Response(
+        "Bitte Empfänger, Betreff und Bestellungen vollständig angeben.",
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const bundleDrafts =
+      await prisma.procurementOrderDraft.findMany({
+        where: {
+          tenantId: access.tenantId,
+          id: {
+            in: bundleDraftIds,
+          },
+          status: {
+            in: [
+              "DRAFT",
+              "ORDERED",
+              "PARTIALLY_RECEIVED",
+            ],
+          },
+        },
+        include: {
+          items: true,
+        },
+      });
+
+    if (
+      bundleDrafts.length !==
+      bundleDraftIds.length
+    ) {
+      throw new Response(
+        "Mindestens eine Sammelbestellung wurde nicht gefunden oder ist nicht mehr offen.",
+        {
+          status: 409,
+        }
+      );
+    }
+
+    const supplierNames = Array.from(
+      new Set(
+        bundleDrafts.map(
+          (draft: any) =>
+            String(
+              draft.supplierName
+            ).trim()
+        )
+      )
+    );
+
+    if (supplierNames.length !== 1) {
+      throw new Response(
+        "Eine Sammelbestellung darf nur Bestellungen desselben Lieferanten enthalten.",
+        {
+          status: 409,
+        }
+      );
+    }
+
+    const itemMap = new Map<string, any>();
+
+    for (const draft of bundleDrafts) {
+      for (const item of draft.items) {
+        const key = [
+          item.catalogItemId || "",
+          item.articleNumber || "",
+          item.catalogItemName || "",
+          item.baseUnit || "",
+          item.netUnitPriceCents || 0,
+        ].join("|");
+
+        let merged = itemMap.get(key);
+
+        if (!merged) {
+          merged = {
+            ingredientName:
+              item.ingredientName,
+            catalogItemName:
+              item.catalogItemName,
+            articleNumber:
+              item.articleNumber,
+            packageCount: 0,
+            packContent:
+              item.packContent,
+            baseUnit: item.baseUnit,
+            netUnitPriceCents:
+              item.netUnitPriceCents,
+            netTotalCents: 0,
+          };
+
+          itemMap.set(key, merged);
+        }
+
+        merged.packageCount += Number(
+          item.packageCount || 0
+        );
+
+        merged.netTotalCents += Number(
+          item.netTotalCents || 0
+        );
+      }
+    }
+
+    const planningDates =
+      bundleDrafts.map(
+        (draft: any) =>
+          new Date(draft.planningDate)
+      );
+
+    const earliestPlanningDate =
+      new Date(
+        Math.min(
+          ...planningDates.map(
+            (date) => date.getTime()
+          )
+        )
+      );
+
+    const pseudoDraft = {
+      supplierName: supplierNames[0],
+      planningDate:
+        earliestPlanningDate,
+      planType: "PRACTICAL",
+      status: "ORDERED",
+      createdAt: new Date(),
+      orderedAt: new Date(),
+      receivedAt: null,
+      netTotalCents:
+        bundleDrafts.reduce(
+          (
+            sum: number,
+            draft: any
+          ) =>
+            sum +
+            Number(
+              draft.netTotalCents || 0
+            ),
+          0
+        ),
+      items: Array.from(
+        itemMap.values()
+      ),
+    };
+
+    try {
+      const {
+        sendProcurementOrderEmail,
+      } = await import(
+        "../lib/procurement-order-mail.server"
+      );
+
+      const result =
+        await sendProcurementOrderEmail({
+          tenantName: access.tenant.name,
+          replyTo:
+            access.tenant.invoiceEmail ||
+            null,
+          recipientEmail,
+          recipientName:
+            recipientName ||
+            supplierNames[0],
+          subject,
+          message,
+          draft: pseudoDraft,
+        });
+
+      const sentAt = new Date();
+
+      await prisma.$transaction([
+        ...bundleDrafts.map(
+          (draft: any) =>
+            prisma.procurementOrderEmailLog.create({
+              data: {
+                tenantId:
+                  access.tenantId,
+                draftId: draft.id,
+                recipient:
+                  recipientEmail,
+                subject,
+                message,
+                status: "SENT",
+                messageId:
+                  result.messageId ||
+                  null,
+              },
+            })
+        ),
+        ...bundleDrafts.map(
+          (draft: any) =>
+            prisma.procurementOrderDraft.update({
+              where: {
+                id: draft.id,
+              },
+              data: {
+                emailedAt: sentAt,
+                emailedTo:
+                  recipientEmail,
+                emailSubject: subject,
+                emailMessageId:
+                  result.messageId ||
+                  null,
+                emailError: null,
+                status:
+                  draft.status ===
+                  "DRAFT"
+                    ? "ORDERED"
+                    : draft.status,
+                orderedAt:
+                  draft.orderedAt ||
+                  sentAt,
+              },
+            })
+        ),
+      ]);
+
+      return redirect(
+        "/einkaufsbestellungen?view=suppliers&bundleMail=sent"
+      );
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Unbekannter Versandfehler.";
+
+      await prisma.$transaction([
+        ...bundleDrafts.map(
+          (draft: any) =>
+            prisma.procurementOrderEmailLog.create({
+              data: {
+                tenantId:
+                  access.tenantId,
+                draftId: draft.id,
+                recipient:
+                  recipientEmail,
+                subject,
+                message,
+                status: "FAILED",
+                error:
+                  errorMessage.slice(
+                    0,
+                    1000
+                  ),
+              },
+            })
+        ),
+        ...bundleDrafts.map(
+          (draft: any) =>
+            prisma.procurementOrderDraft.update({
+              where: {
+                id: draft.id,
+              },
+              data: {
+                emailError:
+                  errorMessage.slice(
+                    0,
+                    1000
+                  ),
+              },
+            })
+        ),
+      ]);
+
+      throw new Response(
+        `Sammelbestellung konnte nicht versendet werden: ${errorMessage}`,
+        {
+          status: 502,
+        }
+      );
+    }
+  }
 
   let draftIds: string[] = [];
 
@@ -657,6 +984,12 @@ export default function ProcurementOrdersPage() {
   return (
     <AppLayout>
       <PageShell className="procurementOrdersPage">
+        {data.bundleMailStatus ===
+        "sent" ? (
+          <div className="procurementOrderNotice procurementOrderNotice--success">
+            Die Sammelbestellung wurde erfolgreich mit PDF-Anhang versendet.
+          </div>
+        ) : null}
         <PageHeader
           eyebrow="Einkauf"
           title="Einkaufsbestellungen"
@@ -1013,6 +1346,119 @@ export default function ProcurementOrdersPage() {
                             </Link>
                           )
                         )}
+                      </div>
+
+                      <div className="procurementSupplierBundleOrderBox">
+                        <div className="procurementSupplierBundleOrderIntro">
+                          <strong>
+                            Sammelbestellung erstellen
+                          </strong>
+                          <span>
+                            Gemeinsame PDF für alle oben aufgeführten Einzelbestellungen.
+                          </span>
+                        </div>
+
+                        <a
+                          className="procurementOrdersButton procurementOrdersButton--secondary"
+                          href={`/einkaufsbestellungen/sammelbestellung/pdf?draftIds=${encodeURIComponent(
+                            bundle.draftIds.join(
+                              ","
+                            )
+                          )}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Sammel-PDF öffnen
+                        </a>
+
+                        <Form
+                          method="post"
+                          className="procurementSupplierBundleMailForm"
+                        >
+                          <input
+                            type="hidden"
+                            name="intent"
+                            value="send-supplier-bundle-email"
+                          />
+                          <input
+                            type="hidden"
+                            name="draftIds"
+                            value={bundle.draftIds.join(
+                              ","
+                            )}
+                          />
+
+                          <label>
+                            <span>Empfänger</span>
+                            <input
+                              type="email"
+                              name="recipientEmail"
+                              placeholder="bestellung@lieferant.de"
+                              required
+                            />
+                          </label>
+
+                          <label>
+                            <span>Ansprechpartner</span>
+                            <input
+                              name="recipientName"
+                              defaultValue={
+                                bundle.supplierName
+                              }
+                            />
+                          </label>
+
+                          <label className="procurementSupplierBundleMailWide">
+                            <span>Betreff</span>
+                            <input
+                              name="emailSubject"
+                              defaultValue={`Sammelbestellung ${bundle.supplierName} · ${formatDate(
+                                bundle.earliestPlanningDate
+                              )} bis ${formatDate(
+                                bundle.latestPlanningDate
+                              )}`}
+                              required
+                            />
+                          </label>
+
+                          <label className="procurementSupplierBundleMailWide">
+                            <span>Nachricht</span>
+                            <textarea
+                              name="emailMessage"
+                              rows={5}
+                              defaultValue={[
+                                "Guten Tag,",
+                                "",
+                                `anbei erhalten Sie unsere Sammelbestellung für den Zeitraum ${formatDate(
+                                  bundle.earliestPlanningDate
+                                )} bis ${formatDate(
+                                  bundle.latestPlanningDate
+                                )}.`,
+                                "",
+                                "Bitte bestätigen Sie uns kurz den Erhalt und die Liefermöglichkeit.",
+                                "",
+                                "Vielen Dank und freundliche Grüße",
+                                data.tenant.name,
+                              ].join("\n")}
+                            />
+                          </label>
+
+                          <button
+                            type="submit"
+                            className="procurementOrdersButton procurementOrdersButton--primary"
+                            disabled={
+                              !data.mailConfigured
+                            }
+                          >
+                            Sammelbestellung senden
+                          </button>
+
+                          {!data.mailConfigured ? (
+                            <span className="procurementOrderMailWarning procurementSupplierBundleMailWide">
+                              Mailjet ist noch nicht vollständig konfiguriert.
+                            </span>
+                          ) : null}
+                        </Form>
                       </div>
 
                       <div className="procurementOrdersWorkActions">

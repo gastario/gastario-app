@@ -757,3 +757,104 @@
     white-space: normal;
   }
 }
+/*
+ * gastario-procurement-bundle-order-v1-20260806
+ */
+
+.procurementSupplierBundleOrderBox {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #cfe0db;
+  border-radius: 12px;
+  background: #f8fbfa;
+}
+
+.procurementSupplierBundleOrderIntro {
+  display: grid;
+  gap: 3px;
+}
+
+.procurementSupplierBundleOrderIntro strong {
+  color: #173f37;
+  font-size: 11px;
+}
+
+.procurementSupplierBundleOrderIntro span {
+  color: #6a827c;
+  font-size: 9px;
+}
+
+.procurementSupplierBundleMailForm {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.procurementSupplierBundleMailForm label {
+  display: grid;
+  gap: 5px;
+}
+
+.procurementSupplierBundleMailForm label > span {
+  color: #6a827c;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.procurementSupplierBundleMailForm input,
+.procurementSupplierBundleMailForm textarea {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #cfe0db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #173f37;
+  font: inherit;
+  font-size: 10px;
+}
+
+.procurementSupplierBundleMailForm input {
+  min-height: 38px;
+}
+
+.procurementSupplierBundleMailForm textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.procurementSupplierBundleMailWide {
+  grid-column: 1 / -1;
+}
+
+.procurementSupplierBundleMailForm
+  > .procurementOrdersButton {
+  justify-self: end;
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 700px) {
+  .procurementSupplierBundleMailForm {
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .procurementSupplierBundleMailWide,
+  .procurementSupplierBundleMailForm
+    > .procurementOrdersButton {
+    grid-column: auto;
+  }
+
+  .procurementSupplierBundleMailForm
+    > .procurementOrdersButton {
+    width: 100%;
+  }
+}
+
+@media print {
+  .procurementSupplierBundleOrderBox {
+    display: none !important;
+  }
+}
