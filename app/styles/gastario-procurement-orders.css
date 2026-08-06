@@ -451,3 +451,170 @@
     display: none !important;
   }
 }
+/*
+ * gastario-procurement-worklist-v1-20260806
+ */
+
+.procurementOrdersViewSwitch {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #dce9e5;
+  border-radius: 11px;
+  background: #f5f9f7;
+}
+
+.procurementOrdersViewTab {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 13px;
+  border-radius: 8px;
+  color: #58716b;
+  font-size: 10px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.procurementOrdersViewTab.isActive {
+  background: #ffffff;
+  color: #08745f;
+  box-shadow: 0 1px 4px rgb(14 62 52 / 10%);
+}
+
+.procurementOrdersWorklist {
+  display: grid;
+  gap: 12px;
+}
+
+.procurementOrdersWorkCard {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #dce9e5;
+  border-left: 4px solid #b9cec8;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.procurementOrdersWorkCard.isToday {
+  border-left-color: #d39b22;
+  background: #fffdf7;
+}
+
+.procurementOrdersWorkCard.isOverdue {
+  border-left-color: #c54b4b;
+  background: #fffafa;
+}
+
+.procurementOrdersWorkCardHeader,
+.procurementOrdersWorkActions,
+.procurementOrdersProgressHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.procurementOrdersWorkCardHeader > div {
+  display: grid;
+  gap: 4px;
+}
+
+.procurementOrdersWorkCardHeader strong {
+  color: #173f37;
+  font-size: 14px;
+}
+
+.procurementOrdersWorkDate {
+  color: #6a827c;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.procurementOrdersWorkMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  color: #58716b;
+  font-size: 10px;
+}
+
+.procurementOrdersDue {
+  display: inline-flex;
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.procurementOrdersDue--today {
+  background: #fff2cd;
+  color: #805900;
+}
+
+.procurementOrdersDue--overdue {
+  background: #fde5e5;
+  color: #9a2f2f;
+}
+
+.procurementOrdersProgressBlock {
+  display: grid;
+  gap: 7px;
+}
+
+.procurementOrdersProgressHeader {
+  color: #496760;
+  font-size: 10px;
+}
+
+.procurementOrdersProgressTrack {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e7efed;
+}
+
+.procurementOrdersProgressTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #08745f;
+  transition: width 160ms ease;
+}
+
+.procurementOrdersProgressBlock small {
+  color: #718a84;
+  font-size: 9px;
+}
+
+.procurementOrdersWorkActions {
+  justify-content: flex-end;
+}
+
+.procurementOrdersWorkActions form {
+  margin: 0;
+}
+
+@media (max-width: 650px) {
+  .procurementOrdersViewSwitch {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .procurementOrdersWorkCardHeader,
+  .procurementOrdersWorkActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .procurementOrdersWorkActions form,
+  .procurementOrdersWorkActions button,
+  .procurementOrdersWorkActions a {
+    width: 100%;
+  }
+}

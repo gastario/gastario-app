@@ -1,6 +1,7 @@
 import {
   Form,
   Link,
+  redirect,
   useLoaderData,
 } from "react-router";
 
@@ -42,6 +43,53 @@ function statusLabel(status: string) {
   return labels[status] || status;
 }
 
+function getReceiptProgress(draft: any) {
+  const totalPackages = draft.items.reduce(
+    (sum: number, item: any) =>
+      sum + Number(item.packageCount || 0),
+    0
+  );
+
+  const receivedPackages = draft.items.reduce(
+    (sum: number, item: any) =>
+      sum +
+      Number(
+        item.receivedPackageCount || 0
+      ),
+    0
+  );
+
+  const percentage =
+    totalPackages > 0
+      ? Math.min(
+          100,
+          Math.round(
+            (receivedPackages /
+              totalPackages) *
+              100
+          )
+        )
+      : 0;
+
+  return {
+    totalPackages,
+    receivedPackages,
+    percentage,
+  };
+}
+
+function startOfLocalDay(date: Date) {
+  const result = new Date(date);
+  result.setHours(0, 0, 0, 0);
+  return result;
+}
+
+function endOfLocalDay(date: Date) {
+  const result = new Date(date);
+  result.setHours(23, 59, 59, 999);
+  return result;
+}
+
 export function meta() {
   return [
     {
@@ -68,6 +116,7 @@ export async function loader({
   );
 
   const url = new URL(request.url);
+
   const status = String(
     url.searchParams.get("status") || ""
   ).trim();
@@ -84,11 +133,23 @@ export async function loader({
     url.searchParams.get("dateTo") || ""
   ).trim();
 
+  const view = String(
+    url.searchParams.get("view") || "worklist"
+  ).trim();
+
   const where: any = {
     tenantId: access.tenantId,
   };
 
-  if (status) {
+  if (view === "worklist") {
+    where.status = {
+      in: [
+        "DRAFT",
+        "ORDERED",
+        "PARTIALLY_RECEIVED",
+      ],
+    };
+  } else if (status) {
     where.status = status;
   }
 
@@ -103,15 +164,17 @@ export async function loader({
     where.planningDate = {};
 
     if (dateFrom) {
-      where.planningDate.gte = new Date(
-        `${dateFrom}T00:00:00.000Z`
-      );
+      where.planningDate.gte =
+        startOfLocalDay(
+          new Date(`${dateFrom}T00:00:00`)
+        );
     }
 
     if (dateTo) {
-      where.planningDate.lte = new Date(
-        `${dateTo}T23:59:59.999Z`
-      );
+      where.planningDate.lte =
+        endOfLocalDay(
+          new Date(`${dateTo}T00:00:00`)
+        );
     }
   }
 
@@ -124,7 +187,10 @@ export async function loader({
         },
         orderBy: [
           {
-            planningDate: "desc",
+            planningDate:
+              view === "worklist"
+                ? "asc"
+                : "desc",
           },
           {
             createdAt: "desc",
@@ -146,27 +212,71 @@ export async function loader({
       }),
     ]);
 
-  const totalNetCents = drafts.reduce(
-    (sum: number, draft: any) =>
-      sum +
-      Number(draft.netTotalCents || 0),
-    0
+  const now = new Date();
+  const todayStart = startOfLocalDay(now);
+  const todayEnd = endOfLocalDay(now);
+
+  const enrichedDrafts = drafts.map(
+    (draft: any) => {
+      const progress =
+        getReceiptProgress(draft);
+
+      const planningDate = new Date(
+        draft.planningDate
+      );
+
+      const isToday =
+        planningDate >= todayStart &&
+        planningDate <= todayEnd;
+
+      const isOverdue =
+        planningDate < todayStart &&
+        draft.status !== "RECEIVED" &&
+        draft.status !== "CANCELLED";
+
+      return {
+        ...draft,
+        progress,
+        isToday,
+        isOverdue,
+      };
+    }
   );
 
-  const openCount = drafts.filter(
-    (draft: any) =>
-      draft.status !== "RECEIVED" &&
-      draft.status !== "CANCELLED"
-  ).length;
+  const totalNetCents =
+    enrichedDrafts.reduce(
+      (sum: number, draft: any) =>
+        sum +
+        Number(draft.netTotalCents || 0),
+      0
+    );
 
-  const receivedCount = drafts.filter(
-    (draft: any) =>
-      draft.status === "RECEIVED"
-  ).length;
+  const openCount =
+    enrichedDrafts.filter(
+      (draft: any) =>
+        draft.status !== "RECEIVED" &&
+        draft.status !== "CANCELLED"
+    ).length;
+
+  const receivedCount =
+    enrichedDrafts.filter(
+      (draft: any) =>
+        draft.status === "RECEIVED"
+    ).length;
+
+  const dueTodayCount =
+    enrichedDrafts.filter(
+      (draft: any) => draft.isToday
+    ).length;
+
+  const overdueCount =
+    enrichedDrafts.filter(
+      (draft: any) => draft.isOverdue
+    ).length;
 
   return {
     tenant: access.tenant,
-    drafts,
+    drafts: enrichedDrafts,
     suppliers: supplierRows.map(
       (row: any) => row.supplierName
     ),
@@ -175,14 +285,110 @@ export async function loader({
       supplier,
       dateFrom,
       dateTo,
+      view,
     },
     stats: {
-      count: drafts.length,
+      count: enrichedDrafts.length,
       openCount,
       receivedCount,
+      dueTodayCount,
+      overdueCount,
       totalNetCents,
     },
   };
+}
+
+export async function action({
+  request,
+}: {
+  request: Request;
+}) {
+  const { prisma } =
+    await import("../lib/prisma.server");
+
+  const { requireTenantFeature } =
+    await import("../lib/features.server");
+
+  const access = await requireTenantFeature(
+    request,
+    "PURCHASING"
+  );
+
+  const formData = await request.formData();
+
+  const intent = String(
+    formData.get("intent") || ""
+  ).trim();
+
+  const draftId = String(
+    formData.get("draftId") || ""
+  ).trim();
+
+  if (
+    intent !== "mark-received" ||
+    !draftId
+  ) {
+    throw new Response(
+      "Ungültige Aktion.",
+      {
+        status: 400,
+      }
+    );
+  }
+
+  const draft =
+    await prisma.procurementOrderDraft.findFirst({
+      where: {
+        id: draftId,
+        tenantId: access.tenantId,
+      },
+      include: {
+        items: true,
+      },
+    });
+
+  if (!draft) {
+    throw new Response(
+      "Einkaufsbestellung nicht gefunden.",
+      {
+        status: 404,
+      }
+    );
+  }
+
+  const now = new Date();
+
+  await prisma.$transaction([
+    ...draft.items.map((item: any) =>
+      prisma.procurementOrderDraftItem.update({
+        where: {
+          id: item.id,
+        },
+        data: {
+          receivedPackageCount:
+            item.packageCount,
+        },
+      })
+    ),
+    prisma.procurementOrderDraft.update({
+      where: {
+        id: draft.id,
+      },
+      data: {
+        status: "RECEIVED",
+        receivedAt: now,
+        orderedAt:
+          draft.orderedAt || now,
+      },
+    }),
+  ]);
+
+  const returnUrl = new URL(request.url);
+  returnUrl.search = "";
+
+  return redirect(
+    "/einkaufsbestellungen?view=worklist"
+  );
 }
 
 export default function ProcurementOrdersPage() {
@@ -205,18 +411,55 @@ export default function ProcurementOrdersPage() {
           }
         />
 
+        <div className="procurementOrdersViewSwitch">
+          <Link
+            to="/einkaufsbestellungen?view=worklist"
+            className={[
+              "procurementOrdersViewTab",
+              data.filters.view ===
+              "worklist"
+                ? "isActive"
+                : "",
+            ].join(" ")}
+          >
+            Tagesarbeitsliste
+          </Link>
+
+          <Link
+            to="/einkaufsbestellungen?view=all"
+            className={[
+              "procurementOrdersViewTab",
+              data.filters.view === "all"
+                ? "isActive"
+                : "",
+            ].join(" ")}
+          >
+            Alle Bestellungen
+          </Link>
+        </div>
+
         <MetricGrid>
           <MetricCard
-            label="Bestellungen"
-            value={data.stats.count}
+            label={
+              data.filters.view ===
+              "worklist"
+                ? "Offene Aufgaben"
+                : "Bestellungen"
+            }
+            value={
+              data.filters.view ===
+              "worklist"
+                ? data.stats.openCount
+                : data.stats.count
+            }
           />
           <MetricCard
-            label="Offen"
-            value={data.stats.openCount}
+            label="Heute fällig"
+            value={data.stats.dueTodayCount}
           />
           <MetricCard
-            label="Geliefert"
-            value={data.stats.receivedCount}
+            label="Überfällig"
+            value={data.stats.overdueCount}
           />
           <MetricCard
             label="Gesamtsumme netto"
@@ -235,12 +478,22 @@ export default function ProcurementOrdersPage() {
             method="get"
             className="procurementOrdersFilters"
           >
+            <input
+              type="hidden"
+              name="view"
+              value={data.filters.view}
+            />
+
             <label>
               <span>Status</span>
               <select
                 name="status"
                 defaultValue={
                   data.filters.status
+                }
+                disabled={
+                  data.filters.view ===
+                  "worklist"
                 }
               >
                 <option value="">
@@ -319,7 +572,7 @@ export default function ProcurementOrdersPage() {
 
             <Link
               className="procurementOrdersButton procurementOrdersButton--secondary"
-              to="/einkaufsbestellungen"
+              to={`/einkaufsbestellungen?view=${data.filters.view}`}
             >
               Zurücksetzen
             </Link>
@@ -327,85 +580,168 @@ export default function ProcurementOrdersPage() {
         </PageSection>
 
         <PageSection
-          eyebrow="Übersicht"
-          title="Lieferantenbestellungen"
-          description={`${data.drafts.length} Bestellung(en) entsprechen den aktuellen Filtern.`}
+          eyebrow={
+            data.filters.view ===
+            "worklist"
+              ? "Arbeitsliste"
+              : "Übersicht"
+          }
+          title={
+            data.filters.view ===
+            "worklist"
+              ? "Offene Einkaufsbestellungen"
+              : "Lieferantenbestellungen"
+          }
+          description={
+            data.filters.view ===
+            "worklist"
+              ? "Nach Planungstag sortiert. Überfällige Bestellungen stehen zuerst."
+              : `${data.drafts.length} Bestellung(en) entsprechen den aktuellen Filtern.`
+          }
         >
           {data.drafts.length === 0 ? (
             <div className="procurementOrdersEmpty">
               Keine Einkaufsbestellungen gefunden.
             </div>
           ) : (
-            <div className="procurementOrdersTableWrap">
-              <table className="procurementOrdersTable">
-                <thead>
-                  <tr>
-                    <th>Planungstag</th>
-                    <th>Lieferant</th>
-                    <th>Plan</th>
-                    <th>Status</th>
-                    <th>Positionen</th>
-                    <th className="isNumeric">
-                      Netto
-                    </th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.drafts.map(
-                    (draft: any) => (
-                      <tr key={draft.id}>
-                        <td>
+            <div className="procurementOrdersWorklist">
+              {data.drafts.map(
+                (draft: any) => (
+                  <article
+                    key={draft.id}
+                    className={[
+                      "procurementOrdersWorkCard",
+                      draft.isOverdue
+                        ? "isOverdue"
+                        : "",
+                      draft.isToday
+                        ? "isToday"
+                        : "",
+                    ].join(" ")}
+                  >
+                    <div className="procurementOrdersWorkCardHeader">
+                      <div>
+                        <span className="procurementOrdersWorkDate">
                           {formatDate(
                             draft.planningDate
                           )}
-                        </td>
-                        <td>
-                          <strong>
-                            {draft.supplierName}
-                          </strong>
-                        </td>
-                        <td>
-                          {draft.planType ===
-                          "PRACTICAL"
-                            ? "Praktisch"
-                            : "Günstig"}
-                        </td>
-                        <td>
-                          <span
-                            className={[
-                              "procurementOrdersStatus",
-                              `procurementOrdersStatus--${String(
-                                draft.status
-                              ).toLowerCase()}`,
-                            ].join(" ")}
+                        </span>
+                        <strong>
+                          {draft.supplierName}
+                        </strong>
+                      </div>
+
+                      <span
+                        className={[
+                          "procurementOrdersStatus",
+                          `procurementOrdersStatus--${String(
+                            draft.status
+                          ).toLowerCase()}`,
+                        ].join(" ")}
+                      >
+                        {statusLabel(
+                          draft.status
+                        )}
+                      </span>
+                    </div>
+
+                    <div className="procurementOrdersWorkMeta">
+                      <span>
+                        {draft.items.length} Position(en)
+                      </span>
+                      <span>
+                        {formatMoney(
+                          draft.netTotalCents
+                        )} netto
+                      </span>
+                      {draft.isOverdue ? (
+                        <span className="procurementOrdersDue procurementOrdersDue--overdue">
+                          Überfällig
+                        </span>
+                      ) : draft.isToday ? (
+                        <span className="procurementOrdersDue procurementOrdersDue--today">
+                          Heute fällig
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <div className="procurementOrdersProgressBlock">
+                      <div className="procurementOrdersProgressHeader">
+                        <span>
+                          Warenannahme
+                        </span>
+                        <strong>
+                          {draft.progress.percentage} %
+                        </strong>
+                      </div>
+
+                      <div className="procurementOrdersProgressTrack">
+                        <span
+                          style={{
+                            width: `${draft.progress.percentage}%`,
+                          }}
+                        />
+                      </div>
+
+                      <small>
+                        {new Intl.NumberFormat(
+                          "de-DE",
+                          {
+                            maximumFractionDigits: 2,
+                          }
+                        ).format(
+                          draft.progress
+                            .receivedPackages
+                        )}{" "}
+                        von{" "}
+                        {new Intl.NumberFormat(
+                          "de-DE",
+                          {
+                            maximumFractionDigits: 2,
+                          }
+                        ).format(
+                          draft.progress
+                            .totalPackages
+                        )}{" "}
+                        Packungen erhalten
+                      </small>
+                    </div>
+
+                    <div className="procurementOrdersWorkActions">
+                      <Link
+                        to={`/einkaufsbestellungen/${draft.id}`}
+                        className="procurementOrdersButton procurementOrdersButton--secondary"
+                      >
+                        Öffnen
+                      </Link>
+
+                      {draft.status !==
+                        "RECEIVED" &&
+                      draft.status !==
+                        "CANCELLED" ? (
+                        <Form method="post">
+                          <input
+                            type="hidden"
+                            name="intent"
+                            value="mark-received"
+                          />
+                          <input
+                            type="hidden"
+                            name="draftId"
+                            value={draft.id}
+                          />
+                          <button
+                            type="submit"
+                            className="procurementOrdersButton procurementOrdersButton--primary"
                           >
-                            {statusLabel(
-                              draft.status
-                            )}
-                          </span>
-                        </td>
-                        <td>
-                          {draft.items.length}
-                        </td>
-                        <td className="isNumeric">
-                          {formatMoney(
-                            draft.netTotalCents
-                          )}
-                        </td>
-                        <td className="isAction">
-                          <Link
-                            to={`/einkaufsbestellungen/${draft.id}`}
-                            className="procurementOrdersButton procurementOrdersButton--secondary"
-                          >
-                            Öffnen
-                          </Link>
-                        </td>
-                      </tr>
-                    )
-                  )}
-                </tbody>
-              </table>
+                            Komplett erhalten
+                          </button>
+                        </Form>
+                      ) : null}
+                    </div>
+                  </article>
+                )
+              )}
             </div>
           )}
         </PageSection>
