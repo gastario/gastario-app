@@ -137,6 +137,96 @@ const PREFERRED_PORTAL_TERMS: Record<string, string> = {
   broetchen: "brötchen",
 };
 
+function editDistance(
+  leftValue: string,
+  rightValue: string
+) {
+  const left = normalizedText(leftValue);
+  const right = normalizedText(rightValue);
+
+  const matrix = Array.from(
+    { length: left.length + 1 },
+    () =>
+      Array(right.length + 1).fill(0)
+  );
+
+  for (
+    let row = 0;
+    row <= left.length;
+    row += 1
+  ) {
+    matrix[row][0] = row;
+  }
+
+  for (
+    let column = 0;
+    column <= right.length;
+    column += 1
+  ) {
+    matrix[0][column] = column;
+  }
+
+  for (
+    let row = 1;
+    row <= left.length;
+    row += 1
+  ) {
+    for (
+      let column = 1;
+      column <= right.length;
+      column += 1
+    ) {
+      const cost =
+        left[row - 1] === right[column - 1]
+          ? 0
+          : 1;
+
+      matrix[row][column] = Math.min(
+        matrix[row - 1][column] + 1,
+        matrix[row][column - 1] + 1,
+        matrix[row - 1][column - 1] +
+          cost
+      );
+    }
+  }
+
+  return matrix[left.length][right.length];
+}
+
+function closestKnownSearchTerm(query: string) {
+  const normalizedQuery = normalizedText(query);
+
+  if (normalizedQuery.length < 5) {
+    return null;
+  }
+
+  const knownTerms =
+    SEARCH_SYNONYM_GROUPS.flat();
+
+  let bestTerm: string | null = null;
+  let bestDistance =
+    Number.POSITIVE_INFINITY;
+
+  for (const term of knownTerms) {
+    const distance = editDistance(
+      normalizedQuery,
+      term
+    );
+
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestTerm = term;
+    }
+  }
+
+  const maximumDistance =
+    normalizedQuery.length >= 9 ? 2 : 1;
+
+  return bestDistance <= maximumDistance
+    ? bestTerm
+    : null;
+}
+
 function expandSearchTerms(query: string) {
   const normalizedQuery = normalizedText(query);
 
@@ -144,32 +234,52 @@ function expandSearchTerms(query: string) {
     return [];
   }
 
+  const correctedTerm =
+    closestKnownSearchTerm(query);
+
+  const comparisonTerm =
+    correctedTerm || query;
+
   const matchingGroup =
     SEARCH_SYNONYM_GROUPS.find((group) =>
       group.some(
         (term) =>
-          normalizedText(term) === normalizedQuery
+          normalizedText(term) ===
+          normalizedText(comparisonTerm)
       )
     );
 
   const terms = matchingGroup
-    ? [query, ...matchingGroup]
+    ? [
+        query,
+        correctedTerm,
+        ...matchingGroup,
+      ]
     : [query];
 
   return Array.from(
     new Set(
       terms
-        .map((term) => String(term || "").trim())
+        .filter(Boolean)
+        .map((term) =>
+          String(term || "").trim()
+        )
         .filter((term) => term.length >= 2)
     )
   ).slice(0, 12);
 }
 
 function preferredPortalQuery(query: string) {
-  const normalizedQuery = normalizedText(query);
+  const correctedTerm =
+    closestKnownSearchTerm(query);
+
+  const normalizedQuery = normalizedText(
+    correctedTerm || query
+  );
 
   return (
     PREFERRED_PORTAL_TERMS[normalizedQuery] ||
+    correctedTerm ||
     query.trim()
   );
 }
