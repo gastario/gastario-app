@@ -1410,6 +1410,13 @@ export default function PurchasingPage() {
                 </button>
               </Form>
 
+              <Link
+                className="procurementButton procurementButton--primary"
+                to="/einkauf/artikelsuche"
+              >
+                Artikel suchen
+              </Link>
+
               <button
                 className="procurementButton procurementButton--secondary procurementPrintButton"
                 type="button"

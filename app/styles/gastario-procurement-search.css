@@ -1,0 +1,249 @@
+.procurementSearchPage {
+  display: grid;
+  gap: 22px;
+}
+
+.procurementSearchButton {
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.procurementSearchButton--primary {
+  background: #0f8f72;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(15, 143, 114, 0.18);
+}
+
+.procurementSearchButton--secondary {
+  border-color: #cbded8;
+  background: #fff;
+  color: #163f37;
+}
+
+.procurementSearchForm {
+  display: grid;
+  grid-template-columns:
+    minmax(300px, 2fr)
+    minmax(190px, 1fr)
+    auto
+    auto;
+  align-items: end;
+  gap: 14px;
+}
+
+.procurementSearchForm label,
+.procurementSearchApply label {
+  display: grid;
+  gap: 7px;
+}
+
+.procurementSearchForm label > span,
+.procurementSearchApply label > span {
+  color: #607b74;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.procurementSearchForm input,
+.procurementSearchForm select,
+.procurementSearchApply select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid #cbded8;
+  border-radius: 11px;
+  background: #fff;
+  color: #163f37;
+  font: inherit;
+}
+
+.procurementSearchCheck {
+  min-height: 44px;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid #cbded8;
+  border-radius: 11px;
+  background: #f8fbfa;
+}
+
+.procurementSearchCheck input {
+  width: 17px;
+  min-height: 17px;
+}
+
+.procurementSearchCheck span {
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+.procurementSearchResults {
+  display: grid;
+  gap: 16px;
+}
+
+.procurementSearchResult {
+  padding: 20px;
+  border: 1px solid #d9e7e3;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 26px rgba(18, 65, 55, 0.06);
+}
+
+.procurementSearchResult > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.procurementSearchResult header > div:first-child {
+  min-width: 0;
+}
+
+.procurementSearchResult header span {
+  color: #0f8f72;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.procurementSearchResult h3 {
+  margin: 5px 0 4px;
+  color: #163f37;
+  font-size: 20px;
+}
+
+.procurementSearchResult header p,
+.procurementSearchDescription {
+  margin: 0;
+  color: #6a817b;
+  line-height: 1.55;
+}
+
+.procurementSearchPrice {
+  flex: 0 0 auto;
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+}
+
+.procurementSearchPrice small {
+  color: #6a817b;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.procurementSearchPrice strong {
+  color: #0f765f;
+  font-size: 23px;
+}
+
+.procurementSearchPrice span {
+  color: #6a817b;
+  font-size: 11px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.procurementSearchFacts {
+  display: grid;
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.procurementSearchFacts > div {
+  display: grid;
+  gap: 4px;
+  padding: 11px 12px;
+  border-radius: 11px;
+  background: #f5faf8;
+}
+
+.procurementSearchFacts span {
+  color: #71877f;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.procurementSearchFacts strong {
+  color: #163f37;
+  font-size: 12px;
+}
+
+.procurementSearchDescription {
+  margin-top: 15px;
+}
+
+.procurementSearchApply {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #e2ece9;
+}
+
+.procurementSearchEmpty {
+  padding: 28px;
+  border: 1px dashed #c8ddd7;
+  border-radius: 14px;
+  color: #667f78;
+  background: #fbfdfc;
+  text-align: center;
+}
+
+@media (max-width: 1100px) {
+  .procurementSearchForm {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr);
+  }
+
+  .procurementSearchFacts {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .procurementSearchForm,
+  .procurementSearchApply {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .procurementSearchResult > header {
+    display: grid;
+  }
+
+  .procurementSearchPrice {
+    justify-items: start;
+  }
+
+  .procurementSearchFacts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .procurementSearchButton {
+    width: 100%;
+  }
+}
