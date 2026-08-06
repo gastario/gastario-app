@@ -618,3 +618,142 @@
     width: 100%;
   }
 }
+/*
+ * gastario-procurement-supplier-bundles-v1-20260806
+ */
+
+.procurementOrdersViewSwitch {
+  grid-template-columns:
+    repeat(3, minmax(0, auto));
+}
+
+.procurementSupplierBundles {
+  display: grid;
+  gap: 16px;
+}
+
+.procurementSupplierBundle {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid #d8e7e2;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.procurementSupplierBundleHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.procurementSupplierBundleHeader > div {
+  display: grid;
+  gap: 4px;
+}
+
+.procurementSupplierBundleHeader span {
+  color: #718a84;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.procurementSupplierBundleHeader h3 {
+  margin: 0;
+  color: #173f37;
+  font-size: 17px;
+}
+
+.procurementSupplierBundleHeader p {
+  margin: 0;
+  color: #6a827c;
+  font-size: 10px;
+}
+
+.procurementSupplierBundleHeader > strong {
+  color: #08745f;
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.procurementSupplierBundleTableWrap {
+  overflow-x: auto;
+}
+
+.procurementSupplierBundleTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.procurementSupplierBundleTable th,
+.procurementSupplierBundleTable td {
+  padding: 10px;
+  border-bottom: 1px solid #e7efed;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 10px;
+}
+
+.procurementSupplierBundleTable th {
+  color: #6a827c;
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.procurementSupplierBundleTable td:first-child {
+  min-width: 230px;
+}
+
+.procurementSupplierBundleTable td:first-child strong,
+.procurementSupplierBundleTable td:first-child span {
+  display: block;
+}
+
+.procurementSupplierBundleTable td:first-child span {
+  margin-top: 3px;
+  color: #718a84;
+  font-size: 9px;
+}
+
+.procurementSupplierBundleDrafts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.procurementSupplierBundleDrafts a {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 9px;
+  border: 1px solid #dce9e5;
+  border-radius: 8px;
+  background: #f8fbfa;
+  color: #496760;
+  font-size: 9px;
+  text-decoration: none;
+}
+
+.procurementSupplierBundleDrafts a strong {
+  color: #08745f;
+}
+
+@media (max-width: 700px) {
+  .procurementOrdersViewSwitch {
+    display: grid;
+    width: 100%;
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .procurementSupplierBundleHeader {
+    flex-direction: column;
+  }
+
+  .procurementSupplierBundleHeader > strong {
+    white-space: normal;
+  }
+}
