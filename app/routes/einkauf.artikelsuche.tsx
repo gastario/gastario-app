@@ -1156,87 +1156,42 @@ export default function ProcurementSearchPage() {
               Gib mindestens zwei Zeichen ein. Gastario durchsucht Produktnamen, Marken, Beschreibungen, Artikelnummern, EAN und GTIN.
             </div>
           ) : data.results.length === 0 ? (
-            <div className="procurementSearchEmpty procurementSearchMetroEmpty">
-              <strong>
-                Noch kein gespeicherter Treffer
-              </strong>
-
-              <span>
-                Gastario kann die Suche jetzt an den lokalen
-                METRO-Connector übergeben. Die Erweiterung
-                übernimmt den Suchbegriff beim nächsten Abruf
-                und sendet die sichtbaren Treffer zurück.
-              </span>
-
+            <div className="procurementSearchEmpty procurementSearchCompactState">
               {data.metroConnector ? (
-                <>
-                  <div className="procurementSearchMetroStatus">
-                    <span>METRO-Connector</span>
+                data.metroConnector.pendingSearch ||
+                shouldStartMetroSearch ||
+                metroFetcher.state !== "idle" ? (
+                  <>
+                    <span className="procurementSearchSpinner" aria-hidden="true" />
                     <strong>
-                      {data.metroConnector.status}
+                      Angebote werden live gesucht …
                     </strong>
                     <small>
-                      {data.metroConnector.lastSeenAt
-                        ? `Zuletzt gesehen: ${formatDateTime(
-                            data.metroConnector.lastSeenAt
-                          )}`
-                        : "Noch keine aktive Rückmeldung"}
+                      Gastario durchsucht verbundene Lieferanten automatisch.
                     </small>
-                  </div>
-
-                  {data.metroConnector.pendingSearch ? (
-                    <div className="procurementSearchMetroPending">
-                      <span>Automatische Suche läuft</span>
-                      <strong>
-                        {
-                          data.metroConnector
-                            .pendingSearch.query
-                        }
-                      </strong>
-                      <small>
-                        Angefordert am{" "}
-                        {formatDateTime(
-                          data.metroConnector
-                            .pendingSearch
-                            .requestedAt
-                        )}
-                      </small>
-                    </div>
-                  ) : shouldStartMetroSearch ||
-                    metroFetcher.state !== "idle" ? (
-                    <div className="procurementSearchMetroPending">
-                      <span>Automatische Suche startet</span>
-                      <strong>{data.query}</strong>
-                      <small>
-                        Gastario übergibt den Suchbegriff an METRO.
-                      </small>
-                    </div>
-                  ) : data.metroConnector.lastSearch ? (
-                    <div className="procurementSearchMetroStatus">
-                      <span>Letzte METRO-Suche</span>
-                      <strong>
-                        {
-                          data.metroConnector
-                            .lastSearch.query
-                        }
-                      </strong>
-                      <small>
-                        {
-                          data.metroConnector
-                            .lastSearch.items
-                        }{" "}
-                        Artikel übertragen
-                      </small>
-                    </div>
-                  ) : null}
-                </>
+                  </>
+                ) : (
+                  <>
+                    <strong>
+                      Keine passenden Angebote gefunden
+                    </strong>
+                    <small>
+                      Der Begriff wurde bereits in den verbundenen Katalogen geprüft.
+                    </small>
+                  </>
+                )
               ) : (
-                <Link
-                  className="procurementSearchButton procurementSearchButton--secondary"
-                  to="/lieferanten"
-                >
-                  METRO-Verbindung prüfen
-                </Link>
+                <>
+                  <strong>
+                    Keine aktive Lieferantenverbindung
+                  </strong>
+                  <Link
+                    className="procurementSearchButton procurementSearchButton--secondary"
+                    to="/lieferanten"
+                  >
+                    Verbindung prüfen
+                  </Link>
+                </>
               )}
             </div>
           ) : (
