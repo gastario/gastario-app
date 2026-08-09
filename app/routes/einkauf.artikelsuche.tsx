@@ -624,6 +624,50 @@ export async function loader({
       return leftPrice - rightPrice;
     });
 
+  /*
+   * gastario-supplier-search-cache-first-v1-20260809
+   *
+   * Bekannte Lieferantenartikel werden sofort aus dem lokalen
+   * Gastario-Katalog angezeigt. Eine Live-Aktualisierung ist nur
+   * nötig, wenn noch kein Treffer oder kein frischer Preis vorliegt.
+   */
+  const livePriceFreshnessMs =
+    5 * 60 * 1000;
+
+  const nowMs = Date.now();
+
+  const freshestPriceAt =
+    results.reduce<Date | null>(
+      (freshest, item: any) => {
+        const fetchedAt =
+          item.latestPrice?.fetchedAt;
+
+        if (!fetchedAt) {
+          return freshest;
+        }
+
+        const date = new Date(fetchedAt);
+
+        if (
+          Number.isNaN(date.getTime()) ||
+          (freshest &&
+            freshest.getTime() >=
+              date.getTime())
+        ) {
+          return freshest;
+        }
+
+        return date;
+      },
+      null
+    );
+
+  const cacheHasFreshPrice =
+    Boolean(freshestPriceAt) &&
+    nowMs -
+      Number(freshestPriceAt?.getTime() || 0) <=
+      livePriceFreshnessMs;
+
   return {
     tenant: access.tenant,
     query,
@@ -634,6 +678,12 @@ export async function loader({
     suppliers,
     products,
     results,
+    searchCache: {
+      freshestPriceAt:
+        freshestPriceAt?.toISOString() || null,
+      hasFreshPrice: cacheHasFreshPrice,
+      freshnessMs: livePriceFreshnessMs,
+    },
     metroConnector: metroConnection
       ? {
           id: metroConnection.id,
@@ -947,17 +997,39 @@ export default function ProcurementSearchPage() {
 
   const revalidator = useRevalidator();
 
-  const shouldStartMetroSearch =
-    data.query.length >= 2 &&
-    data.results.length === 0 &&
-    Boolean(data.metroConnector) &&
-    !data.metroConnector?.pendingSearch &&
+  const liveSearchFreshnessMs =
+    data.searchCache.freshnessMs;
+
+  const lastLiveSearchCompletedAt =
+    data.metroConnector?.lastSearch?.completedAt
+      ? new Date(
+          data.metroConnector.lastSearch.completedAt
+        ).getTime()
+      : 0;
+
+  const lastLiveSearchMatches =
     data.metroConnector?.lastSearch?.query
       ?.trim()
-      .toLocaleLowerCase("de-DE") !==
-      data.query
-        .trim()
-        .toLocaleLowerCase("de-DE");
+      .toLocaleLowerCase("de-DE") ===
+    data.portalQuery
+      .trim()
+      .toLocaleLowerCase("de-DE");
+
+  const lastLiveSearchIsFresh =
+    lastLiveSearchMatches &&
+    Number.isFinite(lastLiveSearchCompletedAt) &&
+    Date.now() - lastLiveSearchCompletedAt <=
+      liveSearchFreshnessMs;
+
+  const shouldStartMetroSearch =
+    data.query.length >= 2 &&
+    Boolean(data.metroConnector) &&
+    !data.metroConnector?.pendingSearch &&
+    (
+      data.results.length === 0 ||
+      !data.searchCache.hasFreshPrice
+    ) &&
+    !lastLiveSearchIsFresh;
 
   useEffect(() => {
     if (
@@ -1005,7 +1077,7 @@ export default function ProcurementSearchPage() {
 
     const timer = window.setInterval(() => {
       revalidator.revalidate();
-    }, 3000);
+    }, 750);
 
     return () => {
       window.clearInterval(timer);
