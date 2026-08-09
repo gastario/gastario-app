@@ -1,3 +1,4 @@
+import { selectTrustedSupplierPrice } from "../lib/supplier-price-quality";
 import {
   buildSupplierSearchQueryTokens,
   normalizeSupplierSearchTerm,
@@ -409,7 +410,9 @@ function resultScore(
 }
 
 function basePrice(item: any) {
-  const price = item.prices?.[0];
+  const price =
+    item.latestPrice ||
+    item.prices?.[0];
 
   if (!price) {
     return null;
@@ -716,7 +719,7 @@ export async function loader({
               orderBy: {
                 fetchedAt: "desc",
               },
-              take: 1,
+              take: 8,
             },
           },
           take: 500,
@@ -724,16 +727,30 @@ export async function loader({
       : [];
 
   const results = catalogItems
-    .map((item: any) => ({
-      ...item,
-      latestPrice: item.prices?.[0] || null,
-      score: resultScore(
-        item,
-        query,
-        searchTerms
-      ),
-      basePriceCents: basePrice(item),
-    }))
+    .map((item: any) => {
+      const trusted =
+        selectTrustedSupplierPrice(
+          item.prices || []
+        );
+
+      const mapped = {
+        ...item,
+        latestPrice: trusted.price,
+        rejectedLatestPrice:
+          trusted.rejectedLatest,
+        score: resultScore(
+          item,
+          query,
+          searchTerms
+        ),
+      };
+
+      return {
+        ...mapped,
+        basePriceCents:
+          basePrice(mapped),
+      };
+    })
     .filter(
       (item: any) =>
         item.score > 0 &&
@@ -1049,7 +1066,7 @@ export async function action({
             orderBy: {
               fetchedAt: "desc",
             },
-            take: 1,
+            take: 8,
           },
         },
       }),
@@ -1062,8 +1079,13 @@ export async function action({
     };
   }
 
+  const trustedAppliedPrice =
+    selectTrustedSupplierPrice(
+      catalogItem.prices || []
+    );
+
   const latestPrice =
-    catalogItem.prices?.[0] || null;
+    trustedAppliedPrice.price;
 
   const purchaseUnit =
     catalogItem.baseUnit ||
@@ -1656,6 +1678,12 @@ export default function ProcurementSearchPage() {
                               )} je ${item.baseUnit || item.latestPrice?.priceUnit || "Einheit"}`
                             : "Grundpreis nicht berechenbar"}
                         </span>
+
+                        {item.rejectedLatestPrice ? (
+                          <small className="procurementPriceWarning">
+                            Neuer Preis wird geprüft · letzter plausibler Preis wird verwendet
+                          </small>
+                        ) : null}
                       </div>
                     </header>
 

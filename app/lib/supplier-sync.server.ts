@@ -1,3 +1,4 @@
+import { assessSupplierPriceQuality } from "./supplier-price-quality";
 import { buildSupplierCatalogSearchTokens } from "./supplier-search-index.server";
 import { prisma } from "./prisma.server";
 import {
@@ -358,11 +359,50 @@ async function savePriceRecord(params: {
     );
   }
 
+  const priceUnit = cleanOptionalText(
+    (record as any).priceUnit
+  );
+
+  const minimumQuantity =
+    cleanPositiveNumber(
+      record.minimumOrderQuantity
+    );
+
+  const priceHistory =
+    await prisma.supplierPriceSnapshot.findMany({
+      where: {
+        tenantId: connection.tenantId,
+        catalogItemId: catalogItem.id,
+      },
+      orderBy: {
+        fetchedAt: "desc",
+      },
+      take: 8,
+    });
+
+  const quality =
+    assessSupplierPriceQuality({
+      netPriceCents,
+      grossPriceCents:
+        Number.isFinite(Number((record as any).grossPriceCents))
+          ? Math.max(0, Math.round(Number((record as any).grossPriceCents)))
+          : null,
+      priceUnit,
+      minimumQuantity,
+      history: priceHistory,
+    });
+
   return prisma.supplierPriceSnapshot.create({
     data: {
       tenantId: connection.tenantId,
       catalogItemId: catalogItem.id,
       netPriceCents,
+      qualityStatus: quality.status,
+      qualityReason: quality.reason,
+      referencePriceCents:
+        quality.referencePriceCents,
+      priceRatio: quality.priceRatio,
+      qualityCheckedAt: new Date(),
       currency:
         String(record.currency || "EUR")
           .trim()
@@ -372,12 +412,8 @@ async function savePriceRecord(params: {
           (record as any).priceUnitQuantity,
           1
         ) || 1,
-      priceUnit: cleanOptionalText(
-        (record as any).priceUnit
-      ),
-      minimumQuantity: cleanPositiveNumber(
-        record.minimumOrderQuantity
-      ),
+      priceUnit,
+      minimumQuantity,
       available:
         typeof record.available === "boolean"
           ? record.available

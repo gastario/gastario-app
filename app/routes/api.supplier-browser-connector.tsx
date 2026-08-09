@@ -1,3 +1,4 @@
+import { assessSupplierPriceQuality } from "../lib/supplier-price-quality";
 import { buildSupplierCatalogSearchTokens } from "../lib/supplier-search-index.server";
 import {
   createHash,
@@ -772,19 +773,56 @@ export async function action({
       }
 
       if (product.netPriceCents !== null) {
+        const basePriceUnit =
+          product.orderUnit ||
+          product.packageText ||
+          null;
+
+        const basePriceHistory =
+          await prisma.supplierPriceSnapshot.findMany({
+            where: {
+              tenantId: connection.tenantId,
+              catalogItemId: catalogItem.id,
+              minimumQuantity: 1,
+            },
+            orderBy: {
+              fetchedAt: "desc",
+            },
+            take: 8,
+          });
+
+        const basePriceQuality =
+          assessSupplierPriceQuality({
+            netPriceCents:
+              product.netPriceCents,
+            grossPriceCents:
+              product.grossPriceCents,
+            priceUnit: basePriceUnit,
+            minimumQuantity: 1,
+            history: basePriceHistory,
+          });
+
         await prisma.supplierPriceSnapshot.create({
           data: {
             tenantId: connection.tenantId,
             catalogItemId: catalogItem.id,
             netPriceCents:
               product.netPriceCents,
+            qualityStatus:
+              basePriceQuality.status,
+            qualityReason:
+              basePriceQuality.reason,
+            referencePriceCents:
+              basePriceQuality.referencePriceCents,
+            priceRatio:
+              basePriceQuality.priceRatio,
+            qualityCheckedAt:
+              new Date(),
             grossPriceCents:
               product.grossPriceCents,
             currency: product.currency,
             priceUnitQuantity: 1,
-            priceUnit:
-              product.orderUnit ||
-              product.packageText,
+            priceUnit: basePriceUnit,
             minimumQuantity: 1,
             available: product.available,
             stockText:
@@ -804,19 +842,58 @@ export async function action({
           continue;
         }
 
+        const tierPriceUnit =
+          product.orderUnit ||
+          product.packageText ||
+          null;
+
+        const tierPriceHistory =
+          await prisma.supplierPriceSnapshot.findMany({
+            where: {
+              tenantId: connection.tenantId,
+              catalogItemId: catalogItem.id,
+              minimumQuantity:
+                tier.minimumQuantity,
+            },
+            orderBy: {
+              fetchedAt: "desc",
+            },
+            take: 8,
+          });
+
+        const tierPriceQuality =
+          assessSupplierPriceQuality({
+            netPriceCents:
+              tier.netPriceCents,
+            grossPriceCents:
+              tier.grossPriceCents,
+            priceUnit: tierPriceUnit,
+            minimumQuantity:
+              tier.minimumQuantity,
+            history: tierPriceHistory,
+          });
+
         await prisma.supplierPriceSnapshot.create({
           data: {
             tenantId: connection.tenantId,
             catalogItemId: catalogItem.id,
             netPriceCents:
               tier.netPriceCents,
+            qualityStatus:
+              tierPriceQuality.status,
+            qualityReason:
+              tierPriceQuality.reason,
+            referencePriceCents:
+              tierPriceQuality.referencePriceCents,
+            priceRatio:
+              tierPriceQuality.priceRatio,
+            qualityCheckedAt:
+              new Date(),
             grossPriceCents:
               tier.grossPriceCents,
             currency: product.currency,
             priceUnitQuantity: 1,
-            priceUnit:
-              product.orderUnit ||
-              product.packageText,
+            priceUnit: basePriceUnit,
             minimumQuantity:
               tier.minimumQuantity,
             available: product.available,

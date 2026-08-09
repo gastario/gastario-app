@@ -656,3 +656,12 @@
     flex-direction: column;
   }
 }
+.procurementPriceWarning {
+  display: inline-flex;
+  max-width: 260px;
+  margin-top: 5px;
+  color: #a15c00;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.35;
+}
