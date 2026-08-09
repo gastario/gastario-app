@@ -1,6 +1,7 @@
 import {
   buildSupplierSearchQueryTokens,
   normalizeSupplierSearchTerm,
+  extractSupplierSearchLearningCandidates,
 } from "../lib/supplier-search-index.server";
 import { useEffect } from "react";
 
@@ -1112,6 +1113,91 @@ export async function action({
           : product.operationalArea,
     },
   });
+
+  const learningQuery =
+    normalizeSupplierSearchTerm(
+      returnQuery
+    );
+
+  if (learningQuery.length >= 2) {
+    const learningCandidates =
+      extractSupplierSearchLearningCandidates({
+        query: returnQuery,
+        itemName: catalogItem.name,
+        brand: catalogItem.brand,
+      });
+
+    for (const candidateTerm of learningCandidates) {
+      const candidateNormalized =
+        normalizeSupplierSearchTerm(
+          candidateTerm
+        );
+
+      if (
+        !candidateNormalized ||
+        candidateNormalized === learningQuery
+      ) {
+        continue;
+      }
+
+      const existingAlias =
+        await prisma.supplierSearchAlias.findUnique({
+          where: {
+            tenantId_aliasNormalized: {
+              tenantId: access.tenantId,
+              aliasNormalized:
+                candidateNormalized,
+            },
+          },
+          select: {
+            id: true,
+          },
+        });
+
+      if (existingAlias) {
+        continue;
+      }
+
+      await prisma.supplierSearchLearningSuggestion.upsert({
+        where: {
+          tenantId_queryNormalized_candidateNormalized: {
+            tenantId: access.tenantId,
+            queryNormalized:
+              learningQuery,
+            candidateNormalized,
+          },
+        },
+        create: {
+          tenantId: access.tenantId,
+          queryTerm: returnQuery,
+          queryNormalized:
+            learningQuery,
+          candidateTerm,
+          candidateNormalized,
+          evidenceCount: 1,
+          status: "PENDING",
+          lastCatalogItemName:
+            catalogItem.name,
+          lastSupplierName:
+            catalogItem.supplier.name,
+          lastSeenAt: new Date(),
+        },
+        update: {
+          queryTerm: returnQuery,
+          candidateTerm,
+          evidenceCount: {
+            increment: 1,
+          },
+          status: "PENDING",
+          lastCatalogItemName:
+            catalogItem.name,
+          lastSupplierName:
+            catalogItem.supplier.name,
+          lastSeenAt: new Date(),
+        },
+      });
+    }
+  }
 
   return redirect(
     `/einkauf/artikelsuche?q=${encodeURIComponent(

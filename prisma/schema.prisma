@@ -1417,3 +1417,30 @@ model SupplierSearchAlias {
   @@index([tenantId, canonicalNormalized])
   @@index([tenantId, active])
 }
+
+model SupplierSearchLearningSuggestion {
+  id String @id @default(cuid())
+
+  tenantId String
+
+  queryTerm           String
+  queryNormalized     String
+  candidateTerm       String
+  candidateNormalized String
+
+  evidenceCount Int    @default(1)
+  status        String @default("PENDING")
+
+  lastCatalogItemName String?
+  lastSupplierName    String?
+  firstSeenAt         DateTime @default(now())
+  lastSeenAt          DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, queryNormalized, candidateNormalized])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, evidenceCount])
+}

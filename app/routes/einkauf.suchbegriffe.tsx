@@ -108,6 +108,23 @@ export async function loader({
     ).values()
   );
 
+  const learningSuggestions =
+    await prisma.supplierSearchLearningSuggestion.findMany({
+      where: {
+        tenantId: access.tenantId,
+        status: "PENDING",
+      },
+      orderBy: [
+        {
+          evidenceCount: "desc",
+        },
+        {
+          lastSeenAt: "desc",
+        },
+      ],
+      take: 40,
+    });
+
   return {
     tenant: {
       name: access.tenant.name,
@@ -117,6 +134,7 @@ export async function loader({
     activeAliases: aliases.filter(
       (entry: any) => entry.active
     ).length,
+    learningSuggestions,
   };
 }
 
@@ -229,6 +247,140 @@ export async function action({
 
     return redirect(
       "/einkauf/suchbegriffe?saved=1"
+    );
+  }
+
+  if (intent === "accept-learning") {
+    const id = cleanTerm(
+      formData.get("id")
+    );
+
+    const suggestion =
+      await prisma.supplierSearchLearningSuggestion.findFirst({
+        where: {
+          id,
+          tenantId: access.tenantId,
+          status: "PENDING",
+        },
+      });
+
+    if (!suggestion) {
+      return {
+        error:
+          "Der Lernvorschlag wurde nicht gefunden.",
+      } satisfies ActionData;
+    }
+
+    const canonicalTerm =
+      suggestion.queryTerm;
+
+    const canonicalNormalized =
+      suggestion.queryNormalized;
+
+    const entries = [
+      {
+        aliasTerm:
+          suggestion.queryTerm,
+        aliasNormalized:
+          suggestion.queryNormalized,
+      },
+      {
+        aliasTerm:
+          suggestion.candidateTerm,
+        aliasNormalized:
+          suggestion.candidateNormalized,
+      },
+    ];
+
+    for (const entry of entries) {
+      const conflict =
+        await prisma.supplierSearchAlias.findUnique({
+          where: {
+            tenantId_aliasNormalized: {
+              tenantId: access.tenantId,
+              aliasNormalized:
+                entry.aliasNormalized,
+            },
+          },
+        });
+
+      if (
+        conflict &&
+        conflict.canonicalNormalized !==
+          canonicalNormalized
+      ) {
+        return {
+          error:
+            `„${entry.aliasTerm}“ gehört bereits zur Gruppe „${conflict.canonicalTerm}“.`,
+        } satisfies ActionData;
+      }
+
+      await prisma.supplierSearchAlias.upsert({
+        where: {
+          tenantId_aliasNormalized: {
+            tenantId: access.tenantId,
+            aliasNormalized:
+              entry.aliasNormalized,
+          },
+        },
+        create: {
+          tenantId: access.tenantId,
+          canonicalTerm,
+          aliasTerm:
+            entry.aliasTerm,
+          canonicalNormalized,
+          aliasNormalized:
+            entry.aliasNormalized,
+          active: true,
+          source: "LEARNED",
+          useCount:
+            suggestion.evidenceCount,
+        },
+        update: {
+          canonicalTerm,
+          canonicalNormalized,
+          active: true,
+          source: "LEARNED",
+          useCount: {
+            increment:
+              suggestion.evidenceCount,
+          },
+        },
+      });
+    }
+
+    await prisma.supplierSearchLearningSuggestion.update({
+      where: {
+        id: suggestion.id,
+      },
+      data: {
+        status: "ACCEPTED",
+      },
+    });
+
+    return redirect(
+      "/einkauf/suchbegriffe?learned=1"
+    );
+  }
+
+  if (intent === "reject-learning") {
+    const id = cleanTerm(
+      formData.get("id")
+    );
+
+    await prisma.supplierSearchLearningSuggestion.updateMany({
+      where: {
+        id,
+        tenantId: access.tenantId,
+        status: "PENDING",
+      },
+      data: {
+        status: "REJECTED",
+      },
+    });
+
+    return redirect(
+      "/einkauf/suchbegriffe"
     );
   }
 
@@ -356,6 +508,95 @@ export default function SupplierSearchAliasesPage() {
             <strong>{data.activeAliases}</strong>
           </div>
         </section>
+
+        {data.learningSuggestions.length > 0 ? (
+          <PageSection
+            eyebrow="Gastario lernt mit"
+            title="Erkannte Suchbeziehungen"
+            description="Diese Vorschläge entstehen aus deiner tatsächlichen Artikelauswahl. Je öfter dieselbe Beziehung erkannt wird, desto höher ist die Evidenz."
+          >
+            <div className="supplierLearningList">
+              {data.learningSuggestions.map(
+                (suggestion: any) => (
+                  <article
+                    className="supplierLearningCard"
+                    key={suggestion.id}
+                  >
+                    <div className="supplierLearningMain">
+                      <span className="supplierAliasEyebrow">
+                        Lernvorschlag
+                      </span>
+
+                      <strong>
+                        {suggestion.queryTerm}
+                        <span> ↔ </span>
+                        {suggestion.candidateTerm}
+                      </strong>
+
+                      <small>
+                        Zuletzt gewählt:{" "}
+                        {suggestion.lastCatalogItemName ||
+                          "Lieferantenartikel"}
+                        {suggestion.lastSupplierName
+                          ? ` · ${suggestion.lastSupplierName}`
+                          : ""}
+                      </small>
+                    </div>
+
+                    <div className="supplierLearningEvidence">
+                      <span>Evidenz</span>
+                      <strong>
+                        {suggestion.evidenceCount}×
+                      </strong>
+                    </div>
+
+                    <div className="supplierLearningActions">
+                      <Form method="post">
+                        <input
+                          type="hidden"
+                          name="intent"
+                          value="accept-learning"
+                        />
+                        <input
+                          type="hidden"
+                          name="id"
+                          value={suggestion.id}
+                        />
+
+                        <button
+                          type="submit"
+                          className="procurementSearchButton"
+                        >
+                          Übernehmen
+                        </button>
+                      </Form>
+
+                      <Form method="post">
+                        <input
+                          type="hidden"
+                          name="intent"
+                          value="reject-learning"
+                        />
+                        <input
+                          type="hidden"
+                          name="id"
+                          value={suggestion.id}
+                        />
+
+                        <button
+                          type="submit"
+                          className="procurementSearchButton procurementSearchButton--secondary"
+                        >
+                          Verwerfen
+                        </button>
+                      </Form>
+                    </div>
+                  </article>
+                )
+              )}
+            </div>
+          </PageSection>
+        ) : null}
 
         <PageSection
           eyebrow="Neue Begriffsgruppe"
