@@ -888,7 +888,14 @@ export async function loader({
       Number(freshestPriceAt?.getTime() || 0) <=
       livePriceFreshnessMs;
 
-  if (query.length >= 2) {
+
+  const needsLegacyPriceRefresh =
+    results.some(
+      (item: any) =>
+        item.priceRefreshPending ===
+        true
+    );
+if (query.length >= 2) {
     const queryNormalized =
       normalizeSupplierSearchTerm(
         query
@@ -1018,12 +1025,6 @@ export async function loader({
       }
     }
   }
-  const needsLegacyPriceRefresh =
-    results.some(
-      (item: any) =>
-        item.priceRefreshPending ===
-        true
-    );
   return {
     tenant: access.tenant,
     query,
