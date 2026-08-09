@@ -1596,16 +1596,15 @@ export default function ProcurementSearchPage() {
           ) : data.results.length === 0 ? (
             <div className="procurementSearchEmpty procurementSearchCompactState">
               {data.metroConnector ? (
-                data.metroConnector.pendingSearch ||
                 shouldStartMetroSearch ||
                 metroFetcher.state !== "idle" ? (
                   <>
                     <span className="procurementSearchSpinner" aria-hidden="true" />
                     <strong>
-                      Angebote werden live gesucht …
+                      Angebote werden gesucht …
                     </strong>
                     <small>
-                      Gastario durchsucht verbundene Lieferanten automatisch.
+                      Die lokale Artikelsuche wird aktualisiert.
                     </small>
                   </>
                 ) : (
