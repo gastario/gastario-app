@@ -124,3 +124,46 @@ URL-Querystrings gespeichert.
 
 Damit können shop-spezifische Parser anhand echter Response-Strukturen
 gebaut werden, ohne Kontodaten in Analyseartefakte zu kopieren.
+
+## Phase 4: METRO Network Native v1
+
+Der METRO-Adapter verwendet für die beobachteten Produktendpunkte keine
+generische Objekt-Erkennung mehr.
+
+Native Quellen:
+
+### `/evaluate.article.v1/substitutes`
+
+Verwendet echte Bundle-/Preisfelder:
+
+- `bundles[].title`
+- `bundles[].customerDisplayId`
+- `bundles[].bundleId`
+- `bundles[].brandName`
+- `bundles[].availability`
+- `bundles[].priceInfo.netPrice`
+- `bundles[].priceInfo.grossPrice`
+- `bundles[].priceInfo.finalPricesInfo`
+- `bundles[].priceInfo.summaryDnrInfo.levels`
+- `bundles[].weightPerPiece`
+- `bundles[].minOrderQuantity`
+
+### `/evaluate.article.v1/betty-variants`
+
+Verwendet echte Produkt-, Bundle-, EAN-, Gebinde- und
+Verfügbarkeitsfelder. Da dieser Response in der beobachteten Struktur
+keine `priceInfo`-Objekte trägt, werden diese Ergebnisse maximal als
+`MEDIUM` klassifiziert, bis ein Preis-Response sie ergänzt.
+
+### `/searchdiscover/articlesearch/search`
+
+Dieser Response liefert beobachtet hauptsächlich Such-IDs und
+Kategorieinformationen. Er wird deshalb noch nicht als fertiger
+Produktdatensatz gespeichert. Die IDs werden in der nächsten Phase für
+gezieltes Enrichment genutzt.
+
+Zielregel:
+
+- HIGH = echter Bundle-Identifier + Produktname + echter Preis
+- MEDIUM = echter Bundle-Identifier + Produktdaten, Preis noch offen
+- Kategorien/Accounts/Navigation = niemals Produkt
