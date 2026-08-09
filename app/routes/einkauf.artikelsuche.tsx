@@ -1466,6 +1466,13 @@ export default function ProcurementSearchPage() {
 
               <Link
                 className="procurementSearchButton procurementSearchButton--secondary"
+                to="/einkauf/preispruefung"
+              >
+                Preisprüfung
+              </Link>
+
+              <Link
+                className="procurementSearchButton procurementSearchButton--secondary"
                 to="/einkauf/suchbegriffe"
               >
                 Suchbegriffe verwalten

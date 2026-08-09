@@ -227,7 +227,9 @@ export function selectTrustedSupplierPrice<
 
   if (
     latest.qualityStatus !==
-      "SUSPICIOUS"
+      "SUSPICIOUS" &&
+    latest.qualityStatus !==
+      "REJECTED"
   ) {
     /*
      * LEGACY/UNCHECKED-Snapshots bekommen zusaetzlich eine
@@ -274,7 +276,9 @@ export function selectTrustedSupplierPrice<
       (entry, index) =>
         index > 0 &&
         entry.qualityStatus !==
-          "SUSPICIOUS"
+          "SUSPICIOUS" &&
+        entry.qualityStatus !==
+          "REJECTED"
     ) || null;
 
   return {
