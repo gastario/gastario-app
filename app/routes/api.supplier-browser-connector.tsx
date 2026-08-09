@@ -88,6 +88,88 @@ function supplierPriceSnapshotChanged(
   );
 }
 
+function supplierCaptureProductMatchesQuery(
+  product: any,
+  queryTokens: string[]
+) {
+  if (!Array.isArray(queryTokens) || queryTokens.length === 0) {
+    return true;
+  }
+
+  const normalizedHaystack =
+    normalizeSupplierSearchTerm(
+      [
+        product?.name,
+        product?.orderUnit,
+        product?.packageText,
+        product?.productUrl,
+      ]
+        .filter(Boolean)
+        .join(" ")
+    );
+
+  if (!normalizedHaystack) {
+    return false;
+  }
+
+  const haystackTokens =
+    normalizedHaystack
+      .split(" ")
+      .map((token) => token.trim())
+      .filter(Boolean);
+
+  const tokenMatches = (
+    queryToken: string
+  ) => {
+    const token =
+      normalizeSupplierSearchTerm(
+        queryToken
+      );
+
+    if (!token) {
+      return false;
+    }
+
+    const aliases =
+      token === "tk"
+        ? [
+            "tk",
+            "tiefkuhl",
+            "tiefgek",
+            "tiefgefror",
+            "gefror",
+          ]
+        : [token];
+
+    return aliases.some((alias) =>
+      haystackTokens.some(
+        (candidate) =>
+          candidate === alias ||
+          (
+            alias.length >= 4 &&
+            candidate.startsWith(alias)
+          ) ||
+          (
+            candidate.length >= 4 &&
+            alias.startsWith(candidate)
+          )
+      )
+    );
+  };
+
+  const matched =
+    queryTokens.filter(tokenMatches).length;
+
+  const required =
+    queryTokens.length <= 1
+      ? 1
+      : Math.ceil(
+          queryTokens.length / 2
+        );
+
+  return matched >= required;
+}
+
 function corsHeaders() {
   return {
     "Access-Control-Allow-Origin": "*",
@@ -853,7 +935,7 @@ export async function action({
     );
   }
 
-  const products = rawProducts
+  const parsedProducts = rawProducts
     .map(parseCaptureProduct)
     .filter(Boolean) as Array<
       NonNullable<
@@ -863,7 +945,7 @@ export async function action({
       >
     >;
 
-  if (products.length === 0) {
+  if (parsedProducts.length === 0) {
     return json(
       {
         ok: false,
@@ -874,6 +956,24 @@ export async function action({
     );
   }
 
+  /*
+   * Ein Discovery-Capture darf den lokalen Suchindex nicht mit
+   * fachfremden Portalartikeln vergiften.
+   *
+   * Nur Artikel, deren Produktdaten den Suchbegriff tatsächlich
+   * plausibel enthalten, werden für diesen Suchlauf übernommen.
+   * Bei normalen Captures ohne Suchbegriff bleibt alles unverändert.
+   */
+  const products =
+    searchQueryTokens.length > 0
+      ? parsedProducts.filter(
+          (product) =>
+            supplierCaptureProductMatchesQuery(
+              product,
+              searchQueryTokens
+            )
+        )
+      : parsedProducts;
   const capturedAt = new Date();
   const locationName = readText(
     payload.locationName,
@@ -894,7 +994,12 @@ export async function action({
             locationName || null,
           productsReceived:
             rawProducts.length,
+          productsParsed:
+            parsedProducts.length,
           productsAccepted:
+            products.length,
+          productsFilteredOut:
+            parsedProducts.length -
             products.length,
           captureComplete,
         },
@@ -1532,7 +1637,12 @@ export async function action({
             locationName || null,
           productsReceived:
             rawProducts.length,
+          productsParsed:
+            parsedProducts.length,
           productsAccepted:
+            products.length,
+          productsFilteredOut:
+            parsedProducts.length -
             products.length,
           captureComplete,
           errors: errors.slice(0, 20),
@@ -1570,7 +1680,11 @@ export async function action({
     supplierName:
       connection.supplier.name,
     itemsReceived: rawProducts.length,
+    itemsParsed: parsedProducts.length,
     itemsAccepted: products.length,
+    itemsFilteredOut:
+      parsedProducts.length -
+      products.length,
     itemsCreated,
     itemsUpdated,
     pricesCreated,
