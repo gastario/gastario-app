@@ -167,3 +167,29 @@ Zielregel:
 - HIGH = echter Bundle-Identifier + Produktname + echter Preis
 - MEDIUM = echter Bundle-Identifier + Produktdaten, Preis noch offen
 - Kategorien/Accounts/Navigation = niemals Produkt
+
+## Phase 5A: Search Request Shape
+
+Der Recorder protokolliert zusätzlich eine sichere Struktur des
+Lieferanten-Suchrequests.
+
+Gespeichert werden:
+
+- HTTP-Methode
+- URL-Pfad
+- Namen der Query-Parameter, niemals deren Werte
+- Body-Typ (`json`, `form`, `text`, `none`)
+- Body-Feldnamen
+- ausschließlich sichere Steuerwerte wie Suchbegriff und Paging
+
+Nicht gespeichert werden:
+
+- Cookies
+- Authorization Header
+- Kundennummern
+- Session-Token
+- vollständige Querystrings
+- unbekannte Body-Werte
+
+Damit kann der reale Supplier-Suchrequest anschließend automatisiert
+reproduziert werden, ohne Zugangsdaten in Analyseartefakte zu schreiben.

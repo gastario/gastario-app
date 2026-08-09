@@ -5,7 +5,8 @@ import type {
 } from "playwright-core";
 
 import type {
-  NetworkObservation
+  NetworkObservation,
+  SafeRequestShape
 } from "../types.js";
 
 import type {
@@ -53,6 +54,213 @@ function isJsonContentType(
   );
 }
 
+const SAFE_REQUEST_VALUE_KEYS =
+  new Set([
+    "q",
+    "query",
+    "search",
+    "searchterm",
+    "searchTerm",
+    "term",
+    "text",
+    "page",
+    "rows",
+    "size",
+    "limit",
+    "offset",
+    "locale"
+  ]);
+
+function collectSafeValues(
+  value: unknown,
+  prefix = "",
+  depth = 0
+): Record<
+  string,
+  string | number | boolean
+> {
+  if (
+    value == null ||
+    depth > 4 ||
+    typeof value !== "object" ||
+    Array.isArray(value)
+  ) {
+    return {};
+  }
+
+  const result:
+    Record<
+      string,
+      string | number | boolean
+    > = {};
+
+  for (
+    const [key, child]
+    of Object.entries(
+      value as Record<
+        string,
+        unknown
+      >
+    )
+  ) {
+    const path =
+      prefix
+        ? `${prefix}.${key}`
+        : key;
+
+    if (
+      SAFE_REQUEST_VALUE_KEYS.has(key) &&
+      (
+        typeof child === "string" ||
+        typeof child === "number" ||
+        typeof child === "boolean"
+      )
+    ) {
+      result[path] = child;
+      continue;
+    }
+
+    if (
+      child &&
+      typeof child === "object" &&
+      !Array.isArray(child)
+    ) {
+      Object.assign(
+        result,
+        collectSafeValues(
+          child,
+          path,
+          depth + 1
+        )
+      );
+    }
+  }
+
+  return result;
+}
+
+function buildSafeRequestShape(
+  response: Response
+): SafeRequestShape {
+  const request =
+    response.request();
+
+  let queryParameterNames:
+    string[] = [];
+
+  try {
+    queryParameterNames =
+      Array.from(
+        new URL(
+          request.url()
+        ).searchParams.keys()
+      )
+        .filter(
+          (
+            value,
+            index,
+            all
+          ) =>
+            all.indexOf(value) ===
+            index
+        )
+        .sort();
+  } catch {
+    queryParameterNames = [];
+  }
+
+  const postData =
+    request.postData();
+
+  if (!postData) {
+    return {
+      queryParameterNames,
+      bodyKind: "none",
+      bodyKeys: [],
+      safeValues: {}
+    };
+  }
+
+  try {
+    const parsed =
+      JSON.parse(postData);
+
+    const bodyKeys =
+      parsed &&
+      typeof parsed === "object" &&
+      !Array.isArray(parsed)
+        ? Object.keys(
+            parsed as Record<
+              string,
+              unknown
+            >
+          ).sort()
+        : [];
+
+    return {
+      queryParameterNames,
+      bodyKind: "json",
+      bodyKeys,
+      safeValues:
+        collectSafeValues(parsed)
+    };
+  } catch {
+    // Form/Text weiter prüfen.
+  }
+
+  try {
+    const form =
+      new URLSearchParams(
+        postData
+      );
+
+    const bodyKeys =
+      Array.from(form.keys())
+        .filter(
+          (
+            value,
+            index,
+            all
+          ) =>
+            all.indexOf(value) ===
+            index
+        )
+        .sort();
+
+    const safeValues:
+      Record<
+        string,
+        string | number | boolean
+      > = {};
+
+    for (const key of bodyKeys) {
+      if (
+        SAFE_REQUEST_VALUE_KEYS.has(key)
+      ) {
+        safeValues[key] =
+          form.get(key) || "";
+      }
+    }
+
+    if (bodyKeys.length > 0) {
+      return {
+        queryParameterNames,
+        bodyKind: "form",
+        bodyKeys,
+        safeValues
+      };
+    }
+  } catch {
+    // Text-Fallback.
+  }
+
+  return {
+    queryParameterNames,
+    bodyKind: "text",
+    bodyKeys: [],
+    safeValues: {}
+  };
+}
 async function readResponseBody(
   response: Response
 ) {
@@ -200,6 +408,10 @@ export class NetworkCapture {
           adapter.key,
         capturedAt:
           new Date().toISOString(),
+        requestShape:
+          buildSafeRequestShape(
+            response
+          ),
         body
       };
 

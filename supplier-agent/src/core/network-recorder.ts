@@ -363,7 +363,27 @@ export class SupplierNetworkRecorder {
         url:
           sanitizeUrl(
             event.observation.url
-          )
+          ),
+
+        queryParameterNames:
+          event.observation
+            .requestShape
+            .queryParameterNames,
+
+        bodyKind:
+          event.observation
+            .requestShape
+            .bodyKind,
+
+        bodyKeys:
+          event.observation
+            .requestShape
+            .bodyKeys,
+
+        safeValues:
+          event.observation
+            .requestShape
+            .safeValues
       },
 
       endpointKind:

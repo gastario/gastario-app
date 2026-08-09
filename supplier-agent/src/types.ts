@@ -57,6 +57,20 @@ export interface NormalizedSupplierProduct {
   capturedAt: string;
 }
 
+export interface SafeRequestShape {
+  queryParameterNames: string[];
+  bodyKind:
+    | "none"
+    | "json"
+    | "form"
+    | "text";
+  bodyKeys: string[];
+  safeValues:
+    Record<
+      string,
+      string | number | boolean
+    >;
+}
 export interface NetworkObservation {
   url: string;
   method: string;
@@ -64,6 +78,7 @@ export interface NetworkObservation {
   contentType: string | null;
   supplierKey: SupplierKey | null;
   capturedAt: string;
+  requestShape: SafeRequestShape;
   body: unknown;
 }
 
