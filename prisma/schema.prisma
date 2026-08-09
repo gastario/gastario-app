@@ -1123,9 +1123,10 @@ model SupplierCatalogItem {
   ean           String?
   gtin          String?
 
-  name        String
-  brand       String?
-  description String?
+  name         String
+  brand        String?
+  description  String?
+  searchTokens String[] @default([])
 
   orderUnit            String?
   baseUnit             String?
@@ -1157,6 +1158,7 @@ model SupplierCatalogItem {
   @@index([ean])
   @@index([gtin])
   @@index([name])
+  @@index([searchTokens], type: Gin)
 }
 
 model SupplierPriceSnapshot {

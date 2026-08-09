@@ -1,3 +1,4 @@
+import { buildSupplierCatalogSearchTokens } from "./supplier-search-index.server";
 import { prisma } from "./prisma.server";
 import {
   getSupplierConnector,
@@ -236,6 +237,18 @@ async function saveCatalogRecord(params: {
         (record as any).minimumOrderQuantity,
         1
       ) || 1,
+    searchTokens:
+      buildSupplierCatalogSearchTokens({
+        name,
+        brand: record.brand,
+        description: record.description,
+        externalId: externalArticleId,
+        articleNumber,
+        ean,
+        gtin: (record as any).gtin,
+        orderUnit: record.orderUnit,
+        baseUnit: record.baseUnit,
+      }),
     active: record.active !== false,
     lastSeenAt: new Date(),
   };

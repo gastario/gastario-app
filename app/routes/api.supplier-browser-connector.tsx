@@ -1,3 +1,4 @@
+import { buildSupplierCatalogSearchTokens } from "../lib/supplier-search-index.server";
 import {
   createHash,
 } from "node:crypto";
@@ -710,6 +711,15 @@ export async function action({
             articleNumber:
               product.articleNumber,
             name: product.name,
+            searchTokens:
+              buildSupplierCatalogSearchTokens({
+                name: product.name,
+                description: product.productUrl,
+                externalId: product.externalId,
+                articleNumber: product.articleNumber,
+                orderUnit: product.orderUnit,
+                packageText: product.packageText,
+              }),
             description:
               product.productUrl || null,
             orderUnit:
@@ -729,6 +739,15 @@ export async function action({
             connectionId: connection.id,
             externalId: product.externalId,
             name: product.name,
+            searchTokens:
+              buildSupplierCatalogSearchTokens({
+                name: product.name,
+                description: product.productUrl,
+                externalId: product.externalId,
+                articleNumber: product.articleNumber,
+                orderUnit: product.orderUnit,
+                packageText: product.packageText,
+              }),
             description:
               product.productUrl || null,
             orderUnit:

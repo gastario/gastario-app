@@ -1,3 +1,4 @@
+import { buildSupplierSearchQueryTokens } from "../lib/supplier-search-index.server";
 import { useEffect } from "react";
 
 import {
@@ -460,6 +461,12 @@ export async function loader({
   const searchTerms =
     expandSearchTerms(query);
 
+  const indexSearchTokens =
+    buildSupplierSearchQueryTokens([
+      query,
+      ...searchTerms,
+    ]);
+
   const portalQuery =
     preferredPortalQuery(query);
 
@@ -604,46 +611,9 @@ export async function loader({
                   supplierId,
                 }
               : {}),
-            OR: searchTerms.flatMap(
-              (term) => [
-                {
-                  name: {
-                    contains: term,
-                    mode: "insensitive" as const,
-                  },
-                },
-                {
-                  brand: {
-                    contains: term,
-                    mode: "insensitive" as const,
-                  },
-                },
-                {
-                  description: {
-                    contains: term,
-                    mode: "insensitive" as const,
-                  },
-                },
-                {
-                  articleNumber: {
-                    contains: term,
-                    mode: "insensitive" as const,
-                  },
-                },
-                {
-                  ean: {
-                    contains: term,
-                    mode: "insensitive" as const,
-                  },
-                },
-                {
-                  gtin: {
-                    contains: term,
-                    mode: "insensitive" as const,
-                  },
-                },
-              ]
-            ),
+            searchTokens: {
+              hasSome: indexSearchTokens,
+            },
           },
           include: {
             supplier: {
@@ -659,7 +629,7 @@ export async function loader({
               take: 1,
             },
           },
-          take: 250,
+          take: 500,
         })
       : [];
 
