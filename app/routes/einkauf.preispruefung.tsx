@@ -309,7 +309,7 @@ export default function SupplierPriceReviewPage() {
           description={
             data.showRejected
               ? "Diese Preise werden von Gastario nicht mehr für Preisvergleich oder Produktübernahme verwendet."
-              : "Gastario verwendet bei auffälligen Preisen automatisch den letzten plausiblen Preis. Hier kannst du den neuen Preis bestätigen oder dauerhaft verwerfen."
+              : "Gastario verwendet bei auffälligen Preisen automatisch den letzten plausiblen Preis. Bestätigen spätere plausible Preisimporte den Ausreißer, kann Gastario ihn automatisch verwerfen. Du kannst hier jederzeit manuell bestätigen oder eingreifen."
           }
         >
           <div className="supplierPriceReviewTabs">

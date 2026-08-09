@@ -1,4 +1,7 @@
-import { assessSupplierPriceQuality } from "./supplier-price-quality";
+import {
+  assessSupplierPriceQuality,
+  autoResolveSuspiciousSupplierPrices,
+} from "./supplier-price-quality";
 import { buildSupplierCatalogSearchTokens } from "./supplier-search-index.server";
 import { prisma } from "./prisma.server";
 import {
@@ -391,6 +394,35 @@ async function savePriceRecord(params: {
       minimumQuantity,
       history: priceHistory,
     });
+
+  if (quality.status === "VALID") {
+    await autoResolveSuspiciousSupplierPrices(
+      prisma,
+      {
+        tenantId: connection.tenantId,
+        catalogItemId: catalogItem.id,
+        currentNetPriceCents:
+          netPriceCents,
+        currentGrossPriceCents:
+          Number.isFinite(
+            Number(
+              (record as any).grossPriceCents
+            )
+          )
+            ? Math.max(
+                0,
+                Math.round(
+                  Number(
+                    (record as any).grossPriceCents
+                  )
+                )
+              )
+            : null,
+        priceUnit,
+        minimumQuantity,
+      }
+    );
+  }
 
   return prisma.supplierPriceSnapshot.create({
     data: {

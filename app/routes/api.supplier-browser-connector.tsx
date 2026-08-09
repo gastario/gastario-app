@@ -1,4 +1,7 @@
-import { assessSupplierPriceQuality } from "../lib/supplier-price-quality";
+import {
+  assessSupplierPriceQuality,
+  autoResolveSuspiciousSupplierPrices,
+} from "../lib/supplier-price-quality";
 import { buildSupplierCatalogSearchTokens } from "../lib/supplier-search-index.server";
 import {
   createHash,
@@ -802,6 +805,28 @@ export async function action({
             history: basePriceHistory,
           });
 
+        if (
+          basePriceQuality.status ===
+            "VALID"
+        ) {
+          await autoResolveSuspiciousSupplierPrices(
+            prisma,
+            {
+              tenantId:
+                connection.tenantId,
+              catalogItemId:
+                catalogItem.id,
+              currentNetPriceCents:
+                product.netPriceCents,
+              currentGrossPriceCents:
+                product.grossPriceCents,
+              priceUnit:
+                basePriceUnit,
+              minimumQuantity: 1,
+            }
+          );
+        }
+
         await prisma.supplierPriceSnapshot.create({
           data: {
             tenantId: connection.tenantId,
@@ -872,6 +897,29 @@ export async function action({
               tier.minimumQuantity,
             history: tierPriceHistory,
           });
+
+        if (
+          tierPriceQuality.status ===
+            "VALID"
+        ) {
+          await autoResolveSuspiciousSupplierPrices(
+            prisma,
+            {
+              tenantId:
+                connection.tenantId,
+              catalogItemId:
+                catalogItem.id,
+              currentNetPriceCents:
+                tier.netPriceCents,
+              currentGrossPriceCents:
+                tier.grossPriceCents,
+              priceUnit:
+                tierPriceUnit,
+              minimumQuantity:
+                tier.minimumQuantity,
+            }
+          );
+        }
 
         await prisma.supplierPriceSnapshot.create({
           data: {

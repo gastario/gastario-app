@@ -286,3 +286,137 @@ export function selectTrustedSupplierPrice<
     rejectedLatest: latest,
   };
 }
+export async function autoResolveSuspiciousSupplierPrices(
+  prisma: any,
+  params: {
+    tenantId: string;
+    catalogItemId: string;
+    currentNetPriceCents: number;
+    currentGrossPriceCents?: number | null;
+    priceUnit?: string | null;
+    minimumQuantity?: number | null;
+  }
+) {
+  const comparableWhere = {
+    tenantId: params.tenantId,
+    catalogItemId: params.catalogItemId,
+    priceUnit: params.priceUnit || null,
+    minimumQuantity:
+      params.minimumQuantity || 1,
+  };
+
+  const recentTrusted =
+    await prisma.supplierPriceSnapshot.findMany({
+      where: {
+        ...comparableWhere,
+        qualityStatus: {
+          in: [
+            "VALID",
+            "UNCHECKED",
+          ],
+        },
+      },
+      orderBy: {
+        fetchedAt: "desc",
+      },
+      take: 8,
+    });
+
+  /*
+   * Der frisch importierte VALID-Preis zählt als dritter
+   * plausibler Datenpunkt. Zusätzlich verlangen wir mindestens
+   * zwei bereits gespeicherte brauchbare Vergleichspreise.
+   */
+  if (recentTrusted.length < 2) {
+    return {
+      checked: 0,
+      autoRejected: 0,
+    };
+  }
+
+  const suspicious =
+    await prisma.supplierPriceSnapshot.findMany({
+      where: {
+        ...comparableWhere,
+        qualityStatus: "SUSPICIOUS",
+      },
+      orderBy: {
+        fetchedAt: "desc",
+      },
+      take: 20,
+    });
+
+  if (suspicious.length === 0) {
+    return {
+      checked: 0,
+      autoRejected: 0,
+    };
+  }
+
+  const currentPrice = {
+    netPriceCents:
+      params.currentNetPriceCents,
+    grossPriceCents:
+      params.currentGrossPriceCents ??
+      null,
+    priceUnit:
+      params.priceUnit || null,
+    minimumQuantity:
+      params.minimumQuantity || 1,
+    qualityStatus: "VALID",
+    fetchedAt: new Date(),
+  };
+
+  const history = [
+    currentPrice,
+    ...recentTrusted,
+  ];
+
+  let autoRejected = 0;
+
+  for (const candidate of suspicious) {
+    const assessment =
+      assessSupplierPriceQuality({
+        netPriceCents:
+          candidate.netPriceCents,
+        grossPriceCents:
+          candidate.grossPriceCents,
+        priceUnit:
+          candidate.priceUnit,
+        minimumQuantity:
+          candidate.minimumQuantity,
+        history,
+      });
+
+    if (
+      assessment.status !==
+        "SUSPICIOUS"
+    ) {
+      continue;
+    }
+
+    await prisma.supplierPriceSnapshot.update({
+      where: {
+        id: candidate.id,
+      },
+      data: {
+        qualityStatus: "REJECTED",
+        qualityReason:
+          `Automatisch verworfen: ${assessment.reason || "Ausreißer durch spätere plausible Preisverläufe bestätigt."}`,
+        referencePriceCents:
+          assessment.referencePriceCents,
+        priceRatio:
+          assessment.priceRatio,
+        qualityCheckedAt:
+          new Date(),
+      },
+    });
+
+    autoRejected += 1;
+  }
+
+  return {
+    checked: suspicious.length,
+    autoRejected,
+  };
+}
