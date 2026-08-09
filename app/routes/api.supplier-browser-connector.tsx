@@ -583,6 +583,9 @@ export async function action({
     240
   );
 
+  const captureComplete =
+    payload.captureComplete !== false;
+
   const sourceUrl = normalizePortalUrl(
     payload.sourceUrl
   );
@@ -661,6 +664,7 @@ export async function action({
             rawProducts.length,
           productsAccepted:
             products.length,
+          captureComplete,
         },
       },
     });
@@ -845,7 +849,7 @@ export async function action({
       settings.browserConnectorLocationName ||
       null,
     browserConnectorLastSearch:
-      searchQuery
+      searchQuery && captureComplete
         ? {
             id: searchRequestId || null,
             query: searchQuery,
@@ -856,6 +860,7 @@ export async function action({
         : settings.browserConnectorLastSearch ||
           null,
     browserConnectorSearchRequest:
+      captureComplete &&
       searchRequestId &&
       settings.browserConnectorSearchRequest &&
       typeof settings.browserConnectorSearchRequest ===
@@ -907,6 +912,7 @@ export async function action({
             rawProducts.length,
           productsAccepted:
             products.length,
+          captureComplete,
           errors: errors.slice(0, 20),
         },
       },
@@ -944,6 +950,7 @@ export async function action({
     itemsCreated,
     itemsUpdated,
     pricesCreated,
+    captureComplete,
     errors: errors.slice(0, 8),
     message:
       finalStatus === "SUCCESS"
