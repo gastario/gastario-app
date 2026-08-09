@@ -83,6 +83,15 @@ const SEARCH_SYNONYM_GROUPS = [
     "rahm",
   ],
   [
+    "mais",
+    "zuckermais",
+    "gemüsemais",
+    "gemuesemais",
+    "maiskolben",
+    "sweetcorn",
+    "corn",
+  ],
+  [
     "croissant",
     "buttercroissant",
     "croissantteigling",
@@ -284,6 +293,48 @@ function preferredPortalQuery(query: string) {
   );
 }
 
+function normalizedTokens(value: unknown) {
+  return normalizedText(value)
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+function hasMeaningfulTermMatch(
+  field: string,
+  normalizedQuery: string
+) {
+  const fieldTokens =
+    normalizedTokens(field);
+
+  const queryTokens =
+    normalizedTokens(normalizedQuery);
+
+  if (queryTokens.length === 0) {
+    return false;
+  }
+
+  if (queryTokens.length === 1) {
+    const token = queryTokens[0];
+
+    return fieldTokens.some(
+      (fieldToken) =>
+        fieldToken === token ||
+        fieldToken.startsWith(token) ||
+        token.startsWith(fieldToken)
+    );
+  }
+
+  return queryTokens.every(
+    (token) =>
+      fieldTokens.some(
+        (fieldToken) =>
+          fieldToken === token ||
+          fieldToken.startsWith(token)
+      )
+  );
+}
+
 function resultScore(
   item: any,
   query: string,
@@ -319,31 +370,31 @@ function resultScore(
       if (field === normalizedQuery) {
         score = Math.max(score, 100);
       } else if (
-        field.startsWith(normalizedQuery)
+        hasMeaningfulTermMatch(
+          field,
+          normalizedQuery
+        )
       ) {
-        score = Math.max(score, 85);
-      } else if (
-        field.includes(normalizedQuery)
-      ) {
-        score = Math.max(score, 70);
-      }
+        const fieldTokens =
+          normalizedTokens(field);
 
-      const queryTokens = normalizedQuery
-        .split(/\s+/)
-        .filter(Boolean);
+        const queryTokens =
+          normalizedTokens(
+            normalizedQuery
+          );
 
-      const tokenMatches = queryTokens.filter(
-        (token) => field.includes(token)
-      ).length;
+        const exactTokenMatches =
+          queryTokens.filter(
+            (token) =>
+              fieldTokens.includes(token)
+          ).length;
 
-      if (queryTokens.length > 0) {
         score = Math.max(
           score,
-          Math.round(
-            (tokenMatches /
-              queryTokens.length) *
-              60
-          )
+          exactTokenMatches ===
+            queryTokens.length
+            ? 85
+            : 70
         );
       }
     }
@@ -625,8 +676,11 @@ export async function loader({
     }))
     .filter(
       (item: any) =>
-        !availableOnly ||
-        item.latestPrice?.available !== false
+        item.score > 0 &&
+        (
+          !availableOnly ||
+          item.latestPrice?.available !== false
+        )
     )
     .sort((left: any, right: any) => {
       if (right.score !== left.score) {
