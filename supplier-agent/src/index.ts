@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import {
   createSupplierRegistry
 } from "./adapters/index.js";
@@ -21,6 +24,9 @@ import {
 import {
   SupplierNetworkRecorder
 } from "./core/network-recorder.js";
+import {
+  runMetroSearch
+} from "./adapters/metro-native-search.js";
 
 const logger =
   createLogger(
@@ -143,6 +149,123 @@ async function main() {
     await browser.close();
     return;
   }
+  if (command === "search") {
+    const supplierKey =
+      String(
+        process.argv[3] || ""
+      )
+        .trim()
+        .toLowerCase();
+
+    const query =
+      process.argv
+        .slice(4)
+        .join(" ")
+        .trim();
+
+    if (
+      supplierKey !==
+      "metro"
+    ) {
+      throw new Error(
+        "Phase 5B currently supports: metro"
+      );
+    }
+
+    if (!query) {
+      throw new Error(
+        'Usage: npm.cmd run dev -- search metro "Tomaten"'
+      );
+    }
+
+    const adapter =
+      registry
+        .all()
+        .find(
+          (candidate) =>
+            candidate.key ===
+            "metro"
+        );
+
+    if (!adapter) {
+      throw new Error(
+        "METRO adapter is not registered."
+      );
+    }
+
+    let page =
+      browser.context
+        .pages()
+        .find(
+          (candidate) =>
+            adapter.matchesUrl(
+              candidate.url()
+            )
+        );
+
+    if (!page) {
+      page =
+        await browser.context
+          .newPage();
+
+      await page.goto(
+        "https://lieferservice.metro.de",
+        {
+          waitUntil:
+            "domcontentloaded",
+          timeout:
+            45_000
+        }
+      );
+    }
+    const result =
+      await runMetroSearch(
+        page,
+        network,
+        query,
+        {
+          page: 1,
+          rows: 80
+        }
+      );
+
+    console.log(
+      JSON.stringify(
+        {
+          ok: true,
+          supplier:
+            "metro",
+          mode:
+            result.mode,
+          query:
+            result.query,
+          status:
+            result.status,
+          amount:
+            result.amount,
+          page:
+            result.page,
+          rows:
+            result.rows,
+          totalPages:
+            result.totalPages,
+          resultCount:
+            result.resultIds.length,
+          additionalVariantCount:
+            result.additionalVariantIds.length,
+          resultIds:
+            result.resultIds,
+          additionalVariantIds:
+            result.additionalVariantIds
+        },
+        null,
+        2
+      )
+    );
+
+    await browser.close();
+    return;
+  }
 
   if (command === "record") {
     const supplierKey =
@@ -179,6 +302,117 @@ async function main() {
         adapter.key,
         adapter
       );
+
+    /*
+     * Raw Network Recorder:
+     * Unabhängig von NetworkCapture/Adapter-Parsing mitschneiden,
+     * damit auch Suchrequests sichtbar werden, die keine Produkte
+     * extrahieren.
+     *
+     * Die vollständigen URLs bleiben ausschließlich lokal im
+     * supplier-agent/artifacts/raw-network Ordner.
+     */
+    const rawNetworkDir =
+      path.join(
+        process.cwd(),
+        "artifacts",
+        "raw-network"
+      );
+
+    fs.mkdirSync(
+      rawNetworkDir,
+      {
+        recursive: true
+      }
+    );
+
+    const rawNetworkFile =
+      path.join(
+        rawNetworkDir,
+        `${adapter.key}-${new Date()
+          .toISOString()
+          .replace(
+            /[:.]/g,
+            "-"
+          )}.ndjson`
+      );
+
+    const rawResponseListener =
+      async (
+        response:
+          import("playwright-core").Response
+      ) => {
+        const request =
+          response.request();
+
+        const url =
+          response.url();
+
+        let host = "";
+
+        try {
+          host =
+            new URL(
+              url
+            ).hostname;
+        } catch {
+          return;
+        }
+
+        if (
+          !adapter.hosts.some(
+            (candidateHost) =>
+              host === candidateHost ||
+              host.endsWith(
+                `.${candidateHost}`
+              )
+          )
+        ) {
+          return;
+        }
+
+        const record = {
+          capturedAt:
+            new Date()
+              .toISOString(),
+          method:
+            request.method(),
+          url,
+          status:
+            response.status(),
+          resourceType:
+            request.resourceType(),
+          contentType:
+            response.headers()[
+              "content-type"
+            ] || null,
+          postData:
+            request.postData() || null
+        };
+
+        fs.appendFileSync(
+          rawNetworkFile,
+          JSON.stringify(
+            record
+          ) + "\n",
+          "utf8"
+        );
+      };
+
+    browser.context.on(
+      "response",
+      rawResponseListener
+    );
+
+    logger.info(
+      "Supplier raw network recording active",
+      {
+        supplier:
+          adapter.key,
+        file:
+          rawNetworkFile
+      }
+    );
 
     const unsubscribe =
       network.subscribe(
@@ -248,6 +482,11 @@ async function main() {
     try {
       await waitForever();
     } finally {
+      browser.context.off(
+        "response",
+        rawResponseListener
+      );
+
       unsubscribe();
       await browser.close();
     }

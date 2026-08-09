@@ -193,3 +193,28 @@ Nicht gespeichert werden:
 
 Damit kann der reale Supplier-Suchrequest anschließend automatisiert
 reproduziert werden, ohne Zugangsdaten in Analyseartefakte zu schreiben.
+
+## Phase 5B: Automatische METRO-Suche
+
+Der Supplier Agent kann die METRO-Suche selbst auslösen:
+
+```powershell
+npm.cmd run dev -- search metro "Tomaten"
+```
+
+Ablauf:
+
+1. Ein bereits beobachteter echter METRO-Suchrequest wird ausschließlich
+   im RAM als Template verwendet.
+2. `query`, `page`, `rows` und der Cache-Buster werden ersetzt.
+3. Der GET-Request läuft im eingeloggten Browserkontext mit dessen
+   bestehender Session.
+4. Ist noch kein Template bekannt, löst Playwright die erste Suche über
+   das sichtbare METRO-Suchfeld aus und lernt den realen Request.
+5. Danach laufen weitere Suchen network-first.
+
+Customer-ID, Store-ID, Cookies und Sessionwerte werden nicht in Dateien
+oder Gastario-Konfiguration persistiert.
+
+Phase 5C verbindet die `resultIds` anschließend automatisch mit
+Varianten/Substitutes, Preisvalidierung und dem Supplier Index.

@@ -307,6 +307,9 @@ export class NetworkCapture {
   private readonly observations:
     NetworkObservation[] = [];
 
+  private readonly productEvents:
+    NetworkCaptureEvent[] = [];
+
   private readonly observedPages =
     new WeakSet<Page>();
 
@@ -352,6 +355,75 @@ export class NetworkCapture {
     return [
       ...this.observations
     ];
+  }
+
+  latestProductEvents() {
+    return [
+      ...this.productEvents
+    ];
+  }
+  async waitForObservation(
+    predicate: (
+      observation: NetworkObservation
+    ) => boolean,
+    timeoutMs = 20_000
+  ) {
+    const existing =
+      [...this.observations]
+        .reverse()
+        .find(predicate);
+
+    if (existing) {
+      return existing;
+    }
+
+    return await new Promise<
+      NetworkObservation
+    >(
+      (resolve, reject) => {
+        let unsubscribe =
+          () => {};
+
+        const timer =
+          setTimeout(
+            () => {
+              unsubscribe();
+
+              reject(
+                new Error(
+                  `Timed out waiting for supplier network observation after ${timeoutMs} ms.`
+                )
+              );
+            },
+            timeoutMs
+          );
+
+        unsubscribe =
+          this.subscribe(
+            async ({
+              observation
+            }) => {
+              if (
+                !predicate(
+                  observation
+                )
+              ) {
+                return;
+              }
+
+              clearTimeout(
+                timer
+              );
+
+              unsubscribe();
+
+              resolve(
+                observation
+              );
+            }
+          );
+      }
+    );
   }
 
   private attachPage(page: Page) {
@@ -432,15 +504,31 @@ export class NetworkCapture {
           observation
         );
 
+      const event:
+        NetworkCaptureEvent = {
+          observation,
+          products
+        };
+
+      this.productEvents.push(
+        event
+      );
+
+      while (
+        this.productEvents.length >
+        agentConfig.networkObservationLimit
+      ) {
+        this.productEvents.shift();
+      }
+
       for (
         const subscriber
         of this.subscribers
       ) {
         try {
-          await subscriber({
-            observation,
-            products
-          });
+          await subscriber(
+            event
+          );
         } catch (error) {
           logger.warn(
             "Supplier network subscriber failed",
