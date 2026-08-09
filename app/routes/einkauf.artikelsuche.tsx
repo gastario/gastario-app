@@ -1,4 +1,7 @@
-import { buildSupplierSearchQueryTokens } from "../lib/supplier-search-index.server";
+import {
+  buildSupplierSearchQueryTokens,
+  normalizeSupplierSearchTerm,
+} from "../lib/supplier-search-index.server";
 import { useEffect } from "react";
 
 import {
@@ -458,14 +461,100 @@ export async function loader({
     url.searchParams.get("q") || ""
   ).trim();
 
-  const searchTerms =
+  const builtInSearchTerms =
     expandSearchTerms(query);
 
+  const normalizedQuery =
+    normalizeSupplierSearchTerm(query);
+
+  const directSearchAliases =
+    normalizedQuery
+      ? await prisma.supplierSearchAlias.findMany({
+          where: {
+            tenantId: access.tenantId,
+            active: true,
+            OR: [
+              {
+                aliasNormalized:
+                  normalizedQuery,
+              },
+              {
+                canonicalNormalized:
+                  normalizedQuery,
+              },
+            ],
+          },
+          select: {
+            canonicalTerm: true,
+            aliasTerm: true,
+            canonicalNormalized: true,
+          },
+          take: 40,
+        })
+      : [];
+
+  const canonicalAliasKeys =
+    Array.from(
+      new Set(
+        directSearchAliases
+          .map(
+            (entry: any) =>
+              entry.canonicalNormalized
+          )
+          .filter(Boolean)
+      )
+    );
+
+  const relatedSearchAliases =
+    canonicalAliasKeys.length > 0
+      ? await prisma.supplierSearchAlias.findMany({
+          where: {
+            tenantId: access.tenantId,
+            active: true,
+            canonicalNormalized: {
+              in: canonicalAliasKeys,
+            },
+          },
+          select: {
+            canonicalTerm: true,
+            aliasTerm: true,
+          },
+          take: 120,
+        })
+      : [];
+
+  const searchTerms =
+    Array.from(
+      new Set(
+        [
+          query,
+          ...builtInSearchTerms,
+          ...directSearchAliases.flatMap(
+            (entry: any) => [
+              entry.canonicalTerm,
+              entry.aliasTerm,
+            ]
+          ),
+          ...relatedSearchAliases.flatMap(
+            (entry: any) => [
+              entry.canonicalTerm,
+              entry.aliasTerm,
+            ]
+          ),
+        ]
+          .map((value) =>
+            String(value || "").trim()
+          )
+          .filter(
+            (value) => value.length >= 2
+          )
+      )
+    ).slice(0, 80);
+
   const indexSearchTokens =
-    buildSupplierSearchQueryTokens([
-      query,
-      ...searchTerms,
-    ]);
+    buildSupplierSearchQueryTokens(
+      searchTerms
+    );
 
   const portalQuery =
     preferredPortalQuery(query);

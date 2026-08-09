@@ -1,4 +1,4 @@
-function normalizeSearchValue(value: unknown) {
+export function normalizeSupplierSearchTerm(value: unknown) {
   return String(value || "")
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -10,7 +10,7 @@ function normalizeSearchValue(value: unknown) {
 }
 
 function tokenize(value: unknown) {
-  const normalized = normalizeSearchValue(value);
+  const normalized = normalizeSupplierSearchTerm(value);
 
   if (!normalized) {
     return [];

@@ -1394,3 +1394,26 @@ model ProcurementIngredientMatch {
   @@index([preferred])
   @@index([active])
 }
+
+model SupplierSearchAlias {
+  id String @id @default(cuid())
+
+  tenantId String
+
+  canonicalTerm       String
+  aliasTerm           String
+  canonicalNormalized String
+  aliasNormalized     String
+
+  active   Boolean @default(true)
+  source   String  @default("MANUAL")
+  useCount Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, aliasNormalized])
+  @@index([tenantId])
+  @@index([tenantId, canonicalNormalized])
+  @@index([tenantId, active])
+}
