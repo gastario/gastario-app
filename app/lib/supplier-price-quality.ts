@@ -271,14 +271,24 @@ export function selectTrustedSupplierPrice<
     }
   }
 
+  /*
+   * STRICT TRUST FALLBACK
+   *
+   * Wenn der neueste Snapshot nicht vertrauenswürdig ist, nehmen
+   * wir als Ersatz ausschließlich einen bereits explizit als VALID
+   * geprüften historischen Preis.
+   *
+   * Alte NULL-/UNCHECKED-Snapshots dürfen hier nicht mehr als
+   * Fallback durchrutschen. Genau solche Altbestände konnten bisher
+   * trotz Preisprüfung wieder als scheinbar plausibler Grundpreis
+   * in der Oberfläche auftauchen.
+   */
   const fallback =
     sorted.find(
       (entry, index) =>
         index > 0 &&
-        entry.qualityStatus !==
-          "SUSPICIOUS" &&
-        entry.qualityStatus !==
-          "REJECTED"
+        entry.qualityStatus ===
+          "VALID"
     ) || null;
 
   return {
