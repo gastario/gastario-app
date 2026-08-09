@@ -833,6 +833,23 @@ export async function action({
     240
   );
 
+  const searchQueryTokens =
+    Array.from(
+      new Set(
+        normalizeSupplierSearchTerm(
+          searchQuery
+        )
+          .split(" ")
+          .map((token) =>
+            token.trim()
+          )
+          .filter(
+            (token) =>
+              token.length >= 2
+          )
+      )
+    );
+
   const captureComplete =
     payload.captureComplete !== false;
 
@@ -1206,6 +1223,65 @@ export async function action({
         `${product.name}: ${String(
           error?.message || error
         ).slice(0, 300)}`
+      );
+    }
+  }
+
+  if (
+    searchQueryTokens.length > 0 &&
+    products.length > 0
+  ) {
+    const capturedArticleNumbers =
+      Array.from(
+        new Set(
+          products
+            .map((product) =>
+              String(
+                product.articleNumber || ""
+              ).trim()
+            )
+            .filter(Boolean)
+        )
+      );
+
+    if (
+      capturedArticleNumbers.length > 0
+    ) {
+      const capturedItems =
+        await prisma.supplierCatalogItem.findMany({
+          where: {
+            tenantId:
+              connection.tenantId,
+            supplierId:
+              connection.supplierId,
+            articleNumber: {
+              in: capturedArticleNumbers,
+            },
+          },
+          select: {
+            id: true,
+            searchTokens: true,
+          },
+        });
+
+      await Promise.all(
+        capturedItems.map(
+          (item: any) =>
+            prisma.supplierCatalogItem.update({
+              where: {
+                id: item.id,
+              },
+              data: {
+                searchTokens:
+                  Array.from(
+                    new Set([
+                      ...(item.searchTokens || []),
+                      ...searchQueryTokens,
+                    ])
+                  ),
+              },
+            })
+        )
       );
     }
   }
