@@ -14,11 +14,79 @@ import {
   verifySupplierBrowserConnectorCode,
 } from "../lib/supplier-browser-connector.server";
 
-const MAX_CAPTURE_ITEMS = 180;
+/*
+ * Supplier Index v2:
+ * Ein einzelner Discovery-Lauf soll Gastario nicht mit hunderten
+ * Portalartikeln und Preis-Snapshots fluten. Der Connector darf
+ * weiterhin progressive Captures senden, serverseitig werden aber
+ * pro Capture höchstens 80 Artikel verarbeitet.
+ */
+const MAX_CAPTURE_ITEMS = 80;
 const MAX_BODY_BYTES = 1_500_000;
 const ALLOWED_PORTAL_HOSTS = new Set([
   "lieferservice.metro.de",
 ]);
+
+function supplierPriceSnapshotChanged(
+  latest: any,
+  next: {
+    netPriceCents: number | null;
+    grossPriceCents: number | null;
+    currency: string | null;
+    priceUnit: string | null;
+    minimumQuantity: number;
+    available: boolean | null;
+    stockText: string | null;
+    qualityStatus: string | null;
+  }
+) {
+  if (!latest) {
+    return true;
+  }
+
+  const sameNullable = (
+    left: unknown,
+    right: unknown
+  ) =>
+    (left ?? null) ===
+    (right ?? null);
+
+  return !(
+    sameNullable(
+      latest.netPriceCents,
+      next.netPriceCents
+    ) &&
+    sameNullable(
+      latest.grossPriceCents,
+      next.grossPriceCents
+    ) &&
+    sameNullable(
+      latest.currency,
+      next.currency
+    ) &&
+    sameNullable(
+      latest.priceUnit,
+      next.priceUnit
+    ) &&
+    Number(
+      latest.minimumQuantity || 1
+    ) === Number(
+      next.minimumQuantity || 1
+    ) &&
+    sameNullable(
+      latest.available,
+      next.available
+    ) &&
+    sameNullable(
+      latest.stockText,
+      next.stockText
+    ) &&
+    sameNullable(
+      latest.qualityStatus,
+      next.qualityStatus
+    )
+  );
+}
 
 function corsHeaders() {
   return {
@@ -986,6 +1054,29 @@ export async function action({
           );
         }
 
+        const baseSnapshotChanged =
+          supplierPriceSnapshotChanged(
+            basePriceHistory[0] || null,
+            {
+              netPriceCents:
+                product.netPriceCents,
+              grossPriceCents:
+                product.grossPriceCents,
+              currency:
+                product.currency || null,
+              priceUnit:
+                basePriceUnit,
+              minimumQuantity: 1,
+              available:
+                product.available,
+              stockText:
+                product.availabilityText,
+              qualityStatus:
+                basePriceQuality.status,
+            }
+          );
+
+        if (baseSnapshotChanged) {
         await prisma.supplierPriceSnapshot.create({
           data: {
             tenantId: connection.tenantId,
@@ -1017,8 +1108,9 @@ export async function action({
             fetchedAt: capturedAt,
           },
         });
+          pricesCreated += 1;
+        }
 
-        pricesCreated += 1;
       }
 
       for (const tier of product.tiers) {
@@ -1080,6 +1172,30 @@ export async function action({
           );
         }
 
+        const tierSnapshotChanged =
+          supplierPriceSnapshotChanged(
+            tierPriceHistory[0] || null,
+            {
+              netPriceCents:
+                tier.netPriceCents,
+              grossPriceCents:
+                tier.grossPriceCents,
+              currency:
+                product.currency || null,
+              priceUnit:
+                tierPriceUnit,
+              minimumQuantity:
+                tier.minimumQuantity,
+              available:
+                product.available,
+              stockText:
+                product.availabilityText,
+              qualityStatus:
+                tierPriceQuality.status,
+            }
+          );
+
+        if (tierSnapshotChanged) {
         await prisma.supplierPriceSnapshot.create({
           data: {
             tenantId: connection.tenantId,
@@ -1112,8 +1228,9 @@ export async function action({
             fetchedAt: capturedAt,
           },
         });
+          pricesCreated += 1;
+        }
 
-        pricesCreated += 1;
       }
     } catch (error: any) {
       errors.push(
