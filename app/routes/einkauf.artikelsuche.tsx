@@ -1238,6 +1238,13 @@ export default function ProcurementSearchPage() {
 
               <Link
                 className="procurementSearchButton procurementSearchButton--secondary"
+                to="/einkauf/suchbegriffe"
+              >
+                Suchbegriffe verwalten
+              </Link>
+
+              <Link
+                className="procurementSearchButton procurementSearchButton--secondary"
                 to="/lieferanten"
               >
                 Lieferanten verwalten
