@@ -1,3 +1,4 @@
+import { normalizeSupplierSearchTerm } from "../lib/supplier-search-index.server";
 import {
   assessSupplierPriceQuality,
   autoResolveSuspiciousSupplierPrices,
@@ -491,10 +492,34 @@ export async function loader({
     backgroundSyncDue
   ) {
     const [
+      discoveryRows,
       ingredientRows,
       aliasRows,
       knownCatalogRows,
     ] = await Promise.all([
+      prisma.supplierSearchDiscovery.findMany({
+        where: {
+          tenantId: connection.tenantId,
+          status: "PENDING",
+        },
+        select: {
+          id: true,
+          query: true,
+          queryNormalized: true,
+          priority: true,
+          searchCount: true,
+        },
+        orderBy: [
+          {
+            priority: "desc",
+          },
+          {
+            lastRequestedAt: "desc",
+          },
+        ],
+        take: 30,
+      }),
+
       prisma.procurementIngredient.findMany({
         where: {
           tenantId: connection.tenantId,
@@ -544,6 +569,10 @@ export async function loader({
       Array.from(
         new Set(
           [
+            ...discoveryRows.map(
+              (entry: any) =>
+                entry.query
+            ),
             ...ingredientRows.map(
               (entry: any) =>
                 entry.displayName
@@ -585,6 +614,17 @@ export async function loader({
       const query =
         backgroundTerms[cursor];
 
+      const discoveryMatch =
+        discoveryRows.find(
+          (entry: any) =>
+            normalizeSupplierSearchTerm(
+              entry.query
+            ) ===
+            normalizeSupplierSearchTerm(
+              query
+            )
+        ) || null;
+
       const requestId =
         "background-sync-" +
         Date.now().toString(36) +
@@ -602,6 +642,8 @@ export async function loader({
           heartbeatAt.toISOString(),
         status: "PENDING",
         source: "BACKGROUND_SYNC",
+        discoveryId:
+          discoveryMatch?.id || null,
         backgroundCursor: cursor,
         backgroundTermCount:
           backgroundTerms.length,
@@ -1207,6 +1249,35 @@ export async function action({
   };
 
   if (completedBackgroundSync) {
+    const discoveryId =
+      String(
+        currentSearchRequest?.discoveryId ||
+          ""
+      ).trim();
+
+    if (discoveryId) {
+      await prisma.supplierSearchDiscovery.updateMany({
+        where: {
+          id: discoveryId,
+          tenantId: connection.tenantId,
+        },
+        data: {
+          status:
+            products.length > 0
+              ? "SATISFIED"
+              : "PENDING",
+          lastProcessedAt:
+            capturedAt,
+          lastResultCount:
+            products.length,
+          priority:
+            products.length > 0
+              ? 10
+              : 90,
+        },
+      });
+    }
+
     const cursor = Math.max(
       0,
       Number(

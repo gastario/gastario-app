@@ -1451,3 +1451,28 @@ model SupplierSearchLearningSuggestion {
   @@index([tenantId, status])
   @@index([tenantId, evidenceCount])
 }
+
+model SupplierSearchDiscovery {
+  id String @id @default(cuid())
+
+  tenantId String
+
+  query           String
+  queryNormalized String
+
+  priority    Int @default(10)
+  searchCount Int @default(1)
+
+  status String @default("PENDING")
+
+  lastRequestedAt DateTime  @default(now())
+  lastProcessedAt DateTime?
+  lastResultCount Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, queryNormalized])
+  @@index([tenantId, status, priority])
+  @@index([tenantId, lastRequestedAt])
+}

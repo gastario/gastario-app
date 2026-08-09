@@ -819,6 +819,57 @@ export async function loader({
       Number(freshestPriceAt?.getTime() || 0) <=
       livePriceFreshnessMs;
 
+  if (query.length >= 2) {
+    const queryNormalized =
+      normalizeSupplierSearchTerm(
+        query
+      );
+
+    if (queryNormalized) {
+      await prisma.supplierSearchDiscovery.upsert({
+        where: {
+          tenantId_queryNormalized: {
+            tenantId: access.tenantId,
+            queryNormalized,
+          },
+        },
+        create: {
+          tenantId: access.tenantId,
+          query,
+          queryNormalized,
+          priority:
+            results.length === 0
+              ? 100
+              : 20,
+          searchCount: 1,
+          status:
+            results.length === 0
+              ? "PENDING"
+              : "SATISFIED",
+          lastRequestedAt: new Date(),
+          lastResultCount:
+            results.length,
+        },
+        update: {
+          query,
+          priority:
+            results.length === 0
+              ? 100
+              : 20,
+          searchCount: {
+            increment: 1,
+          },
+          status:
+            results.length === 0
+              ? "PENDING"
+              : "SATISFIED",
+          lastRequestedAt: new Date(),
+          lastResultCount:
+            results.length,
+        },
+      });
+    }
+  }
   return {
     tenant: access.tenant,
     query,
