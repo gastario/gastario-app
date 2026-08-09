@@ -803,7 +803,7 @@ export async function loader({
             : trusted.price,
         rejectedLatestPrice:
           legacyPriceHidden
-            ? trusted.price
+            ? null
             : trusted.rejectedLatest,
         priceRefreshPending:
           legacyPriceHidden,
@@ -817,7 +817,9 @@ export async function loader({
       return {
         ...mapped,
         basePriceCents:
-          basePrice(mapped),
+          legacyPriceHidden
+            ? null
+            : basePrice(mapped),
       };
     })
     .filter(
@@ -948,83 +950,9 @@ if (query.length >= 2) {
             results.length,
         },
       });
-
-      /*
-       * FASTLANE:
-       * Ein echter Nutzer-Search mit 0 Treffern darf nicht hinter
-       * einer normalen Hintergrundrunde warten. Wir setzen alle
-       * aktiven Browser-Verbindungen dieses Tenants sofort auf fällig.
-       * Der Connector holt sich beim nächsten Heartbeat den
-       * höchst priorisierten Discovery-Begriff.
-       */
-      if (
-        results.length === 0 ||
-        needsLegacyPriceRefresh
-      ) {
-        const activeConnections =
-          await prisma.supplierConnection.findMany({
-            where: {
-              tenantId: access.tenantId,
-              active: true,
-              status: "ACTIVE",
-            },
-            select: {
-              id: true,
-              settingsJson: true,
-            },
-          });
-
-        await Promise.all(
-          activeConnections.map(
-            async (connection: any) => {
-              const settings =
-                connection.settingsJson &&
-                typeof connection.settingsJson ===
-                  "object" &&
-                !Array.isArray(
-                  connection.settingsJson
-                )
-                  ? {
-                      ...connection.settingsJson,
-                    }
-                  : {};
-
-              const currentRequest =
-                settings.browserConnectorSearchRequest &&
-                typeof settings.browserConnectorSearchRequest ===
-                  "object" &&
-                !Array.isArray(
-                  settings.browserConnectorSearchRequest
-                )
-                  ? settings.browserConnectorSearchRequest
-                  : null;
-
-              if (
-                currentRequest &&
-                String(
-                  currentRequest.source || ""
-                ) === "BACKGROUND_SYNC"
-              ) {
-                settings.browserConnectorSearchRequest =
-                  null;
-              }
-
-              await prisma.supplierConnection.update({
-                where: {
-                  id: connection.id,
-                },
-                data: {
-                  nextSyncAt: new Date(),
-                  settingsJson:
-                    settings as any,
-                },
-              });
-            }
-          )
-        );
-      }
     }
   }
+
   return {
     tenant: access.tenant,
     query,
@@ -1130,107 +1058,57 @@ export async function action({
 
   const intent = String(
     formData.get("intent") || ""
-  ).trim();
-
-  if (intent === "request-metro-search") {
+  ).trim();  if (intent === "request-metro-search") {
     const query = String(
       formData.get("query") || ""
     ).trim();
 
-    const queryTerms =
-      expandSearchTerms(query);
-
-    const portalQuery =
-      preferredPortalQuery(query);
-
     if (query.length < 2) {
       return {
         error:
-          "Bitte mindestens zwei Zeichen für die METRO-Suche eingeben.",
+          "Bitte mindestens zwei Zeichen eingeben.",
       };
     }
 
-    const connection =
-      await prisma.supplierConnection.findFirst({
+    const queryNormalized =
+      normalizeSupplierSearchTerm(
+        query
+      );
+
+    if (queryNormalized) {
+      await prisma.supplierSearchDiscovery.upsert({
         where: {
-          tenantId: access.tenantId,
-          active: true,
-          OR: [
-            {
-              label: {
-                equals: "METRO",
-                mode: "insensitive",
-              },
-            },
-            {
-              supplier: {
-                name: {
-                  equals: "METRO",
-                  mode: "insensitive",
-                },
-              },
-            },
-          ],
-        },
-        include: {
-          supplier: {
-            select: {
-              name: true,
-            },
+          tenantId_queryNormalized: {
+            tenantId: access.tenantId,
+            queryNormalized,
           },
         },
-        orderBy: {
-          createdAt: "desc",
+        create: {
+          tenantId: access.tenantId,
+          query,
+          queryNormalized,
+          priority: 100,
+          searchCount: 1,
+          status: "PENDING",
+          lastRequestedAt: new Date(),
+          lastResultCount: 0,
+        },
+        update: {
+          query,
+          priority: 100,
+          searchCount: {
+            increment: 1,
+          },
+          status: "PENDING",
+          lastRequestedAt: new Date(),
         },
       });
-
-    if (!connection) {
-      return {
-        error:
-          "Es wurde keine aktive METRO-Verbindung gefunden.",
-      };
     }
-
-    const settings =
-      connection.settingsJson &&
-      typeof connection.settingsJson === "object" &&
-      !Array.isArray(connection.settingsJson)
-        ? (connection.settingsJson as Record<
-            string,
-            unknown
-          >)
-        : {};
-
-    const requestId =
-      "metro-search-" +
-      Date.now().toString(36) +
-      "-" +
-      Math.random().toString(36).slice(2, 10);
-
-    await prisma.supplierConnection.update({
-      where: {
-        id: connection.id,
-      },
-      data: {
-        settingsJson: {
-          ...settings,
-          browserConnectorSearchRequest: {
-            id: requestId,
-            query: portalQuery,
-            originalQuery: query,
-            queryTerms,
-            requestedAt:
-              new Date().toISOString(),
-            status: "PENDING",
-          },
-        } as any,
-      },
-    });
 
     return redirect(
       `/einkauf/artikelsuche?q=${encodeURIComponent(
         query
-      )}&metroRequested=1`
+      )}&refreshQueued=1`
     );
   }
 
@@ -1554,52 +1432,6 @@ export async function action({
   );
 }
 
-function SilentSupplierSearchRefresh({
-  active,
-  query,
-}: {
-  active: boolean;
-  query: string;
-}) {
-  const revalidator =
-    useRevalidator();
-
-  useEffect(() => {
-    if (
-      !active ||
-      query.trim().length < 2
-    ) {
-      return;
-    }
-
-    let attempts = 0;
-
-    const timer =
-      window.setInterval(() => {
-        attempts += 1;
-
-        if (
-          revalidator.state === "idle"
-        ) {
-          revalidator.revalidate();
-        }
-
-        if (attempts >= 6) {
-          window.clearInterval(timer);
-        }
-      }, 2000);
-
-    return () => {
-      window.clearInterval(timer);
-    };
-  }, [
-    active,
-    query,
-    revalidator,
-  ]);
-
-  return null;
-}
 export default function ProcurementSearchPage() {
   const data = useLoaderData<typeof loader>();
   const actionData =
@@ -1634,7 +1466,6 @@ export default function ProcurementSearchPage() {
     Date.now() - lastLiveSearchCompletedAt <=
       liveSearchFreshnessMs;
   const shouldStartMetroSearch = false;
-
   useEffect(() => {
     if (
       !shouldStartMetroSearch ||
@@ -1674,33 +1505,10 @@ export default function ProcurementSearchPage() {
     revalidator,
   ]);
 
-  useEffect(() => {
-    if (true) {
-      return;
-    }
-
-    const timer = window.setInterval(() => {
-      revalidator.revalidate();
-    }, 750);
-
-    return () => {
-      window.clearInterval(timer);
-    };
-  }, [
-    data.metroConnector?.pendingSearch?.id,
-    revalidator,
-  ]);
-
   return (
     <AppLayout>
       <PageShell className="procurementSearchPage">
-        <SilentSupplierSearchRefresh
-          active={
-            data.query.length >= 2 &&
-            data.results.length === 0
-          }
-          query={data.query}
-        />
+
         <PageHeader
           eyebrow="Einkauf & Lieferanten"
           title="Artikelsuche"
@@ -1802,7 +1610,7 @@ export default function ProcurementSearchPage() {
               type="submit"
               className="procurementSearchButton procurementSearchButton--primary"
             >
-              Lieferanten durchsuchen
+              Katalog aktualisieren
             </button>
           </Form>
         </PageSection>
@@ -1935,7 +1743,11 @@ export default function ProcurementSearchPage() {
                             : "Grundpreis nicht berechenbar"}
                         </span>
 
-                        {item.rejectedLatestPrice ? (
+                        {item.priceRefreshPending ? (
+                          <small className="procurementPriceWarning">
+                            Preis wird im Hintergrund aktualisiert
+                          </small>
+                        ) : item.rejectedLatestPrice ? (
                           <small className="procurementPriceWarning">
                             Neuer Preis wird geprüft · letzter plausibler Preis wird verwendet
                           </small>
