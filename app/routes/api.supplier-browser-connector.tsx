@@ -412,6 +412,37 @@ export async function loader({
 
   const heartbeatAt = new Date();
 
+  const rawSearchRequest =
+    settings.browserConnectorSearchRequest &&
+    typeof settings.browserConnectorSearchRequest ===
+      "object" &&
+    !Array.isArray(
+      settings.browserConnectorSearchRequest
+    )
+      ? (settings.browserConnectorSearchRequest as Record<
+          string,
+          unknown
+        >)
+      : null;
+
+  const searchRequestedAt =
+    rawSearchRequest?.requestedAt
+      ? new Date(
+          String(rawSearchRequest.requestedAt)
+        ).getTime()
+      : 0;
+
+  const searchRequestIsFresh =
+    Number.isFinite(searchRequestedAt) &&
+    searchRequestedAt > 0 &&
+    heartbeatAt.getTime() - searchRequestedAt <
+      90 * 1000;
+
+  const activeSearchRequest =
+    searchRequestIsFresh
+      ? rawSearchRequest
+      : null;
+
   const updatedSettings = {
     ...settings,
     connectionMode:
@@ -424,6 +455,8 @@ export async function loader({
     sessionStatus:
       "LOCAL_BROWSER_ACTIVE",
     automaticSync: false,
+    browserConnectorSearchRequest:
+      activeSearchRequest,
   };
 
   await prisma.supplierConnection.update({
@@ -466,14 +499,7 @@ export async function loader({
           100_000
         ) || 0,
       searchRequest:
-        settings.browserConnectorSearchRequest &&
-        typeof settings.browserConnectorSearchRequest ===
-          "object" &&
-        !Array.isArray(
-          settings.browserConnectorSearchRequest
-        )
-          ? settings.browserConnectorSearchRequest
-          : null,
+        activeSearchRequest,
     },
   });
 }

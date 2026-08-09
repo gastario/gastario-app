@@ -479,7 +479,7 @@ export async function loader({
         >)
       : {};
 
-  const pendingMetroSearch =
+  const rawPendingMetroSearch =
     metroSettings.browserConnectorSearchRequest &&
     typeof metroSettings.browserConnectorSearchRequest ===
       "object" &&
@@ -490,6 +490,26 @@ export async function loader({
           string,
           unknown
         >)
+      : null;
+
+  const pendingMetroRequestedAt =
+    rawPendingMetroSearch?.requestedAt
+      ? new Date(
+          String(
+            rawPendingMetroSearch.requestedAt
+          )
+        ).getTime()
+      : 0;
+
+  const pendingMetroSearchIsFresh =
+    Number.isFinite(pendingMetroRequestedAt) &&
+    pendingMetroRequestedAt > 0 &&
+    Date.now() - pendingMetroRequestedAt <
+      90 * 1000;
+
+  const pendingMetroSearch =
+    pendingMetroSearchIsFresh
+      ? rawPendingMetroSearch
       : null;
 
   const lastMetroSearch =
