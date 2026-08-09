@@ -67,6 +67,15 @@ async function readResponseBody(
   }
 }
 
+export interface NetworkCaptureEvent {
+  observation: NetworkObservation;
+  products: Awaited<
+    ReturnType<
+      import("../adapters/types.js").SupplierAdapter["extractNetworkProducts"]
+    >
+  >;
+}
+
 export class NetworkCapture {
   private readonly observations:
     NetworkObservation[] = [];
@@ -74,10 +83,31 @@ export class NetworkCapture {
   private readonly observedPages =
     new WeakSet<Page>();
 
+  private readonly subscribers =
+    new Set<
+      (
+        event: NetworkCaptureEvent
+      ) => void | Promise<void>
+    >();
+
   constructor(
     private readonly registry:
       AdapterRegistry
   ) {}
+
+  subscribe(
+    listener: (
+      event: NetworkCaptureEvent
+    ) => void | Promise<void>
+  ) {
+    this.subscribers.add(listener);
+
+    return () => {
+      this.subscribers.delete(
+        listener
+      );
+    };
+  }
 
   start(context: BrowserContext) {
     for (const page of context.pages()) {
@@ -170,6 +200,31 @@ export class NetworkCapture {
         await adapter.extractNetworkProducts(
           observation
         );
+
+      for (
+        const subscriber
+        of this.subscribers
+      ) {
+        try {
+          await subscriber({
+            observation,
+            products
+          });
+        } catch (error) {
+          logger.warn(
+            "Supplier network subscriber failed",
+            {
+              supplier:
+                adapter.key,
+              url,
+              error:
+                error instanceof Error
+                  ? error.message
+                  : String(error)
+            }
+          );
+        }
+      }
 
       if (products.length > 0) {
         logger.info(

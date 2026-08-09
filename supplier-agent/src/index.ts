@@ -18,6 +18,10 @@ import {
   NetworkCapture
 } from "./core/network-capture.js";
 
+import {
+  SupplierNetworkRecorder
+} from "./core/network-recorder.js";
+
 const logger =
   createLogger(
     agentConfig.logLevel
@@ -137,6 +141,124 @@ async function main() {
 
     await waitForever();
     await browser.close();
+    return;
+  }
+
+  if (command === "record") {
+    const supplierKey =
+      String(
+        process.argv[3] || ""
+      )
+        .trim()
+        .toLowerCase();
+
+    const adapter =
+      registry
+        .all()
+        .find(
+          (candidate) =>
+            candidate.key ===
+            supplierKey
+        );
+
+    if (!adapter) {
+      throw new Error(
+        "Unknown supplier for recording. Use one of: " +
+          registry
+            .all()
+            .map(
+              (candidate) =>
+                candidate.key
+            )
+            .join(", ")
+      );
+    }
+
+    const recorder =
+      new SupplierNetworkRecorder(
+        adapter.key
+      );
+
+    const unsubscribe =
+      network.subscribe(
+        async (event) => {
+          if (
+            event.observation
+              .supplierKey !==
+            adapter.key
+          ) {
+            return;
+          }
+
+          await recorder.record(
+            event
+          );
+        }
+      );
+
+    let page =
+      browser.context
+        .pages()
+        .find(
+          (candidate) =>
+            adapter.matchesUrl(
+              candidate.url()
+            )
+        );
+
+    if (!page) {
+      page =
+        await browser.context
+          .newPage();
+    }
+
+    const firstHost =
+      adapter.hosts[0];
+
+    if (
+      firstHost &&
+      !adapter.matchesUrl(
+        page.url()
+      )
+    ) {
+      await page.goto(
+        `https://${firstHost}`,
+        {
+          waitUntil:
+            "domcontentloaded",
+          timeout:
+            45_000
+        }
+      );
+    }
+
+    logger.info(
+      "Supplier network recording active",
+      {
+        supplier:
+          adapter.key,
+        file:
+          recorder.filePath,
+        instructions:
+          "Im Browser anmelden, nach mehreren Artikeln suchen und Produktseiten öffnen. Ctrl+C beendet die Aufzeichnung."
+      }
+    );
+
+    try {
+      await waitForever();
+    } finally {
+      unsubscribe();
+      await browser.close();
+    }
+
+    logger.info(
+      "Supplier network recording stopped",
+      {
+        file:
+          recorder.filePath
+      }
+    );
+
     return;
   }
 

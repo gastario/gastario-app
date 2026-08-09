@@ -63,3 +63,35 @@ npm.cmd run health
 8. Discovery Queue Polling
 9. zentrale Health-/Import-Telemetrie
 10. weitere Supplier Adapter
+
+## Network Recorder
+
+Reale Shop-Netzwerkantworten werden lokal analysiert, ohne Cookies,
+Request-Header oder rohe Login-Daten in Artefakte zu schreiben.
+
+Beispiel METRO:
+
+```powershell
+npm.cmd run dev -- record metro
+```
+
+Danach im geöffneten Supplier-Browser:
+
+1. anmelden
+2. mehrere unterschiedliche Produkte suchen
+3. Produktdetailseiten öffnen
+4. wenn vorhanden Staffelpreise / Varianten / Verfügbarkeit aufrufen
+5. mit `Ctrl+C` beenden
+
+Die technische Aufzeichnung liegt anschließend unter:
+
+`artifacts/network/`
+
+Sie enthält nur:
+- Host + URL-Pfad ohne Querystring
+- HTTP-Methode / Status / Content-Type
+- JSON-Top-Level-Struktur
+- Anzahl erkannter Produktkandidaten
+- normalisierte Beispielprodukte und Confidence
+
+Keine Cookies, Authorization-Header oder Request-Header werden gespeichert.
