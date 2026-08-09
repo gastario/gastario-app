@@ -1708,7 +1708,7 @@ export default function ProcurementSearchPage() {
                 (item: any) => (
                   <article
                     key={item.id}
-                    className="procurementSearchResult"
+                    className="procurementSearchResult supplierOfferCard"
                   >
                     <header>
                       <div>
@@ -1763,6 +1763,78 @@ export default function ProcurementSearchPage() {
                         ) : null}
                       </div>
                     </header>
+
+                    <div
+                      className="supplierOfferPipeline"
+                      aria-label="Datenstatus dieses Lieferantenartikels"
+                    >
+                      <div className="supplierOfferPipelineStep isDone">
+                        <span className="supplierOfferPipelineIndex">
+                          1
+                        </span>
+                        <div>
+                          <strong>Shop erkannt</strong>
+                          <small>
+                            Artikel wurde beim Lieferanten gefunden
+                          </small>
+                        </div>
+                      </div>
+
+                      <span
+                        className="supplierOfferPipelineConnector"
+                        aria-hidden="true"
+                      />
+
+                      <div className="supplierOfferPipelineStep isDone">
+                        <span className="supplierOfferPipelineIndex">
+                          2
+                        </span>
+                        <div>
+                          <strong>Gastario Index</strong>
+                          <small>
+                            Artikel ist lokal gespeichert und suchbar
+                          </small>
+                        </div>
+                      </div>
+
+                      <span
+                        className="supplierOfferPipelineConnector"
+                        aria-hidden="true"
+                      />
+
+                      <div
+                        className={`supplierOfferPipelineStep ${
+                          item.latestPrice
+                            ? "isDone"
+                            : item.priceRefreshPending ||
+                                item.rejectedLatestPrice
+                              ? "isReview"
+                              : "isOpen"
+                        }`}
+                      >
+                        <span className="supplierOfferPipelineIndex">
+                          3
+                        </span>
+                        <div>
+                          <strong>
+                            {item.latestPrice
+                              ? "Preis freigegeben"
+                              : item.priceRefreshPending ||
+                                  item.rejectedLatestPrice
+                                ? "Preisprüfung"
+                                : "Preis offen"}
+                          </strong>
+                          <small>
+                            {item.latestPrice
+                              ? "Vertrauenswürdiger Preis kann verwendet werden"
+                              : item.priceRefreshPending ||
+                                  item.rejectedLatestPrice
+                                ? "Preis wird validiert und noch nicht übernommen"
+                                : "Noch kein freigegebener Preis vorhanden"}
+                          </small>
+                        </div>
+                      </div>
+                    </div>
 
                     <div className="procurementSearchFacts">
                       <div>

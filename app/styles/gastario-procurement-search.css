@@ -777,3 +777,243 @@
     white-space: normal;
   }
 }
+
+/* supplier-offer-cards-v2-20260809 */
+
+.supplierOfferCard {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin: 0 0 22px;
+  padding: 24px;
+  border: 1px solid #d8e8e3;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 58, 48, 0.04),
+    0 12px 34px rgba(15, 58, 48, 0.07);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.supplierOfferCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(
+    180deg,
+    #0c9b73 0%,
+    #49c6a4 100%
+  );
+}
+
+.supplierOfferCard:hover {
+  transform: translateY(-1px);
+  border-color: #bfded5;
+  box-shadow:
+    0 2px 5px rgba(15, 58, 48, 0.05),
+    0 18px 42px rgba(15, 58, 48, 0.10);
+}
+
+.supplierOfferCard > header {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(190px, 260px);
+  gap: 28px;
+  align-items: start;
+  padding-bottom: 18px;
+}
+
+.supplierOfferCard > header > div:first-child > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #eaf8f3;
+  color: #08795b;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.supplierOfferCard > header h3 {
+  margin: 10px 0 5px;
+  color: #103c32;
+  font-size: clamp(19px, 1.5vw, 23px);
+  line-height: 1.18;
+  letter-spacing: -0.025em;
+}
+
+.supplierOfferCard > header p {
+  margin: 0;
+  color: #6a807a;
+  font-size: 13px;
+}
+
+.supplierOfferCard .procurementSearchPrice {
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid #e0ece8;
+  border-radius: 16px;
+  background: #f8fbfa;
+}
+
+.supplierOfferCard .procurementSearchPrice > strong {
+  display: block;
+  margin: 3px 0 2px;
+  color: #08795b;
+  font-size: 25px;
+  line-height: 1.05;
+}
+
+.supplierOfferCard .procurementSearchPrice > span {
+  display: block;
+  color: #507068;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.supplierOfferPipeline {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    26px
+    minmax(0, 1fr)
+    26px
+    minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid #e1ece8;
+  border-radius: 16px;
+  background: #fbfdfc;
+}
+
+.supplierOfferPipelineStep {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+
+.supplierOfferPipelineStep > div {
+  min-width: 0;
+}
+
+.supplierOfferPipelineStep strong {
+  display: block;
+  margin: 0 0 2px;
+  color: #365b52;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.supplierOfferPipelineStep small {
+  display: block;
+  color: #80948f;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.supplierOfferPipelineIndex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #d7e4e0;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #789089;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.supplierOfferPipelineStep.isDone .supplierOfferPipelineIndex {
+  border-color: #95d8c5;
+  background: #e6f7f1;
+  color: #08795b;
+}
+
+.supplierOfferPipelineStep.isDone strong {
+  color: #08795b;
+}
+
+.supplierOfferPipelineStep.isReview .supplierOfferPipelineIndex {
+  border-color: #f1ce89;
+  background: #fff7e7;
+  color: #9a6500;
+}
+
+.supplierOfferPipelineStep.isReview strong {
+  color: #8d6109;
+}
+
+.supplierOfferPipelineStep.isOpen .supplierOfferPipelineIndex {
+  border-color: #dfe7e4;
+  background: #f5f8f7;
+  color: #83938f;
+}
+
+.supplierOfferPipelineConnector {
+  display: block;
+  width: 100%;
+  height: 2px;
+  border-radius: 99px;
+  background: linear-gradient(
+    90deg,
+    #a8dece,
+    #d9e8e3
+  );
+}
+
+.supplierOfferCard .procurementSearchFacts {
+  margin-top: 0;
+  padding: 0;
+}
+
+.supplierOfferCard .procurementSearchDescription {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f7faf9;
+}
+
+.supplierOfferCard .procurementSearchApply {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #e3ece9;
+}
+
+@media (max-width: 820px) {
+  .supplierOfferCard {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .supplierOfferCard > header {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .supplierOfferPipeline {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .supplierOfferPipelineConnector {
+    display: none;
+  }
+
+  .supplierOfferPipelineStep {
+    padding: 8px 0;
+  }
+}
