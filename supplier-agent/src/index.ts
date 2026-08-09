@@ -176,7 +176,8 @@ async function main() {
 
     const recorder =
       new SupplierNetworkRecorder(
-        adapter.key
+        adapter.key,
+        adapter
       );
 
     const unsubscribe =

@@ -4,12 +4,27 @@ import type {
   SupplierKey
 } from "../types.js";
 
+export type SupplierEndpointKind =
+  | "PRODUCT_SEARCH"
+  | "PRODUCT_DETAIL"
+  | "PRODUCT_VARIANTS"
+  | "PRODUCT_SUBSTITUTES"
+  | "NAVIGATION"
+  | "ACCOUNT"
+  | "CART"
+  | "CONFIG"
+  | "OTHER";
+
 export interface SupplierAdapter {
   key: SupplierKey;
   displayName: string;
   hosts: readonly string[];
 
   matchesUrl(url: string): boolean;
+
+  classifyEndpoint?(
+    url: string
+  ): SupplierEndpointKind;
 
   /**
    * Netzwerkantworten des Shops in ein einheitliches Format überführen.

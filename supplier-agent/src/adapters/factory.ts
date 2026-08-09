@@ -3,7 +3,8 @@ import {
 } from "./generic-network.js";
 
 import type {
-  SupplierAdapter
+  SupplierAdapter,
+  SupplierEndpointKind
 } from "./types.js";
 
 import type {
@@ -37,6 +38,12 @@ export function createNetworkFirstAdapter(
       } catch {
         return false;
       }
+    },
+
+    classifyEndpoint(
+      _url: string
+    ): SupplierEndpointKind {
+      return "OTHER";
     },
 
     async extractNetworkProducts(

@@ -95,3 +95,32 @@ Sie enthält nur:
 - normalisierte Beispielprodukte und Confidence
 
 Keine Cookies, Authorization-Header oder Request-Header werden gespeichert.
+
+## Phase 3: Endpoint-Klassifizierung und Schema-Probe
+
+METRO-Endpunkte werden jetzt getrennt klassifiziert:
+
+- `PRODUCT_SEARCH`
+- `PRODUCT_VARIANTS`
+- `PRODUCT_SUBSTITUTES`
+- `NAVIGATION`
+- `ACCOUNT`
+- `CART`
+- `CONFIG`
+- `OTHER`
+
+Nur produktnahe Endpoints dürfen in den generischen Produktparser.
+
+Die Network-Artefakte enthalten zusätzlich rein strukturelle
+`schemaFingerprints` mit:
+
+- JSON-Pfad
+- Feldnamen
+- Datentypen
+- Häufigkeit
+
+Es werden dafür keine Rohwerte, Cookies, Authorization-Header oder
+URL-Querystrings gespeichert.
+
+Damit können shop-spezifische Parser anhand echter Response-Strukturen
+gebaut werden, ohne Kontodaten in Analyseartefakte zu kopieren.

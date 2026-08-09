@@ -18,6 +18,25 @@ import { createLogger } from "./logger.js";
 const logger =
   createLogger(agentConfig.logLevel);
 
+function sanitizeLoggedUrl(
+  value: string
+) {
+  try {
+    const url =
+      new URL(value);
+
+    return (
+      `${url.protocol}//` +
+      `${url.host}` +
+      `${url.pathname}`
+    );
+  } catch {
+    return value
+      .split("?")[0]
+      .slice(0, 500);
+  }
+}
+
 function isJsonContentType(
   contentType: string
 ) {
@@ -233,7 +252,15 @@ export class NetworkCapture {
             supplier:
               adapter.key,
             responseUrl:
-              observation.url,
+              sanitizeLoggedUrl(
+                observation.url
+              ),
+            endpointKind:
+              adapter.classifyEndpoint
+                ? adapter.classifyEndpoint(
+                    observation.url
+                  )
+                : "OTHER",
             products:
               products.length,
             confidence:
@@ -267,7 +294,10 @@ export class NetworkCapture {
         {
           supplier:
             adapter.key,
-          url,
+          url:
+            sanitizeLoggedUrl(
+              url
+            ),
           error:
             error instanceof Error
               ? error.message

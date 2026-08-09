@@ -181,12 +181,38 @@ export function extractGenericNetworkProducts(
         ]
       );
 
+    /*
+     * Ein beliebiges JSON-Objekt mit "name" + "id" ist noch kein Produkt.
+     * Kategorien, Accounts und Navigation dürfen hier nicht als
+     * Produktkandidaten durchrutschen.
+     */
+    const hasCommercialIdentity =
+      Boolean(
+        articleNumber ||
+        ean
+      );
+
+    const hasPriceSignal =
+      rawNet != null ||
+      rawGross != null;
+
+    const hasProductUrlSignal =
+      Boolean(
+        firstText(
+          record,
+          [
+            "productUrl",
+            "productURL",
+            "articleUrl",
+            "pdpUrl"
+          ]
+        )
+      );
+
     if (
-      !articleNumber &&
-      !externalId &&
-      !ean &&
-      rawNet == null &&
-      rawGross == null
+      !hasCommercialIdentity &&
+      !hasPriceSignal &&
+      !hasProductUrlSignal
     ) {
       continue;
     }
