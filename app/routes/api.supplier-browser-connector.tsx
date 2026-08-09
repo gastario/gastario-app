@@ -448,6 +448,185 @@ export async function loader({
       ? rawSearchRequest
       : null;
 
+  const rawBackgroundSync =
+    settings.browserBackgroundSync &&
+    typeof settings.browserBackgroundSync ===
+      "object" &&
+    !Array.isArray(
+      settings.browserBackgroundSync
+    )
+      ? (settings.browserBackgroundSync as Record<
+          string,
+          unknown
+        >)
+      : {};
+
+  const nextSyncAtMs =
+    connection.nextSyncAt
+      ? new Date(
+          connection.nextSyncAt
+        ).getTime()
+      : 0;
+
+  const backgroundSyncDue =
+    !connection.nextSyncAt ||
+    !Number.isFinite(nextSyncAtMs) ||
+    nextSyncAtMs <=
+      heartbeatAt.getTime();
+
+  let effectiveSearchRequest =
+    activeSearchRequest;
+
+  let queuedBackgroundSync = false;
+
+  let backgroundSyncState: Record<
+    string,
+    unknown
+  > = {
+    ...rawBackgroundSync,
+  };
+
+  if (
+    !effectiveSearchRequest &&
+    backgroundSyncDue
+  ) {
+    const [
+      ingredientRows,
+      aliasRows,
+      knownCatalogRows,
+    ] = await Promise.all([
+      prisma.procurementIngredient.findMany({
+        where: {
+          tenantId: connection.tenantId,
+          active: true,
+        },
+        select: {
+          displayName: true,
+        },
+        orderBy: {
+          updatedAt: "desc",
+        },
+        take: 40,
+      }),
+
+      prisma.supplierSearchAlias.findMany({
+        where: {
+          tenantId: connection.tenantId,
+          active: true,
+        },
+        select: {
+          canonicalTerm: true,
+        },
+        orderBy: {
+          updatedAt: "desc",
+        },
+        take: 40,
+      }),
+
+      prisma.supplierCatalogItem.findMany({
+        where: {
+          tenantId: connection.tenantId,
+          supplierId:
+            connection.supplierId,
+          active: true,
+        },
+        select: {
+          name: true,
+        },
+        orderBy: {
+          lastSeenAt: "asc",
+        },
+        take: 40,
+      }),
+    ]);
+
+    const backgroundTerms =
+      Array.from(
+        new Set(
+          [
+            ...ingredientRows.map(
+              (entry: any) =>
+                entry.displayName
+            ),
+            ...aliasRows.map(
+              (entry: any) =>
+                entry.canonicalTerm
+            ),
+            ...knownCatalogRows.map(
+              (entry: any) =>
+                entry.name
+            ),
+          ]
+            .map((value) =>
+              String(value || "")
+                .replace(/\s+/g, " ")
+                .trim()
+            )
+            .filter(
+              (value) =>
+                value.length >= 2 &&
+                value.length <= 120
+            )
+        )
+      ).slice(0, 80);
+
+    if (backgroundTerms.length > 0) {
+      const rawCursor = Number(
+        rawBackgroundSync.cursor || 0
+      );
+
+      const cursor =
+        Number.isFinite(rawCursor) &&
+        rawCursor >= 0
+          ? Math.floor(rawCursor) %
+            backgroundTerms.length
+          : 0;
+
+      const query =
+        backgroundTerms[cursor];
+
+      const requestId =
+        "background-sync-" +
+        Date.now().toString(36) +
+        "-" +
+        Math.random()
+          .toString(36)
+          .slice(2, 10);
+
+      effectiveSearchRequest = {
+        id: requestId,
+        query,
+        originalQuery: query,
+        queryTerms: [query],
+        requestedAt:
+          heartbeatAt.toISOString(),
+        status: "PENDING",
+        source: "BACKGROUND_SYNC",
+        backgroundCursor: cursor,
+        backgroundTermCount:
+          backgroundTerms.length,
+      };
+
+      backgroundSyncState = {
+        ...rawBackgroundSync,
+        enabled: true,
+        cursor,
+        termCount:
+          backgroundTerms.length,
+        lastRequestedAt:
+          heartbeatAt.toISOString(),
+        lastQuery: query,
+        currentRequestId:
+          requestId,
+        cycleStartedAt:
+          rawBackgroundSync.cycleStartedAt ||
+          heartbeatAt.toISOString(),
+      };
+
+      queuedBackgroundSync = true;
+    }
+  }
+
   const updatedSettings = {
     ...settings,
     connectionMode:
@@ -459,9 +638,11 @@ export async function loader({
       "BROWSER_CONNECTOR_ACTIVE",
     sessionStatus:
       "LOCAL_BROWSER_ACTIVE",
-    automaticSync: false,
+    automaticSync: true,
+    browserBackgroundSync:
+      backgroundSyncState,
     browserConnectorSearchRequest:
-      activeSearchRequest,
+      effectiveSearchRequest,
   };
 
   await prisma.supplierConnection.update({
@@ -471,6 +652,13 @@ export async function loader({
     data: {
       status: "ACTIVE",
       lastError: null,
+      nextSyncAt:
+        queuedBackgroundSync
+          ? new Date(
+              heartbeatAt.getTime() +
+                10 * 60 * 1000
+            )
+          : connection.nextSyncAt,
       settingsJson: updatedSettings as any,
     },
   });
@@ -504,7 +692,7 @@ export async function loader({
           100_000
         ) || 0,
       searchRequest:
-        activeSearchRequest,
+        effectiveSearchRequest,
     },
   });
 }
@@ -972,6 +1160,118 @@ export async function action({
         ? "PARTIAL"
         : "FAILED";
 
+  const currentSearchRequest =
+    settings.browserConnectorSearchRequest &&
+    typeof settings.browserConnectorSearchRequest ===
+      "object" &&
+    !Array.isArray(
+      settings.browserConnectorSearchRequest
+    )
+      ? (settings.browserConnectorSearchRequest as Record<
+          string,
+          unknown
+        >)
+      : null;
+
+  const rawBackgroundState =
+    settings.browserBackgroundSync &&
+    typeof settings.browserBackgroundSync ===
+      "object" &&
+    !Array.isArray(
+      settings.browserBackgroundSync
+    )
+      ? (settings.browserBackgroundSync as Record<
+          string,
+          unknown
+        >)
+      : {};
+
+  const completedBackgroundSync =
+    Boolean(captureComplete) &&
+    Boolean(searchRequestId) &&
+    String(
+      currentSearchRequest?.id || ""
+    ) === String(searchRequestId) &&
+    String(
+      currentSearchRequest?.source || ""
+    ) === "BACKGROUND_SYNC";
+
+  let nextConnectionSyncAt =
+    connection.nextSyncAt;
+
+  let nextBackgroundState: Record<
+    string,
+    unknown
+  > = {
+    ...rawBackgroundState,
+  };
+
+  if (completedBackgroundSync) {
+    const cursor = Math.max(
+      0,
+      Number(
+        currentSearchRequest
+          ?.backgroundCursor || 0
+      ) || 0
+    );
+
+    const termCount = Math.max(
+      1,
+      Number(
+        currentSearchRequest
+          ?.backgroundTermCount || 1
+      ) || 1
+    );
+
+    const nextCursor =
+      cursor + 1;
+
+    const cycleComplete =
+      nextCursor >= termCount;
+
+    nextBackgroundState = {
+      ...rawBackgroundState,
+      enabled: true,
+      cursor: cycleComplete
+        ? 0
+        : nextCursor,
+      termCount,
+      lastCompletedAt:
+        capturedAt.toISOString(),
+      lastCompletedQuery:
+        searchQuery || null,
+      currentRequestId: null,
+      cycleStartedAt:
+        cycleComplete
+          ? null
+          : rawBackgroundState.cycleStartedAt ||
+            capturedAt.toISOString(),
+      lastCycleCompletedAt:
+        cycleComplete
+          ? capturedAt.toISOString()
+          : rawBackgroundState
+              .lastCycleCompletedAt ||
+            null,
+    };
+
+    const delayMinutes =
+      cycleComplete
+        ? Math.max(
+            15,
+            Number(
+              connection.syncIntervalMinutes ||
+                1440
+            ) || 1440
+          )
+        : 2;
+
+    nextConnectionSyncAt =
+      new Date(
+        capturedAt.getTime() +
+          delayMinutes * 60 * 1000
+      );
+  }
+
   const updatedSettings = {
     ...settings,
     connectionMode:
@@ -1027,7 +1327,9 @@ export async function action({
       "BROWSER_CONNECTOR_ACTIVE",
     sessionStatus:
       "LOCAL_BROWSER_ACTIVE",
-    automaticSync: false,
+    automaticSync: true,
+    browserBackgroundSync:
+      nextBackgroundState,
   };
 
   await prisma.$transaction([
@@ -1079,6 +1381,8 @@ export async function action({
           errors.length > 0
             ? errors.slice(0, 4).join(" | ")
             : null,
+        nextSyncAt:
+          nextConnectionSyncAt,
         settingsJson: updatedSettings as any,
       },
     }),
