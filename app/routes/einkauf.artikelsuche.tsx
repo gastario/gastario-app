@@ -1381,16 +1381,7 @@ export default function ProcurementSearchPage() {
     Number.isFinite(lastLiveSearchCompletedAt) &&
     Date.now() - lastLiveSearchCompletedAt <=
       liveSearchFreshnessMs;
-
-  const shouldStartMetroSearch =
-    data.query.length >= 2 &&
-    Boolean(data.metroConnector) &&
-    !data.metroConnector?.pendingSearch &&
-    (
-      data.results.length === 0 ||
-      !data.searchCache.hasFreshPrice
-    ) &&
-    !lastLiveSearchIsFresh;
+  const shouldStartMetroSearch = false;
 
   useEffect(() => {
     if (
@@ -1432,7 +1423,7 @@ export default function ProcurementSearchPage() {
   ]);
 
   useEffect(() => {
-    if (!data.metroConnector?.pendingSearch) {
+    if (true) {
       return;
     }
 
@@ -1497,7 +1488,7 @@ export default function ProcurementSearchPage() {
         <PageSection
           eyebrow="Lieferantenübergreifend"
           title="Was möchtest du einkaufen?"
-          description={`Gastario durchsucht vorhandene Kataloge intelligent und berücksichtigt verwandte Begriffe wie ${data.searchTerms.slice(0, 4).join(", ") || data.query}. Fehlen Treffer, startet automatisch die Live-Suche.`}
+          description={`Gastario durchsucht den lokalen Lieferantenindex sofort und berücksichtigt verwandte Begriffe wie ${data.searchTerms.slice(0, 4).join(", ") || data.query}. Kataloge und Preise werden im Hintergrund aktualisiert.`}
         >
           <Form
             method="get"
