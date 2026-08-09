@@ -462,19 +462,6 @@ export async function loader({
         >)
       : {};
 
-  const nextSyncAtMs =
-    connection.nextSyncAt
-      ? new Date(
-          connection.nextSyncAt
-        ).getTime()
-      : 0;
-
-  const backgroundSyncDue =
-    !connection.nextSyncAt ||
-    !Number.isFinite(nextSyncAtMs) ||
-    nextSyncAtMs <=
-      heartbeatAt.getTime();
-
   let effectiveSearchRequest =
     activeSearchRequest;
 
@@ -487,20 +474,39 @@ export async function loader({
     ...rawBackgroundSync,
   };
 
-  if (
-    !effectiveSearchRequest &&
-    backgroundSyncDue
-  ) {
-    const [
-      discoveryRows,
-      ingredientRows,
-      aliasRows,
-      knownCatalogRows,
-    ] = await Promise.all([
-      prisma.supplierSearchDiscovery.findMany({
+  /*
+   * SUPPLIER INDEX V2
+   *
+   * Der Browser-Connector ist nur noch Hintergrund-Importer.
+   * Er arbeitet ausschließlich ausdrücklich vorgemerkte
+   * SupplierSearchDiscovery-Einträge ab.
+   *
+   * Keine Rotation mehr durch Zutaten, Aliase oder bekannte
+   * Katalogartikel.
+   */
+  if (!effectiveSearchRequest) {
+    const retryCutoff =
+      new Date(
+        heartbeatAt.getTime() -
+          15 * 60 * 1000
+      );
+
+    const discovery =
+      await prisma.supplierSearchDiscovery.findFirst({
         where: {
-          tenantId: connection.tenantId,
+          tenantId:
+            connection.tenantId,
           status: "PENDING",
+          OR: [
+            {
+              lastProcessedAt: null,
+            },
+            {
+              lastProcessedAt: {
+                lte: retryCutoff,
+              },
+            },
+          ],
         },
         select: {
           id: true,
@@ -517,131 +523,21 @@ export async function loader({
             lastRequestedAt: "desc",
           },
         ],
-        take: 30,
-      }),
+      });
 
-      prisma.procurementIngredient.findMany({
-        where: {
-          tenantId: connection.tenantId,
-          active: true,
-        },
-        select: {
-          displayName: true,
-        },
-        orderBy: {
-          updatedAt: "desc",
-        },
-        take: 40,
-      }),
-
-      prisma.supplierSearchAlias.findMany({
-        where: {
-          tenantId: connection.tenantId,
-          active: true,
-        },
-        select: {
-          canonicalTerm: true,
-        },
-        orderBy: {
-          updatedAt: "desc",
-        },
-        take: 40,
-      }),
-
-      prisma.supplierCatalogItem.findMany({
-        where: {
-          tenantId: connection.tenantId,
-          supplierId:
-            connection.supplierId,
-          active: true,
-        },
-        select: {
-          name: true,
-        },
-        orderBy: {
-          lastSeenAt: "asc",
-        },
-        take: 40,
-      }),
-    ]);
-
-    const backgroundTerms =
-      Array.from(
-        new Set(
-          [
-            ...discoveryRows.map(
-              (entry: any) =>
-                entry.query
-            ),
-            ...ingredientRows.map(
-              (entry: any) =>
-                entry.displayName
-            ),
-            ...aliasRows.map(
-              (entry: any) =>
-                entry.canonicalTerm
-            ),
-            ...knownCatalogRows.map(
-              (entry: any) =>
-                entry.name
-            ),
-          ]
-            .map((value) =>
-              String(value || "")
-                .replace(/\s+/g, " ")
-                .trim()
-            )
-            .filter(
-              (value) =>
-                value.length >= 2 &&
-                value.length <= 120
-            )
-        )
-      ).slice(0, 80);
-
-    if (backgroundTerms.length > 0) {
-      const topDiscovery =
-        discoveryRows[0] || null;
-
-      const rawCursor = Number(
-        rawBackgroundSync.cursor || 0
+    const query =
+      readText(
+        discovery?.query,
+        240
+      ) ||
+      readText(
+        discovery?.queryNormalized,
+        240
       );
 
-      const normalCursor =
-        Number.isFinite(rawCursor) &&
-        rawCursor >= 0
-          ? Math.floor(rawCursor) %
-            backgroundTerms.length
-          : 0;
-
-      /*
-       * FASTLANE:
-       * Sobald ein PENDING Discovery-Begriff vorhanden ist, gewinnt
-       * er immer gegen den normalen Rundlauf-Cursor.
-       */
-      const query =
-        topDiscovery?.query ||
-        backgroundTerms[normalCursor];
-
-      const cursor =
-        topDiscovery
-          ? 0
-          : normalCursor;
-
-      const discoveryMatch =
-        topDiscovery ||
-        discoveryRows.find(
-          (entry: any) =>
-            normalizeSupplierSearchTerm(
-              entry.query
-            ) ===
-            normalizeSupplierSearchTerm(
-              query
-            )
-        ) || null;
-
+    if (discovery && query) {
       const requestId =
-        "background-sync-" +
+        "metro-background-" +
         Date.now().toString(36) +
         "-" +
         Math.random()
@@ -658,32 +554,33 @@ export async function loader({
         status: "PENDING",
         source: "BACKGROUND_SYNC",
         discoveryId:
-          discoveryMatch?.id || null,
-        backgroundCursor: cursor,
-        backgroundTermCount:
-          backgroundTerms.length,
+          discovery.id,
       };
 
       backgroundSyncState = {
         ...rawBackgroundSync,
         enabled: true,
-        cursor,
-        termCount:
-          backgroundTerms.length,
+        mode: "DISCOVERY_ONLY",
         lastRequestedAt:
           heartbeatAt.toISOString(),
         lastQuery: query,
         currentRequestId:
           requestId,
-        cycleStartedAt:
-          rawBackgroundSync.cycleStartedAt ||
-          heartbeatAt.toISOString(),
+        discoveryId:
+          discovery.id,
       };
 
       queuedBackgroundSync = true;
+    } else {
+      backgroundSyncState = {
+        ...rawBackgroundSync,
+        enabled: true,
+        mode: "DISCOVERY_ONLY",
+        currentRequestId: null,
+        discoveryId: null,
+      };
     }
   }
-
   const updatedSettings = {
     ...settings,
     connectionMode:
@@ -713,7 +610,7 @@ export async function loader({
         queuedBackgroundSync
           ? new Date(
               heartbeatAt.getTime() +
-                90 * 1000
+                2 * 60 * 1000
             )
           : connection.nextSyncAt,
       settingsJson: updatedSettings as any,
