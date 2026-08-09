@@ -443,6 +443,62 @@ export function meta() {
   ];
 }
 
+function isLegacyMetroPriceSuspicious(
+  item: any,
+  price: any
+) {
+  if (!price) {
+    return false;
+  }
+
+  const articleNumber =
+    String(
+      item?.articleNumber ||
+        item?.externalId ||
+        ""
+    ).toUpperCase();
+
+  if (
+    !articleNumber.startsWith(
+      "METRO-WEB-"
+    )
+  ) {
+    return false;
+  }
+
+  const fetchedAt =
+    price.fetchedAt
+      ? new Date(
+          price.fetchedAt
+        ).getTime()
+      : 0;
+
+  const parserFixCutoff =
+    new Date(
+      "2026-08-09T00:00:00.000Z"
+    ).getTime();
+
+  const netPriceCents =
+    Number(
+      price.netPriceCents || 0
+    );
+
+  const manuallyConfirmed =
+    String(
+      price.qualityReason || ""
+    )
+      .toLocaleLowerCase("de-DE")
+      .includes(
+        "manuell als plausibel bestätigt"
+      );
+
+  return (
+    !manuallyConfirmed &&
+    fetchedAt > 0 &&
+    fetchedAt < parserFixCutoff &&
+    netPriceCents >= 25000
+  );
+}
 export async function loader({
   request,
 }: {
@@ -733,11 +789,24 @@ export async function loader({
           item.prices || []
         );
 
+      const legacyPriceHidden =
+        isLegacyMetroPriceSuspicious(
+          item,
+          trusted.price
+        );
+
       const mapped = {
         ...item,
-        latestPrice: trusted.price,
+        latestPrice:
+          legacyPriceHidden
+            ? null
+            : trusted.price,
         rejectedLatestPrice:
-          trusted.rejectedLatest,
+          legacyPriceHidden
+            ? trusted.price
+            : trusted.rejectedLatest,
+        priceRefreshPending:
+          legacyPriceHidden,
         score: resultScore(
           item,
           query,
@@ -838,12 +907,14 @@ export async function loader({
           query,
           queryNormalized,
           priority:
-            results.length === 0
+            results.length === 0 ||
+            needsLegacyPriceRefresh
               ? 100
               : 20,
           searchCount: 1,
           status:
-            results.length === 0
+            results.length === 0 ||
+            needsLegacyPriceRefresh
               ? "PENDING"
               : "SATISFIED",
           lastRequestedAt: new Date(),
@@ -853,14 +924,16 @@ export async function loader({
         update: {
           query,
           priority:
-            results.length === 0
+            results.length === 0 ||
+            needsLegacyPriceRefresh
               ? 100
               : 20,
           searchCount: {
             increment: 1,
           },
           status:
-            results.length === 0
+            results.length === 0 ||
+            needsLegacyPriceRefresh
               ? "PENDING"
               : "SATISFIED",
           lastRequestedAt: new Date(),
@@ -877,7 +950,10 @@ export async function loader({
        * Der Connector holt sich beim nächsten Heartbeat den
        * höchst priorisierten Discovery-Begriff.
        */
-      if (results.length === 0) {
+      if (
+        results.length === 0 ||
+        needsLegacyPriceRefresh
+      ) {
         const activeConnections =
           await prisma.supplierConnection.findMany({
             where: {
@@ -942,6 +1018,12 @@ export async function loader({
       }
     }
   }
+  const needsLegacyPriceRefresh =
+    results.some(
+      (item: any) =>
+        item.priceRefreshPending ===
+        true
+    );
   return {
     tenant: access.tenant,
     query,
