@@ -134,6 +134,10 @@ export async function loader({
     activeAliases: aliases.filter(
       (entry: any) => entry.active
     ).length,
+    autoLearnedAliases: aliases.filter(
+      (entry: any) =>
+        entry.source === "AUTO_LEARNED"
+    ).length,
     learningSuggestions,
   };
 }
@@ -507,13 +511,18 @@ export default function SupplierSearchAliasesPage() {
             <span>Aktiv</span>
             <strong>{data.activeAliases}</strong>
           </div>
+
+          <div className="supplierAliasMetric">
+            <span>Automatisch gelernt</span>
+            <strong>{data.autoLearnedAliases}</strong>
+          </div>
         </section>
 
         {data.learningSuggestions.length > 0 ? (
           <PageSection
             eyebrow="Gastario lernt mit"
             title="Erkannte Suchbeziehungen"
-            description="Diese Vorschläge entstehen aus deiner tatsächlichen Artikelauswahl. Je öfter dieselbe Beziehung erkannt wird, desto höher ist die Evidenz."
+            description="Diese Vorschläge entstehen aus deiner tatsächlichen Artikelauswahl. Gastario aktiviert eine Beziehung nur dann automatisch, wenn sie mehrfach in beide Richtungen bestätigt wurde und keine bestehende Alias-Gruppe berührt."
           >
             <div className="supplierLearningList">
               {data.learningSuggestions.map(
@@ -684,8 +693,20 @@ export default function SupplierSearchAliasesPage() {
                           }`}
                           key={entry.id}
                         >
-                          <span>
-                            {entry.aliasTerm}
+                          <span className="supplierAliasPillLabel">
+                            <span>
+                              {entry.aliasTerm}
+                            </span>
+
+                            {entry.source === "AUTO_LEARNED" ? (
+                              <small className="supplierAliasSourceBadge">
+                                Automatisch gelernt
+                              </small>
+                            ) : entry.source === "LEARNED" ? (
+                              <small className="supplierAliasSourceBadge supplierAliasSourceBadge--reviewed">
+                                Aus Lernvorschlag
+                              </small>
+                            ) : null}
                           </span>
 
                           <div className="supplierAliasPillActions">

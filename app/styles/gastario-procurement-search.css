@@ -346,7 +346,7 @@
 }
 .supplierAliasMetrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -617,5 +617,42 @@
 
   .supplierLearningMain small {
     white-space: normal;
+  }
+}
+.supplierAliasPillLabel {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.supplierAliasSourceBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #daf3e9;
+  color: #08745e;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.supplierAliasSourceBadge--reviewed {
+  background: #eef3ff;
+  color: #536ca8;
+}
+
+@media (max-width: 1180px) {
+  .supplierAliasMetrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .supplierAliasPillLabel {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

@@ -1158,44 +1158,164 @@ export async function action({
         continue;
       }
 
-      await prisma.supplierSearchLearningSuggestion.upsert({
-        where: {
-          tenantId_queryNormalized_candidateNormalized: {
+      const learningSuggestion =
+        await prisma.supplierSearchLearningSuggestion.upsert({
+          where: {
+            tenantId_queryNormalized_candidateNormalized: {
+              tenantId: access.tenantId,
+              queryNormalized:
+                learningQuery,
+              candidateNormalized,
+            },
+          },
+          create: {
             tenantId: access.tenantId,
+            queryTerm: returnQuery,
             queryNormalized:
               learningQuery,
+            candidateTerm,
             candidateNormalized,
+            evidenceCount: 1,
+            status: "PENDING",
+            lastCatalogItemName:
+              catalogItem.name,
+            lastSupplierName:
+              catalogItem.supplier.name,
+            lastSeenAt: new Date(),
           },
-        },
-        create: {
-          tenantId: access.tenantId,
-          queryTerm: returnQuery,
-          queryNormalized:
-            learningQuery,
-          candidateTerm,
-          candidateNormalized,
-          evidenceCount: 1,
-          status: "PENDING",
-          lastCatalogItemName:
-            catalogItem.name,
-          lastSupplierName:
-            catalogItem.supplier.name,
-          lastSeenAt: new Date(),
-        },
-        update: {
-          queryTerm: returnQuery,
-          candidateTerm,
-          evidenceCount: {
-            increment: 1,
+          update: {
+            queryTerm: returnQuery,
+            candidateTerm,
+            evidenceCount: {
+              increment: 1,
+            },
+            status: "PENDING",
+            lastCatalogItemName:
+              catalogItem.name,
+            lastSupplierName:
+              catalogItem.supplier.name,
+            lastSeenAt: new Date(),
           },
-          status: "PENDING",
-          lastCatalogItemName:
-            catalogItem.name,
-          lastSupplierName:
-            catalogItem.supplier.name,
-          lastSeenAt: new Date(),
-        },
-      });
+        });
+
+      /*
+       * Automatisch freigeben nur bei reziproker Evidenz:
+       *
+       * A -> B mindestens 2x
+       * B -> A mindestens 2x
+       *
+       * Dadurch reicht es nicht, dass z. B. bei "Marmelade"
+       * mehrfach "Erdbeere" im Artikelnamen vorkommt. Erst wenn
+       * auch die umgekehrte Such-/Auswahlbeziehung beobachtet wurde,
+       * darf Gastario selbstständig daraus einen Alias machen.
+       */
+      if (
+        learningSuggestion.evidenceCount >= 2
+      ) {
+        const reverseSuggestion =
+          await prisma.supplierSearchLearningSuggestion.findUnique({
+            where: {
+              tenantId_queryNormalized_candidateNormalized: {
+                tenantId: access.tenantId,
+                queryNormalized:
+                  candidateNormalized,
+                candidateNormalized:
+                  learningQuery,
+              },
+            },
+          });
+
+        if (
+          reverseSuggestion &&
+          reverseSuggestion.status === "PENDING" &&
+          reverseSuggestion.evidenceCount >= 2
+        ) {
+          const existingAliases =
+            await prisma.supplierSearchAlias.findMany({
+              where: {
+                tenantId: access.tenantId,
+                aliasNormalized: {
+                  in: [
+                    learningQuery,
+                    candidateNormalized,
+                  ],
+                },
+              },
+              select: {
+                aliasNormalized: true,
+                canonicalNormalized: true,
+              },
+            });
+
+          /*
+           * Sobald einer der beiden Begriffe bereits zu einer
+           * bestehenden Gruppe gehört, bleibt der Vorschlag bewusst
+           * manuell prüfbar. So überschreibt Auto-Learning niemals
+           * vorhandene Suchlogik.
+           */
+          if (existingAliases.length === 0) {
+            const canonicalTerm =
+              learningSuggestion.queryTerm;
+
+            const canonicalNormalized =
+              learningSuggestion.queryNormalized;
+
+            const combinedEvidence =
+              learningSuggestion.evidenceCount +
+              reverseSuggestion.evidenceCount;
+
+            await prisma.$transaction([
+              prisma.supplierSearchAlias.create({
+                data: {
+                  tenantId: access.tenantId,
+                  canonicalTerm,
+                  aliasTerm:
+                    learningSuggestion.queryTerm,
+                  canonicalNormalized,
+                  aliasNormalized:
+                    learningSuggestion.queryNormalized,
+                  active: true,
+                  source: "AUTO_LEARNED",
+                  useCount: combinedEvidence,
+                },
+              }),
+
+              prisma.supplierSearchAlias.create({
+                data: {
+                  tenantId: access.tenantId,
+                  canonicalTerm,
+                  aliasTerm:
+                    learningSuggestion.candidateTerm,
+                  canonicalNormalized,
+                  aliasNormalized:
+                    learningSuggestion.candidateNormalized,
+                  active: true,
+                  source: "AUTO_LEARNED",
+                  useCount: combinedEvidence,
+                },
+              }),
+
+              prisma.supplierSearchLearningSuggestion.update({
+                where: {
+                  id: learningSuggestion.id,
+                },
+                data: {
+                  status: "AUTO_ACCEPTED",
+                },
+              }),
+
+              prisma.supplierSearchLearningSuggestion.update({
+                where: {
+                  id: reverseSuggestion.id,
+                },
+                data: {
+                  status: "AUTO_ACCEPTED",
+                },
+              }),
+            ]);
+          }
+        }
+      }
     }
   }
 
