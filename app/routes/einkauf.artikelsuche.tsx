@@ -410,9 +410,13 @@ function resultScore(
 }
 
 function basePrice(item: any) {
+  /*
+   * Nur bereits vertrauenswürdige Preise dürfen für den Grundpreis
+   * verwendet werden. Rohe Snapshots aus item.prices können
+   * SUSPICIOUS/REJECTED sein und dürfen hier niemals zurückleaken.
+   */
   const price =
-    item.latestPrice ||
-    item.prices?.[0];
+    item.latestPrice;
 
   if (!price) {
     return null;
@@ -1747,9 +1751,14 @@ export default function ProcurementSearchPage() {
                           <small className="procurementPriceWarning">
                             Preis wird im Hintergrund aktualisiert
                           </small>
-                        ) : item.rejectedLatestPrice ? (
+                        ) : item.rejectedLatestPrice &&
+                          item.latestPrice ? (
                           <small className="procurementPriceWarning">
                             Neuer Preis wird geprüft · letzter plausibler Preis wird verwendet
+                          </small>
+                        ) : item.rejectedLatestPrice ? (
+                          <small className="procurementPriceWarning">
+                            Neuer Preis wird geprüft · noch kein freigegebener Preis verfügbar
                           </small>
                         ) : null}
                       </div>
