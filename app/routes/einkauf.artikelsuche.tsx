@@ -868,6 +868,27 @@ export async function loader({
             results.length,
         },
       });
+
+      /*
+       * FASTLANE:
+       * Ein echter Nutzer-Search mit 0 Treffern darf nicht hinter
+       * einer normalen Hintergrundrunde warten. Wir setzen alle
+       * aktiven Browser-Verbindungen dieses Tenants sofort auf fällig.
+       * Der Connector holt sich beim nächsten Heartbeat den
+       * höchst priorisierten Discovery-Begriff.
+       */
+      if (results.length === 0) {
+        await prisma.supplierConnection.updateMany({
+          where: {
+            tenantId: access.tenantId,
+            active: true,
+            status: "ACTIVE",
+          },
+          data: {
+            nextSyncAt: new Date(),
+          },
+        });
+      }
     }
   }
   return {

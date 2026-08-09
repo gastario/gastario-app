@@ -600,21 +600,36 @@ export async function loader({
       ).slice(0, 80);
 
     if (backgroundTerms.length > 0) {
+      const topDiscovery =
+        discoveryRows[0] || null;
+
       const rawCursor = Number(
         rawBackgroundSync.cursor || 0
       );
 
-      const cursor =
+      const normalCursor =
         Number.isFinite(rawCursor) &&
         rawCursor >= 0
           ? Math.floor(rawCursor) %
             backgroundTerms.length
           : 0;
 
+      /*
+       * FASTLANE:
+       * Sobald ein PENDING Discovery-Begriff vorhanden ist, gewinnt
+       * er immer gegen den normalen Rundlauf-Cursor.
+       */
       const query =
-        backgroundTerms[cursor];
+        topDiscovery?.query ||
+        backgroundTerms[normalCursor];
+
+      const cursor =
+        topDiscovery
+          ? 0
+          : normalCursor;
 
       const discoveryMatch =
+        topDiscovery ||
         discoveryRows.find(
           (entry: any) =>
             normalizeSupplierSearchTerm(
@@ -698,7 +713,7 @@ export async function loader({
         queuedBackgroundSync
           ? new Date(
               heartbeatAt.getTime() +
-                10 * 60 * 1000
+                90 * 1000
             )
           : connection.nextSyncAt,
       settingsJson: updatedSettings as any,
