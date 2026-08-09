@@ -878,16 +878,67 @@ export async function loader({
        * höchst priorisierten Discovery-Begriff.
        */
       if (results.length === 0) {
-        await prisma.supplierConnection.updateMany({
-          where: {
-            tenantId: access.tenantId,
-            active: true,
-            status: "ACTIVE",
-          },
-          data: {
-            nextSyncAt: new Date(),
-          },
-        });
+        const activeConnections =
+          await prisma.supplierConnection.findMany({
+            where: {
+              tenantId: access.tenantId,
+              active: true,
+              status: "ACTIVE",
+            },
+            select: {
+              id: true,
+              settingsJson: true,
+            },
+          });
+
+        await Promise.all(
+          activeConnections.map(
+            async (connection: any) => {
+              const settings =
+                connection.settingsJson &&
+                typeof connection.settingsJson ===
+                  "object" &&
+                !Array.isArray(
+                  connection.settingsJson
+                )
+                  ? {
+                      ...connection.settingsJson,
+                    }
+                  : {};
+
+              const currentRequest =
+                settings.browserConnectorSearchRequest &&
+                typeof settings.browserConnectorSearchRequest ===
+                  "object" &&
+                !Array.isArray(
+                  settings.browserConnectorSearchRequest
+                )
+                  ? settings.browserConnectorSearchRequest
+                  : null;
+
+              if (
+                currentRequest &&
+                String(
+                  currentRequest.source || ""
+                ) === "BACKGROUND_SYNC"
+              ) {
+                settings.browserConnectorSearchRequest =
+                  null;
+              }
+
+              await prisma.supplierConnection.update({
+                where: {
+                  id: connection.id,
+                },
+                data: {
+                  nextSyncAt: new Date(),
+                  settingsJson:
+                    settings as any,
+                },
+              });
+            }
+          )
+        );
       }
     }
   }
@@ -1420,6 +1471,52 @@ export async function action({
   );
 }
 
+function SilentSupplierSearchRefresh({
+  active,
+  query,
+}: {
+  active: boolean;
+  query: string;
+}) {
+  const revalidator =
+    useRevalidator();
+
+  useEffect(() => {
+    if (
+      !active ||
+      query.trim().length < 2
+    ) {
+      return;
+    }
+
+    let attempts = 0;
+
+    const timer =
+      window.setInterval(() => {
+        attempts += 1;
+
+        if (
+          revalidator.state === "idle"
+        ) {
+          revalidator.revalidate();
+        }
+
+        if (attempts >= 6) {
+          window.clearInterval(timer);
+        }
+      }, 2000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [
+    active,
+    query,
+    revalidator,
+  ]);
+
+  return null;
+}
 export default function ProcurementSearchPage() {
   const data = useLoaderData<typeof loader>();
   const actionData =
@@ -1514,6 +1611,13 @@ export default function ProcurementSearchPage() {
   return (
     <AppLayout>
       <PageShell className="procurementSearchPage">
+        <SilentSupplierSearchRefresh
+          active={
+            data.query.length >= 2 &&
+            data.results.length === 0
+          }
+          query={data.query}
+        />
         <PageHeader
           eyebrow="Einkauf & Lieferanten"
           title="Artikelsuche"
