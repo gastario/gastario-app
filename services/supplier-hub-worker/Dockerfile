@@ -30,7 +30,6 @@ ENV SUPPLIER_HUB_BROWSER_HEADLESS=0
 RUN mkdir -p /data/supplier-sessions \
   && chmod 700 /data/supplier-sessions
 
-VOLUME ["/data"]
 
 EXPOSE 8080
 
