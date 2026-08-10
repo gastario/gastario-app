@@ -86,16 +86,25 @@ export function saveMetroBridgeConfig(
   const code =
     String(connectorCode || "")
       .trim();
+  const isLegacyConnectorCode =
+    /^GASTARIO-SUPPLIER-CONNECTOR\.[A-Za-z0-9_-]{8,80}\.[A-Za-z0-9_-]{32,100}$/.test(
+      code
+    );
+
+  const isGsclConnectorCode =
+    /^(?:gsc1|gscl)\.[A-Za-z0-9_-]{8,160}\.[A-Za-z0-9_-]{16,160}$/.test(
+      code
+    );
 
   if (
-    !/^GASTARIO-SUPPLIER-CONNECTOR\.[A-Za-z0-9_-]{8,80}\.[A-Za-z0-9_-]{32,100}$/.test(
-      code
-    )
+    !isLegacyConnectorCode &&
+    !isGsclConnectorCode
   ) {
     throw new Error(
       "Ungültiger Gastario Lieferanten-Verbindungscode."
     );
   }
+
 
   const target =
     configPath();
