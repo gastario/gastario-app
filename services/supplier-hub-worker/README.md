@@ -77,3 +77,47 @@ Ein Hosted Browser Runtime Manager übernimmt ein Ticket,
 öffnet eine isolierte interaktive METRO-Session und speichert
 nach erfolgreichem Login ausschließlich den Storage-State
 verschlüsselt im Session Vault.
+
+## Phase 2.5 – METRO Native Search Transport
+
+Neu:
+- verschlüsselte METRO Storage-State Session wird serverseitig wiederhergestellt
+- isolierter Chromium-Kontext pro Native Search
+- Gastario navigiert nicht über DOM-Scraping der Ergebnisliste
+- die echte METRO Search-Response `/searchdiscover/articlesearch/search` wird abgefangen
+- Produkt-IDs kommen direkt aus `resultIds`
+- Betty-Variant-Responses werden während der Shop-Suche gesammelt und zur Produktauflösung genutzt
+- Preise werden aus der strukturierten Search-Payload gelesen
+- Session-Ablauf wird als `REAUTH_REQUIRED` signalisiert
+
+Aktueller bewusster Zwischenstand:
+- `refreshPrices` läuft noch nicht über einen separaten Produktdetail-Request
+- der erste Live-Search öffnet pro Anfrage einen isolierten Browser-Kontext
+- in späteren Performance-Phasen wird daraus ein Connection-Pool mit warmen Sessions und Cache-First-Refresh
+
+Der technische Vertrag nach außen bleibt:
+`/v1/search`, `/v1/prices`, `/v1/health`.
+
+## Phase 2.6 – Railway Deployment Readiness
+
+Railway-Service:
+- Root Directory: `/services/supplier-hub-worker`
+- Dockerfile wird automatisch aus diesem Root-Verzeichnis erkannt.
+- Healthcheck: `/health`
+- Restart: `ON_FAILURE`
+- Persistentes Volume: Mount Path `/data`
+
+Erforderliche Service-Variablen:
+- `SUPPLIER_HUB_SERVICE_TOKEN`
+- `SUPPLIER_HUB_VAULT_KEY`
+- `SUPPLIER_HUB_PUBLIC_URL`
+- `SUPPLIER_HUB_SESSION_DIR=/data/supplier-sessions`
+- `SUPPLIER_HUB_BROWSER_HEADLESS=0`
+- `SUPPLIER_HUB_NATIVE_HEADLESS=0`
+
+Gastario-Webservice benötigt danach:
+- `SUPPLIER_HUB_METRO_GATEWAY_URL`
+- denselben `SUPPLIER_HUB_SERVICE_TOKEN`
+
+Smoke Test:
+`SUPPLIER_HUB_SMOKE_URL=https://<worker-domain> npm run smoke`

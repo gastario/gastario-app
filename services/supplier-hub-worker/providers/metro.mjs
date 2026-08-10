@@ -2,10 +2,14 @@ export class MetroHostedProvider {
   code = "METRO";
 
   constructor({
-    sessionStore
+    sessionStore,
+    transport
   }) {
     this.sessionStore =
       sessionStore;
+
+    this.transport =
+      transport;
   }
 
   async getSession({
@@ -37,12 +41,9 @@ export class MetroHostedProvider {
       };
     }
 
-    return {
-      ok: true,
-      requiresUserAction: false,
-      message:
-        "METRO Hosted Session vorhanden."
-    };
+    return await this.transport.health(
+      session
+    );
   }
 
   async search({
@@ -69,32 +70,8 @@ export class MetroHostedProvider {
       throw error;
     }
 
-    /*
-     * Phase 2.2:
-     * Hier wird der bereits erforschte native METRO-Transport
-     * eingebunden:
-     *
-     * /searchdiscover/articlesearch/search
-     * + Betty-Variant-Hydration.
-     *
-     * Der Gastario-Nutzer benötigt dafür KEINEN lokalen Connector.
-     */
-    if (
-      typeof session.search !==
-      "function"
-    ) {
-      const error =
-        new Error(
-          "METRO Native Transport ist noch nicht an den Hosted Session Vault gebunden."
-        );
-
-      error.code =
-        "TRANSPORT_NOT_READY";
-
-      throw error;
-    }
-
-    return session.search(
+    return await this.transport.search(
+      session,
       query,
       limit
     );
@@ -123,15 +100,10 @@ export class MetroHostedProvider {
       throw error;
     }
 
-    if (
-      typeof session.refreshPrices !==
-      "function"
-    ) {
-      return [];
-    }
-
-    return session.refreshPrices(
-      externalIds
-    );
+    return await this.transport
+      .refreshPrices(
+        session,
+        externalIds
+      );
   }
 }

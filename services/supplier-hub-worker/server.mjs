@@ -17,6 +17,10 @@ import {
 } from "./providers/metro.mjs";
 
 import {
+  MetroNativeTransport
+} from "./providers/metro-native-transport.mjs";
+
+import {
   LoginTicketStore
 } from "./login-ticket-store.mjs";
 
@@ -95,11 +99,26 @@ const browserRuntime =
           "https://lieferservice.metro.de/"
       ).trim()
   });
+const metroTransport =
+  new MetroNativeTransport({
+    executablePath:
+      String(
+        process.env
+          .SUPPLIER_HUB_CHROMIUM_PATH ||
+          ""
+      ).trim(),
+    headless:
+      process.env
+        .SUPPLIER_HUB_NATIVE_HEADLESS ===
+        "1"
+  });
 const registry =
   new SupplierWorkerProviderRegistry()
     .register(
       new MetroHostedProvider({
-        sessionStore
+        sessionStore,
+        transport:
+          metroTransport
       })
     );
 
