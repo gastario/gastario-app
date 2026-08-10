@@ -52,6 +52,10 @@ async function waitForever() {
   );
 }
 
+import {
+  runMetroBridge,
+  saveMetroBridgeConfig
+} from "./core/gastario-bridge.js";
 async function main() {
   const command =
     process.argv[2] ||
@@ -271,6 +275,73 @@ async function main() {
     return;
   }
 
+  if (command === "bridge-config") {
+    const supplierKey =
+      String(
+        process.argv[3] || ""
+      )
+        .trim()
+        .toLowerCase();
+
+    if (supplierKey !== "metro") {
+      throw new Error(
+        "Usage: bridge-config metro <VERBINDUNGSCODE> [GASTARIO_URL]"
+      );
+    }
+
+    const connectorCode =
+      String(
+        process.argv[4] || ""
+      ).trim();
+
+    const baseUrl =
+      String(
+        process.argv[5] || ""
+      ).trim();
+
+    const saved =
+      saveMetroBridgeConfig(
+        connectorCode,
+        baseUrl ||
+        undefined
+      );
+
+    console.log(
+      JSON.stringify(
+        {
+          ok: true,
+          supplier:
+            "metro",
+          configPath:
+            saved.path,
+          baseUrl:
+            saved.baseUrl
+        },
+        null,
+        2
+      )
+    );
+
+    return;
+  }
+
+  if (command === "watch") {
+    const supplierKey =
+      String(
+        process.argv[3] || ""
+      )
+        .trim()
+        .toLowerCase();
+
+    if (supplierKey !== "metro") {
+      throw new Error(
+        "Usage: watch metro"
+      );
+    }
+
+    await runMetroBridge();
+    return;
+  }
   if (command === "record") {
     const supplierKey =
       String(
