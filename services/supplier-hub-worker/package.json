@@ -1,0 +1,16 @@
+{
+  "name": "gastario-supplier-hub-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "check": "node --check server.mjs && node --check auth.mjs && node --check crypto-vault.mjs && node --check login-ticket-store.mjs && node --check browser-runtime.mjs && node --check provider-registry.mjs && node --check session-store.mjs && node --check providers/metro.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.62.1"
+  }
+}
