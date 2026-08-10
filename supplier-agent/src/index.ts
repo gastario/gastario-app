@@ -256,7 +256,11 @@ async function main() {
           resultIds:
             result.resultIds,
           additionalVariantIds:
-            result.additionalVariantIds
+            result.additionalVariantIds,
+          productCount:
+            result.products.length,
+          products:
+            result.products
         },
         null,
         2
