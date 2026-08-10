@@ -1049,6 +1049,7 @@ function isDeliveryOverviewMealContinuationLine(
     "sosse",
     "dip",
     "topping",
+    "cheese",
     "with ",
     "mit ",
     "and ",
