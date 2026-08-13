@@ -513,60 +513,83 @@ async function handleRequest(
 <title>METRO mit Gastario verbinden</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#eef5f2;color:#12372b;font-family:Inter,Arial,sans-serif}
-.shell{max-width:1360px;margin:0 auto;padding:20px}
-.header{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:14px}
-h1{font-size:22px;margin:0}
-p{margin:4px 0 0;color:#52665e}
-.browser{background:#fff;border:1px solid #cfe0da;border-radius:16px;overflow:hidden;box-shadow:0 15px 40px rgba(12,70,52,.10)}
-.bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #e3ece8;background:#f8fbfa}
-#state{font-size:13px;font-weight:700}
-.frame-wrap{position:relative;background:#f3f3f3;overflow:auto}
-#frame{display:block;width:100%;height:auto;min-height:520px;cursor:default}
-.controls{display:flex;gap:10px;flex-wrap:wrap;padding:14px;background:#fff;border-top:1px solid #e3ece8}
-input{flex:1;min-width:260px;border:1px solid #cbdad5;border-radius:10px;padding:11px 12px;font-size:14px}
-button{border:0;border-radius:10px;padding:11px 15px;font-weight:800;cursor:pointer}
-.primary{background:#07966f;color:#fff}
-.secondary{background:#edf5f2;color:#12372b}
-.danger{background:#fff0ef;color:#a4312b}
-.note{padding:0 14px 14px;color:#6b7c75;font-size:12px}
+:root{color-scheme:light;--ink:#12372b;--muted:#667a72;--line:#d9e6e1;--green:#07966f;--green-dark:#087e61;--success:#eaf8f2;--danger:#a4312b}
+html,body{min-height:100%}
+body{margin:0;background:#f3f7f5;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.shell{width:min(1440px,100%);margin:0 auto;padding:20px 22px 28px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:12px}
+.brandmark{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--green);color:#fff;font-weight:900;font-size:18px}
+.title h1{margin:0;font-size:21px;line-height:1.15}
+.title p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.status{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font-size:12px;font-weight:800}
+.dot{width:8px;height:8px;border-radius:50%;background:#d7a11e}
+.browser{overflow:hidden;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 18px 50px rgba(15,60,46,.08)}
+.browser-head{min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 14px;border-bottom:1px solid #e7efec;background:#fbfdfc}
+.browser-head strong{font-size:13px}
+.browser-head span{color:var(--muted);font-size:12px}
+.frame-wrap{position:relative;min-height:620px;overflow:auto;background:#eef1f0;outline:none}
+#frame{display:block;width:100%;height:auto;min-height:620px;user-select:none;-webkit-user-drag:none;cursor:pointer}
+.helper{display:flex;justify-content:space-between;gap:18px;align-items:center;min-height:54px;padding:11px 14px;border-top:1px solid #e7efec;background:#fff}
+.helper-text{color:var(--muted);font-size:12px;line-height:1.45}
+button{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}
+.cancel{color:var(--danger);background:#fff2f1}
+#error{display:none;margin:12px 0 0;border:1px solid #efc9c5;border-radius:12px;padding:10px 12px;background:#fff5f4;color:#8c2822;font-size:12px}
+.success{display:none;min-height:690px;align-items:center;justify-content:center;padding:40px 20px}
+.success-card{width:min(520px,100%);text-align:center}
+.success-icon{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;margin:0 auto 18px;background:var(--success);color:var(--green-dark);font-size:30px;font-weight:900}
+.success h2{margin:0;font-size:25px}
+.success p{margin:10px auto 20px;max-width:430px;color:var(--muted);line-height:1.55}
+.close-button{background:var(--green);color:#fff}
+@media(max-width:760px){.shell{padding:12px}.topbar{align-items:flex-start;flex-direction:column}.frame-wrap,#frame{min-height:520px}.helper{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body>
 <div class="shell">
-  <div class="header">
-    <div>
-      <h1>METRO mit Gastario verbinden</h1>
-      <p>Melde dich einmal direkt in der geschützten Gastario-Browsersitzung an.</p>
+  <div class="topbar" id="topbar">
+    <div class="brand">
+      <div class="brandmark">G</div>
+      <div class="title">
+        <h1>METRO-Konto verbinden</h1>
+        <p>Melde dich einmal bei METRO an. Gastario übernimmt danach automatisch.</p>
+      </div>
     </div>
-    <strong id="state">Verbindung wird geladen …</strong>
+    <div class="status">
+      <span class="dot" id="statusDot"></span>
+      <span id="state">Anmeldung wird vorbereitet</span>
+    </div>
   </div>
 
-  <div class="browser">
-    <div class="bar">
-      <span>Geschützte Lieferanten-Sitzung</span>
-      <button class="secondary" id="refresh">Bild aktualisieren</button>
+  <div class="browser" id="browser">
+    <div class="browser-head">
+      <strong>METRO Anmeldung</strong>
+      <span>Klicke und tippe direkt im Fenster</span>
     </div>
 
-    <div class="frame-wrap">
-      <img id="frame" alt="METRO Browser">
+    <div class="frame-wrap" id="frameWrap" tabindex="0" aria-label="METRO Browser">
+      <img id="frame" alt="METRO Browser" draggable="false">
     </div>
 
-    <div class="controls">
-      <input
-        id="text"
-        autocomplete="off"
-        placeholder="Text für das aktuell ausgewählte Feld eingeben"
-      >
-      <button class="secondary" id="type">Text eingeben</button>
-      <button class="secondary" id="tab">Tab</button>
-      <button class="secondary" id="enter">Enter</button>
-      <button class="primary" id="complete">Anmeldung abgeschlossen</button>
-      <button class="danger" id="cancel">Abbrechen</button>
+    <div class="helper">
+      <div class="helper-text">
+        Dein Passwort wird nicht in Gastario gespeichert.
+        Nach erfolgreicher Anmeldung wird nur die verschlüsselte Sitzung hinterlegt.
+      </div>
+      <button class="cancel" id="cancel">Abbrechen</button>
     </div>
+  </div>
 
-    <div class="note">
-      Passwörter werden nicht in Gastario gespeichert. Eingaben werden direkt an die aktive Browser-Sitzung weitergegeben.
+  <div id="error"></div>
+
+  <div class="success" id="success">
+    <div class="success-card">
+      <div class="success-icon">✓</div>
+      <h2>METRO erfolgreich verbunden</h2>
+      <p>
+        Dein METRO-Konto ist jetzt mit Gastario verbunden.
+        Preise und Verfügbarkeiten können künftig automatisch aktualisiert werden.
+      </p>
+      <button class="close-button" id="closeWindow">Zurück zu Gastario</button>
     </div>
   </div>
 </div>
@@ -574,8 +597,18 @@ button{border:0;border-radius:10px;padding:11px 15px;font-weight:800;cursor:poin
 <script>
 const token = ${JSON.stringify(token)};
 const frame = document.getElementById("frame");
+const frameWrap = document.getElementById("frameWrap");
+const browser = document.getElementById("browser");
+const topbar = document.getElementById("topbar");
+const success = document.getElementById("success");
 const state = document.getElementById("state");
+const statusDot = document.getElementById("statusDot");
+const errorBox = document.getElementById("error");
+
 let timer = null;
+let completing = false;
+let authenticatedChecks = 0;
+let lastFrameRefresh = 0;
 
 async function api(path, options) {
   const response = await fetch(path, options);
@@ -586,8 +619,84 @@ async function api(path, options) {
   return response;
 }
 
-async function refreshFrame() {
-  frame.src = "/public/login/" + encodeURIComponent(token) + "/frame?t=" + Date.now();
+function setState(label, kind) {
+  state.textContent = label;
+  statusDot.style.background =
+    kind === "success"
+      ? "#07966f"
+      : kind === "error"
+        ? "#c93c32"
+        : "#d7a11e";
+}
+
+function showError(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  errorBox.textContent = "Die Verbindung konnte nicht abgeschlossen werden. " + message;
+  errorBox.style.display = "block";
+  setState("Verbindung prüfen", "error");
+}
+
+function refreshFrame(force) {
+  const now = Date.now();
+  if (!force && now - lastFrameRefresh < 650) {
+    return;
+  }
+  lastFrameRefresh = now;
+  frame.src = "/public/login/" + encodeURIComponent(token) + "/frame?t=" + now;
+}
+
+function looksLikeAuthenticatedMetro(runtime) {
+  const url = String(runtime?.url || "").toLowerCase();
+  if (!url) {
+    return false;
+  }
+
+  const metroShop = url.includes("lieferservice.metro.de");
+  const loginLike =
+    url.includes("/login") ||
+    url.includes("/signin") ||
+    url.includes("/auth") ||
+    url.includes("identity") ||
+    url.includes("oauth");
+
+  return metroShop && !loginLike;
+}
+
+async function completeAutomatically() {
+  if (completing) {
+    return;
+  }
+
+  completing = true;
+
+  try {
+    setState("Verbindung wird gespeichert", "pending");
+
+    await api(
+      "/public/login/" + encodeURIComponent(token) + "/complete",
+      { method: "POST" }
+    );
+
+    clearInterval(timer);
+    setState("Verbunden", "success");
+    browser.style.display = "none";
+    topbar.style.display = "none";
+    errorBox.style.display = "none";
+    success.style.display = "flex";
+
+    setTimeout(() => {
+      try {
+        window.opener?.focus();
+        window.close();
+      }
+      catch {}
+    }, 2200);
+  }
+  catch (error) {
+    completing = false;
+    authenticatedChecks = 0;
+    showError(error);
+  }
 }
 
 async function refreshStatus() {
@@ -596,18 +705,36 @@ async function refreshStatus() {
       "/public/login/" + encodeURIComponent(token) + "/status"
     );
     const data = await response.json();
-    state.textContent = data.state || "INTERACTIVE";
 
-    if (
-      data.state === "COMPLETED" ||
-      data.state === "CANCELLED" ||
-      data.state === "FAILED"
-    ) {
+    if (data.state === "COMPLETED") {
       clearInterval(timer);
+      browser.style.display = "none";
+      topbar.style.display = "none";
+      success.style.display = "flex";
+      return;
     }
+
+    if (data.state === "CANCELLED" || data.state === "FAILED") {
+      clearInterval(timer);
+      setState(data.message || "Verbindung beendet", "error");
+      return;
+    }
+
+    if (looksLikeAuthenticatedMetro(data.runtime)) {
+      authenticatedChecks += 1;
+      setState("Anmeldung erkannt", "pending");
+
+      if (authenticatedChecks >= 2) {
+        await completeAutomatically();
+      }
+      return;
+    }
+
+    authenticatedChecks = 0;
+    setState("Bei METRO anmelden", "pending");
   }
-  catch (error) {
-    state.textContent = "Verbindung unterbrochen";
+  catch {
+    setState("Verbindung wird wiederhergestellt", "error");
   }
 }
 
@@ -623,80 +750,109 @@ async function sendInput(payload) {
     }
   );
 
-  setTimeout(refreshFrame, 250);
+  setTimeout(() => refreshFrame(true), 180);
+  setTimeout(refreshStatus, 260);
 }
 
 frame.addEventListener("click", async (event) => {
-  const rect = frame.getBoundingClientRect();
-  const x = (event.clientX - rect.left) * (1280 / rect.width);
-  const y = (event.clientY - rect.top) * (800 / rect.height);
+  try {
+    frameWrap.focus();
 
-  await sendInput({
-    type: "click",
-    x,
-    y
-  });
+    const rect = frame.getBoundingClientRect();
+    const x = (event.clientX - rect.left) * (1280 / rect.width);
+    const y = (event.clientY - rect.top) * (800 / rect.height);
+
+    await sendInput({
+      type: "click",
+      x,
+      y
+    });
+  }
+  catch (error) {
+    showError(error);
+  }
 });
 
-document.getElementById("type").onclick = async () => {
-  const input = document.getElementById("text");
-  const text = input.value;
-  input.value = "";
-  await sendInput({
-    type: "text",
-    text
-  });
-};
+frameWrap.addEventListener("keydown", async (event) => {
+  if (event.ctrlKey || event.metaKey || event.altKey) {
+    return;
+  }
 
-document.getElementById("tab").onclick = () =>
-  sendInput({
-    type: "key",
-    key: "Tab"
-  });
+  const specialKeys = new Set([
+    "Enter",
+    "Tab",
+    "Escape",
+    "Backspace",
+    "Delete",
+    "ArrowUp",
+    "ArrowDown",
+    "ArrowLeft",
+    "ArrowRight"
+  ]);
 
-document.getElementById("enter").onclick = () =>
-  sendInput({
-    type: "key",
-    key: "Enter"
-  });
-
-document.getElementById("refresh").onclick = refreshFrame;
-
-document.getElementById("complete").onclick = async () => {
-  await api(
-    "/public/login/" + encodeURIComponent(token) + "/complete",
-    {
-      method: "POST"
+  try {
+    if (specialKeys.has(event.key)) {
+      event.preventDefault();
+      await sendInput({
+        type: "key",
+        key: event.key
+      });
+      return;
     }
-  );
 
-  state.textContent = "Verbunden";
-  clearInterval(timer);
-  alert("METRO wurde mit Gastario verbunden.");
-};
+    if (event.key.length === 1) {
+      event.preventDefault();
+      await sendInput({
+        type: "text",
+        text: event.key
+      });
+    }
+  }
+  catch (error) {
+    showError(error);
+  }
+});
 
 document.getElementById("cancel").onclick = async () => {
-  await api(
-    "/public/login/" + encodeURIComponent(token) + "/cancel",
-    {
-      method: "POST"
+  try {
+    await api(
+      "/public/login/" + encodeURIComponent(token) + "/cancel",
+      { method: "POST" }
+    );
+  }
+  finally {
+    clearInterval(timer);
+    try {
+      window.opener?.focus();
+      window.close();
     }
-  );
-
-  state.textContent = "Abgebrochen";
-  clearInterval(timer);
+    catch {}
+  }
 };
 
-refreshFrame();
+document.getElementById("closeWindow").onclick = () => {
+  try {
+    window.opener?.focus();
+    window.close();
+  }
+  catch {
+    history.back();
+  }
+};
+
+frameWrap.focus();
+refreshFrame(true);
 refreshStatus();
+
 timer = setInterval(() => {
-  refreshFrame();
-  refreshStatus();
+  if (!completing) {
+    refreshFrame(false);
+    refreshStatus();
+  }
 }, 900);
 </script>
 </body>
 </html>`;
-
     response.writeHead(
       200,
       {
