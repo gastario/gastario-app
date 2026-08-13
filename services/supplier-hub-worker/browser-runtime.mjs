@@ -293,6 +293,171 @@ export class HostedBrowserRuntimeManager {
       });
   }
 
+  ensureMetroLoginDiagnostics(
+    runtime
+  ) {
+    if (
+      !runtime ||
+      runtime.metroLoginDiagnosticsInstalled
+    ) {
+      return;
+    }
+
+    runtime.metroLoginDiagnosticsInstalled =
+      true;
+
+    const sanitizeUrl =
+      (value) => {
+        try {
+          const parsed =
+            new URL(
+              String(
+                value ||
+                ""
+              )
+            );
+
+          return (
+            parsed.origin +
+            parsed.pathname
+          );
+        }
+        catch {
+          return "[invalid-url]";
+        }
+      };
+
+    const isRelevantUrl =
+      (value) => {
+        const text =
+          String(
+            value ||
+            ""
+          )
+            .toLowerCase();
+
+        return (
+          text.includes("metro.de") ||
+          text.includes("metro-online") ||
+          text.includes("identity") ||
+          text.includes("oauth") ||
+          text.includes("login") ||
+          text.includes("signin")
+        );
+      };
+
+    runtime.page.on(
+      "request",
+      (request) => {
+        const url =
+          request.url();
+
+        if (!isRelevantUrl(url)) {
+          return;
+        }
+
+        console.log(
+          "[METRO LOGIN NET] request",
+          {
+            method:
+              request.method(),
+            url:
+              sanitizeUrl(url),
+            resourceType:
+              request.resourceType()
+          }
+        );
+      }
+    );
+
+    runtime.page.on(
+      "response",
+      (response) => {
+        const url =
+          response.url();
+
+        if (!isRelevantUrl(url)) {
+          return;
+        }
+
+        console.log(
+          "[METRO LOGIN NET] response",
+          {
+            status:
+              response.status(),
+            url:
+              sanitizeUrl(url)
+          }
+        );
+      }
+    );
+
+    runtime.page.on(
+      "requestfailed",
+      (request) => {
+        const url =
+          request.url();
+
+        if (!isRelevantUrl(url)) {
+          return;
+        }
+
+        console.warn(
+          "[METRO LOGIN NET] request-failed",
+          {
+            method:
+              request.method(),
+            url:
+              sanitizeUrl(url),
+            failure:
+              request.failure()
+                ?.errorText ||
+              "unknown"
+          }
+        );
+      }
+    );
+
+    runtime.page.on(
+      "framenavigated",
+      (frame) => {
+        if (
+          frame !==
+          runtime.page
+            .mainFrame()
+        ) {
+          return;
+        }
+
+        const url =
+          frame.url();
+
+        if (!isRelevantUrl(url)) {
+          return;
+        }
+
+        console.log(
+          "[METRO LOGIN NET] navigation",
+          {
+            url:
+              sanitizeUrl(url)
+          }
+        );
+      }
+    );
+
+    console.log(
+      "[METRO LOGIN NET] diagnostics-active",
+      {
+        tenantId:
+          runtime.tenantId,
+        connectionId:
+          runtime.connectionId,
+        provider:
+          runtime.provider
+      }
+    );
+  }
   async input(
     token,
     action
@@ -301,6 +466,10 @@ export class HostedBrowserRuntimeManager {
       this.getRuntime(
         token
       );
+
+    this.ensureMetroLoginDiagnostics(
+      runtime
+    );
 
     if (!runtime) {
       throw new Error(
