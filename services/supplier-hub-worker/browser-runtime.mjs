@@ -431,9 +431,25 @@ export class HostedBrowserRuntimeManager {
       );
     }
 
+    console.log(
+      "[SUPPLIER HUB LOGIN] complete:start",
+      {
+        tenantId:
+          runtime.tenantId,
+        connectionId:
+          runtime.connectionId,
+        provider:
+          runtime.provider
+      }
+    );
+
     const storageState =
       await runtime.context
         .storageState();
+
+    console.log(
+      "[SUPPLIER HUB LOGIN] complete:storage-state"
+    );
 
     await this.sessionStore.set({
       tenantId:
@@ -457,6 +473,10 @@ export class HostedBrowserRuntimeManager {
       }
     });
 
+    console.log(
+      "[SUPPLIER HUB LOGIN] complete:session-saved"
+    );
+
     this.ticketStore.update(
       token,
       {
@@ -470,9 +490,29 @@ export class HostedBrowserRuntimeManager {
       }
     );
 
-    await this.close(
+    /*
+     * Die Session ist ab hier bereits dauerhaft gespeichert.
+     * Browser-Cleanup darf die HTTP-Antwort nicht mehr blockieren.
+     * Railway/Chromium kann beim Schliessen mehrere Sekunden warten.
+     */
+    void this.close(
       token,
       false
+    )
+      .then(() => {
+        console.log(
+          "[SUPPLIER HUB LOGIN] complete:cleanup-finished"
+        );
+      })
+      .catch((error) => {
+        console.error(
+          "[SUPPLIER HUB LOGIN] complete:cleanup-failed",
+          error
+        );
+      });
+
+    console.log(
+      "[SUPPLIER HUB LOGIN] complete:response-ready"
     );
 
     return {
@@ -481,7 +521,6 @@ export class HostedBrowserRuntimeManager {
         "COMPLETED"
     };
   }
-
   async cancel(
     token
   ) {
