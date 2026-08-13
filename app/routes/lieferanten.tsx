@@ -14,6 +14,10 @@ import {
 import "../styles/gastario-page-shell.css";
 import "../styles/gastario-supply-masterdesign.css";
 
+import {
+  resolveSupplierConnectionStrategy,
+} from "../lib/supplier-hub/connection-strategy";
+
 export function meta() {
   return [{ title: "Lieferanten · Gastario" }];
 }
@@ -171,6 +175,55 @@ export async function loader({ request }: { request: Request }) {
     return !Number.isFinite(fetchedAt) || fetchedAt < freshnessLimit;
   });
 
+  const usableConnections =
+    connections.filter(
+      (connection: any) => {
+        const strategy =
+          resolveSupplierConnectionStrategy({
+            providerCode:
+              connection.label,
+            status:
+              connection.status,
+            active:
+              connection.active,
+            settingsJson:
+              connection.settingsJson,
+            catalogItems:
+              connection._count?.catalogItems ||
+              0,
+            priceItems:
+              connection._count?.catalogItems ||
+              0,
+          });
+
+        return strategy.usable;
+      }
+    );
+
+  const liveConnections =
+    connections.filter(
+      (connection: any) => {
+        const strategy =
+          resolveSupplierConnectionStrategy({
+            providerCode:
+              connection.label,
+            status:
+              connection.status,
+            active:
+              connection.active,
+            settingsJson:
+              connection.settingsJson,
+            catalogItems:
+              connection._count?.catalogItems ||
+              0,
+            priceItems:
+              connection._count?.catalogItems ||
+              0,
+          });
+
+        return strategy.live;
+      }
+    );
   return {
     tenant: access.tenant,
     suppliers: safeSuppliers,
@@ -189,6 +242,10 @@ export async function loader({ request }: { request: Request }) {
           connection.active &&
           connection.status === "ACTIVE"
       ).length,
+      usableConnections:
+        usableConnections.length,
+      liveConnections:
+        liveConnections.length,
       catalogItems: catalogItems.length,
       currentPrices: currentPriceItems.length,
       stalePrices: stalePriceItems.length,
@@ -1207,8 +1264,8 @@ export default function SuppliersPage() {
             </strong>
             <p>
               {data.stats.connections === 0
-                ? "Verbinde zuerst ein Lieferantenportal, damit Gastario Sortimente und Preise übernehmen kann."
-                : `${data.stats.activeConnections} von ${data.stats.connections} Portalverbindungen sind aktiv. ${data.stats.currentPrices} Preise sind aktuell.`}
+                ? "Lege eine Lieferantenquelle an. Gastario kann mit offiziellen Schnittstellen, Katalogen oder vorhandenen Einkaufsdaten arbeiten."
+                : `${data.stats.usableConnections} von ${data.stats.connections} Lieferantenquellen sind nutzbar. ${data.stats.liveConnections} davon liefern Live-Daten. ${data.stats.currentPrices} Preise sind aktuell.`}
             </p>
           </div>
 
@@ -1229,10 +1286,10 @@ export default function SuppliersPage() {
 
           <article>
             <div>
-              <span>Verbundene Portale</span>
-              <small>{data.stats.activeConnections} aktiv</small>
+              <span>Nutzbare Quellen</span>
+              <small>{data.stats.liveConnections} live</small>
             </div>
-            <strong>{data.stats.connections}</strong>
+            <strong>{data.stats.usableConnections}</strong>
             <i />
           </article>
 
@@ -2216,16 +2273,16 @@ export default function SuppliersPage() {
 
               <div className="supplyV1ActivityList">
                 <article>
-                  <b data-tone={data.stats.activeConnections > 0 ? "success" : "warning"} />
+                  <b data-tone={data.stats.usableConnections > 0 ? "success" : "warning"} />
                   <div>
-                    <small>Portalstatus</small>
+                    <small>Datenquellen</small>
                     <strong>
-                      {data.stats.activeConnections > 0
-                        ? "Mindestens ein Portal ist aktiv"
-                        : "Noch kein Portal aktiv"}
+                      {data.stats.usableConnections > 0
+                        ? "Einkaufsdaten sind nutzbar"
+                        : "Noch keine nutzbare Quelle"}
                     </strong>
                     <p>
-                      {data.stats.connections} Verbindungen insgesamt.
+                      {data.stats.usableConnections} nutzbar, {data.stats.liveConnections} live.
                     </p>
                   </div>
                 </article>
