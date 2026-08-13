@@ -65,6 +65,7 @@ export default [
   route("api/supplier-browser-connector", "routes/api.supplier-browser-connector.tsx"),
   route("api/supplier-hub/search", "routes/api.supplier-hub.search.tsx"),
   route("api/supplier-hub/connect", "routes/api.supplier-hub.connect.tsx"),
+  route("api/supplier-hub/connect/metro", "routes/api.supplier-hub.connect.metro.tsx"),
 
   route("gastario-control", "routes/gastario-control.tsx"),
   route("gastario-control/mandanten", "routes/gastario-control.mandanten.tsx"),

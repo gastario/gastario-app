@@ -1631,6 +1631,25 @@ export default function SuppliersPage() {
                               ? "Portal"
                               : "Verbinden"}
                           </a>
+                          {connection &&
+                          String(
+                            connection?.settingsJson?.providerCode ||
+                              connection?.label ||
+                              supplier.name ||
+                              ""
+                          )
+                            .trim()
+                            .toUpperCase()
+                            .includes("METRO") ? (
+                            <a
+                              className="supplyV1RowButton supplyV1RowButton--primary"
+                              href="/api/supplier-hub/connect/metro"
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              METRO verbinden
+                            </a>
+                          ) : null}
                         </div>
                       </article>
                     );
