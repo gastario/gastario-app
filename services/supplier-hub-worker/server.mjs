@@ -282,7 +282,25 @@ async function handleRequest(
     );
   }
 
+  /*
+   * Interne /v1/* APIs bleiben mit dem Service-Token geschützt.
+   * Der Hosted-Login wird über ein kurzlebiges, zufälliges Login-Ticket
+   * autorisiert und muss deshalb im normalen Browser erreichbar sein.
+   */
+  const isPublicLoginRoute =
+    (
+      request.method ===
+        "GET" &&
+      /^\/connect\/metro\/[A-Za-z0-9_-]{20,200}$/.test(
+        url.pathname
+      )
+    ) ||
+    /^\/public\/login\/[A-Za-z0-9_-]{20,200}\/(?:frame|status|input|complete|cancel)$/.test(
+      url.pathname
+    );
+
   if (
+    !isPublicLoginRoute &&
     !verifyServiceToken(
       request,
       serviceToken
