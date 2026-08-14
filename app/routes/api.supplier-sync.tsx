@@ -1,5 +1,6 @@
 import { prisma } from "../lib/prisma.server";
 import { runSupplierSync } from "../lib/supplier-sync.server";
+import { resolveSupplierConnectionStrategy } from "../lib/supplier-hub/connection-strategy";
 
 /*
  * gastario-automatic-supplier-sync-route-20260729
@@ -62,6 +63,15 @@ async function runDueSupplierConnections() {
       select: {
         id: true,
         tenantId: true,
+        label: true,
+        status: true,
+        active: true,
+        settingsJson: true,
+        _count: {
+          select: {
+            catalogItems: true,
+          },
+        },
         supplier: {
           select: {
             name: true,
@@ -83,6 +93,34 @@ async function runDueSupplierConnections() {
 
   for (const connection of connections) {
     try {
+      const strategy =
+        resolveSupplierConnectionStrategy({
+          providerCode: connection.label,
+          status: connection.status,
+          active: connection.active,
+          settingsJson: connection.settingsJson,
+          catalogItems:
+            connection._count?.catalogItems || 0,
+          priceItems: 0,
+        });
+
+      if (!strategy.live) {
+        results.push({
+          connectionId: connection.id,
+          supplierName: connection.supplier.name,
+          ok: strategy.usable,
+          status: "SKIPPED",
+          message:
+            strategy.strategy === "CATALOG"
+              ? "Vorhandene Katalogdaten werden genutzt; kein Live-Sync erforderlich."
+              : strategy.strategy === "HISTORICAL"
+                ? "Historische Einkaufsdaten werden genutzt; kein Live-Sync erforderlich."
+                : "Keine Live-Datenquelle für eine automatische Synchronisierung verfügbar.",
+          strategy: strategy.strategy,
+        });
+        continue;
+      }
+
       const result = await runSupplierSync({
         connectionId: connection.id,
         tenantId: connection.tenantId,

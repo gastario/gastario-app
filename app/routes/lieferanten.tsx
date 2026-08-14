@@ -1023,8 +1023,16 @@ export async function action({ request }: { request: Request }) {
         },
         select: {
           id: true,
+          tenantId: true,
+          label: true,
           status: true,
-          credentialsEncrypted: true,
+          active: true,
+          settingsJson: true,
+          _count: {
+            select: {
+              catalogItems: true,
+            },
+          },
         },
       });
 
@@ -1034,17 +1042,35 @@ export async function action({ request }: { request: Request }) {
       };
     }
 
-    if (!connection.credentialsEncrypted) {
+    const strategy =
+      resolveSupplierConnectionStrategy({
+        providerCode: connection.label,
+        status: connection.status,
+        active: connection.active,
+        settingsJson: connection.settingsJson,
+        catalogItems:
+          connection._count?.catalogItems || 0,
+        priceItems: 0,
+      });
+
+    if (strategy.strategy === "CATALOG") {
       return {
-        error:
-          "Bitte zuerst den METRO-Zugang sicher speichern.",
+        success:
+          "Die vorhandenen Katalogdaten sind als Datenquelle aktiv. Ein Live-Sync ist für diese Verbindung derzeit nicht erforderlich.",
       };
     }
 
-    if (connection.status !== "ACTIVE") {
+    if (strategy.strategy === "HISTORICAL") {
+      return {
+        success:
+          "Historische Einkaufsdaten sind als Datenquelle aktiv. Ein Live-Sync ist für diese Verbindung derzeit nicht erforderlich.",
+      };
+    }
+
+    if (!strategy.live) {
       return {
         error:
-          "Die METRO-Sitzung ist noch nicht aktiv. Bitte zuerst den Browser-Login abschließen.",
+          "Für diese Lieferantenverbindung ist derzeit keine Live-Schnittstelle verfügbar.",
       };
     }
 
