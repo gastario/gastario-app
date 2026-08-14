@@ -1112,11 +1112,49 @@ model SupplierConnection {
   @@index([nextSyncAt])
 }
 
+model GlobalSupplierCatalogItem {
+  id String @id @default(cuid())
+
+  providerCode String
+
+  externalId    String?
+  articleNumber String?
+  ean           String?
+  gtin          String?
+
+  name         String
+  brand        String?
+  description  String?
+  searchTokens String[] @default([])
+
+  orderUnit       String?
+  baseUnit        String?
+  contentQuantity Float?
+  packageQuantity Float?
+
+  active     Boolean   @default(true)
+  lastSeenAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenantItems SupplierCatalogItem[]
+
+  @@unique([providerCode, externalId])
+  @@unique([providerCode, articleNumber])
+  @@index([providerCode])
+  @@index([ean])
+  @@index([gtin])
+  @@index([name])
+  @@index([searchTokens], type: Gin)
+}
+
 model SupplierCatalogItem {
-  id           String  @id @default(cuid())
-  tenantId     String
-  supplierId   String
-  connectionId String?
+  id                  String  @id @default(cuid())
+  tenantId            String
+  supplierId          String
+  connectionId        String?
+  globalCatalogItemId String?
 
   externalId    String?
   articleNumber String?
@@ -1141,9 +1179,10 @@ model SupplierCatalogItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  tenant     Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  supplier   Supplier            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  connection SupplierConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+  tenant            Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  supplier          Supplier                   @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  connection        SupplierConnection?        @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+  globalCatalogItem GlobalSupplierCatalogItem? @relation(fields: [globalCatalogItemId], references: [id], onDelete: SetNull)
 
   prices            SupplierPriceSnapshot[]
   matches           ProductSupplierMatch[]
@@ -1155,6 +1194,7 @@ model SupplierCatalogItem {
   @@index([tenantId])
   @@index([supplierId])
   @@index([connectionId])
+  @@index([globalCatalogItemId])
   @@index([ean])
   @@index([gtin])
   @@index([name])
