@@ -1,4 +1,4 @@
-import { selectTrustedSupplierPrice } from "../lib/supplier-price-quality";
+﻿import { selectTrustedSupplierPrice } from "../lib/supplier-price-quality";
 import {
   buildSupplierSearchQueryTokens,
   normalizeSupplierSearchTerm,
@@ -66,14 +66,14 @@ function normalizedText(value: unknown) {
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLocaleLowerCase("de-DE")
-    .replace(/ß/g, "ss")
+    .replace(/ÃŸ/g, "ss")
     .trim();
 }
 
 const SEARCH_SYNONYM_GROUPS = [
   [
     "marmelade",
-    "konfitüre",
+    "konfitÃ¼re",
     "konfituere",
     "fruchtaufstrich",
     "fruchtgelee",
@@ -83,15 +83,15 @@ const SEARCH_SYNONYM_GROUPS = [
     "sahne",
     "schlagsahne",
     "schlagrahm",
-    "kochsa​​hne",
-    "küchensahne",
+    "kochsaâ€‹â€‹hne",
+    "kÃ¼chensahne",
     "kuechensahne",
     "rahm",
   ],
   [
     "mais",
     "zuckermais",
-    "gemüsemais",
+    "gemÃ¼semais",
     "gemuesemais",
     "maiskolben",
     "sweetcorn",
@@ -111,7 +111,7 @@ const SEARCH_SYNONYM_GROUPS = [
     "hack",
   ],
   [
-    "tomatensoße",
+    "tomatensoÃŸe",
     "tomatensosse",
     "pastasauce",
     "tomatensauce",
@@ -124,14 +124,14 @@ const SEARCH_SYNONYM_GROUPS = [
     "pepsi",
   ],
   [
-    "kartoffelpüree",
+    "kartoffelpÃ¼ree",
     "kartoffelpueree",
     "kartoffelstampf",
-    "püree",
+    "pÃ¼ree",
     "pueree",
   ],
   [
-    "brötchen",
+    "brÃ¶tchen",
     "broetchen",
     "semmel",
     "schrippe",
@@ -139,17 +139,17 @@ const SEARCH_SYNONYM_GROUPS = [
 ] as const;
 
 const PREFERRED_PORTAL_TERMS: Record<string, string> = {
-  marmelade: "konfitüre",
-  konfituere: "konfitüre",
-  fruchtaufstrich: "konfitüre",
+  marmelade: "konfitÃ¼re",
+  konfituere: "konfitÃ¼re",
+  fruchtaufstrich: "konfitÃ¼re",
   sahne: "sahne",
   rahm: "sahne",
   croissants: "croissant",
   croissant: "croissant",
   hackfleisch: "hackfleisch",
   tomatensosse: "tomatensauce",
-  "tomatensoße": "tomatensauce",
-  broetchen: "brötchen",
+  "tomatensoÃŸe": "tomatensauce",
+  broetchen: "brÃ¶tchen",
 };
 
 function editDistance(
@@ -242,6 +242,33 @@ function closestKnownSearchTerm(query: string) {
     : null;
 }
 
+function buildSearchMorphologyTerms(value: string) {
+  const term = normalizedText(value);
+
+  if (!term || term.length < 3) {
+    return [];
+  }
+
+  const variants = new Set<string>([term]);
+
+  if (term.endsWith("en") && term.length > 4) {
+    variants.add(term.slice(0, -1));
+    variants.add(term.slice(0, -2));
+  }
+
+  if (term.endsWith("n") && term.length > 4) {
+    variants.add(term.slice(0, -1));
+  }
+
+  if (term.endsWith("e") && term.length > 3) {
+    variants.add(`${term}n`);
+  }
+
+  return Array.from(variants).filter(
+    (variant) => variant.length >= 3
+  );
+}
+
 function expandSearchTerms(query: string) {
   const normalizedQuery = normalizedText(query);
 
@@ -264,13 +291,26 @@ function expandSearchTerms(query: string) {
       )
     );
 
-  const terms = matchingGroup
+  const baseTerms = matchingGroup
     ? [
         query,
         correctedTerm,
         ...matchingGroup,
       ]
-    : [query];
+    : [query, correctedTerm];
+
+  const terms = baseTerms.flatMap((term) => {
+    if (!term) {
+      return [];
+    }
+
+    return [
+      String(term),
+      ...buildSearchMorphologyTerms(
+        String(term)
+      ),
+    ];
+  });
 
   return Array.from(
     new Set(
@@ -281,7 +321,7 @@ function expandSearchTerms(query: string) {
         )
         .filter((term) => term.length >= 2)
     )
-  ).slice(0, 12);
+  ).slice(0, 20);
 }
 
 function preferredPortalQuery(query: string) {
@@ -411,9 +451,9 @@ function resultScore(
 
 function basePrice(item: any) {
   /*
-   * Nur bereits vertrauenswürdige Preise dürfen für den Grundpreis
-   * verwendet werden. Rohe Snapshots aus item.prices können
-   * SUSPICIOUS/REJECTED sein und dürfen hier niemals zurückleaken.
+   * Nur bereits vertrauenswÃ¼rdige Preise dÃ¼rfen fÃ¼r den Grundpreis
+   * verwendet werden. Rohe Snapshots aus item.prices kÃ¶nnen
+   * SUSPICIOUS/REJECTED sein und dÃ¼rfen hier niemals zurÃ¼ckleaken.
    */
   const price =
     item.latestPrice;
@@ -442,7 +482,7 @@ export function meta() {
   return [
     {
       title:
-        "Lieferantenübergreifende Artikelsuche · Gastario",
+        "LieferantenÃ¼bergreifende Artikelsuche Â· Gastario",
     },
   ];
 }
@@ -493,7 +533,7 @@ function isLegacyMetroPriceSuspicious(
     )
       .toLocaleLowerCase("de-DE")
       .includes(
-        "manuell als plausibel bestätigt"
+        "manuell als plausibel bestÃ¤tigt"
       );
 
   return (
@@ -971,7 +1011,7 @@ export async function loader({
    *
    * Bekannte Lieferantenartikel werden sofort aus dem lokalen
    * Gastario-Katalog angezeigt. Eine Live-Aktualisierung ist nur
-   * nötig, wenn noch kein Treffer oder kein frischer Preis vorliegt.
+   * nÃ¶tig, wenn noch kein Treffer oder kein frischer Preis vorliegt.
    */
   const livePriceFreshnessMs =
     5 * 60 * 1000;
@@ -1433,7 +1473,7 @@ export async function action({
        * Dadurch reicht es nicht, dass z. B. bei "Marmelade"
        * mehrfach "Erdbeere" im Artikelnamen vorkommt. Erst wenn
        * auch die umgekehrte Such-/Auswahlbeziehung beobachtet wurde,
-       * darf Gastario selbstständig daraus einen Alias machen.
+       * darf Gastario selbststÃ¤ndig daraus einen Alias machen.
        */
       if (
         learningSuggestion.evidenceCount >= 2
@@ -1475,8 +1515,8 @@ export async function action({
 
           /*
            * Sobald einer der beiden Begriffe bereits zu einer
-           * bestehenden Gruppe gehört, bleibt der Vorschlag bewusst
-           * manuell prüfbar. So überschreibt Auto-Learning niemals
+           * bestehenden Gruppe gehÃ¶rt, bleibt der Vorschlag bewusst
+           * manuell prÃ¼fbar. So Ã¼berschreibt Auto-Learning niemals
            * vorhandene Suchlogik.
            */
           if (existingAliases.length === 0) {
@@ -1646,7 +1686,7 @@ export default function ProcurementSearchPage() {
                 className="procurementSearchButton procurementSearchButton--secondary"
                 to="/einkauf/preispruefung"
               >
-                Preisprüfung
+                PreisprÃ¼fung
               </Link>
 
               <Link
@@ -1673,9 +1713,9 @@ export default function ProcurementSearchPage() {
         ) : null}
 
         <PageSection
-          eyebrow="Lieferantenübergreifend"
-          title="Was möchtest du einkaufen?"
-          description={`Gastario durchsucht den lokalen Lieferantenindex sofort und berücksichtigt verwandte Begriffe wie ${data.searchTerms.slice(0, 4).join(", ") || data.query}. Kataloge und Preise werden im Hintergrund aktualisiert.`}
+          eyebrow="LieferantenÃ¼bergreifend"
+          title="Was mÃ¶chtest du einkaufen?"
+          description={`Gastario durchsucht den lokalen Lieferantenindex sofort und berÃ¼cksichtigt verwandte Begriffe wie ${data.searchTerms.slice(0, 4).join(", ") || data.query}. Kataloge und Preise werden im Hintergrund aktualisiert.`}
         >
           <Form
             method="get"
@@ -1723,7 +1763,7 @@ export default function ProcurementSearchPage() {
                   data.availableOnly
                 }
               />
-              <span>Nur verfügbare Artikel</span>
+              <span>Nur verfÃ¼gbare Artikel</span>
             </label>
 
             <button
@@ -1740,7 +1780,7 @@ export default function ProcurementSearchPage() {
             <MetricCard
               label="Treffer"
               value={data.stats.resultCount}
-              description={`für „${data.query}“`}
+              description={`fÃ¼r â€ž${data.query}â€œ`}
               badge="Kataloge"
             />
 
@@ -1759,7 +1799,7 @@ export default function ProcurementSearchPage() {
             />
 
             <MetricCard
-              label="Verfügbar"
+              label="VerfÃ¼gbar"
               value={data.stats.availableCount}
               description="laut letztem Preisstand"
               badge="Bestand"
@@ -1771,10 +1811,10 @@ export default function ProcurementSearchPage() {
           eyebrow="Ergebnisse"
           title={
             data.query.length >= 2
-              ? `Angebote für „${data.query}“`
+              ? `Angebote fÃ¼r â€ž${data.query}â€œ`
               : "Suche starten"
           }
-          description="Sortiert nach Relevanz und anschließend nach Nettopreis."
+          description="Sortiert nach Relevanz und anschlieÃŸend nach Nettopreis."
         >
           {data.query.length < 2 ? (
             <div className="procurementSearchEmpty">
@@ -1788,7 +1828,7 @@ export default function ProcurementSearchPage() {
                   <>
                     <span className="procurementSearchSpinner" aria-hidden="true" />
                     <strong>
-                      Angebote werden gesucht …
+                      Angebote werden gesucht â€¦
                     </strong>
                     <small>
                       Die lokale Artikelsuche wird aktualisiert.
@@ -1800,7 +1840,7 @@ export default function ProcurementSearchPage() {
                       Keine passenden Angebote gefunden
                     </strong>
                     <small>
-                      Der Begriff wurde bereits in den verbundenen Katalogen geprüft.
+                      Der Begriff wurde bereits in den verbundenen Katalogen geprÃ¼ft.
                     </small>
                   </>
                 )
@@ -1813,7 +1853,7 @@ export default function ProcurementSearchPage() {
                     className="procurementSearchButton procurementSearchButton--secondary"
                     to="/lieferanten"
                   >
-                    Verbindung prüfen
+                    Verbindung prÃ¼fen
                   </Link>
                 </>
               )}
@@ -1843,7 +1883,7 @@ export default function ProcurementSearchPage() {
                               : null,
                           ]
                             .filter(Boolean)
-                            .join(" · ")}
+                            .join(" Â· ")}
                         </p>
                       </div>
 
@@ -1870,11 +1910,11 @@ export default function ProcurementSearchPage() {
                         ) : item.rejectedLatestPrice &&
                           item.latestPrice ? (
                           <small className="procurementPriceWarning">
-                            Neuer Preis wird geprüft · letzter plausibler Preis wird verwendet
+                            Neuer Preis wird geprÃ¼ft Â· letzter plausibler Preis wird verwendet
                           </small>
                         ) : item.rejectedLatestPrice ? (
                           <small className="procurementPriceWarning">
-                            Neuer Preis wird geprüft · noch kein freigegebener Preis verfügbar
+                            Neuer Preis wird geprÃ¼ft Â· noch kein freigegebener Preis verfÃ¼gbar
                           </small>
                         ) : null}
                       </div>
@@ -1937,15 +1977,15 @@ export default function ProcurementSearchPage() {
                               ? "Preis freigegeben"
                               : item.priceRefreshPending ||
                                   item.rejectedLatestPrice
-                                ? "Preisprüfung"
+                                ? "PreisprÃ¼fung"
                                 : "Preis offen"}
                           </strong>
                           <small>
                             {item.latestPrice
-                              ? "Vertrauenswürdiger Preis kann verwendet werden"
+                              ? "VertrauenswÃ¼rdiger Preis kann verwendet werden"
                               : item.priceRefreshPending ||
                                   item.rejectedLatestPrice
-                                ? "Preis wird validiert und noch nicht übernommen"
+                                ? "Preis wird validiert und noch nicht Ã¼bernommen"
                                 : "Noch kein freigegebener Preis vorhanden"}
                           </small>
                         </div>
@@ -1987,15 +2027,15 @@ export default function ProcurementSearchPage() {
                       </div>
 
                       <div>
-                        <span>Verfügbarkeit</span>
+                        <span>VerfÃ¼gbarkeit</span>
                         <strong>
                           {item.latestPrice
                             ?.available === false
-                            ? "Nicht verfügbar"
+                            ? "Nicht verfÃ¼gbar"
                             : item.latestPrice
                                 ?.stockText ||
                               item.availabilityStatus ||
-                              "Verfügbar / unbekannt"}
+                              "VerfÃ¼gbar / unbekannt"}
                         </strong>
                       </div>
 
@@ -2039,14 +2079,14 @@ export default function ProcurementSearchPage() {
 
                       <label>
                         <span>
-                          Als Einkaufsartikel für Produkt
+                          Als Einkaufsartikel fÃ¼r Produkt
                         </span>
                         <select
                           name="productId"
                           required
                         >
                           <option value="">
-                            Produkt auswählen
+                            Produkt auswÃ¤hlen
                           </option>
                           {data.products.map(
                             (product: any) => (
@@ -2057,7 +2097,7 @@ export default function ProcurementSearchPage() {
                                 {product.name}
                                 {product.procurementType !==
                                 "RECIPE"
-                                  ? " · Fertigartikel"
+                                  ? " Â· Fertigartikel"
                                   : ""}
                               </option>
                             )
@@ -2069,7 +2109,7 @@ export default function ProcurementSearchPage() {
                         type="submit"
                         className="procurementSearchButton procurementSearchButton--primary"
                       >
-                        Übernehmen
+                        Ãœbernehmen
                       </button>
                     </Form>
                   </article>
