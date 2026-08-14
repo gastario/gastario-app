@@ -49,6 +49,7 @@ export default [
   route("einkaufsbestellungen/sammelbestellung/pdf", "routes/einkaufsbestellungen.sammelbestellung.pdf.tsx"),
   route("lager", "routes/lager.tsx"),
   route("lieferanten", "routes/lieferanten.tsx"),
+  route("lieferanten/katalog-import", "routes/lieferanten.katalog-import.tsx"),
   route("rezepte", "routes/rezepte.tsx"),
   route("auftragseingang", "routes/auftragseingang.tsx"),
   route("neuer-auftrag", "routes/neuer-auftrag.tsx"),
@@ -66,8 +67,10 @@ export default [
   route("api/supplier-hub/search", "routes/api.supplier-hub.search.tsx"),
   route("api/supplier-hub/connect", "routes/api.supplier-hub.connect.tsx"),
   route("api/supplier-hub/connect/metro", "routes/api.supplier-hub.connect.metro.tsx"),
+  route("api/global-supplier-catalog-refresh", "routes/api.global-supplier-catalog-refresh.tsx"),
 
   route("gastario-control", "routes/gastario-control.tsx"),
+  route("gastario-control/lieferantenkatalog", "routes/gastario-control.lieferantenkatalog.tsx"),
   route("gastario-control/mandanten", "routes/gastario-control.mandanten.tsx"),
   route("gastario-control/mandanten/:tenantId", "routes/gastario-control.mandanten.$tenantId.tsx"),
   route("gastario-control/pakete", "routes/gastario-control.pakete.tsx"),
