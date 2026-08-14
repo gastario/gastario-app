@@ -372,6 +372,12 @@ export default function GastarioControlPage() {
             <div className="quickTitle">Features</div>
             <div className="quickText">Alle Modul-Codes, Paketlogik und Aktivierungen kontrollieren.</div>
           </Link>
+
+          <Link className="quickCard" to="/gastario-control/lieferantenkatalog">
+            <div className="quickIcon">L</div>
+            <div className="quickTitle">Lieferantenkatalog</div>
+            <div className="quickText">Globale Lieferantenkataloge zentral importieren und an passende Mandanten verteilen.</div>
+          </Link>
         </div>
       </section>
 
