@@ -753,7 +753,7 @@ export async function loader({
       take: 500,
     });
 
-  const catalogItems =
+  const indexedCatalogItems =
     query.length >= 2
       ? await prisma.supplierCatalogItem.findMany({
           where: {
@@ -782,10 +782,126 @@ export async function loader({
               take: 8,
             },
           },
-          take: 500,
+          take: 700,
         })
       : [];
 
+  /*
+   * gastario-supplier-search-reliability-v2-20260813
+   *
+   * Der GIN-Index bleibt der schnelle Primaerpfad.
+   * Ein zweiter, begrenzter Textpfad faengt Artikel ab, deren
+   * searchTokens wegen alter oder partieller Imports unvollstaendig sind.
+   */
+  const fallbackSearchTerms =
+    Array.from(
+      new Set(
+        [
+          query,
+          ...searchTerms,
+        ]
+          .map((value) =>
+            String(value || "").trim()
+          )
+          .filter(
+            (value) =>
+              value.length >= 2 &&
+              value.length <= 120
+          )
+      )
+    ).slice(0, 20);
+
+  const fallbackCatalogItems =
+    query.length >= 2 &&
+    fallbackSearchTerms.length > 0
+      ? await prisma.supplierCatalogItem.findMany({
+          where: {
+            tenantId: access.tenantId,
+            active: true,
+            ...(supplierId
+              ? {
+                  supplierId,
+                }
+              : {}),
+            OR: fallbackSearchTerms.flatMap(
+              (term) => [
+                {
+                  name: {
+                    contains: term,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  brand: {
+                    contains: term,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  description: {
+                    contains: term,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  articleNumber: {
+                    contains: term,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  externalId: {
+                    contains: term,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  ean: {
+                    contains: term,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  gtin: {
+                    contains: term,
+                    mode: "insensitive",
+                  },
+                },
+              ]
+            ),
+          },
+          include: {
+            supplier: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            prices: {
+              orderBy: {
+                fetchedAt: "desc",
+              },
+              take: 8,
+            },
+          },
+          take: 700,
+        })
+      : [];
+
+  const catalogItems =
+    Array.from(
+      new Map(
+        [
+          ...indexedCatalogItems,
+          ...fallbackCatalogItems,
+        ].map(
+          (item: any) => [
+            item.id,
+            item,
+          ]
+        )
+      ).values()
+    );
   const results = catalogItems
     .map((item: any) => {
       const trusted =
