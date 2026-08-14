@@ -66,6 +66,81 @@ async function saveSettings(input) {
   };
 }
 
+const CAPTURE_BATCH_SIZE = 80;
+
+async function pushCaptureInBatches(payload) {
+  const products = Array.isArray(payload?.products)
+    ? payload.products
+    : [];
+
+  if (products.length === 0) {
+    return await apiRequest({
+      method: "POST",
+      body: payload,
+    });
+  }
+
+  let lastResponse = null;
+  let totalAccepted = 0;
+  let totalCreated = 0;
+  let totalUpdated = 0;
+  let totalPricesCreated = 0;
+  const errors = [];
+
+  for (
+    let offset = 0;
+    offset < products.length;
+    offset += CAPTURE_BATCH_SIZE
+  ) {
+    const batchProducts = products.slice(
+      offset,
+      offset + CAPTURE_BATCH_SIZE
+    );
+
+    const isLastBatch =
+      offset + CAPTURE_BATCH_SIZE >=
+      products.length;
+
+    const response = await apiRequest({
+      method: "POST",
+      body: {
+        ...payload,
+        products: batchProducts,
+        captureComplete: isLastBatch,
+      },
+    });
+
+    lastResponse = response;
+    totalAccepted +=
+      Number(response?.itemsAccepted) || 0;
+    totalCreated +=
+      Number(response?.itemsCreated) || 0;
+    totalUpdated +=
+      Number(response?.itemsUpdated) || 0;
+    totalPricesCreated +=
+      Number(response?.pricesCreated) || 0;
+
+    if (Array.isArray(response?.errors)) {
+      errors.push(...response.errors);
+    }
+  }
+
+  return {
+    ...(lastResponse || {}),
+    itemsReceived: products.length,
+    itemsAccepted: totalAccepted,
+    itemsCreated: totalCreated,
+    itemsUpdated: totalUpdated,
+    pricesCreated: totalPricesCreated,
+    captureComplete: true,
+    errors: errors.slice(0, 8),
+    message:
+      `${totalAccepted} Produkte wurden in ${Math.ceil(
+        products.length / CAPTURE_BATCH_SIZE
+      )} Batch(es) an Gastario übertragen.`,
+  };
+}
+
 async function apiRequest({
   method,
   body,
@@ -157,10 +232,9 @@ chrome.runtime.onMessage.addListener(
         case "GASTARIO_PUSH_CAPTURE":
           return {
             ok: true,
-            data: await apiRequest({
-              method: "POST",
-              body: message.payload,
-            }),
+            data: await pushCaptureInBatches(
+              message.payload
+            ),
           };
 
         default:
