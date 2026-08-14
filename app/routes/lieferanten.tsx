@@ -1255,6 +1255,13 @@ export default function SuppliersPage() {
             </a>
 
             <a
+              className="supplyV1Button supplyV1Button--secondary"
+              href="/lieferanten/katalog-import"
+            >
+              Katalog importieren
+            </a>
+
+            <a
               className="supplyV1Button supplyV1Button--primary"
               href="#supplier-new"
             >
