@@ -1,7 +1,8 @@
-import crypto from "node:crypto";
+﻿import crypto from "node:crypto";
 import { createRequire } from "node:module";
 import { simpleParser } from "mailparser";
 import { prisma } from "../lib/prisma.server";
+import { learnSupplierPricesFromInvoice } from "../lib/supplier-invoice-prices.server";
 
 import {
   analyzeImportedOrder,
@@ -2016,9 +2017,39 @@ export async function loader({ request }: { request: Request }) {
                               });
 
                       if (
-                        aiDecision.confidence >= 0.85 &&
-                        ["TRASH", "INVOICE", "DELIVERY_NOTE"].includes(aiDecision.mailType)
-                      ) {
+            aiDecision.confidence >= 0.85 &&
+            ["TRASH", "INVOICE", "DELIVERY_NOTE"].includes(aiDecision.mailType)
+          ) {
+            if (aiDecision.mailType === "INVOICE") {
+              try {
+                const invoicePriceResult =
+                  await learnSupplierPricesFromInvoice({
+                    prisma,
+                    tenantId: account.tenantId,
+                    text: bestText,
+                  });
+
+                (result as any).invoicePriceLearning = {
+                  recognized:
+                    ((result as any).invoicePriceLearning?.recognized || 0) +
+                    (invoicePriceResult.recognized ? 1 : 0),
+                  matched:
+                    ((result as any).invoicePriceLearning?.matched || 0) +
+                    invoicePriceResult.matched,
+                  pricesCreated:
+                    ((result as any).invoicePriceLearning?.pricesCreated || 0) +
+                    invoicePriceResult.pricesCreated,
+                  skipped:
+                    ((result as any).invoicePriceLearning?.skipped || 0) +
+                    invoicePriceResult.skipped,
+                };
+              } catch (error: any) {
+                console.error(
+                  "[supplier-invoice-prices] Preislernen fehlgeschlagen",
+                  String(error?.message || error)
+                );
+              }
+            }
                         await prisma.incomingEmail.update({
                           where: { id: existing.id },
                           data: {
@@ -2313,6 +2344,36 @@ export async function loader({ request }: { request: Request }) {
             aiDecision.confidence >= 0.85 &&
             ["TRASH", "INVOICE", "DELIVERY_NOTE"].includes(aiDecision.mailType)
           ) {
+            if (aiDecision.mailType === "INVOICE") {
+              try {
+                const invoicePriceResult =
+                  await learnSupplierPricesFromInvoice({
+                    prisma,
+                    tenantId: account.tenantId,
+                    text: bestText,
+                  });
+
+                (result as any).invoicePriceLearning = {
+                  recognized:
+                    ((result as any).invoicePriceLearning?.recognized || 0) +
+                    (invoicePriceResult.recognized ? 1 : 0),
+                  matched:
+                    ((result as any).invoicePriceLearning?.matched || 0) +
+                    invoicePriceResult.matched,
+                  pricesCreated:
+                    ((result as any).invoicePriceLearning?.pricesCreated || 0) +
+                    invoicePriceResult.pricesCreated,
+                  skipped:
+                    ((result as any).invoicePriceLearning?.skipped || 0) +
+                    invoicePriceResult.skipped,
+                };
+              } catch (error: any) {
+                console.error(
+                  "[supplier-invoice-prices] Preislernen fehlgeschlagen",
+                  String(error?.message || error)
+                );
+              }
+            }
             await prisma.incomingEmail.update({
               where: { id: incomingEmail.id },
               data: {
@@ -2491,6 +2552,8 @@ export async function loader({ request }: { request: Request }) {
 
   return json(result);
 }
+
+
 
 
 
