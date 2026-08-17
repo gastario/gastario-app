@@ -8,6 +8,7 @@ import {
 import SuperAdminLayout from "../components/SuperAdminLayout";
 import { requireSuperAdmin } from "../lib/session.server";
 import { refreshGlobalSupplierCatalogCsv } from "../lib/global-supplier-catalog-refresh.server";
+import { runGlobalSupplierCatalogFeed } from "../lib/global-supplier-catalog-feed.server";
 
 const PROVIDERS = [
   {
@@ -207,7 +208,46 @@ export async function loader({
     }),
   ]);
 
+  const catalogFeeds =
+    await prisma.globalSupplierCatalogFeed.findMany({
+      orderBy: [
+        {
+          providerCode: "asc",
+        },
+        {
+          updatedAt: "desc",
+        },
+      ],
+      select: {
+        id: true,
+        providerCode: true,
+        label: true,
+        sourceType: true,
+        endpointUrl: true,
+        credentialReference: true,
+        active: true,
+        automaticSync: true,
+        syncIntervalMinutes: true,
+        lastSyncAt: true,
+        lastSuccessfulSyncAt: true,
+        nextSyncAt: true,
+        lastError: true,
+        updatedAt: true,
+      },
+    });
+
   return {
+    catalogFeeds: catalogFeeds.map((feed) => ({
+      ...feed,
+      lastSyncAt:
+        feed.lastSyncAt?.toISOString() || null,
+      lastSuccessfulSyncAt:
+        feed.lastSuccessfulSyncAt?.toISOString() || null,
+      nextSyncAt:
+        feed.nextSyncAt?.toISOString() || null,
+      updatedAt:
+        feed.updatedAt.toISOString(),
+    })),
     counts,
     total:
       grouped.reduce(
@@ -247,6 +287,224 @@ export async function action({
 
   const formData =
     await request.formData();
+
+  const intent =
+    String(
+      formData.get("intent") || ""
+    ).trim();
+
+  if (
+    intent === "saveCatalogFeed" ||
+    intent === "runCatalogFeed"
+  ) {
+    const { prisma } =
+      await import(
+        "../lib/prisma.server"
+      );
+
+    if (intent === "runCatalogFeed") {
+      const feedId =
+        String(
+          formData.get("feedId") || ""
+        ).trim();
+
+      if (!feedId) {
+        return {
+          ok: false,
+          feedAction: true,
+          error:
+            "Feed-ID fehlt.",
+        };
+      }
+
+      try {
+        const result =
+          await runGlobalSupplierCatalogFeed(
+            feedId
+          );
+
+        return {
+          ok: true,
+          feedAction: true,
+          message:
+            "Feed wurde erfolgreich synchronisiert.",
+          feedResult: result,
+        };
+      } catch (error: any) {
+        return {
+          ok: false,
+          feedAction: true,
+          error:
+            String(
+              error?.message ||
+                error
+            ),
+        };
+      }
+    }
+
+    const feedId =
+      String(
+        formData.get("feedId") || ""
+      ).trim();
+
+    const providerCode =
+      String(
+        formData.get("providerCode") || ""
+      )
+        .trim()
+        .toUpperCase();
+
+    const sourceType =
+      String(
+        formData.get("sourceType") || ""
+      )
+        .trim()
+        .toUpperCase();
+
+    const endpointUrl =
+      String(
+        formData.get("endpointUrl") || ""
+      ).trim();
+
+    const credentialReference =
+      String(
+        formData.get(
+          "credentialReference"
+        ) || ""
+      ).trim();
+
+    const label =
+      String(
+        formData.get("label") || ""
+      ).trim();
+
+    const automaticSync =
+      String(
+        formData.get("automaticSync") || ""
+      ) === "true";
+
+    const active =
+      String(
+        formData.get("active") || ""
+      ) === "true";
+
+    const syncIntervalMinutes =
+      Math.max(
+        15,
+        Math.min(
+          Number(
+            formData.get(
+              "syncIntervalMinutes"
+            ) || 1440
+          ) || 1440,
+          43200
+        )
+      );
+
+    if (
+      !PROVIDERS.some(
+        (provider) =>
+          provider.code ===
+          providerCode
+      )
+    ) {
+      return {
+        ok: false,
+        feedAction: true,
+        error:
+          "Bitte einen unterstützten Lieferanten auswählen.",
+      };
+    }
+
+    const supportedSourceTypes =
+      new Set([
+        "CSV_URL",
+        "BMECAT_URL",
+        "CXML_URL",
+        "API",
+        "SFTP",
+      ]);
+
+    if (
+      !supportedSourceTypes.has(
+        sourceType
+      )
+    ) {
+      return {
+        ok: false,
+        feedAction: true,
+        error:
+          "Bitte einen gültigen Feed-Typ auswählen.",
+      };
+    }
+
+    if (
+      sourceType === "CSV_URL" &&
+      !endpointUrl
+    ) {
+      return {
+        ok: false,
+        feedAction: true,
+        error:
+          "Für CSV_URL wird eine Feed-URL benötigt.",
+      };
+    }
+
+    const data = {
+      providerCode,
+      label:
+        label || null,
+      sourceType:
+        sourceType as any,
+      endpointUrl:
+        endpointUrl || null,
+      credentialReference:
+        credentialReference || null,
+      active,
+      automaticSync,
+      syncIntervalMinutes,
+      nextSyncAt:
+        automaticSync
+          ? new Date()
+          : null,
+    };
+
+    try {
+      const saved =
+        feedId
+          ? await prisma.globalSupplierCatalogFeed.update({
+              where: {
+                id: feedId,
+              },
+              data,
+            })
+          : await prisma.globalSupplierCatalogFeed.create({
+              data,
+            });
+
+      return {
+        ok: true,
+        feedAction: true,
+        message:
+          feedId
+            ? "Feed-Einstellungen wurden gespeichert."
+            : "Zentraler Feed wurde angelegt.",
+        feedId:
+          saved.id,
+      };
+    } catch (error: any) {
+      return {
+        ok: false,
+        feedAction: true,
+        error:
+          String(
+            error?.message ||
+              error
+          ),
+      };
+    }
+  }
 
   const providerCode =
     String(
@@ -707,6 +965,145 @@ export default function GlobalSupplierCatalogControlPage() {
           pointer-events: none;
         }
 
+        /* GLOBAL_CATALOG_FEED_MANAGEMENT_V1 */
+        .catalogFeedPanel {
+          border-radius: 24px;
+          padding: 22px;
+          background: #fff;
+          border: 1px solid rgba(148,163,184,.24);
+          box-shadow: 0 18px 46px rgba(15,23,42,.07);
+        }
+
+        .catalogFeedHeader {
+          display: flex;
+          justify-content: space-between;
+          gap: 16px;
+          align-items: flex-start;
+          margin-bottom: 18px;
+        }
+
+        .catalogFeedHeader h2 {
+          margin: 0;
+          color: #07111f;
+          letter-spacing: -.03em;
+        }
+
+        .catalogFeedHeader p {
+          margin: 7px 0 0;
+          color: #64748b;
+          line-height: 1.5;
+          font-size: 14px;
+          font-weight: 730;
+        }
+
+        .catalogFeedForm {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0,1fr));
+          gap: 14px;
+          padding: 18px;
+          border: 1px solid rgba(148,163,184,.2);
+          background: #f8fafc;
+          border-radius: 18px;
+        }
+
+        .catalogFeedForm .catalogField input,
+        .catalogFeedForm .catalogField select {
+          width: 100%;
+          min-height: 44px;
+          border: 1px solid rgba(148,163,184,.34);
+          border-radius: 13px;
+          background: #fff;
+          padding: 9px 11px;
+          color: #0f172a;
+          font: inherit;
+          box-sizing: border-box;
+        }
+
+        .catalogFeedWide {
+          grid-column: 1 / -1;
+        }
+
+        .catalogFeedChecks {
+          grid-column: 1 / -1;
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .catalogFeedChecks label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #334155;
+          font-size: 13px;
+          font-weight: 850;
+        }
+
+        .catalogFeedList {
+          display: grid;
+          gap: 12px;
+          margin-top: 18px;
+        }
+
+        .catalogFeedCard {
+          display: grid;
+          grid-template-columns: minmax(0,1fr) auto;
+          gap: 16px;
+          padding: 16px;
+          border-radius: 17px;
+          border: 1px solid rgba(148,163,184,.2);
+          background: #fff;
+        }
+
+        .catalogFeedCard strong {
+          color: #07111f;
+        }
+
+        .catalogFeedMeta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 7px 14px;
+          margin-top: 8px;
+          color: #64748b;
+          font-size: 12px;
+          font-weight: 730;
+        }
+
+        .catalogFeedError {
+          margin-top: 9px;
+          color: #b91c1c;
+          font-size: 12px;
+          font-weight: 800;
+          line-height: 1.45;
+        }
+
+        .catalogFeedActions {
+          display: flex;
+          gap: 8px;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .catalogFeedRun {
+          border: 0;
+          border-radius: 11px;
+          padding: 9px 12px;
+          background: #047857;
+          color: #fff;
+          font-weight: 900;
+          cursor: pointer;
+        }
+
+        .catalogFeedEmpty {
+          padding: 18px;
+          border-radius: 16px;
+          background: #f8fafc;
+          color: #64748b;
+          font-size: 13px;
+          font-weight: 750;
+        }
+
         @media (max-width: 760px) {
           .catalogListToolbar {
             grid-template-columns: 1fr;
@@ -746,6 +1143,267 @@ export default function GlobalSupplierCatalogControlPage() {
           >
             Zur Übersicht
           </Link>
+        </section>
+
+        <section className="catalogFeedPanel">
+          <div className="catalogFeedHeader">
+            <div>
+              <h2>
+                Automatische Katalog-Feeds
+              </h2>
+              <p>
+                Zentrale Datenquellen je Lieferant verwalten. Normale Mandanten müssen dafür nichts installieren oder hochladen.
+              </p>
+            </div>
+          </div>
+
+          {actionData?.feedAction ? (
+            <div
+              className={
+                actionData?.ok
+                  ? "catalogNotice catalogNotice--success"
+                  : "catalogNotice catalogNotice--danger"
+              }
+              style={{ marginBottom: 16 }}
+            >
+              {actionData?.message ||
+                actionData?.error}
+            </div>
+          ) : null}
+
+          <Form
+            method="post"
+            className="catalogFeedForm"
+          >
+            <input
+              type="hidden"
+              name="intent"
+              value="saveCatalogFeed"
+            />
+
+            <label className="catalogField">
+              Lieferant / Provider
+              <select
+                name="providerCode"
+                defaultValue="METRO"
+              >
+                {PROVIDERS.map((provider) => (
+                  <option
+                    key={provider.code}
+                    value={provider.code}
+                  >
+                    {provider.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="catalogField">
+              Quelle
+              <select
+                name="sourceType"
+                defaultValue="CSV_URL"
+              >
+                <option value="CSV_URL">
+                  CSV URL
+                </option>
+                <option value="BMECAT_URL">
+                  BMEcat URL
+                </option>
+                <option value="CXML_URL">
+                  cXML URL
+                </option>
+                <option value="API">
+                  API
+                </option>
+                <option value="SFTP">
+                  SFTP
+                </option>
+              </select>
+            </label>
+
+            <label className="catalogField">
+              Bezeichnung
+              <input
+                name="label"
+                placeholder="z. B. METRO Hauptkatalog"
+              />
+            </label>
+
+            <label className="catalogField">
+              Intervall in Minuten
+              <input
+                type="number"
+                min="15"
+                max="43200"
+                name="syncIntervalMinutes"
+                defaultValue="1440"
+              />
+            </label>
+
+            <label className="catalogField catalogFeedWide">
+              Feed-URL / Endpunkt
+              <input
+                type="url"
+                name="endpointUrl"
+                placeholder="https://..."
+              />
+            </label>
+
+            <label className="catalogField catalogFeedWide">
+              Credential-Referenz
+              <input
+                name="credentialReference"
+                placeholder="z. B. METRO_CATALOG_TOKEN"
+              />
+            </label>
+
+            <div className="catalogFeedChecks">
+              <label>
+                <input
+                  type="checkbox"
+                  name="active"
+                  value="true"
+                  defaultChecked
+                />
+                Feed aktiv
+              </label>
+
+              <label>
+                <input
+                  type="checkbox"
+                  name="automaticSync"
+                  value="true"
+                  defaultChecked
+                />
+                Automatisch synchronisieren
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              className="catalogSubmit catalogFeedWide"
+            >
+              Feed anlegen
+            </button>
+          </Form>
+
+          <div className="catalogFeedList">
+            {data.catalogFeeds.length === 0 ? (
+              <div className="catalogFeedEmpty">
+                Noch kein automatischer Feed eingerichtet.
+              </div>
+            ) : (
+              data.catalogFeeds.map((feed) => (
+                <div
+                  key={feed.id}
+                  className="catalogFeedCard"
+                >
+                  <div>
+                    <strong>
+                      {feed.label ||
+                        feed.providerCode}
+                    </strong>
+
+                    <div className="catalogFeedMeta">
+                      <span>
+                        {feed.providerCode}
+                      </span>
+                      <span>
+                        {feed.sourceType}
+                      </span>
+                      <span>
+                        {feed.active
+                          ? "Aktiv"
+                          : "Inaktiv"}
+                      </span>
+                      <span>
+                        Auto:{" "}
+                        {feed.automaticSync
+                          ? "Ja"
+                          : "Nein"}
+                      </span>
+                      <span>
+                        Intervall:{" "}
+                        {feed.syncIntervalMinutes} Min.
+                      </span>
+                    </div>
+
+                    <div className="catalogFeedMeta">
+                      <span>
+                        Letzter Lauf:{" "}
+                        {feed.lastSyncAt
+                          ? new Date(
+                              feed.lastSyncAt
+                            ).toLocaleString(
+                              "de-DE"
+                            )
+                          : "—"}
+                      </span>
+
+                      <span>
+                        Letzter Erfolg:{" "}
+                        {feed.lastSuccessfulSyncAt
+                          ? new Date(
+                              feed.lastSuccessfulSyncAt
+                            ).toLocaleString(
+                              "de-DE"
+                            )
+                          : "—"}
+                      </span>
+
+                      <span>
+                        Nächster Lauf:{" "}
+                        {feed.nextSyncAt
+                          ? new Date(
+                              feed.nextSyncAt
+                            ).toLocaleString(
+                              "de-DE"
+                            )
+                          : "—"}
+                      </span>
+                    </div>
+
+                    {feed.endpointUrl ? (
+                      <div className="catalogFeedMeta">
+                        <span>
+                          Endpunkt:{" "}
+                          {feed.endpointUrl}
+                        </span>
+                      </div>
+                    ) : null}
+
+                    {feed.lastError ? (
+                      <div className="catalogFeedError">
+                        {feed.lastError}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="catalogFeedActions">
+                    <Form method="post">
+                      <input
+                        type="hidden"
+                        name="intent"
+                        value="runCatalogFeed"
+                      />
+                      <input
+                        type="hidden"
+                        name="feedId"
+                        value={feed.id}
+                      />
+                      <button
+                        type="submit"
+                        className="catalogFeedRun"
+                      >
+                        Jetzt synchronisieren
+                      </button>
+                    </Form>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </section>
 
         {actionData?.ok === false ? (
