@@ -9,7 +9,8 @@
     "start": "prisma migrate deploy --schema=./prisma/schema.prisma && react-router-serve ./build/server/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "cron:email-import": "node scripts/run-email-import-cron.mjs"
+    "cron:email-import": "node scripts/run-email-import-cron.mjs",
+    "cron:global-supplier-catalog": "node scripts/run-global-supplier-catalog-cron.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
