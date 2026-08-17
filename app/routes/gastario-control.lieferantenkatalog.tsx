@@ -51,6 +51,95 @@ export async function loader({
       "../lib/prisma.server"
     );
 
+  const url =
+    new URL(request.url);
+
+  const query =
+    String(
+      url.searchParams.get("q") || ""
+    ).trim();
+
+  const provider =
+    String(
+      url.searchParams.get("provider") || ""
+    )
+      .trim()
+      .toUpperCase();
+
+  const page =
+    Math.max(
+      1,
+      Number(
+        url.searchParams.get("page") || 1
+      ) || 1
+    );
+
+  const pageSize = 50;
+
+  const where = {
+    active: true,
+    ...(provider
+      ? {
+          providerCode:
+            provider,
+        }
+      : {}),
+    ...(query
+      ? {
+          OR: [
+            {
+              name: {
+                contains:
+                  query,
+                mode:
+                  "insensitive" as const,
+              },
+            },
+            {
+              brand: {
+                contains:
+                  query,
+                mode:
+                  "insensitive" as const,
+              },
+            },
+            {
+              articleNumber: {
+                contains:
+                  query,
+                mode:
+                  "insensitive" as const,
+              },
+            },
+            {
+              externalId: {
+                contains:
+                  query,
+                mode:
+                  "insensitive" as const,
+              },
+            },
+            {
+              ean: {
+                contains:
+                  query,
+                mode:
+                  "insensitive" as const,
+              },
+            },
+            {
+              gtin: {
+                contains:
+                  query,
+                mode:
+                  "insensitive" as const,
+              },
+            },
+          ],
+        }
+      : {}),
+  };
+
   const grouped =
     await prisma.globalSupplierCatalogItem.groupBy({
       by: [
@@ -78,6 +167,46 @@ export async function loader({
       )
     );
 
+  const [
+    filteredTotal,
+    items,
+  ] = await Promise.all([
+    prisma.globalSupplierCatalogItem.count({
+      where,
+    }),
+    prisma.globalSupplierCatalogItem.findMany({
+      where,
+      orderBy: [
+        {
+          providerCode:
+            "asc",
+        },
+        {
+          name:
+            "asc",
+        },
+      ],
+      skip:
+        (page - 1) *
+        pageSize,
+      take:
+        pageSize,
+      select: {
+        id: true,
+        providerCode: true,
+        name: true,
+        brand: true,
+        articleNumber: true,
+        externalId: true,
+        ean: true,
+        gtin: true,
+        orderUnit: true,
+        packageQuantity: true,
+        lastSeenAt: true,
+      },
+    }),
+  ]);
+
   return {
     counts,
     total:
@@ -89,6 +218,20 @@ export async function loader({
           sum +
           entry._count._all,
         0
+      ),
+    items,
+    filteredTotal,
+    query,
+    provider,
+    page,
+    pageSize,
+    pageCount:
+      Math.max(
+        1,
+        Math.ceil(
+          filteredTotal /
+          pageSize
+        )
       ),
   };
 }
@@ -456,6 +599,120 @@ export default function GlobalSupplierCatalogControlPage() {
           margin-top: 14px;
         }
 
+        /* GLOBAL_CATALOG_LIST_V1 */
+        .catalogListToolbar {
+          display: grid;
+          grid-template-columns: minmax(240px, 1fr) 220px auto;
+          gap: 10px;
+          align-items: end;
+          margin: 16px 0;
+        }
+
+        .catalogListToolbar label {
+          display: grid;
+          gap: 6px;
+          font-size: 12px;
+          font-weight: 900;
+          color: #475569;
+        }
+
+        .catalogListToolbar input,
+        .catalogListToolbar select {
+          min-height: 44px;
+          border: 1px solid rgba(148,163,184,.34);
+          border-radius: 13px;
+          padding: 9px 11px;
+          background: #fff;
+          font: inherit;
+          color: #0f172a;
+        }
+
+        .catalogSearchButton {
+          min-height: 44px;
+          border: 0;
+          border-radius: 13px;
+          padding: 10px 16px;
+          background: #07111f;
+          color: white;
+          font-weight: 950;
+          cursor: pointer;
+        }
+
+        .catalogTableWrap {
+          overflow-x: auto;
+          border: 1px solid rgba(148,163,184,.2);
+          border-radius: 18px;
+        }
+
+        .catalogTable {
+          width: 100%;
+          border-collapse: collapse;
+          background: #fff;
+          font-size: 13px;
+        }
+
+        .catalogTable th {
+          text-align: left;
+          padding: 12px 11px;
+          background: #f8fafc;
+          color: #64748b;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: .07em;
+          white-space: nowrap;
+        }
+
+        .catalogTable td {
+          padding: 12px 11px;
+          border-top: 1px solid rgba(148,163,184,.16);
+          color: #334155;
+          vertical-align: top;
+        }
+
+        .catalogTable strong {
+          display: block;
+          color: #07111f;
+        }
+
+        .catalogTable small {
+          color: #64748b;
+        }
+
+        .catalogPager {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+          margin-top: 14px;
+          flex-wrap: wrap;
+        }
+
+        .catalogPagerLinks {
+          display: flex;
+          gap: 8px;
+        }
+
+        .catalogPagerLink {
+          text-decoration: none;
+          border: 1px solid rgba(148,163,184,.3);
+          border-radius: 11px;
+          padding: 8px 11px;
+          background: #fff;
+          color: #0f172a;
+          font-weight: 850;
+        }
+
+        .catalogPagerLink[aria-disabled="true"] {
+          opacity: .45;
+          pointer-events: none;
+        }
+
+        @media (max-width: 760px) {
+          .catalogListToolbar {
+            grid-template-columns: 1fr;
+          }
+        }
+
         @media (max-width: 980px) {
           .catalogGrid {
             grid-template-columns: 1fr;
@@ -623,6 +880,263 @@ export default function GlobalSupplierCatalogControlPage() {
               )}
             </div>
           </aside>
+        </section>
+
+        <section className="catalogPanel">
+          <h2>
+            Globaler Bestand
+          </h2>
+
+          <p className="catalogPanelText">
+            Zentrale Artikel aller Provider durchsuchen und kontrollieren.
+          </p>
+
+          <Form
+            method="get"
+            className="catalogListToolbar"
+          >
+            <label>
+              <span>
+                Suche
+              </span>
+
+              <input
+                type="search"
+                name="q"
+                defaultValue={
+                  data.query
+                }
+                placeholder="Artikel, Marke, Artikelnummer, EAN ..."
+              />
+            </label>
+
+            <label>
+              <span>
+                Provider
+              </span>
+
+              <select
+                name="provider"
+                defaultValue={
+                  data.provider
+                }
+              >
+                <option value="">
+                  Alle Provider
+                </option>
+
+                {PROVIDERS.map(
+                  (
+                    provider
+                  ) => (
+                    <option
+                      key={
+                        provider.code
+                      }
+                      value={
+                        provider.code
+                      }
+                    >
+                      {
+                        provider.name
+                      }
+                    </option>
+                  )
+                )}
+              </select>
+            </label>
+
+            <button
+              className="catalogSearchButton"
+              type="submit"
+            >
+              Suchen
+            </button>
+          </Form>
+
+          <div className="catalogTableWrap">
+            <table className="catalogTable">
+              <thead>
+                <tr>
+                  <th>
+                    Artikel
+                  </th>
+                  <th>
+                    Provider
+                  </th>
+                  <th>
+                    Artikelnummer
+                  </th>
+                  <th>
+                    EAN / GTIN
+                  </th>
+                  <th>
+                    Einheit
+                  </th>
+                  <th>
+                    Zuletzt gesehen
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {data.items.length === 0 ? (
+                  <tr>
+                    <td colSpan={6}>
+                      Noch keine passenden globalen Artikel vorhanden.
+                    </td>
+                  </tr>
+                ) : (
+                  data.items.map(
+                    (
+                      item
+                    ) => (
+                      <tr
+                        key={
+                          item.id
+                        }
+                      >
+                        <td>
+                          <strong>
+                            {
+                              item.name
+                            }
+                          </strong>
+
+                          <small>
+                            {
+                              item.brand ||
+                              "—"
+                            }
+                          </small>
+                        </td>
+
+                        <td>
+                          {
+                            item.providerCode
+                          }
+                        </td>
+
+                        <td>
+                          {
+                            item.articleNumber ||
+                            item.externalId ||
+                            "—"
+                          }
+                        </td>
+
+                        <td>
+                          {
+                            item.ean ||
+                            item.gtin ||
+                            "—"
+                          }
+                        </td>
+
+                        <td>
+                          {
+                            item.orderUnit ||
+                            "—"
+                          }
+                          {
+                            item.packageQuantity
+                              ? " · " +
+                                item.packageQuantity
+                              : ""
+                          }
+                        </td>
+
+                        <td>
+                          {
+                            item.lastSeenAt
+                              ? new Date(
+                                  item.lastSeenAt
+                                ).toLocaleDateString(
+                                  "de-DE"
+                                )
+                              : "—"
+                          }
+                        </td>
+                      </tr>
+                    )
+                  )
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="catalogPager">
+            <div>
+              <strong>
+                {
+                  data.filteredTotal
+                }
+              </strong>{" "}
+              Artikel · Seite{" "}
+              {
+                data.page
+              }{" "}
+              von{" "}
+              {
+                data.pageCount
+              }
+            </div>
+
+            <div className="catalogPagerLinks">
+              <Link
+                className="catalogPagerLink"
+                aria-disabled={
+                  data.page <= 1
+                    ? "true"
+                    : undefined
+                }
+                to={
+                  "?q=" +
+                  encodeURIComponent(
+                    data.query
+                  ) +
+                  "&provider=" +
+                  encodeURIComponent(
+                    data.provider
+                  ) +
+                  "&page=" +
+                  Math.max(
+                    1,
+                    data.page - 1
+                  )
+                }
+              >
+                Zurück
+              </Link>
+
+              <Link
+                className="catalogPagerLink"
+                aria-disabled={
+                  data.page >=
+                  data.pageCount
+                    ? "true"
+                    : undefined
+                }
+                to={
+                  "?q=" +
+                  encodeURIComponent(
+                    data.query
+                  ) +
+                  "&provider=" +
+                  encodeURIComponent(
+                    data.provider
+                  ) +
+                  "&page=" +
+                  Math.min(
+                    data.pageCount,
+                    data.page + 1
+                  )
+                }
+              >
+                Weiter
+              </Link>
+            </div>
+          </div>
         </section>
 
         {actionData?.ok === true ? (
