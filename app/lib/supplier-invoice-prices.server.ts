@@ -205,6 +205,17 @@ export async function learnSupplierPricesFromInvoice({
       matched: 0,
       pricesCreated: 0,
       skipped: positions.length,
+      supplierMissing: true,
+      supplierMessage:
+        "Kein METRO-Lieferant für diesen Mandanten gefunden.",
+      skippedPositions: positions.map((position) => ({
+        articleNumber: position.articleNumber,
+        ean: position.ean,
+        name: position.name,
+        netPriceCents: position.netPriceCents,
+        reason:
+          "METRO-Lieferant im Mandanten nicht gefunden.",
+      })),
     };
   }
 
@@ -299,6 +310,7 @@ export async function learnSupplierPricesFromInvoice({
     skipped,
   };
 }
+
 
 
 
