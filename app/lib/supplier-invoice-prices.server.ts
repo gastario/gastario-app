@@ -251,6 +251,16 @@ export async function learnSupplierPricesFromInvoice({
 
     if (!catalogItem) {
       skipped += 1;
+
+      skippedPositions.push({
+        articleNumber: position.articleNumber,
+        ean: position.ean,
+        name: position.name,
+        netPriceCents: position.netPriceCents,
+        reason:
+          "Kein passender METRO-Katalogartikel über Artikelnummer oder EAN gefunden.",
+      });
+
       continue;
     }
 
@@ -308,8 +318,10 @@ export async function learnSupplierPricesFromInvoice({
     matched,
     pricesCreated,
     skipped,
+    skippedPositions,
   };
 }
+
 
 
 
