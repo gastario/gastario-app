@@ -68,6 +68,7 @@ export default [
   route("api/supplier-hub/connect", "routes/api.supplier-hub.connect.tsx"),
   route("api/supplier-hub/connect/metro", "routes/api.supplier-hub.connect.metro.tsx"),
   route("api/global-supplier-catalog-refresh", "routes/api.global-supplier-catalog-refresh.tsx"),
+  route("api/global-supplier-catalog-feeds/run-due", "routes/api.global-supplier-catalog-feeds.run-due.tsx"),
 
   route("gastario-control", "routes/gastario-control.tsx"),
   route("gastario-control/lieferantenkatalog", "routes/gastario-control.lieferantenkatalog.tsx"),
