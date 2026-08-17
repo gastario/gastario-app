@@ -1,4 +1,5 @@
 ﻿import type { PrismaClient } from "@prisma/client";
+import { createHash } from "node:crypto";
 import { buildSupplierCatalogSearchTokens } from "./supplier-search-index.server";
 
 type MetroInvoicePosition = {
@@ -40,6 +41,26 @@ function isMetroInvoice(text: string) {
     normalized.includes("ART.-NR") &&
     normalized.includes("EAN")
   );
+}
+
+export function parseMetroInvoiceNumber(text: string) {
+  const value = String(text || "");
+
+  const patterns = [
+    /RECHNUNGS-NR\.?\s*:?\s*([A-Z0-9\-\/]+)/i,
+    /RECHNUNGSNUMMER\s*:?\s*([A-Z0-9\-\/]+)/i,
+    /RECHNUNG\s*NR\.?\s*:?\s*([A-Z0-9\-\/]+)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = value.match(pattern);
+
+    if (match?.[1]) {
+      return match[1].trim();
+    }
+  }
+
+  return null;
 }
 
 export function parseMetroInvoiceDate(text: string) {
@@ -172,7 +193,15 @@ export async function learnSupplierPricesFromInvoice({
   tenantId: string;
   text: string;
 }) {
-  const invoiceDate = parseMetroInvoiceDate(text) || new Date();
+  const parsedInvoiceDate = parseMetroInvoiceDate(text);
+  const invoiceDate = parsedInvoiceDate || new Date();
+  const invoiceNumber = parseMetroInvoiceNumber(text);
+  const invoiceDocumentKey = invoiceNumber
+    ? `METRO:${invoiceNumber}`
+    : `METRO-HASH:${createHash("sha256")
+        .update(text)
+        .digest("hex")
+        .slice(0, 24)}`;
 
   const positions =
     parseMetroInvoicePositions(text);
@@ -343,10 +372,9 @@ export async function learnSupplierPricesFromInvoice({
           tenantId,
           catalogItemId: catalogItem.id,
           source: "INVOICE",
-          netPriceCents:
-            position.netPriceCents,
-          validFrom:
-            invoiceDate,
+          qualityReason: {
+            contains: invoiceDocumentKey,
+          },
         },
         select: {
           id: true,
@@ -368,7 +396,7 @@ export async function learnSupplierPricesFromInvoice({
         source: "INVOICE",
         qualityStatus: "VALID",
         qualityReason:
-          "Exakter Match aus METRO-Rechnung über Artikelnummer oder EAN.",
+          `${invoiceDocumentKey} | Preis aus METRO-Rechnung über Artikelnummer oder EAN.`,
         qualityCheckedAt:
           new Date(),
         fetchedAt:
@@ -389,6 +417,14 @@ export async function learnSupplierPricesFromInvoice({
     skippedPositions,
   };
 }
+
+
+
+
+
+
+
+
 
 
 
