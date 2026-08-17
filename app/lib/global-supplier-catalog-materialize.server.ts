@@ -87,6 +87,7 @@ export async function materializeGlobalSupplierCatalog(params: {
   connectionId?: string | null;
   onlyActive?: boolean;
   limit?: number;
+  globalItemIds?: string[];
 }) {
   const providerCode =
     normalizeProviderCode(
@@ -147,6 +148,17 @@ export async function materializeGlobalSupplierCatalog(params: {
     )
   );
 
+  const requestedGlobalItemIds =
+    Array.from(
+      new Set(
+        (params.globalItemIds || [])
+          .map((value) =>
+            String(value || "").trim()
+          )
+          .filter(Boolean)
+      )
+    );
+
   const globalItems =
     await prisma.globalSupplierCatalogItem.findMany({
       where: {
@@ -156,6 +168,13 @@ export async function materializeGlobalSupplierCatalog(params: {
           : {
               active: true,
             }),
+        ...(requestedGlobalItemIds.length > 0
+          ? {
+              id: {
+                in: requestedGlobalItemIds,
+              },
+            }
+          : {}),
       },
       orderBy: [
         {

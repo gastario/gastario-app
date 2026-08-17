@@ -888,12 +888,276 @@ export async function loader({
         })
       : [];
 
+  /*
+   * gastario-global-search-fallback-v1
+   *
+   * Treffer aus dem zentralen Gastario-Katalog werden im Hintergrund
+   * gezielt für verbundene Provider materialisiert. Der Nutzer sieht
+   * weiterhin nur die normale Artikelsuche.
+   */
+  let globalMaterializedCatalogItems: any[] = [];
+
+  if (
+    query.length >= 2 &&
+    fallbackSearchTerms.length > 0
+  ) {
+    const tenantConnections =
+      await prisma.supplierConnection.findMany({
+        where: {
+          tenantId: access.tenantId,
+          active: true,
+          supplier: {
+            active: true,
+          },
+          ...(supplierId
+            ? {
+                supplierId,
+              }
+            : {}),
+        },
+        select: {
+          id: true,
+          supplierId: true,
+          label: true,
+          settingsJson: true,
+        },
+        orderBy: {
+          updatedAt: "desc",
+        },
+      });
+
+    const providerTargets = new Map<
+      string,
+      {
+        providerCode: string;
+        supplierId: string;
+        connectionId: string;
+      }
+    >();
+
+    for (const connection of tenantConnections) {
+      const settings =
+        connection.settingsJson &&
+        typeof connection.settingsJson === "object" &&
+        !Array.isArray(connection.settingsJson)
+          ? (connection.settingsJson as Record<string, unknown>)
+          : {};
+
+      const providerCode =
+        String(
+          settings.providerCode ||
+            connection.label ||
+            ""
+        )
+          .trim()
+          .toUpperCase()
+          .replace(/[^A-Z0-9_-]/g, "_");
+
+      if (!providerCode) {
+        continue;
+      }
+
+      const targetKey =
+        providerCode +
+        ":" +
+        connection.supplierId;
+
+      if (!providerTargets.has(targetKey)) {
+        providerTargets.set(targetKey, {
+          providerCode,
+          supplierId: connection.supplierId,
+          connectionId: connection.id,
+        });
+      }
+    }
+
+    const providerCodes =
+      Array.from(
+        new Set(
+          Array.from(
+            providerTargets.values()
+          ).map(
+            (target) =>
+              target.providerCode
+          )
+        )
+      );
+
+    if (providerCodes.length > 0) {
+      const globalIndexedItems =
+        indexSearchTokens.length > 0
+          ? await prisma.globalSupplierCatalogItem.findMany({
+              where: {
+                active: true,
+                providerCode: {
+                  in: providerCodes,
+                },
+                searchTokens: {
+                  hasSome: indexSearchTokens,
+                },
+              },
+              select: {
+                id: true,
+                providerCode: true,
+              },
+              take: 300,
+            })
+          : [];
+
+      const globalFallbackItems =
+        await prisma.globalSupplierCatalogItem.findMany({
+          where: {
+            active: true,
+            providerCode: {
+              in: providerCodes,
+            },
+            OR: fallbackSearchTerms.flatMap(
+              (term) => [
+                {
+                  name: {
+                    contains: term,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  brand: {
+                    contains: term,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  description: {
+                    contains: term,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  articleNumber: {
+                    contains: term,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  externalId: {
+                    contains: term,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  ean: {
+                    contains: term,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  gtin: {
+                    contains: term,
+                    mode: "insensitive",
+                  },
+                },
+              ]
+            ),
+          },
+          select: {
+            id: true,
+            providerCode: true,
+          },
+          take: 300,
+        });
+
+      const globalMatches =
+        Array.from(
+          new Map(
+            [
+              ...globalIndexedItems,
+              ...globalFallbackItems,
+            ].map(
+              (item) => [
+                item.id,
+                item,
+              ]
+            )
+          ).values()
+        );
+
+      if (globalMatches.length > 0) {
+        const {
+          materializeGlobalSupplierCatalog,
+        } = await import(
+          "../lib/global-supplier-catalog-materialize.server"
+        );
+
+        for (const target of providerTargets.values()) {
+          const globalItemIds =
+            globalMatches
+              .filter(
+                (item) =>
+                  item.providerCode ===
+                  target.providerCode
+              )
+              .map(
+                (item) =>
+                  item.id
+              );
+
+          if (globalItemIds.length === 0) {
+            continue;
+          }
+
+          await materializeGlobalSupplierCatalog({
+            tenantId: access.tenantId,
+            supplierId: target.supplierId,
+            providerCode: target.providerCode,
+            connectionId: target.connectionId,
+            globalItemIds,
+            limit: globalItemIds.length,
+          });
+        }
+
+        globalMaterializedCatalogItems =
+          await prisma.supplierCatalogItem.findMany({
+            where: {
+              tenantId: access.tenantId,
+              active: true,
+              ...(supplierId
+                ? {
+                    supplierId,
+                  }
+                : {}),
+              globalCatalogItemId: {
+                in: globalMatches.map(
+                  (item) =>
+                    item.id
+                ),
+              },
+            },
+            include: {
+              supplier: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              prices: {
+                orderBy: {
+                  fetchedAt: "desc",
+                },
+                take: 8,
+              },
+            },
+            take: 700,
+          });
+      }
+    }
+  }
+
   const catalogItems =
     Array.from(
       new Map(
         [
           ...indexedCatalogItems,
           ...fallbackCatalogItems,
+          ...globalMaterializedCatalogItems,
         ].map(
           (item: any) => [
             item.id,
