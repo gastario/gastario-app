@@ -1,4 +1,4 @@
-import { Form, useActionData, useLoaderData } from "react-router";
+﻿import { Form, useActionData, useLoaderData } from "react-router";
 
 import AppLayout from "../components/AppLayout";
 
@@ -1932,15 +1932,15 @@ export default function SuppliersPage() {
                   const statusLabel =
                     browserConnectorActive &&
                     connection.status === "ACTIVE"
-                      ? "Browser-Connector aktiv"
+                      ? "Einkaufsdaten aktiv"
                       : browserConnectorReady
-                        ? "Chrome-Connector bereit"
+                        ? "Katalogdaten vorhanden"
                         : connection.status === "ERROR"
                           ? "Fehler"
                           : connection.status ===
                               "PAUSED"
                             ? "Pausiert"
-                            : "Einrichtung erforderlich";
+                            : "Datenquelle vorbereitet";
 
                   const statusTone =
                     browserConnectorActive &&
@@ -2061,7 +2061,7 @@ export default function SuppliersPage() {
 
                       <div className="supplyPortalState">
                         <strong>
-                          Automatische Lieferantenverbindung
+                          METRO Einkaufsdaten
                         </strong>
 
                         <span>
@@ -2087,7 +2087,7 @@ export default function SuppliersPage() {
                               <small>Automatische Verbindung</small>
 
                               <strong>
-                                METRO mit Gastario verbinden
+                                METRO Katalog & Einkaufspreise
                               </strong>
 
                               <span>
@@ -2114,35 +2114,17 @@ export default function SuppliersPage() {
                           <div className="supplyBrowserConnectorActions">
                             <a
                               className="supplyButton supplyButton--primary"
-                              href="/api/supplier-hub/connect/metro"
-                              target="_blank"
-                              rel="noreferrer"
+                              href="/einkauf/artikelsuche"
                             >
-                              {connection.status === "ACTIVE"
-                                ? "METRO-Verbindung erneuern"
-                                : "METRO verbinden"}
+                              Katalog anzeigen
                             </a>
 
-                            <Form method="post">
-                              <input
-                                type="hidden"
-                                name="intent"
-                                value="syncSupplierConnection"
-                              />
-
-                              <input
-                                type="hidden"
-                                name="connectionId"
-                                value={connection.id}
-                              />
-
-                              <button
-                                className="supplyButton supplyButton--secondary"
-                                type="submit"
-                              >
-                                Jetzt synchronisieren
-                              </button>
-                            </Form>
+                            <a
+                              className="supplyButton supplyButton--secondary"
+                              href="/lieferanten/katalog-import"
+                            >
+                              Preisdaten importieren
+                            </a>
                           </div>
 
                           <div className="supplyBrowserConnectorFacts">
@@ -2460,6 +2442,9 @@ export default function SuppliersPage() {
     </AppLayout>
   );
 }
+
+
+
 
 
 
