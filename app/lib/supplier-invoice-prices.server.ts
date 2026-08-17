@@ -225,7 +225,7 @@ export async function learnSupplierPricesFromInvoice({
   const skippedPositions: any[] = [];
 
   for (const position of positions) {
-    const catalogItem =
+    let catalogItem =
       await prisma.supplierCatalogItem.findFirst({
         where: {
           tenantId,
@@ -250,6 +250,56 @@ export async function learnSupplierPricesFromInvoice({
       });
 
     if (!catalogItem) {
+      const globalItem =
+        await prisma.globalSupplierCatalogItem.findFirst({
+          where: {
+            providerCode: "METRO",
+            OR: [
+              {
+                articleNumber:
+                  position.articleNumber,
+              },
+              ...(position.ean
+                ? [
+                    {
+                      ean: position.ean,
+                    },
+                  ]
+                : []),
+            ],
+          },
+        });
+
+      if (globalItem) {
+        catalogItem =
+          await prisma.supplierCatalogItem.create({
+            data: {
+              tenantId,
+              supplierId: supplier.id,
+              globalCatalogItemId: globalItem.id,
+              externalId: globalItem.externalId,
+              articleNumber: globalItem.articleNumber,
+              ean: globalItem.ean,
+              gtin: globalItem.gtin,
+              name: globalItem.name,
+              brand: globalItem.brand,
+              description: globalItem.description,
+              searchTokens: globalItem.searchTokens,
+              orderUnit: globalItem.orderUnit,
+              baseUnit: globalItem.baseUnit,
+              contentQuantity: globalItem.contentQuantity,
+              packageQuantity: globalItem.packageQuantity,
+              active: globalItem.active,
+              lastSeenAt: new Date(),
+            },
+            select: {
+              id: true,
+            },
+          });
+      }
+    }
+
+    if (!catalogItem) {
       skipped += 1;
 
       skippedPositions.push({
@@ -258,7 +308,7 @@ export async function learnSupplierPricesFromInvoice({
         name: position.name,
         netPriceCents: position.netPriceCents,
         reason:
-          "Kein passender METRO-Katalogartikel über Artikelnummer oder EAN gefunden.",
+          "Weder im Mandanten-Katalog noch im globalen METRO-Katalog gefunden.",
       });
 
       continue;
@@ -321,6 +371,7 @@ export async function learnSupplierPricesFromInvoice({
     skippedPositions,
   };
 }
+
 
 
 
