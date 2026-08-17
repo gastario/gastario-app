@@ -1112,6 +1112,42 @@ model SupplierConnection {
   @@index([nextSyncAt])
 }
 
+enum GlobalSupplierCatalogFeedType {
+  CSV_URL
+  BMECAT_URL
+  CXML_URL
+  API
+  SFTP
+}
+
+model GlobalSupplierCatalogFeed {
+  id String @id @default(cuid())
+
+  providerCode String
+  label        String?
+  sourceType   GlobalSupplierCatalogFeedType
+
+  endpointUrl         String?
+  credentialReference String?
+  settingsJson        Json?
+
+  active              Boolean @default(true)
+  automaticSync       Boolean @default(true)
+  syncIntervalMinutes Int     @default(1440)
+
+  lastSyncAt           DateTime?
+  lastSuccessfulSyncAt DateTime?
+  nextSyncAt           DateTime?
+  lastError            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([providerCode])
+  @@index([active, automaticSync, nextSyncAt])
+  @@index([sourceType])
+}
+
 model GlobalSupplierCatalogItem {
   id String @id @default(cuid())
 
