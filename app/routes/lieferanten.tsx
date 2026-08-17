@@ -1755,7 +1755,7 @@ export default function SuppliersPage() {
                   <span>
                     <small>Technische Verwaltung</small>
                     <strong>
-                      Portale, Browser-Connector und Verbindungscodes
+                      Portale und automatische Lieferantenverbindungen
                     </strong>
                     <p>
                       Nur öffnen, wenn ein Portal eingerichtet oder technisch verwaltet werden soll.
@@ -1870,10 +1870,10 @@ export default function SuppliersPage() {
 
               <div className="supplyPortalHint">
                 <strong>
-                  Lokaler Chrome-Connector
+                  Automatische Server-Verbindung
                 </strong>
                 <span>
-                  Nach dem Anlegen kannst du die Erweiterung herunterladen und einen sicheren Verbindungscode erzeugen.
+                  Nach dem Anlegen kann der Lieferant einmalig mit Gastario verbunden werden. Danach laufen Katalog- und Preisabfragen serverseitig.
                 </span>
               </div>
 
@@ -2061,25 +2061,121 @@ export default function SuppliersPage() {
 
                       <div className="supplyPortalState">
                         <strong>
-                          {browserConnectorActive &&
-                          connection.status === "ACTIVE"
-                            ? "Lokaler Chrome-Connector ist aktiv"
-                            : browserConnectorReady
-                              ? "Chrome-Erweiterung kann gekoppelt werden"
-                              : "Chrome-Connector einrichten"}
+                          Automatische Lieferantenverbindung
                         </strong>
 
                         <span>
-                          {browserConnectorActive &&
-                          connection.status === "ACTIVE"
-                            ? `${lastBrowserCaptureItems} Artikel wurden bei der letzten Browserübertragung erkannt. METRO-Passwörter und Browser-Cookies bleiben vollständig auf deinem Rechner.`
-                            : browserConnectorReady
-                              ? "Installiere die Gastario-Erweiterung, füge den einmal erzeugten Verbindungscode ein und übertrage anschließend sichtbare Produktkarten aus deinem normal angemeldeten METRO-Browser."
-                              : "Der Railway-Login wird nicht weiter verwendet. Der lokale Connector liest nur sichtbare Produktdaten aus deinem eigenen Chrome-Browser."}
+                          Verbinde dein Lieferantenkonto einmalig mit Gastario.
+                          Danach laufen Katalog-, Preis- und
+                          Verfügbarkeitsabfragen automatisch über die
+                          sichere Server-Verbindung.
                         </span>
                       </div>
 
-                      <details className="supplyDisclosure supplyDisclosure--connector">
+                      {String(
+                        connection.settingsJson?.providerCode ||
+                          connection.label ||
+                          connection.supplierName ||
+                          ""
+                      )
+                        .trim()
+                        .toUpperCase()
+                        .includes("METRO") ? (
+                        <div className="supplyBrowserConnectorPanel">
+                          <div className="supplyBrowserConnectorHeader">
+                            <div>
+                              <small>Automatische Verbindung</small>
+
+                              <strong>
+                                METRO mit Gastario verbinden
+                              </strong>
+
+                              <span>
+                                Einmal bei METRO anmelden. Anschließend
+                                übernimmt Gastario die Verbindung
+                                serverseitig – ohne Chrome-Erweiterung.
+                              </span>
+                            </div>
+
+                            <span
+                              className={[
+                                "supplyStatus",
+                                connection.status === "ACTIVE"
+                                  ? "supplyStatus--success"
+                                  : "supplyStatus--warning",
+                              ].join(" ")}
+                            >
+                              {connection.status === "ACTIVE"
+                                ? "Verbunden"
+                                : "Anmeldung erforderlich"}
+                            </span>
+                          </div>
+
+                          <div className="supplyBrowserConnectorActions">
+                            <a
+                              className="supplyButton supplyButton--primary"
+                              href="/api/supplier-hub/connect/metro"
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {connection.status === "ACTIVE"
+                                ? "METRO-Verbindung erneuern"
+                                : "METRO verbinden"}
+                            </a>
+
+                            <Form method="post">
+                              <input
+                                type="hidden"
+                                name="intent"
+                                value="syncSupplierConnection"
+                              />
+
+                              <input
+                                type="hidden"
+                                name="connectionId"
+                                value={connection.id}
+                              />
+
+                              <button
+                                className="supplyButton supplyButton--secondary"
+                                type="submit"
+                              >
+                                Jetzt synchronisieren
+                              </button>
+                            </Form>
+                          </div>
+
+                          <div className="supplyBrowserConnectorFacts">
+                            <div>
+                              <small>Kundennummer</small>
+                              <strong>
+                                {connection.customerNumber ||
+                                  connection.settingsJson?.customerNumber ||
+                                  "–"}
+                              </strong>
+                            </div>
+
+                            <div>
+                              <small>Katalogartikel</small>
+                              <strong>
+                                {connection._count.catalogItems}
+                              </strong>
+                            </div>
+
+                            <div>
+                              <small>Letzter Abruf</small>
+                              <strong>
+                                {lastSyncText}
+                              </strong>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
+
+                      <details
+                        className="supplyDisclosure supplyDisclosure--connector"
+                        style={{ display: "none" }}
+                      >
                         <summary>
                           <span>
                             <strong>Chrome-Connector einrichten und verwalten</strong>
@@ -2364,3 +2460,7 @@ export default function SuppliersPage() {
     </AppLayout>
   );
 }
+
+
+
+
