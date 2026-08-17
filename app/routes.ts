@@ -1,4 +1,4 @@
-import { type RouteConfig, index, route } from "@react-router/dev/routes";
+﻿import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
   index("routes/home.tsx"),
@@ -50,6 +50,7 @@ export default [
   route("lager", "routes/lager.tsx"),
   route("lieferanten", "routes/lieferanten.tsx"),
   route("lieferanten/katalog-import", "routes/lieferanten.katalog-import.tsx"),
+  route("lieferanten/rechnungs-import", "routes/lieferanten.rechnungs-import.tsx"),
   route("rezepte", "routes/rezepte.tsx"),
   route("auftragseingang", "routes/auftragseingang.tsx"),
   route("neuer-auftrag", "routes/neuer-auftrag.tsx"),
@@ -64,6 +65,7 @@ export default [
   route("api/email-import/run", "routes/api.email-import.run.tsx"),
   route("api/navigation-counts", "routes/api.navigation-counts.tsx"),
   route("api/supplier-browser-connector", "routes/api.supplier-browser-connector.tsx"),
+  route("api/supplier-invoice-import", "routes/api.supplier-invoice-import.tsx"),
   route("api/supplier-hub/search", "routes/api.supplier-hub.search.tsx"),
   route("api/supplier-hub/connect", "routes/api.supplier-hub.connect.tsx"),
   route("api/supplier-hub/connect/metro", "routes/api.supplier-hub.connect.metro.tsx"),
@@ -81,3 +83,4 @@ export default [
   route("belege", "routes/belege.tsx"),
   route("steuerberater-export", "routes/steuerberater-export.tsx"),
 ] satisfies RouteConfig;
+
