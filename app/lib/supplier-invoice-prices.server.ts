@@ -41,6 +41,42 @@ function isMetroInvoice(text: string) {
   );
 }
 
+export function parseMetroInvoiceDate(text: string) {
+  const value = String(text || "");
+
+  const patterns = [
+    /Rechnungsdatum\s*:?\s*(\d{2}\.\d{2}\.\d{4})/i,
+    /Rechnungs-Datum\s*:?\s*(\d{2}\.\d{2}\.\d{4})/i,
+    /Rechnung\s+vom\s+(\d{2}\.\d{2}\.\d{4})/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = value.match(pattern);
+
+    if (!match) {
+      continue;
+    }
+
+    const [day, month, year] =
+      match[1].split(".").map(Number);
+
+    const date = new Date(
+      year,
+      month - 1,
+      day,
+      12,
+      0,
+      0
+    );
+
+    if (!Number.isNaN(date.getTime())) {
+      return date;
+    }
+  }
+
+  return null;
+}
+
 export function parseMetroInvoicePositions(
   text: string
 ): MetroInvoicePosition[] {
@@ -260,3 +296,4 @@ export async function learnSupplierPricesFromInvoice({
     skipped,
   };
 }
+

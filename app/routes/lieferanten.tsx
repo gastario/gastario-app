@@ -1256,7 +1256,7 @@ export default function SuppliersPage() {
 
             <a
               className="supplyV1Button supplyV1Button--secondary"
-              href="/lieferanten/katalog-import"
+              href="/lieferanten/rechnungs-import"
             >
               Katalog importieren
             </a>
@@ -2121,9 +2121,9 @@ export default function SuppliersPage() {
 
                             <a
                               className="supplyButton supplyButton--secondary"
-                              href="/lieferanten/katalog-import"
+                              href="/lieferanten/rechnungs-import"
                             >
-                              Preisdaten importieren
+                              Rechnungen importieren
                             </a>
                           </div>
 
@@ -2442,6 +2442,7 @@ export default function SuppliersPage() {
     </AppLayout>
   );
 }
+
 
 
 
