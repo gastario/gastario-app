@@ -508,6 +508,80 @@ export default function SupplierInvoiceImportPage() {
                             ? "Keine unterstützte Lieferantenrechnung erkannt"
                             : `${item.matched || 0} Artikel zugeordnet · ${item.pricesCreated || 0} Preisstände gespeichert · ${item.skipped || 0} übersprungen`}
                       </small>
+
+                      {item.skippedPositions?.length ? (
+                        <details
+                          style={{
+                            marginTop: 10,
+                          }}
+                        >
+                          <summary
+                            style={{
+                              cursor: "pointer",
+                              color: "#08705b",
+                              fontSize: 12,
+                              fontWeight: 800,
+                            }}
+                          >
+                            {item.skippedPositions.length} nicht zugeordnete Positionen anzeigen
+                          </summary>
+
+                          <div
+                            style={{
+                              marginTop: 10,
+                              display: "grid",
+                              gap: 7,
+                            }}
+                          >
+                            {item.skippedPositions.map(
+                              (position, positionIndex) => (
+                                <div
+                                  key={`${position.articleNumber}-${positionIndex}`}
+                                  style={{
+                                    padding: "9px 10px",
+                                    border: "1px solid #e3ece9",
+                                    borderRadius: 9,
+                                    background: "#fafcfb",
+                                    fontSize: 12,
+                                  }}
+                                >
+                                  <strong>
+                                    {position.name}
+                                  </strong>
+
+                                  <div
+                                    style={{
+                                      marginTop: 3,
+                                      color: "#697d78",
+                                    }}
+                                  >
+                                    Art.-Nr.: {position.articleNumber || "–"}
+                                    {" · "}
+                                    EAN: {position.ean || "–"}
+                                    {" · "}
+                                    Preis: {(Number(position.netPriceCents || 0) / 100).toLocaleString(
+                                      "de-DE",
+                                      {
+                                        style: "currency",
+                                        currency: "EUR",
+                                      }
+                                    )}
+                                  </div>
+
+                                  <div
+                                    style={{
+                                      marginTop: 2,
+                                      color: "#9a6531",
+                                    }}
+                                  >
+                                    {position.reason}
+                                  </div>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </details>
+                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -519,3 +593,5 @@ export default function SupplierInvoiceImportPage() {
     </AppLayout>
   );
 }
+
+

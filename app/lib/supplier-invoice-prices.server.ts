@@ -171,6 +171,8 @@ export async function learnSupplierPricesFromInvoice({
   tenantId: string;
   text: string;
 }) {
+  const invoiceDate = parseMetroInvoiceDate(text) || new Date();
+
   const positions =
     parseMetroInvoicePositions(text);
 
@@ -209,6 +211,7 @@ export async function learnSupplierPricesFromInvoice({
   let matched = 0;
   let pricesCreated = 0;
   let skipped = 0;
+  const skippedPositions: any[] = [];
 
   for (const position of positions) {
     const catalogItem =
@@ -280,9 +283,9 @@ export async function learnSupplierPricesFromInvoice({
         qualityCheckedAt:
           new Date(),
         fetchedAt:
-          new Date(),
+          invoiceDate,
         validFrom:
-          new Date(),
+          invoiceDate,
       },
     });
 
@@ -296,4 +299,6 @@ export async function learnSupplierPricesFromInvoice({
     skipped,
   };
 }
+
+
 
