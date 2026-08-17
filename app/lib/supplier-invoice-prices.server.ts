@@ -1,4 +1,5 @@
 ﻿import type { PrismaClient } from "@prisma/client";
+import { buildSupplierCatalogSearchTokens } from "./supplier-search-index.server";
 
 type MetroInvoicePosition = {
   articleNumber: string;
@@ -300,42 +301,59 @@ export async function learnSupplierPricesFromInvoice({
     }
 
     if (!catalogItem) {
-      skipped += 1;
-
-      skippedPositions.push({
-        articleNumber: position.articleNumber,
-        ean: position.ean,
-        name: position.name,
-        netPriceCents: position.netPriceCents,
-        reason:
-          "Weder im Mandanten-Katalog noch im globalen METRO-Katalog gefunden.",
-      });
-
-      continue;
+      catalogItem =
+        await prisma.supplierCatalogItem.create({
+          data: {
+            tenantId,
+            supplierId: supplier.id,
+            articleNumber:
+              position.articleNumber,
+            ean:
+              position.ean,
+            gtin:
+              position.ean,
+            name:
+              position.name,
+            searchTokens:
+              buildSupplierCatalogSearchTokens({
+                providerCode: "METRO",
+                name: position.name,
+                articleNumber:
+                  position.articleNumber,
+                ean:
+                  position.ean,
+                gtin:
+                  position.ean,
+              }),
+            active: true,
+            lastSeenAt:
+              invoiceDate,
+          },
+          select: {
+            id: true,
+          },
+        });
     }
 
     matched += 1;
 
-    const latest =
+    const existingInvoicePrice =
       await prisma.supplierPriceSnapshot.findFirst({
         where: {
           tenantId,
           catalogItemId: catalogItem.id,
-        },
-        orderBy: {
-          fetchedAt: "desc",
+          source: "INVOICE",
+          netPriceCents:
+            position.netPriceCents,
+          validFrom:
+            invoiceDate,
         },
         select: {
-          netPriceCents: true,
-          source: true,
+          id: true,
         },
       });
 
-    if (
-      latest?.netPriceCents ===
-        position.netPriceCents &&
-      latest?.source === "INVOICE"
-    ) {
+    if (existingInvoicePrice) {
       continue;
     }
 
@@ -371,6 +389,10 @@ export async function learnSupplierPricesFromInvoice({
     skippedPositions,
   };
 }
+
+
+
+
 
 
 
