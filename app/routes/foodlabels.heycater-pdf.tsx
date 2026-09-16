@@ -97,13 +97,20 @@ export async function action({ request }: ActionFunctionArgs) {
     const labels = parseHeycaterLabelsFromText(text, deliveryDishDetails, file.name, customerName);
 
     // Labels nach Gerichtsreihenfolge gruppieren.
-    // Das erste Auftreten eines Gerichts bestimmt die Reihenfolge.
+    // Unsichtbare Zeichen und unterschiedliche Leerzeichen
+    // dürfen dasselbe Gericht nicht auseinanderziehen.
+    const normalizeMealKey = (value: unknown) =>
+      String(value || "")
+        .normalize("NFKC")
+        .replace(/[\u200B-\u200D\uFEFF]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLocaleLowerCase("de-DE");
+
     const mealOrder = new Map<string, number>();
 
     for (const label of labels) {
-      const mealKey = String(label.meal || "")
-        .trim()
-        .toLocaleLowerCase("de-DE");
+      const mealKey = normalizeMealKey(label.meal);
 
       if (!mealOrder.has(mealKey)) {
         mealOrder.set(mealKey, mealOrder.size);
@@ -111,17 +118,13 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     labels.sort((a, b) => {
-      const mealA = String(a.meal || "")
-        .trim()
-        .toLocaleLowerCase("de-DE");
+      const mealA = normalizeMealKey(a.meal);
+      const mealB = normalizeMealKey(b.meal);
 
-      const mealB = String(b.meal || "")
-        .trim()
-        .toLocaleLowerCase("de-DE");
-
-      return
+      return (
         (mealOrder.get(mealA) ?? 999999) -
-        (mealOrder.get(mealB) ?? 999999);
+        (mealOrder.get(mealB) ?? 999999)
+      );
     });
 
     const expectedCount = getExpectedLabelCountFromFilename(file.name);
