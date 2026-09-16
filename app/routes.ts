@@ -34,6 +34,7 @@ export default [
   route("foodlabels/heycater-pdf", "routes/foodlabels.heycater-pdf.tsx"),
   route("foodlabels/allergene", "routes/foodlabels.allergene.tsx"),
   route("foodlabels/print/:labelId", "routes/foodlabels.print.$labelId.tsx"),
+  route("foodlabels/print/:labelId/pdf", "routes/foodlabels.print.$labelId.pdf.tsx"),
   route("mhd-labels/print/:labelId", "routes/mhd-labels.print.$labelId.tsx"),
   route("label/:publicToken", "routes/label.$publicToken.tsx"),
   route("packlisten", "routes/packlisten.tsx"),
@@ -83,4 +84,5 @@ export default [
   route("belege", "routes/belege.tsx"),
   route("steuerberater-export", "routes/steuerberater-export.tsx"),
 ] satisfies RouteConfig;
+
 
