@@ -95,6 +95,35 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const deliveryDishDetails = await getDeliveryDishDetailsMap(prisma, access.tenantId);
     const labels = parseHeycaterLabelsFromText(text, deliveryDishDetails, file.name, customerName);
+
+    // Labels nach Gerichtsreihenfolge gruppieren.
+    // Das erste Auftreten eines Gerichts bestimmt die Reihenfolge.
+    const mealOrder = new Map<string, number>();
+
+    for (const label of labels) {
+      const mealKey = String(label.meal || "")
+        .trim()
+        .toLocaleLowerCase("de-DE");
+
+      if (!mealOrder.has(mealKey)) {
+        mealOrder.set(mealKey, mealOrder.size);
+      }
+    }
+
+    labels.sort((a, b) => {
+      const mealA = String(a.meal || "")
+        .trim()
+        .toLocaleLowerCase("de-DE");
+
+      const mealB = String(b.meal || "")
+        .trim()
+        .toLocaleLowerCase("de-DE");
+
+      return
+        (mealOrder.get(mealA) ?? 999999) -
+        (mealOrder.get(mealB) ?? 999999);
+    });
+
     const expectedCount = getExpectedLabelCountFromFilename(file.name);
 
     if (labels.length === 0) {
@@ -156,6 +185,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export async function loader() {
   return new Response("Nur Upload per Formular erlaubt.", { status: 405 });
 }
+
 
 
 
