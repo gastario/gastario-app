@@ -1,5 +1,5 @@
 ﻿import { useEffect } from "react";
-import { Link, redirect, useLoaderData } from "react-router";
+import { Link, redirect, redirectDocument, useLoaderData } from "react-router";
 
 function getPrintPreset(preset: string, labelSize: string = "auto") {
   if (preset === "roll-76x51") {
@@ -95,7 +95,7 @@ export async function loader({ request, params }: { request: Request; params: { 
     label.printPreset === "roll-57x32";
 
   if (isRollPreset) {
-    throw redirect(`/foodlabels/print/${label.id}/pdf`);
+    throw redirectDocument(`/foodlabels/print/${label.id}/pdf`);
   }
 
   return {
@@ -395,3 +395,4 @@ export default function FoodLabelPrintPage() {
     </main>
   );
 }
+
