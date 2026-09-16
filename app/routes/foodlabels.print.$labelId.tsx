@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { Link, redirect, useLoaderData } from "react-router";
 
 function getPrintPreset(preset: string, labelSize: string = "auto") {
@@ -87,6 +87,41 @@ export async function loader({ request, params }: { request: Request; params: { 
 
   if (!label) {
     throw redirect("/foodlabels");
+  }
+
+
+  const isRollPreset =
+    label.printPreset === "roll-76x51" ||
+    label.printPreset === "roll-57x32";
+
+  if (isRollPreset) {
+    const { renderManualFoodLabelPdf } =
+      await import("../lib/manual-foodlabel-pdf.server");
+
+    const widthMm =
+      label.printPreset === "roll-57x32" ? 57 : 76;
+
+    const heightMm =
+      label.printPreset === "roll-57x32" ? 32 : 51;
+
+    const pdfBytes =
+      await renderManualFoodLabelPdf({
+        name: label.name,
+        ingredients: label.ingredients,
+        allergens: label.allergens,
+        count: Number(label.labelCount || 1),
+        widthMm,
+        heightMm,
+      });
+
+    return new Response(pdfBytes, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition":
+          'inline; filename="gastario-foodlabels.pdf"',
+        "Cache-Control": "no-store",
+      },
+    });
   }
 
   return {
