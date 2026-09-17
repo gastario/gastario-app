@@ -54,6 +54,7 @@ async function ensureFoodProductLabelTable(prisma: any) {
       "id" TEXT PRIMARY KEY,
       "tenantId" TEXT NOT NULL,
       "name" TEXT NOT NULL,
+      "customerName" TEXT,
       "ingredients" TEXT,
       "allergens" TEXT,
       "logoDataUrl" TEXT,
@@ -66,6 +67,7 @@ async function ensureFoodProductLabelTable(prisma: any) {
     );
   `);
 
+  await prisma.$executeRawUnsafe(`ALTER TABLE "FoodProductLabel" ADD COLUMN IF NOT EXISTS "customerName" TEXT;`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodProductLabel" ADD COLUMN IF NOT EXISTS "logoDataUrl" TEXT;`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodProductLabel" ADD COLUMN IF NOT EXISTS "printPreset" TEXT NOT NULL DEFAULT 'a4-3';`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodProductLabel" ADD COLUMN IF NOT EXISTS "labelSize" TEXT NOT NULL DEFAULT 'auto';`);
@@ -149,6 +151,7 @@ export async function action({ request }: { request: Request }) {
   }
 
   const name = safeText(formData.get("name"));
+  const customerName = safeText(formData.get("customerName"));
   const ingredients = safeText(formData.get("ingredients"));
   const allergens = safeText(formData.get("allergens"));
   const printPreset = safeText(formData.get("printPreset")) || "a4-3";
@@ -182,12 +185,13 @@ export async function action({ request }: { request: Request }) {
 
   await prisma.$executeRawUnsafe(
     `INSERT INTO "FoodProductLabel"
-      ("id", "tenantId", "name", "ingredients", "allergens", "logoDataUrl", "labelCount", "printPreset", "labelSize", "publicToken", "updatedAt")
+      ("id", "tenantId", "name", "customerName", "ingredients", "allergens", "logoDataUrl", "labelCount", "printPreset", "labelSize", "publicToken", "updatedAt")
      VALUES
-      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)`,
+      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP)`,
     id,
     access.tenantId,
     name,
+    customerName || null,
     ingredients || null,
     allergens || null,
     logoDataUrl || null,
@@ -287,8 +291,8 @@ Labeldaten speichern</h2>
             </label>
             <div className="heycaterCustomerField">
               <label>
-                Kunde für diese Labels
-                <input name="customerName" type="text" placeholder="z. B. Parloa, NinjaOne GmbH, Kunde XYZ" required />
+                Bestellername (optional)
+                <input name="customerName" type="text" placeholder="z. B. Max Mustermann" />
               </label>
             </div>
 
@@ -1100,6 +1104,8 @@ const orderShortcutMetaStyle: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 700,
 };
+
+
 
 
 

@@ -6,6 +6,7 @@ async function ensureFoodProductLabelTable(prisma: any) {
       "id" TEXT PRIMARY KEY,
       "tenantId" TEXT NOT NULL,
       "name" TEXT NOT NULL,
+      "customerName" TEXT,
       "ingredients" TEXT,
       "allergens" TEXT,
       "logoDataUrl" TEXT,
@@ -16,6 +17,11 @@ async function ensureFoodProductLabelTable(prisma: any) {
       "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
       "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "FoodProductLabel"
+    ADD COLUMN IF NOT EXISTS "customerName" TEXT;
   `);
 }
 
@@ -81,6 +87,7 @@ export async function loader({
   const pdfBytes =
     await renderManualFoodLabelPdf({
       name: label.name,
+      customerName: label.customerName,
       ingredients: label.ingredients,
       allergens: label.allergens,
       count: Number(label.labelCount || 1),
@@ -97,3 +104,4 @@ export async function loader({
     },
   });
 }
+
