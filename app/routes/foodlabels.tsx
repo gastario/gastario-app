@@ -257,7 +257,7 @@ Labeldaten speichern</h2>
             </Field>
 
             <Field label="Druckformat">
-              <select name="printPreset" defaultValue="a4-3">
+              <select name="printPreset" defaultValue="roll-76x51">
                 <option value="a4-2">A4 Hochformat - 2 Labels pro Reihe</option>
                 <option value="a4-3">A4 Hochformat - 3 Labels pro Reihe</option>
                 <option value="a4-4">A4 Hochformat - 4 Labels pro Reihe</option>
@@ -1112,6 +1112,7 @@ const orderShortcutMetaStyle: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 700,
 };
+
 
 
 
