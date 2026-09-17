@@ -236,6 +236,14 @@ Labeldaten speichern</h2>
               <input name="name" placeholder="z. B. Chicken Bowl, Wrap, Dessert" required />
             </Field>
 
+            <Field label="Name des Essers (optional)">
+              <input
+                name="customerName"
+                placeholder="z. B. Max Mustermann"
+              />
+            </Field>
+
+
             <Field label="Zutaten">
               <input name="ingredients" placeholder="z. B. Reis, Haehnchen, Gemuese, Sauce" />
             </Field>
