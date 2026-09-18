@@ -129,7 +129,7 @@ export async function renderManualFoodLabelPdf({
     Math.max(1, Math.min(Number(count || 1), 200));
 
   const margin =
-    compact ? mmToPt(2.3) : mmToPt(3);
+    compact ? mmToPt(2.0) : mmToPt(2.5);
 
   const contentWidth =
     width - margin * 2;
@@ -204,8 +204,8 @@ export async function renderManualFoodLabelPdf({
       y: 1,
       width: width - 2,
       height: height - 2,
-      borderWidth: 0.6,
-      borderColor: rgb(0.72, 0.72, 0.72),
+      borderWidth: 0.55,
+      borderColor: rgb(0.82, 0.87, 0.84),
     });
 
     let y = height - margin;
@@ -306,7 +306,7 @@ export async function renderManualFoodLabelPdf({
       start: { x: margin, y },
       end: { x: width - margin, y },
       thickness: 0.45,
-      color: rgb(0.86, 0.86, 0.86),
+      color: rgb(0.82, 0.87, 0.84),
     });
 
     y -= compact ? 4 : 5;
@@ -353,7 +353,7 @@ export async function renderManualFoodLabelPdf({
       start: { x: margin, y },
       end: { x: width - margin, y },
       thickness: 0.45,
-      color: rgb(0.86, 0.86, 0.86),
+      color: rgb(0.82, 0.87, 0.84),
     });
 
     y -= compact ? 4 : 5;
@@ -399,7 +399,7 @@ export async function renderManualFoodLabelPdf({
       start: { x: margin, y },
       end: { x: width - margin, y },
       thickness: 0.45,
-      color: rgb(0.86, 0.86, 0.86),
+      color: rgb(0.82, 0.87, 0.84),
     });
 
     // --------------------------------------------------
@@ -466,6 +466,9 @@ export async function renderManualFoodLabelPdf({
 
   return pdf.save();
 }
+
+
+
 
 
 
