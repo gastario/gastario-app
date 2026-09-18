@@ -276,8 +276,8 @@ export async function renderManualFoodLabelPdf({
     const dishSize = fitSingleLine(
       dishName,
       bold,
-      compact ? 7.8 : 9.4,
-      compact ? 5.8 : 7,
+      compact ? 8.4 : 10.2,
+      compact ? 6.2 : 7.4,
       contentWidth
     );
 
@@ -300,16 +300,16 @@ export async function renderManualFoodLabelPdf({
       y -= dishSize + (compact ? 1 : 1.5);
     }
 
-    y -= compact ? 4 : 5.5;
+    y -= compact ? 6 : 8;
 
     // --------------------------------------------------
     // ZUTATEN
     // --------------------------------------------------
 
-    const sectionSize = compact ? 4.6 : 5.3;
-    const bodySize = compact ? 4.8 : 5.7;
+    const sectionSize = compact ? 4.0 : 4.6;
+    const bodySize = compact ? 4.5 : 5.2;
 
-    page.drawText("Zutaten", {
+    page.drawText("ZUTATEN", {
       x: margin,
       y,
       size: sectionSize,
@@ -317,7 +317,7 @@ export async function renderManualFoodLabelPdf({
       color: rgb(0.08, 0.08, 0.08),
     });
 
-    y -= compact ? 5.8 : 7;
+    y -= compact ? 6.6 : 8;
 
     const ingredientLines = wrapText(
       ingredientText,
@@ -338,13 +338,13 @@ export async function renderManualFoodLabelPdf({
       y -= compact ? 5.2 : 6.4;
     }
 
-    y -= compact ? 3 : 4;
+    y -= compact ? 5 : 6.5;
 
     // --------------------------------------------------
     // ALLERGENE
     // --------------------------------------------------
 
-    page.drawText("Allergene", {
+    page.drawText("ALLERGENE", {
       x: margin,
       y,
       size: sectionSize,
@@ -352,9 +352,9 @@ export async function renderManualFoodLabelPdf({
       color: rgb(0.08, 0.08, 0.08),
     });
 
-    y -= compact ? 5.8 : 7;
+    y -= compact ? 6.6 : 8;
 
-    const allergenSize = compact ? 4.8 : 5.7;
+    const allergenSize = compact ? 4.5 : 5.2;
 
     const allergenLines = wrapText(
       allergenText,
@@ -439,6 +439,8 @@ export async function renderManualFoodLabelPdf({
 
   return pdf.save();
 }
+
+
 
 
 
