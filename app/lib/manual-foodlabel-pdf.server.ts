@@ -198,14 +198,14 @@ export async function renderManualFoodLabelPdf({
       color: rgb(1, 1, 1),
     });
 
-    // Feiner kompletter Labelrand
+    // Klarer äußerer Labelrand
     page.drawRectangle({
-      x: 0.8,
-      y: 0.8,
-      width: width - 1.6,
-      height: height - 1.6,
-      borderWidth: 0.35,
-      borderColor: rgb(0.82, 0.82, 0.82),
+      x: 1,
+      y: 1,
+      width: width - 2,
+      height: height - 2,
+      borderWidth: 0.6,
+      borderColor: rgb(0.72, 0.72, 0.72),
     });
 
     let y = height - margin;
@@ -300,7 +300,16 @@ export async function renderManualFoodLabelPdf({
       y -= dishSize + (compact ? 1 : 1.5);
     }
 
-    y -= compact ? 6 : 8;
+    y -= compact ? 3 : 4;
+
+    page.drawLine({
+      start: { x: margin, y },
+      end: { x: width - margin, y },
+      thickness: 0.45,
+      color: rgb(0.86, 0.86, 0.86),
+    });
+
+    y -= compact ? 4 : 5;
 
     // --------------------------------------------------
     // ZUTATEN
@@ -338,7 +347,16 @@ export async function renderManualFoodLabelPdf({
       y -= compact ? 5.2 : 6.4;
     }
 
-    y -= compact ? 5 : 6.5;
+    y -= compact ? 2.5 : 3.5;
+
+    page.drawLine({
+      start: { x: margin, y },
+      end: { x: width - margin, y },
+      thickness: 0.45,
+      color: rgb(0.86, 0.86, 0.86),
+    });
+
+    y -= compact ? 4 : 5;
 
     // --------------------------------------------------
     // ALLERGENE
@@ -374,6 +392,15 @@ export async function renderManualFoodLabelPdf({
 
       y -= compact ? 5.2 : 6.4;
     }
+
+    y -= compact ? 2.5 : 3.5;
+
+    page.drawLine({
+      start: { x: margin, y },
+      end: { x: width - margin, y },
+      thickness: 0.45,
+      color: rgb(0.86, 0.86, 0.86),
+    });
 
     // --------------------------------------------------
     // FOOTER
@@ -439,6 +466,8 @@ export async function renderManualFoodLabelPdf({
 
   return pdf.save();
 }
+
+
 
 
 
