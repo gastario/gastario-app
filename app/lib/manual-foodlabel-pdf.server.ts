@@ -86,6 +86,7 @@ function fitSingleLine(
 export async function renderManualFoodLabelPdf({
   name,
   customerName,
+  brandName,
   labelDate,
   ingredients,
   allergens,
@@ -95,6 +96,7 @@ export async function renderManualFoodLabelPdf({
 }: {
   name: string;
   customerName?: string | null;
+  brandName?: string | null;
   labelDate?: string | null;
   ingredients?: string | null;
   allergens?: string | null;
@@ -130,6 +132,9 @@ export async function renderManualFoodLabelPdf({
 
   const customer =
     clean(customerName);
+
+  const brandText =
+    clean(brandName);
 
   const dateText =
     formatLabelDate(labelDate);
@@ -349,7 +354,7 @@ export async function renderManualFoodLabelPdf({
       color: rgb(0.82, 0.82, 0.82),
     });
 
-    page.drawText("Gastario Foodlabel", {
+    page.drawText(brandText || "Gastario", {
       x: margin,
       y: margin + (compact ? 2 : 3),
       size: compact ? 4.2 : 4.8,
@@ -360,6 +365,7 @@ export async function renderManualFoodLabelPdf({
 
   return pdf.save();
 }
+
 
 
 
