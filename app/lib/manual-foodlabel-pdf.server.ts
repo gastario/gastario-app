@@ -114,7 +114,7 @@ export async function renderManualFoodLabelPdf({
   const sans = await pdf.embedFont(StandardFonts.Helvetica);
   const sansBold = await pdf.embedFont(StandardFonts.HelveticaBold);
   const serif = await pdf.embedFont(StandardFonts.TimesRoman);
-  const serifItalic = await pdf.embedFont(StandardFonts.TimesItalic);
+  const serifItalic = await pdf.embedFont(StandardFonts.TimesRomanItalic);
 
   const width = mmToPt(widthMm);
   const height = mmToPt(heightMm);
@@ -326,3 +326,4 @@ export async function renderManualFoodLabelPdf({
 
   return pdf.save();
 }
+
