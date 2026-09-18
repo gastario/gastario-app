@@ -56,6 +56,8 @@ async function ensureFoodProductLabelTable(prisma: any) {
       "name" TEXT NOT NULL,
       "customerName" TEXT,
       "brandName" TEXT,
+      "qrText" TEXT,
+      "assetMode" TEXT NOT NULL DEFAULT 'brand-only',
       "labelDate" TEXT,
       "ingredients" TEXT,
       "allergens" TEXT,
@@ -71,6 +73,8 @@ async function ensureFoodProductLabelTable(prisma: any) {
 
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodProductLabel" ADD COLUMN IF NOT EXISTS "customerName" TEXT;`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodProductLabel" ADD COLUMN IF NOT EXISTS "brandName" TEXT;`);
+  await prisma.$executeRawUnsafe(`ALTER TABLE "FoodProductLabel" ADD COLUMN IF NOT EXISTS "qrText" TEXT;`);
+  await prisma.$executeRawUnsafe(`ALTER TABLE "FoodProductLabel" ADD COLUMN IF NOT EXISTS "assetMode" TEXT NOT NULL DEFAULT 'brand-only';`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodProductLabel" ADD COLUMN IF NOT EXISTS "labelDate" TEXT;`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodProductLabel" ADD COLUMN IF NOT EXISTS "logoDataUrl" TEXT;`);
   await prisma.$executeRawUnsafe(`ALTER TABLE "FoodProductLabel" ADD COLUMN IF NOT EXISTS "printPreset" TEXT NOT NULL DEFAULT 'a4-3';`);
@@ -157,6 +161,8 @@ export async function action({ request }: { request: Request }) {
   const name = safeText(formData.get("name"));
   const customerName = safeText(formData.get("customerName"));
   const brandName = safeText(formData.get("brandName"));
+  const qrText = safeText(formData.get("qrText"));
+  const assetMode = safeText(formData.get("assetMode")) || "brand-only";
   const labelDate = safeText(formData.get("labelDate"));
   const ingredients = safeText(formData.get("ingredients"));
   const allergens = safeText(formData.get("allergens"));
@@ -191,14 +197,16 @@ export async function action({ request }: { request: Request }) {
 
   await prisma.$executeRawUnsafe(
     `INSERT INTO "FoodProductLabel"
-      ("id", "tenantId", "name", "customerName", "brandName", "labelDate", "ingredients", "allergens", "logoDataUrl", "labelCount", "printPreset", "labelSize", "publicToken", "updatedAt")
+      ("id", "tenantId", "name", "customerName", "brandName", "qrText", "assetMode", "labelDate", "ingredients", "allergens", "logoDataUrl", "labelCount", "printPreset", "labelSize", "publicToken", "updatedAt")
      VALUES
-      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, CURRENT_TIMESTAMP)`,
+      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, CURRENT_TIMESTAMP)`,
     id,
     access.tenantId,
     name,
     customerName || null,
     brandName || null,
+    qrText || null,
+    assetMode,
     labelDate || null,
     ingredients || null,
     allergens || null,
@@ -257,6 +265,25 @@ Labeldaten speichern</h2>
                 name="brandName"
                 placeholder="z. B. Let Me Bowl, Mixie, Haiyo Sushi"
               />
+            </Field>
+
+            
+            <Field label="QR-Link / QR-Text (optional)">
+              <input
+                name="qrText"
+                placeholder="z. B. https://letmebowl-catering.de"
+              />
+            </Field>
+
+            <Field label="Footer auswählen">
+              <select
+                name="assetMode"
+                defaultValue="brand-only"
+              >
+                <option value="brand-only">Nur Marke</option>
+                <option value="brand-and-qr">Marke + QR-Code</option>
+                <option value="qr-only">Nur QR-Code</option>
+              </select>
             </Field>
 
             <Field label="Datum (optional)">
@@ -1136,6 +1163,9 @@ const orderShortcutMetaStyle: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 700,
 };
+
+
+
 
 
 

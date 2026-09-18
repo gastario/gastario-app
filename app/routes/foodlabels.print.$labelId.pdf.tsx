@@ -8,6 +8,8 @@ async function ensureFoodProductLabelTable(prisma: any) {
       "name" TEXT NOT NULL,
       "customerName" TEXT,
       "brandName" TEXT,
+      "qrText" TEXT,
+      "assetMode" TEXT NOT NULL DEFAULT 'brand-only',
       "labelDate" TEXT,
       "ingredients" TEXT,
       "allergens" TEXT,
@@ -29,6 +31,16 @@ async function ensureFoodProductLabelTable(prisma: any) {
   await prisma.$executeRawUnsafe(`
     ALTER TABLE "FoodProductLabel"
     ADD COLUMN IF NOT EXISTS "brandName" TEXT;
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "FoodProductLabel"
+    ADD COLUMN IF NOT EXISTS "qrText" TEXT;
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "FoodProductLabel"
+    ADD COLUMN IF NOT EXISTS "assetMode" TEXT NOT NULL DEFAULT 'brand-only';
   `);
 
   await prisma.$executeRawUnsafe(`
@@ -101,6 +113,8 @@ export async function loader({
       name: label.name,
       customerName: label.customerName,
       brandName: label.brandName,
+      qrText: label.qrText,
+      assetMode: label.assetMode,
       labelDate: label.labelDate,
       ingredients: label.ingredients,
       allergens: label.allergens,
@@ -118,6 +132,7 @@ export async function loader({
     },
   });
 }
+
 
 
 

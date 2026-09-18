@@ -1,4 +1,5 @@
-﻿import {
+﻿import QRCode from "qrcode";
+import {
   PDFDocument,
   StandardFonts,
   rgb,
@@ -87,6 +88,8 @@ export async function renderManualFoodLabelPdf({
   name,
   customerName,
   brandName,
+  qrText,
+  assetMode,
   labelDate,
   ingredients,
   allergens,
@@ -97,6 +100,8 @@ export async function renderManualFoodLabelPdf({
   name: string;
   customerName?: string | null;
   brandName?: string | null;
+  qrText?: string | null;
+  assetMode?: string | null;
   labelDate?: string | null;
   ingredients?: string | null;
   allergens?: string | null;
@@ -136,6 +141,12 @@ export async function renderManualFoodLabelPdf({
   const brandText =
     clean(brandName);
 
+  const qrValue =
+    clean(qrText);
+
+  const footerMode =
+    clean(assetMode) || "brand-only";
+
   const dateText =
     formatLabelDate(labelDate);
 
@@ -145,6 +156,31 @@ export async function renderManualFoodLabelPdf({
   const allergenText =
     prettifyList(allergens) || "-";
 
+  let qrImageBytes: Uint8Array | null = null;
+
+  if (
+    qrValue &&
+    (footerMode === "brand-and-qr" ||
+      footerMode === "qr-only")
+  ) {
+    const qrDataUrl =
+      await QRCode.toDataURL(qrValue, {
+        margin: 0,
+        width: 256,
+        color: {
+          dark: "#111111",
+          light: "#FFFFFF",
+        },
+      });
+
+    const base64 =
+      qrDataUrl.split(",")[1];
+
+    qrImageBytes =
+      Uint8Array.from(
+        Buffer.from(base64, "base64")
+      );
+  }
   for (let index = 0; index < safeCount; index += 1) {
     const page = pdf.addPage([width, height]);
 
@@ -337,34 +373,62 @@ export async function renderManualFoodLabelPdf({
     // --------------------------------------------------
     // FOOTER
     // --------------------------------------------------
-
     const footerLineY =
       margin + (compact ? 8 : 11);
 
     page.drawLine({
       start: {
         x: margin,
-        y: footerLineY,
+        y: footerLineY + (compact ? 8 : 10),
       },
       end: {
         x: width - margin,
-        y: footerLineY,
+        y: footerLineY + (compact ? 8 : 10),
       },
       thickness: 0.5,
       color: rgb(0.82, 0.82, 0.82),
     });
 
-    page.drawText(brandText || "Gastario", {
-      x: margin,
-      y: margin + (compact ? 2 : 3),
-      size: compact ? 4.2 : 4.8,
-      font: bold,
-      color: rgb(0.16, 0.16, 0.16),
-    });
+    if (
+      footerMode !== "qr-only" &&
+      brandText
+    ) {
+      page.drawText(brandText, {
+        x: margin,
+        y: footerLineY,
+        size: compact ? 4.8 : 5.8,
+        font: bold,
+        color: rgb(0.10, 0.10, 0.10),
+      });
+    }
+
+    if (
+      qrImageBytes &&
+      (footerMode === "brand-and-qr" ||
+        footerMode === "qr-only")
+    ) {
+      const qrImage =
+        await pdf.embedPng(qrImageBytes);
+
+      const qrSize =
+        compact ? 24 : 34;
+
+      page.drawImage(qrImage, {
+        x: width - margin - qrSize,
+        y: margin,
+        width: qrSize,
+        height: qrSize,
+      });
+    }
   }
 
   return pdf.save();
 }
+
+
+
+
+
 
 
 
