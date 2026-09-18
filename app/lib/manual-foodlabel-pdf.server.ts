@@ -31,29 +31,24 @@ function formatLabelDate(value: string | null | undefined) {
   return `${match[3]}.${match[2]}.${match[1]}`;
 }
 
-function wrapTextByWidth(
+function wrapText(
   text: string,
   font: PDFFont,
-  fontSize: number,
+  size: number,
   maxWidth: number
 ) {
   const words = clean(text).split(" ").filter(Boolean);
-
-  if (words.length === 0) {
-    return [];
-  }
-
   const lines: string[] = [];
   let current = "";
 
   for (const word of words) {
-    const candidate = current ? `${current} ${word}` : word;
+    const next = current ? `${current} ${word}` : word;
 
     if (
-      font.widthOfTextAtSize(candidate, fontSize) <= maxWidth ||
-      current.length === 0
+      !current ||
+      font.widthOfTextAtSize(next, size) <= maxWidth
     ) {
-      current = candidate;
+      current = next;
     } else {
       lines.push(current);
       current = word;
@@ -67,27 +62,23 @@ function wrapTextByWidth(
   return lines;
 }
 
-function fitTextSize(
+function fitSize(
   text: string,
   font: PDFFont,
   startSize: number,
   minSize: number,
-  maxWidth: number,
-  maxLines: number
+  maxWidth: number
 ) {
   let size = startSize;
 
-  while (size >= minSize) {
-    const lines = wrapTextByWidth(text, font, size, maxWidth);
-
-    if (lines.length <= maxLines) {
-      return size;
-    }
-
+  while (
+    size > minSize &&
+    wrapText(text, font, size, maxWidth).length > 2
+  ) {
     size -= 0.4;
   }
 
-  return minSize;
+  return size;
 }
 
 export async function renderManualFoodLabelPdf({
@@ -111,29 +102,47 @@ export async function renderManualFoodLabelPdf({
 }) {
   const pdf = await PDFDocument.create();
 
-  const sans = await pdf.embedFont(StandardFonts.Helvetica);
-  const sansBold = await pdf.embedFont(StandardFonts.HelveticaBold);
-  const serif = await pdf.embedFont(StandardFonts.TimesRoman);
-  const serifItalic = await pdf.embedFont(StandardFonts.TimesRomanItalic);
+  const regular =
+    await pdf.embedFont(StandardFonts.Helvetica);
+
+  const bold =
+    await pdf.embedFont(StandardFonts.HelveticaBold);
 
   const width = mmToPt(widthMm);
   const height = mmToPt(heightMm);
 
-  const compact = widthMm <= 57 || heightMm <= 32;
-  const safeCount = Math.max(1, Math.min(Number(count || 1), 200));
+  const compact =
+    widthMm <= 57 || heightMm <= 32;
 
-  const margin = compact ? mmToPt(2.4) : mmToPt(3.2);
-  const contentWidth = width - margin * 2;
+  const safeCount =
+    Math.max(1, Math.min(Number(count || 1), 200));
 
-  const dishName = clean(name) || "Foodlabel";
-  const eaterName = clean(customerName);
-  const dateText = formatLabelDate(labelDate);
-  const ingredientText = clean(ingredients) || "-";
-  const allergenText = clean(allergens) || "-";
+  const margin =
+    compact ? mmToPt(2.2) : mmToPt(3);
+
+  const contentWidth =
+    width - margin * 2;
+
+  const dishName =
+    clean(name) || "Foodlabel";
+
+  const eaterName =
+    clean(customerName);
+
+  const dateText =
+    formatLabelDate(labelDate);
+
+  const ingredientText =
+    clean(ingredients) || "-";
+
+  const allergenText =
+    clean(allergens) || "-";
 
   for (let index = 0; index < safeCount; index += 1) {
-    const page = pdf.addPage([width, height]);
+    const page =
+      pdf.addPage([width, height]);
 
+    // weißer Hintergrund
     page.drawRectangle({
       x: 0,
       y: 0,
@@ -142,164 +151,211 @@ export async function renderManualFoodLabelPdf({
       color: rgb(1, 1, 1),
     });
 
+    // nur ein sauberer Außenrahmen
     page.drawRectangle({
-      x: 2,
-      y: 2,
-      width: width - 4,
-      height: height - 4,
+      x: 1.7,
+      y: 1.7,
+      width: width - 3.4,
+      height: height - 3.4,
       borderWidth: 0.65,
-      borderColor: rgb(0.62, 0.62, 0.62),
+      borderColor: rgb(0.55, 0.55, 0.55),
     });
 
-    let y = height - margin;
-    // Haupttitel
-    const titleSize = fitTextSize(
-      dishName,
-      sansBold,
-      compact ? 10.5 : 13,
-      compact ? 7.8 : 10,
-      contentWidth,
-      2
-    );
+    let y =
+      height - margin;
 
-    const titleLines = wrapTextByWidth(
-      dishName,
-      sansBold,
-      titleSize,
-      contentWidth
-    ).slice(0, 2);
+    // GERÜST: Gericht
+    const titleSize =
+      fitSize(
+        dishName,
+        bold,
+        compact ? 10.5 : 13,
+        compact ? 7.5 : 10,
+        contentWidth
+      );
+
+    const titleLines =
+      wrapText(
+        dishName,
+        bold,
+        titleSize,
+        contentWidth
+      ).slice(0, 2);
 
     for (const line of titleLines) {
       page.drawText(line, {
         x: margin,
         y: y - titleSize,
         size: titleSize,
-        font: sansBold,
-        color: rgb(0.06, 0.06, 0.06),
+        font: bold,
+        color: rgb(0.03, 0.03, 0.03),
       });
 
-      y -= titleSize + (compact ? 1 : 1.8);
+      y -= titleSize + (compact ? 1 : 1.5);
     }
 
-    y -= compact ? 2 : 3.5;
+    // Meta-Zeile
+    y -= compact ? 1.5 : 2.5;
 
-    // Meta-Zeile: Esser links, Datum rechts
-    const metaSize = compact ? 5.1 : 5.9;
+    const metaSize =
+      compact ? 4.8 : 5.7;
+
+    if (eaterName) {
+      page.drawText(eaterName, {
+        x: margin,
+        y: y - metaSize,
+        size: metaSize,
+        font: bold,
+        color: rgb(0.30, 0.30, 0.30),
+      });
+    }
+
+    if (dateText) {
+      const dateWidth =
+        regular.widthOfTextAtSize(
+          dateText,
+          metaSize
+        );
+
+      page.drawText(dateText, {
+        x:
+          width -
+          margin -
+          dateWidth,
+        y: y - metaSize,
+        size: metaSize,
+        font: regular,
+        color: rgb(0.38, 0.38, 0.38),
+      });
+    }
 
     if (eaterName || dateText) {
-      if (eaterName) {
-        page.drawText(eaterName, {
-          x: margin,
-          y: y - metaSize,
-          size: metaSize,
-          font: sansBold,
-          color: rgb(0.28, 0.28, 0.28),
-        });
-      }
-
-      if (dateText) {
-        const dateWidth =
-          sans.widthOfTextAtSize(dateText, metaSize);
-
-        page.drawText(dateText, {
-          x: width - margin - dateWidth,
-          y: y - metaSize,
-          size: metaSize,
-          font: sans,
-          color: rgb(0.38, 0.38, 0.38),
-        });
-      }
-
-      y -= metaSize + (compact ? 5 : 7);
+      y -= metaSize + (compact ? 4 : 5.5);
     }
 
-
-    // feine Trennung
+    // Haupttrennlinie
     page.drawLine({
-      start: { x: margin, y },
-      end: { x: width - margin, y },
-      thickness: 0.65,
-      color: rgb(0.80, 0.80, 0.80),
+      start: {
+        x: margin,
+        y,
+      },
+      end: {
+        x: width - margin,
+        y,
+      },
+      thickness: 0.75,
+      color: rgb(0.72, 0.72, 0.72),
     });
 
     y -= compact ? 6 : 8;
 
-    // Zutaten
-    const sectionSize = compact ? 4.6 : 5.3;
-    const bodySize = compact ? 5 : 6.1;
+    /*
+     * Unterer Bereich:
+     * Zutaten links / Allergene rechts
+     */
+    const gap =
+      compact ? mmToPt(2) : mmToPt(2.8);
 
+    const ingredientWidth =
+      contentWidth * 0.66;
+
+    const allergenWidth =
+      contentWidth - ingredientWidth - gap;
+
+    const allergenX =
+      margin + ingredientWidth + gap;
+
+    const sectionSize =
+      compact ? 4.4 : 5.2;
+
+    const bodySize =
+      compact ? 4.8 : 5.9;
+
+    // Abschnittstitel
     page.drawText("ZUTATEN", {
       x: margin,
       y,
       size: sectionSize,
-      font: sansBold,
-      color: rgb(0.48, 0.48, 0.48),
+      font: bold,
+      color: rgb(0.42, 0.42, 0.42),
     });
 
-    y -= compact ? 6.5 : 8;
+    page.drawText("ALLERGENE", {
+      x: allergenX,
+      y,
+      size: sectionSize,
+      font: bold,
+      color: rgb(0.42, 0.42, 0.42),
+    });
 
-    const ingredientLines = wrapTextByWidth(
-      ingredientText,
-      serif,
-      bodySize,
-      contentWidth
-    ).slice(0, compact ? 3 : 5);
+    // vertikale Trennung
+    const columnTop =
+      y + 2;
+
+    const columnBottom =
+      margin + 2;
+
+    page.drawLine({
+      start: {
+        x: allergenX - gap / 2,
+        y: columnTop,
+      },
+      end: {
+        x: allergenX - gap / 2,
+        y: columnBottom,
+      },
+      thickness: 0.5,
+      color: rgb(0.84, 0.84, 0.84),
+    });
+
+    let ingredientsY =
+      y - (compact ? 7 : 8.5);
+
+    let allergensY =
+      ingredientsY;
+
+    const ingredientLines =
+      wrapText(
+        ingredientText,
+        regular,
+        bodySize,
+        ingredientWidth
+      ).slice(0, compact ? 5 : 7);
 
     for (const line of ingredientLines) {
       page.drawText(line, {
         x: margin,
-        y,
+        y: ingredientsY,
         size: bodySize,
-        font: serif,
+        font: regular,
         color: rgb(0.10, 0.10, 0.10),
       });
 
-      y -= compact ? 5.8 : 7.2;
+      ingredientsY -=
+        compact ? 5.5 : 7;
     }
 
-    y -= compact ? 3 : 5;
-
-    // Allergene direkt danach, nicht künstlich nach ganz unten drücken
-    page.drawLine({
-      start: { x: margin, y },
-      end: { x: width - margin, y },
-      thickness: 0.5,
-      color: rgb(0.87, 0.87, 0.87),
-    });
-
-    y -= compact ? 6 : 8;
-
-    page.drawText("ALLERGENE", {
-      x: margin,
-      y,
-      size: sectionSize,
-      font: sansBold,
-      color: rgb(0.48, 0.48, 0.48),
-    });
-
-    y -= compact ? 6.5 : 8;
-
-    const allergenLines = wrapTextByWidth(
-      allergenText,
-      sansBold,
-      compact ? 5.1 : 6.2,
-      contentWidth
-    ).slice(0, compact ? 2 : 3);
+    const allergenLines =
+      wrapText(
+        allergenText,
+        bold,
+        bodySize,
+        allergenWidth
+      ).slice(0, compact ? 5 : 7);
 
     for (const line of allergenLines) {
       page.drawText(line, {
-        x: margin,
-        y,
-        size: compact ? 5.1 : 6.2,
-        font: sansBold,
-        color: rgb(0.08, 0.08, 0.08),
+        x: allergenX,
+        y: allergensY,
+        size: bodySize,
+        font: bold,
+        color: rgb(0.06, 0.06, 0.06),
       });
 
-      y -= compact ? 5.8 : 7.2;
+      allergensY -=
+        compact ? 5.5 : 7;
     }
   }
 
   return pdf.save();
 }
-
-
