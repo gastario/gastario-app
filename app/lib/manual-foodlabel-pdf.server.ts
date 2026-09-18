@@ -152,21 +152,7 @@ export async function renderManualFoodLabelPdf({
     });
 
     let y = height - margin;
-
-    // kleine Kategoriezeile
-    const eyebrowSize = compact ? 4.4 : 5.1;
-
-    page.drawText("GERICHT", {
-      x: margin,
-      y: y - eyebrowSize,
-      size: eyebrowSize,
-      font: sansBold,
-      color: rgb(0.52, 0.52, 0.52),
-    });
-
-    y -= compact ? 7 : 9;
-
-    // Gericht
+    // Haupttitel
     const titleSize = fitTextSize(
       dishName,
       sansBold,
@@ -198,46 +184,35 @@ export async function renderManualFoodLabelPdf({
     y -= compact ? 2 : 3.5;
 
     // Meta-Zeile: Esser links, Datum rechts
-    const metaLabelSize = compact ? 4.2 : 4.8;
-    const metaValueSize = compact ? 5.1 : 6;
+    const metaSize = compact ? 5.1 : 5.9;
 
     if (eaterName || dateText) {
       if (eaterName) {
-        page.drawText("FÜR", {
-          x: margin,
-          y: y - metaValueSize,
-          size: metaLabelSize,
-          font: sansBold,
-          color: rgb(0.52, 0.52, 0.52),
-        });
-
-        const labelWidth =
-          sansBold.widthOfTextAtSize("FÜR", metaLabelSize);
-
         page.drawText(eaterName, {
-          x: margin + labelWidth + 5,
-          y: y - metaValueSize,
-          size: metaValueSize,
-          font: serifItalic,
-          color: rgb(0.18, 0.18, 0.18),
+          x: margin,
+          y: y - metaSize,
+          size: metaSize,
+          font: sansBold,
+          color: rgb(0.28, 0.28, 0.28),
         });
       }
 
       if (dateText) {
         const dateWidth =
-          serif.widthOfTextAtSize(dateText, metaValueSize);
+          sans.widthOfTextAtSize(dateText, metaSize);
 
         page.drawText(dateText, {
           x: width - margin - dateWidth,
-          y: y - metaValueSize,
-          size: metaValueSize,
-          font: serif,
-          color: rgb(0.22, 0.22, 0.22),
+          y: y - metaSize,
+          size: metaSize,
+          font: sans,
+          color: rgb(0.38, 0.38, 0.38),
         });
       }
 
-      y -= metaValueSize + (compact ? 5 : 7);
+      y -= metaSize + (compact ? 5 : 7);
     }
+
 
     // feine Trennung
     page.drawLine({
@@ -326,4 +301,5 @@ export async function renderManualFoodLabelPdf({
 
   return pdf.save();
 }
+
 
