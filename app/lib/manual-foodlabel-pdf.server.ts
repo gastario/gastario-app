@@ -400,11 +400,21 @@ export async function renderManualFoodLabelPdf({
     ) {
       page.drawText(brandText, {
         x: margin,
-        y: footerLineY,
+        y: margin + (compact ? 7 : 9),
         size: compact ? 4.8 : 5.8,
         font: bold,
         color: rgb(0.10, 0.10, 0.10),
       });
+
+      if (brandSublineText) {
+        page.drawText(brandSublineText, {
+          x: margin,
+          y: margin + (compact ? 2 : 3),
+          size: compact ? 3.5 : 4.2,
+          font: regular,
+          color: rgb(0.28, 0.28, 0.28),
+        });
+      }
     }
 
     if (
@@ -429,6 +439,8 @@ export async function renderManualFoodLabelPdf({
 
   return pdf.save();
 }
+
+
 
 
 
