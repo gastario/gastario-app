@@ -119,6 +119,9 @@ export async function renderManualFoodLabelPdf({
   const bold =
     await pdf.embedFont(StandardFonts.HelveticaBold);
 
+  const heroFont =
+    await pdf.embedFont(StandardFonts.HelveticaBoldOblique);
+
   const width = mmToPt(widthMm);
   const height = mmToPt(heightMm);
 
@@ -239,8 +242,8 @@ export async function renderManualFoodLabelPdf({
         fitSingleLine(
           customer,
           bold,
-          compact ? 7.8 : 9.2,
-          compact ? 5.8 : 6.8,
+          compact ? 7.0 : 8.2,
+          compact ? 5.4 : 6.2,
           customerMaxWidth
         );
 
@@ -287,22 +290,22 @@ export async function renderManualFoodLabelPdf({
     y -= compact ? 6 : 8;
 
     // --------------------------------------------------
-    // GERICHT + INFO
+    // GERICHT / HERO
     // --------------------------------------------------
 
     const dishSize =
       fitSingleLine(
         dishName,
-        bold,
-        compact ? 7.6 : 9.0,
-        compact ? 5.8 : 6.8,
+        heroFont,
+        compact ? 9.0 : 11.0,
+        compact ? 6.5 : 8.0,
         contentWidth
       );
 
     const dishLines =
       wrapText(
         dishName,
-        bold,
+        heroFont,
         dishSize,
         contentWidth
       ).slice(0, 2);
@@ -312,37 +315,42 @@ export async function renderManualFoodLabelPdf({
         x: margin,
         y: y - dishSize,
         size: dishSize,
-        font: bold,
-        color: rgb(0.03, 0.03, 0.03),
+        font: heroFont,
+        color: rgb(0.02, 0.02, 0.02),
       });
 
-      y -= dishSize + (compact ? 0.8 : 1.2);
+      y -=
+        dishSize +
+        (compact ? 1.2 : 1.8);
     }
 
-    y -= compact ? 4 : 5;
+    y -= compact ? 5.5 : 7;
 
-    const infoHeadingSize =
-      compact ? 3.9 : 4.5;
+    // --------------------------------------------------
+    // ZUTATEN
+    // --------------------------------------------------
 
-    const infoBodySize =
+    const metaSize =
+      compact ? 3.6 : 4.2;
+
+    const bodySize =
       compact ? 4.2 : 4.8;
 
-    // Zutaten kompakt
-    page.drawText("Zutaten", {
+    page.drawText("ZUTATEN", {
       x: margin,
       y,
-      size: infoHeadingSize,
+      size: metaSize,
       font: bold,
-      color: rgb(0.12, 0.12, 0.12),
+      color: rgb(0.32, 0.32, 0.32),
     });
 
-    y -= compact ? 5.0 : 6.0;
+    y -= compact ? 5.2 : 6.2;
 
     const ingredientLines =
       wrapText(
         ingredientText,
         regular,
-        infoBodySize,
+        bodySize,
         contentWidth
       ).slice(0, compact ? 3 : 4);
 
@@ -350,25 +358,38 @@ export async function renderManualFoodLabelPdf({
       page.drawText(line, {
         x: margin,
         y,
-        size: infoBodySize,
+        size: bodySize,
         font: regular,
-        color: rgb(0.05, 0.05, 0.05),
+        color: rgb(0.08, 0.08, 0.08),
       });
 
-      y -= compact ? 4.7 : 5.5;
+      y -= compact ? 4.8 : 5.7;
     }
 
-    y -= compact ? 2.5 : 3.5;
+    y -= compact ? 3.5 : 4.5;
 
-    // Allergene wie bei Heycater als kompakte Infozeile
-    const allergenLabel =
-      `Allergene: ${allergenText}`;
+    // --------------------------------------------------
+    // ALLERGENE KOMPAKT
+    // --------------------------------------------------
+
+    const allergenPrefix =
+      "ALLERGENE";
+
+    page.drawText(allergenPrefix, {
+      x: margin,
+      y,
+      size: metaSize,
+      font: bold,
+      color: rgb(0.32, 0.32, 0.32),
+    });
+
+    y -= compact ? 5.2 : 6.2;
 
     const allergenLines =
       wrapText(
-        allergenLabel,
+        allergenText,
         regular,
-        infoBodySize,
+        bodySize,
         contentWidth
       ).slice(0, compact ? 2 : 3);
 
@@ -376,12 +397,12 @@ export async function renderManualFoodLabelPdf({
       page.drawText(line, {
         x: margin,
         y,
-        size: infoBodySize,
+        size: bodySize,
         font: regular,
-        color: rgb(0.05, 0.05, 0.05),
+        color: rgb(0.08, 0.08, 0.08),
       });
 
-      y -= compact ? 4.7 : 5.5;
+      y -= compact ? 4.8 : 5.7;
     }
 
     // --------------------------------------------------
@@ -389,7 +410,7 @@ export async function renderManualFoodLabelPdf({
     // --------------------------------------------------
 
     const qrSize =
-      compact ? 14 : 18;
+      compact ? 12 : 16;
 
     const footerBottom =
       margin;
@@ -418,7 +439,7 @@ export async function renderManualFoodLabelPdf({
       page.drawText(brandText, {
         x: margin,
         y: footerBottom + (compact ? 8 : 10),
-        size: compact ? 4.4 : 5.0,
+        size: compact ? 4.8 : 5.5,
         font: bold,
         color: rgb(0.08, 0.08, 0.08),
       });
@@ -427,7 +448,7 @@ export async function renderManualFoodLabelPdf({
         page.drawText(brandSublineText, {
           x: margin,
           y: footerBottom + (compact ? 2 : 3),
-          size: compact ? 3.5 : 4.1,
+          size: compact ? 3.2 : 3.8,
           font: regular,
           color: rgb(0.28, 0.28, 0.28),
         });
@@ -454,6 +475,8 @@ export async function renderManualFoodLabelPdf({
   }
   return pdf.save();
 }
+
+
 
 
 
