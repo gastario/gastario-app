@@ -137,32 +137,33 @@ export async function renderManualFoodLabelPdf({
       height,
       color: rgb(1, 1, 1),
     });
-
-    // weicher Außenrand
+    // Schlichter Außenrahmen für sauberen Thermodruck
     page.drawRectangle({
       x: 2,
       y: 2,
       width: width - 4,
       height: height - 4,
-      borderWidth: 1.1,
-      borderColor: rgb(0.72, 0.72, 0.72),
-    });
-
-    // dezenter Innenrahmen
-    page.drawRectangle({
-      x: 5.5,
-      y: 5.5,
-      width: width - 11,
-      height: height - 11,
-      borderWidth: 0.6,
-      borderColor: rgb(0.88, 0.88, 0.88),
+      borderWidth: 0.75,
+      borderColor: rgb(0.48, 0.48, 0.48),
     });
 
     let y = height - margin;
+    // Gericht als klare Hauptüberschrift
+    const titleSize =
+      compact
+        ? fitTitleSize(dishName, bold, contentWidth, true)
+        : Math.min(
+            12.5,
+            fitTitleSize(dishName, bold, contentWidth, false)
+          );
 
-    // GERICHTSNAME zuerst
-    const titleSize = fitTitleSize(dishName, bold, contentWidth, compact);
-    const titleLines = wrapTextByWidth(dishName, bold, titleSize, contentWidth).slice(0, 2);
+    const titleLines =
+      wrapTextByWidth(
+        dishName,
+        bold,
+        titleSize,
+        contentWidth
+      ).slice(0, 2);
 
     for (const line of titleLines) {
       page.drawText(line, {
@@ -170,32 +171,59 @@ export async function renderManualFoodLabelPdf({
         y: y - titleSize,
         size: titleSize,
         font: bold,
-        color: rgb(0.07, 0.07, 0.07),
+        color: rgb(0.04, 0.04, 0.04),
       });
 
-      y -= titleSize + (compact ? 1.5 : 2.5);
+      y -= titleSize + (compact ? 1.5 : 2.2);
     }
 
-    // Name des Essers darunter
+    // Optionaler Essername direkt unter dem Gericht
     if (eaterName) {
-      y -= compact ? 1 : 2;
+      y -= compact ? 1.5 : 2.5;
 
-      const prefixSize = compact ? 4.8 : 5.4;
-      const eaterLine = `Für ${eaterName}`;
-      const eaterSize = fitCustomerSize(eaterLine, bold, contentWidth, compact);
+      const eaterLabelSize =
+        compact ? 4.3 : 5;
 
-      page.drawText(eaterLine, {
+      const eaterNameSize =
+        compact
+          ? 6.2
+          : fitCustomerSize(
+              eaterName,
+              bold,
+              contentWidth - 34,
+              false
+            );
+
+      page.drawText("ESSER", {
         x: margin,
-        y: y - eaterSize,
-        size: eaterSize,
+        y: y - eaterNameSize,
+        size: eaterLabelSize,
         font: bold,
-        color: rgb(0.42, 0.42, 0.42),
+        color: rgb(0.48, 0.48, 0.48),
       });
 
-      y -= eaterSize + (compact ? 4 : 6);
+      const eaterLabelWidth =
+        bold.widthOfTextAtSize(
+          "ESSER",
+          eaterLabelSize
+        );
+
+      page.drawText(eaterName, {
+        x:
+          margin +
+          eaterLabelWidth +
+          (compact ? 5 : 7),
+        y: y - eaterNameSize,
+        size: eaterNameSize,
+        font: bold,
+        color: rgb(0.12, 0.12, 0.12),
+      });
+
+      y -= eaterNameSize + (compact ? 5 : 7);
     } else {
       y -= compact ? 3 : 5;
     }
+
 
     // Trennlinie 1
     page.drawLine({
@@ -309,4 +337,5 @@ export async function renderManualFoodLabelPdf({
 
   return pdf.save();
 }
+
 
