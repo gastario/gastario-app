@@ -88,6 +88,7 @@ export async function renderManualFoodLabelPdf({
   name,
   customerName,
   brandName,
+  brandSubline,
   qrText,
   assetMode,
   labelDate,
@@ -100,6 +101,7 @@ export async function renderManualFoodLabelPdf({
   name: string;
   customerName?: string | null;
   brandName?: string | null;
+  brandSubline?: string | null;
   qrText?: string | null;
   assetMode?: string | null;
   labelDate?: string | null;
@@ -140,6 +142,9 @@ export async function renderManualFoodLabelPdf({
 
   const brandText =
     clean(brandName);
+
+  const brandSublineText =
+    clean(brandSubline);
 
   const qrValue =
     clean(qrText);
@@ -195,12 +200,12 @@ export async function renderManualFoodLabelPdf({
 
     // Feiner kompletter Labelrand
     page.drawRectangle({
-      x: 1.4,
-      y: 1.4,
-      width: width - 2.8,
-      height: height - 2.8,
-      borderWidth: 0.55,
-      borderColor: rgb(0.72, 0.72, 0.72),
+      x: 0.8,
+      y: 0.8,
+      width: width - 1.6,
+      height: height - 1.6,
+      borderWidth: 0.35,
+      borderColor: rgb(0.82, 0.82, 0.82),
     });
 
     let y = height - margin;
@@ -411,11 +416,11 @@ export async function renderManualFoodLabelPdf({
         await pdf.embedPng(qrImageBytes);
 
       const qrSize =
-        compact ? 24 : 34;
+        compact ? 18 : 24;
 
       page.drawImage(qrImage, {
-        x: width - margin - qrSize,
-        y: margin,
+        x: width - margin - qrSize + 1,
+        y: margin - 1,
         width: qrSize,
         height: qrSize,
       });
@@ -424,6 +429,8 @@ export async function renderManualFoodLabelPdf({
 
   return pdf.save();
 }
+
+
 
 
 
