@@ -189,7 +189,10 @@ export async function renderManualFoodLabelPdf({
   for (let index = 0; index < safeCount; index += 1) {
     const page = pdf.addPage([width, height]);
 
-    // Weißer Hintergrund
+    // --------------------------------------------------
+    // HINTERGRUND + FEINER AUSSENRAND
+    // --------------------------------------------------
+
     page.drawRectangle({
       x: 0,
       y: 0,
@@ -198,46 +201,55 @@ export async function renderManualFoodLabelPdf({
       color: rgb(1, 1, 1),
     });
 
-    // Klarer äußerer Labelrand
+    const borderInset =
+      compact ? 0.8 : 1;
+
     page.drawRectangle({
-      x: 1,
-      y: 1,
-      width: width - 2,
-      height: height - 2,
-      borderWidth: 0.55,
-      borderColor: rgb(0.78, 0.85, 0.81),
+      x: borderInset,
+      y: borderInset,
+      width: width - borderInset * 2,
+      height: height - borderInset * 2,
+      borderWidth: 0.45,
+      borderColor: rgb(0.80, 0.86, 0.83),
     });
 
-    let y = height - margin;
+    let y =
+      height - margin;
 
     // --------------------------------------------------
     // NAME + DATUM
     // --------------------------------------------------
 
-    const dateSize = compact ? 4.5 : 5.2;
+    const dateSize =
+      compact ? 4.3 : 5.0;
 
-    const reservedDateWidth = dateText
-      ? regular.widthOfTextAtSize(dateText, dateSize) + 8
-      : 0;
+    const reservedDateWidth =
+      dateText
+        ? regular.widthOfTextAtSize(
+            dateText,
+            dateSize
+          ) + 8
+        : 0;
 
     const customerMaxWidth =
       contentWidth - reservedDateWidth;
 
     if (customer) {
-      const customerSize = fitSingleLine(
-        customer,
-        bold,
-        compact ? 7.8 : 9.2,
-        compact ? 5.8 : 6.8,
-        customerMaxWidth
-      );
+      const customerSize =
+        fitSingleLine(
+          customer,
+          bold,
+          compact ? 7.8 : 9.2,
+          compact ? 5.8 : 6.8,
+          customerMaxWidth
+        );
 
       page.drawText(customer, {
         x: margin,
         y: y - customerSize,
         size: customerSize,
         font: bold,
-        color: rgb(0.02, 0.02, 0.02),
+        color: rgb(0.03, 0.03, 0.03),
       });
     }
 
@@ -259,12 +271,17 @@ export async function renderManualFoodLabelPdf({
 
     y -= compact ? 11 : 14;
 
-    // Linie wie bei Heycater
     page.drawLine({
-      start: { x: margin, y },
-      end: { x: width - margin, y },
-      thickness: 0.45,
-      color: rgb(0.78, 0.85, 0.81),
+      start: {
+        x: margin,
+        y,
+      },
+      end: {
+        x: width - margin,
+        y,
+      },
+      thickness: 0.4,
+      color: rgb(0.80, 0.86, 0.83),
     });
 
     y -= compact ? 6 : 8;
@@ -273,20 +290,22 @@ export async function renderManualFoodLabelPdf({
     // GERICHT
     // --------------------------------------------------
 
-    const dishSize = fitSingleLine(
-      dishName,
-      bold,
-      compact ? 8.4 : 10.2,
-      compact ? 6.2 : 7.4,
-      contentWidth
-    );
+    const dishSize =
+      fitSingleLine(
+        dishName,
+        bold,
+        compact ? 8.0 : 9.6,
+        compact ? 6.0 : 7.2,
+        contentWidth
+      );
 
-    const dishLines = wrapText(
-      dishName,
-      bold,
-      dishSize,
-      contentWidth
-    ).slice(0, 2);
+    const dishLines =
+      wrapText(
+        dishName,
+        bold,
+        dishSize,
+        contentWidth
+      ).slice(0, 2);
 
     for (const line of dishLines) {
       page.drawText(line, {
@@ -294,110 +313,117 @@ export async function renderManualFoodLabelPdf({
         y: y - dishSize,
         size: dishSize,
         font: bold,
-        color: rgb(0.02, 0.02, 0.02),
+        color: rgb(0.03, 0.03, 0.03),
       });
 
-      y -= dishSize + (compact ? 1 : 1.5);
+      y -=
+        dishSize +
+        (compact ? 1 : 1.4);
     }
 
-    y -= compact ? 3 : 4;
-
-    y -= compact ? 4 : 5;
+    y -= compact ? 5 : 6;
 
     // --------------------------------------------------
     // ZUTATEN
     // --------------------------------------------------
 
-    const sectionSize = compact ? 4.0 : 4.6;
-    const bodySize = compact ? 4.5 : 5.2;
+    const infoHeadingSize =
+      compact ? 4.1 : 4.7;
 
-    page.drawText("ZUTATEN", {
+    const infoBodySize =
+      compact ? 4.4 : 5.0;
+
+    page.drawText("Zutaten", {
       x: margin,
       y,
-      size: sectionSize,
+      size: infoHeadingSize,
       font: bold,
-      color: rgb(0.08, 0.08, 0.08),
+      color: rgb(0.12, 0.12, 0.12),
     });
 
-    y -= compact ? 6.6 : 8;
+    y -= compact ? 5.5 : 6.5;
 
-    const ingredientLines = wrapText(
-      ingredientText,
-      regular,
-      bodySize,
-      contentWidth
-    ).slice(0, compact ? 3 : 4);
+    const ingredientLines =
+      wrapText(
+        ingredientText,
+        regular,
+        infoBodySize,
+        contentWidth
+      ).slice(0, compact ? 3 : 4);
 
     for (const line of ingredientLines) {
       page.drawText(line, {
         x: margin,
         y,
-        size: bodySize,
+        size: infoBodySize,
         font: regular,
-        color: rgb(0.04, 0.04, 0.04),
+        color: rgb(0.05, 0.05, 0.05),
       });
 
-      y -= compact ? 5.2 : 6.4;
+      y -= compact ? 5.0 : 5.9;
     }
 
-    y -= compact ? 2.5 : 3.5;
-
-    y -= compact ? 4 : 5;
+    y -= compact ? 3.5 : 4.5;
 
     // --------------------------------------------------
     // ALLERGENE
     // --------------------------------------------------
 
-    page.drawText("ALLERGENE", {
+    page.drawText("Allergene", {
       x: margin,
       y,
-      size: sectionSize,
+      size: infoHeadingSize,
       font: bold,
-      color: rgb(0.08, 0.08, 0.08),
+      color: rgb(0.12, 0.12, 0.12),
     });
 
-    y -= compact ? 6.6 : 8;
+    y -= compact ? 5.5 : 6.5;
 
-    const allergenSize = compact ? 4.5 : 5.2;
-
-    const allergenLines = wrapText(
-      allergenText,
-      regular,
-      allergenSize,
-      contentWidth
-    ).slice(0, 3);
+    const allergenLines =
+      wrapText(
+        allergenText,
+        regular,
+        infoBodySize,
+        contentWidth
+      ).slice(0, compact ? 2 : 3);
 
     for (const line of allergenLines) {
       page.drawText(line, {
         x: margin,
         y,
-        size: allergenSize,
+        size: infoBodySize,
         font: regular,
-        color: rgb(0.02, 0.02, 0.02),
+        color: rgb(0.05, 0.05, 0.05),
       });
 
-      y -= compact ? 5.2 : 6.4;
+      y -= compact ? 5.0 : 5.9;
     }
-
-    y -= compact ? 2.5 : 3.5;
 
     // --------------------------------------------------
     // FOOTER
     // --------------------------------------------------
+
+    const qrSize =
+      compact ? 17 : 22;
+
+    const footerBottom =
+      margin;
+
     const footerLineY =
-      margin + (compact ? 8 : 11);
+      footerBottom +
+      (compact ? 22 : 28);
 
     page.drawLine({
       start: {
         x: margin,
-        y: footerLineY + (compact ? 8 : 10),
+        y: footerLineY,
       },
       end: {
         x: width - margin,
-        y: footerLineY + (compact ? 8 : 10),
+        y: footerLineY,
       },
-      thickness: 0.45,
-      color: rgb(0.78, 0.85, 0.81),
+      thickness: 0.4,
+      color: rgb(0.80, 0.86, 0.83),
     });
 
     if (
@@ -406,17 +432,17 @@ export async function renderManualFoodLabelPdf({
     ) {
       page.drawText(brandText, {
         x: margin,
-        y: margin + (compact ? 7 : 9),
-        size: compact ? 4.8 : 5.8,
+        y: footerBottom + (compact ? 8 : 10),
+        size: compact ? 4.8 : 5.6,
         font: bold,
-        color: rgb(0.10, 0.10, 0.10),
+        color: rgb(0.08, 0.08, 0.08),
       });
 
       if (brandSublineText) {
         page.drawText(brandSublineText, {
           x: margin,
-          y: margin + (compact ? 2 : 3),
-          size: compact ? 3.5 : 4.2,
+          y: footerBottom + (compact ? 2 : 3),
+          size: compact ? 3.5 : 4.1,
           font: regular,
           color: rgb(0.28, 0.28, 0.28),
         });
@@ -425,26 +451,25 @@ export async function renderManualFoodLabelPdf({
 
     if (
       qrImageBytes &&
-      (footerMode === "brand-and-qr" ||
-        footerMode === "qr-only")
+      (
+        footerMode === "brand-and-qr" ||
+        footerMode === "qr-only"
+      )
     ) {
       const qrImage =
         await pdf.embedPng(qrImageBytes);
 
-      const qrSize =
-        compact ? 18 : 24;
-
       page.drawImage(qrImage, {
-        x: width - margin - qrSize + 1,
-        y: margin - 1,
+        x: width - margin - qrSize,
+        y: footerBottom,
         width: qrSize,
         height: qrSize,
       });
     }
   }
-
   return pdf.save();
 }
+
 
 
 
