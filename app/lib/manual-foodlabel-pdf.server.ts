@@ -287,15 +287,15 @@ export async function renderManualFoodLabelPdf({
     y -= compact ? 6 : 8;
 
     // --------------------------------------------------
-    // GERICHT
+    // GERICHT + INFO
     // --------------------------------------------------
 
     const dishSize =
       fitSingleLine(
         dishName,
         bold,
-        compact ? 8.0 : 9.6,
-        compact ? 6.0 : 7.2,
+        compact ? 7.6 : 9.0,
+        compact ? 5.8 : 6.8,
         contentWidth
       );
 
@@ -316,23 +316,18 @@ export async function renderManualFoodLabelPdf({
         color: rgb(0.03, 0.03, 0.03),
       });
 
-      y -=
-        dishSize +
-        (compact ? 1 : 1.4);
+      y -= dishSize + (compact ? 0.8 : 1.2);
     }
 
-    y -= compact ? 5 : 6;
-
-    // --------------------------------------------------
-    // ZUTATEN
-    // --------------------------------------------------
+    y -= compact ? 4 : 5;
 
     const infoHeadingSize =
-      compact ? 4.1 : 4.7;
+      compact ? 3.9 : 4.5;
 
     const infoBodySize =
-      compact ? 4.4 : 5.0;
+      compact ? 4.2 : 4.8;
 
+    // Zutaten kompakt
     page.drawText("Zutaten", {
       x: margin,
       y,
@@ -341,7 +336,7 @@ export async function renderManualFoodLabelPdf({
       color: rgb(0.12, 0.12, 0.12),
     });
 
-    y -= compact ? 5.5 : 6.5;
+    y -= compact ? 5.0 : 6.0;
 
     const ingredientLines =
       wrapText(
@@ -360,28 +355,18 @@ export async function renderManualFoodLabelPdf({
         color: rgb(0.05, 0.05, 0.05),
       });
 
-      y -= compact ? 5.0 : 5.9;
+      y -= compact ? 4.7 : 5.5;
     }
 
-    y -= compact ? 3.5 : 4.5;
+    y -= compact ? 2.5 : 3.5;
 
-    // --------------------------------------------------
-    // ALLERGENE
-    // --------------------------------------------------
-
-    page.drawText("Allergene", {
-      x: margin,
-      y,
-      size: infoHeadingSize,
-      font: bold,
-      color: rgb(0.12, 0.12, 0.12),
-    });
-
-    y -= compact ? 5.5 : 6.5;
+    // Allergene wie bei Heycater als kompakte Infozeile
+    const allergenLabel =
+      `Allergene: ${allergenText}`;
 
     const allergenLines =
       wrapText(
-        allergenText,
+        allergenLabel,
         regular,
         infoBodySize,
         contentWidth
@@ -396,7 +381,7 @@ export async function renderManualFoodLabelPdf({
         color: rgb(0.05, 0.05, 0.05),
       });
 
-      y -= compact ? 5.0 : 5.9;
+      y -= compact ? 4.7 : 5.5;
     }
 
     // --------------------------------------------------
@@ -404,7 +389,7 @@ export async function renderManualFoodLabelPdf({
     // --------------------------------------------------
 
     const qrSize =
-      compact ? 17 : 22;
+      compact ? 14 : 18;
 
     const footerBottom =
       margin;
@@ -433,7 +418,7 @@ export async function renderManualFoodLabelPdf({
       page.drawText(brandText, {
         x: margin,
         y: footerBottom + (compact ? 8 : 10),
-        size: compact ? 4.8 : 5.6,
+        size: compact ? 4.4 : 5.0,
         font: bold,
         color: rgb(0.08, 0.08, 0.08),
       });
@@ -469,6 +454,7 @@ export async function renderManualFoodLabelPdf({
   }
   return pdf.save();
 }
+
 
 
 
