@@ -205,7 +205,7 @@ export async function renderManualFoodLabelPdf({
       width: width - 2,
       height: height - 2,
       borderWidth: 0.55,
-      borderColor: rgb(0.82, 0.87, 0.84),
+      borderColor: rgb(0.78, 0.85, 0.81),
     });
 
     let y = height - margin;
@@ -263,8 +263,8 @@ export async function renderManualFoodLabelPdf({
     page.drawLine({
       start: { x: margin, y },
       end: { x: width - margin, y },
-      thickness: 0.55,
-      color: rgb(0.80, 0.80, 0.80),
+      thickness: 0.45,
+      color: rgb(0.78, 0.85, 0.81),
     });
 
     y -= compact ? 6 : 8;
@@ -301,13 +301,6 @@ export async function renderManualFoodLabelPdf({
     }
 
     y -= compact ? 3 : 4;
-
-    page.drawLine({
-      start: { x: margin, y },
-      end: { x: width - margin, y },
-      thickness: 0.45,
-      color: rgb(0.82, 0.87, 0.84),
-    });
 
     y -= compact ? 4 : 5;
 
@@ -349,13 +342,6 @@ export async function renderManualFoodLabelPdf({
 
     y -= compact ? 2.5 : 3.5;
 
-    page.drawLine({
-      start: { x: margin, y },
-      end: { x: width - margin, y },
-      thickness: 0.45,
-      color: rgb(0.82, 0.87, 0.84),
-    });
-
     y -= compact ? 4 : 5;
 
     // --------------------------------------------------
@@ -395,13 +381,6 @@ export async function renderManualFoodLabelPdf({
 
     y -= compact ? 2.5 : 3.5;
 
-    page.drawLine({
-      start: { x: margin, y },
-      end: { x: width - margin, y },
-      thickness: 0.45,
-      color: rgb(0.82, 0.87, 0.84),
-    });
-
     // --------------------------------------------------
     // FOOTER
     // --------------------------------------------------
@@ -417,8 +396,8 @@ export async function renderManualFoodLabelPdf({
         x: width - margin,
         y: footerLineY + (compact ? 8 : 10),
       },
-      thickness: 0.5,
-      color: rgb(0.82, 0.82, 0.82),
+      thickness: 0.45,
+      color: rgb(0.78, 0.85, 0.81),
     });
 
     if (
@@ -466,6 +445,8 @@ export async function renderManualFoodLabelPdf({
 
   return pdf.save();
 }
+
+
 
 
 
