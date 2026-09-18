@@ -18,15 +18,11 @@ function clean(value: string | null | undefined) {
 function formatLabelDate(value: string | null | undefined) {
   const raw = clean(value);
 
-  if (!raw) {
-    return "";
-  }
+  if (!raw) return "";
 
   const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
 
-  if (!match) {
-    return raw;
-  }
+  if (!match) return raw;
 
   return `${match[3]}.${match[2]}.${match[1]}`;
 }
@@ -48,9 +44,7 @@ function wrapText(
   let current = "";
 
   for (const word of words) {
-    const candidate = current
-      ? `${current} ${word}`
-      : word;
+    const candidate = current ? `${current} ${word}` : word;
 
     if (
       !current ||
@@ -70,24 +64,23 @@ function wrapText(
   return lines;
 }
 
-function fitTitleSize(
+function fitSingleLine(
   text: string,
   font: PDFFont,
-  maxWidth: number,
-  compact: boolean
+  startSize: number,
+  minSize: number,
+  maxWidth: number
 ) {
-  let size = compact ? 10.2 : 12.8;
-  const minimum = compact ? 7.6 : 9.4;
+  let size = startSize;
 
-  while (size > minimum) {
-    if (wrapText(text, font, size, maxWidth).length <= 2) {
-      return size;
-    }
-
-    size -= 0.4;
+  while (
+    size > minSize &&
+    font.widthOfTextAtSize(text, size) > maxWidth
+  ) {
+    size -= 0.3;
   }
 
-  return minimum;
+  return size;
 }
 
 export async function renderManualFoodLabelPdf({
@@ -127,7 +120,7 @@ export async function renderManualFoodLabelPdf({
     Math.max(1, Math.min(Number(count || 1), 200));
 
   const margin =
-    compact ? mmToPt(2.5) : mmToPt(3.2);
+    compact ? mmToPt(2.3) : mmToPt(3);
 
   const contentWidth =
     width - margin * 2;
@@ -148,9 +141,9 @@ export async function renderManualFoodLabelPdf({
     prettifyList(allergens) || "-";
 
   for (let index = 0; index < safeCount; index += 1) {
-    const page = pdf.addPage([width, height]);
+    const page =
+      pdf.addPage([width, height]);
 
-    // Weißer Hintergrund
     page.drawRectangle({
       x: 0,
       y: 0,
@@ -159,128 +152,132 @@ export async function renderManualFoodLabelPdf({
       color: rgb(1, 1, 1),
     });
 
-    // Klarer, feiner Labelrand
+    // Sehr feiner kompletter Labelrand
     page.drawRectangle({
-      x: 1.6,
-      y: 1.6,
-      width: width - 3.2,
-      height: height - 3.2,
-      borderWidth: 0.65,
-      borderColor: rgb(0.62, 0.62, 0.62),
+      x: 1.4,
+      y: 1.4,
+      width: width - 2.8,
+      height: height - 2.8,
+      borderWidth: 0.55,
+      borderColor: rgb(0.72, 0.72, 0.72),
     });
 
-    let y = height - margin;
+    let y =
+      height - margin;
 
     // --------------------------------------------------
-    // 1. CUSTOMER-NAME LINKS / DATUM RECHTS
+    // CUSTOMER + DATUM
     // --------------------------------------------------
-    const customerSize =
-      compact ? 6.1 : 7.3;
 
     const dateSize =
-      compact ? 4.7 : 5.4;
+      compact ? 4.5 : 5.2;
+
+    const reservedDateWidth =
+      dateText
+        ? regular.widthOfTextAtSize(dateText, dateSize) + 8
+        : 0;
+
+    const customerMaxWidth =
+      contentWidth - reservedDateWidth;
 
     if (customer) {
+      const customerSize =
+        fitSingleLine(
+          customer,
+          bold,
+          compact ? 7 : 8.4,
+          compact ? 5.3 : 6.4,
+          customerMaxWidth
+        );
+
       page.drawText(customer, {
         x: margin,
         y: y - customerSize,
         size: customerSize,
         font: bold,
-        color: rgb(0.06, 0.06, 0.06),
+        color: rgb(0.04, 0.04, 0.04),
       });
     }
 
     if (dateText) {
       const dateWidth =
-        regular.widthOfTextAtSize(
-          dateText,
-          dateSize
-        );
+        regular.widthOfTextAtSize(dateText, dateSize);
 
       page.drawText(dateText, {
         x: width - margin - dateWidth,
         y: y - dateSize,
         size: dateSize,
         font: regular,
-        color: rgb(0.34, 0.34, 0.34),
+        color: rgb(0.20, 0.20, 0.20),
       });
     }
 
-    if (customer || dateText) {
-      y -=
-        Math.max(customerSize, dateSize) +
-        (compact ? 4.5 : 6);
-    }
+    y -= compact ? 11 : 14;
 
-    // Trennlinie nach Customer
+    // Heycater-artige Trennung
     page.drawLine({
-      start: {
-        x: margin,
-        y,
-      },
-      end: {
-        x: width - margin,
-        y,
-      },
-      thickness: 0.65,
+      start: { x: margin, y },
+      end: { x: width - margin, y },
+      thickness: 0.55,
       color: rgb(0.80, 0.80, 0.80),
     });
 
     y -= compact ? 6 : 8;
 
     // --------------------------------------------------
-    // 2. GERICHT
+    // GERICHT
     // --------------------------------------------------
-    const titleSize =
-      fitTitleSize(
+
+    const dishSize =
+      fitSingleLine(
         dishName,
         bold,
-        contentWidth,
-        compact
+        compact ? 7.8 : 9.6,
+        compact ? 6 : 7.2,
+        contentWidth
       );
 
-    const titleLines =
+    const dishLines =
       wrapText(
         dishName,
         bold,
-        titleSize,
+        dishSize,
         contentWidth
       ).slice(0, 2);
 
-    for (const line of titleLines) {
+    for (const line of dishLines) {
       page.drawText(line, {
         x: margin,
-        y: y - titleSize,
-        size: titleSize,
+        y: y - dishSize,
+        size: dishSize,
         font: bold,
-        color: rgb(0.03, 0.03, 0.03),
+        color: rgb(0.02, 0.02, 0.02),
       });
 
-      y -=
-        titleSize +
-        (compact ? 1 : 1.7);
+      y -= dishSize + (compact ? 1 : 1.5);
     }
 
-    y -= compact ? 4 : 6;
+    y -= compact ? 5 : 7;
 
     // --------------------------------------------------
-    // 3. ZUTATEN
+    // ZUTATEN
     // --------------------------------------------------
+
     const sectionSize =
-      compact ? 4.5 : 5.2;
+      compact ? 4.4 : 5;
 
     const bodySize =
-      compact ? 5 : 6;
+      compact ? 4.8 : 5.7;
 
     page.drawText("ZUTATEN", {
       x: margin,
       y,
       size: sectionSize,
       font: bold,
-      color: rgb(0.40, 0.40, 0.40),
+      color: rgb(0.28, 0.28, 0.28),
     });
 
-    y -= compact ? 6.5 : 8;
+    y -= compact ? 6 : 7.5;
 
     const ingredientLines =
       wrapText(
@@ -296,46 +293,30 @@ export async function renderManualFoodLabelPdf({
         y,
         size: bodySize,
         font: regular,
-        color: rgb(0.07, 0.07, 0.07),
+        color: rgb(0.04, 0.04, 0.04),
       });
 
-      y -=
-        compact ? 5.8 : 7.1;
+      y -= compact ? 5.3 : 6.5;
     }
 
-    y -= compact ? 3.5 : 5;
-
-    // Trennlinie vor Allergenen
-    page.drawLine({
-      start: {
-        x: margin,
-        y,
-      },
-      end: {
-        x: width - margin,
-        y,
-      },
-      thickness: 0.45,
-      color: rgb(0.86, 0.86, 0.86),
-    });
-
-    y -= compact ? 6 : 8;
+    y -= compact ? 4 : 5.5;
 
     // --------------------------------------------------
-    // 4. ALLERGENE
+    // ALLERGENE
     // --------------------------------------------------
+
     page.drawText("ALLERGENE", {
       x: margin,
       y,
       size: sectionSize,
       font: bold,
-      color: rgb(0.40, 0.40, 0.40),
+      color: rgb(0.28, 0.28, 0.28),
     });
 
-    y -= compact ? 6.5 : 8;
+    y -= compact ? 6 : 7.5;
 
     const allergenSize =
-      compact ? 5.2 : 6.2;
+      compact ? 4.9 : 5.8;
 
     const allergenLines =
       wrapText(
@@ -343,7 +324,7 @@ export async function renderManualFoodLabelPdf({
         bold,
         allergenSize,
         contentWidth
-      ).slice(0, compact ? 2 : 3);
+      ).slice(0, 2);
 
     for (const line of allergenLines) {
       page.drawText(line, {
@@ -351,12 +332,23 @@ export async function renderManualFoodLabelPdf({
         y,
         size: allergenSize,
         font: bold,
-        color: rgb(0.03, 0.03, 0.03),
+        color: rgb(0.02, 0.02, 0.02),
       });
 
-      y -=
-        compact ? 5.8 : 7;
+      y -= compact ? 5.4 : 6.6;
     }
+
+    // Kleine Abschlusslinie unten,
+    // damit das Label optisch geschlossen wirkt.
+    const footerY =
+      margin + (compact ? 1 : 2);
+
+    page.drawLine({
+      start: { x: margin, y: footerY },
+      end: { x: width - margin, y: footerY },
+      thickness: 0.45,
+      color: rgb(0.86, 0.86, 0.86),
+    });
   }
 
   return pdf.save();
