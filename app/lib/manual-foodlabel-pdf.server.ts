@@ -202,15 +202,15 @@ export async function renderManualFoodLabelPdf({
     });
 
     const borderInset =
-      compact ? 0.8 : 1;
+      compact ? 0.7 : 0.8;
 
     page.drawRectangle({
       x: borderInset,
       y: borderInset,
       width: width - borderInset * 2,
       height: height - borderInset * 2,
-      borderWidth: 0.45,
-      borderColor: rgb(0.80, 0.86, 0.83),
+      borderWidth: 0.7,
+      borderColor: rgb(0.72, 0.82, 0.77),
     });
 
     let y =
@@ -469,6 +469,7 @@ export async function renderManualFoodLabelPdf({
   }
   return pdf.save();
 }
+
 
 
 
