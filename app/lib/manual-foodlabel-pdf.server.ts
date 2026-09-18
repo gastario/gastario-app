@@ -258,28 +258,27 @@ export async function renderManualFoodLabelPdf({
       color: rgb(0.86, 0.86, 0.86),
     });
 
-    // weicher Allergene-Kasten
+    // Allergene: für Thermodruck bewusst ohne Hintergrundfläche
+    const boxPadding = compact ? 3.5 : 5;
+
     page.drawRectangle({
       x: margin,
       y: allergenBoxY,
       width: contentWidth,
       height: allergenBoxHeight,
-      color: rgb(0.96, 0.96, 0.96),
-      borderWidth: 0.6,
-      borderColor: rgb(0.86, 0.86, 0.86),
+      borderWidth: 0.8,
+      borderColor: rgb(0.55, 0.55, 0.55),
     });
-
-    const boxPadding = compact ? 3.5 : 5;
 
     page.drawText("ALLERGENE", {
       x: margin + boxPadding,
       y: allergenBoxY + allergenBoxHeight - boxPadding - sectionLabelSize,
       size: sectionLabelSize,
       font: bold,
-      color: rgb(0.45, 0.45, 0.45),
+      color: rgb(0.22, 0.22, 0.22),
     });
 
-    const allergenSize = compact ? 5.2 : 6.5;
+    const allergenSize = compact ? 5.4 : 6.8;
     const allergenLines = wrapTextByWidth(
       allergenText,
       bold,
@@ -293,7 +292,7 @@ export async function renderManualFoodLabelPdf({
       boxPadding -
       sectionLabelSize -
       allergenSize -
-      3;
+      4;
 
     for (const line of allergenLines) {
       page.drawText(line, {
@@ -301,7 +300,7 @@ export async function renderManualFoodLabelPdf({
         y: allergenY,
         size: allergenSize,
         font: bold,
-        color: rgb(0.08, 0.08, 0.08),
+        color: rgb(0, 0, 0),
       });
 
       allergenY -= allergenSize + 1.5;
@@ -310,3 +309,4 @@ export async function renderManualFoodLabelPdf({
 
   return pdf.save();
 }
+
