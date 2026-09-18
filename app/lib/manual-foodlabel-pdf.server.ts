@@ -148,22 +148,18 @@ export async function renderManualFoodLabelPdf({
     });
 
     let y = height - margin;
-    // Gericht als klare Hauptüberschrift
+    // Ruhiger Kopfbereich
     const titleSize =
       compact
-        ? fitTitleSize(dishName, bold, contentWidth, true)
-        : Math.min(
-            12.5,
-            fitTitleSize(dishName, bold, contentWidth, false)
-          );
+        ? 10.8
+        : 12.6;
 
-    const titleLines =
-      wrapTextByWidth(
-        dishName,
-        bold,
-        titleSize,
-        contentWidth
-      ).slice(0, 2);
+    const titleLines = wrapTextByWidth(
+      dishName,
+      bold,
+      titleSize,
+      contentWidth
+    ).slice(0, 2);
 
     for (const line of titleLines) {
       page.drawText(line, {
@@ -171,69 +167,50 @@ export async function renderManualFoodLabelPdf({
         y: y - titleSize,
         size: titleSize,
         font: bold,
-        color: rgb(0.04, 0.04, 0.04),
+        color: rgb(0.08, 0.08, 0.08),
       });
 
-      y -= titleSize + (compact ? 1.5 : 2.2);
+      y -= titleSize + (compact ? 1.2 : 1.8);
     }
 
-    // Optionaler Essername direkt unter dem Gericht
     if (eaterName) {
-      y -= compact ? 1.5 : 2.5;
+      y -= compact ? 1.2 : 2;
 
-      const eaterLabelSize =
-        compact ? 4.3 : 5;
+      const metaLabelSize = compact ? 4.1 : 4.6;
+      const eaterSize = compact ? 5.2 : 5.9;
 
-      const eaterNameSize =
-        compact
-          ? 6.2
-          : fitCustomerSize(
-              eaterName,
-              bold,
-              contentWidth - 34,
-              false
-            );
-
-      page.drawText("ESSER", {
+      page.drawText("für", {
         x: margin,
-        y: y - eaterNameSize,
-        size: eaterLabelSize,
-        font: bold,
-        color: rgb(0.48, 0.48, 0.48),
+        y: y - eaterSize,
+        size: metaLabelSize,
+        font: regular,
+        color: rgb(0.45, 0.45, 0.45),
       });
 
-      const eaterLabelWidth =
-        bold.widthOfTextAtSize(
-          "ESSER",
-          eaterLabelSize
-        );
+      const fuerWidth = regular.widthOfTextAtSize("für", metaLabelSize);
 
       page.drawText(eaterName, {
-        x:
-          margin +
-          eaterLabelWidth +
-          (compact ? 5 : 7),
-        y: y - eaterNameSize,
-        size: eaterNameSize,
+        x: margin + fuerWidth + (compact ? 4 : 6),
+        y: y - eaterSize,
+        size: eaterSize,
         font: bold,
-        color: rgb(0.12, 0.12, 0.12),
+        color: rgb(0.22, 0.22, 0.22),
       });
 
-      y -= eaterNameSize + (compact ? 5 : 7);
+      y -= eaterSize + (compact ? 4 : 6);
     } else {
-      y -= compact ? 3 : 5;
+      y -= compact ? 2 : 4;
     }
 
-
-    // Trennlinie 1
     page.drawLine({
       start: { x: margin, y },
-      end: { x: width - margin, y },
+      end: { x: margin + contentWidth, y },
       thickness: 0.8,
-      color: rgb(0.75, 0.75, 0.75),
+      color: rgb(0.78, 0.78, 0.78),
     });
 
-    y -= compact ? 7 : 10;
+    y -= compact ? 4 : 6;
+
 
     // ZUTATEN
     const sectionLabelSize = compact ? 4.9 : 5.8;
@@ -275,67 +252,49 @@ export async function renderManualFoodLabelPdf({
 
       y -= compact ? 6.2 : 8;
     }
-
-    // Trennlinie 2 über Allergenen
-    const dividerY = allergenBoxY + allergenBoxHeight + (compact ? 4 : 5);
+    // Feine Trennlinie vor Allergenen
+    const dividerY = allergenBoxY + allergenBoxHeight + (compact ? 3 : 4);
 
     page.drawLine({
       start: { x: margin, y: dividerY },
-      end: { x: width - margin, y: dividerY },
-      thickness: 0.6,
-      color: rgb(0.86, 0.86, 0.86),
+      end: { x: margin + contentWidth, y: dividerY },
+      thickness: 0.7,
+      color: rgb(0.84, 0.84, 0.84),
     });
 
-    // Allergene: für Thermodruck bewusst ohne Hintergrundfläche
-    const boxPadding = compact ? 3.5 : 5;
-
-    page.drawRectangle({
-      x: margin,
-      y: allergenBoxY,
-      width: contentWidth,
-      height: allergenBoxHeight,
-      borderWidth: 0.8,
-      borderColor: rgb(0.55, 0.55, 0.55),
-    });
+    // Schlichter Allergene-Bereich ohne Hintergrundkasten
+    const allergenLabelY = dividerY - (compact ? 7 : 9);
+    const allergenTextYStart = allergenLabelY - (compact ? 6 : 7);
 
     page.drawText("ALLERGENE", {
-      x: margin + boxPadding,
-      y: allergenBoxY + allergenBoxHeight - boxPadding - sectionLabelSize,
-      size: sectionLabelSize,
+      x: margin,
+      y: allergenLabelY,
+      size: compact ? 4.8 : 5.5,
       font: bold,
-      color: rgb(0.22, 0.22, 0.22),
+      color: rgb(0.42, 0.42, 0.42),
     });
 
-    const allergenSize = compact ? 5.4 : 6.8;
     const allergenLines = wrapTextByWidth(
       allergenText,
       bold,
-      allergenSize,
-      contentWidth - boxPadding * 2
-    ).slice(0, compact ? 1 : 2);
+      compact ? 5.2 : 6.1,
+      contentWidth
+    ).slice(0, compact ? 2 : 3);
 
-    let allergenY =
-      allergenBoxY +
-      allergenBoxHeight -
-      boxPadding -
-      sectionLabelSize -
-      allergenSize -
-      4;
+    let allergenY = allergenTextYStart;
 
     for (const line of allergenLines) {
       page.drawText(line, {
-        x: margin + boxPadding,
+        x: margin,
         y: allergenY,
-        size: allergenSize,
+        size: compact ? 5.2 : 6.1,
         font: bold,
-        color: rgb(0, 0, 0),
+        color: rgb(0.08, 0.08, 0.08),
       });
 
-      allergenY -= allergenSize + 1.5;
+      allergenY -= compact ? 6 : 7.2;
     }
-  }
 
+}
   return pdf.save();
 }
-
-
