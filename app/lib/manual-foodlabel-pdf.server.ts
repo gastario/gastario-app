@@ -223,8 +223,7 @@ export async function renderManualFoodLabelPdf({
     // NAME + DATUM
     // --------------------------------------------------
 
-    const dateSize =
-      compact ? 4.3 : 5.0;
+    const dateSize = compact ? 7.0 : 8.5;
 
     const reservedDateWidth =
       dateText
@@ -267,8 +266,8 @@ export async function renderManualFoodLabelPdf({
         x: width - margin - dateWidth,
         y: y - dateSize,
         size: dateSize,
-        font: regular,
-        color: rgb(0.18, 0.18, 0.18),
+        font: bold,
+        color: rgb(0, 0, 0),
       });
     }
 
@@ -330,18 +329,16 @@ export async function renderManualFoodLabelPdf({
     // ZUTATEN
     // --------------------------------------------------
 
-    const metaSize =
-      compact ? 3.6 : 4.2;
+    const metaSize = compact ? 6.5 : 7.8;
 
-    const bodySize =
-      compact ? 4.2 : 4.8;
+    const bodySize = compact ? 7.5 : 9.0;
 
     page.drawText("ZUTATEN", {
       x: margin,
       y,
       size: metaSize,
       font: bold,
-      color: rgb(0.32, 0.32, 0.32),
+      color: rgb(0, 0, 0),
     });
 
     y -= compact ? 6.2 : 7.8;
@@ -359,8 +356,8 @@ export async function renderManualFoodLabelPdf({
         x: margin,
         y,
         size: bodySize,
-        font: regular,
-        color: rgb(0.08, 0.08, 0.08),
+        font: bold,
+        color: rgb(0, 0, 0),
       });
 
       y -= compact ? 6.2 : 7.8;
@@ -380,7 +377,7 @@ export async function renderManualFoodLabelPdf({
       y,
       size: metaSize,
       font: bold,
-      color: rgb(0.32, 0.32, 0.32),
+      color: rgb(0, 0, 0),
     });
 
     y -= compact ? 6.2 : 7.8;
@@ -398,8 +395,8 @@ export async function renderManualFoodLabelPdf({
         x: margin,
         y,
         size: bodySize,
-        font: regular,
-        color: rgb(0.08, 0.08, 0.08),
+        font: bold,
+        color: rgb(0, 0, 0),
       });
 
       y -= compact ? 6.2 : 7.8;
@@ -475,6 +472,8 @@ export async function renderManualFoodLabelPdf({
   }
   return pdf.save();
 }
+
+
 
 
 
