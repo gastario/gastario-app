@@ -287,7 +287,7 @@ export async function renderManualFoodLabelPdf({
       color: rgb(0.80, 0.86, 0.83),
     });
 
-    y -= compact ? 6 : 8;
+    y -= compact ? 7 : 9;
 
     // --------------------------------------------------
     // GERICHT / HERO
@@ -324,7 +324,7 @@ export async function renderManualFoodLabelPdf({
         (compact ? 1.2 : 1.8);
     }
 
-    y -= compact ? 5.5 : 7;
+    y -= compact ? 6.5 : 8.5;
 
     // --------------------------------------------------
     // ZUTATEN
@@ -344,7 +344,7 @@ export async function renderManualFoodLabelPdf({
       color: rgb(0.32, 0.32, 0.32),
     });
 
-    y -= compact ? 5.2 : 6.2;
+    y -= compact ? 6.2 : 7.8;
 
     const ingredientLines =
       wrapText(
@@ -363,10 +363,10 @@ export async function renderManualFoodLabelPdf({
         color: rgb(0.08, 0.08, 0.08),
       });
 
-      y -= compact ? 4.8 : 5.7;
+      y -= compact ? 6.2 : 7.8;
     }
 
-    y -= compact ? 3.5 : 4.5;
+    y -= compact ? 5 : 6.5;
 
     // --------------------------------------------------
     // ALLERGENE KOMPAKT
@@ -383,7 +383,7 @@ export async function renderManualFoodLabelPdf({
       color: rgb(0.32, 0.32, 0.32),
     });
 
-    y -= compact ? 5.2 : 6.2;
+    y -= compact ? 6.2 : 7.8;
 
     const allergenLines =
       wrapText(
@@ -402,7 +402,7 @@ export async function renderManualFoodLabelPdf({
         color: rgb(0.08, 0.08, 0.08),
       });
 
-      y -= compact ? 4.8 : 5.7;
+      y -= compact ? 6.2 : 7.8;
     }
 
     // --------------------------------------------------
@@ -439,7 +439,7 @@ export async function renderManualFoodLabelPdf({
       page.drawText(brandText, {
         x: margin,
         y: footerBottom + (compact ? 8 : 10),
-        size: compact ? 4.8 : 5.5,
+        size: compact ? 6.0 : 7.5,
         font: bold,
         color: rgb(0.08, 0.08, 0.08),
       });
@@ -448,7 +448,7 @@ export async function renderManualFoodLabelPdf({
         page.drawText(brandSublineText, {
           x: margin,
           y: footerBottom + (compact ? 2 : 3),
-          size: compact ? 3.2 : 3.8,
+          size: compact ? 4.4 : 5.5,
           font: regular,
           color: rgb(0.28, 0.28, 0.28),
         });
@@ -475,6 +475,8 @@ export async function renderManualFoodLabelPdf({
   }
   return pdf.save();
 }
+
+
 
 
 
