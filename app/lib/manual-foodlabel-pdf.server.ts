@@ -323,7 +323,7 @@ export async function renderManualFoodLabelPdf({
         (compact ? 1.2 : 1.8);
     }
 
-    y -= compact ? 6.5 : 8.5;
+    y -= compact ? 8.5 : 11.5;
 
     // --------------------------------------------------
     // ZUTATEN
@@ -363,7 +363,7 @@ export async function renderManualFoodLabelPdf({
       y -= compact ? 6.2 : 7.8;
     }
 
-    y -= compact ? 5 : 6.5;
+    y -= compact ? 7 : 9;
 
     // --------------------------------------------------
     // ALLERGENE KOMPAKT
@@ -425,8 +425,8 @@ export async function renderManualFoodLabelPdf({
         x: width - margin,
         y: footerLineY,
       },
-      thickness: 0.4,
-      color: rgb(0.80, 0.86, 0.83),
+      thickness: 0.65,
+      color: rgb(0.72, 0.80, 0.76),
     });
 
     if (
@@ -435,7 +435,7 @@ export async function renderManualFoodLabelPdf({
     ) {
       page.drawText(brandText, {
         x: margin,
-        y: footerBottom + (compact ? 8 : 10),
+        y: footerBottom + (compact ? 11 : 14),
         size: compact ? 7.5 : 9.0,
         font: bold,
         color: rgb(0.08, 0.08, 0.08),
@@ -444,7 +444,7 @@ export async function renderManualFoodLabelPdf({
       if (brandSublineText) {
         page.drawText(brandSublineText, {
           x: margin,
-          y: footerBottom + (compact ? 2 : 3),
+          y: footerBottom + (compact ? 4 : 5),
           size: compact ? 6.5 : 8.0,
           font: regular,
           color: rgb(0.28, 0.28, 0.28),
@@ -472,6 +472,9 @@ export async function renderManualFoodLabelPdf({
   }
   return pdf.save();
 }
+
+
+
 
 
 
