@@ -363,7 +363,7 @@ export async function renderManualFoodLabelPdf({
       y -= bodySize + (compact ? 1.2 : 1.8);
     }
 
-    y -= compact ? 7 : 9;
+    y -= compact ? 2.5 : 3.5;
 
     // --------------------------------------------------
     // ALLERGENE KOMPAKT
@@ -414,7 +414,7 @@ export async function renderManualFoodLabelPdf({
 
     const footerLineY =
       footerBottom +
-      (compact ? 22 : 28);
+      (compact ? 15 : 20);
 
     page.drawLine({
       start: {
@@ -472,6 +472,10 @@ export async function renderManualFoodLabelPdf({
   }
   return pdf.save();
 }
+
+
+
+
 
 
 
