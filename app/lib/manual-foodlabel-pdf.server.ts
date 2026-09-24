@@ -223,7 +223,7 @@ export async function renderManualFoodLabelPdf({
     // NAME + DATUM
     // --------------------------------------------------
 
-    const dateSize = compact ? 8.5 : 10.5;
+    const dateSize = compact ? 7.5 : 9.0;
 
     const reservedDateWidth =
       dateText
@@ -329,9 +329,9 @@ export async function renderManualFoodLabelPdf({
     // ZUTATEN
     // --------------------------------------------------
 
-    const metaSize = compact ? 8.0 : 10.0;
+    const metaSize = compact ? 6.8 : 8.2;
 
-    const bodySize = compact ? 9.5 : 11.5;
+    const bodySize = compact ? 8.5 : 10.0;
 
     page.drawText("ZUTATEN", {
       x: margin,
@@ -346,7 +346,7 @@ export async function renderManualFoodLabelPdf({
     const ingredientLines =
       wrapText(
         ingredientText,
-        bold,
+        regular,
         bodySize,
         contentWidth
       ).slice(0, compact ? 3 : 4);
@@ -356,7 +356,7 @@ export async function renderManualFoodLabelPdf({
         x: margin,
         y,
         size: bodySize,
-        font: bold,
+        font: regular,
         color: rgb(0, 0, 0),
       });
 
@@ -385,7 +385,7 @@ export async function renderManualFoodLabelPdf({
     const allergenLines =
       wrapText(
         allergenText,
-        bold,
+        regular,
         bodySize,
         contentWidth
       ).slice(0, compact ? 2 : 3);
@@ -395,7 +395,7 @@ export async function renderManualFoodLabelPdf({
         x: margin,
         y,
         size: bodySize,
-        font: bold,
+        font: regular,
         color: rgb(0, 0, 0),
       });
 
@@ -472,6 +472,8 @@ export async function renderManualFoodLabelPdf({
   }
   return pdf.save();
 }
+
+
 
 
 
