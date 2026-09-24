@@ -326,84 +326,7 @@ export async function renderManualFoodLabelPdf({
     y -= compact ? 8.5 : 11.5;
 
     // --------------------------------------------------
-    // ZUTATEN
-    // --------------------------------------------------
-
-    const metaSize = compact ? 6.8 : 8.2;
-
-    const bodySize = compact ? 8.5 : 10.0;
-
-    page.drawText("ZUTATEN", {
-      x: margin,
-      y,
-      size: metaSize,
-      font: bold,
-      color: rgb(0, 0, 0),
-    });
-
-    y -= bodySize + (compact ? 1.2 : 1.8);
-
-    const ingredientLines =
-      wrapText(
-        ingredientText,
-        regular,
-        bodySize,
-        contentWidth
-      ).slice(0, compact ? 3 : 4);
-
-    for (const line of ingredientLines) {
-      page.drawText(line, {
-        x: margin,
-        y,
-        size: bodySize,
-        font: regular,
-        color: rgb(0, 0, 0),
-      });
-
-      y -= bodySize + (compact ? 1.2 : 1.8);
-    }
-
-    y -= compact ? 2.5 : 3.5;
-
-    // --------------------------------------------------
-    // ALLERGENE KOMPAKT
-    // --------------------------------------------------
-
-    const allergenPrefix =
-      "ALLERGENE";
-
-    page.drawText(allergenPrefix, {
-      x: margin,
-      y,
-      size: metaSize,
-      font: bold,
-      color: rgb(0, 0, 0),
-    });
-
-    y -= bodySize + (compact ? 1.2 : 1.8);
-
-    const allergenLines =
-      wrapText(
-        allergenText,
-        regular,
-        bodySize,
-        contentWidth
-      ).slice(0, compact ? 2 : 3);
-
-    for (const line of allergenLines) {
-      page.drawText(line, {
-        x: margin,
-        y,
-        size: bodySize,
-        font: regular,
-        color: rgb(0, 0, 0),
-      });
-
-      y -= bodySize + (compact ? 1.2 : 1.8);
-    }
-
-    // --------------------------------------------------
-    // FOOTER
+    // FOOTER-POSITION FEST RESERVIEREN
     // --------------------------------------------------
 
     const qrSize =
@@ -416,6 +339,166 @@ export async function renderManualFoodLabelPdf({
       footerBottom +
       (compact ? 11 : 15);
 
+    const contentBottomY =
+      footerLineY + (compact ? 4 : 5);
+
+    // --------------------------------------------------
+    // ZUTATEN + ALLERGENE DYNAMISCH
+    // --------------------------------------------------
+
+    let metaSize =
+      compact ? 6.8 : 8.2;
+
+    let bodySize =
+      compact ? 8.5 : 10.0;
+
+    const minMetaSize =
+      compact ? 5.6 : 6.2;
+
+    const minBodySize =
+      compact ? 6.4 : 7.2;
+
+    let bodyLineGap =
+      compact ? 0.8 : 1.0;
+
+    let headingGap =
+      compact ? 1.4 : 1.8;
+
+    let sectionGap =
+      compact ? 2.0 : 2.5;
+
+    let ingredientLines =
+      wrapText(
+        ingredientText,
+        regular,
+        bodySize,
+        contentWidth
+      );
+
+    let allergenLines =
+      wrapText(
+        allergenText,
+        regular,
+        bodySize,
+        contentWidth
+      );
+
+    const requiredInfoHeight = () =>
+      metaSize +
+      headingGap +
+      ingredientLines.length * (bodySize + bodyLineGap) +
+      sectionGap +
+      metaSize +
+      headingGap +
+      allergenLines.length * (bodySize + bodyLineGap) +
+      (compact ? 2 : 3);
+
+    const availableInfoHeight =
+      y - contentBottomY;
+
+    while (
+      requiredInfoHeight() > availableInfoHeight &&
+      bodySize > minBodySize
+    ) {
+      bodySize =
+        Math.max(
+          minBodySize,
+          bodySize - 0.35
+        );
+
+      metaSize =
+        Math.max(
+          minMetaSize,
+          metaSize - 0.2
+        );
+
+      ingredientLines =
+        wrapText(
+          ingredientText,
+          regular,
+          bodySize,
+          contentWidth
+        );
+
+      allergenLines =
+        wrapText(
+          allergenText,
+          regular,
+          bodySize,
+          contentWidth
+        );
+    }
+
+    // Falls selbst die Mindestgröße knapp ist:
+    // nur Abstände verdichten, nicht sofort Text weiter verkleinern.
+    if (requiredInfoHeight() > availableInfoHeight) {
+      bodyLineGap =
+        compact ? 0.3 : 0.5;
+
+      headingGap =
+        compact ? 0.8 : 1.0;
+
+      sectionGap =
+        compact ? 1.2 : 1.5;
+    }
+
+    // --------------------------------------------------
+    // ZUTATEN
+    // --------------------------------------------------
+
+    page.drawText("ZUTATEN", {
+      x: margin,
+      y,
+      size: metaSize,
+      font: bold,
+      color: rgb(0, 0, 0),
+    });
+
+    y -= metaSize + headingGap;
+
+    for (const line of ingredientLines) {
+      page.drawText(line, {
+        x: margin,
+        y,
+        size: bodySize,
+        font: regular,
+        color: rgb(0, 0, 0),
+      });
+
+      y -= bodySize + bodyLineGap;
+    }
+
+    y -= sectionGap;
+
+    // --------------------------------------------------
+    // ALLERGENE
+    // --------------------------------------------------
+
+    page.drawText("ALLERGENE", {
+      x: margin,
+      y,
+      size: metaSize,
+      font: bold,
+      color: rgb(0, 0, 0),
+    });
+
+    y -= metaSize + headingGap;
+
+    for (const line of allergenLines) {
+      page.drawText(line, {
+        x: margin,
+        y,
+        size: bodySize,
+        font: regular,
+        color: rgb(0, 0, 0),
+      });
+
+      y -= bodySize + bodyLineGap;
+    }
+
+    // --------------------------------------------------
+    // FOOTER
+    // --------------------------------------------------
     page.drawLine({
       start: {
         x: margin,
@@ -472,6 +555,7 @@ export async function renderManualFoodLabelPdf({
   }
   return pdf.save();
 }
+
 
 
 
