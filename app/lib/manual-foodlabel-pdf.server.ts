@@ -414,7 +414,7 @@ export async function renderManualFoodLabelPdf({
 
     const footerLineY =
       footerBottom +
-      (compact ? 15 : 20);
+      (compact ? 11 : 15);
 
     page.drawLine({
       start: {
@@ -435,7 +435,7 @@ export async function renderManualFoodLabelPdf({
     ) {
       page.drawText(brandText, {
         x: margin,
-        y: footerBottom + (compact ? 11 : 14),
+        y: footerBottom + (compact ? 5 : 7),
         size: compact ? 7.5 : 9.0,
         font: bold,
         color: rgb(0.08, 0.08, 0.08),
@@ -444,7 +444,7 @@ export async function renderManualFoodLabelPdf({
       if (brandSublineText) {
         page.drawText(brandSublineText, {
           x: margin,
-          y: footerBottom + (compact ? 4 : 5),
+          y: footerBottom + (compact ? 1.5 : 2),
           size: compact ? 6.5 : 8.0,
           font: regular,
           color: rgb(0.28, 0.28, 0.28),
@@ -472,6 +472,7 @@ export async function renderManualFoodLabelPdf({
   }
   return pdf.save();
 }
+
 
 
 
