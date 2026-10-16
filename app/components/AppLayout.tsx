@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import {
   useEffect,
   useLayoutEffect,
@@ -11,6 +11,17 @@ import {
   useFetcher,
   useLocation,
 } from "react-router";
+
+import {
+  BarChart3,
+  BriefcaseBusiness,
+  ClipboardList,
+  Inbox,
+  LayoutDashboard,
+  Settings,
+  ShoppingCart,
+  Utensils,
+} from "lucide-react";
 
 import "../styles/gastario-layout.css";
 
@@ -45,6 +56,38 @@ type NavigationGroup = {
 type AppLayoutProps = {
   children: ReactNode;
 };
+
+function NavigationGroupIcon({
+  groupId,
+}: {
+  groupId: string;
+}) {
+  const Icon =
+    groupId === "overview"
+      ? LayoutDashboard
+      : groupId === "inbox"
+        ? Inbox
+        : groupId === "orders"
+          ? ClipboardList
+          : groupId === "sales"
+            ? BriefcaseBusiness
+            : groupId === "operations"
+              ? Utensils
+              : groupId === "purchasing"
+                ? ShoppingCart
+                : groupId === "finance"
+                  ? BarChart3
+                  : Settings;
+
+  return (
+    <Icon
+      className="navGroupIcon"
+      size={16}
+      strokeWidth={1.6}
+      aria-hidden="true"
+    />
+  );
+}
 
 const emptyNavigationCounts: NavigationCounts = {
   inbox: 0,
@@ -930,7 +973,10 @@ export default function AppLayout({
                 >
                   {isOverview ? (
                     <div className="navAccordionStaticLabel">
-                      {group.label}
+                      <NavigationGroupIcon
+                        groupId={group.id}
+                      />
+                      <span>{group.label}</span>
                     </div>
                   ) : (
                     <button
@@ -948,6 +994,9 @@ export default function AppLayout({
                       }
                     >
                       <span className="navAccordionTriggerContent">
+                        <NavigationGroupIcon
+                          groupId={group.id}
+                        />
                         <span>
                           {group.label}
                         </span>

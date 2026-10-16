@@ -1738,3 +1738,270 @@
     height: 25px;
   }
 }
+
+/* gastario-catersmart-sidebar-v1-20261016
+   Rein visuelles Redesign – keine Navigationsfunktion wird verändert.
+*/
+
+.appShell {
+  background: #fbfaf8 !important;
+}
+
+.sidebar {
+  background: #ffffff !important;
+  border-right: 1px solid #ebe8e3 !important;
+  box-shadow: none !important;
+  padding: 22px 14px 16px !important;
+  gap: 12px !important;
+}
+
+.brand {
+  padding: 2px 8px 16px !important;
+}
+
+.sidebarBrandLink {
+  display: inline-flex;
+  align-items: center;
+}
+
+.brandLogo {
+  width: 118px !important;
+  max-width: 100%;
+}
+
+.navGroups {
+  display: grid !important;
+  gap: 3px !important;
+  align-content: start;
+}
+
+.navAccordionGroup,
+.navGroup {
+  display: grid !important;
+  gap: 2px !important;
+  margin: 0 0 3px !important;
+}
+
+.navAccordionStaticLabel,
+.navAccordionTrigger {
+  width: 100%;
+  min-height: 34px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+
+  margin: 0 !important;
+  padding: 0 8px !important;
+
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  color: #77726d !important;
+  font-size: 11.5px !important;
+  line-height: 1 !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.005em !important;
+  text-transform: none !important;
+
+  cursor: pointer;
+}
+
+.navAccordionStaticLabel {
+  cursor: default;
+}
+
+.navAccordionTrigger:hover {
+  background: #f8f6f3 !important;
+  color: #3f3c38 !important;
+}
+
+.navAccordionTriggerContent {
+  min-width: 0;
+  flex: 1;
+
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.navGroupIcon {
+  flex: 0 0 auto;
+
+  width: 16px;
+  height: 16px;
+
+  color: #aaa49d !important;
+  stroke: currentColor;
+}
+
+.navAccordionGroup.hasActiveItem
+  > .navAccordionTrigger
+  .navGroupIcon,
+.navAccordionGroup.hasActiveItem
+  > .navAccordionTrigger {
+  color: #504b46 !important;
+}
+
+.navAccordionChevron {
+  flex: 0 0 auto;
+  margin-left: auto !important;
+
+  color: #b7b1aa !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+
+  transition: transform 140ms ease;
+}
+
+.navAccordionGroup.isOpen
+  > .navAccordionTrigger
+  .navAccordionChevron {
+  transform: rotate(90deg);
+}
+
+.navAccordionItems {
+  display: grid;
+  gap: 1px;
+
+  padding: 2px 0 7px 25px !important;
+}
+
+.navAccordionItems[hidden] {
+  display: none !important;
+}
+
+.navAccordionItems a,
+.navGroup a {
+  min-height: 30px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+
+  padding: 0 8px !important;
+
+  border: 0 !important;
+  border-radius: 6px !important;
+
+  background: transparent !important;
+  box-shadow: none !important;
+
+  color: #77726d !important;
+
+  font-size: 12px !important;
+  line-height: 1.25 !important;
+  font-weight: 450 !important;
+
+  text-decoration: none !important;
+
+  transition:
+    background 120ms ease,
+    color 120ms ease !important;
+}
+
+.navAccordionItems a:hover,
+.navGroup a:hover {
+  background: #f7f5f2 !important;
+  border-color: transparent !important;
+  color: #282522 !important;
+  transform: none !important;
+}
+
+.navAccordionItems a.active,
+.navGroup a.active {
+  background: #f1efeb !important;
+  border-color: transparent !important;
+
+  color: #262320 !important;
+  font-weight: 600 !important;
+
+  box-shadow: none !important;
+}
+
+.navItemLabel {
+  min-width: 0;
+  flex: 1;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navCountBadge {
+  min-width: 20px;
+  height: 18px;
+
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 5px !important;
+
+  border: 1px solid #ebe7e2 !important;
+  border-radius: 999px !important;
+
+  background: #f7f5f2 !important;
+  color: #857f78 !important;
+
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+}
+
+.navCountBadgeGroup {
+  margin-left: auto;
+}
+
+.sidebarFooter {
+  margin-top: auto;
+  padding: 14px 6px 0 !important;
+
+  border-top: 1px solid #efede9 !important;
+}
+
+.sidebarLogoutButton {
+  min-height: 34px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+
+  padding: 0 8px !important;
+
+  border: 0 !important;
+  border-radius: 7px !important;
+
+  background: transparent !important;
+  box-shadow: none !important;
+
+  color: #79736d !important;
+
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+.sidebarLogoutButton:hover {
+  background: #f7f5f2 !important;
+  color: #292623 !important;
+}
+
+@media (min-width: 981px) {
+  .appShell {
+    grid-template-columns:
+      222px minmax(0, 1fr) !important;
+  }
+
+  .workspace {
+    padding: 26px 28px 56px !important;
+  }
+}
+
+@media (max-width: 980px) {
+  .sidebar {
+    padding-top: 18px !important;
+  }
+}
+

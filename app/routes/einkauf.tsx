@@ -1,4 +1,4 @@
-import { Form, Link, redirect, useLoaderData } from "react-router";
+﻿import { Form, Link, redirect, useLoaderData } from "react-router";
 
 import AppLayout from "../components/AppLayout";
 
@@ -1022,6 +1022,7 @@ export async function loader({
   );
 
   const demandMap = new Map<string, any>();
+  const shoppingMap = new Map<string, any>();
   const missingMap = new Map<string, any>();
 
   for (const order of filteredOrders) {
@@ -1116,6 +1117,35 @@ export async function loader({
             recipeItem.quantityPerUnit || 0
           ) * orderQty;
 
+        // Einkaufsliste unabhängig von Lieferant und Preis.
+        // Gleiche Zutat + gleiche Einheit werden zusammengefasst.
+        const shoppingKey = [
+          ingredientName.toLocaleLowerCase("de-DE"),
+          recipeUnit.toLocaleLowerCase("de-DE"),
+        ].join("__");
+
+        if (!shoppingMap.has(shoppingKey)) {
+          shoppingMap.set(shoppingKey, {
+            ingredientName,
+            unit: recipeUnit,
+            quantity: 0,
+            sources: [],
+          });
+        }
+
+        const shoppingRow =
+          shoppingMap.get(shoppingKey);
+
+        shoppingRow.quantity += requiredQty;
+
+        shoppingRow.sources.push({
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          customerName: order.customerName,
+          productName,
+          productQuantity: orderQty,
+        });
+
         const key = [
           supplierName.toLocaleLowerCase("de-DE"),
           ingredientName.toLocaleLowerCase("de-DE"),
@@ -1165,6 +1195,15 @@ export async function loader({
       "de"
     );
   });
+
+  const shoppingItems = Array.from(
+    shoppingMap.values()
+  ).sort((left, right) =>
+    left.ingredientName.localeCompare(
+      right.ingredientName,
+      "de"
+    )
+  );
 
   const missingRecipeItems = Array.from(
     missingMap.values()
@@ -1343,6 +1382,7 @@ export async function loader({
     availableDates,
     orders: filteredOrders,
     demandItems: comparisonResult.items,
+    shoppingItems,
     supplierGroups,
     missingRecipeItems,
     unresolvedCount,
@@ -1526,31 +1566,28 @@ export default function PurchasingPage() {
               <table className="procurementTable">
                 <thead>
                   <tr>
-                    <th>Zutat / Material</th>
-                    <th>Menge</th>
+                    <th>Zutat</th>
+                    <th>Gesamtmenge</th>
                     <th>Einheit</th>
-                    <th>Preisvorschlag</th>
-                    <th>Kosten netto</th>
-                    <th>Quelle</th>
+                    <th>Herkunft</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {data.demandItems.length === 0 ? (
+                  {data.shoppingItems.length === 0 ? (
                     <tr>
-                      <td colSpan={6}>
+                      <td colSpan={4}>
                         <div className="procurementEmpty">
                           <span>0</span>
 
                           <div>
                             <strong>
-                              Keine Einkaufsvorschläge
-                              vorhanden
+                              Kein Einkaufsbedarf vorhanden
                             </strong>
 
                             <p>
-                              Für diesen Planungstag
-                              wurde noch kein Bedarf aus
+                              Für diesen Planungstag wurde
+                              noch kein Bedarf aus
                               vollständigen Rezepturen
                               berechnet.
                             </p>
@@ -1559,11 +1596,10 @@ export default function PurchasingPage() {
                       </td>
                     </tr>
                   ) : (
-                    data.demandItems.map(
+                    data.shoppingItems.map(
                       (item: any) => (
                         <tr
                           key={[
-                            item.supplierName,
                             item.ingredientName,
                             item.unit,
                           ].join("-")}
@@ -1578,111 +1614,39 @@ export default function PurchasingPage() {
                             {formatQty(item.quantity)}
                           </td>
 
-                          <td>{item.unit}</td>                          <td>
-                            {item.bestOffer ? (
-                              <div className="procurementOffer">
-                                <strong>
-                                  {
-                                    item.bestOffer
-                                      .supplierName
-                                  }
-                                </strong>
-
-                                <span>
-                                  {
-                                    item.bestOffer
-                                      .catalogItemName
-                                  }
-                                </span>
-
-                                <small>
-                                  {
-                                    item.bestOffer
-                                      .packageCount
-                                  }{" "}
-                                  ×{" "}
-                                  {formatQty(
-                                    item.bestOffer
-                                      .packContent
-                                  )}{" "}
-                                  {
-                                    item.bestOffer
-                                      .baseUnit
-                                  }
-                                  {" · "}
-                                  {
-                                    item.offersCount
-                                  }{" "}
-                                  Angebot(e)
-                                </small>
-                              </div>
-                            ) : (
-                              <div className="procurementOffer procurementOffer--missing">
-                                <strong>
-                                  Noch keine Zuordnung
-                                </strong>
-
-                                <span>
-                                  Lieferantenartikel
-                                  zuordnen
-                                </span>
-                              </div>
-                            )}
-                          </td>
-
-                          <td>
-                            {item.bestOffer ? (
-                              <div className="procurementCost">
-                                <strong>
-                                  {formatMoney(
-                                    item.bestOffer
-                                      .netTotalCents
-                                  )}
-                                </strong>
-
-                                <small>
-                                  Preisstand:{" "}
-                                  {formatPriceAge(
-                                    item.bestOffer
-                                      .fetchedAt
-                                  )}
-                                </small>
-                              </div>
-                            ) : (
-                              <span className="procurementNoPrice">
-                                –
-                              </span>
-                            )}
-                          </td>
+                          <td>{item.unit}</td>
 
                           <td>
                             <div className="procurementSources">
                               {item.sources
                                 .slice(0, 3)
                                 .map(
-                                  (source: any) => (
+                                  (
+                                    source: any,
+                                    index: number
+                                  ) => (
                                     <span
                                       key={[
                                         source.orderId,
                                         source.productName,
+                                        index,
                                       ].join("-")}
                                     >
                                       {formatQty(
                                         source.productQuantity
                                       )}{" "}
                                       ×{" "}
-                                      {source.productName} ·{" "}
+                                      {source.productName}
+                                      {" · "}
                                       {source.orderNumber}
                                     </span>
                                   )
                                 )}
 
-                              {item.sources.length >
-                              3 ? (
+                              {item.sources.length > 3 ? (
                                 <small>
                                   +{" "}
-                                  {item.sources.length -
-                                    3}{" "}
+                                  {item.sources.length - 3}{" "}
                                   weitere Quellen
                                 </small>
                               ) : null}
@@ -2634,3 +2598,6 @@ export default function PurchasingPage() {
     </AppLayout>
   );
 }
+
+
+
