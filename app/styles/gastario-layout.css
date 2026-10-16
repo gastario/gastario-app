@@ -2160,3 +2160,143 @@ body {
   box-shadow: none !important;
 }
 
+
+/* gastario-catersmart-refinement-v2-20261016 */
+
+/* Sidebar-Gruppen noch ruhiger */
+.navAccordionTrigger,
+.navAccordionStaticLabel {
+  background: transparent !important;
+}
+
+.navAccordionGroup.hasActiveItem
+  > .navAccordionTrigger {
+  background: transparent !important;
+  color: #24211e !important;
+}
+
+.navAccordionTrigger:hover {
+  background: #f7f5f2 !important;
+}
+
+/* Aktiver Unterpunkt wie CaterSmart */
+.navAccordionItems a.active {
+  background: #efede9 !important;
+  color: #201e1b !important;
+  font-weight: 600 !important;
+}
+
+/* Content insgesamt etwas kompakter */
+.workspace {
+  padding-top: 24px !important;
+}
+
+.workspace [class*="PageShell"],
+.workspace [class*="pageShell"] {
+  gap: 16px !important;
+}
+
+/* Karten flacher */
+.workspace article,
+.workspace section,
+.workspace .card,
+.workspace .panel,
+.workspace .metricCard,
+.workspace [class*="Section"] {
+  border-radius: 8px !important;
+  border-color: #e8e5e0 !important;
+  box-shadow: none !important;
+}
+
+/* Inputs näher an CaterSmart */
+.workspace input,
+.workspace textarea,
+.workspace select {
+  min-height: 36px !important;
+  border-radius: 6px !important;
+  border-color: #ddd8d2 !important;
+}
+
+/* Buttons kompakter */
+.workspace button,
+.workspace .button,
+.workspace a[class*="Button"],
+.workspace a[class*="button"] {
+  min-height: 36px;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+
+/* Gastario-Grün nur noch als Akzent */
+.workspace button[type="submit"],
+.workspace .primaryButton,
+.workspace [class*="primary"] {
+  background: #2d2a27 !important;
+  border-color: #2d2a27 !important;
+  color: #ffffff !important;
+}
+
+/* Kleine Überschriften weniger grün */
+.workspace .eyebrow,
+.workspace .pageOverline,
+.workspace .overline,
+.workspace [class*="Eyebrow"],
+.workspace [class*="eyebrow"] {
+  color: #77716a !important;
+}
+
+/* Tabellen noch leichter */
+.workspace table th {
+  background: #fbfaf8 !important;
+  border-color: #ece9e5 !important;
+}
+
+.workspace table td {
+  border-color: #efede9 !important;
+}
+
+
+/* gastario-catersmart-visual-fix-v3-20261016 */
+
+/* Sidebar: Gruppen wirklich neutral */
+.sidebar .navAccordionGroup > .navAccordionTrigger,
+.sidebar .navAccordionStaticLabel {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.sidebar .navAccordionGroup.hasActiveItem > .navAccordionTrigger {
+  background: transparent !important;
+  color: #292622 !important;
+}
+
+.sidebar .navAccordionGroup > .navAccordionTrigger:hover {
+  background: #f6f4f1 !important;
+}
+
+/* Aktiver Unterpunkt dezent beige/grau */
+.sidebar .navAccordionItems a.active {
+  background: #efede9 !important;
+  color: #24211e !important;
+  box-shadow: none !important;
+}
+
+/* Primary Actions neutral wie bei CaterSmart */
+html body .appShell .workspace button[type="submit"],
+html body .appShell .workspace .primaryButton,
+html body .appShell .workspace [class*="Button"][class*="primary"],
+html body .appShell .workspace [class*="button"][class*="primary"] {
+  background: #302d29 !important;
+  border-color: #302d29 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* Hover nur leicht heller */
+html body .appShell .workspace button[type="submit"]:hover,
+html body .appShell .workspace .primaryButton:hover {
+  background: #46413c !important;
+  border-color: #46413c !important;
+}
+
