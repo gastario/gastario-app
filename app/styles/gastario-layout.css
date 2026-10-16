@@ -2300,3 +2300,29 @@ html body .appShell .workspace .primaryButton:hover {
   border-color: #46413c !important;
 }
 
+
+/* gastario-catersmart-item-icons-v1-20261016 */
+
+.sidebar .navAccordionItems a {
+  gap: 8px !important;
+}
+
+.navItemIcon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+
+  color: #aaa49d !important;
+  stroke: currentColor;
+
+  transition: color 120ms ease;
+}
+
+.sidebar .navAccordionItems a:hover .navItemIcon {
+  color: #77716a !important;
+}
+
+.sidebar .navAccordionItems a.active .navItemIcon {
+  color: #514c46 !important;
+}
+

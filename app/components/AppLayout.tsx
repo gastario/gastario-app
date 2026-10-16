@@ -1,25 +1,37 @@
 ﻿import type { ReactNode } from "react";
 import {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import {
-  Link,
-  useFetcher,
-  useLocation,
-} from "react-router";
-
-import {
+  Archive,
   BarChart3,
+  BookOpen,
   BriefcaseBusiness,
+  Calculator,
+  ChefHat,
+  Circle,
+  CirclePlus,
+  ClipboardCheck,
   ClipboardList,
+  CreditCard,
+  Download,
+  FileCog,
+  Files,
+  FileText,
   Inbox,
   LayoutDashboard,
+  ListChecks,
+  Mail,
+  Package,
+  ReceiptText,
   Settings,
+  ShoppingBag,
   ShoppingCart,
+  SlidersHorizontal,
+  Store,
+  Tag,
+  Tags,
+  Truck,
+  Upload,
+  Users,
+  Warehouse,
   Utensils,
 } from "lucide-react";
 
@@ -57,6 +69,115 @@ type AppLayoutProps = {
   children: ReactNode;
 };
 
+function NavigationItemIcon({
+  to,
+}: {
+  to: string;
+}) {
+  let Icon = Circle;
+
+  switch (to) {
+    case "/":
+      Icon = LayoutDashboard;
+      break;
+    case "/auswertungen":
+      Icon = BarChart3;
+      break;
+    case "/auftragseingang":
+      Icon = Inbox;
+      break;
+    case "/importe":
+      Icon = Mail;
+      break;
+    case "/import-regeln":
+      Icon = SlidersHorizontal;
+      break;
+    case "/auftraege":
+      Icon = ClipboardList;
+      break;
+    case "/auftraege?view=past":
+      Icon = Archive;
+      break;
+    case "/neuer-auftrag":
+      Icon = CirclePlus;
+      break;
+    case "/angebote":
+      Icon = FileText;
+      break;
+    case "/kunden":
+      Icon = Users;
+      break;
+    case "/produkte":
+      Icon = Package;
+      break;
+    case "/produkte/import":
+      Icon = Upload;
+      break;
+    case "/produktion":
+      Icon = ChefHat;
+      break;
+    case "/packlisten":
+      Icon = ListChecks;
+      break;
+    case "/lieferungen":
+      Icon = Truck;
+      break;
+    case "/lieferscheine":
+      Icon = ClipboardCheck;
+      break;
+    case "/mhd-labels":
+      Icon = Tags;
+      break;
+    case "/foodlabels":
+      Icon = Tag;
+      break;
+    case "/einkauf":
+      Icon = ShoppingCart;
+      break;
+    case "/einkaufsbestellungen":
+      Icon = ShoppingBag;
+      break;
+    case "/lager":
+      Icon = Warehouse;
+      break;
+    case "/lieferanten":
+      Icon = Store;
+      break;
+    case "/rezepte":
+      Icon = BookOpen;
+      break;
+    case "/rechnungen":
+      Icon = ReceiptText;
+      break;
+    case "/buchhaltung":
+      Icon = Calculator;
+      break;
+    case "/belege":
+      Icon = Files;
+      break;
+    case "/steuerberater-export":
+      Icon = Download;
+      break;
+    case "/einstellungen":
+      Icon = Settings;
+      break;
+    case "/einstellungen/rechnungen":
+      Icon = FileCog;
+      break;
+    case "/konto/abo":
+      Icon = CreditCard;
+      break;
+  }
+
+  return (
+    <Icon
+      className="navItemIcon"
+      size={14}
+      strokeWidth={1.5}
+      aria-hidden="true"
+    />
+  );
+}
 function NavigationGroupIcon({
   groupId,
 }: {
@@ -1065,6 +1186,8 @@ export default function AppLayout({
                             to={item.to}
                             key={item.to}
                           >
+                            <NavigationItemIcon to={item.to} />
+
                             <span className="navItemLabel">
                               {item.label}
                             </span>
@@ -1109,3 +1232,4 @@ export default function AppLayout({
     </main>
   );
 }
+
