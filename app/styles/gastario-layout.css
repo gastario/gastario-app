@@ -2005,3 +2005,158 @@
   }
 }
 
+
+/* gastario-catersmart-global-v1-20261016
+   Rein visuelles Redesign – keine Funktionen werden verändert.
+*/
+
+:root {
+  --cs-page: #fbfaf8;
+  --cs-surface: #ffffff;
+  --cs-border: #e7e4df;
+  --cs-border-soft: #efede9;
+  --cs-text: #282522;
+  --cs-muted: #817b74;
+}
+
+body {
+  background: var(--cs-page) !important;
+  color: var(--cs-text) !important;
+}
+
+@media (min-width: 981px) {
+  .appShell {
+    grid-template-columns:
+      242px minmax(0, 1fr) !important;
+  }
+
+  .sidebar {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  .workspace {
+    padding:
+      30px 34px 64px !important;
+  }
+}
+
+/* Hauptbereich ruhiger und heller */
+.workspace {
+  background: var(--cs-page) !important;
+}
+
+/* Überschriften näher an CaterSmart */
+.workspace h1 {
+  color: #292622 !important;
+  font-size: clamp(27px, 2.4vw, 34px) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.workspace h2 {
+  color: #302d29 !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
+}
+
+.workspace h3 {
+  color: #38342f !important;
+  font-weight: 600 !important;
+}
+
+/* Kleine Overlines dezenter */
+.eyebrow,
+.pageOverline,
+.overline,
+[class*="Eyebrow"],
+[class*="eyebrow"] {
+  color: #77716a !important;
+  font-size: 10px !important;
+  font-weight: 650 !important;
+  letter-spacing: .085em !important;
+}
+
+/* Karten / Panels leichter */
+.workspace article,
+.workspace section,
+.workspace .card,
+.workspace .panel,
+.workspace .metricCard,
+.workspace [class*="Section"] {
+  border-color: var(--cs-border) !important;
+  box-shadow:
+    0 1px 2px rgba(37, 32, 28, 0.025) !important;
+}
+
+/* Große Content-Karten nicht mehr so rund */
+.workspace .card,
+.workspace .panel,
+.workspace .metricCard,
+.workspace [class*="Section"] {
+  border-radius: 10px !important;
+}
+
+/* Formulare feiner */
+.workspace input,
+.workspace textarea,
+.workspace select {
+  border-color: #dedad4 !important;
+  border-radius: 7px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  font-weight: 450 !important;
+}
+
+.workspace input:focus,
+.workspace textarea:focus,
+.workspace select:focus {
+  border-color: #aaa39b !important;
+  box-shadow:
+    0 0 0 2px rgba(70, 64, 58, .055) !important;
+}
+
+/* Tabellen wie modernes SaaS statt schwerem Dashboard */
+.workspace table {
+  border-color: var(--cs-border) !important;
+}
+
+.workspace table th {
+  background: #faf9f7 !important;
+  color: #817b74 !important;
+  font-size: 10.5px !important;
+  font-weight: 650 !important;
+  letter-spacing: .035em !important;
+}
+
+.workspace table td {
+  border-color: var(--cs-border-soft) !important;
+  color: #423e39 !important;
+}
+
+/* Secondary Buttons */
+.workspace .secondaryButton,
+.workspace .ghostButton,
+.workspace .toolbarButton,
+.workspace [class*="secondary"] {
+  background: #ffffff !important;
+  border-color: #dedad4 !important;
+  color: #48433e !important;
+  box-shadow: none !important;
+  border-radius: 7px !important;
+}
+
+/* Primary Buttons näher an CaterSmart */
+.workspace .primaryButton,
+.workspace button[type="submit"] {
+  border-radius: 7px !important;
+  box-shadow: none !important;
+}
+
+/* Badge-Flächen weniger dominant */
+.workspace .badge,
+.workspace .statusBadge,
+.workspace .orderStatus {
+  box-shadow: none !important;
+}
+
