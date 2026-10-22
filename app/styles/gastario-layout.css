@@ -2300,3 +2300,175 @@ html body .appShell .workspace .primaryButton:hover {
   border-color: #46413c !important;
 }
 
+/* =========================================================
+   GASTARIO SIDEBAR 2026 FINAL
+   Nur App-Navigation / keine Content-Styles
+========================================================= */
+
+@media screen {
+
+  @media (min-width: 981px) {
+    .appShell {
+      grid-template-columns:
+        258px minmax(0, 1fr) !important;
+    }
+  }
+
+  .sidebar {
+    background: #fbfaf8 !important;
+    border-right: 1px solid #ebe5de !important;
+    box-shadow: none !important;
+
+    padding: 22px 18px 16px !important;
+  }
+
+  .brand {
+    padding: 4px 10px 22px !important;
+    margin-bottom: 7px !important;
+
+    border-bottom: 0 !important;
+  }
+
+  .brandLogo {
+    width: 116px !important;
+  }
+
+  .navGroups {
+    display: grid !important;
+    gap: 8px !important;
+  }
+
+  .navAccordionGroup {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .navAccordionTrigger {
+    width: 100% !important;
+    min-height: 40px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    padding: 0 11px !important;
+
+    border: 1px solid transparent !important;
+    border-radius: 9px !important;
+
+    background: transparent !important;
+
+    color: #69625c !important;
+
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+
+    box-shadow: none !important;
+  }
+
+  .navAccordionTrigger:hover {
+    background: rgba(255,255,255,.62) !important;
+    border-color: rgba(229,222,214,.72) !important;
+
+    color: #36312d !important;
+  }
+
+  .navAccordionTriggerContent {
+    display: inline-flex !important;
+    align-items: center !important;
+
+    gap: 9px !important;
+    min-width: 0 !important;
+  }
+
+  .navGroupIcon {
+    width: 16px !important;
+    height: 16px !important;
+
+    color: #aaa29a !important;
+  }
+
+  .navAccordionItems {
+    display: grid !important;
+    gap: 2px !important;
+
+    margin: 3px 0 4px 12px !important;
+    padding: 2px 0 3px 15px !important;
+
+    border-left: 1px solid #ebe5de !important;
+  }
+
+  .navAccordionItems a {
+    min-height: 33px !important;
+
+    display: flex !important;
+    align-items: center !important;
+
+    padding: 5px 10px !important;
+
+    border: 1px solid transparent !important;
+    border-radius: 8px !important;
+
+    background: transparent !important;
+
+    color: #817970 !important;
+
+    font-size: 11.25px !important;
+    font-weight: 450 !important;
+
+    box-shadow: none !important;
+  }
+
+  .navAccordionItems a:hover {
+    background: rgba(255,255,255,.68) !important;
+
+    color: #413b36 !important;
+  }
+
+  .navAccordionItems a.active {
+    background: #fffefd !important;
+
+    border-color: #e8e1da !important;
+
+    color: #302b27 !important;
+
+    font-weight: 600 !important;
+
+    box-shadow:
+      0 5px 16px rgba(55,46,38,.045) !important;
+  }
+
+  .navItemIcon {
+    width: 14px !important;
+    height: 14px !important;
+
+    color: #b3aba3 !important;
+  }
+
+  .navAccordionItems a.active .navItemIcon {
+    color: #746b63 !important;
+  }
+
+  .navCountBadge {
+    min-width: 20px !important;
+    height: 20px !important;
+
+    padding: 0 6px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border: 1px solid #e6dfd7 !important;
+    border-radius: 999px !important;
+
+    background: #f2eee9 !important;
+
+    color: #8a8178 !important;
+
+    font-size: 9.5px !important;
+
+    box-shadow: none !important;
+  }
+
+}

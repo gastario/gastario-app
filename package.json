@@ -5,12 +5,13 @@
   "scripts": {
     "dev": "react-router dev",
     "typecheck": "react-router typegen && tsc",
-    "build": "prisma generate --schema=./prisma/schema.prisma && react-router build",
+    "build": "npm run ui:check && prisma generate --schema=./prisma/schema.prisma && react-router build",
     "start": "prisma migrate deploy --schema=./prisma/schema.prisma && react-router-serve ./build/server/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "cron:email-import": "node scripts/run-email-import-cron.mjs",
-    "cron:global-supplier-catalog": "node scripts/run-global-supplier-catalog-cron.mjs"
+    "cron:global-supplier-catalog": "node scripts/run-global-supplier-catalog-cron.mjs",
+    "ui:check": "node scripts/check-gastario-ui-contract.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

@@ -2,9 +2,26 @@ import { Form, Link, redirect, useActionData, useLoaderData } from "react-router
 import { useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
 import {
-  PageHeader,
-  PageShell,
-} from "../components/ui/PageShell";
+  GastarioPage,
+  GastarioEmptyState,
+  GastarioHeader,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioNotice,
+  gastarioButtonClass,
+  GastarioBadge,
+  GastarioButton,
+  GastarioField,
+  GastarioFilterBar,
+  GastarioInput,
+  GastarioPanel,
+  GastarioSection,
+  GastarioSelect,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioDrawer,
+  GastarioToolbar,
+} from "../components/ui";
 import DeliveryNoteButton from "../components/DeliveryNoteButton";
 import auftraegeStyles from "../styles/auftraege.css?url";
 import auftragseingangStyles from "../styles/auftragseingang.css?url";
@@ -563,277 +580,282 @@ export default function OrdersPage() {
   return (
     <AppLayout>
 
-      <div
+      <GastarioPage
         className={
-          "ordersPage ordersReferencePage gastario-orders-fullwidth " +
-          (data.view === "past"
+          data.view === "past"
             ? "ordersPagePast"
-            : "ordersPageUpcoming")
+            : "ordersPageUpcoming"
         }
       >
-      <header className="topbar g-ui-page-header">
-        <div>
-          <p className="eyebrow g-ui-eyebrow">Verkauf</p>
-          <h1 className="g-ui-page-title">Aufträge</h1>
-          <span className="pageSubline g-ui-page-subtitle">
-            {data.tenant?.name || "Kein Mandant"} · {data.view === "past"
+      <GastarioHeader
+        eyebrow="Verkauf"
+        title="Aufträge"
+        subtitle={
+          <>
+            {data.tenant?.name || "Kein Mandant"} ·{" "}
+            {data.view === "past"
               ? "abgeschlossene und vergangene Catering-Aufträge."
               : "kommende Lieferungen, Produktion und Packstatus auf einen Blick."}
-          </span>
-        </div>
+          </>
+        }
+        actions={
+          <>
+            <Link
+              className={gastarioButtonClass("secondary")}
+              to="/auftragseingang"
+            >
+              Eingangszentrale
+            </Link>
 
-        <div className="topActions">
-          <Link className="secondaryButton g-ui-button g-ui-button--secondary" to="/auftragseingang">Eingangszentrale</Link>
-          <Link className="primaryButton g-ui-button g-ui-button--primary" to="/neuer-auftrag">+ Neuer Auftrag</Link>
-        </div>
-      </header>
+            <Link
+              className={gastarioButtonClass("primary")}
+              to="/neuer-auftrag"
+            >
+              + Neuer Auftrag
+            </Link>
+          </>
+        }
+      />
 
       {data.setupError ? (
-        <div style={{
-          background: "#fff7ed",
-          border: "1px solid #fed7aa",
-          color: "#9a3412",
-          padding: 16,
-          borderRadius: 16,
-          fontWeight: 900,
-          marginBottom: 16
-        }}>
+        <GastarioNotice type="danger">
           {data.setupError}
-        </div>
+        </GastarioNotice>
       ) : null}
 
       {actionData?.success ? (
-        <div style={{
-          background: "#ecfdf5",
-          border: "1px solid #a7f3d0",
-          color: "#065f46",
-          padding: 16,
-          borderRadius: 16,
-          fontWeight: 900,
-          marginBottom: 16
-        }}>
+        <GastarioNotice type="success">
           {actionData.success}
-        </div>
+        </GastarioNotice>
       ) : null}
 
       {actionData?.error ? (
-        <div style={{
-          background: "#fef2f2",
-          border: "1px solid #fecaca",
-          color: "#991b1b",
-          padding: 16,
-          borderRadius: 16,
-          fontWeight: 900,
-          marginBottom: 16
-        }}>
+        <GastarioNotice type="danger">
           {actionData.error}
-        </div>
+        </GastarioNotice>
       ) : null}
 
-      <section className="orderSummaryGrid g-ui-metrics">
-        <article className="metricCard g-ui-card g-ui-card--flat">
-          <div>
-            <p>
-              {data.view === "past"
-                ? "Vergangene Aufträge"
-                : "Aufträge gesamt"}
-            </p>
+      <GastarioMetricGrid>
+        <GastarioMetric
+          label={
+            data.view === "past"
+              ? "Vergangene Aufträge"
+              : "Aufträge gesamt"
+          }
+          value={data.counts.all}
+          description={
+            data.view === "past"
+              ? "bereits vergangene Lieferungen"
+              : `${data.counts.confirmed} bestätigt`
+          }
+          badge={data.view === "past" ? "Archiv" : "echt"}
+        />
 
-            <strong>{data.counts.all}</strong>
+        <GastarioMetric
+          label={
+            data.view === "past"
+              ? "Archivierte Aufträge"
+              : "Bestätigt"
+          }
+          value={
+            data.view === "past"
+              ? data.orders.length
+              : data.counts.confirmed
+          }
+          description={
+            data.view === "past"
+              ? "aktuell in dieser Archivansicht"
+              : "für die Ausführung vorgesehen"
+          }
+          badge={data.view === "past" ? "Historie" : "aktiv"}
+        />
 
-            <span>
-              {data.view === "past"
-                ? "bereits vergangene Lieferungen"
-                : data.counts.confirmed + " bestätigt"}
-            </span>
-          </div>
+        <GastarioMetric
+          label={
+            data.view === "past"
+              ? "Lieferungen im Archiv"
+              : "Operative Aufträge"
+          }
+          value={data.orders.length}
+          description={
+            data.view === "past"
+              ? "vergangene Lieferungen sichtbar"
+              : "aktuell in dieser Ansicht"
+          }
+          badge={data.view === "past" ? "Archiv" : "live"}
+        />
 
-          <small data-trend="aktiv">
-            {data.view === "past" ? "Archiv" : "echt"}
-          </small>
-        </article>
+        <GastarioMetric
+          label="Auftragswert"
+          value={centsToEuro(data.counts.totalValueCents)}
+          description={
+            data.view === "past"
+              ? "Wert der vergangenen Lieferungen"
+              : "Summe aller Positionen"
+          }
+          badge="EUR"
+        />
+      </GastarioMetricGrid>
 
-        <article className="metricCard g-ui-card g-ui-card--flat">
-          <div>
-            <p>
-              {data.view === "past"
-                ? "Archivierte Aufträge"
-                : "Bestätigt"}
-            </p>
+      <section className="g-ui-orders-content">
+        <GastarioSection
+          eyebrow="Auftragsübersicht"
+          title={
+            data.view === "past"
+              ? "Vergangene Aufträge"
+              : "Bevorstehende Aufträge"
+          }
+          description={
+            data.view === "past"
+              ? "Abgeschlossene und vergangene Catering-Aufträge."
+              : "Kommende Lieferungen, Produktion und Packstatus verwalten."
+          }
+          action={
+            <GastarioBadge variant="neutral">
+              {data.orders.length === 1
+                ? "1 Auftrag"
+                : `${data.orders.length} Aufträge`}
+            </GastarioBadge>
+          }
+        >
 
-            <strong>
-              {data.view === "past"
-                ? data.orders.length
-                : data.counts.confirmed}
-            </strong>
+          <Form method="get">
 
-            <span>
-              {data.view === "past"
-                ? "aktuell in dieser Archivansicht"
-                : "für die Ausführung vorgesehen"}
-            </span>
-          </div>
-
-          <small data-trend="aktiv">
-            {data.view === "past" ? "Historie" : "aktiv"}
-          </small>
-        </article>
-
-        <article className="metricCard g-ui-card g-ui-card--flat">
-          <div>
-            <p>
-              {data.view === "past"
-                ? "Lieferungen im Archiv"
-                : "Operative Aufträge"}
-            </p>
-
-            <strong>{data.orders.length}</strong>
-
-            <span>
-              {data.view === "past"
-                ? "vergangene Lieferungen sichtbar"
-                : "aktuell in dieser Ansicht"}
-            </span>
-          </div>
-
-          <small data-trend="bereit">
-            {data.view === "past" ? "Archiv" : "live"}
-          </small>
-        </article>
-
-        <article className="metricCard g-ui-card g-ui-card--flat">
-          <div>
-            <p>Auftragswert</p>
-
-            <strong>
-              {centsToEuro(data.counts.totalValueCents)}
-            </strong>
-
-            <span>
-              {data.view === "past"
-                ? "Wert der vergangenen Lieferungen"
-                : "Summe aller Positionen"}
-            </span>
-          </div>
-
-          <small data-trend="bereit">EUR</small>
-        </article>
-      </section>
-
-      <section className="panel g-ui-card">
-        <div className="ordersWorkspaceHeader">
-          <div>
-            <p className="eyebrow g-ui-eyebrow">Auftragsübersicht</p>
-            <h2>
-              {data.view === "past"
-                ? "Vergangene Aufträge"
-                : "Bevorstehende Aufträge"}
-            </h2>
-            <span>
-              {data.view === "past"
-                ? "Abgeschlossene und vergangene Catering-Aufträge."
-                : "Kommende Lieferungen, Produktion und Packstatus verwalten."}
-            </span>
-          </div>
-
-          <div className="ordersWorkspaceCount">
-            <strong>{data.orders.length}</strong>
-            <small>
-              {data.orders.length === 1 ? "von 1 Auftrag" : `von ${data.orders.length} Aufträgen`}
-            </small>
-          </div>
-        </div>
-
-        <div className="ordersWorkspaceFilters">
-          <Form method="get" className="ordersFilterForm">
             {data.view === "past" ? (
-              <input type="hidden" name="view" value="past" />
+              <input
+                type="hidden"
+                name="view"
+                value="past"
+              />
             ) : null}
 
             {data.activeStatus ? (
-              <input type="hidden" name="status" value={data.activeStatus} />
+              <input
+                type="hidden"
+                name="status"
+                value={data.activeStatus}
+              />
             ) : null}
 
-            <label className="ordersSearchField">
-              <span>Suche</span>
-              <input
-                type="search"
-                name="q"
-                defaultValue={data.searchQuery || ""}
-                placeholder="Kunde, Nummer oder Adresse"
-              />
-            </label>
+            <GastarioFilterBar
+              actions={
+                <>
+                  <GastarioButton
+                    variant="primary"
+                    type="submit"
+                  >
+                    Anzeigen
+                  </GastarioButton>
 
-            {data.view !== "past" ? (
-              <label className="ordersFilterField">
-                <span>Lieferzeitraum</span>
-
-                <select
-                  name="dateRange"
-                  defaultValue={data.dateRange || ""}
-                >
-                  <option value="">Alle Lieferungen</option>
-                  <option value="today">Heute</option>
-                  <option value="tomorrow">Morgen</option>
-                  <option value="week">Nächste 7 Tage</option>
-                </select>
-              </label>
-            ) : (
-              <label className="ordersFilterField">
-                <span>Zeitraum</span>
-
-                <select
-                  name="dateRange"
-                  defaultValue={data.dateRange || ""}
-                >
-                  <option value="">
-                    Alle vergangenen Lieferungen
-                  </option>
-                  <option value="past7">
-                    Letzte 7 Tage
-                  </option>
-                  <option value="past30">
-                    Letzte 30 Tage
-                  </option>
-                  <option value="currentMonth">
-                    Dieser Monat
-                  </option>
-                  <option value="currentYear">
-                    Dieses Jahr
-                  </option>
-                </select>
-              </label>
-            )}
-
-            <button
-              className="productsPrimaryButton g-ui-button g-ui-button--primary"
-              type="submit"
+                  <Link
+                    className={gastarioButtonClass(
+                      "secondary"
+                    )}
+                    to={
+                      data.view === "past"
+                        ? "/auftraege?view=past"
+                        : "/auftraege"
+                    }
+                  >
+                    Zurücksetzen
+                  </Link>
+                </>
+              }
             >
-              Anzeigen
-            </button>
 
-            <Link
-              className="productsSecondaryButton g-ui-button g-ui-button--secondary"
-              to={data.view === "past" ? "/auftraege?view=past" : "/auftraege"}
-            >
-              Zurücksetzen
-            </Link>
+              <GastarioField label="Suche">
+                <GastarioInput
+                  type="search"
+                  name="q"
+                  defaultValue={
+                    data.searchQuery || ""
+                  }
+                  placeholder="Kunde, Nummer oder Adresse"
+                />
+              </GastarioField>
+
+              {data.view !== "past" ? (
+                <GastarioField label="Lieferzeitraum">
+                  <GastarioSelect
+                    name="dateRange"
+                    defaultValue={
+                      data.dateRange || ""
+                    }
+                  >
+                    <option value="">
+                      Alle Lieferungen
+                    </option>
+
+                    <option value="today">
+                      Heute
+                    </option>
+
+                    <option value="tomorrow">
+                      Morgen
+                    </option>
+
+                    <option value="week">
+                      Nächste 7 Tage
+                    </option>
+                  </GastarioSelect>
+                </GastarioField>
+              ) : (
+                <GastarioField label="Zeitraum">
+                  <GastarioSelect
+                    name="dateRange"
+                    defaultValue={
+                      data.dateRange || ""
+                    }
+                  >
+                    <option value="">
+                      Alle vergangenen Lieferungen
+                    </option>
+
+                    <option value="past7">
+                      Letzte 7 Tage
+                    </option>
+
+                    <option value="past30">
+                      Letzte 30 Tage
+                    </option>
+
+                    <option value="currentMonth">
+                      Dieser Monat
+                    </option>
+
+                    <option value="currentYear">
+                      Dieses Jahr
+                    </option>
+                  </GastarioSelect>
+                </GastarioField>
+              )}
+
+            </GastarioFilterBar>
+
           </Form>
+
 
           {data.view !== "past" ? (
             <nav
-              className="ordersStatusTabs"
+              className="g-ui-tabs"
               aria-label="Auftragsstatus"
             >
               {STATUSES.map((status) => {
-                const params = new URLSearchParams();
+                const params =
+                  new URLSearchParams();
 
                 if (status.value) {
-                  params.set("status", status.value);
+                  params.set(
+                    "status",
+                    status.value
+                  );
                 }
 
                 if (data.searchQuery) {
-                  params.set("q", data.searchQuery);
+                  params.set(
+                    "q",
+                    data.searchQuery
+                  );
                 }
 
                 if (data.dateRange) {
@@ -843,17 +865,22 @@ export default function OrdersPage() {
                   );
                 }
 
-                const href = params.toString()
-                  ? "/auftraege?" + params.toString()
-                  : "/auftraege";
+                const href =
+                  params.toString()
+                    ? "/auftraege?" +
+                      params.toString()
+                    : "/auftraege";
 
                 return (
                   <Link
-                    key={status.value || "all"}
+                    key={
+                      status.value || "all"
+                    }
                     className={
-                      data.activeStatus === status.value
-                        ? "ordersStatusTab active"
-                        : "ordersStatusTab"
+                      data.activeStatus ===
+                      status.value
+                        ? "g-ui-tab g-ui-tab--active"
+                        : "g-ui-tab"
                     }
                     to={href}
                   >
@@ -863,367 +890,257 @@ export default function OrdersPage() {
               })}
             </nav>
           ) : (
-            <div className="pastOrdersArchiveNotice">
+            <GastarioPanel variant="soft">
+              <strong>
+                Auftragsarchiv
+              </strong>
+
               <div>
-                <strong>Auftragsarchiv</strong>
-
-                <span>
-                  Bereits vergangene Lieferungen werden
-                  unabhängig vom Produktions- oder
-                  Packstatus angezeigt.
-                </span>
+                Bereits vergangene Lieferungen
+                werden unabhängig vom Produktions-
+                oder Packstatus angezeigt.
               </div>
 
-              <span className="pastOrdersArchiveBadge">
+              <GastarioBadge variant="neutral">
                 {data.orders.length} archiviert
-              </span>
-            </div>
+              </GastarioBadge>
+            </GastarioPanel>
           )}
-        </div>
 
-        {selectedOrder ? (
-          <div className="finalOrdersGrid selectedFocusMode">
-            <aside
-              className="finalSelectedPanel g-ui-card"
-              key={selectedOrder.id}
-            >
-              <div className="finalSelectedTop">
-                <div>
-                  <div className="finalSelectedKicker">
-                    Ausgewählt
-                  </div>
+        </GastarioSection>
 
-                  <div className="finalOrderNumber">
-                    {selectedOrder.orderNumber}
-                  </div>
+          <GastarioDataList>
 
-                  <h3>
-                    {selectedOrder.customerName ||
-                      selectedOrder.customer?.name ||
-                      "Kunde unbekannt"}
-                  </h3>
+            {data.orders.length === 0 ? (
 
-                  <p
-                    style={{
-                      margin: "6px 0 0",
-                      color: "#71817a",
-                      fontSize: 13,
-                      fontWeight: 700,
-                    }}
+              <GastarioEmptyState title="Keine Aufträge vorhanden">
+                {data.activeStatus
+                  ? "Für diesen Filter wurden keine Aufträge gefunden."
+                  : data.view === "past"
+                    ? "Es sind noch keine vergangenen Aufträge vorhanden."
+                    : "Es stehen aktuell keine Lieferungen bevor."}
+              </GastarioEmptyState>
+
+            ) : (
+
+              data.orders.map((order: any) => {
+
+                const items = Array.isArray(order.items)
+                  ? order.items
+                  : [];
+
+                const visibleItems = items.filter(
+                  (item: any) =>
+                    !String(item.name || "")
+                      .toLowerCase()
+                      .includes("fehlende position")
+                );
+
+                const previewItems =
+                  visibleItems.slice(0, 3);
+
+                const total = items.reduce(
+                  (sum: number, item: any) =>
+                    sum +
+                    Number(
+                      item.totalCents ||
+                      item.totalPriceCents ||
+                      0
+                    ),
+                  0
+                );
+
+                const previewText =
+                  previewItems
+                    .map(
+                      (item: any) =>
+                        `${Number(item.quantity || 1)}x ${
+                          item.name || "Position"
+                        }`
+                    )
+                    .join(" · ");
+
+                return (
+
+                  <GastarioDataRow
+                    key={order.id}
+                    onClick={() =>
+                      setSelectedOrderId(order.id)
+                    }
                   >
-                    {selectedOrder.contactName ||
-                      "Keine Kontaktperson eingetragen"}
-                  </p>
-                </div>
 
-                <span className="finalSourceBadge big g-ui-pill">
-                  {String(
-                    selectedOrder.platformName ||
-                      selectedOrder.source ||
-                      "Direkt"
-                  )}
-                </span>
-              </div>
+                    <div className="g-ui-data-row-main">
 
-              <div className="finalSelectedFacts g-ui-fact-grid">
-                <div>
-                  <span>Lieferung</span>
+                      <strong className="g-ui-data-row-title">
+                        {order.customerName ||
+                          order.customer?.name ||
+                          "Kunde unbekannt"}
+                      </strong>
 
-                  <strong>
-                    {formatDate(
-                      selectedOrder.deliveryDate
-                    )}
-                  </strong>
-
-                  <small>
-                    {selectedOrder.deliveryTimeText ||
-                      "Uhrzeit offen"}
-                  </small>
-                </div>
-
-                <div>
-                  <span>Lieferadresse</span>
-
-                  <strong>
-                    {selectedOrder.customerName ||
-                      selectedOrder.customer?.name ||
-                      "Kunde unbekannt"}
-                  </strong>
-
-                  <small>
-                    {selectedOrder.deliveryAddress ||
-                      "Keine Lieferadresse eingetragen"}
-                  </small>
-
-                  {selectedOrder.contactPhone ? (
-                    <small
-                      style={{
-                        marginTop: 6,
-                        color: "#087158",
-                      }}
-                    >
-                      Telefon:{" "}
-                      {selectedOrder.contactPhone}
-                    </small>
-                  ) : null}
-                </div>
-
-                <div>
-                  <span>Gesamt</span>
-
-                  <strong>
-                    {centsToEuro(selectedOrderTotal)}
-                  </strong>
-
-                  <small>
-                    {data.view === "past"
-                      ? "Vergangener Auftrag"
-                      : "Bestätigter Auftrag"}
-                  </small>
-                </div>
-              </div>
-
-              <div className="finalSelectedItems g-ui-card g-ui-card--flat">
-                <h4>Positionen</h4>
-
-                {selectedOrderItems
-                  .slice(0, 8)
-                  .map((item: any) => (
-                    <div
-                      className="finalSelectedItem"
-                      key={item.id || item.name}
-                    >
-                      <span>
-                        <strong>
-                          {item.quantity || 1}x
-                        </strong>
-
-                        {item.name || "Position"}
+                      <span className="g-ui-data-row-description">
+                        {order.orderNumber}
+                        {" · "}
+                        {order.contactName ||
+                          order.customer?.email ||
+                          order.customerEmail ||
+                          "Keine Kontaktperson erkannt"}
                       </span>
 
-                      <b>
-                        {centsToEuro(
-                          Number(
-                            item.totalCents ||
-                              item.totalPriceCents ||
-                              0
-                          )
-                        )}
-                      </b>
+                      {previewText ? (
+                        <span className="g-ui-data-row-description">
+                          {previewText}
+
+                          {visibleItems.length >
+                          previewItems.length
+                            ? ` · +${
+                                visibleItems.length -
+                                previewItems.length
+                              } weitere`
+                            : ""}
+                        </span>
+                      ) : null}
+
                     </div>
-                  ))}
 
-                {selectedOrderItems.length > 8 ? (
-                  <div className="finalSelectedMore">
-                    +{" "}
-                    {selectedOrderItems.length - 8}{" "}
-                    weitere Positionen
-                  </div>
-                ) : null}
-              </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  marginTop: 12,
-                }}
-              >
-                <Link
-                  className="secondaryButton g-ui-button g-ui-button--secondary"
-                  to={`/auftrag-pruefung/${selectedOrder.id}`}
-                >
-                  Operative Zuordnung bearbeiten
-                </Link>
-              </div>
+                    <div className="g-ui-data-row-meta">
 
-              <section className="orderBillingPanel g-ui-card g-ui-card--flat g-ui-card--soft">
-                <div className="orderBillingHeader">
-                  <div>
-                    <p className="eyebrow g-ui-eyebrow">Abrechnung</p>
-                    <h4>Wie soll dieser Auftrag abgerechnet werden?</h4>
-                    <span>
-                      Gastario erstellt nur dann eine Rechnung, wenn du
-                      ausdrücklich „Eigene Gastario-Rechnung“ auswählst.
-                    </span>
-                  </div>
+                      <span>
+                        {String(
+                          order.source || "Direkt"
+                        )}
+                      </span>
 
-                  <div className="orderBillingStatus">
-                    {selectedOrder.billingStatus === "READY_TO_INVOICE"
-                      ? "Rechnung vorbereiten"
-                      : selectedOrder.billingStatus ===
-                          "INVOICED_EXTERNALLY"
-                        ? "Extern abgerechnet"
-                        : selectedOrder.billingStatus ===
-                            "WAITING_FOR_CREDIT"
-                          ? "Gutschrift ausstehend"
-                          : selectedOrder.billingStatus ===
-                              "CREDIT_RECEIVED"
-                            ? "Gutschrift erhalten"
-                            : selectedOrder.billingStatus ===
-                                "NOT_RELEVANT"
-                              ? "Nicht erforderlich"
-                              : selectedOrder.billingStatus ===
-                                  "INVOICED"
-                                ? "Rechnung erstellt"
-                                : "Noch offen"}
-                  </div>
-                </div>
+                      <span>
+                        {formatDate(
+                          order.deliveryDate
+                        )}
+                      </span>
 
-                <Form method="post" className="orderBillingForm">
-                  <input
-                    type="hidden"
-                    name="intent"
-                    value="updateBillingMode"
-                  />
-                  <input
-                    type="hidden"
-                    name="orderId"
-                    value={selectedOrder.id}
-                  />
+                      <span>
+                        {order.deliveryTimeText ||
+                          "Uhrzeit offen"}
+                      </span>
 
-                  <label>
-                    <span>Abrechnungsart</span>
-                    <select
-                      name="billingMode"
-                      defaultValue={
-                        selectedOrder.billingMode || "UNDECIDED"
+                      <span>
+                        {statusLabel(order.status)}
+                      </span>
+
+                      <span>
+                        {centsToEuro(total)}
+                      </span>
+
+                    </div>
+
+
+                    <div
+                      className="g-ui-data-row-actions"
+                      onClick={(event) =>
+                        event.stopPropagation()
+                      }
+                      onKeyDown={(event) =>
+                        event.stopPropagation()
                       }
                     >
-                      <option value="UNDECIDED">
-                        Noch nicht entschieden
-                      </option>
-                      <option value="DIRECT_INVOICE">
-                        Eigene Rechnung mit Gastario
-                      </option>
-                      <option value="EXTERNAL_INVOICE">
-                        Über anderes System abgerechnet
-                      </option>
-                      <option value="PLATFORM_CREDIT">
-                        Plattformgutschrift
-                      </option>
-                      <option value="NO_INVOICE">
-                        Keine Rechnung erforderlich
-                      </option>
-                    </select>
-                  </label>
 
-                  <button type="submit">
-                    Abrechnungsart speichern
-                  </button>
-                </Form>
+                      <DeliveryNoteButton
+                        orderId={order.id}
+                        compact
+                      />
 
-                {selectedOrder.billingMode === "DIRECT_INVOICE" ? (
-                  <div className="orderBillingInvoiceAction">
-                    {Array.isArray(selectedOrder.invoices) &&
-                    selectedOrder.invoices.length > 0 ? (
-                      <>
-                        <div>
-                          <strong>Rechnung bereits vorhanden</strong>
-                          <span>
-                            {selectedOrder.invoices[0]
-                              .externalInvoiceNumber ||
-                              "Rechnungsentwurf ohne Nummer"}
-                          </span>
-                        </div>
+                      <Form method="post">
 
-                        <Link
-                          to={
-                            "/rechnungen/" +
-                            selectedOrder.invoices[0].id
-                          }
+                        <input
+                          type="hidden"
+                          name="intent"
+                          value="deleteOrder"
+                        />
+
+                        <input
+                          type="hidden"
+                          name="orderId"
+                          value={order.id}
+                        />
+
+                        <GastarioButton
+                          variant="danger"
+                          type="submit"
                         >
-                          Rechnung öffnen
-                        </Link>
-                      </>
-                    ) : (
-                      <>
-                        <div>
-                          <strong>Rechnungsentwurf vorbereiten</strong>
-                          <span>
-                            Kunde, Auftragsdatum und Positionen werden
-                            im nächsten Schritt in den Rechnungseditor
-                            übernommen. Es wird noch keine endgültige
-                            Rechnung erzeugt.
-                          </span>
-                        </div>
+                          Löschen
+                        </GastarioButton>
 
-                        <Link
-                          to={
-                            "/rechnungen/neu?orderId=" +
-                            selectedOrder.id
-                          }
-                        >
-                          Rechnungsentwurf vorbereiten
-                        </Link>
-                      </>
-                    )}
-                  </div>
-                ) : null}
+                      </Form>
 
-                {selectedOrder.billingMode === "PLATFORM_CREDIT" ? (
-                  <div className="orderBillingInformation">
-                    <strong>Plattformgutschrift</strong>
-                    <span>
-                      Für diesen Auftrag erzeugt Gastario keine eigene
-                      Rechnung. Die Abrechnung erfolgt über die
-                      Plattformgutschrift.
+                    </div>
+
+
+                    <span
+                      className="g-ui-data-row-chevron"
+                      aria-hidden="true"
+                    >
+                      →
                     </span>
-                  </div>
-                ) : null}
 
-                {selectedOrder.billingMode === "EXTERNAL_INVOICE" ? (
-                  <div className="orderBillingInformation">
-                    <strong>Extern abgerechnet</strong>
-                    <span>
-                      Der Auftrag wird in einem anderen System
-                      fakturiert. Gastario erzeugt dafür keine Rechnung.
-                    </span>
-                  </div>
-                ) : null}
+                  </GastarioDataRow>
+                );
+              })
+            )}
 
-                {selectedOrder.billingMode === "NO_INVOICE" ? (
-                  <div className="orderBillingInformation">
-                    <strong>Keine Rechnung erforderlich</strong>
-                    <span>
-                      Dieser Auftrag wird nicht in die offene
-                      Rechnungsbearbeitung aufgenommen.
-                    </span>
-                  </div>
-                ) : null}
-              </section>
+          </GastarioDataList>
 
-              <div className="finalSelectedActions">
-                <div className="finalSelectedActionsMain">
-                  <button
-                    type="button"
-                    className="finalBackButton g-ui-button g-ui-button--secondary"
-                    onClick={() =>
-                      setSelectedOrderId(null)
-                    }
-                  >
-                    Zurück zur Liste
-                  </button>
+        <GastarioDrawer
+          open={Boolean(selectedOrder)}
+          title={
+            selectedOrder
+              ? (
+                  selectedOrder.customerName ||
+                  selectedOrder.customer?.name ||
+                  "Kunde unbekannt"
+                )
+              : "Auftrag"
+          }
+          description={
+            selectedOrder
+              ? `${selectedOrder.orderNumber} · ${
+                  selectedOrder.contactName ||
+                  "Keine Kontaktperson"
+                }`
+              : undefined
+          }
+          onClose={() =>
+            setSelectedOrderId(null)
+          }
+          footer={
+            selectedOrder ? (
+              <>
+                <DeliveryNoteButton
+                  orderId={selectedOrder.id}
+                />
 
-                  <DeliveryNoteButton
-                    orderId={selectedOrder.id}
-                  />
-
-                  <Link
-                    className="finalFoodlabelsButton"
-                    to={
-                      "/auftraege/" +
-                      selectedOrder.id +
-                      "/foodlabels"
-                    }
-                  >
-                    Foodlabels erstellen
-                  </Link>
-                </div>
+                <Link
+                  className={gastarioButtonClass(
+                    "secondary"
+                  )}
+                  to={
+                    "/auftraege/" +
+                    selectedOrder.id +
+                    "/foodlabels"
+                  }
+                >
+                  Foodlabels
+                </Link>
 
                 <Form
                   method="post"
-                  className="finalSelectedDeleteForm"
+                  onSubmit={(event) => {
+                    if (
+                      !window.confirm(
+                        "Diesen Auftrag wirklich löschen?"
+                      )
+                    ) {
+                      event.preventDefault();
+                    }
+                  }}
                 >
                   <input
                     type="hidden"
@@ -1237,228 +1154,382 @@ export default function OrdersPage() {
                     value={selectedOrder.id}
                   />
 
-                  <button
+                  <GastarioButton
+                    variant="danger"
                     type="submit"
-                    className="finalSelectedDeleteButton"
                   >
-                    Auftrag löschen
-                  </button>
+                    Löschen
+                  </GastarioButton>
                 </Form>
-              </div>
-            </aside>
-          </div>
-        ) : (
-          <div className="finalOrderRows operationalOrderRows">
-          {data.orders.length === 0 ? (
-            <div className="ordersCardEmpty">
-              <strong>Keine Aufträge vorhanden.</strong>
+              </>
+            ) : null
+          }
+        >
 
-              <span>
-                {data.activeStatus
-                  ? "Für diesen Filter wurden keine Aufträge gefunden."
-                  : data.view === "past"
-                    ? "Es sind noch keine vergangenen Aufträge vorhanden."
-                    : "Es stehen aktuell keine Lieferungen bevor."}
-              </span>
-            </div>
-          ) : (
-            data.orders.map((order: any) => {
-              const items = Array.isArray(order.items)
-                ? order.items
-                : [];
+          {selectedOrder ? (
 
-              const visibleItems = items.filter(
-                (item: any) =>
-                  !String(item.name || "")
-                    .toLowerCase()
-                    .includes("fehlende position")
-              );
+            <div className="g-ui-detail-stack">
 
-              const previewItems = visibleItems.slice(0, 3);
 
-              const total = items.reduce(
-                (sum: number, item: any) =>
-                  sum +
-                  Number(
-                    item.totalCents ||
-                      item.totalPriceCents ||
-                      0
-                  ),
-                0
-              );
+              <GastarioToolbar>
 
-              return (
-                <article
-                  className={
-                    "finalOrderRow operationalOrderRow " +
-                    (data.view === "past"
-                      ? "operationalOrderRowPast"
-                      : "operationalOrderRowUpcoming")
+                <GastarioBadge variant="neutral">
+                  {String(
+                    selectedOrder.platformName ||
+                    selectedOrder.source ||
+                    "Direkt"
+                  )}
+                </GastarioBadge>
+
+                <Link
+                  className={gastarioButtonClass(
+                    "secondary"
+                  )}
+                  to={
+                    `/auftrag-pruefung/${selectedOrder.id}`
                   }
-                  key={order.id}
-                  /* gastario-clickable-order-card-20260714 */
-                  role="button"
-                  tabIndex={0}
-                  onClick={() =>
-                    setSelectedOrderId(order.id)
-                  }
-                  onKeyDown={(event) => {
-                    if (
-                      event.key === "Enter" ||
-                      event.key === " "
-                    ) {
-                      event.preventDefault();
-                      setSelectedOrderId(order.id);
-                    }
-                  }}
                 >
-                  <div className="finalOrderIcon">
-                    <span aria-hidden="true">✉</span>
+                  Operative Zuordnung
+                </Link>
+
+              </GastarioToolbar>
+
+
+              <GastarioMetricGrid>
+
+                <GastarioMetric
+                  label="Lieferung"
+                  value={formatDate(
+                    selectedOrder.deliveryDate
+                  )}
+                  description={
+                    selectedOrder.deliveryTimeText ||
+                    "Uhrzeit offen"
+                  }
+                />
+
+                <GastarioMetric
+                  label="Gesamt"
+                  value={centsToEuro(
+                    selectedOrderTotal
+                  )}
+                  description={
+                    data.view === "past"
+                      ? "Vergangener Auftrag"
+                      : "Aktueller Auftrag"
+                  }
+                  badge="EUR"
+                />
+
+              </GastarioMetricGrid>
+
+
+              <GastarioPanel variant="soft">
+
+                <strong>
+                  Lieferadresse
+                </strong>
+
+                <div>
+                  {selectedOrder.deliveryAddress ||
+                    "Keine Lieferadresse eingetragen"}
+                </div>
+
+                {selectedOrder.contactPhone ? (
+                  <div>
+                    Telefon:{" "}
+                    {selectedOrder.contactPhone}
                   </div>
+                ) : null}
 
-                  <div className="finalOrderCustomer">
-                    <div className="finalOrderNumber">
-                      {order.orderNumber}
-                    </div>
+              </GastarioPanel>
 
-                    <h3>
-                      {order.customerName ||
-                        order.customer?.name ||
-                        "Kunde unbekannt"}
-                    </h3>
 
-                    <p>
-                      {order.contactName ||
-                        order.customer?.email ||
-                        order.customerEmail ||
-                        "Keine Kontaktperson erkannt"}
-                    </p>
+              <GastarioSection
+                eyebrow="Auftrag"
+                title="Positionen"
+                description={
+                  selectedOrderItems.length === 1
+                    ? "1 Position"
+                    : `${selectedOrderItems.length} Positionen`
+                }
+              >
 
-                    <span className="finalSourceBadge">
-                      {String(order.source || "Direkt")}
-                    </span>
-                  </div>
+                {selectedOrderItems.length === 0 ? (
 
-                  <div className="finalOrderItems">
-                    {previewItems.map(
-                      (item: any, index: number) => (
-                        <div
+                  <GastarioEmptyState title="Keine Positionen">
+                    Für diesen Auftrag sind keine Positionen hinterlegt.
+                  </GastarioEmptyState>
+
+                ) : (
+
+                  <GastarioDataList>
+
+                    {selectedOrderItems.map(
+                      (item: any) => (
+
+                        <GastarioDataRow
                           key={
                             item.id ||
-                            item.name + "-" + index
+                            item.name
                           }
                         >
-                          <strong>
-                            {Number(item.quantity || 1)}x
-                          </strong>
 
-                          <span>
-                            {item.name || "Position"}
-                          </span>
-                        </div>
+                          <div className="g-ui-data-row-main">
+
+                            <strong className="g-ui-data-row-title">
+                              {item.quantity || 1}x{" "}
+                              {item.name ||
+                                "Position"}
+                            </strong>
+
+                            {item.notes ||
+                            item.itemNotes ? (
+                              <span className="g-ui-data-row-description">
+                                {item.notes ||
+                                  item.itemNotes}
+                              </span>
+                            ) : null}
+
+                          </div>
+
+                          <div className="g-ui-data-row-meta">
+                            <span>
+                              {centsToEuro(
+                                Number(
+                                  item.totalCents ||
+                                  item.totalPriceCents ||
+                                  0
+                                )
+                              )}
+                            </span>
+                          </div>
+
+                        </GastarioDataRow>
                       )
                     )}
 
-                    {visibleItems.length >
-                    previewItems.length ? (
-                      <small>
-                        +{" "}
-                        {visibleItems.length -
-                          previewItems.length}{" "}
-                        weitere Position
-                        {visibleItems.length -
-                          previewItems.length ===
-                        1
-                          ? ""
-                          : "en"}
-                      </small>
-                    ) : null}
-                  </div>
+                  </GastarioDataList>
+                )}
 
-                  <div className="finalOrderDate operationalOrderDate">
-                    <strong>
-                      {formatDate(order.deliveryDate)}
-                    </strong>
+              </GastarioSection>
 
-                    <span>
-                      {order.deliveryTimeText ||
-                        "Uhrzeit offen"}
-                    </span>
 
-                    {order.deliveryAddress ? (
-                      <small>
-                        {order.deliveryAddress}
-                      </small>
-                    ) : null}
-                  </div>
+              <GastarioSection
+                eyebrow="Finanzen"
+                title="Abrechnung"
+                description="Lege fest, wie dieser Auftrag fakturiert wird."
+              >
 
-                  <div className="operationalOrderStatus">
-                    <span
-                      className={
-                        "orderStatus " +
-                        statusClass(order.status)
+                <GastarioBadge variant="neutral">
+                  {selectedOrder.billingStatus ===
+                  "READY_TO_INVOICE"
+                    ? "Rechnung vorbereiten"
+                    : selectedOrder.billingStatus ===
+                        "INVOICED_EXTERNALLY"
+                      ? "Extern abgerechnet"
+                      : selectedOrder.billingStatus ===
+                          "WAITING_FOR_CREDIT"
+                        ? "Gutschrift ausstehend"
+                        : selectedOrder.billingStatus ===
+                            "CREDIT_RECEIVED"
+                          ? "Gutschrift erhalten"
+                          : selectedOrder.billingStatus ===
+                              "NOT_RELEVANT"
+                            ? "Nicht erforderlich"
+                            : selectedOrder.billingStatus ===
+                                "INVOICED"
+                              ? "Rechnung erstellt"
+                              : "Noch offen"}
+                </GastarioBadge>
+
+
+                <Form method="post">
+
+                  <input
+                    type="hidden"
+                    name="intent"
+                    value="updateBillingMode"
+                  />
+
+                  <input
+                    type="hidden"
+                    name="orderId"
+                    value={selectedOrder.id}
+                  />
+
+                  <GastarioField label="Abrechnungsart">
+
+                    <GastarioSelect
+                      name="billingMode"
+                      defaultValue={
+                        selectedOrder.billingMode ||
+                        "UNDECIDED"
                       }
                     >
-                      {statusLabel(order.status)}
-                    </span>
-                  </div>
+                      <option value="UNDECIDED">
+                        Noch nicht entschieden
+                      </option>
 
-                  <div className="finalOrderTotal">
-                    <strong>{centsToEuro(total)}</strong>
+                      <option value="DIRECT_INVOICE">
+                        Eigene Rechnung mit Gastario
+                      </option>
 
-                    <span>
-                      {data.view === "past"
-                        ? "Auftragswert"
-                        : "Gesamt"}
-                    </span>
-                  </div>
+                      <option value="EXTERNAL_INVOICE">
+                        Über anderes System abgerechnet
+                      </option>
 
-                  <div
-                    className="finalOrderActions operationalOrderActions"
-                    onClick={(event) =>
-                      event.stopPropagation()
-                    }
-                    onKeyDown={(event) =>
-                      event.stopPropagation()
-                    }
-                  >
-                    <DeliveryNoteButton
-                      orderId={order.id}
-                      compact
-                    />
+                      <option value="PLATFORM_CREDIT">
+                        Plattformgutschrift
+                      </option>
 
-                    <Form method="post">
-                      <input
-                        type="hidden"
-                        name="intent"
-                        value="deleteOrder"
-                      />
+                      <option value="NO_INVOICE">
+                        Keine Rechnung erforderlich
+                      </option>
+                    </GastarioSelect>
 
-                      <input
-                        type="hidden"
-                        name="orderId"
-                        value={order.id}
-                      />
+                  </GastarioField>
 
-                      <button
-                        className="operationalDeleteButton"
-                        type="submit"
-                        aria-label="Auftrag löschen"
-                        title="Auftrag löschen"
-                      >
-                        <svg viewBox="0 0 24 24" aria-hidden="true">                           <path                             d="M4 7h16"                             fill="none"                             stroke="currentColor"                             strokeWidth="1.8"                             strokeLinecap="round"                           />                           <path                             d="M9 7V5h6v2"                             fill="none"                             stroke="currentColor"                             strokeWidth="1.8"                             strokeLinecap="round"                             strokeLinejoin="round"                           />                           <path                             d="M6.5 7l.8 12a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-12"                             fill="none"                             stroke="currentColor"                             strokeWidth="1.8"                             strokeLinecap="round"                             strokeLinejoin="round"                           />                           <path                             d="M10 11v6M14 11v6"                             fill="none"                             stroke="currentColor"                             strokeWidth="1.8"                             strokeLinecap="round"                           />                         </svg>
-                      </button>
-                    </Form>
-                  </div>
-                </article>
-              );
-            })
-          )}
-        </div>
+                  <GastarioToolbar>
 
-        )}
+                    <GastarioButton
+                      variant="primary"
+                      type="submit"
+                    >
+                      Abrechnungsart speichern
+                    </GastarioButton>
+
+                  </GastarioToolbar>
+
+                </Form>
+
+
+                {selectedOrder.billingMode ===
+                "DIRECT_INVOICE" ? (
+
+                  <GastarioPanel variant="soft">
+
+                    {Array.isArray(
+                      selectedOrder.invoices
+                    ) &&
+                    selectedOrder.invoices.length >
+                      0 ? (
+                      <>
+                        <strong>
+                          Rechnung bereits vorhanden
+                        </strong>
+
+                        <div>
+                          {selectedOrder.invoices[0]
+                            .externalInvoiceNumber ||
+                            "Rechnungsentwurf ohne Nummer"}
+                        </div>
+
+                        <Link
+                          className={gastarioButtonClass(
+                            "secondary"
+                          )}
+                          to={
+                            "/rechnungen/" +
+                            selectedOrder.invoices[0]
+                              .id
+                          }
+                        >
+                          Rechnung öffnen
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <strong>
+                          Rechnungsentwurf vorbereiten
+                        </strong>
+
+                        <div>
+                          Kunde und Positionen werden
+                          in den Rechnungseditor
+                          übernommen.
+                        </div>
+
+                        <Link
+                          className={gastarioButtonClass(
+                            "secondary"
+                          )}
+                          to={
+                            "/rechnungen/neu?orderId=" +
+                            selectedOrder.id
+                          }
+                        >
+                          Rechnungsentwurf vorbereiten
+                        </Link>
+                      </>
+                    )}
+
+                  </GastarioPanel>
+
+                ) : null}
+
+
+                {selectedOrder.billingMode ===
+                "PLATFORM_CREDIT" ? (
+
+                  <GastarioPanel variant="soft">
+                    <strong>
+                      Plattformgutschrift
+                    </strong>
+
+                    <div>
+                      Gastario erzeugt für diesen
+                      Auftrag keine eigene Rechnung.
+                    </div>
+                  </GastarioPanel>
+
+                ) : null}
+
+
+                {selectedOrder.billingMode ===
+                "EXTERNAL_INVOICE" ? (
+
+                  <GastarioPanel variant="soft">
+                    <strong>
+                      Extern abgerechnet
+                    </strong>
+
+                    <div>
+                      Der Auftrag wird in einem
+                      anderen System fakturiert.
+                    </div>
+                  </GastarioPanel>
+
+                ) : null}
+
+
+                {selectedOrder.billingMode ===
+                "NO_INVOICE" ? (
+
+                  <GastarioPanel variant="soft">
+                    <strong>
+                      Keine Rechnung erforderlich
+                    </strong>
+
+                    <div>
+                      Der Auftrag wird nicht in die
+                      offene Rechnungsbearbeitung
+                      aufgenommen.
+                    </div>
+                  </GastarioPanel>
+
+                ) : null}
+
+              </GastarioSection>
+
+            </div>
+
+          ) : null}
+
+        </GastarioDrawer>
+
       </section>
-      </div>
+      </GastarioPage>
 </AppLayout>
   );
 }

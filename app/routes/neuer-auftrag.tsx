@@ -1,6 +1,22 @@
 import { useMemo, useState } from "react";
 import auftraegeStyles from "../styles/auftraege.css?url";
 import AppLayout from "../components/AppLayout";
+import {
+  GastarioField,
+  GastarioFormGrid,
+  GastarioHeader,
+  GastarioInput,
+  GastarioNotice,
+  GastarioPage,
+  GastarioSection,
+  GastarioTextarea,
+  gastarioButtonClass,
+  GastarioButton,
+  GastarioMetric,
+  GastarioMetricGrid,
+  GastarioPanel,
+  GastarioToolbar,
+} from "../components/ui";
 import { Form, redirect, useActionData } from "react-router";
 
 export function links() {
@@ -433,315 +449,315 @@ export default function NeuerAuftragPage() {
 
   return (
     <AppLayout>
-      <div className="newOrderPage" style={pageStyle}>
-        <div className="newOrderShell" style={shellStyle}>
-          <header className="newOrderHero" style={{ ...cardStyle, marginBottom: 18 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
-              <div>
-                <div style={smallOverlineStyle}>Auftrag</div>
-                <h1 style={titleStyle}>Neuer Auftrag</h1>
-                <p style={subtitleStyle}>
-                  Manuell erfassen und anschließend im Auftragseingang prüfen.
-                </p>
-              </div>
+      <GastarioPage>
 
-              <a className="newOrderSecondaryButton" href="/auftragseingang" style={secondaryButtonStyle}>
-                Zurück zum Eingang
-              </a>
-            </div>
-          </header>
-
-          {actionData?.error ? (
-            <div style={{
-              background: "#fff7ed",
-              border: "1px solid #fdba74",
-              color: "#9a3412",
-              borderRadius: 14,
-              padding: 14,
-              fontWeight: 600,
-              marginBottom: 16,
-            }}>
-              {actionData.error}
-            </div>
-          ) : null}
-
-          <Form method="post" className="newOrderForm" style={{ display: "grid", gap: 18 }}>
-            <section className="newOrderSection" style={cardStyle}>
-              <h2 style={sectionTitleStyle}>Kundendaten</h2>
-
-              <div className="manualOrderGrid customerGrid">
-                <label style={labelStyle}>
-                  Kunde *
-                  <input name="customerName" style={inputStyle} placeholder="z. B. Muster GmbH" />
-                </label>
-
-                <label style={labelStyle}>
-                  E-Mail
-                  <input name="customerEmail" type="email" style={inputStyle} placeholder="kunde@example.de" />
-                </label>
-
-                <label style={labelStyle}>
-                  Telefon
-                  <input name="customerPhone" style={inputStyle} placeholder="030..." />
-                </label>
-
-                <label style={labelStyle}>
-                  Kontaktperson
-                  <input name="contactName" style={inputStyle} placeholder="Name" />
-                </label>
-
-                <label style={labelStyle}>
-                  Kontakt Telefon
-                  <input name="contactPhone" style={inputStyle} placeholder="Mobil / Büro" />
-                </label>
-              </div>
-            </section>
-
-            <section className="newOrderSection" style={cardStyle}>
-              <h2 style={sectionTitleStyle}>Lieferung</h2>
-
-              <div className="manualOrderGrid deliveryGrid">
-                <label style={labelStyle}>
-                  Lieferdatum *
-                  <input name="deliveryDate" inputMode="numeric" style={inputStyle} placeholder="TT.MM.JJJJ" />
-                </label>
-
-                <label style={labelStyle}>
-                  Lieferzeit
-                  <input name="deliveryTime" style={inputStyle} placeholder="z. B. 12:00" />
-                </label>
-
-                <label style={labelStyle}>
-                  Straße / Hausnummer
-                  <input name="deliveryStreet" style={inputStyle} placeholder="Straße 12" />
-                </label>
-
-                <label style={labelStyle}>
-                  PLZ
-                  <input name="deliveryZip" inputMode="numeric" style={inputStyle} placeholder="10115" />
-                </label>
-
-                <label style={labelStyle}>
-                  Ort
-                  <input name="deliveryCity" style={inputStyle} placeholder="Berlin" />
-                </label>
-              </div>
-
-              <label style={{ ...labelStyle, marginTop: 12 }}>
-                Zusatz zur Lieferadresse
-                <textarea
-                  name="deliveryAddressNote"
-                  style={textareaStyle}
-                  placeholder="z. B. Hinterhof, Etage, Ansprechpartner vor Ort, Klingelname..."
-                />
-              </label>
-            </section>
-
-            <section className="newOrderSection" style={cardStyle}>
-              <h2 style={{ ...sectionTitleStyle, marginBottom: 6 }}>Positionen</h2>
-              <p style={sectionSubtextStyle}>
-                Positionen können frei ergänzt, als Freitext erfasst oder gelöscht werden.
-              </p>
-
-              <div className="newOrderItemsList" style={{ display: "grid", gap: 12, marginTop: 18 }}>
-                {items.map((item, index) => (
-                  <div
-                    key={item.id}
-                    style={{
-                      border: "1px solid #e8eef3",
-                      background: "#fcfdff",
-                      borderRadius: 14,
-                      padding: 12,
-                    }}
-                  >
-                    <div className="manualOrderItemRow newOrderItemRow">
-                      <label style={labelStyle}>
-                        Position {index + 1}
-                        <input
-                          name="itemName"
-                          value={item.name}
-                          onChange={(event) => updateItem(item.id, "name", event.target.value)}
-                          style={inputStyle}
-                          placeholder={index === 0 ? "z. B. Chicken Bowl" : "Weitere Position"}
-                        />
-                      </label>
-
-                      <label style={labelStyle}>
-                        Menge
-                        <input
-                          name="quantity"
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={item.quantity}
-                          onChange={(event) => updateItem(item.id, "quantity", event.target.value)}
-                          style={inputStyle}
-                        />
-                      </label>
-
-                      <label style={labelStyle}>
-                        Einzelpreis netto
-                        <input
-                          name="unitPriceEuro"
-                          value={item.unitPriceEuro}
-                          onChange={(event) => updateItem(item.id, "unitPriceEuro", event.target.value)}
-                          style={inputStyle}
-                          placeholder="0,00"
-                        />
-                      </label>
-
-                      <label style={labelStyle}>
-                        Freitext / Hinweis
-                        <input
-                          name="itemNotes"
-                          value={item.itemNotes}
-                          onChange={(event) => updateItem(item.id, "itemNotes", event.target.value)}
-                          style={inputStyle}
-                          placeholder="Allergene, Besonderheit, Beschreibung..."
-                        />
-                      </label>
-
-                      <div className="newOrderDeleteCell" style={{ display: "flex", alignItems: "end" }}>
-                        <button
-                          type="button"
-                          onClick={() => removeItem(item.id)}
-                          className="newOrderDeleteButton" style={dangerButtonStyle}
-                          disabled={items.length <= 1}
-                        >
-                          Löschen
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="newOrderItemActions" style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16 }}>
-                <button className="newOrderAddButton" type="button" onClick={addItem} style={subtleButtonStyle}>
-                  + Position hinzufügen
-                </button>
-
-                <button className="newOrderSecondaryButton" type="button" onClick={addTextItem} style={secondaryButtonStyle}>
-                  + Freitextposition
-                </button>
-              </div>
-
-              <div className="newOrderTotalBar" style={darkTotalBarStyle}>
-                <div>
-                  <div style={{
-                    fontSize: 12,
-                    letterSpacing: ".08em",
-                    textTransform: "uppercase",
-                    color: "rgba(255,255,255,0.72)",
-                    fontWeight: 600,
-                    marginBottom: 4,
-                  }}>
-                    Gesamtsumme netto
-                  </div>
-                  <div style={{
-                    fontSize: 13,
-                    color: "rgba(255,255,255,0.78)",
-                    fontWeight: 450,
-                  }}>
-                    Summe aller aktuell erfassten Positionen
-                  </div>
-                </div>
-
-                <div style={{
-                  fontSize: 34,
-                  lineHeight: 1,
-                  letterSpacing: "-0.03em",
-                  fontWeight: 600,
-                }}>
-                  {formatEuro(total)}
-                </div>
-              </div>
-            </section>
-
-            <section className="newOrderSection" style={cardStyle}>
-              <h2 style={sectionTitleStyle}>Notizen</h2>
-
-              <label style={labelStyle}>
-                Interne Notizen
-                <textarea
-                  name="notes"
-                  style={textareaStyle}
-                  placeholder="Besonderheiten, Absprachen, Hinweise..."
-                />
-              </label>
-
-              <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 12,
-                marginTop: 18,
-                alignItems: "center",
-                flexWrap: "wrap",
-              }}>
-                <div style={{ color: "#64748b", fontSize: 13, fontWeight: 450 }}>
-                  Der Auftrag wird zuerst im Auftragseingang geprüft.
-                </div>
-
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <a className="newOrderSecondaryButton" href="/auftragseingang" style={secondaryButtonStyle}>
-                    Abbrechen
-                  </a>
-                  <button className="newOrderPrimaryButton" type="submit" style={primaryButtonStyle}>
-                    Auftrag anlegen
-                  </button>
-                </div>
-              </div>
-            </section>
-          </Form>
-        </div>
-      </div>
-
-      <style>{`
-        input::placeholder,
-        textarea::placeholder {
-          color: #8a94a6 !important;
-          font-weight: 450 !important;
-        }
-
-        input:focus,
-        textarea:focus {
-          border-color: #9fc9bc !important;
-          box-shadow: 0 0 0 3px rgba(15, 159, 122, 0.08) !important;
-        }
-
-        button:disabled {
-          opacity: .45;
-          cursor: not-allowed !important;
-        }
-
-        .manualOrderGrid {
-          display: grid;
-          gap: 14px;
-        }
-
-        .customerGrid {
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-
-        .deliveryGrid {
-          grid-template-columns: 160px 140px minmax(0, 1.5fr) 110px 160px;
-        }
-
-        .manualOrderItemRow {
-          display: grid;
-          grid-template-columns: minmax(220px, 1.3fr) 90px 130px minmax(240px, 1fr) auto;
-          gap: 10px;
-          align-items: end;
-        }
-
-        @media (max-width: 1100px) {
-          .customerGrid,
-          .deliveryGrid,
-          .manualOrderItemRow {
-            grid-template-columns: 1fr !important;
+        <GastarioHeader
+          eyebrow="Auftrag"
+          title="Neuer Auftrag"
+          subtitle="Manuell erfassen und anschließend im Auftragseingang prüfen."
+          actions={
+            <a
+              href="/auftragseingang"
+              className={gastarioButtonClass("secondary")}
+            >
+              Zurück zum Eingang
+            </a>
           }
-        }
-      `}</style>
+        />
+
+        {actionData?.error ? (
+          <GastarioNotice type="danger">
+            {actionData.error}
+          </GastarioNotice>
+        ) : null}
+
+        <Form
+          method="post"
+          className="g-ui-stack"
+        >
+
+          <GastarioSection
+            eyebrow="Kunde"
+            title="Kundendaten"
+            description="Kontakt- und Ansprechpartnerdaten für diesen Auftrag."
+          >
+            <GastarioFormGrid columns={3}>
+
+              <GastarioField
+                label="Kunde"
+                required
+              >
+                <GastarioInput
+                  name="customerName"
+                  placeholder="z. B. Muster GmbH"
+                  required
+                />
+              </GastarioField>
+
+              <GastarioField label="E-Mail">
+                <GastarioInput
+                  name="customerEmail"
+                  type="email"
+                  placeholder="kunde@example.de"
+                />
+              </GastarioField>
+
+              <GastarioField label="Telefon">
+                <GastarioInput
+                  name="customerPhone"
+                  placeholder="030..."
+                />
+              </GastarioField>
+
+              <GastarioField label="Kontaktperson">
+                <GastarioInput
+                  name="contactName"
+                  placeholder="Name"
+                />
+              </GastarioField>
+
+              <GastarioField label="Kontakt Telefon">
+                <GastarioInput
+                  name="contactPhone"
+                  placeholder="Mobil / Büro"
+                />
+              </GastarioField>
+
+            </GastarioFormGrid>
+          </GastarioSection>
+
+
+          <GastarioSection
+            eyebrow="Logistik"
+            title="Lieferung"
+            description="Lieferdatum, Zeitfenster und Zieladresse des Auftrags."
+          >
+            <GastarioFormGrid columns={3}>
+
+              <GastarioField
+                label="Lieferdatum"
+                required
+              >
+                <GastarioInput
+                  name="deliveryDate"
+                  inputMode="numeric"
+                  placeholder="TT.MM.JJJJ"
+                  required
+                />
+              </GastarioField>
+
+              <GastarioField label="Lieferzeit">
+                <GastarioInput
+                  name="deliveryTime"
+                  placeholder="z. B. 12:00"
+                />
+              </GastarioField>
+
+              <GastarioField label="Straße / Hausnummer">
+                <GastarioInput
+                  name="deliveryStreet"
+                  placeholder="Straße 12"
+                />
+              </GastarioField>
+
+              <GastarioField label="PLZ">
+                <GastarioInput
+                  name="deliveryZip"
+                  inputMode="numeric"
+                  placeholder="10115"
+                />
+              </GastarioField>
+
+              <GastarioField label="Ort">
+                <GastarioInput
+                  name="deliveryCity"
+                  placeholder="Berlin"
+                />
+              </GastarioField>
+
+            </GastarioFormGrid>
+
+            <GastarioField label="Zusatz zur Lieferadresse">
+              <GastarioTextarea
+                name="deliveryAddressNote"
+                placeholder="z. B. Hinterhof, Etage, Ansprechpartner vor Ort, Klingelname..."
+              />
+            </GastarioField>
+          </GastarioSection>
+
+          <GastarioSection
+            eyebrow="Leistung"
+            title="Positionen"
+            description="Positionen frei ergänzen, als Freitext erfassen oder wieder entfernen."
+          >
+
+            {items.map((item, index) => (
+              <GastarioPanel
+                key={item.id}
+                variant="soft"
+              >
+                <GastarioFormGrid columns={4}>
+
+                  <GastarioField
+                    label={`Position ${index + 1}`}
+                  >
+                    <GastarioInput
+                      name="itemName"
+                      value={item.name}
+                      onChange={(event) =>
+                        updateItem(
+                          item.id,
+                          "name",
+                          event.target.value
+                        )
+                      }
+                      placeholder={
+                        index === 0
+                          ? "z. B. Chicken Bowl"
+                          : "Weitere Position"
+                      }
+                    />
+                  </GastarioField>
+
+                  <GastarioField label="Menge">
+                    <GastarioInput
+                      name="quantity"
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={item.quantity}
+                      onChange={(event) =>
+                        updateItem(
+                          item.id,
+                          "quantity",
+                          event.target.value
+                        )
+                      }
+                    />
+                  </GastarioField>
+
+                  <GastarioField label="Einzelpreis netto">
+                    <GastarioInput
+                      name="unitPriceEuro"
+                      value={item.unitPriceEuro}
+                      onChange={(event) =>
+                        updateItem(
+                          item.id,
+                          "unitPriceEuro",
+                          event.target.value
+                        )
+                      }
+                      placeholder="0,00"
+                    />
+                  </GastarioField>
+
+                  <GastarioField label="Freitext / Hinweis">
+                    <GastarioInput
+                      name="itemNotes"
+                      value={item.itemNotes}
+                      onChange={(event) =>
+                        updateItem(
+                          item.id,
+                          "itemNotes",
+                          event.target.value
+                        )
+                      }
+                      placeholder="Allergene, Besonderheit, Beschreibung..."
+                    />
+                  </GastarioField>
+
+                </GastarioFormGrid>
+
+                <GastarioToolbar>
+                  <GastarioButton
+                    type="button"
+                    variant="danger"
+                    onClick={() =>
+                      removeItem(item.id)
+                    }
+                    disabled={items.length <= 1}
+                  >
+                    Löschen
+                  </GastarioButton>
+                </GastarioToolbar>
+
+              </GastarioPanel>
+            ))}
+
+
+            <GastarioToolbar>
+
+              <GastarioButton
+                type="button"
+                variant="primary"
+                onClick={addItem}
+              >
+                + Position hinzufügen
+              </GastarioButton>
+
+              <GastarioButton
+                type="button"
+                variant="secondary"
+                onClick={addTextItem}
+              >
+                + Freitextposition
+              </GastarioButton>
+
+            </GastarioToolbar>
+
+
+            <GastarioMetricGrid>
+              <GastarioMetric
+                label="Gesamtsumme netto"
+                value={formatEuro(total)}
+                description="Summe aller aktuell erfassten Positionen"
+                badge="EUR"
+              />
+            </GastarioMetricGrid>
+
+          </GastarioSection>
+
+
+          <GastarioSection
+            eyebrow="Intern"
+            title="Notizen"
+            description="Interne Hinweise und Abschluss des manuellen Auftrags."
+          >
+
+            <GastarioField label="Interne Notizen">
+              <GastarioTextarea
+                name="notes"
+                placeholder="Besonderheiten, Absprachen, Hinweise..."
+              />
+            </GastarioField>
+
+            <GastarioPanel variant="soft">
+              Der Auftrag wird zuerst im Auftragseingang geprüft.
+            </GastarioPanel>
+
+            <GastarioToolbar>
+
+              <a
+                href="/auftragseingang"
+                className={gastarioButtonClass(
+                  "secondary"
+                )}
+              >
+                Abbrechen
+              </a>
+
+              <GastarioButton
+                variant="primary"
+                type="submit"
+              >
+                Auftrag anlegen
+              </GastarioButton>
+
+            </GastarioToolbar>
+
+          </GastarioSection>
+          </Form>
+      </GastarioPage>
     </AppLayout>
   );
 }

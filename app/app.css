@@ -1,7 +1,9 @@
-@import "./styles/gastario-tokens.css";
+﻿@import "./styles/gastario-tokens.css";
 @import "./styles/gastario-foundation.css";
 @import "./styles/gastario-ui.css";
 @import "./styles/gastario-page-shell.css";
+
+
 
 :root {
   --bg: var(--g-color-page);
@@ -1895,3 +1897,7 @@ h2 {
   font-size: 15px;
   line-height: 1;
 }
+
+
+
+

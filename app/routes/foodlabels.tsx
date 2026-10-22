@@ -1,7 +1,26 @@
-﻿import { Form, Link, redirect, useActionData, useLoaderData, useSearchParams } from "react-router";
+import { Form, Link, redirect, useActionData, useLoaderData, useSearchParams } from "react-router";
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import AppLayout from "../components/AppLayout";
+import {
+  GastarioActionCard,
+  GastarioActionGrid,
+  GastarioButton,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioDialog,
+  GastarioDrawer,
+  GastarioEmptyState,
+  GastarioField,
+  GastarioFormGrid,
+  GastarioHeader,
+  GastarioInput,
+  GastarioNotice,
+  GastarioPanel,
+  GastarioSection,
+  GastarioSelect,
+  GastarioTabs,
+} from "../components/ui";
 
 function formatDate(value: Date | string | null | undefined) {
   if (!value) return "-";
@@ -227,185 +246,483 @@ export async function action({ request }: { request: Request }) {
 export default function FoodLabelsPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as any;
-  const url = new URL(typeof window !== "undefined" ? window.location.href : "http://localhost");
-  const selectedId = url.searchParams.get("print");
-  const selected = selectedId ? data.labels.find((label: any) => label.id === selectedId) : data.labels[0];
+
+  const [searchParams] = useSearchParams();
+  const selectedId = searchParams.get("print");
+
+  const selected = selectedId
+    ? data.labels.find((label: any) => label.id === selectedId)
+    : null;
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [pdfOpen, setPdfOpen] = useState(false);
+  const [createTab, setCreateTab] = useState("general");
 
   return (
     <AppLayout>
-      <section style={pageGridStyle}>
-        <div>
-          <p style={smallLabelStyle}>Betrieb</p>
-          <h1 style={pageTitleStyle}>Foodlabel erstellen</h1>
-        </div>
+      <section className="foodlabelsPage">
+        <GastarioHeader
+          eyebrow="Betrieb"
+          title="Foodlabels"
+        />
 
-        {actionData?.error ? <div style={errorStyle}>{actionData.error}</div> : null}
-        {actionData?.success ? <div style={successStyle}>{actionData.success}</div> : null}
+        {actionData?.error ? (
+          <GastarioNotice type="danger">
+            {actionData.error}
+          </GastarioNotice>
+        ) : null}
 
-        <div style={editorCardStyle}>
-          <div style={cardHeaderStyle}>
-            <div>
-              <p style={smallLabelStyle}>Foodlabel</p>
-              <h2 style={sectionTitleStyle}>
-Labeldaten speichern</h2>
+        {actionData?.success ? (
+          <GastarioNotice type="success">
+            {actionData.success}
+          </GastarioNotice>
+        ) : null}
+
+
+        <GastarioSection
+          title="Was möchtest du machen?"
+          description="Erstelle Labels, konvertiere vorhandene PDF-Bögen oder verwalte die automatische Allergen-Erkennung."
+        >
+          <GastarioActionGrid columns={3}>
+
+            <GastarioActionCard
+              title="Foodlabel erstellen"
+              tone="sand"
+              description="Neues Etikett mit Zutaten, Allergenen, QR-Code und Druckformat anlegen."
+              meta="Neu"
+              onClick={() => {
+                setCreateTab("general");
+                setCreateOpen(true);
+              }}
+            />
+
+            <GastarioActionCard
+              title="PDF importieren"
+              tone="blue"
+              description="Vorhandenen A4-Labelbogen automatisch für Zebra-Etiketten aufbereiten."
+              meta="PDF → Zebra"
+              onClick={() => setPdfOpen(true)}
+            />
+
+            <GastarioActionCard
+              title="Allergene verwalten"
+              tone="sage"
+              description="Automatische Zuordnung von Gerichten, Allergenen und Hinweisen bearbeiten."
+              meta="Regeln"
+              onClick={() => {
+                window.location.assign("/foodlabels/allergene");
+              }}
+            />
+
+          </GastarioActionGrid>
+        </GastarioSection>
+
+
+        <GastarioSection
+          eyebrow="Übersicht"
+          title="Gespeicherte Foodlabels"
+          description={
+            data.labels.length === 1
+              ? "1 Foodlabel gespeichert"
+              : `${data.labels.length} Foodlabels gespeichert`
+          }
+        >
+
+          {data.labels.length === 0 ? (
+            <GastarioEmptyState title="Noch keine Foodlabels">
+              Erstelle dein erstes Foodlabel über die Aktion oben.
+            </GastarioEmptyState>
+          ) : (
+            <GastarioDataList>
+
+              {data.labels.map((label: any) => (
+                <GastarioDataRow
+                  key={label.id}
+                  onClick={() => {
+                    setSearchParams({
+                      print: label.id,
+                    });
+                  }}
+                >
+                  <div className="g-ui-data-row-copy">
+                    <strong className="g-ui-data-row-title">
+                      {label.name}
+                    </strong>
+
+                    <span className="g-ui-data-row-description">
+                      {label.ingredients
+                        ? `Zutaten: ${label.ingredients}`
+                        : "Keine Zutaten hinterlegt"}
+                    </span>
+                  </div>
+
+                  <div className="g-ui-data-row-meta">
+                    <span>
+                      {label.labelCount} Labels
+                    </span>
+
+                    <span>
+                      {label.printPreset}
+                    </span>
+                  </div>
+
+                  <span
+                    className="g-ui-data-row-chevron"
+                    aria-hidden="true"
+                  >
+                    →
+                  </span>
+                </GastarioDataRow>
+              ))}
+
+            </GastarioDataList>
+          )}
+
+        </GastarioSection>
+
+
+        {/* =================================================
+            NEUES FOODLABEL
+        ================================================= */}
+
+        <GastarioDialog
+          open={createOpen}
+          title="Neues Foodlabel"
+          description="Labeldaten erfassen und anschließend direkt drucken."
+          size="xl"
+          onClose={() => setCreateOpen(false)}
+          footer={
+            <>
+              <GastarioButton
+                variant="secondary"
+                onClick={() => setCreateOpen(false)}
+              >
+                Abbrechen
+              </GastarioButton>
+
+              <GastarioButton
+                variant="primary"
+                type="submit"
+                form="foodlabel-create-form"
+              >
+                Label speichern
+              </GastarioButton>
+            </>
+          }
+        >
+
+          <GastarioTabs
+            activeId={createTab}
+            onChange={setCreateTab}
+            items={[
+              {
+                id: "general",
+                label: "Allgemein",
+              },
+              {
+                id: "content",
+                label: "Inhalt",
+              },
+              {
+                id: "output",
+                label: "Ausgabe",
+              },
+            ]}
+          />
+
+          <Form
+            id="foodlabel-create-form"
+            method="post"
+            encType="multipart/form-data"
+            className="g-ui-dialog-form"
+          >
+
+            <div
+              className="g-ui-form-section"
+              hidden={createTab !== "general"}
+            >
+              <div className="g-ui-form-section-heading">
+                <h3>Allgemein</h3>
+                <p>
+                  Grunddaten und Zuordnung des Labels.
+                </p>
+              </div>
+
+              <GastarioFormGrid columns={2}>
+
+                <GastarioField
+                  label="Name"
+                  required
+                >
+                  <GastarioInput
+                    name="name"
+                    placeholder="z. B. Chicken Bowl"
+                    required
+                  />
+                </GastarioField>
+
+                <GastarioField label="Name des Essers">
+                  <GastarioInput
+                    name="customerName"
+                    placeholder="z. B. Max Mustermann"
+                  />
+                </GastarioField>
+
+                <GastarioField label="Caterer / Marke">
+                  <GastarioInput
+                    name="brandName"
+                    placeholder="z. B. Let Me Bowl"
+                  />
+                </GastarioField>
+
+                <GastarioField label="Unterzeile / Adresse">
+                  <GastarioInput
+                    name="brandSubline"
+                    placeholder="z. B. Alexanderstraße 5, Berlin"
+                  />
+                </GastarioField>
+
+                <GastarioField label="Datum">
+                  <GastarioInput
+                    name="labelDate"
+                    type="date"
+                  />
+                </GastarioField>
+
+              </GastarioFormGrid>
             </div>
-          </div>
 
-          <Form method="post" encType="multipart/form-data" style={formGridStyle}>
-            <Field label="Name *">
-              <input name="name" placeholder="z. B. Chicken Bowl, Wrap, Dessert" required />
-            </Field>
 
-            <Field label="Name des Essers (optional)">
-              <input
+            <div
+              className="g-ui-form-section"
+              hidden={createTab !== "content"}
+            >
+              <div className="g-ui-form-section-heading">
+                <h3>Inhalt</h3>
+                <p>
+                  Zutaten, Allergene und sichtbare Label-Inhalte.
+                </p>
+              </div>
+
+              <GastarioFormGrid columns={2}>
+
+                <GastarioField label="Zutaten">
+                  <GastarioInput
+                    name="ingredients"
+                    placeholder="z. B. Reis, Hähnchen, Gemüse, Sauce"
+                  />
+                </GastarioField>
+
+                <GastarioField label="Allergene">
+                  <GastarioInput
+                    name="allergens"
+                    placeholder="z. B. Soja, Sesam, Gluten"
+                  />
+                </GastarioField>
+
+                <GastarioField label="QR-Link / QR-Text">
+                  <GastarioInput
+                    name="qrText"
+                    placeholder="z. B. https://letmebowl-catering.de"
+                  />
+                </GastarioField>
+
+                <GastarioField label="Footer">
+                  <GastarioSelect
+                    name="assetMode"
+                    defaultValue="brand-only"
+                  >
+                    <option value="brand-only">
+                      Nur Marke
+                    </option>
+
+                    <option value="brand-and-qr">
+                      Marke + QR-Code
+                    </option>
+
+                    <option value="qr-only">
+                      Nur QR-Code
+                    </option>
+                  </GastarioSelect>
+                </GastarioField>
+
+                <GastarioField label="Logo">
+                  <GastarioInput
+                    name="logo"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  />
+                </GastarioField>
+
+              </GastarioFormGrid>
+            </div>
+
+
+            <div
+              className="g-ui-form-section"
+              hidden={createTab !== "output"}
+            >
+              <div className="g-ui-form-section-heading">
+                <h3>Ausgabe</h3>
+                <p>
+                  Etikettenformat und benötigte Anzahl festlegen.
+                </p>
+              </div>
+
+              <GastarioFormGrid columns={2}>
+
+                <GastarioField label="Druckformat">
+                  <GastarioSelect
+                    name="printPreset"
+                    defaultValue="roll-76x51"
+                  >
+                    <option value="a4-2">
+                      A4 Hochformat – 2 Labels pro Reihe
+                    </option>
+
+                    <option value="a4-3">
+                      A4 Hochformat – 3 Labels pro Reihe
+                    </option>
+
+                    <option value="a4-4">
+                      A4 Hochformat – 4 Labels pro Reihe
+                    </option>
+
+                    <option value="roll-76x51">
+                      Etikettenrolle – 76 × 51 mm
+                    </option>
+
+                    <option value="roll-57x32">
+                      Etikettenrolle – 57 × 32 mm
+                    </option>
+                  </GastarioSelect>
+                </GastarioField>
+
+                <GastarioField label="Anzahl Labels">
+                  <GastarioInput
+                    name="labelCount"
+                    type="number"
+                    min="1"
+                    max="200"
+                    defaultValue="12"
+                  />
+                </GastarioField>
+
+              </GastarioFormGrid>
+            </div>
+
+          </Form>
+
+        </GastarioDialog>
+
+
+        {/* =================================================
+            PDF → ZEBRA
+        ================================================= */}
+
+        <GastarioDialog
+          open={pdfOpen}
+          title="PDF importieren"
+          description="A4-Labelbogen in einzelne Zebra-Etiketten umwandeln."
+          size="lg"
+          onClose={() => setPdfOpen(false)}
+          footer={
+            <>
+              <GastarioButton
+                variant="secondary"
+                onClick={() => setPdfOpen(false)}
+              >
+                Abbrechen
+              </GastarioButton>
+
+              <GastarioButton
+                variant="primary"
+                type="submit"
+                form="foodlabel-pdf-form"
+              >
+                Zebra-PDF erstellen
+              </GastarioButton>
+            </>
+          }
+        >
+
+          <form
+            id="foodlabel-pdf-form"
+            action="/foodlabels/heycater-pdf"
+            method="post"
+            encType="multipart/form-data"
+            className="g-ui-dialog-form"
+          >
+
+            <GastarioField
+              label="A4-Labelbogen"
+              hint="Bitte nur passende A4-Labelbögen verwenden."
+              required
+            >
+              <GastarioInput
+                type="file"
+                name="pdf"
+                accept="application/pdf"
+                required
+              />
+            </GastarioField>
+
+            <GastarioField label="Bestellername">
+              <GastarioInput
                 name="customerName"
+                type="text"
                 placeholder="z. B. Max Mustermann"
               />
-            </Field>
+            </GastarioField>
 
-            
-            <Field label="Caterer / Marke (optional)">
-              <input
-                name="brandName"
-                placeholder="z. B. Let Me Bowl, Mixie, Haiyo Sushi"
-              />
-            </Field>
+            <GastarioFormGrid columns={4}>
 
-            
-            
-            <Field label="Unterzeile / Adresse (optional)">
-              <input
-                name="brandSubline"
-                placeholder="z. B. Alexanderstraße 5, Berlin"
-              />
-            </Field>
-<Field label="QR-Link / QR-Text (optional)">
-              <input
-                name="qrText"
-                placeholder="z. B. https://letmebowl-catering.de"
-              />
-            </Field>
-
-            <Field label="Footer auswählen">
-              <select
-                name="assetMode"
-                defaultValue="brand-only"
-              >
-                <option value="brand-only">Nur Marke</option>
-                <option value="brand-and-qr">Marke + QR-Code</option>
-                <option value="qr-only">Nur QR-Code</option>
-              </select>
-            </Field>
-
-            <Field label="Datum (optional)">
-              <input
-                name="labelDate"
-                type="date"
-              />
-            </Field>
-
-
-
-            <Field label="Zutaten">
-              <input name="ingredients" placeholder="z. B. Reis, Haehnchen, Gemuese, Sauce" />
-            </Field>
-
-            <Field label="Allergene">
-              <input name="allergens" placeholder="z. B. Soja, Sesam, Gluten" />
-            </Field>
-
-            <Field label="Logo">
-              <input name="logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
-            </Field>
-
-            <Field label="Druckformat">
-              <select name="printPreset" defaultValue="roll-76x51">
-                <option value="a4-2">A4 Hochformat - 2 Labels pro Reihe</option>
-                <option value="a4-3">A4 Hochformat - 3 Labels pro Reihe</option>
-                <option value="a4-4">A4 Hochformat - 4 Labels pro Reihe</option>
-                <option value="roll-76x51">Etikettenrolle - 76 x 51 mm</option>
-                <option value="roll-57x32">Etikettenrolle - 57 x 32 mm</option>
-              </select>
-            </Field>
-<Field label="Anzahl Labels">
-              <input name="labelCount" type="number" min="1" max="200" defaultValue="12" />
-            </Field>
-
-            <div style={formActionStyle}>
-              <button type="submit" style={primaryButtonStyle}>
-                Label speichern
-              </button>
-            </div>
-          </Form>
-        </div>
-
-
-        <section className="heycaterUploadCard">
-          <div className="heycaterUploadTop">
-            <div>
-              <p>PDF Zuschnitt</p>
-              <h2>A4-PDF zu Zebra-Etiketten</h2>
-              <span>
-                A4-Labelbogen hochladen und in einzelne 76 x 51 mm Zebra-Etiketten schneiden.
-              </span>
-            </div>
-          </div>
-
-          <form action="/foodlabels/heycater-pdf" method="post" encType="multipart/form-data" className="heycaterUploadForm">
-            <label className="heycaterDropzone">
-              <input type="file" name="pdf" accept="application/pdf" required />
-              <strong>PDF hier auswählen</strong>
-              <span>
-                Nur passende A4-Labelbögen verwenden. Die Erstellung stoppt, wenn Anzahl oder Labeldaten nicht sicher erkannt werden.
-              </span>
-            </label>
-            <div className="heycaterCustomerField">
-              <label>
-                Bestellername (optional)
-                <input name="customerName" type="text" placeholder="z. B. Max Mustermann" />
-              </label>
-            </div>
-
-<div className="heycaterSettingsGrid">
-              <label>
-                Raster
-                <select name="columns" defaultValue="3">
+              <GastarioField label="Raster">
+                <GastarioSelect
+                  name="columns"
+                  defaultValue="3"
+                >
                   <option value="3">3 Spalten</option>
                   <option value="2">2 Spalten</option>
                   <option value="1">1 Spalte</option>
-                </select>
-              </label>
+                </GastarioSelect>
+              </GastarioField>
 
-              <label>
-                Reihen
-                <select name="rows" defaultValue="8">
+              <GastarioField label="Reihen">
+                <GastarioSelect
+                  name="rows"
+                  defaultValue="8"
+                >
                   <option value="8">8 Reihen</option>
                   <option value="6">6 Reihen</option>
                   <option value="5">5 Reihen</option>
                   <option value="4">4 Reihen</option>
-                </select>
-              </label>
+                </GastarioSelect>
+              </GastarioField>
 
-              <label>
-                Etikett
-                <select name="labelWidthMm" defaultValue="76">
-                  <option value="76">76 mm breit</option>
-                  <option value="70">70 mm breit</option>
-                  <option value="57">57 mm breit</option>
-                </select>
-              </label>
+              <GastarioField label="Breite">
+                <GastarioSelect
+                  name="labelWidthMm"
+                  defaultValue="76"
+                >
+                  <option value="76">76 mm</option>
+                  <option value="70">70 mm</option>
+                  <option value="57">57 mm</option>
+                </GastarioSelect>
+              </GastarioField>
 
-              <label>
-                Hoehe
-                <select name="labelHeightMm" defaultValue="51">
-                  <option value="51">51 mm hoch</option>
-                  <option value="50">50 mm hoch</option>
-                  <option value="38">38 mm hoch</option>
-                </select>
-              </label>
+              <GastarioField label="Höhe">
+                <GastarioSelect
+                  name="labelHeightMm"
+                  defaultValue="51"
+                >
+                  <option value="51">51 mm</option>
+                  <option value="50">50 mm</option>
+                  <option value="38">38 mm</option>
+                </GastarioSelect>
+              </GastarioField>
 
-              <button type="submit">Zebra-PDF erstellen</button>
-            </div>
+            </GastarioFormGrid>
 
             <input type="hidden" name="pageTopMm" value="0" />
             <input type="hidden" name="pageRightMm" value="0" />
@@ -416,107 +733,130 @@ Labeldaten speichern</h2>
             <input type="hidden" name="innerRightMm" value="0.4" />
             <input type="hidden" name="innerBottomMm" value="0.4" />
             <input type="hidden" name="innerLeftMm" value="0.4" />
+
+            <GastarioPanel variant="soft">
+              Die Erstellung wird abgebrochen, wenn Anzahl
+              oder Labeldaten nicht sicher erkannt werden.
+            </GastarioPanel>
+
           </form>
 
-          <div className="heycaterSafetyHint">
-            Sicherheitsregel: Es darf kein Label fehlen und kein falsches Gericht gedruckt werden. Bei unsicherer Erkennung wird keine Druckdatei erstellt.
-          </div>
+        </GastarioDialog>
 
-          <div className="allergenManagerTeaser">
-            <div>
-              <p>Automatische Erkennung</p>
-              <h3>Allergen-Erkennung bearbeiten</h3>
-              <span>
-                Lege hier fest, welche Allergene und Hinweise Gastario automatisch auf die Zebra-Labels schreibt,
-                wenn ein Gericht aus einer Delivery-Overview-PDF erkannt wird.
-              </span>
-            </div>
 
-            <a href="/foodlabels/allergene">Gerichte & Allergene bearbeiten</a>
-          </div>
-        </section>
+        {/* =================================================
+            LABEL DETAILS
+        ================================================= */}
 
-        <div style={contentGridStyle}>
-          <div style={listCardStyle}>
-            <div style={cardHeaderStyle}>
-              <div>
-                <p style={smallLabelStyle}>Gespeichert</p>
-                <h2 style={sectionTitleStyle}>Letzte Foodlabels</h2>
-              </div>
-            </div>
-
-            {data.labels.length === 0 ? (
-              <div style={emptyStyle}>Noch keine Foodlabels gespeichert.</div>
-            ) : (
-              <div style={labelListStyle}>
-                {data.labels.map((label: any) => (
-                  <div key={label.id} style={labelRowStyle}>
-                    <div style={rowTitleBlockStyle}>
-                      <strong style={rowTitleStyle}>{label.name}</strong>
-                      <span style={rowSubTextStyle}>
-                        {label.ingredients ? <>Zutaten: {label.ingredients}</> : "Ohne Zutatenliste"}
-                      </span>
-                    </div>
-
-                    <div style={rowMetaStyle}>
-                      <span>{label.labelCount} x {label.printPreset}</span>
-                    </div>
-
-                    <div style={listActionGroupStyle}>
-                      <Link to={`/foodlabels?print=${label.id}`} style={previewButtonStyle}>
-                        Vorschau
-                      </Link>
-
-                      <Link to={`/foodlabels/print/${label.id}`} style={primaryButtonStyle}>
-                        Drucken
-                      </Link>
-
-                      <Form
-                        method="post"
-                        onSubmit={(event) => {
-                          if (!window.confirm("Dieses Foodlabel wirklich l\u00f6schen?")) {
-                            event.preventDefault();
-                          }
-                        }}
-                      >
-                        <input type="hidden" name="_action" value="delete" />
-                        <input type="hidden" name="labelId" value={label.id} />
-                        <button type="submit" style={dangerButtonStyle}>
-                          {"L\u00f6schen"}
-                        </button>
-                      </Form>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div style={previewCardStyle}>
-            <div style={cardHeaderStyle}>
-              <div>
-                <p style={smallLabelStyle}>Vorschau</p>
-                <h2 style={sectionTitleStyle}>{selected ? "Druckvorschau" : "Label auswaehlen"}</h2>
-              </div>
-            </div>
-
-            {selected ? (
+        <GastarioDrawer
+          open={Boolean(selected)}
+          title={selected?.name || "Foodlabel"}
+          description="Vorschau und Aktionen"
+          onClose={() => {
+            setSearchParams({});
+          }}
+          footer={
+            selected ? (
               <>
-                <div style={previewWrapStyle}>
-                  <FoodLabelCard label={selected} />
+                <Form
+                  method="post"
+                  onSubmit={(event) => {
+                    if (
+                      !window.confirm(
+                        "Dieses Foodlabel wirklich löschen?"
+                      )
+                    ) {
+                      event.preventDefault();
+                    }
+                  }}
+                >
+                  <input
+                    type="hidden"
+                    name="_action"
+                    value="delete"
+                  />
+
+                  <input
+                    type="hidden"
+                    name="labelId"
+                    value={selected.id}
+                  />
+
+                  <GastarioButton
+                    type="submit"
+                    variant="danger"
+                  >
+                    Löschen
+                  </GastarioButton>
+                </Form>
+
+                <Link
+                  to={`/foodlabels/print/${selected.id}`}
+                  className="g-ui-button g-ui-button--primary"
+                >
+                  Drucken
+                </Link>
+              </>
+            ) : null
+          }
+        >
+
+          {selected ? (
+            <div className="g-ui-detail-stack">
+
+              <div className="foodlabelsPreviewWrap">
+                <FoodLabelCard label={selected} />
+              </div>
+
+              <div className="g-ui-detail-meta">
+
+                <div>
+                  <span>Format</span>
+                  <strong>
+                    {selected.printPreset}
+                  </strong>
                 </div>
 
-                <div style={previewFooterActionsStyle}>
-                  <Link to={`/foodlabels/print/${selected.id}`} style={primaryButtonStyle}>
-                    Drucken
-                  </Link>
+                <div>
+                  <span>Anzahl</span>
+                  <strong>
+                    {selected.labelCount}
+                  </strong>
                 </div>
-              </>
-            ) : (
-              <div style={emptyStyle}>Waehle links ein Foodlabel aus.</div>
-            )}
-          </div>
-        </div>
+
+                <div>
+                  <span>Datum</span>
+                  <strong>
+                    {selected.labelDate
+                      ? formatDate(selected.labelDate)
+                      : "–"}
+                  </strong>
+                </div>
+
+              </div>
+
+              {selected.ingredients ? (
+                <GastarioPanel variant="soft">
+                  <strong>Zutaten</strong>
+                  <div>
+                    {selected.ingredients}
+                  </div>
+                </GastarioPanel>
+              ) : null}
+
+              {selected.allergens ? (
+                <GastarioPanel variant="soft">
+                  <strong>Allergene</strong>
+                  <div>
+                    {selected.allergens}
+                  </div>
+                </GastarioPanel>
+              ) : null}
+
+            </div>
+          ) : null}
+
+        </GastarioDrawer>
       </section>
     
       <style>{`
@@ -782,10 +1122,9 @@ Labeldaten speichern</h2>
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label style={fieldStyle}>
-      <span>{label}</span>
+    <GastarioField label={label}>
       {children}
-    </label>
+    </GastarioField>
   );
 }
 
@@ -1174,6 +1513,9 @@ const orderShortcutMetaStyle: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 700,
 };
+
+
+
 
 
 
