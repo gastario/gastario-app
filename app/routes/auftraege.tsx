@@ -48,6 +48,24 @@ function formatDate(value: string | Date | null | undefined) {
   return new Date(value).toLocaleDateString("de-DE");
 }
 
+
+function formatDateInput(
+  value: string | Date | null | undefined
+) {
+  if (!value) return "";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
 function getOrderDeliveryDateTime(order: any) {
   if (!order?.deliveryDate) return null;
 
@@ -497,16 +515,48 @@ export async function action({ request }: { request: Request }) {
   }
 
   if (intent === "updateStatus") {
-    const status = String(formData.get("status") || "AUTO_CREATED");
+    const status = String(
+      formData.get("status") || "AUTO_CREATED"
+    );
+
+    const now = new Date();
+
+    const workflowData: Record<
+      string,
+      any
+    > = {};
+
+    if (status === "IN_PRODUCTION") {
+      workflowData.productionStartedAt =
+        order.productionStartedAt || now;
+    }
+
+    if (status === "PACKING_OPEN") {
+      workflowData.productionStartedAt =
+        order.productionStartedAt || now;
+
+      workflowData.productionCompletedAt =
+        order.productionCompletedAt || now;
+
+      workflowData.packingStartedAt =
+        order.packingStartedAt || now;
+
+      workflowData.packingCompletedAt = null;
+    }
 
     await prisma.order.update({
-      where: { id: order.id },
+      where: {
+        id: order.id,
+      },
       data: {
         status: status as any,
+        ...workflowData,
       },
     });
 
-    return { success: "Status wurde gespeichert." };
+    return {
+      success: "Status wurde gespeichert.",
+    };
   }
 
   if (intent === "deleteOrder") {
@@ -1077,6 +1127,100 @@ export default function OrdersPage() {
           footer={
             selectedOrder ? (
               <>
+                
+                <Link
+                  className={gastarioButtonClass(
+                    "secondary"
+                  )}
+                  to={
+                    `/auftrag-pruefung/${selectedOrder.id}`
+                  }
+                >
+                  Operative Zuordnung
+                </Link>
+
+                {String(
+                  selectedOrder.status || ""
+                ) === "CONFIRMED" ? (
+                  <Form method="post">
+                    <input
+                      type="hidden"
+                      name="intent"
+                      value="updateStatus"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="orderId"
+                      value={selectedOrder.id}
+                    />
+
+                    <input
+                      type="hidden"
+                      name="status"
+                      value="IN_PRODUCTION"
+                    />
+
+                    <GastarioButton
+                      variant="primary"
+                      type="submit"
+                    >
+                      In Produktion
+                    </GastarioButton>
+                  </Form>
+                ) : null}
+
+                {String(
+                  selectedOrder.status || ""
+                ) === "IN_PRODUCTION" ? (
+                  <Form method="post">
+                    <input
+                      type="hidden"
+                      name="intent"
+                      value="updateStatus"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="orderId"
+                      value={selectedOrder.id}
+                    />
+
+                    <input
+                      type="hidden"
+                      name="status"
+                      value="PACKING_OPEN"
+                    />
+
+                    <GastarioButton
+                      variant="primary"
+                      type="submit"
+                    >
+                      An Packstation
+                    </GastarioButton>
+                  </Form>
+                ) : null}
+
+                {String(
+                  selectedOrder.status || ""
+                ) === "PACKING_OPEN" ? (
+                  <Link
+                    className={gastarioButtonClass(
+                      "primary"
+                    )}
+                    to={
+                      "/packlisten?date=" +
+                      encodeURIComponent(
+                        formatDateInput(
+                          selectedOrder.deliveryDate
+                        )
+                      )
+                    }
+                  >
+                    Packliste öffnen
+                  </Link>
+                ) : null}
+
                 <DeliveryNoteButton
                   orderId={selectedOrder.id}
                 />
@@ -1175,17 +1319,6 @@ export default function OrdersPage() {
                         "Direkt"
                       )}
                     </GastarioBadge>
-
-                    <Link
-                      className={gastarioButtonClass(
-                        "secondary"
-                      )}
-                      to={
-                        `/auftrag-pruefung/${selectedOrder.id}`
-                      }
-                    >
-                      Operative Zuordnung
-                    </Link>
                   </GastarioToolbar>
 
                   <GastarioMetricGrid>

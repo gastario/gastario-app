@@ -19,16 +19,24 @@ import {
 import AppLayout from "../components/AppLayout";
 
 import {
-  MetricCard,
-  MetricGrid,
-  Notice,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
+  GastarioPage,
+  GastarioHeader,
+  GastarioNotice,
+  gastarioButtonClass,
+  GastarioSection,
+  GastarioField,
+  GastarioInput,
+  GastarioSelect,
+  GastarioCheckRow,
+  GastarioToolbar,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioEmptyState,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioStack,
+} from "../components/ui";
 
-import "../styles/gastario-page-shell.css";
-import "../styles/gastario-procurement-search.css";
 
 function formatMoney(cents: number | null | undefined) {
   if (cents == null) {
@@ -1891,37 +1899,37 @@ export default function ProcurementSearchPage() {
 
   return (
     <AppLayout>
-      <PageShell className="procurementSearchPage">
+      <GastarioPage>
 
-        <PageHeader
+        <GastarioHeader
           eyebrow="Einkauf & Lieferanten"
           title="Artikelsuche"
-          subtitle={`Durchsuche alle verbundenen Lieferantenkataloge von ${data.tenant.name} und vergleiche aktuelle Preise und Gebinde.`}
+          description={`Durchsuche alle verbundenen Lieferantenkataloge von ${data.tenant.name} und vergleiche aktuelle Preise und Gebinde.`}
           actions={
             <>
               <Link
-                className="procurementSearchButton procurementSearchButton--secondary"
+                className={gastarioButtonClass("secondary")}
                 to="/einkauf"
               >
                 Zur Einkaufsplanung
               </Link>
 
               <Link
-                className="procurementSearchButton procurementSearchButton--secondary"
+                className={gastarioButtonClass("secondary")}
                 to="/einkauf/preispruefung"
               >
                 Preisprüfung
               </Link>
 
               <Link
-                className="procurementSearchButton procurementSearchButton--secondary"
+                className={gastarioButtonClass("secondary")}
                 to="/einkauf/suchbegriffe"
               >
                 Suchbegriffe verwalten
               </Link>
 
               <Link
-                className="procurementSearchButton procurementSearchButton--secondary"
+                className={gastarioButtonClass("secondary")}
                 to="/lieferanten"
               >
                 Lieferanten verwalten
@@ -1931,107 +1939,104 @@ export default function ProcurementSearchPage() {
         />
 
         {actionData?.error ? (
-          <Notice type="danger">
+          <GastarioNotice type="danger">
             {actionData.error}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
-        <PageSection
+        <GastarioSection
           eyebrow="Lieferantenübergreifend"
           title="Was möchtest du einkaufen?"
           description={`Gastario durchsucht den lokalen Lieferantenindex sofort und berücksichtigt verwandte Begriffe wie ${data.searchTerms.slice(0, 4).join(", ") || data.query}. Kataloge und Preise werden im Hintergrund aktualisiert.`}
         >
-          <Form
-            method="get"
-            className="procurementSearchForm"
-          >
-            <label className="procurementSearchQuery">
-              <span>Artikel, Marke oder Artikelnummer</span>
-              <input
-                type="search"
-                name="q"
-                defaultValue={data.query}
-                placeholder="Zum Beispiel Marmelade, Mini Croissant oder Gyoza"
-                autoFocus
-              />
-            </label>
+          <Form method="get">
+            <GastarioToolbar>
+              <GastarioField label="Artikel, Marke oder Artikelnummer">
+                <GastarioInput
+                  type="search"
+                  name="q"
+                  defaultValue={data.query}
+                  placeholder="Zum Beispiel Marmelade, Mini Croissant oder Gyoza"
+                  autoFocus
+                />
+              </GastarioField>
 
-            <label>
-              <span>Lieferant</span>
-              <select
-                name="supplier"
-                defaultValue={data.supplierId}
-              >
-                <option value="">
-                  Alle Lieferanten
-                </option>
-                {data.suppliers.map(
-                  (supplier: any) => (
-                    <option
-                      key={supplier.id}
-                      value={supplier.id}
-                    >
-                      {supplier.name}
-                    </option>
-                  )
-                )}
-              </select>
-            </label>
+              <GastarioField label="Lieferant">
+                <GastarioSelect
+                  name="supplier"
+                  defaultValue={data.supplierId}
+                >
+                  <option value="">
+                    Alle Lieferanten
+                  </option>
 
-            <label className="procurementSearchCheck">
-              <input
-                type="checkbox"
+                  {data.suppliers.map(
+                    (supplier: any) => (
+                      <option
+                        key={supplier.id}
+                        value={supplier.id}
+                      >
+                        {supplier.name}
+                      </option>
+                    )
+                  )}
+                </GastarioSelect>
+              </GastarioField>
+
+              <GastarioCheckRow
                 name="available"
                 value="1"
                 defaultChecked={
                   data.availableOnly
                 }
+                title="Nur verfügbare Artikel"
               />
-              <span>Nur verfügbare Artikel</span>
-            </label>
 
-            <button
-              type="submit"
-              className="procurementSearchButton procurementSearchButton--primary"
-            >
-              Katalog aktualisieren
-            </button>
+              <button
+                type="submit"
+                className={gastarioButtonClass(
+                  "primary"
+                )}
+              >
+                Katalog aktualisieren
+              </button>
+            </GastarioToolbar>
           </Form>
-        </PageSection>
+        </GastarioSection>
 
         {data.query.length >= 2 ? (
-          <MetricGrid>
-            <MetricCard
+          <GastarioMetricGrid>
+            <GastarioMetric
               label="Treffer"
               value={data.stats.resultCount}
               description={`für „${data.query}“`}
               badge="Kataloge"
             />
 
-            <MetricCard
+            <GastarioMetric
               label="Lieferanten"
               value={data.stats.supplierCount}
               description="mit passenden Artikeln"
               badge="Vergleich"
             />
 
-            <MetricCard
+            <GastarioMetric
               label="Mit Preis"
               value={data.stats.pricedCount}
               description="aktuell bepreiste Treffer"
               badge="Preis"
             />
 
-            <MetricCard
+            <GastarioMetric
               label="Verfügbar"
               value={data.stats.availableCount}
               description="laut letztem Preisstand"
               badge="Bestand"
             />
-          </MetricGrid>
+          </GastarioMetricGrid>
         ) : null}
 
-        <PageSection
+        <GastarioSection
           eyebrow="Ergebnisse"
           title={
             data.query.length >= 2
@@ -2041,308 +2046,300 @@ export default function ProcurementSearchPage() {
           description="Sortiert nach Relevanz und anschließend nach Nettopreis."
         >
           {data.query.length < 2 ? (
-            <div className="procurementSearchEmpty">
-              Gib mindestens zwei Zeichen ein. Gastario durchsucht Produktnamen, Marken, Beschreibungen, Artikelnummern, EAN und GTIN.
-            </div>
+            <GastarioEmptyState title="Suche starten">
+              Gib mindestens zwei Zeichen ein. Gastario durchsucht
+              Produktnamen, Marken, Beschreibungen, Artikelnummern,
+              EAN und GTIN.
+            </GastarioEmptyState>
           ) : data.results.length === 0 ? (
-            <div className="procurementSearchEmpty procurementSearchCompactState">
-              {data.metroConnector ? (
-                shouldStartMetroSearch ||
-                metroFetcher.state !== "idle" ? (
-                  <>
-                    <span className="procurementSearchSpinner" aria-hidden="true" />
-                    <strong>
-                      Angebote werden gesucht …
-                    </strong>
-                    <small>
-                      Die lokale Artikelsuche wird aktualisiert.
-                    </small>
-                  </>
-                ) : (
-                  <>
-                    <strong>
-                      Keine passenden Angebote gefunden
-                    </strong>
-                    <small>
-                      Der Begriff wurde bereits in den verbundenen Katalogen geprüft.
-                    </small>
-                  </>
-                )
+            data.metroConnector ? (
+              shouldStartMetroSearch ||
+              metroFetcher.state !== "idle" ? (
+                <GastarioEmptyState title="Angebote werden gesucht …">
+                  Die lokale Artikelsuche wird aktualisiert.
+                </GastarioEmptyState>
               ) : (
-                <>
-                  <strong>
-                    Keine aktive Lieferantenverbindung
-                  </strong>
+                <GastarioEmptyState title="Keine passenden Angebote gefunden">
+                  Der Begriff wurde bereits in den verbundenen
+                  Katalogen geprüft.
+                </GastarioEmptyState>
+              )
+            ) : (
+              <GastarioEmptyState title="Keine aktive Lieferantenverbindung">
+                <GastarioStack>
+                  <span>
+                    Für die Live-Suche ist aktuell keine aktive
+                    Lieferantenverbindung vorhanden.
+                  </span>
+
                   <Link
-                    className="procurementSearchButton procurementSearchButton--secondary"
+                    className={gastarioButtonClass(
+                      "secondary"
+                    )}
                     to="/lieferanten"
                   >
                     Verbindung prüfen
                   </Link>
-                </>
-              )}
-            </div>
+                </GastarioStack>
+              </GastarioEmptyState>
+            )
           ) : (
-            <div className="procurementSearchResults">
+            <GastarioStack>
               {data.results.map(
-                (item: any) => (
-                  <article
-                    key={item.id}
-                    className="procurementSearchResult supplierOfferCard"
-                  >
-                    <header>
-                      <div>
-                        <span>
-                          {item.supplier.name}
-                        </span>
-                        <h3>{item.name}</h3>
-                        <p>
-                          {[
-                            item.brand,
-                            item.articleNumber
-                              ? `Art.-Nr. ${item.articleNumber}`
-                              : null,
-                            item.ean
-                              ? `EAN ${item.ean}`
-                              : null,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </p>
-                      </div>
+                (item: any) => {
+                  const priceStatusTitle =
+                    item.latestPrice
+                      ? "Preis freigegeben"
+                      : item.priceRefreshPending ||
+                          item.rejectedLatestPrice
+                        ? "Preisprüfung"
+                        : "Preis offen";
 
-                      <div className="procurementSearchPrice">
-                        <small>Nettopreis</small>
-                        <strong>
-                          {formatMoney(
+                  const priceStatusDescription =
+                    item.latestPrice
+                      ? "Vertrauenswürdiger Preis kann verwendet werden."
+                      : item.priceRefreshPending ||
+                          item.rejectedLatestPrice
+                        ? "Preis wird validiert und noch nicht übernommen."
+                        : "Noch kein freigegebener Preis vorhanden.";
+
+                  return (
+                    <GastarioSection
+                      key={item.id}
+                      eyebrow={item.supplier.name}
+                      title={item.name}
+                      description={[
+                        item.brand,
+                        item.articleNumber
+                          ? `Art.-Nr. ${item.articleNumber}`
+                          : null,
+                        item.ean
+                          ? `EAN ${item.ean}`
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    >
+                      <GastarioMetricGrid>
+                        <GastarioMetric
+                          label="Nettopreis"
+                          value={formatMoney(
                             item.latestPrice
                               ?.netPriceCents
                           )}
-                        </strong>
-                        <span>
-                          {item.basePriceCents != null
-                            ? `${formatMoney(
-                                item.basePriceCents
-                              )} je ${item.baseUnit || item.latestPrice?.priceUnit || "Einheit"}`
-                            : "Grundpreis nicht berechenbar"}
-                        </span>
+                          description={
+                            item.basePriceCents != null
+                              ? `${formatMoney(
+                                  item.basePriceCents
+                                )} je ${
+                                  item.baseUnit ||
+                                  item.latestPrice
+                                    ?.priceUnit ||
+                                  "Einheit"
+                                }`
+                              : "Grundpreis nicht berechenbar"
+                          }
+                        />
 
-                        {item.priceRefreshPending ? (
-                          <small className="procurementPriceWarning">
-                            Preis wird im Hintergrund aktualisiert
-                          </small>
-                        ) : item.rejectedLatestPrice &&
-                          item.latestPrice ? (
-                          <small className="procurementPriceWarning">
-                            Neuer Preis wird geprüft · letzter plausibler Preis wird verwendet
-                          </small>
-                        ) : item.rejectedLatestPrice ? (
-                          <small className="procurementPriceWarning">
-                            Neuer Preis wird geprüft · noch kein freigegebener Preis verfügbar
-                          </small>
-                        ) : null}
-                      </div>
-                    </header>
+                        <GastarioMetric
+                          label="Bestelleinheit"
+                          value={
+                            item.orderUnit ||
+                            "Gebinde"
+                          }
+                          description="Lieferanteneinheit"
+                        />
 
-                    <div
-                      className="supplierOfferPipeline"
-                      aria-label="Datenstatus dieses Lieferantenartikels"
-                    >
-                      <div className="supplierOfferPipelineStep isDone">
-                        <span className="supplierOfferPipelineIndex">
-                          1
-                        </span>
-                        <div>
-                          <strong>Shop erkannt</strong>
-                          <small>
-                            Artikel wurde beim Lieferanten gefunden
-                          </small>
-                        </div>
-                      </div>
-
-                      <span
-                        className="supplierOfferPipelineConnector"
-                        aria-hidden="true"
-                      />
-
-                      <div className="supplierOfferPipelineStep isDone">
-                        <span className="supplierOfferPipelineIndex">
-                          2
-                        </span>
-                        <div>
-                          <strong>Gastario Index</strong>
-                          <small>
-                            Artikel ist lokal gespeichert und suchbar
-                          </small>
-                        </div>
-                      </div>
-
-                      <span
-                        className="supplierOfferPipelineConnector"
-                        aria-hidden="true"
-                      />
-
-                      <div
-                        className={`supplierOfferPipelineStep ${
-                          item.latestPrice
-                            ? "isDone"
-                            : item.priceRefreshPending ||
-                                item.rejectedLatestPrice
-                              ? "isReview"
-                              : "isOpen"
-                        }`}
-                      >
-                        <span className="supplierOfferPipelineIndex">
-                          3
-                        </span>
-                        <div>
-                          <strong>
-                            {item.latestPrice
-                              ? "Preis freigegeben"
-                              : item.priceRefreshPending ||
-                                  item.rejectedLatestPrice
-                                ? "Preisprüfung"
-                                : "Preis offen"}
-                          </strong>
-                          <small>
-                            {item.latestPrice
-                              ? "Vertrauenswürdiger Preis kann verwendet werden"
-                              : item.priceRefreshPending ||
-                                  item.rejectedLatestPrice
-                                ? "Preis wird validiert und noch nicht übernommen"
-                                : "Noch kein freigegebener Preis vorhanden"}
-                          </small>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="procurementSearchFacts">
-                      <div>
-                        <span>Bestelleinheit</span>
-                        <strong>
-                          {item.orderUnit ||
-                            "Gebinde"}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <span>Gebindeinhalt</span>
-                        <strong>
-                          {item.contentQuantity
-                            ? `${formatNumber(
-                                item.contentQuantity
-                              )} ${item.baseUnit || ""}`
-                            : item.packageQuantity
+                        <GastarioMetric
+                          label="Gebindeinhalt"
+                          value={
+                            item.contentQuantity
                               ? `${formatNumber(
-                                  item.packageQuantity
-                                )} Packungen`
-                              : "Nicht angegeben"}
-                        </strong>
-                      </div>
+                                  item.contentQuantity
+                                )} ${
+                                  item.baseUnit || ""
+                                }`
+                              : item.packageQuantity
+                                ? `${formatNumber(
+                                    item.packageQuantity
+                                  )} Packungen`
+                                : "Nicht angegeben"
+                          }
+                          description="Inhalt pro Bestelleinheit"
+                        />
 
-                      <div>
-                        <span>Mindestmenge</span>
-                        <strong>
-                          {formatNumber(
+                        <GastarioMetric
+                          label="Mindestmenge"
+                          value={formatNumber(
                             item.minimumOrderQuantity ||
                               1
                           )}
-                        </strong>
-                      </div>
+                          description="Bestellmenge"
+                        />
 
-                      <div>
-                        <span>Verfügbarkeit</span>
-                        <strong>
-                          {item.latestPrice
-                            ?.available === false
-                            ? "Nicht verfügbar"
-                            : item.latestPrice
-                                ?.stockText ||
-                              item.availabilityStatus ||
-                              "Verfügbar / unbekannt"}
-                        </strong>
-                      </div>
+                        <GastarioMetric
+                          label="Verfügbarkeit"
+                          value={
+                            item.latestPrice
+                              ?.available === false
+                              ? "Nicht verfügbar"
+                              : item.latestPrice
+                                  ?.stockText ||
+                                item.availabilityStatus ||
+                                "Verfügbar / unbekannt"
+                          }
+                          description="Letzter Lieferantenstatus"
+                        />
 
-                      <div>
-                        <span>Preisstand</span>
-                        <strong>
-                          {formatDateTime(
+                        <GastarioMetric
+                          label="Preisstand"
+                          value={formatDateTime(
                             item.latestPrice
                               ?.fetchedAt ||
                               item.lastSeenAt
                           )}
-                        </strong>
-                      </div>
-                    </div>
+                          description="Letzte Aktualisierung"
+                        />
+                      </GastarioMetricGrid>
 
-                    {item.description ? (
-                      <p className="procurementSearchDescription">
-                        {item.description}
-                      </p>
-                    ) : null}
+                      {item.priceRefreshPending ? (
+                        <GastarioNotice type="warning">
+                          Preis wird im Hintergrund
+                          aktualisiert.
+                        </GastarioNotice>
+                      ) : item.rejectedLatestPrice &&
+                        item.latestPrice ? (
+                        <GastarioNotice type="warning">
+                          Neuer Preis wird geprüft.
+                          Bis dahin wird der letzte
+                          plausible Preis verwendet.
+                        </GastarioNotice>
+                      ) : item.rejectedLatestPrice ? (
+                        <GastarioNotice type="warning">
+                          Neuer Preis wird geprüft.
+                          Es ist noch kein freigegebener
+                          Preis verfügbar.
+                        </GastarioNotice>
+                      ) : null}
 
-                    <Form
-                      method="post"
-                      className="procurementSearchApply"
-                    >
-                      <input
-                        type="hidden"
-                        name="intent"
-                        value="apply-catalog-item"
-                      />
-                      <input
-                        type="hidden"
-                        name="catalogItemId"
-                        value={item.id}
-                      />
-                      <input
-                        type="hidden"
-                        name="returnQuery"
-                        value={data.query}
-                      />
+                      <GastarioDataList>
+                        <GastarioDataRow>
+                          <div className="g-ui-data-row-main">
+                            <strong className="g-ui-data-row-title">
+                              Shop erkannt
+                            </strong>
+                            <span className="g-ui-data-row-description">
+                              Artikel wurde beim Lieferanten gefunden.
+                            </span>
+                          </div>
+                          <div className="g-ui-data-row-meta">
+                            Erledigt
+                          </div>
+                        </GastarioDataRow>
 
-                      <label>
-                        <span>
-                          Als Einkaufsartikel für Produkt
-                        </span>
-                        <select
-                          name="productId"
-                          required
-                        >
-                          <option value="">
-                            Produkt auswählen
-                          </option>
-                          {data.products.map(
-                            (product: any) => (
-                              <option
-                                value={product.id}
-                                key={product.id}
-                              >
-                                {product.name}
-                                {product.procurementType !==
-                                "RECIPE"
-                                  ? " · Fertigartikel"
-                                  : ""}
+                        <GastarioDataRow>
+                          <div className="g-ui-data-row-main">
+                            <strong className="g-ui-data-row-title">
+                              Gastario Index
+                            </strong>
+                            <span className="g-ui-data-row-description">
+                              Artikel ist lokal gespeichert und suchbar.
+                            </span>
+                          </div>
+                          <div className="g-ui-data-row-meta">
+                            Erledigt
+                          </div>
+                        </GastarioDataRow>
+
+                        <GastarioDataRow>
+                          <div className="g-ui-data-row-main">
+                            <strong className="g-ui-data-row-title">
+                              {priceStatusTitle}
+                            </strong>
+                            <span className="g-ui-data-row-description">
+                              {priceStatusDescription}
+                            </span>
+                          </div>
+                          <div className="g-ui-data-row-meta">
+                            {item.latestPrice
+                              ? "Erledigt"
+                              : item.priceRefreshPending ||
+                                  item.rejectedLatestPrice
+                                ? "Prüfung"
+                                : "Offen"}
+                          </div>
+                        </GastarioDataRow>
+                      </GastarioDataList>
+
+                      {item.description ? (
+                        <GastarioNotice type="info">
+                          {item.description}
+                        </GastarioNotice>
+                      ) : null}
+
+                      <Form method="post">
+                        <input
+                          type="hidden"
+                          name="intent"
+                          value="apply-catalog-item"
+                        />
+                        <input
+                          type="hidden"
+                          name="catalogItemId"
+                          value={item.id}
+                        />
+                        <input
+                          type="hidden"
+                          name="returnQuery"
+                          value={data.query}
+                        />
+
+                        <GastarioToolbar>
+                          <GastarioField label="Als Einkaufsartikel für Produkt">
+                            <GastarioSelect
+                              name="productId"
+                              required
+                              defaultValue=""
+                            >
+                              <option value="">
+                                Produkt auswählen
                               </option>
-                            )
-                          )}
-                        </select>
-                      </label>
 
-                      <button
-                        type="submit"
-                        className="procurementSearchButton procurementSearchButton--primary"
-                      >
-                        Übernehmen
-                      </button>
-                    </Form>
-                  </article>
-                )
+                              {data.products.map(
+                                (product: any) => (
+                                  <option
+                                    value={product.id}
+                                    key={product.id}
+                                  >
+                                    {product.name}
+                                    {product.procurementType !==
+                                    "RECIPE"
+                                      ? " · Fertigartikel"
+                                      : ""}
+                                  </option>
+                                )
+                              )}
+                            </GastarioSelect>
+                          </GastarioField>
+
+                          <button
+                            type="submit"
+                            className={gastarioButtonClass(
+                              "primary"
+                            )}
+                          >
+                            Übernehmen
+                          </button>
+                        </GastarioToolbar>
+                      </Form>
+                    </GastarioSection>
+                  );
+                }
               )}
-            </div>
+            </GastarioStack>
           )}
-        </PageSection>
-      </PageShell>
+        </GastarioSection>
+      </GastarioPage>
     </AppLayout>
   );
 }

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Form,
   Link,
@@ -9,14 +10,22 @@ import {
 import AppLayout from "../components/AppLayout";
 
 import {
-  Notice,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
+  GastarioPage,
+  GastarioHeader,
+  GastarioNotice,
+  gastarioButtonClass,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioSection,
+  GastarioToolbar,
+  GastarioEmptyState,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioDetailDialog,
+  GastarioDetailTabs,
+  GastarioDetailPane,
+} from "../components/ui";
 
-import "../styles/gastario-page-shell.css";
-import "../styles/gastario-procurement-search.css";
 
 type ActionData = {
   error?: string;
@@ -251,24 +260,36 @@ export default function SupplierPriceReviewPage() {
   const actionData =
     useActionData<typeof action>();
 
+  const [selectedPriceId, setSelectedPriceId] =
+    useState<string | null>(null);
+
+  const [priceDetailTab, setPriceDetailTab] =
+    useState("overview");
+
+  const selectedPrice =
+    data.prices.find(
+      (price: any) =>
+        price.id === selectedPriceId
+    ) || null;
+
   return (
     <AppLayout>
-      <PageShell className="procurementSearchPage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Einkauf & Lieferanten"
           title="Preisprüfung"
-          subtitle={`Prüfe auffällige Lieferantenpreise von ${data.tenant.name}, bevor sie in Einkauf und Produktdaten übernommen werden.`}
+          description={`Prüfe auffällige Lieferantenpreise von ${data.tenant.name}, bevor sie in Einkauf und Produktdaten übernommen werden.`}
           actions={
             <>
               <Link
-                className="procurementSearchButton procurementSearchButton--secondary"
+                className={gastarioButtonClass("secondary")}
                 to="/einkauf/artikelsuche"
               >
                 Zur Artikelsuche
               </Link>
 
               <Link
-                className="procurementSearchButton procurementSearchButton--secondary"
+                className={gastarioButtonClass("secondary")}
                 to="/einkauf"
               >
                 Zur Einkaufsplanung
@@ -278,28 +299,26 @@ export default function SupplierPriceReviewPage() {
         />
 
         {actionData?.error ? (
-          <Notice type="danger">
+          <GastarioNotice type="danger">
             {actionData.error}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
-        <section className="supplierPriceReviewMetrics">
-          <div className="supplierAliasMetric">
-            <span>Offen zur Prüfung</span>
-            <strong>
-              {data.suspiciousCount}
-            </strong>
-          </div>
+        <GastarioMetricGrid>
+          <GastarioMetric
+            label="Offen zur Prüfung"
+            value={data.suspiciousCount}
+            description="auffällige Preise"
+          />
 
-          <div className="supplierAliasMetric">
-            <span>Verworfen</span>
-            <strong>
-              {data.rejectedCount}
-            </strong>
-          </div>
-        </section>
+          <GastarioMetric
+            label="Verworfen"
+            value={data.rejectedCount}
+            description="nicht mehr verwendete Preise"
+          />
+        </GastarioMetricGrid>
 
-        <PageSection
+        <GastarioSection
           eyebrow="Preisqualität"
           title={
             data.showRejected
@@ -312,110 +331,140 @@ export default function SupplierPriceReviewPage() {
               : "Gastario verwendet bei auffälligen Preisen automatisch den letzten plausiblen Preis. Bestätigen spätere plausible Preisimporte den Ausreißer, kann Gastario ihn automatisch verwerfen. Du kannst hier jederzeit manuell bestätigen oder eingreifen."
           }
         >
-          <div className="supplierPriceReviewTabs">
+          <GastarioToolbar>
             <Link
-              className={`procurementSearchButton ${
+              className={gastarioButtonClass(
                 data.showRejected
-                  ? "procurementSearchButton--secondary"
-                  : ""
-              }`}
+                  ? "secondary"
+                  : "primary"
+              )}
               to="/einkauf/preispruefung"
             >
               Offen ({data.suspiciousCount})
             </Link>
 
             <Link
-              className={`procurementSearchButton ${
+              className={gastarioButtonClass(
                 data.showRejected
-                  ? ""
-                  : "procurementSearchButton--secondary"
-              }`}
+                  ? "primary"
+                  : "secondary"
+              )}
               to="/einkauf/preispruefung?rejected=1"
             >
               Verworfen ({data.rejectedCount})
             </Link>
-          </div>
+          </GastarioToolbar>
 
           {data.prices.length === 0 ? (
-            <div className="supplierAliasEmpty">
+            <GastarioEmptyState
+              title={
+                data.showRejected
+                  ? "Keine verworfenen Preise"
+                  : "Keine auffälligen Preise"
+              }
+            >
               {data.showRejected
-                ? "Keine verworfenen Preise vorhanden."
-                : "Aktuell gibt es keine auffälligen Preise."}
-            </div>
+                ? "Es sind aktuell keine verworfenen Preise vorhanden."
+                : "Aktuell gibt es keine auffälligen Preise zur Prüfung."}
+            </GastarioEmptyState>
           ) : (
-            <div className="supplierPriceReviewList">
-              {data.prices.map(
-                (price: any) => (
-                  <article
-                    className="supplierPriceReviewCard"
-                    key={price.id}
-                  >
-                    <div className="supplierPriceReviewIdentity">
-                      <span className="supplierAliasEyebrow">
-                        {price.catalogItem
+            <>
+              <GastarioDataList>
+                {data.prices.map(
+                  (price: any) => (
+                    <GastarioDataRow
+                      key={price.id}
+                    >
+                      <div className="g-ui-data-row-main">
+                        <strong className="g-ui-data-row-title">
+                          {price.catalogItem?.name ||
+                            "Lieferantenartikel"}
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          {price.catalogItem
+                            ?.supplier?.name ||
+                            "Lieferant"}
+                          {" · "}
+                          Art.-Nr.{" "}
+                          {price.catalogItem
+                            ?.articleNumber ||
+                            price.catalogItem
+                              ?.externalId ||
+                            "–"}
+                          {" · "}
+                          Importiert:{" "}
+                          {formatMoney(
+                            price.netPriceCents
+                          )}
+                        </span>
+                      </div>
+
+                      <div className="g-ui-data-row-meta">
+                        <button
+                          type="button"
+                          className={gastarioButtonClass(
+                            "ghost"
+                          )}
+                          onClick={() => {
+                            setSelectedPriceId(
+                              price.id
+                            );
+                            setPriceDetailTab(
+                              "overview"
+                            );
+                          }}
+                        >
+                          Prüfen
+                        </button>
+                      </div>
+                    </GastarioDataRow>
+                  )
+                )}
+              </GastarioDataList>
+
+              <GastarioDetailDialog
+                open={Boolean(selectedPrice)}
+                title={
+                  selectedPrice
+                    ? selectedPrice.catalogItem
+                        ?.name ||
+                      "Lieferantenartikel"
+                    : "Preisprüfung"
+                }
+                description={
+                  selectedPrice
+                    ? `${
+                        selectedPrice.catalogItem
                           ?.supplier?.name ||
-                          "Lieferant"}
-                      </span>
-
-                      <strong>
-                        {price.catalogItem?.name ||
-                          "Lieferantenartikel"}
-                      </strong>
-
-                      <small>
-                        Art.-Nr.{" "}
-                        {price.catalogItem
+                        "Lieferant"
+                      } · Art.-Nr. ${
+                        selectedPrice.catalogItem
                           ?.articleNumber ||
-                          price.catalogItem
-                            ?.externalId ||
-                          "–"}
-                      </small>
-                    </div>
-
-                    <div className="supplierPriceReviewPrice">
-                      <span>Importierter Preis</span>
-                      <strong>
-                        {formatMoney(
-                          price.netPriceCents
+                        selectedPrice.catalogItem
+                          ?.externalId ||
+                        "–"
+                      }`
+                    : undefined
+                }
+                onClose={() =>
+                  setSelectedPriceId(null)
+                }
+                footer={
+                  selectedPrice ? (
+                    <>
+                      <button
+                        type="button"
+                        className={gastarioButtonClass(
+                          "secondary"
                         )}
-                      </strong>
-                      <small>
-                        {price.priceUnit ||
-                          "Einheit"}
-                      </small>
-                    </div>
+                        onClick={() =>
+                          setSelectedPriceId(null)
+                        }
+                      >
+                        Schließen
+                      </button>
 
-                    <div className="supplierPriceReviewReference">
-                      <span>Referenz</span>
-                      <strong>
-                        {formatMoney(
-                          price.referencePriceCents
-                        )}
-                      </strong>
-                      <small>
-                        {price.priceRatio != null
-                          ? `Faktor ${Number(
-                              price.priceRatio
-                            ).toFixed(2)}`
-                          : "Keine Referenz"}
-                      </small>
-                    </div>
-
-                    <div className="supplierPriceReviewReason">
-                      <span>Prüfgrund</span>
-                      <strong>
-                        {price.qualityReason ||
-                          "Automatisch auffällig erkannt"}
-                      </strong>
-                      <small>
-                        Import:{" "}
-                        {formatDateTime(
-                          price.fetchedAt
-                        )}
-                      </small>
-                    </div>
-
-                    <div className="supplierPriceReviewActions">
                       {data.showRejected ? (
                         <Form method="post">
                           <input
@@ -423,15 +472,20 @@ export default function SupplierPriceReviewPage() {
                             name="intent"
                             value="restore"
                           />
+
                           <input
                             type="hidden"
                             name="id"
-                            value={price.id}
+                            value={
+                              selectedPrice.id
+                            }
                           />
 
                           <button
                             type="submit"
-                            className="procurementSearchButton procurementSearchButton--secondary"
+                            className={gastarioButtonClass(
+                              "primary"
+                            )}
                           >
                             Erneut prüfen
                           </button>
@@ -444,15 +498,20 @@ export default function SupplierPriceReviewPage() {
                               name="intent"
                               value="approve"
                             />
+
                             <input
                               type="hidden"
                               name="id"
-                              value={price.id}
+                              value={
+                                selectedPrice.id
+                              }
                             />
 
                             <button
                               type="submit"
-                              className="procurementSearchButton"
+                              className={gastarioButtonClass(
+                                "primary"
+                              )}
                             >
                               Preis bestätigen
                             </button>
@@ -464,29 +523,114 @@ export default function SupplierPriceReviewPage() {
                               name="intent"
                               value="reject"
                             />
+
                             <input
                               type="hidden"
                               name="id"
-                              value={price.id}
+                              value={
+                                selectedPrice.id
+                              }
                             />
 
                             <button
                               type="submit"
-                              className="procurementSearchButton procurementSearchButton--secondary"
+                              className={gastarioButtonClass(
+                                "danger"
+                              )}
                             >
                               Verwerfen
                             </button>
                           </Form>
                         </>
                       )}
-                    </div>
-                  </article>
-                )
-              )}
-            </div>
+                    </>
+                  ) : null
+                }
+              >
+                {selectedPrice ? (
+                  <>
+                    <GastarioDetailTabs
+                      items={[
+                        {
+                          id: "overview",
+                          label: "Preis",
+                        },
+                        {
+                          id: "review",
+                          label: "Prüfung",
+                        },
+                      ]}
+                      activeId={priceDetailTab}
+                      onChange={setPriceDetailTab}
+                    />
+
+                    <GastarioDetailPane
+                      active={
+                        priceDetailTab ===
+                        "overview"
+                      }
+                    >
+                      <GastarioMetricGrid>
+                        <GastarioMetric
+                          label="Importierter Preis"
+                          value={formatMoney(
+                            selectedPrice.netPriceCents
+                          )}
+                          description={
+                            selectedPrice.priceUnit ||
+                            "Einheit"
+                          }
+                        />
+
+                        <GastarioMetric
+                          label="Referenzpreis"
+                          value={formatMoney(
+                            selectedPrice.referencePriceCents
+                          )}
+                          description={
+                            selectedPrice.priceRatio !=
+                            null
+                              ? `Faktor ${Number(
+                                  selectedPrice.priceRatio
+                                ).toFixed(2)}`
+                              : "Keine Referenz"
+                          }
+                        />
+
+                        <GastarioMetric
+                          label="Import"
+                          value={formatDateTime(
+                            selectedPrice.fetchedAt
+                          )}
+                          description="Zeitpunkt des Preisimports"
+                        />
+                      </GastarioMetricGrid>
+                    </GastarioDetailPane>
+
+                    <GastarioDetailPane
+                      active={
+                        priceDetailTab ===
+                        "review"
+                      }
+                    >
+                      <GastarioNotice
+                        type={
+                          data.showRejected
+                            ? "danger"
+                            : "warning"
+                        }
+                      >
+                        {selectedPrice.qualityReason ||
+                          "Automatisch auffällig erkannt"}
+                      </GastarioNotice>
+                    </GastarioDetailPane>
+                  </>
+                ) : null}
+              </GastarioDetailDialog>
+            </>
           )}
-        </PageSection>
-      </PageShell>
+        </GastarioSection>
+      </GastarioPage>
     </AppLayout>
   );
 }

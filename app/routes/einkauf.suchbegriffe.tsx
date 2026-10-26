@@ -9,18 +9,26 @@ import {
 import AppLayout from "../components/AppLayout";
 
 import {
-  Notice,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
+  GastarioPage,
+  GastarioHeader,
+  GastarioNotice,
+  gastarioButtonClass,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioSection,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioToolbar,
+  GastarioField,
+  GastarioInput,
+  GastarioTextarea,
+  GastarioEmptyState,
+} from "../components/ui";
 
 import {
   normalizeSupplierSearchTerm,
 } from "../lib/supplier-search-index.server";
 
-import "../styles/gastario-page-shell.css";
-import "../styles/gastario-procurement-search.css";
 
 type ActionData = {
   error?: string;
@@ -466,22 +474,22 @@ export default function SupplierSearchAliasesPage() {
 
   return (
     <AppLayout>
-      <PageShell className="procurementSearchPage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Einkauf & Lieferanten"
           title="Suchbegriffe verwalten"
-          subtitle={`Lege eigene Begriffsgruppen für ${data.tenant.name} an. Gastario berücksichtigt sie sofort in der lieferantenübergreifenden Artikelsuche.`}
+          description={`Lege eigene Begriffsgruppen für ${data.tenant.name} an. Gastario berücksichtigt sie sofort in der lieferantenübergreifenden Artikelsuche.`}
           actions={
             <>
               <Link
-                className="procurementSearchButton procurementSearchButton--secondary"
+                className={gastarioButtonClass("secondary")}
                 to="/einkauf/artikelsuche"
               >
                 Zur Artikelsuche
               </Link>
 
               <Link
-                className="procurementSearchButton procurementSearchButton--secondary"
+                className={gastarioButtonClass("secondary")}
                 to="/einkauf"
               >
                 Zur Einkaufsplanung
@@ -491,277 +499,277 @@ export default function SupplierSearchAliasesPage() {
         />
 
         {actionData?.error ? (
-          <Notice type="danger">
+          <GastarioNotice type="danger">
             {actionData.error}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
-        <section className="supplierAliasMetrics">
-          <div className="supplierAliasMetric">
-            <span>Begriffsgruppen</span>
-            <strong>{data.groups.length}</strong>
-          </div>
+        <GastarioMetricGrid>
+          <GastarioMetric
+            label="Begriffsgruppen"
+            value={data.groups.length}
+            description="gespeicherte Gruppen"
+          />
 
-          <div className="supplierAliasMetric">
-            <span>Suchbegriffe</span>
-            <strong>{data.totalAliases}</strong>
-          </div>
+          <GastarioMetric
+            label="Suchbegriffe"
+            value={data.totalAliases}
+            description="insgesamt hinterlegt"
+          />
 
-          <div className="supplierAliasMetric">
-            <span>Aktiv</span>
-            <strong>{data.activeAliases}</strong>
-          </div>
+          <GastarioMetric
+            label="Aktiv"
+            value={data.activeAliases}
+            description="werden aktuell berücksichtigt"
+          />
 
-          <div className="supplierAliasMetric">
-            <span>Automatisch gelernt</span>
-            <strong>{data.autoLearnedAliases}</strong>
-          </div>
-        </section>
+          <GastarioMetric
+            label="Automatisch gelernt"
+            value={data.autoLearnedAliases}
+            description="durch Gastario erkannt"
+          />
+        </GastarioMetricGrid>
 
         {data.learningSuggestions.length > 0 ? (
-          <PageSection
+          <GastarioSection
             eyebrow="Gastario lernt mit"
             title="Erkannte Suchbeziehungen"
             description="Diese Vorschläge entstehen aus deiner tatsächlichen Artikelauswahl. Gastario aktiviert eine Beziehung nur dann automatisch, wenn sie mehrfach in beide Richtungen bestätigt wurde und keine bestehende Alias-Gruppe berührt."
           >
-            <div className="supplierLearningList">
+            <GastarioDataList>
               {data.learningSuggestions.map(
                 (suggestion: any) => (
-                  <article
-                    className="supplierLearningCard"
+                  <GastarioDataRow
                     key={suggestion.id}
                   >
-                    <div className="supplierLearningMain">
-                      <span className="supplierAliasEyebrow">
-                        Lernvorschlag
-                      </span>
-
-                      <strong>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
                         {suggestion.queryTerm}
-                        <span> ↔ </span>
+                        {" ↔ "}
                         {suggestion.candidateTerm}
                       </strong>
 
-                      <small>
+                      <span className="g-ui-data-row-description">
                         Zuletzt gewählt:{" "}
                         {suggestion.lastCatalogItemName ||
                           "Lieferantenartikel"}
                         {suggestion.lastSupplierName
                           ? ` · ${suggestion.lastSupplierName}`
                           : ""}
-                      </small>
-                    </div>
-
-                    <div className="supplierLearningEvidence">
-                      <span>Evidenz</span>
-                      <strong>
+                        {" · "}
+                        Evidenz:{" "}
                         {suggestion.evidenceCount}×
-                      </strong>
+                      </span>
                     </div>
 
-                    <div className="supplierLearningActions">
-                      <Form method="post">
-                        <input
-                          type="hidden"
-                          name="intent"
-                          value="accept-learning"
-                        />
-                        <input
-                          type="hidden"
-                          name="id"
-                          value={suggestion.id}
-                        />
+                    <div className="g-ui-data-row-meta">
+                      <GastarioToolbar>
+                        <Form method="post">
+                          <input
+                            type="hidden"
+                            name="intent"
+                            value="accept-learning"
+                          />
 
-                        <button
-                          type="submit"
-                          className="procurementSearchButton"
-                        >
-                          Übernehmen
-                        </button>
-                      </Form>
+                          <input
+                            type="hidden"
+                            name="id"
+                            value={suggestion.id}
+                          />
 
-                      <Form method="post">
-                        <input
-                          type="hidden"
-                          name="intent"
-                          value="reject-learning"
-                        />
-                        <input
-                          type="hidden"
-                          name="id"
-                          value={suggestion.id}
-                        />
+                          <button
+                            type="submit"
+                            className={gastarioButtonClass(
+                              "primary"
+                            )}
+                          >
+                            Übernehmen
+                          </button>
+                        </Form>
 
-                        <button
-                          type="submit"
-                          className="procurementSearchButton procurementSearchButton--secondary"
-                        >
-                          Verwerfen
-                        </button>
-                      </Form>
+                        <Form method="post">
+                          <input
+                            type="hidden"
+                            name="intent"
+                            value="reject-learning"
+                          />
+
+                          <input
+                            type="hidden"
+                            name="id"
+                            value={suggestion.id}
+                          />
+
+                          <button
+                            type="submit"
+                            className={gastarioButtonClass(
+                              "danger"
+                            )}
+                          >
+                            Verwerfen
+                          </button>
+                        </Form>
+                      </GastarioToolbar>
                     </div>
-                  </article>
+                  </GastarioDataRow>
                 )
               )}
-            </div>
-          </PageSection>
+            </GastarioDataList>
+          </GastarioSection>
         ) : null}
 
-        <PageSection
+        <GastarioSection
           eyebrow="Neue Begriffsgruppe"
           title="Was soll Gastario als dasselbe Produkt verstehen?"
           description="Ein Hauptbegriff verbindet alle dazugehörigen Begriffe. Mehrere Aliase kannst du mit Komma, Semikolon oder einer neuen Zeile trennen."
         >
-          <Form
-            method="post"
-            className="supplierAliasCreateForm"
-          >
+          <Form method="post">
             <input
               type="hidden"
               name="intent"
               value="create-group"
             />
 
-            <label className="supplierAliasField">
-              <span>Hauptbegriff</span>
-              <input
-                name="canonicalTerm"
-                placeholder="z. B. Marmelade"
+            <GastarioStack>
+              <GastarioField
+                label="Hauptbegriff"
                 required
-              />
-            </label>
-
-            <label className="supplierAliasField supplierAliasField--wide">
-              <span>Synonyme / alternative Bezeichnungen</span>
-              <textarea
-                name="aliases"
-                rows={3}
-                placeholder="Konfitüre, Fruchtaufstrich, Gelee"
-              />
-            </label>
-
-            <div className="supplierAliasFormActions">
-              <button
-                type="submit"
-                className="procurementSearchButton"
               >
-                Begriffsgruppe speichern
-              </button>
-            </div>
-          </Form>
-        </PageSection>
+                <GastarioInput
+                  name="canonicalTerm"
+                  placeholder="z. B. Marmelade"
+                  required
+                />
+              </GastarioField>
 
-        <PageSection
+              <GastarioField label="Synonyme / alternative Bezeichnungen">
+                <GastarioTextarea
+                  name="aliases"
+                  rows={3}
+                  placeholder="Konfitüre, Fruchtaufstrich, Gelee"
+                />
+              </GastarioField>
+
+              <GastarioToolbar>
+                <button
+                  type="submit"
+                  className={gastarioButtonClass(
+                    "primary"
+                  )}
+                >
+                  Begriffsgruppe speichern
+                </button>
+              </GastarioToolbar>
+            </GastarioStack>
+          </Form>
+        </GastarioSection>
+
+        <GastarioSection
           eyebrow="Gespeicherte Begriffe"
           title="Suchlogik deines Betriebs"
           description="Änderungen gelten sofort für die Artikelsuche. Deaktivierte Begriffe bleiben gespeichert, werden aber nicht mehr berücksichtigt."
         >
           {data.groups.length === 0 ? (
-            <div className="supplierAliasEmpty">
+            <GastarioEmptyState title="Noch keine Begriffsgruppen">
               Noch keine eigenen Begriffsgruppen angelegt.
-            </div>
+            </GastarioEmptyState>
           ) : (
-            <div className="supplierAliasGroupList">
-              {data.groups.map((group: any) => (
-                <article
-                  className="supplierAliasGroup"
-                  key={group.canonicalNormalized}
-                >
-                  <div className="supplierAliasGroupHeader">
-                    <div>
-                      <span className="supplierAliasEyebrow">
-                        Hauptbegriff
-                      </span>
-                      <h3>
-                        {group.canonicalTerm}
-                      </h3>
-                    </div>
+            <GastarioStack>
+              {data.groups.map(
+                (group: any) => (
+                  <GastarioSection
+                    key={group.canonicalNormalized}
+                    eyebrow="Hauptbegriff"
+                    title={group.canonicalTerm}
+                    description={`${group.aliases.length} Begriffe`}
+                  >
+                    <GastarioDataList>
+                      {group.aliases.map(
+                        (entry: any) => (
+                          <GastarioDataRow
+                            key={entry.id}
+                          >
+                            <div className="g-ui-data-row-main">
+                              <strong className="g-ui-data-row-title">
+                                {entry.aliasTerm}
+                              </strong>
 
-                    <span className="supplierAliasCount">
-                      {group.aliases.length} Begriffe
-                    </span>
-                  </div>
-
-                  <div className="supplierAliasPills">
-                    {group.aliases.map(
-                      (entry: any) => (
-                        <div
-                          className={`supplierAliasPill ${
-                            entry.active
-                              ? ""
-                              : "supplierAliasPill--inactive"
-                          }`}
-                          key={entry.id}
-                        >
-                          <span className="supplierAliasPillLabel">
-                            <span>
-                              {entry.aliasTerm}
-                            </span>
-
-                            {entry.source === "AUTO_LEARNED" ? (
-                              <small className="supplierAliasSourceBadge">
-                                Automatisch gelernt
-                              </small>
-                            ) : entry.source === "LEARNED" ? (
-                              <small className="supplierAliasSourceBadge supplierAliasSourceBadge--reviewed">
-                                Aus Lernvorschlag
-                              </small>
-                            ) : null}
-                          </span>
-
-                          <div className="supplierAliasPillActions">
-                            <Form method="post">
-                              <input
-                                type="hidden"
-                                name="intent"
-                                value="toggle-alias"
-                              />
-                              <input
-                                type="hidden"
-                                name="id"
-                                value={entry.id}
-                              />
-
-                              <button
-                                type="submit"
-                                className="supplierAliasTextButton"
-                              >
+                              <span className="g-ui-data-row-description">
                                 {entry.active
-                                  ? "Deaktivieren"
-                                  : "Aktivieren"}
-                              </button>
-                            </Form>
+                                  ? "Aktiv"
+                                  : "Deaktiviert"}
+                                {entry.source ===
+                                "AUTO_LEARNED"
+                                  ? " · Automatisch gelernt"
+                                  : entry.source ===
+                                      "LEARNED"
+                                    ? " · Aus Lernvorschlag"
+                                    : ""}
+                              </span>
+                            </div>
 
-                            <Form method="post">
-                              <input
-                                type="hidden"
-                                name="intent"
-                                value="delete-alias"
-                              />
-                              <input
-                                type="hidden"
-                                name="id"
-                                value={entry.id}
-                              />
+                            <div className="g-ui-data-row-meta">
+                              <GastarioToolbar>
+                                <Form method="post">
+                                  <input
+                                    type="hidden"
+                                    name="intent"
+                                    value="toggle-alias"
+                                  />
 
-                              <button
-                                type="submit"
-                                className="supplierAliasTextButton supplierAliasTextButton--danger"
-                              >
-                                Löschen
-                              </button>
-                            </Form>
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </article>
-              ))}
-            </div>
+                                  <input
+                                    type="hidden"
+                                    name="id"
+                                    value={entry.id}
+                                  />
+
+                                  <button
+                                    type="submit"
+                                    className={gastarioButtonClass(
+                                      "secondary"
+                                    )}
+                                  >
+                                    {entry.active
+                                      ? "Deaktivieren"
+                                      : "Aktivieren"}
+                                  </button>
+                                </Form>
+
+                                <Form method="post">
+                                  <input
+                                    type="hidden"
+                                    name="intent"
+                                    value="delete-alias"
+                                  />
+
+                                  <input
+                                    type="hidden"
+                                    name="id"
+                                    value={entry.id}
+                                  />
+
+                                  <button
+                                    type="submit"
+                                    className={gastarioButtonClass(
+                                      "danger"
+                                    )}
+                                  >
+                                    Löschen
+                                  </button>
+                                </Form>
+                              </GastarioToolbar>
+                            </div>
+                          </GastarioDataRow>
+                        )
+                      )}
+                    </GastarioDataList>
+                  </GastarioSection>
+                )
+              )}
+            </GastarioStack>
           )}
-        </PageSection>
-      </PageShell>
+        </GastarioSection>
+      </GastarioPage>
     </AppLayout>
   );
 }

@@ -10,10 +10,16 @@ import AppLayout from "../components/AppLayout";
 import {
   MetricCard,
   MetricGrid,
-  PageHeader,
   PageSection,
-  PageShell,
 } from "../components/ui/PageShell";
+
+import {
+  GastarioPage,
+  GastarioHeader,
+  GastarioNotice,
+  gastarioButtonClass,
+  GastarioToolbar,
+} from "../components/ui";
 
 import "../styles/gastario-page-shell.css";
 import "../styles/gastario-procurement-orders.css";
@@ -983,20 +989,20 @@ export default function ProcurementOrdersPage() {
 
   return (
     <AppLayout>
-      <PageShell className="procurementOrdersPage">
+      <GastarioPage>
         {data.bundleMailStatus ===
         "sent" ? (
-          <div className="procurementOrderNotice procurementOrderNotice--success">
+          <GastarioNotice type="success">
             Die Sammelbestellung wurde erfolgreich mit PDF-Anhang versendet.
-          </div>
+          </GastarioNotice>
         ) : null}
-        <PageHeader
+        <GastarioHeader
           eyebrow="Einkauf"
           title="Einkaufsbestellungen"
-          subtitle={`Gespeicherte Lieferantenbestellungen für ${data.tenant.name}.`}
+          description={`Gespeicherte Lieferantenbestellungen für ${data.tenant.name}.`}
           actions={
             <Link
-              className="procurementOrdersButton procurementOrdersButton--primary"
+              className={gastarioButtonClass("primary")}
               to="/einkauf"
             >
               Neue Planung
@@ -1004,45 +1010,40 @@ export default function ProcurementOrdersPage() {
           }
         />
 
-        <div className="procurementOrdersViewSwitch">
+        <GastarioToolbar>
           <Link
             to="/einkaufsbestellungen?view=worklist"
-            className={[
-              "procurementOrdersViewTab",
-              data.filters.view ===
-              "worklist"
-                ? "isActive"
-                : "",
-            ].join(" ")}
+            className={gastarioButtonClass(
+              data.filters.view === "worklist"
+                ? "primary"
+                : "secondary"
+            )}
           >
             Tagesarbeitsliste
           </Link>
 
           <Link
             to="/einkaufsbestellungen?view=suppliers"
-            className={[
-              "procurementOrdersViewTab",
-              data.filters.view ===
-              "suppliers"
-                ? "isActive"
-                : "",
-            ].join(" ")}
+            className={gastarioButtonClass(
+              data.filters.view === "suppliers"
+                ? "primary"
+                : "secondary"
+            )}
           >
             Nach Lieferant
           </Link>
 
           <Link
             to="/einkaufsbestellungen?view=all"
-            className={[
-              "procurementOrdersViewTab",
+            className={gastarioButtonClass(
               data.filters.view === "all"
-                ? "isActive"
-                : "",
-            ].join(" ")}
+                ? "primary"
+                : "secondary"
+            )}
           >
             Alle Bestellungen
           </Link>
-        </div>
+        </GastarioToolbar>
 
         <MetricGrid>
           <MetricCard
@@ -1176,7 +1177,7 @@ export default function ProcurementOrdersPage() {
 
             <button
               type="submit"
-              className="procurementOrdersButton procurementOrdersButton--primary"
+              className={gastarioButtonClass("primary")}
             >
               Filtern
             </button>
@@ -1445,7 +1446,7 @@ export default function ProcurementOrdersPage() {
 
                           <button
                             type="submit"
-                            className="procurementOrdersButton procurementOrdersButton--primary"
+                            className={gastarioButtonClass("primary")}
                             disabled={
                               !data.mailConfigured
                             }
@@ -1477,7 +1478,7 @@ export default function ProcurementOrdersPage() {
                           />
                           <button
                             type="submit"
-                            className="procurementOrdersButton procurementOrdersButton--primary"
+                            className={gastarioButtonClass("primary")}
                           >
                             Alle Bestellungen komplett erhalten
                           </button>
@@ -1638,7 +1639,7 @@ export default function ProcurementOrdersPage() {
                             />
                             <button
                               type="submit"
-                              className="procurementOrdersButton procurementOrdersButton--primary"
+                              className={gastarioButtonClass("primary")}
                             >
                               Komplett erhalten
                             </button>
@@ -1652,7 +1653,7 @@ export default function ProcurementOrdersPage() {
             )}
           </PageSection>
         )}
-      </PageShell>
+      </GastarioPage>
     </AppLayout>
   );
 }

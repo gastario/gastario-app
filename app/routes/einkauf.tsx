@@ -1,10 +1,7 @@
+import { useState } from "react";
 import { Form, Link, redirect, useLoaderData } from "react-router";
 
 import AppLayout from "../components/AppLayout";
-
-import {
-  PageSection,
-} from "../components/ui/PageShell";
 
 import {
   GastarioPage,
@@ -25,10 +22,13 @@ import {
   GastarioEmptyState,
   GastarioTable,
   GastarioStack,
+  GastarioInput,
+  GastarioDetailDialog,
+  GastarioDetailTabs,
+  GastarioDetailPane,
+  GastarioCheckRow,
 } from "../components/ui";
 
-import "../styles/gastario-page-shell.css";
-import "../styles/gastario-procurement.css";
 
 const PURCHASING_STATUSES = [
   "CONFIRMED",
@@ -1416,6 +1416,29 @@ export async function loader({
 export default function PurchasingPage() {
   const data = useLoaderData<typeof loader>();
 
+  const [selectedDraftId, setSelectedDraftId] =
+    useState<string | null>(null);
+
+  const [draftDetailTab, setDraftDetailTab] =
+    useState("overview");
+
+  const selectedDraft =
+    data.savedProcurementDrafts.find(
+      (draft: any) =>
+        draft.id === selectedDraftId
+    ) || null;
+
+  const [selectedIngredientId, setSelectedIngredientId] =
+    useState<string | null>(null);
+
+  const [ingredientDetailTab, setIngredientDetailTab] =
+    useState("matches");
+
+  const selectedIngredient =
+    data.ingredientMappings.find(
+      (ingredient: any) =>
+        ingredient.id === selectedIngredientId
+    ) || null;
   return (
     <AppLayout>
       <GastarioPage>
@@ -1934,41 +1957,44 @@ export default function PurchasingPage() {
         {/*
          * gastario-procurement-practical-plan-v1-20260804
          */}
-        <PageSection
-          className="procurementPracticalSection"
+        <GastarioSection
           eyebrow="Alternative"
           title="Praktischer Einkaufsplan"
           description={`Bevorzugt möglichst wenige Lieferanten. Ein Artikel darf dabei höchstens ${data.practicalProcurementPlan.tolerancePercent}% teurer als das günstigste Angebot sein.`}
           actions={
-            <div className="procurementPlanActions">
+            <GastarioToolbar>
               <Form method="post">
                 <input
                   type="hidden"
                   name="intent"
                   value="save-procurement-drafts"
                 />
+
                 <input
                   type="hidden"
                   name="selectedDate"
                   value={data.selectedDate}
                 />
+
                 <input
                   type="hidden"
                   name="planType"
                   value="PRACTICAL"
                 />
+
                 <input
                   type="hidden"
                   name="groupsJson"
                   value={JSON.stringify(
-                    data.practicalProcurementPlan
-                      .groups
+                    data.practicalProcurementPlan.groups
                   )}
                 />
 
                 <button
                   type="submit"
-                  className={gastarioButtonClass("primary")}
+                  className={gastarioButtonClass(
+                    "primary"
+                  )}
                   disabled={
                     data.practicalProcurementPlan
                       .groups.length === 0
@@ -1977,9 +2003,12 @@ export default function PurchasingPage() {
                   Bestellentwürfe erstellen
                 </button>
               </Form>
+
               <button
                 type="button"
-                className={gastarioButtonClass("secondary")}
+                className={gastarioButtonClass(
+                  "secondary"
+                )}
                 onClick={() =>
                   downloadProcurementCsv({
                     plan:
@@ -2001,144 +2030,135 @@ export default function PurchasingPage() {
 
               <button
                 type="button"
-                className={gastarioButtonClass("secondary")}
-                onClick={() => window.print()}
+                className={gastarioButtonClass(
+                  "secondary"
+                )}
+                onClick={() =>
+                  window.print()
+                }
               >
                 Drucken
               </button>
-
-              <div className="procurementPlanTotal">
-                <small>Gesamtsumme netto</small>
-                <strong>
-                  {formatMoney(
-                    data.practicalProcurementPlan
-                      .totalNetCents
-                  )}
-                </strong>
-              </div>
-            </div>
+            </GastarioToolbar>
           }
         >
-          <div className="procurementPracticalSummary">
-            <div>
-              <small>Lieferanten</small>
-              <strong>
-                {
-                  data.practicalProcurementPlan
-                    .supplierCount
-                }
-              </strong>
-            </div>
+          <GastarioMetricGrid>
+            <GastarioMetric
+              label="Gesamtsumme netto"
+              value={formatMoney(
+                data.practicalProcurementPlan
+                  .totalNetCents
+              )}
+              description="Berechneter praktischer Einkaufsplan"
+            />
 
-            <div>
-              <small>Mehrkosten</small>
-              <strong>
-                {formatMoney(
-                  data.practicalProcurementPlan
-                    .surchargeCents
-                )}
-              </strong>
-            </div>
+            <GastarioMetric
+              label="Lieferanten"
+              value={
+                data.practicalProcurementPlan
+                  .supplierCount
+              }
+              description="Im praktischen Plan"
+            />
 
-            <div>
-              <small>Schwerpunkt</small>
-              <strong>
-                {data.practicalProcurementPlan
+            <GastarioMetric
+              label="Mehrkosten"
+              value={formatMoney(
+                data.practicalProcurementPlan
+                  .surchargeCents
+              )}
+              description="Gegenüber dem günstigsten Plan"
+            />
+
+            <GastarioMetric
+              label="Schwerpunkt"
+              value={
+                data.practicalProcurementPlan
                   .preferredSupplierName ||
-                  "Noch offen"}
-              </strong>
-            </div>
-          </div>
+                "Noch offen"
+              }
+              description="Bevorzugter Lieferant"
+            />
+          </GastarioMetricGrid>
 
           {data.practicalProcurementPlan.groups
             .length === 0 ? (
-            <div className="procurementCompactEmpty">
-              Noch kein praktischer Einkaufsplan
-              berechenbar.
-            </div>
+            <GastarioEmptyState title="Noch kein praktischer Einkaufsplan">
+              Der praktische Plan kann mit den
+              aktuellen Preis- und Artikeldaten noch
+              nicht berechnet werden.
+            </GastarioEmptyState>
           ) : (
-            <div className="procurementPlanGrid">
+            <GastarioStack>
               {data.practicalProcurementPlan.groups.map(
                 (group: any) => (
-                  <article
-                    className="procurementPlanSupplier"
+                  <GastarioSection
                     key={`practical-${
                       group.supplierId ||
                       group.supplierName
                     }`}
+                    eyebrow="Lieferant"
+                    title={group.supplierName}
+                    description={`${group.itemCount} Position(en)`}
+                    actions={
+                      <strong>
+                        {formatMoney(
+                          group.netTotalCents
+                        )}
+                      </strong>
+                    }
                   >
-                    <header>
-                      <div>
-                        <small>Lieferant</small>
-                        <strong>
-                          {group.supplierName}
-                        </strong>
-                        <span>
-                          {group.itemCount} Position(en)
-                        </span>
-                      </div>
-
-                      <div className="procurementPlanSupplierTotal">
-                        <small>Netto</small>
-                        <strong>
-                          {formatMoney(
-                            group.netTotalCents
-                          )}
-                        </strong>
-                      </div>
-                    </header>
-
-                    <div className="procurementPlanItems">
+                    <GastarioDataList>
                       {group.items.map(
                         (item: any) => (
-                          <div
-                            className="procurementPlanItem"
+                          <GastarioDataRow
                             key={[
                               "practical",
                               item.catalogItemId,
                               item.ingredientName,
                             ].join("-")}
                           >
-                            <div>
-                              <strong>
+                            <div className="g-ui-data-row-main">
+                              <strong className="g-ui-data-row-title">
                                 {item.ingredientName}
                               </strong>
-                              <span>
+
+                              <span className="g-ui-data-row-description">
                                 {item.catalogItemName}
-                              </span>
-                              <small>
+                                {" · "}
                                 {item.packageCount} ×{" "}
                                 {formatQty(
                                   item.packContent
                                 )}{" "}
                                 {item.baseUnit}
-                                {item.surchargeCents > 0
+                                {item.surchargeCents >
+                                0
                                   ? ` · ${formatMoney(
                                       item.surchargeCents
                                     )} über Bestpreis`
                                   : " · Bestpreis"}
-                              </small>
+                              </span>
                             </div>
 
-                            <div className="procurementPlanItemPrice">
+                            <div className="g-ui-data-row-meta">
                               <strong>
                                 {formatMoney(
                                   item.netTotalCents
                                 )}
                               </strong>
                             </div>
-                          </div>
+                          </GastarioDataRow>
                         )
                       )}
-                    </div>
-                  </article>
+                    </GastarioDataList>
+                  </GastarioSection>
                 )
               )}
-            </div>
+            </GastarioStack>
           )}
-        </PageSection>
-        <PageSection
-          className="procurementDraftSection"
+        </GastarioSection>
+
+        <GastarioSection
           eyebrow="Gespeichert"
           title="Bestellentwürfe"
           description="Dauerhaft gespeicherte Lieferantenentwürfe für den gewählten Planungstag."
@@ -2146,181 +2166,283 @@ export default function PurchasingPage() {
         >
           {data.savedProcurementDrafts.length ===
           0 ? (
-            <div className="procurementCompactEmpty">
-              Für diesen Planungstag wurden noch keine
-              Bestellentwürfe gespeichert.
-            </div>
+            <GastarioEmptyState title="Noch keine Bestellentwürfe">
+              Für diesen Planungstag wurden noch
+              keine Bestellentwürfe gespeichert.
+            </GastarioEmptyState>
           ) : (
-            <div className="procurementDraftGrid">
+            <GastarioDataList>
               {data.savedProcurementDrafts.map(
                 (draft: any) => (
-                  <article
-                    className="procurementDraftCard"
+                  <GastarioDataRow
                     key={draft.id}
                   >
-                    <header>
-                      <div>
-                        <small>
-                          {draft.planType ===
-                          "PRACTICAL"
-                            ? "Praktischer Plan"
-                            : "Günstigster Plan"}
-                        </small>
-                        <strong>
-                          {draft.supplierName}
-                        </strong>
-                        <span>
-                          {draft.items.length} Position(en)
-                        </span>
-                      </div>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        {draft.supplierName}
+                      </strong>
 
-                      <div className="procurementDraftStatus">
-                        <span>
-                          {procurementDraftStatusLabel(
-                            draft.status
-                          )}
-                        </span>
-                        <strong>
-                          {formatMoney(
-                            draft.netTotalCents
-                          )}
-                        </strong>
-                      </div>
-                    </header>
-
-                    <Form
-                      method="post"
-                      className="procurementDraftForm"
-                    >
-                      <input
-                        type="hidden"
-                        name="intent"
-                        value="update-procurement-draft"
-                      />
-                      <input
-                        type="hidden"
-                        name="draftId"
-                        value={draft.id}
-                      />
-                      <input
-                        type="hidden"
-                        name="selectedDate"
-                        value={data.selectedDate}
-                      />
-
-                      <div className="procurementDraftControls">
-                        <label>
-                          <span>Status</span>
-                          <select
-                            name="status"
-                            defaultValue={
-                              draft.status
-                            }
-                          >
-                            <option value="DRAFT">
-                              Entwurf
-                            </option>
-                            <option value="ORDERED">
-                              Bestellt
-                            </option>
-                            <option value="PARTIALLY_RECEIVED">
-                              Teilweise geliefert
-                            </option>
-                            <option value="RECEIVED">
-                              Geliefert
-                            </option>
-                            <option value="CANCELLED">
-                              Storniert
-                            </option>
-                          </select>
-                        </label>
-
-                        <button
-                          type="submit"
-                          className={gastarioButtonClass("primary")}
-                        >
-                          Änderungen speichern
-                        </button>
-                      </div>
-
-                      <div className="procurementDraftEditor">
-                        {draft.items.map(
-                          (item: any) => (
-                            <div
-                              className="procurementDraftEditorRow"
-                              key={item.id}
-                            >
-                              <div>
-                                <strong>
-                                  {item.ingredientName}
-                                </strong>
-                                <span>
-                                  {item.catalogItemName}
-                                </span>
-                                <small>
-                                  {item.articleNumber
-                                    ? `Art.-Nr. ${item.articleNumber}`
-                                    : "Keine Artikelnummer"}
-                                </small>
-                              </div>
-
-                              <label>
-                                <span>Bestellt</span>
-                                <input
-                                  type="number"
-                                  name={`packageCount_${item.id}`}
-                                  min="0.01"
-                                  step="0.01"
-                                  defaultValue={
-                                    item.packageCount
-                                  }
-                                />
-                              </label>
-
-                              <label>
-                                <span>Geliefert</span>
-                                <input
-                                  type="number"
-                                  name={`receivedPackageCount_${item.id}`}
-                                  min="0"
-                                  step="0.01"
-                                  max={
-                                    item.packageCount
-                                  }
-                                  defaultValue={
-                                    item.receivedPackageCount
-                                  }
-                                />
-                              </label>
-
-                              <div className="procurementDraftEditorPrice">
-                                <small>Netto</small>
-                                <strong>
-                                  {formatMoney(
-                                    item.netTotalCents
-                                  )}
-                                </strong>
-                              </div>
-                            </div>
-                          )
+                      <span className="g-ui-data-row-description">
+                        {draft.planType ===
+                        "PRACTICAL"
+                          ? "Praktischer Plan"
+                          : "Günstigster Plan"}
+                        {" · "}
+                        {draft.items.length} Position(en)
+                        {" · "}
+                        {procurementDraftStatusLabel(
+                          draft.status
                         )}
-                      </div>
-                    </Form>
-                  </article>
+                      </span>
+                    </div>
+
+                    <div className="g-ui-data-row-meta">
+                      <strong>
+                        {formatMoney(
+                          draft.netTotalCents
+                        )}
+                      </strong>
+
+                      <button
+                        type="button"
+                        className={gastarioButtonClass(
+                          "ghost"
+                        )}
+                        onClick={() => {
+                          setSelectedDraftId(
+                            draft.id
+                          );
+                          setDraftDetailTab(
+                            "overview"
+                          );
+                        }}
+                      >
+                        Öffnen
+                      </button>
+                    </div>
+                  </GastarioDataRow>
                 )
               )}
-            </div>
+            </GastarioDataList>
           )}
-        </PageSection>
-        <PageSection
-          className="procurementMappingSection"
+        </GastarioSection>
+
+        <GastarioDetailDialog
+          open={Boolean(selectedDraft)}
+          title={
+            selectedDraft
+              ? selectedDraft.supplierName
+              : "Bestellentwurf"
+          }
+          description={
+            selectedDraft
+              ? `${
+                  selectedDraft.planType ===
+                  "PRACTICAL"
+                    ? "Praktischer Plan"
+                    : "Günstigster Plan"
+                } · ${procurementDraftStatusLabel(
+                  selectedDraft.status
+                )}`
+              : undefined
+          }
+          onClose={() =>
+            setSelectedDraftId(null)
+          }
+          footer={
+            selectedDraft ? (
+              <GastarioToolbar>
+                <button
+                  type="button"
+                  className={gastarioButtonClass(
+                    "secondary"
+                  )}
+                  onClick={() =>
+                    setSelectedDraftId(null)
+                  }
+                >
+                  Schließen
+                </button>
+
+                <button
+                  type="submit"
+                  form={`procurement-draft-${selectedDraft.id}`}
+                  className={gastarioButtonClass(
+                    "primary"
+                  )}
+                >
+                  Änderungen speichern
+                </button>
+              </GastarioToolbar>
+            ) : null
+          }
+        >
+          {selectedDraft ? (
+            <Form
+              method="post"
+              id={`procurement-draft-${selectedDraft.id}`}
+            >
+              <input
+                type="hidden"
+                name="intent"
+                value="update-procurement-draft"
+              />
+
+              <input
+                type="hidden"
+                name="draftId"
+                value={selectedDraft.id}
+              />
+
+              <input
+                type="hidden"
+                name="selectedDate"
+                value={data.selectedDate}
+              />
+
+              <GastarioDetailTabs
+                items={[
+                  {
+                    id: "overview",
+                    label: "Übersicht",
+                  },
+                  {
+                    id: "items",
+                    label: "Positionen",
+                  },
+                ]}
+                activeId={draftDetailTab}
+                onChange={setDraftDetailTab}
+              />
+
+              <GastarioDetailPane
+                active={
+                  draftDetailTab ===
+                  "overview"
+                }
+              >
+                <GastarioMetricGrid>
+                  <GastarioMetric
+                    label="Netto"
+                    value={formatMoney(
+                      selectedDraft.netTotalCents
+                    )}
+                    description="Aktueller Bestellentwurf"
+                  />
+
+                  <GastarioMetric
+                    label="Positionen"
+                    value={
+                      selectedDraft.items.length
+                    }
+                    description="Lieferantenartikel"
+                  />
+                </GastarioMetricGrid>
+
+                <GastarioField label="Status">
+                  <GastarioSelect
+                    name="status"
+                    defaultValue={
+                      selectedDraft.status
+                    }
+                  >
+                    <option value="DRAFT">
+                      Entwurf
+                    </option>
+                    <option value="ORDERED">
+                      Bestellt
+                    </option>
+                    <option value="PARTIALLY_RECEIVED">
+                      Teilweise geliefert
+                    </option>
+                    <option value="RECEIVED">
+                      Geliefert
+                    </option>
+                    <option value="CANCELLED">
+                      Storniert
+                    </option>
+                  </GastarioSelect>
+                </GastarioField>
+              </GastarioDetailPane>
+
+              <GastarioDetailPane
+                active={
+                  draftDetailTab === "items"
+                }
+              >
+                <GastarioDataList>
+                  {selectedDraft.items.map(
+                    (item: any) => (
+                      <GastarioDataRow
+                        key={item.id}
+                      >
+                        <div className="g-ui-data-row-main">
+                          <strong className="g-ui-data-row-title">
+                            {item.ingredientName}
+                          </strong>
+
+                          <span className="g-ui-data-row-description">
+                            {item.catalogItemName}
+                            {" · "}
+                            {item.articleNumber
+                              ? `Art.-Nr. ${item.articleNumber}`
+                              : "Keine Artikelnummer"}
+                          </span>
+                        </div>
+
+                        <div className="g-ui-data-row-meta">
+                          <GastarioField label="Bestellt">
+                            <GastarioInput
+                              type="number"
+                              name={`packageCount_${item.id}`}
+                              min="0.01"
+                              step="0.01"
+                              defaultValue={
+                                item.packageCount
+                              }
+                            />
+                          </GastarioField>
+
+                          <GastarioField label="Geliefert">
+                            <GastarioInput
+                              type="number"
+                              name={`receivedPackageCount_${item.id}`}
+                              min="0"
+                              step="0.01"
+                              max={
+                                item.packageCount
+                              }
+                              defaultValue={
+                                item.receivedPackageCount
+                              }
+                            />
+                          </GastarioField>
+
+                          <strong>
+                            {formatMoney(
+                              item.netTotalCents
+                            )}
+                          </strong>
+                        </div>
+                      </GastarioDataRow>
+                    )
+                  )}
+                </GastarioDataList>
+              </GastarioDetailPane>
+            </Form>
+          ) : null}
+        </GastarioDetailDialog>
+
+        <GastarioSection
           eyebrow="Artikelzuordnung"
           title="Zutaten mit Lieferantenartikeln verbinden"
           description="Ordne jede Zutat einem oder mehreren echten Katalogartikeln zu. Gastario vergleicht anschließend automatisch Packungsgrößen und aktuelle Preise."
           id="ingredient-mapping"
           actions={
             <Link
-              className={gastarioButtonClass("secondary")}
+              className={gastarioButtonClass(
+                "secondary"
+              )}
               to="/lieferanten"
             >
               Lieferantenkataloge
@@ -2328,193 +2450,284 @@ export default function PurchasingPage() {
           }
         >
           {data.ingredientMappings.length === 0 ? (
-            <div className="procurementCompactEmpty">
+            <GastarioEmptyState title="Keine berechenbaren Zutaten">
               Für den gewählten Planungstag gibt es
-              noch keine berechenbaren Zutaten.
-            </div>
+              noch keine Zutaten, die einem
+              Lieferantenartikel zugeordnet werden
+              können.
+            </GastarioEmptyState>
           ) : (
-            <div className="procurementMappingList">
+            <GastarioDataList>
               {data.ingredientMappings.map(
                 (ingredient: any) => (
-                  <article
-                    className="procurementMappingRow"
+                  <GastarioDataRow
                     key={ingredient.id}
                   >
-                    <div className="procurementMappingIdentity">
-                      <small>Zutat</small>
-                      <strong>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
                         {ingredient.displayName}
                       </strong>
-                      <span>
+
+                      <span className="g-ui-data-row-description">
                         Basiseinheit:{" "}
                         {ingredient.baseUnit}
+                        {" · "}
+                        {ingredient.matches.length}{" "}
+                        Zuordnung(en)
+                        {" · "}
+                        {(data.candidateSuggestions[
+                          ingredient.id
+                        ] || []).length}{" "}
+                        Vorschlag/Vorschläge
                       </span>
+                    </div>
 
-                      <div className="procurementSuggestionSummary">
-                        <strong>
-                          {(data.candidateSuggestions[
+                    <div className="g-ui-data-row-meta">
+                      <button
+                        type="button"
+                        className={gastarioButtonClass(
+                          "ghost"
+                        )}
+                        onClick={() => {
+                          setSelectedIngredientId(
                             ingredient.id
-                          ] || []).length}
-                        </strong>
-                        <span>
-                          passende Katalogkandidaten
-                        </span>
-                      </div>
+                          );
+                          setIngredientDetailTab(
+                            "matches"
+                          );
+                        }}
+                      >
+                        Zuordnung öffnen
+                      </button>
                     </div>
+                  </GastarioDataRow>
+                )
+              )}
+            </GastarioDataList>
+          )}
+        </GastarioSection>
 
-                    <div className="procurementMappingMatches">
-                      {ingredient.matches.length === 0 ? (
-                        <div className="procurementMappingEmpty">
-                          Noch kein Lieferantenartikel
-                          zugeordnet
-                        </div>
-                      ) : (
-                        ingredient.matches.map(
-                          (match: any) => {
-                            const price =
-                              match.catalogItem
-                                .prices?.[0] || null;
+        <GastarioDetailDialog
+          open={Boolean(selectedIngredient)}
+          title={
+            selectedIngredient
+              ? selectedIngredient.displayName
+              : "Artikelzuordnung"
+          }
+          description={
+            selectedIngredient
+              ? `Basiseinheit: ${selectedIngredient.baseUnit}`
+              : undefined
+          }
+          onClose={() =>
+            setSelectedIngredientId(null)
+          }
+          footer={
+            <button
+              type="button"
+              className={gastarioButtonClass(
+                "secondary"
+              )}
+              onClick={() =>
+                setSelectedIngredientId(null)
+              }
+            >
+              Schließen
+            </button>
+          }
+        >
+          {selectedIngredient ? (
+            <>
+              <GastarioDetailTabs
+                items={[
+                  {
+                    id: "matches",
+                    label: "Zuordnungen",
+                  },
+                  {
+                    id: "add",
+                    label: "Neue Zuordnung",
+                  },
+                ]}
+                activeId={ingredientDetailTab}
+                onChange={setIngredientDetailTab}
+              />
 
-                            return (
-                              <div
-                                className="procurementMappedArticle"
-                                key={match.id}
-                              >
-                                <div>
-                                  <strong>
-                                    {
-                                      match
-                                        .catalogItem
-                                        .supplier
-                                        .name
-                                    }
-                                  </strong>
+              <GastarioDetailPane
+                active={
+                  ingredientDetailTab ===
+                  "matches"
+                }
+              >
+                {selectedIngredient.matches
+                  .length === 0 ? (
+                  <GastarioEmptyState title="Noch keine Zuordnung">
+                    Für diese Zutat wurde noch kein
+                    Lieferantenartikel hinterlegt.
+                  </GastarioEmptyState>
+                ) : (
+                  <GastarioDataList>
+                    {selectedIngredient.matches.map(
+                      (match: any) => {
+                        const price =
+                          match.catalogItem
+                            .prices?.[0] || null;
 
-                                  <span>
-                                    {
-                                      match
-                                        .catalogItem
-                                        .name
-                                    }
-                                  </span>
+                        return (
+                          <GastarioDataRow
+                            key={match.id}
+                          >
+                            <div className="g-ui-data-row-main">
+                              <strong className="g-ui-data-row-title">
+                                {
+                                  match.catalogItem
+                                    .supplier.name
+                                }
+                              </strong>
 
-                                  <small>
-                                    {price
-                                      ? `${formatMoney(
-                                          price.netPriceCents
-                                        )} · ${formatPriceAge(
-                                          price.fetchedAt
-                                        )}`
-                                      : "Noch kein Preis vorhanden"}
-                                  </small>
-                                </div>
+                              <span className="g-ui-data-row-description">
+                                {
+                                  match.catalogItem
+                                    .name
+                                }
+                                {" · "}
+                                {price
+                                  ? `${formatMoney(
+                                      price.netPriceCents
+                                    )} · ${formatPriceAge(
+                                      price.fetchedAt
+                                    )}`
+                                  : "Noch kein Preis vorhanden"}
+                                {match.preferred
+                                  ? " · Bevorzugt"
+                                  : ""}
+                              </span>
+                            </div>
 
-                                {match.preferred ? (
-                                  <span className="procurementPreferredBadge">
-                                    Bevorzugt
-                                  </span>
-                                ) : null}
+                            <div className="g-ui-data-row-meta">
+                              <Form method="post">
+                                <input
+                                  type="hidden"
+                                  name="intent"
+                                  value="remove-ingredient-match"
+                                />
 
-                                <Form method="post">
-                                  <input
-                                    type="hidden"
-                                    name="intent"
-                                    value="remove-ingredient-match"
-                                  />
-                                  <input
-                                    type="hidden"
-                                    name="matchId"
-                                    value={match.id}
-                                  />
-                                  <input
-                                    type="hidden"
-                                    name="returnDate"
-                                    value={
-                                      data.selectedDate
-                                    }
-                                  />
+                                <input
+                                  type="hidden"
+                                  name="matchId"
+                                  value={match.id}
+                                />
 
-                                  <button
-                                    type="submit"
-                                    className="procurementMappingRemove"
-                                  >
-                                    Entfernen
-                                  </button>
-                                </Form>
-                              </div>
-                            );
-                          }
-                        )
-                      )}
-                    </div>
+                                <input
+                                  type="hidden"
+                                  name="returnDate"
+                                  value={
+                                    data.selectedDate
+                                  }
+                                />
 
-                    <Form
-                      method="post"
-                      className="procurementMappingForm"
+                                <button
+                                  type="submit"
+                                  className={gastarioButtonClass(
+                                    "danger"
+                                  )}
+                                >
+                                  Entfernen
+                                </button>
+                              </Form>
+                            </div>
+                          </GastarioDataRow>
+                        );
+                      }
+                    )}
+                  </GastarioDataList>
+                )}
+              </GastarioDetailPane>
+
+              <GastarioDetailPane
+                active={
+                  ingredientDetailTab === "add"
+                }
+              >
+                <Form method="post">
+                  <input
+                    type="hidden"
+                    name="intent"
+                    value="save-ingredient-match"
+                  />
+
+                  <input
+                    type="hidden"
+                    name="ingredientId"
+                    value={
+                      selectedIngredient.id
+                    }
+                  />
+
+                  <input
+                    type="hidden"
+                    name="returnDate"
+                    value={data.selectedDate}
+                  />
+
+                  <GastarioStack>
+                    <GastarioField
+                      label="Lieferantenartikel"
+                      required
                     >
-                      <input
-                        type="hidden"
-                        name="intent"
-                        value="save-ingredient-match"
-                      />
-                      <input
-                        type="hidden"
-                        name="ingredientId"
-                        value={ingredient.id}
-                      />
-                      <input
-                        type="hidden"
-                        name="returnDate"
-                        value={data.selectedDate}
-                      />
-
-                      <label>
-                        <span>
-                          Lieferantenartikel
-                        </span>
-
-                        <select
-                          name="catalogItemId"
-                          required
-                          defaultValue=""
+                      <GastarioSelect
+                        name="catalogItemId"
+                        required
+                        defaultValue=""
+                      >
+                        <option
+                          value=""
+                          disabled
                         >
-                          <option value="" disabled>
-                            Artikel auswählen …
-                          </option>
+                          Artikel auswählen …
+                        </option>
 
-                          {(data.candidateSuggestions[
-                            ingredient.id
-                          ] || []).length > 0 ? (
-                            <optgroup label="Gastario Vorschläge">
-                              {(data.candidateSuggestions[
-                                ingredient.id
-                              ] || []).map(
-                                (suggestion: any) => (
-                                  <option
-                                    key={`suggestion-${suggestion.catalogItemId}`}
-                                    value={
-                                      suggestion.catalogItemId
-                                    }
-                                  >
-                                    {suggestion.supplierName}
-                                    {" · "}
-                                    {suggestion.catalogItemName}
-                                    {suggestion.netPriceCents !==
-                                    null
-                                      ? ` · ${formatMoney(
-                                          suggestion.netPriceCents
-                                        )}`
-                                      : " · ohne Preis"}
-                                    {` · Treffer ${suggestion.score}%`}
-                                  </option>
-                                )
-                              )}
-                            </optgroup>
-                          ) : null}
+                        {(data.candidateSuggestions[
+                          selectedIngredient.id
+                        ] || []).length > 0 ? (
+                          <optgroup label="Gastario Vorschläge">
+                            {(data.candidateSuggestions[
+                              selectedIngredient.id
+                            ] || []).map(
+                              (
+                                suggestion: any
+                              ) => (
+                                <option
+                                  key={`suggestion-${suggestion.catalogItemId}`}
+                                  value={
+                                    suggestion.catalogItemId
+                                  }
+                                >
+                                  {
+                                    suggestion.supplierName
+                                  }
+                                  {" · "}
+                                  {
+                                    suggestion.catalogItemName
+                                  }
+                                  {suggestion.netPriceCents !==
+                                  null
+                                    ? ` · ${formatMoney(
+                                        suggestion.netPriceCents
+                                      )}`
+                                    : " · ohne Preis"}
+                                  {` · Treffer ${suggestion.score}%`}
+                                </option>
+                              )
+                            )}
+                          </optgroup>
+                        ) : null}
 
-                          <optgroup label="Alle Katalogartikel">
+                        <optgroup label="Alle Katalogartikel">
                           {data.catalogItems.map(
-                            (catalogItem: any) => {
+                            (
+                              catalogItem: any
+                            ) => {
                               const latestPrice =
                                 catalogItem
                                   .prices?.[0] ||
@@ -2534,85 +2747,92 @@ export default function PurchasingPage() {
                                       .supplier.name
                                   }
                                   {" · "}
-                                  {catalogItem.name}
+                                  {
+                                    catalogItem.name
+                                  }
                                   {latestPrice
                                     ? ` · ${formatMoney(
-                                        latestPrice
-                                          .netPriceCents
+                                        latestPrice.netPriceCents
                                       )}`
                                     : " · ohne Preis"}
                                 </option>
                               );
                             }
                           )}
-                          </optgroup>
-                        </select>
-                      </label>
+                        </optgroup>
+                      </GastarioSelect>
+                    </GastarioField>
 
-                      <label className="procurementMappingCheck">
-                        <input
-                          type="checkbox"
-                          name="preferred"
-                          value="true"
-                        />
-                        <span>
-                          Als bevorzugten Artikel
-                          markieren
-                        </span>
-                      </label>
+                    <GastarioCheckRow
+                      name="preferred"
+                      value="true"
+                      title="Als bevorzugten Artikel markieren"
+                      description="Dieser Artikel wird bei mehreren passenden Zuordnungen bevorzugt."
+                    />
 
+                    <GastarioToolbar>
                       <button
-                        className={gastarioButtonClass("primary")}
                         type="submit"
+                        className={gastarioButtonClass(
+                          "primary"
+                        )}
                       >
                         Zuordnen
                       </button>
-                    </Form>
-                  </article>
-                )
-              )}
-            </div>
-          )}
-        </PageSection>
+                    </GastarioToolbar>
+                  </GastarioStack>
+                </Form>
+              </GastarioDetailPane>
+            </>
+          ) : null}
+        </GastarioDetailDialog>
+
         {data.missingRecipeItems.length > 0 ? (
-          <PageSection
+          <GastarioSection
             eyebrow="Prüfung"
             title="Noch nicht berechenbare Positionen"
             description="Diese Positionen werden nicht geraten. Erst nach Zuordnung und Rezeptur fließen sie in den Einkauf ein."
             actions={
               <Link
-                className={gastarioButtonClass("primary")}
+                className={gastarioButtonClass(
+                  "primary"
+                )}
                 to="/produkte"
               >
                 Zuordnungen pflegen
               </Link>
             }
           >
-            <div className="procurementIssueList">
+            <GastarioDataList>
               {data.missingRecipeItems.map(
                 (item: any) => (
-                  <article
-                    className="procurementIssueRow"
+                  <GastarioDataRow
                     key={[
                       item.name,
                       item.reason,
                     ].join("-")}
                   >
-                    <div>
-                      <strong>{item.name}</strong>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        {item.name}
+                      </strong>
 
-                      <span>
+                      <span className="g-ui-data-row-description">
                         {formatQty(item.quantity)}{" "}
-                        {item.unit} · {item.reason}
+                        {item.unit}
+                        {" · "}
+                        {item.reason}
                       </span>
                     </div>
 
-                    <small>Prüfen</small>
-                  </article>
+                    <div className="g-ui-data-row-meta">
+                      Prüfen
+                    </div>
+                  </GastarioDataRow>
                 )
               )}
-            </div>
-          </PageSection>
+            </GastarioDataList>
+          </GastarioSection>
         ) : null}
       </GastarioPage>
     </AppLayout>
