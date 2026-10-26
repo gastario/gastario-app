@@ -3427,3 +3427,100 @@
   font-weight: 600;
   line-height: 1.4;
 }
+
+/* =========================================================
+   GASTARIO CHECK ROW LAYOUT FIX 2026
+   Text links, Checkbox rechts.
+========================================================= */
+
+.g-ui-check-list {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.g-ui-check-row {
+  width: 100%;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+
+  min-width: 0;
+  min-height: 68px;
+  padding: 14px 16px;
+
+  box-sizing: border-box;
+}
+
+.g-ui-check-row-copy {
+  order: 1 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 3px;
+
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+
+  text-align: left !important;
+  justify-self: stretch !important;
+  align-self: center !important;
+}
+
+.g-ui-check-row-title {
+  display: block;
+  width: 100%;
+  min-width: 0;
+
+  color: var(--g-color-text, #172c27);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+
+  text-align: left !important;
+}
+
+.g-ui-check-row-description {
+  display: block;
+  width: 100%;
+  min-width: 0;
+
+  color: var(--g-color-text-muted, #73827d);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+
+  text-align: left !important;
+}
+
+.g-ui-check-row-control {
+  order: 2 !important;
+
+  display: block !important;
+  flex: 0 0 20px !important;
+
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  align-self: center !important;
+  justify-self: end !important;
+
+  accent-color: var(--g26-accent);
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .g-ui-check-row {
+    min-height: 64px;
+    padding: 13px 14px;
+    gap: 14px !important;
+  }
+}
