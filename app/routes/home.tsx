@@ -1,6 +1,24 @@
 import { Link, useLoaderData } from "react-router";
 import { useMemo, useState } from "react";
 import AppLayout from "../components/AppLayout";
+import {
+  GastarioButton,
+  GastarioFilterBar,
+  GastarioHeader,
+  GastarioInput,
+  GastarioSelect,
+  GastarioTabs,
+  gastarioButtonClass,
+  GastarioMetric,
+  GastarioMetricGrid,
+  GastarioPanel,
+  GastarioToolbar,
+  GastarioInsight,
+} from "../components/ui";
+import { GastarioMain, GastarioAside } from "../components/ui";
+import { GastarioPage, GastarioStack, GastarioSplitView } from "../components/ui";
+import { GastarioActionGrid, GastarioActionCard } from "../components/ui";
+import { GastarioSection, GastarioDataList, GastarioDataRow, GastarioEmptyState } from "../components/ui";
 
 import "../styles/gastario-dashboard.css";
 
@@ -1019,19 +1037,12 @@ export default function Home() {
     ) as Array<[string, any[]]>;
   return (
     <AppLayout>
-      <div
-        className="dashPage"
-        data-view={dashboardView}
-      >
-        <header className="dashHeader">
-          <div>
-            <p className="dashEyebrow">
-              Dashboard
-            </p>
-
-            <h1>Betriebsübersicht</h1>
-
-            <p className="dashSubtitle">
+      <GastarioPage>
+        <GastarioHeader
+          eyebrow="Dashboard"
+          title="Betriebsübersicht"
+          subtitle={
+            <>
               {data.tenant?.name}
               {" · "}
               {new Date().toLocaleDateString(
@@ -1043,192 +1054,58 @@ export default function Home() {
                   year: "numeric",
                 }
               )}
-            </p>
-          </div>
+            </>
+          }
+          actions={
+            <>
+              <Link
+                to="/auftragseingang"
+                className={gastarioButtonClass("secondary")}
+              >
+                Auftragseingang
+              </Link>
 
-          <div className="dashHeaderActions">
-            <Link to="/auftragseingang">
-              Auftragseingang
-            </Link>
-
-            <Link
-              to="/neuer-auftrag"
-              className="dashPrimaryAction"
-            >
-              Neuer Auftrag
-            </Link>
-          </div>
-        </header>
+              <Link
+                to="/neuer-auftrag"
+                className={gastarioButtonClass("primary")}
+              >
+                Neuer Auftrag
+              </Link>
+            </>
+          }
+        />
 
         {/* gastario-dashboard-workspace-controls-20260726 */}
 
-        <nav
-          className="dashWorkspaceTabs"
-          aria-label="Dashboard-Bereiche"
-        >
-          <button
-            type="button"
-            data-active={
-              dashboardView === "overview"
-                ? "true"
-                : "false"
-            }
-            onClick={() =>
-              setDashboardView("overview")
-            }
-          >
-            Übersicht
-          </button>
-
-          <button
-            type="button"
-            data-active={
-              dashboardView === "planning"
-                ? "true"
-                : "false"
-            }
-            onClick={() =>
-              setDashboardView("planning")
-            }
-          >
-            Lieferplan
-          </button>
-
-
-          <button
-            type="button"
-            data-active={
-              dashboardView === "finance"
-                ? "true"
-                : "false"
-            }
-            onClick={() =>
-              setDashboardView("finance")
-            }
-          >
-            Finanzen
-          </button>
-        </nav>
+        <GastarioTabs
+          items={[
+            {
+              id: "overview",
+              label: "Übersicht",
+            },
+            {
+              id: "planning",
+              label: "Lieferplan",
+            },
+            {
+              id: "finance",
+              label: "Finanzen",
+            },
+          ]}
+          activeId={dashboardView}
+          onChange={(id) =>
+            setDashboardView(
+              id as DashboardView
+            )
+          }
+        />
 
         {dashboardView === "planning" ? (
-          <section className="dashFilterBar">
-            <div className="dashPeriodFilter">
-              <button
+          <GastarioFilterBar
+            actions={
+              <GastarioButton
+                variant="ghost"
                 type="button"
-                data-active={
-                  dashboardPeriod === "today"
-                    ? "true"
-                    : "false"
-                }
-                onClick={() =>
-                  setDashboardPeriod("today")
-                }
-              >
-                Heute
-              </button>
-
-              <button
-                type="button"
-                data-active={
-                  dashboardPeriod === "tomorrow"
-                    ? "true"
-                    : "false"
-                }
-                onClick={() =>
-                  setDashboardPeriod("tomorrow")
-                }
-              >
-                Morgen
-              </button>
-
-              <button
-                type="button"
-                data-active={
-                  dashboardPeriod === "week"
-                    ? "true"
-                    : "false"
-                }
-                onClick={() =>
-                  setDashboardPeriod("week")
-                }
-              >
-                7 Tage
-              </button>
-
-              <button
-                type="button"
-                data-active={
-                  dashboardPeriod === "month"
-                    ? "true"
-                    : "false"
-                }
-                onClick={() =>
-                  setDashboardPeriod("month")
-                }
-              >
-                30 Tage
-              </button>
-
-              <button
-                type="button"
-                data-active={
-                  dashboardPeriod === "all"
-                    ? "true"
-                    : "false"
-                }
-                onClick={() =>
-                  setDashboardPeriod("all")
-                }
-              >
-                Alle
-              </button>
-            </div>
-
-            <div className="dashFilterControls">
-              <select
-                value={dashboardStatus}
-                onChange={(event) =>
-                  setDashboardStatus(
-                    event.target.value as DashboardStatus
-                  )
-                }
-                aria-label="Auftragsstatus filtern"
-              >
-                <option value="all">
-                  Alle Status
-                </option>
-
-                <option value="CONFIRMED">
-                  Bestätigt
-                </option>
-
-                <option value="IN_PRODUCTION">
-                  In Produktion
-                </option>
-
-                <option value="PACKING_OPEN">
-                  Packen offen
-                </option>
-              </select>
-
-              <label className="dashSearchField">
-                <span>⌕</span>
-
-                <input
-                  type="search"
-                  value={dashboardSearch}
-                  onChange={(event) =>
-                    setDashboardSearch(
-                      event.target.value
-                    )
-                  }
-                  placeholder="Kunde, Auftrag oder Adresse suchen"
-                />
-              </label>
-
-              <button
-                type="button"
-                className="dashResetButton"
                 onClick={resetDashboardFilters}
                 disabled={
                   dashboardPeriod === "week" &&
@@ -1237,31 +1114,91 @@ export default function Home() {
                 }
               >
                 Zurücksetzen
-              </button>
-            </div>
-          </section>
-        ) : null}
-        <section
-          className="dashIntelligenceCard"
-          aria-label="Gastario Intelligence"
-        >
-          <div
-            className="dashIntelligenceIcon"
-            aria-hidden="true"
+              </GastarioButton>
+            }
           >
-            ✦
-          </div>
 
-          <div className="dashIntelligenceCopy">
-            <p>Gastario Intelligence</p>
+            <GastarioTabs
+              items={[
+                {
+                  id: "today",
+                  label: "Heute",
+                },
+                {
+                  id: "tomorrow",
+                  label: "Morgen",
+                },
+                {
+                  id: "week",
+                  label: "7 Tage",
+                },
+                {
+                  id: "month",
+                  label: "30 Tage",
+                },
+                {
+                  id: "all",
+                  label: "Alle",
+                },
+              ]}
+              activeId={dashboardPeriod}
+              onChange={(id) =>
+                setDashboardPeriod(
+                  id as DashboardPeriod
+                )
+              }
+            />
 
-            <strong>
-              {dashboardTotalTasks > 0
-                ? `${dashboardTotalTasks} Punkte benötigen deine Aufmerksamkeit.`
-                : "Dein Betrieb ist aktuell aufgeräumt."}
-            </strong>
+            <GastarioSelect
+              value={dashboardStatus}
+              onChange={(event) =>
+                setDashboardStatus(
+                  event.target.value as DashboardStatus
+                )
+              }
+              aria-label="Auftragsstatus filtern"
+            >
+              <option value="all">
+                Alle Status
+              </option>
 
-            <span>
+              <option value="CONFIRMED">
+                Bestätigt
+              </option>
+
+              <option value="IN_PRODUCTION">
+                In Produktion
+              </option>
+
+              <option value="PACKING_OPEN">
+                Packen offen
+              </option>
+            </GastarioSelect>
+
+            <GastarioInput
+              type="search"
+              value={dashboardSearch}
+              onChange={(event) =>
+                setDashboardSearch(
+                  event.target.value
+                )
+              }
+              placeholder="Kunde, Auftrag oder Adresse suchen"
+              aria-label="Dashboard durchsuchen"
+            />
+
+          </GastarioFilterBar>
+        ) : null}
+
+        <GastarioInsight
+          eyebrow="Gastario Intelligence"
+          title={
+            dashboardTotalTasks > 0
+              ? `${dashboardTotalTasks} Punkte benötigen deine Aufmerksamkeit.`
+              : "Dein Betrieb ist aktuell aufgeräumt."
+          }
+          description={
+            <>
               {dashboardTaskCounts.review > 0
                 ? `${dashboardTaskCounts.review} Eingänge sind zu prüfen.`
                 : "Keine neuen Eingänge zur Prüfung."}
@@ -1269,286 +1206,301 @@ export default function Home() {
               {dashboardTaskCounts.inventory > 0
                 ? `${dashboardTaskCounts.inventory} Lagerwarnungen sind offen.`
                 : "Der Lagerstatus ist unauffällig."}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={() =>
-              setDashboardView("tasks")
-            }
-          >
-            {dashboardTotalTasks > 0
+            </>
+          }
+          actionLabel={
+            dashboardTotalTasks > 0
               ? "Hinweise prüfen"
-              : "Arbeitsbereich öffnen"}
-          </button>
-        </section>
+              : "Arbeitsbereich öffnen"
+          }
+          onAction={() =>
+            setDashboardView("tasks")
+          }
+          tone={
+            dashboardTotalTasks > 0
+              ? "sand"
+              : "sage"
+          }
+        />
 
-        <nav
-          className="dashKpiBar"
-          aria-label="Dashboard-Kennzahlen"
-        >
-          <Link to="/lieferungen">
-            <span>Heute</span>
 
-            <strong>
-              {todayOrdersSorted.length}
-            </strong>
+        <GastarioMetricGrid>
 
-            <small>
-              Lieferungen
-            </small>
+          <Link
+            to="/lieferungen"
+            className="g-ui-metric-link"
+          >
+            <GastarioMetric
+              label="Heute"
+              value={todayOrdersSorted.length}
+              description="Lieferungen"
+            />
           </Link>
 
-          <Link to="/auftraege">
-            <span>Kommend</span>
 
-            <strong>
-              {upcomingOrdersSorted.length}
-            </strong>
-
-            <small>
-              geplante Aufträge
-            </small>
+          <Link
+            to="/auftraege"
+            className="g-ui-metric-link"
+          >
+            <GastarioMetric
+              label="Kommend"
+              value={upcomingOrdersSorted.length}
+              description="Geplante Aufträge"
+            />
           </Link>
 
-          <Link to="/rechnungen">
-            <span>Finanzen</span>
 
-            <strong className="dashKpiMoney">
-              {centsToEuro(
+          <Link
+            to="/rechnungen"
+            className="g-ui-metric-link"
+          >
+            <GastarioMetric
+              label="Finanzen"
+              value={centsToEuro(
                 data.finance.currentMonthGrossCents
               )}
-            </strong>
-
-            <small>
-              Monatsumsatz
-            </small>
+              description="Monatsumsatz"
+            />
           </Link>
 
-          <Link to="/auftragseingang">
-            <span>Offen</span>
 
-            <strong>
-              {openReviewCount}
-            </strong>
-
-            <small>
-              Prüfungen
-            </small>
+          <Link
+            to="/auftragseingang"
+            className="g-ui-metric-link"
+          >
+            <GastarioMetric
+              label="Offen"
+              value={openReviewCount}
+              description="Prüfungen"
+            />
           </Link>
+
 
           {data.counts.lowInventory > 0 ? (
+
             <Link
               to="/lager"
-              className="dashKpiWarning"
+              className="g-ui-metric-link"
             >
-              <span>Lager</span>
-
-              <strong>
-                {data.counts.lowInventory}
-              </strong>
-
-              <small>
-                Warnungen
-              </small>
+              <GastarioMetric
+                label="Lager"
+                value={data.counts.lowInventory}
+                description="Warnungen"
+              />
             </Link>
+
           ) : null}
-        </nav>
+
+        </GastarioMetricGrid>
 
         {dashboardView === "overview" ? (
-          <section className="dashOverviewHome">
-            <section className="dashPanel dashOverviewDeliveries">
-              <div className="dashPanelHead">
-                <div>
-                  <p className="dashEyebrow">
-                    Nächste Auslieferungen
-                  </p>
-
-                  <h2>Betriebsplan</h2>
-
-                  <span>
-                    Die nächsten drei geplanten Lieferungen
-                    im direkten Überblick.
-                  </span>
-                </div>
-
-                <button
+          <GastarioStack>
+            <GastarioSection
+              eyebrow="Nächste Auslieferungen"
+              title="Betriebsplan"
+              description="Die nächsten drei geplanten Lieferungen im direkten Überblick."
+              action={
+                <GastarioButton
+                  variant="secondary"
                   type="button"
-                  className="dashOverviewTextButton"
-                  onClick={() => setDashboardView("planning")}
+                  onClick={() =>
+                    setDashboardView("planning")
+                  }
                 >
                   Vollständigen Lieferplan öffnen
-                </button>
-              </div>
+                </GastarioButton>
+              }
+            >
 
               {overviewNextOrders.length === 0 ? (
-                <div className="dashSimpleEmpty">
-                  <strong>Keine Lieferung geplant</strong>
 
-                  <span>
-                    Aktuell sind keine zukünftigen
-                    Auslieferungen erfasst.
-                  </span>
-                </div>
+                <GastarioEmptyState title="Keine Lieferung geplant">
+                  Aktuell sind keine zukünftigen Auslieferungen erfasst.
+                </GastarioEmptyState>
+
               ) : (
-                <div className="dashOverviewDeliveryList">
+
+                <GastarioDataList>
+
                   {overviewNextOrders.map(
                     (order: any) => (
-                      <Link
-                        className="dashOverviewDelivery"
+
+                      <GastarioDataRow
+                        key={order.id}
                         to={
                           "/auftrag-pruefung/" +
                           order.id
                         }
-                        key={order.id}
                       >
-                        <div className="dashOverviewDate">
-                          <strong>
+
+                        <div className="g-ui-data-row-main">
+
+                          <strong className="g-ui-data-row-title">
+                            {order.customerName ||
+                              "Kunde nicht erkannt"}
+                          </strong>
+
+                          <span className="g-ui-data-row-description">
+                            {order.eventName ||
+                              order.orderNumber}
+                          </span>
+
+                          <span className="g-ui-data-row-description">
+                            {order.deliveryAddress ||
+                              "Lieferadresse noch offen"}
+                          </span>
+
+                        </div>
+
+
+                        <div className="g-ui-data-row-meta">
+
+                          <span>
                             {planningDateLabel(
                               order.deliveryDate
                             )}
-                          </strong>
+                          </span>
 
                           <span>
                             {order.deliveryTimeText ||
                               "Zeit offen"}
                           </span>
-                        </div>
-
-                        <div>
-                          <strong>
-                            {order.customerName ||
-                              "Kunde nicht erkannt"}
-                          </strong>
 
                           <span>
-                            {order.eventName ||
-                              order.orderNumber}
+                            {order.items.length}
+                            {" Positionen"}
                           </span>
 
-                          <small>
-                            {order.deliveryAddress ||
-                              "Lieferadresse noch offen"}
-                          </small>
                         </div>
 
-                        <em>
-                          {order.items.length}
-                          {" Positionen"}
-                        </em>
 
-                        <b>›</b>
-                      </Link>
+                        <div
+                          className="g-ui-data-row-actions"
+                          aria-hidden="true"
+                        />
+
+
+                        <span
+                          className="g-ui-data-row-chevron"
+                          aria-hidden="true"
+                        >
+                          →
+                        </span>
+
+                      </GastarioDataRow>
                     )
                   )}
-                </div>
+
+                </GastarioDataList>
+
               )}
-            </section>
 
-            <section className="dashOverviewOperations">
-              <div className="dashPanel dashOverviewStatus">
-                <div className="dashPanelHead">
-                  <div>
-                    <p className="dashEyebrow">
-                      Operativer Stand
-                    </p>
+            </GastarioSection>
 
-                    <h2>Heute im Betrieb</h2>
-                  </div>
-                </div>
+            <GastarioSplitView wide>
+              <GastarioSection
+                eyebrow="Operativer Stand"
+                title="Heute im Betrieb"
+              >
 
-                <div className="dashOverviewStatusGrid">
-                  <Link to=
-"/produktion"
->
-                    <strong>
-                      {dashboardTaskCounts.production}
-                    </strong>
-                    <span>In Produktion</span>
-                    <small>Produktion bearbeiten</small>
-                  </Link>
+                <GastarioActionGrid columns={4}>
 
-                  <Link to=
-"/packlisten"
->
-                    <strong>
-                      {dashboardTaskCounts.packing}
-                    </strong>
-                    <span>Packen offen</span>
-                    <small>Packlisten bearbeiten</small>
-                  </Link>
+                  <GastarioActionCard
+                    title="In Produktion"
+                    description="Produktion bearbeiten"
+                    meta={dashboardTaskCounts.production}
+                    to="/produktion"
+                    tone="sage"
+                  />
 
-                  <Link to=
-"/auftragseingang"
->
-                    <strong>
-                      {dashboardTaskCounts.review}
-                    </strong>
-                    <span>Prüfung offen</span>
-                    <small>Eingänge kontrollieren</small>
-                  </Link>
+                  <GastarioActionCard
+                    title="Packen offen"
+                    description="Packlisten bearbeiten"
+                    meta={dashboardTaskCounts.packing}
+                    to="/packlisten"
+                    tone="sand"
+                  />
 
-                  <button
-                    type="button"
-                    onClick={() => setDashboardView("tasks")}
-                  >
-                    <strong>{dashboardTotalTasks}</strong>
-                    <span>Alle Aufgaben</span>
-                    <small>Arbeitskorb öffnen</small>
-                  </button>
-                </div>
-              </div>
+                  <GastarioActionCard
+                    title="Prüfung offen"
+                    description="Eingänge kontrollieren"
+                    meta={dashboardTaskCounts.review}
+                    to="/auftragseingang"
+                    tone="blue"
+                  />
 
-              <div className="dashPanel dashOverviewQuickActions">
-                <div className="dashPanelHead">
-                  <div>
-                    <p className="dashEyebrow">
-                      Schnellzugriff
-                    </p>
+                  <GastarioActionCard
+                    title="Alle Aufgaben"
+                    description="Arbeitskorb öffnen"
+                    meta={dashboardTotalTasks}
+                    onClick={() =>
+                      setDashboardView("tasks")
+                    }
+                    tone="neutral"
+                  />
 
-                    <h2>Direkt öffnen</h2>
-                  </div>
-                </div>
+                </GastarioActionGrid>
 
-                <div>
-                  <Link to="/produktion">
-                    <strong>Produktion</strong>
-                    <span>Planung und Mengen</span>
-                  </Link>
+              </GastarioSection>
 
-                  <Link to="/packlisten">
-                    <strong>Packlisten</strong>
-                    <span>Kommissionierung</span>
-                  </Link>
+              <GastarioSection
+                eyebrow="Schnellzugriff"
+                title="Direkt öffnen"
+              >
 
-                  <Link to="/lieferungen">
-                    <strong>Lieferungen</strong>
-                    <span>Touren und Fahrer</span>
-                  </Link>
+                <GastarioActionGrid columns={2}>
 
-                  <Link to="/lieferscheine">
-                    <strong>Lieferscheine</strong>
-                    <span>Dokumente vorbereiten</span>
-                  </Link>
+                  <GastarioActionCard
+                    title="Produktion"
+                    description="Planung und Mengen"
+                    to="/produktion"
+                    tone="neutral"
+                  />
 
-                  <Link to="/rechnungen">
-                    <strong>Rechnungen</strong>
-                    <span>Abrechnung öffnen</span>
-                  </Link>
+                  <GastarioActionCard
+                    title="Packlisten"
+                    description="Kommissionierung"
+                    to="/packlisten"
+                    tone="neutral"
+                  />
 
-                  <Link to="/lager">
-                    <strong>Lager</strong>
-                    <span>Bestände prüfen</span>
-                  </Link>
-                </div>
-              </div>
-            </section>
-          </section>
+                  <GastarioActionCard
+                    title="Lieferungen"
+                    description="Touren und Fahrer"
+                    to="/lieferungen"
+                    tone="neutral"
+                  />
+
+                  <GastarioActionCard
+                    title="Lieferscheine"
+                    description="Dokumente vorbereiten"
+                    to="/lieferscheine"
+                    tone="neutral"
+                  />
+
+                  <GastarioActionCard
+                    title="Rechnungen"
+                    description="Abrechnung öffnen"
+                    to="/rechnungen"
+                    tone="neutral"
+                  />
+
+                  <GastarioActionCard
+                    title="Lager"
+                    description="Bestände prüfen"
+                    to="/lager"
+                    tone="neutral"
+                  />
+
+                </GastarioActionGrid>
+
+              </GastarioSection>
+            </GastarioSplitView>
+          </GastarioStack>
         ) : null}
 
-        <section className="dashControlGrid">
-          <main className="dashPlanning">
+        <GastarioSplitView wide>
+          <GastarioMain>
             <section className="dashPanel dashTodayPanel">
               <div className="dashPanelHead">
                 <div>
@@ -1787,9 +1739,9 @@ export default function Home() {
                 </div>
               )}
             </section>
-          </main>
+          </GastarioMain>
 
-          <aside className="dashAttention">
+          <GastarioAside>
             {/* gastario-dashboard-compact-workbar-20260726 */}
 
             <section className="dashPanel dashWorkbar">
@@ -2068,8 +2020,8 @@ export default function Home() {
                 </div>
               ) : null}
             </section>
-          </aside>
-        </section>
+          </GastarioAside>
+        </GastarioSplitView>
 
         <section className="dashFinanceStrip">
           <div>
@@ -2123,7 +2075,7 @@ export default function Home() {
             Finanzen öffnen
           </Link>
         </section>
-      </div>
+      </GastarioPage>
     </AppLayout>
   );
 }

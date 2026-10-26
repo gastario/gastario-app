@@ -1,4 +1,5 @@
-﻿import type { ReactNode } from "react";
+import { Link } from "react-router";
+import type { ReactNode } from "react";
 
 type PageShellProps = {
   children: ReactNode;
@@ -34,6 +35,7 @@ type MetricCardProps = {
   description?: ReactNode;
   badge?: ReactNode;
   attention?: boolean;
+  to?: string;
 };
 
 type NoticeProps = {
@@ -164,14 +166,16 @@ export function MetricCard({
   description,
   badge,
   attention = false,
+  to,
 }: MetricCardProps) {
-  return (
-    <article
-      className={joinClasses(
-        "g-ui-metric-card",
-        attention && "g-ui-metric-card--attention"
-      )}
-    >
+  const className = joinClasses(
+    "g-ui-metric-card",
+    attention && "g-ui-metric-card--attention",
+    to && "g-ui-metric-card--clickable"
+  );
+
+  const content = (
+    <>
       <div>
         <p>{label}</p>
         <strong>{value}</strong>
@@ -182,6 +186,23 @@ export function MetricCard({
       </div>
 
       {badge ? <small>{badge}</small> : null}
+    </>
+  );
+
+  if (to) {
+    return (
+      <Link
+        to={to}
+        className={className}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <article className={className}>
+      {content}
     </article>
   );
 }

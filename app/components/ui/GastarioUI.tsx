@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Link } from "react-router";
 import type {
   ButtonHTMLAttributes,
   InputHTMLAttributes,
@@ -169,19 +170,27 @@ export function GastarioFormGrid({
   );
 }
 
+export type GastarioToolbarAlign =
+  | "start"
+  | "end"
+  | "between";
+
 type GastarioToolbarProps = {
   children: ReactNode;
   className?: string;
+  align?: GastarioToolbarAlign;
 };
 
 export function GastarioToolbar({
   children,
   className,
+  align = "end",
 }: GastarioToolbarProps) {
   return (
     <div
       className={joinClasses(
         "g-ui-toolbar",
+        `g-ui-toolbar--${align}`,
         className
       )}
     >
@@ -392,6 +401,91 @@ export function GastarioDataSection({
 /* GASTARIO INTERACTION PRIMITIVES V2 */
 
 /* =========================================================
+   GASTARIO INSIGHT V1
+========================================================= */
+
+export type GastarioInsightTone =
+  | "neutral"
+  | "sand"
+  | "sage"
+  | "blue"
+  | "rose";
+
+type GastarioInsightProps = {
+  eyebrow?: ReactNode;
+  title: ReactNode;
+  description?: ReactNode;
+  actionLabel?: ReactNode;
+  actionTo?: string;
+  onAction?: () => void;
+  tone?: GastarioInsightTone;
+  className?: string;
+};
+
+export function GastarioInsight({
+  eyebrow,
+  title,
+  description,
+  actionLabel,
+  actionTo,
+  onAction,
+  tone = "neutral",
+  className,
+}: GastarioInsightProps) {
+  const action =
+    actionLabel && actionTo ? (
+      <Link
+        to={actionTo}
+        className={gastarioButtonClass("secondary")}
+      >
+        {actionLabel}
+      </Link>
+    ) : actionLabel && onAction ? (
+      <GastarioButton
+        variant="secondary"
+        type="button"
+        onClick={onAction}
+      >
+        {actionLabel}
+      </GastarioButton>
+    ) : null;
+
+  return (
+    <section
+      className={joinClasses(
+        "g-ui-insight",
+        `g-ui-insight--${tone}`,
+        className
+      )}
+    >
+      <div className="g-ui-insight-copy">
+        {eyebrow ? (
+          <div className="g-ui-insight-eyebrow">
+            {eyebrow}
+          </div>
+        ) : null}
+
+        <strong className="g-ui-insight-title">
+          {title}
+        </strong>
+
+        {description ? (
+          <div className="g-ui-insight-description">
+            {description}
+          </div>
+        ) : null}
+      </div>
+
+      {action ? (
+        <div className="g-ui-insight-action">
+          {action}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+/* =========================================================
    SECTION
 ========================================================= */
 
@@ -525,6 +619,7 @@ type GastarioActionCardProps = {
   icon?: ReactNode;
   meta?: ReactNode;
   onClick?: () => void;
+  to?: string;
   disabled?: boolean;
   className?: string;
   tone?: "neutral" | "sand" | "sage" | "blue" | "rose";
@@ -536,21 +631,13 @@ export function GastarioActionCard({
   icon,
   meta,
   onClick,
+  to,
   disabled = false,
   className,
   tone = "neutral",
 }: GastarioActionCardProps) {
-  return (
-    <button
-      type="button"
-      className={joinClasses(
-        "g-ui-action-card",
-        `g-ui-action-card--${tone}`,
-        className
-      )}
-      onClick={onClick}
-      disabled={disabled}
-    >
+  const content = (
+    <>
       {icon ? (
         <span className="g-ui-action-card-icon">
           {icon}
@@ -581,10 +668,37 @@ export function GastarioActionCard({
       >
         →
       </span>
+    </>
+  );
+
+  const classes = joinClasses(
+    "g-ui-action-card",
+    `g-ui-action-card--${tone}`,
+    className
+  );
+
+  if (to && !disabled) {
+    return (
+      <Link
+        to={to}
+        className={classes}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className={classes}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {content}
     </button>
   );
 }
-
 
 /* =========================================================
    ICON BUTTON
@@ -983,13 +1097,30 @@ type GastarioDataRowProps = {
   children: ReactNode;
   className?: string;
   onClick?: () => void;
+  to?: string;
 };
 
 export function GastarioDataRow({
   children,
   className,
   onClick,
+  to,
 }: GastarioDataRowProps) {
+  if (to) {
+    return (
+      <Link
+        to={to}
+        className={joinClasses(
+          "g-ui-data-row",
+          "g-ui-data-row--clickable",
+          className
+        )}
+      >
+        {children}
+      </Link>
+    );
+  }
+
   if (onClick) {
     return (
       <div
