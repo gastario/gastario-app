@@ -1,3 +1,5 @@
+import { GastarioStack } from "../components/ui";
+import { GastarioSplitView, GastarioMain, GastarioAside } from "../components/ui";
 import { GastarioDataList, GastarioDataRow, GastarioEmptyState, GastarioToolbar } from "../components/ui";
 import { GastarioPage, GastarioHeader, GastarioNotice, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioFilterBar, GastarioField, GastarioInput, GastarioSelect, gastarioButtonClass } from "../components/ui";
 import {
@@ -15,24 +17,10 @@ import {
   classifyIncomingEmail,
 } from "../lib/incoming-email-classification";
 
-import auftragseingangStyles from "../styles/auftragseingang.css?url";
-import auftragseingangCleanStyles from "../styles/auftragseingang-clean.css?url";
 import { Form, Link, redirect, useActionData, useFetcher, useLoaderData,
   useSearchParams,
 } from "react-router";
 
-export function links() {
-  return [
-    {
-      rel: "stylesheet",
-      href: auftragseingangStyles,
-    },
-      {
-      rel: "stylesheet",
-      href: auftragseingangCleanStyles,
-    },
-];
-}
 
 const EMAIL_BUCKETS = [
   { key: "orders", label: "Bestätigungen", help: "Sichere Auftragsbestätigungen" },
@@ -1961,26 +1949,25 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
           </GastarioSection>
 
         ) : (
-<section className="finalOrdersShell finalOrdersSplitShell">
-          <div className="finalOrdersHead">
-            <div>
-              <h2>{activeOrderViewTitle}</h2>
-              <p>{activeOrderViewSubtitle}</p>
-            </div>
-
-            <div className="finalOrdersRight">
-              <strong>{visibleOrders.length}</strong>
-              <span>{activeOrderViewCountLabel}</span>
-            </div>
-          </div>
-
+        <GastarioSection
+          eyebrow="Aufträge"
+          title={activeOrderViewTitle}
+          description={
+            `${activeOrderViewSubtitle} · ${
+              visibleOrders.length
+            } ${activeOrderViewCountLabel}`
+          }
+        >
           {visibleOrders.length === 0 ? (
-            <div className="finalEmpty">
-              {data.setupError ? data.setupError : 'Keine Aufträge in dieser Ansicht.'}
-            </div>
+            <GastarioEmptyState title="Keine Aufträge">
+              {data.setupError
+                ? data.setupError
+                : "Keine Aufträge in dieser Ansicht."}
+            </GastarioEmptyState>
           ) : (
-            <div className={selectedOrder ? "finalOrdersGrid selectedFocusMode" : "finalOrdersGrid"}>
-              <div className="finalOrderRows">
+            <GastarioSplitView wide>
+              <GastarioMain>
+              <GastarioDataList>
                 {visibleOrders.map((order: any, index: number) => {
                   const items = Array.isArray(order.items) ? order.items : [];
                   const totalInfo = getDisplayedOrderTotal(order);
@@ -1989,194 +1976,258 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                     .slice(0, 3);
 
                   return (
-                    <article
-                      className={selectedOrder?.id === order.id ? "finalOrderRow selected" : "finalOrderRow"}
+                    <GastarioDataRow
                       key={order.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => updateSelectedOrder(order.id)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
+                      className={
+                        selectedOrder?.id === order.id
+                          ? "is-selected"
+                          : undefined
+                      }
+                      onClick={() =>
+                        updateSelectedOrder(order.id)
+                      }
+                      onKeyDown={(event: any) => {
+                        if (
+                          event.key === "Enter" ||
+                          event.key === " "
+                        ) {
                           event.preventDefault();
                           updateSelectedOrder(order.id);
                         }
                       }}
                     >
-                      <div className="finalOrderIcon">{"\u2709"}</div>
 
-                      <div className="finalOrderCustomer">
-                        <div className="finalOrderNumber">{order.orderNumber}</div>
-                        <h3>{order.customerName || order.customer?.name || "Kunde unbekannt"}</h3>
-                        <p>{order.contactName || "Keine Kontaktperson erkannt"}</p>
-                        <span className="finalSourceBadge">{sourceLabel(order.source)}</span>
-                      </div>
+                      <div className="g-ui-data-row-main">
 
-                      <div className="finalOrderItems">
-                        {previewItems.map((item: any) => (
-                          <div key={item.id || item.name}>
-                            <strong>{item.quantity || 1}x</strong>
-                            <span>{item.name || "Position"}</span>
-                          </div>
-                        ))}
+                        <span className="g-ui-data-row-description">
+                          {order.orderNumber}
+                          {" · "}
+                          {sourceLabel(order.source)}
+                        </span>
 
-                        {items.length > previewItems.length ? (
-                          <small>+ {items.length - previewItems.length} weitere Position</small>
+                        <strong className="g-ui-data-row-title">
+                          {order.customerName ||
+                            order.customer?.name ||
+                            "Kunde unbekannt"}
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          {order.contactName ||
+                            "Keine Kontaktperson erkannt"}
+                        </span>
+
+
+                        {previewItems.length > 0 ? (
+
+                          <span className="g-ui-data-row-description">
+
+                            {previewItems
+                              .map(
+                                (item: any) =>
+                                  `${item.quantity || 1}× ${
+                                    item.name || "Position"
+                                  }`
+                              )
+                              .join(" · ")}
+
+                            {items.length >
+                            previewItems.length
+                              ? ` · +${
+                                  items.length -
+                                  previewItems.length
+                                } weitere`
+                              : ""}
+
+                          </span>
+
                         ) : null}
+
                       </div>
 
-                      <div className="finalOrderDate">
-                        <strong>{formatDate(order.deliveryDate)}</strong>
-                        <span>{order.deliveryTimeText || "Uhrzeit offen"}</span>
+
+                      <div className="g-ui-data-row-meta">
+
+                        <span>
+                          {formatDate(order.deliveryDate)}
+                        </span>
+
+                        <span>
+                          {order.deliveryTimeText ||
+                            "Uhrzeit offen"}
+                        </span>
+
+                        <strong>
+                          {formatImportCurrencyFromCents(
+                            totalInfo.cents
+                          )}
+                        </strong>
+
                       </div>
 
-                      <div className="finalOrderTotal">
-                        <strong>{formatImportCurrencyFromCents(totalInfo.cents)}</strong>
-                        <span>{totalInfo.source}</span>
-                      </div>
-                    </article>
+
+                      <span
+                        className="g-ui-data-row-chevron"
+                        aria-hidden="true"
+                      >
+                        →
+                      </span>
+
+                    </GastarioDataRow>
                   );
                 })}
 
-                <div className="finalLoadMore">Weitere Ergebnisse laden</div>
-              </div>
+                <GastarioToolbar align="start">
+                  <span>Weitere Ergebnisse laden</span>
+                </GastarioToolbar>
+              </GastarioDataList>
+              </GastarioMain>
 
               {selectedOrder ? (
-                <aside
-                  className="incomingOrderReviewCardV2"
+              <GastarioAside>
+                <GastarioStack
                   key={selectedOrder.id}
                 >
-                  <header className="incomingOrderReviewHeaderV2">
-                    <div>
-                      <div className="incomingOrderReviewEyebrowV2">
-                        Auftrag prüfen
-                      </div>
+                  <GastarioSection
+                    eyebrow="Auftrag prüfen"
+                    title={
+                      selectedOrder.customer?.name ||
+                      selectedOrder.customerName ||
+                      "Kunde unbekannt"
+                    }
+                    description={
+                      [
+                        selectedOrder.orderNumber,
+                        selectedOrder.contactName,
+                        sourceLabel(selectedOrder.source),
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")
+                    }
+                  >
 
-                      <div className="incomingOrderReviewNumberV2">
-                        {selectedOrder.orderNumber}
-                      </div>
+                    <GastarioMetricGrid>
 
-                      <h3>
-                        {selectedOrder.customer?.name ||
+                      <GastarioMetric
+                        label="Lieferung"
+                        value={formatDate(
+                          selectedOrder.deliveryDate
+                        )}
+                        description={
+                          selectedOrder.deliveryTimeText ||
+                          "Uhrzeit prüfen"
+                        }
+                      />
+
+                      <GastarioMetric
+                        label="Lieferadresse"
+                        value={
+                          selectedOrder.customer?.name ||
                           selectedOrder.customerName ||
-                          "Kunde unbekannt"}
-                      </h3>
+                          "Kunde unbekannt"
+                        }
+                        description={
+                          selectedOrder.deliveryAddress ||
+                          "Adresse prüfen"
+                        }
+                      />
 
-                      {selectedOrder.contactName ? (
-                        <p>{selectedOrder.contactName}</p>
-                      ) : null}
-                    </div>
+                      <GastarioMetric
+                        label="Gesamt"
+                        value={
+                          selectedOrderTotal
+                            ? formatImportCurrencyFromCents(
+                                selectedOrderTotal.cents
+                              )
+                            : "-"
+                        }
+                        description={
+                          selectedOrderTotal?.source ||
+                          "Summe prüfen"
+                        }
+                      />
 
-                    <span className="incomingOrderReviewSourceV2">
-                      {sourceLabel(selectedOrder.source)}
-                    </span>
-                  </header>
+                    </GastarioMetricGrid>
 
-                  <div className="incomingOrderReviewFactsV2">
-                    <div>
-                      <span>Lieferung</span>
-                      <strong>
-                        {formatDate(selectedOrder.deliveryDate)}
-                      </strong>
-                      <small>
-                        {selectedOrder.deliveryTimeText ||
-                          "Uhrzeit prüfen"}
-                      </small>
-                    </div>
+                  </GastarioSection>
 
-                    <div>
-                      <span>Lieferadresse</span>
-                      <strong>
-                        {selectedOrder.customer?.name ||
-                          selectedOrder.customerName ||
-                          "Kunde unbekannt"}
-                      </strong>
-                      <small>
-                        {selectedOrder.deliveryAddress ||
-                          "Adresse prüfen"}
-                      </small>
-                    </div>
+                  <GastarioSection
+                    eyebrow="Auftragsinhalt"
+                    title="Positionen"
+                    description={
+                      selectedOrderItems.length === 1
+                        ? "1 Produkt"
+                        : `${selectedOrderItems.length} Produkte`
+                    }
+                  >
 
-                    <div>
-                      <span>Gesamt</span>
-                      <strong>
-                        {selectedOrderTotal
-                          ? formatImportCurrencyFromCents(
-                              selectedOrderTotal.cents
-                            )
-                          : "-"}
-                      </strong>
-                      <small>
-                        {selectedOrderTotal?.source ||
-                          "Summe prüfen"}
-                      </small>
-                    </div>
-                  </div>
+                    {selectedOrderItems.length > 0 ? (
 
-                  <section className="incomingOrderProductsV2">
-                    <div className="incomingOrderSectionHeaderV2">
-                      <div>
-                        <span>Positionen</span>
-                        <h4>
-                          {selectedOrderItems.length}
-                          {selectedOrderItems.length === 1
-                            ? " Produkt"
-                            : " Produkte"}
-                        </h4>
-                      </div>
+                      <GastarioDataList>
 
-                      <small>
-                        Bei vielen Positionen innerhalb der Liste scrollen
-                      </small>
-                    </div>
-
-                    <div className="incomingOrderProductScrollV2">
-                      {selectedOrderItems.length > 0 ? (
-                        selectedOrderItems.map(
+                        {selectedOrderItems.map(
                           (item: any, itemIndex: number) => (
-                            <div
-                              className="incomingOrderProductRowV2"
+
+                            <GastarioDataRow
                               key={
                                 item.id ||
                                 `${item.name || "position"}-${itemIndex}`
                               }
                             >
-                              <div className="incomingOrderProductMainV2">
-                                <strong>
-                                  {item.quantity || 1}x
+
+                              <div className="g-ui-data-row-main">
+
+                                <strong className="g-ui-data-row-title">
+                                  {item.name || "Position"}
                                 </strong>
 
-                                <span>
+                                <span className="g-ui-data-row-description">
+                                  {item.quantity || 1}
+                                  {" × "}
                                   {item.name || "Position"}
                                 </span>
+
                               </div>
 
-                              <b>
-                                {formatImportCurrencyFromCents(
-                                  Number(item.totalCents || 0)
-                                )}
-                              </b>
-                            </div>
-                          )
-                        )
-                      ) : (
-                        <div className="incomingOrderProductsEmptyV2">
-                          Keine Positionen erkannt. Auftrag bitte manuell
-                          kontrollieren.
-                        </div>
-                      )}
-                    </div>
-                  </section>
 
-                  {selectedOrderTotal?.source === "vorläufig" ? (
-                    <div className="incomingOrderWarningV2">
-                      Die Gesamtsumme ist vorläufig und muss vor der
-                      Übernahme kontrolliert werden.
-                    </div>
-                  ) : null}
+                              <div className="g-ui-data-row-meta">
+
+                                <strong>
+                                  {formatImportCurrencyFromCents(
+                                    Number(item.totalCents || 0)
+                                  )}
+                                </strong>
+
+                              </div>
+
+                            </GastarioDataRow>
+
+                          )
+                        )}
+
+                      </GastarioDataList>
+
+                    ) : (
+
+                      <GastarioEmptyState title="Keine Positionen erkannt">
+                        Auftrag bitte manuell kontrollieren.
+                      </GastarioEmptyState>
+
+                    )}
+
+
+                    {selectedOrderTotal?.source === "vorläufig" ? (
+
+                      <GastarioNotice type="warning">
+                        Die Gesamtsumme ist vorläufig und muss vor der
+                        Übernahme kontrolliert werden.
+                      </GastarioNotice>
+
+                    ) : null}
+
+                  </GastarioSection>
 
                   <Form
                     method="post"
-                    className="incomingOrderReviewFormV2"
                   >
                     <input
                       type="hidden"
@@ -2189,20 +2240,16 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                       name="orderId"
                       value={selectedOrder.id}
                     />
-                    <section className="incomingOrderBillingV2">
-                      <div className="incomingOrderSectionHeaderV2">
-                        <div>
-                          <span>Abrechnung</span>
-                          <h4>
-                            Wie soll der Auftrag abgerechnet werden?
-                          </h4>
-                        </div>
-                      </div>
+                    <GastarioSection
+                      eyebrow="Abrechnung"
+                      title="Wie soll der Auftrag abgerechnet werden?"
+                    >
 
-                      <label className="incomingOrderBillingFieldV2">
-                        <span>Abrechnungsart</span>
-
-                        <select
+                      <GastarioField
+                        label="Abrechnungsart"
+                        required
+                      >
+                        <GastarioSelect
                           name="billingMode"
                           defaultValue={
                             selectedOrder.billingMode ||
@@ -2229,122 +2276,157 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                           <option value="NO_INVOICE">
                             Keine Rechnung erforderlich
                           </option>
-                        </select>
-                      </label>
-                    </section>
+                        </GastarioSelect>
+                      </GastarioField>
 
-                    <section className="incomingOrderChecklistV2">
-                      <div className="incomingOrderSectionHeaderV2">
-                        <div>
-                          <span>Pflichtprüfung</span>
-                          <h4>
-                            Vor der Übernahme kontrollieren
-                          </h4>
-                        </div>
+                    </GastarioSection>
 
-                        <small>
-                          Alle fünf Punkte müssen bestätigt werden
-                        </small>
-                      </div>
 
-                      <div className="incomingOrderChecklistGridV2">
-                        <label>
-                          <input
-                            type="checkbox"
-                            name="customerChecked"
-                            value="1"
-                            required
-                          />
-                          <span>
-                            <strong>Kundendaten geprüft</strong>
-                            <small>
-                              Firmenname und Ansprechpartner stimmen.
-                            </small>
-                          </span>
-                        </label>
+                    <GastarioSection
+                      eyebrow="Pflichtprüfung"
+                      title="Vor der Übernahme kontrollieren"
+                      description="Alle fünf Punkte müssen bestätigt werden."
+                    >
 
-                        <label>
-                          <input
-                            type="checkbox"
-                            name="addressChecked"
-                            value="1"
-                            required
-                          />
-                          <span>
-                            <strong>Lieferadresse geprüft</strong>
-                            <small>
-                              Straße, Hausnummer und Ort sind vollständig.
-                            </small>
-                          </span>
-                        </label>
+                      <GastarioDataList>
 
-                        <label>
-                          <input
-                            type="checkbox"
-                            name="scheduleChecked"
-                            value="1"
-                            required
-                          />
-                          <span>
-                            <strong>Datum und Uhrzeit geprüft</strong>
-                            <small>
-                              Liefertermin und Zeitfenster sind korrekt.
-                            </small>
-                          </span>
-                        </label>
+                        <GastarioDataRow>
+                          <label>
+                            <input
+                              type="checkbox"
+                              name="customerChecked"
+                              value="1"
+                              required
+                            />
 
-                        <label>
-                          <input
-                            type="checkbox"
-                            name="itemsChecked"
-                            value="1"
-                            required
-                          />
-                          <span>
-                            <strong>Positionen und Mengen geprüft</strong>
-                            <small>
-                              Alle Speisen, Mengen und Preise stimmen.
-                            </small>
-                          </span>
-                        </label>
+                            <span className="g-ui-data-row-main">
+                              <strong className="g-ui-data-row-title">
+                                Kundendaten geprüft
+                              </strong>
 
-                        <label>
-                          <input
-                            type="checkbox"
-                            name="billingChecked"
-                            value="1"
-                            required
-                          />
-                          <span>
-                            <strong>Abrechnungsart geprüft</strong>
-                            <small>
-                              Die spätere Rechnungsbearbeitung ist festgelegt.
-                            </small>
-                          </span>
-                        </label>
-                      </div>
-                    </section>
+                              <span className="g-ui-data-row-description">
+                                Firmenname und Ansprechpartner stimmen.
+                              </span>
+                            </span>
+                          </label>
+                        </GastarioDataRow>
 
-                    <div className="incomingOrderReviewSubmitV2">
-                      <div>
-                        <strong>
-                          Bereit für die vollständige Prüfung?
-                        </strong>
-                        <span>
-                          Ohne vollständige Checkliste kann der Vorgang
-                          nicht fortgesetzt werden.
-                        </span>
-                      </div>
 
-                      <button type="submit">
+                        <GastarioDataRow>
+                          <label>
+                            <input
+                              type="checkbox"
+                              name="addressChecked"
+                              value="1"
+                              required
+                            />
+
+                            <span className="g-ui-data-row-main">
+                              <strong className="g-ui-data-row-title">
+                                Lieferadresse geprüft
+                              </strong>
+
+                              <span className="g-ui-data-row-description">
+                                Straße, Hausnummer und Ort sind vollständig.
+                              </span>
+                            </span>
+                          </label>
+                        </GastarioDataRow>
+
+
+                        <GastarioDataRow>
+                          <label>
+                            <input
+                              type="checkbox"
+                              name="scheduleChecked"
+                              value="1"
+                              required
+                            />
+
+                            <span className="g-ui-data-row-main">
+                              <strong className="g-ui-data-row-title">
+                                Datum und Uhrzeit geprüft
+                              </strong>
+
+                              <span className="g-ui-data-row-description">
+                                Liefertermin und Zeitfenster sind korrekt.
+                              </span>
+                            </span>
+                          </label>
+                        </GastarioDataRow>
+
+
+                        <GastarioDataRow>
+                          <label>
+                            <input
+                              type="checkbox"
+                              name="itemsChecked"
+                              value="1"
+                              required
+                            />
+
+                            <span className="g-ui-data-row-main">
+                              <strong className="g-ui-data-row-title">
+                                Positionen und Mengen geprüft
+                              </strong>
+
+                              <span className="g-ui-data-row-description">
+                                Alle Speisen, Mengen und Preise stimmen.
+                              </span>
+                            </span>
+                          </label>
+                        </GastarioDataRow>
+
+
+                        <GastarioDataRow>
+                          <label>
+                            <input
+                              type="checkbox"
+                              name="billingChecked"
+                              value="1"
+                              required
+                            />
+
+                            <span className="g-ui-data-row-main">
+                              <strong className="g-ui-data-row-title">
+                                Abrechnungsart geprüft
+                              </strong>
+
+                              <span className="g-ui-data-row-description">
+                                Die spätere Rechnungsbearbeitung ist festgelegt.
+                              </span>
+                            </span>
+                          </label>
+                        </GastarioDataRow>
+
+                      </GastarioDataList>
+
+                    </GastarioSection>
+
+                    <GastarioNotice type="neutral">
+                      <strong>
+                        Bereit für die vollständige Prüfung?
+                      </strong>
+                      {" "}
+                      Ohne vollständige Checkliste kann der Vorgang
+                      nicht fortgesetzt werden.
+                    </GastarioNotice>
+
+                    <GastarioToolbar align="end">
+                      <button
+                        type="submit"
+                        className={gastarioButtonClass("primary")}
+                      >
                         Auftrag bestätigen und übernehmen
                       </button>
-                    </div>
+                    </GastarioToolbar>
                   </Form>
 
-                  <footer className="incomingOrderReviewFooterV2">
+                  <GastarioToolbar align="between">
+
                     <button
                       type="button"
+                      className={gastarioButtonClass("secondary")}
                       onClick={() =>
                         updateSelectedOrder(null)
                       }
@@ -2358,6 +2440,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                         name="intent"
                         value="deleteOrder"
                       />
+
                       <input
                         type="hidden"
                         name="orderId"
@@ -2366,24 +2449,37 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
                       <button
                         type="submit"
-                        className="incomingOrderDeleteButtonV2"
+                        className={gastarioButtonClass("danger")}
                       >
                         Auftrag löschen
                       </button>
                     </Form>
-                  </footer>
-                </aside>
+
+                  </GastarioToolbar>
+                </GastarioStack>
+              </GastarioAside>
               ) : null}
-            </div>
+            </GastarioSplitView>
           )}
 
           {hiddenPastOrderCount > 0 ? (
-            <div className="finalHint">
-              {hiddenPastOrderCount} vergangene Auftrag{hiddenPastOrderCount === 1 ? "" : "e"} ausgeblendet.{" "}
-              <Link to="/auftraege?view=past">Vergangene Aufträge öffnen</Link>
-            </div>
+            <GastarioToolbar align="between">
+
+              <span>
+                {hiddenPastOrderCount} vergangene Auftrag
+                {hiddenPastOrderCount === 1 ? "" : "e"} ausgeblendet.
+              </span>
+
+              <Link
+                to="/auftraege?view=past"
+                className={gastarioButtonClass("secondary")}
+              >
+                Vergangene Aufträge öffnen
+              </Link>
+
+            </GastarioToolbar>
           ) : null}
-        </section>
+        </GastarioSection>
         )}
         </GastarioSection>
       </GastarioPage>

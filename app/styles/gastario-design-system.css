@@ -3093,3 +3093,27 @@
   }
 
 }
+
+/* =========================================================
+   GASTARIO DATA ROW SELECTED STATE 2026
+========================================================= */
+
+@media screen {
+
+  .g-ui-data-row.is-selected {
+    background:
+      var(--g26-accent-soft);
+
+    border-color:
+      var(--g26-accent);
+
+    box-shadow:
+      inset 3px 0 0 var(--g26-accent);
+  }
+
+  .g-ui-data-row.is-selected .g-ui-data-row-title {
+    color:
+      var(--g26-accent);
+  }
+
+}
