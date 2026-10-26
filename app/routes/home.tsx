@@ -1408,7 +1408,7 @@ export default function Home() {
 
             </GastarioSection>
 
-            <GastarioSplitView wide>
+            <GastarioStack>
               <GastarioSection
                 eyebrow="Operativer Stand"
                 title="Heute im Betrieb"
@@ -1506,7 +1506,7 @@ export default function Home() {
                 </GastarioActionGrid>
 
               </GastarioSection>
-            </GastarioSplitView>
+            </GastarioStack>
           </GastarioStack>
         ) : null}
 

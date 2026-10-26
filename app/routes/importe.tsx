@@ -1,15 +1,30 @@
 import crypto from "node:crypto";
+import { useState } from "react";
 import { Form, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
-
 import {
-  Notice,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
+  GastarioPage,
+  GastarioHeader,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioNotice,
+  GastarioSection,
+  GastarioFormGrid,
+  GastarioField,
+  GastarioInput,
+  GastarioSelect,
+  GastarioToolbar,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioEmptyState,
+  GastarioDetailDialog,
+  GastarioDetailTabs,
+  GastarioDetailPane,
+  gastarioButtonClass,
+} from "../components/ui";
 
-import "../styles/gastario-module-workspace.css";
+
+
 
 export function meta() {
   return [{ title: "E-Mail-Import · Gastario" }];
@@ -162,12 +177,48 @@ export async function action({ request }: { request: Request }) {
       return { error: "Bitte Benutzername eintragen." };
     }
 
-    const existing = await prisma.emailAccount.findFirst({
-      where: {
-        tenantId: access.tenantId,
-        email,
-      },
-    });
+    const accountId =
+      String(formData.get("id") || "").trim();
+
+    const existing = accountId
+      ? await prisma.emailAccount.findFirst({
+          where: {
+            id: accountId,
+            tenantId: access.tenantId,
+          },
+        })
+      : await prisma.emailAccount.findFirst({
+          where: {
+            tenantId: access.tenantId,
+            email,
+          },
+        });
+
+    if (accountId && !existing) {
+      return {
+        error: "Das Postfach wurde nicht gefunden.",
+      };
+    }
+
+    if (accountId) {
+      const emailOwner =
+        await prisma.emailAccount.findFirst({
+          where: {
+            tenantId: access.tenantId,
+            email,
+          },
+        });
+
+      if (
+        emailOwner &&
+        emailOwner.id !== accountId
+      ) {
+        return {
+          error:
+            "Diese E-Mail-Adresse ist bereits als anderes Postfach eingerichtet.",
+        };
+      }
+    }
 
     const passwordData = password
       ? { imapPasswordEncrypted: encryptSecret(password) }
@@ -200,6 +251,7 @@ export async function action({ request }: { request: Request }) {
       await prisma.emailAccount.update({
         where: { id: existing.id },
         data: {
+          email,
           label: label || "Auftragseingang",
           active: true,
           provider,
@@ -255,6 +307,17 @@ export default function ImportsPage() {
   const actionData =
     useActionData<typeof action>() as any;
 
+  const [
+    selectedMailboxId,
+    setSelectedMailboxId,
+  ] = useState<string | null>(null);
+
+  const selectedMailbox =
+    data.emailAccounts.find(
+      (account: any) =>
+        account.id === selectedMailboxId
+    ) || null;
+
   const activeAccounts =
     data.emailAccounts.filter(
       (account: any) =>
@@ -263,159 +326,138 @@ export default function ImportsPage() {
 
   return (
     <AppLayout>
-      <PageShell className="modulePage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Eingang"
           title="E-Mail-Konten"
-          subtitle={
-            <>
-              {data.tenantName}
-              {" · "}
-              Auftrags-Postfächer sicher verbinden
-              und für den automatischen Abruf
-              vorbereiten.
-            </>
-          }
-          actions={
-            <div className="moduleHeaderStatus">
-              <span className="moduleBadge moduleBadgeSuccess">
-                {activeAccounts} aktiv
-              </span>
-
-              <span className="moduleBadge">
-                IMAP
-              </span>
-            </div>
-          }
+          description={`${data.tenantName} · Auftrags-Postfächer sicher verbinden und für den automatischen Abruf vorbereiten.`}
         />
 
+        <GastarioMetricGrid>
+          <GastarioMetric
+            label="Aktive Postfächer"
+            value={activeAccounts}
+            description="Für den automatischen Abruf aktiviert"
+          />
+
+          <GastarioMetric
+            label="Konten gesamt"
+            value={data.emailAccounts.length}
+            description="Eingerichtete E-Mail-Konten"
+          />
+
+          <GastarioMetric
+            label="Abruf"
+            value="IMAP"
+            description="Direkte Verbindung zum Postfach"
+          />
+        </GastarioMetricGrid>
+
         {data.error ? (
-          <Notice type="danger">
+          <GastarioNotice type="danger">
             {data.error}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
         {actionData?.error ? (
-          <Notice type="danger">
+          <GastarioNotice type="danger">
             {actionData.error}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
         {actionData?.success ? (
-          <Notice type="success">
+          <GastarioNotice type="success">
             {actionData.success}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
-        <PageSection
+        <GastarioSection
           eyebrow="Postfach verbinden"
           title="Neues E-Mail-Konto"
           description="Gastario liest Bestellungen direkt per IMAP. Das Passwort wird verschlüsselt gespeichert."
-          actions={
-            <span className="moduleBadge moduleBadgeSuccess">
-              Sicherer Abruf
-            </span>
-          }
         >
-          <Form
-            method="post"
-            className="moduleFormGrid moduleFormGridMailbox"
-          >
-            <label className="moduleField">
-              <span>E-Mail-Adresse</span>
-
-              <input
-                name="email"
-                type="email"
-                placeholder="info@firma.de"
+          <Form method="post">
+            <GastarioFormGrid>
+              <GastarioField
+                label="E-Mail-Adresse"
                 required
-              />
-            </label>
-
-            <label className="moduleField">
-              <span>Bezeichnung</span>
-
-              <input
-                name="label"
-                placeholder="z. B. Heycater oder Website"
-              />
-            </label>
-
-            <label className="moduleField">
-              <span>Anbieter</span>
-
-              <select
-                name="provider"
-                defaultValue="STRATO"
               >
-                <option value="STRATO">
-                  STRATO
-                </option>
+                <GastarioInput
+                  name="email"
+                  type="email"
+                  placeholder="info@firma.de"
+                  required
+                />
+              </GastarioField>
 
-                <option value="GMAIL">
-                  Gmail
-                </option>
+              <GastarioField label="Bezeichnung">
+                <GastarioInput
+                  name="label"
+                  placeholder="z. B. Heycater oder Website"
+                />
+              </GastarioField>
 
-                <option value="MICROSOFT">
-                  Microsoft 365
-                </option>
+              <GastarioField label="Anbieter">
+                <GastarioSelect
+                  name="provider"
+                  defaultValue="STRATO"
+                >
+                  <option value="STRATO">STRATO</option>
+                  <option value="GMAIL">Gmail</option>
+                  <option value="MICROSOFT">Microsoft 365</option>
+                  <option value="IONOS">IONOS</option>
+                  <option value="OTHER">Sonstiges</option>
+                </GastarioSelect>
+              </GastarioField>
 
-                <option value="IONOS">
-                  IONOS
-                </option>
-
-                <option value="OTHER">
-                  Sonstiges
-                </option>
-              </select>
-            </label>
-
-            <label className="moduleField">
-              <span>IMAP-Server</span>
-
-              <input
-                name="imapHost"
-                defaultValue="imap.strato.de"
+              <GastarioField
+                label="IMAP-Server"
                 required
-              />
-            </label>
+              >
+                <GastarioInput
+                  name="imapHost"
+                  defaultValue="imap.strato.de"
+                  required
+                />
+              </GastarioField>
 
-            <label className="moduleField">
-              <span>Port</span>
-
-              <input
-                name="imapPort"
-                defaultValue="993"
-                inputMode="numeric"
+              <GastarioField
+                label="Port"
                 required
-              />
-            </label>
+              >
+                <GastarioInput
+                  name="imapPort"
+                  defaultValue="993"
+                  inputMode="numeric"
+                  required
+                />
+              </GastarioField>
 
-            <label className="moduleField">
-              <span>Benutzername</span>
+              <GastarioField label="Benutzername">
+                <GastarioInput
+                  name="imapUsername"
+                  placeholder="meistens die E-Mail-Adresse"
+                />
+              </GastarioField>
 
-              <input
-                name="imapUsername"
-                placeholder="meistens die E-Mail-Adresse"
-              />
-            </label>
+              <GastarioField
+                label="Passwort oder App-Passwort"
+                hint="Das Passwort wird verschlüsselt gespeichert."
+              >
+                <GastarioInput
+                  name="password"
+                  type="password"
+                  placeholder="Verschlüsselte Speicherung"
+                />
+              </GastarioField>
+            </GastarioFormGrid>
 
-            <label className="moduleField moduleFieldPassword">
-              <span>Passwort oder App-Passwort</span>
-
-              <input
-                name="password"
-                type="password"
-                placeholder="Verschlüsselte Speicherung"
-              />
-            </label>
-
-            <div className="moduleFormActions">
+            <GastarioToolbar align="end">
               <button
                 type="submit"
                 name="intent"
                 value="testMailbox"
-                className="moduleButton moduleButtonSecondary"
+                className={gastarioButtonClass("secondary")}
               >
                 Verbindung testen
               </button>
@@ -424,93 +466,88 @@ export default function ImportsPage() {
                 type="submit"
                 name="intent"
                 value="saveMailbox"
-                className="moduleButton moduleButtonPrimary"
+                className={gastarioButtonClass("primary")}
               >
                 Postfach speichern
               </button>
-            </div>
+            </GastarioToolbar>
           </Form>
+        </GastarioSection>
 
-          <div className="moduleHintGrid">
-            <article>
-              <strong>
-                Keine Weiterleitung nötig
-              </strong>
+        <GastarioSection
+          eyebrow="Ablauf"
+          title="So funktioniert der E-Mail-Abruf"
+          description="Gastario verbindet sich direkt mit dem vorhandenen Postfach."
+        >
+          <GastarioDataList>
+            <GastarioDataRow>
+              <div className="g-ui-data-row-main">
+                <strong className="g-ui-data-row-title">
+                  Keine Weiterleitung nötig
+                </strong>
 
-              <span>
-                Gastario verbindet sich direkt
-                mit dem vorhandenen Postfach.
-              </span>
-            </article>
+                <span className="g-ui-data-row-description">
+                  Gastario verbindet sich direkt mit dem vorhandenen Postfach.
+                </span>
+              </div>
+            </GastarioDataRow>
 
-            <article>
-              <strong>
-                Erst prüfen, dann übernehmen
-              </strong>
+            <GastarioDataRow>
+              <div className="g-ui-data-row-main">
+                <strong className="g-ui-data-row-title">
+                  Erst prüfen, dann übernehmen
+                </strong>
 
-              <span>
-                Neue Aufträge landen zuerst
-                kontrolliert in der
-                Eingangszentrale.
-              </span>
-            </article>
+                <span className="g-ui-data-row-description">
+                  Neue Aufträge landen zuerst kontrolliert in der Eingangszentrale.
+                </span>
+              </div>
+            </GastarioDataRow>
 
-            <article>
-              <strong>
-                Nur IMAP erforderlich
-              </strong>
+            <GastarioDataRow>
+              <div className="g-ui-data-row-main">
+                <strong className="g-ui-data-row-title">
+                  Nur IMAP erforderlich
+                </strong>
 
-              <span>
-                SMTP wird für das Lesen der
-                eingehenden Nachrichten nicht
-                benötigt.
-              </span>
-            </article>
-          </div>
-        </PageSection>
+                <span className="g-ui-data-row-description">
+                  SMTP wird für das Lesen der eingehenden Nachrichten nicht benötigt.
+                </span>
+              </div>
+            </GastarioDataRow>
+          </GastarioDataList>
+        </GastarioSection>
 
-        <PageSection
+        <GastarioSection
           eyebrow="Verbunden"
           title="Aktive Postfächer"
           description="Alle Konten, die für den automatischen Auftragseingang eingerichtet sind."
-          actions={
-            <span className="moduleCount">
-              {data.emailAccounts.length}
-            </span>
-          }
         >
           {data.emailAccounts.length === 0 ? (
-            <div className="moduleEmpty">
-              <strong>
-                Noch kein Postfach verbunden
-              </strong>
-
-              <span>
-                Richte oben das erste
-                Auftrags-Postfach ein.
-              </span>
-            </div>
+            <GastarioEmptyState title="Noch kein Postfach verbunden">
+              Richte oben das erste Auftrags-Postfach ein.
+            </GastarioEmptyState>
           ) : (
-            <div className="moduleList">
+            <GastarioDataList>
               {data.emailAccounts.map(
                 (account: any) => (
-                  <article
+                  <GastarioDataRow
                     key={account.id}
-                    className="moduleListRow"
+                    onClick={() =>
+                      setSelectedMailboxId(
+                        account.id
+                      )
+                    }
                   >
-                    <div className="moduleListMain">
-                      <strong>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
                         {account.email}
                       </strong>
 
-                      <span>
-                        {account.label ||
-                          "Auftragseingang"}
-                      </span>
-
-                      <small>
-                        {account.provider ||
-                          "IMAP"}
+                      <span className="g-ui-data-row-description">
+                        {account.label || "Auftragseingang"}
+                        {" · "}
+                        {account.provider || "IMAP"}
                         {" · "}
                         {account.imapHost || "-"}
                         :
@@ -519,50 +556,238 @@ export default function ImportsPage() {
                         {maskSecret(
                           account.imapPasswordEncrypted
                         )}
-                      </small>
+                      </span>
                     </div>
 
-                    <div className="moduleRowActions">
-                      <span
-                        className={
-                          account.active
-                            ? "moduleBadge moduleBadgeSuccess"
-                            : "moduleBadge"
-                        }
-                      >
+                    <div className="g-ui-data-row-meta">
+                      <strong>
                         {account.active
                           ? "Aktiv"
                           : "Inaktiv"}
-                      </span>
-
-                      <Form method="post">
-                        <input
-                          type="hidden"
-                          name="intent"
-                          value="deleteEmailAccount"
-                        />
-
-                        <input
-                          type="hidden"
-                          name="id"
-                          value={account.id}
-                        />
-
-                        <button
-                          type="submit"
-                          className="moduleButton moduleButtonDanger"
-                        >
-                          Entfernen
-                        </button>
-                      </Form>
+                      </strong>
                     </div>
-                  </article>
+                    <span
+                      className="g-ui-data-row-chevron"
+                      aria-hidden="true"
+                    >
+                      →
+                    </span>
+                  </GastarioDataRow>
                 )
               )}
-            </div>
+            </GastarioDataList>
           )}
-        </PageSection>
-      </PageShell>
+        </GastarioSection>
+
+        <GastarioDetailDialog
+          open={Boolean(selectedMailbox)}
+          title={
+            selectedMailbox?.email ||
+            "E-Mail-Konto"
+          }
+          description="Postfach-Verbindung bearbeiten, testen oder entfernen."
+          onClose={() =>
+            setSelectedMailboxId(null)
+          }
+          footer={
+            selectedMailbox ? (
+              <GastarioToolbar>
+                <button
+                  type="button"
+                  className={gastarioButtonClass("secondary")}
+                  onClick={() =>
+                    setSelectedMailboxId(null)
+                  }
+                >
+                  Schließen
+                </button>
+
+                <button
+                  type="submit"
+                  form="mailbox-detail-form"
+                  name="intent"
+                  value="testMailbox"
+                  className={gastarioButtonClass("secondary")}
+                >
+                  Verbindung testen
+                </button>
+
+                <button
+                  type="submit"
+                  form="mailbox-detail-form"
+                  name="intent"
+                  value="deleteEmailAccount"
+                  formNoValidate
+                  className={gastarioButtonClass("danger")}
+                  onClick={(event) => {
+                    if (
+                      !window.confirm(
+                        "Dieses Postfach wirklich entfernen?"
+                      )
+                    ) {
+                      event.preventDefault();
+                    }
+                  }}
+                >
+                  Entfernen
+                </button>
+
+                <button
+                  type="submit"
+                  form="mailbox-detail-form"
+                  name="intent"
+                  value="saveMailbox"
+                  className={gastarioButtonClass("primary")}
+                >
+                  Änderungen speichern
+                </button>
+              </GastarioToolbar>
+            ) : null
+          }
+        >
+          {selectedMailbox ? (
+            <Form
+              id="mailbox-detail-form"
+              method="post"
+              key={selectedMailbox.id}
+            >
+              <input
+                type="hidden"
+                name="id"
+                value={selectedMailbox.id}
+              />
+
+              <GastarioDetailTabs
+                items={[
+                  {
+                    id: "connection",
+                    label: "Verbindung",
+                  },
+                ]}
+                activeId="connection"
+                onChange={() => undefined}
+              />
+
+              <GastarioDetailPane active>
+                <GastarioFormGrid>
+                  <GastarioField
+                    label="E-Mail-Adresse"
+                    required
+                  >
+                    <GastarioInput
+                      name="email"
+                      type="email"
+                      defaultValue={
+                        selectedMailbox.email ||
+                        ""
+                      }
+                      required
+                    />
+                  </GastarioField>
+
+                  <GastarioField label="Bezeichnung">
+                    <GastarioInput
+                      name="label"
+                      defaultValue={
+                        selectedMailbox.label ||
+                        ""
+                      }
+                      placeholder="z. B. Heycater oder Website"
+                    />
+                  </GastarioField>
+
+                  <GastarioField label="Anbieter">
+                    <GastarioSelect
+                      name="provider"
+                      defaultValue={
+                        selectedMailbox.provider ||
+                        "STRATO"
+                      }
+                    >
+                      <option value="STRATO">
+                        STRATO
+                      </option>
+
+                      <option value="GMAIL">
+                        Gmail
+                      </option>
+
+                      <option value="MICROSOFT">
+                        Microsoft 365
+                      </option>
+
+                      <option value="IONOS">
+                        IONOS
+                      </option>
+
+                      <option value="OTHER">
+                        Andere
+                      </option>
+                    </GastarioSelect>
+                  </GastarioField>
+
+                  <GastarioField
+                    label="IMAP-Server"
+                    required
+                  >
+                    <GastarioInput
+                      name="imapHost"
+                      defaultValue={
+                        selectedMailbox.imapHost ||
+                        ""
+                      }
+                      required
+                    />
+                  </GastarioField>
+
+                  <GastarioField
+                    label="IMAP-Port"
+                    required
+                  >
+                    <GastarioInput
+                      name="imapPort"
+                      type="number"
+                      defaultValue={
+                        selectedMailbox.imapPort ||
+                        993
+                      }
+                      required
+                    />
+                  </GastarioField>
+
+                  <GastarioField
+                    label="Benutzername"
+                    required
+                  >
+                    <GastarioInput
+                      name="imapUsername"
+                      defaultValue={
+                        selectedMailbox.imapUsername ||
+                        selectedMailbox.email ||
+                        ""
+                      }
+                      required
+                    />
+                  </GastarioField>
+
+                  <GastarioField label="Neues Passwort – optional">
+                    <GastarioInput
+                      name="password"
+                      type="password"
+                      placeholder="Leer lassen = bestehendes Passwort behalten"
+                    />
+                  </GastarioField>
+                </GastarioFormGrid>
+
+                <GastarioNotice type="info">
+                  Das vorhandene Passwort bleibt verschlüsselt gespeichert,
+                  solange kein neues Passwort eingetragen wird.
+                </GastarioNotice>
+              </GastarioDetailPane>
+            </Form>
+          ) : null}
+        </GastarioDetailDialog>
+      </GastarioPage>
     </AppLayout>
   );
 }

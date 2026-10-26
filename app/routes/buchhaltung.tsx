@@ -6,11 +6,20 @@ import {
 import AppLayout from "../components/AppLayout";
 
 import {
-  Notice,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
+  GastarioPage,
+  GastarioHeader,
+  GastarioNotice,
+  GastarioSection,
+  GastarioDataList,
+  GastarioDataRow,
+  gastarioButtonClass,
+  GastarioField,
+  GastarioInput,
+  GastarioToolbar,
+  GastarioSplitView,
+  GastarioSplitMain,
+  GastarioSplitAside,
+} from "../components/ui";
 
 import "../styles/gastario-module-workspace.css";
 import { ACCOUNTING_PROVIDERS } from "../lib/accounting-providers";
@@ -563,11 +572,11 @@ export default function AccountingPage() {
 
   return (
     <AppLayout>
-      <PageShell className="modulePage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Finanzen"
           title="Buchhaltung"
-          subtitle="Verbinde Gastario sicher mit deinem Buchhaltungsprogramm und verwalte den technischen Status zentral."
+          description="Verbinde Gastario sicher mit deinem Buchhaltungsprogramm und verwalte den technischen Status zentral."
           actions={
             <span
               className={
@@ -582,29 +591,29 @@ export default function AccountingPage() {
         />
 
         {data.error ? (
-          <Notice type="danger">
+          <GastarioNotice type="danger">
             {data.error}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
         {actionData?.error ? (
-          <Notice type="danger">
+          <GastarioNotice type="danger">
             {actionData.error}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
         {actionData?.success ? (
-          <Notice type="success">
+          <GastarioNotice type="success">
             {actionData.success}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
-        <PageSection
+        <GastarioSection
           eyebrow="Anbieter"
           title="Unterstützte Buchhaltungsprogramme"
           description="Wähle das Buchhaltungsprogramm deines Betriebs. Weitere Anbieter werden schrittweise ergänzt."
         >
-          <div className="moduleProviderGrid">
+          <GastarioDataList>
             {ACCOUNTING_PROVIDERS.map(
               (provider) => {
                 const available =
@@ -617,260 +626,314 @@ export default function AccountingPage() {
                   Boolean(connection);
 
                 return (
-                  <article
+                  <GastarioDataRow
                     key={provider.code}
-                    className={
-                      connected
-                        ? "moduleProviderCard isConnected"
-                        : "moduleProviderCard"
-                    }
                   >
-                    <div className="moduleProviderTop">
-                      <strong>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
                         {provider.name}
                       </strong>
 
-                      <span
-                        className={
-                          connected
-                            ? "moduleBadge moduleBadgeSuccess"
-                            : "moduleBadge"
-                        }
-                      >
+                      <span className="g-ui-data-row-description">
+                        {provider.description}
+
+                        {provider.capabilities.length >
+                        0
+                          ? ` · ${provider.capabilities.join(
+                              " · "
+                            )}`
+                          : " · Noch keine aktive Verbindung verfügbar."}
+                      </span>
+                    </div>
+
+                    <div className="g-ui-data-row-meta">
+                      <strong>
                         {connected
                           ? "Verbunden"
                           : available
                             ? "Verfügbar"
                             : "In Vorbereitung"}
-                      </span>
+                      </strong>
                     </div>
 
-                    <p>
-                      {provider.description}
-                    </p>
-
-                    <div className="moduleCapabilities">
-                      {provider.capabilities.length >
-                      0 ? (
-                        provider.capabilities.map(
-                          (capability) => (
-                            <span key={capability}>
-                              ✓ {capability}
-                            </span>
-                          )
-                        )
+                    <div className="g-ui-data-row-actions">
+                      {available ? (
+                        <a
+                          href="#zugang-einrichten"
+                          className={gastarioButtonClass(
+                            "secondary"
+                          )}
+                        >
+                          {connected
+                            ? "Verbindung verwalten"
+                            : "Verbindung einrichten"}
+                        </a>
                       ) : (
-                        <span>
-                          Noch keine aktive
-                          Verbindung verfügbar.
-                        </span>
+                        <button
+                          type="button"
+                          className={gastarioButtonClass(
+                            "secondary"
+                          )}
+                          disabled
+                        >
+                          Noch nicht verfügbar
+                        </button>
                       )}
                     </div>
-
-                    {available ? (
-                      <a
-                        href="#zugang-einrichten"
-                        className="moduleButton moduleButtonSecondary"
-                      >
-                        {connected
-                          ? "Verbindung verwalten"
-                          : "Verbindung einrichten"}
-                      </a>
-                    ) : (
-                      <button
-                        type="button"
-                        className="moduleButton moduleButtonSecondary"
-                        disabled
-                      >
-                        Noch nicht verfügbar
-                      </button>
-                    )}
-                  </article>
+                  </GastarioDataRow>
                 );
               }
             )}
-          </div>
-        </PageSection>
+          </GastarioDataList>
+        </GastarioSection>
 
-        <section className="moduleSplit">
-          <PageSection
-            id="zugang-einrichten"
-            className="moduleConnectionPanel"
-            eyebrow="Verbindung"
-            title="Lexware Office verbinden"
-            description="Zugangsschlüssel sicher hinterlegen und die Verbindung prüfen."
-            actions={
-              <span
-                className={
-                  connection?.active
-                    ? "moduleBadge moduleBadgeSuccess"
-                    : "moduleBadge"
-                }
-              >
-                {connectionLabel}
-              </span>
-            }
-          >
-            <Form
-              method="post"
-              className="moduleConnectionForm"
+        <GastarioSplitView wide>
+          <GastarioSplitMain>
+          <div id="zugang-einrichten">
+            <GastarioSection
+              eyebrow="Verbindung"
+              title="Lexware Office verbinden"
+              description="Zugangsschlüssel sicher hinterlegen und die Verbindung prüfen."
+              actions={
+                <strong>
+                  {connectionLabel}
+                </strong>
+              }
             >
-              <label className="moduleField">
-                <span>Zugangsschlüssel</span>
-
-                <input
-                  type="password"
-                  name="accessToken"
-                  autoComplete="off"
-                  placeholder={
-                    connection
-                      ? "Leer lassen, um den gespeicherten Schlüssel weiterzuverwenden"
-                      : "Zugangsschlüssel eintragen"
-                  }
-                />
-
-                <small>
-                  {data.secretStatus}
-                </small>
-              </label>
-
-              <div className="moduleFormActions moduleFormActionsStart">
-                <button
-                  type="submit"
-                  name="intent"
-                  value="saveConnection"
-                  className="moduleButton moduleButtonPrimary"
-                >
-                  Verbindung speichern
-                </button>
-
-                <button
-                  type="submit"
-                  name="intent"
-                  value="testConnection"
-                  className="moduleButton moduleButtonSecondary"
-                >
-                  Verbindung testen
-                </button>
-              </div>
-            </Form>
-
-            <div className="moduleSafeBox">
-              <strong>
-                Sicherer, nur lesender Zugriff
-              </strong>
-
-              <p>
-                Gastario liest ausschließlich
-                benötigte Belegdaten. Im
-                verbundenen Buchhaltungskonto
-                werden keine Dokumente erstellt,
-                geändert oder gelöscht.
-              </p>
-            </div>
-          </PageSection>
-
-          <PageSection
-            eyebrow="Status"
-            title="Verbindungsstatus"
-            description="Technischer Status der aktuell ausgewählten Anbindung."
-          >
-            <div className="moduleStatusList">
-              <div>
-                <span>Anbieter</span>
-                <strong>
-                  Lexware Office
-                </strong>
-              </div>
-
-              <div>
-                <span>Mandant</span>
-                <strong>
-                  {data.tenantName}
-                </strong>
-              </div>
-
-              <div>
-                <span>Unternehmen</span>
-                <strong>
-                  {connection?.companyName ||
-                    "-"}
-                </strong>
-              </div>
-
-              <div>
-                <span>Organisations-ID</span>
-                <strong>
-                  {connection?.organizationId ||
-                    "-"}
-                </strong>
-              </div>
-
-              <div>
-                <span>Status</span>
-                <strong>
-                  {connection?.status ||
-                    "DISCONNECTED"}
-                </strong>
-              </div>
-
-              <div>
-                <span>
-                  Letzter erfolgreicher Test
-                </span>
-
-                <strong>
-                  {formatDateTime(
-                    connection
-                      ?.lastSuccessfulSyncAt
-                  )}
-                </strong>
-              </div>
-
-              <div>
-                <span>Letzter Fehler</span>
-
-                <strong>
-                  {connection?.lastError ||
-                    "-"}
-                </strong>
-              </div>
-            </div>
-
-            {connection ? (
-              <div className="moduleFormActions moduleFormActionsStart moduleStatusActions">
-                <Form method="post">
-                  <button
-                    type="submit"
-                    name="intent"
-                    value={
-                      connection.active
-                        ? "pauseConnection"
-                        : "activateConnection"
+              <Form method="post">
+                <GastarioField label="Zugangsschlüssel">
+                  <GastarioInput
+                    type="password"
+                    name="accessToken"
+                    autoComplete="off"
+                    placeholder={
+                      connection
+                        ? "Leer lassen, um den gespeicherten Schlüssel weiterzuverwenden"
+                        : "Zugangsschlüssel eintragen"
                     }
-                    className="moduleButton moduleButtonSecondary"
-                  >
-                    {connection.active
-                      ? "Verbindung pausieren"
-                      : "Verbindung aktivieren"}
-                  </button>
-                </Form>
+                  />
 
-                <Form method="post">
+                  <small>
+                    {data.secretStatus}
+                  </small>
+                </GastarioField>
+
+                <GastarioToolbar>
                   <button
                     type="submit"
                     name="intent"
-                    value="deleteConnection"
-                    className="moduleButton moduleButtonDanger"
+                    value="saveConnection"
+                    className={gastarioButtonClass(
+                      "primary"
+                    )}
                   >
-                    Verbindung entfernen
+                    Verbindung speichern
                   </button>
-                </Form>
-              </div>
-            ) : null}
-          </PageSection>
-        </section>
-      </PageShell>
+
+                  <button
+                    type="submit"
+                    name="intent"
+                    value="testConnection"
+                    className={gastarioButtonClass(
+                      "secondary"
+                    )}
+                  >
+                    Verbindung testen
+                  </button>
+                </GastarioToolbar>
+              </Form>
+
+              <GastarioNotice type="info">
+                <strong>
+                  Sicherer, nur lesender Zugriff
+                </strong>
+                {" "}
+                Gastario liest ausschließlich benötigte
+                Belegdaten. Im verbundenen Buchhaltungskonto
+                werden keine Dokumente erstellt, geändert
+                oder gelöscht.
+              </GastarioNotice>
+            </GastarioSection>
+          </div>
+          </GastarioSplitMain>
+
+          <GastarioSplitAside>
+            <GastarioSection
+              eyebrow="Status"
+              title="Verbindungsstatus"
+              description="Technischer Status der aktuell ausgewählten Anbindung."
+            >
+              <GastarioDataList>
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      Anbieter
+                    </strong>
+                    <span className="g-ui-data-row-description">
+                      Verbundenes Buchhaltungsprogramm
+                    </span>
+                  </div>
+
+                  <div className="g-ui-data-row-meta">
+                    <strong>Lexware Office</strong>
+                  </div>
+                </GastarioDataRow>
+
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      Mandant
+                    </strong>
+                    <span className="g-ui-data-row-description">
+                      Gastario-Betrieb
+                    </span>
+                  </div>
+
+                  <div className="g-ui-data-row-meta">
+                    <strong>
+                      {data.tenantName}
+                    </strong>
+                  </div>
+                </GastarioDataRow>
+
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      Unternehmen
+                    </strong>
+                    <span className="g-ui-data-row-description">
+                      Verbundenes Lexware-Unternehmen
+                    </span>
+                  </div>
+
+                  <div className="g-ui-data-row-meta">
+                    <strong>
+                      {connection?.companyName || "-"}
+                    </strong>
+                  </div>
+                </GastarioDataRow>
+
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      Organisations-ID
+                    </strong>
+                    <span className="g-ui-data-row-description">
+                      Technische Konto-Zuordnung
+                    </span>
+                  </div>
+
+                  <div className="g-ui-data-row-meta">
+                    <strong>
+                      {connection?.organizationId || "-"}
+                    </strong>
+                  </div>
+                </GastarioDataRow>
+
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      Status
+                    </strong>
+                    <span className="g-ui-data-row-description">
+                      Aktueller Zustand der Verbindung
+                    </span>
+                  </div>
+
+                  <div className="g-ui-data-row-meta">
+                    <strong>
+                      {connection?.status || "DISCONNECTED"}
+                    </strong>
+                  </div>
+                </GastarioDataRow>
+
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      Letzter erfolgreicher Test
+                    </strong>
+                    <span className="g-ui-data-row-description">
+                      Letzte bestätigte Kommunikation
+                    </span>
+                  </div>
+
+                  <div className="g-ui-data-row-meta">
+                    <strong>
+                      {formatDateTime(
+                        connection?.lastSuccessfulSyncAt
+                      )}
+                    </strong>
+                  </div>
+                </GastarioDataRow>
+
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      Letzter Fehler
+                    </strong>
+                    <span className="g-ui-data-row-description">
+                      Letzte technische Fehlermeldung
+                    </span>
+                  </div>
+
+                  <div className="g-ui-data-row-meta">
+                    <strong>
+                      {connection?.lastError || "-"}
+                    </strong>
+                  </div>
+                </GastarioDataRow>
+              </GastarioDataList>
+
+              {connection ? (
+                <GastarioToolbar>
+                  <Form method="post">
+                    <button
+                      type="submit"
+                      name="intent"
+                      value={
+                        connection.active
+                          ? "pauseConnection"
+                          : "activateConnection"
+                      }
+                      className={gastarioButtonClass(
+                        "secondary"
+                      )}
+                    >
+                      {connection.active
+                        ? "Verbindung pausieren"
+                        : "Verbindung aktivieren"}
+                    </button>
+                  </Form>
+
+                  <Form
+                    method="post"
+                    onSubmit={(event) => {
+                      if (
+                        !window.confirm(
+                          "Buchhaltungsverbindung wirklich entfernen?"
+                        )
+                      ) {
+                        event.preventDefault();
+                      }
+                    }}
+                  >
+                    <button
+                      type="submit"
+                      name="intent"
+                      value="deleteConnection"
+                      className={gastarioButtonClass(
+                        "danger"
+                      )}
+                    >
+                      Verbindung entfernen
+                    </button>
+                  </Form>
+                </GastarioToolbar>
+              ) : null}
+            </GastarioSection>
+          </GastarioSplitAside>
+        </GastarioSplitView>
+      </GastarioPage>
     </AppLayout>
   );
 }

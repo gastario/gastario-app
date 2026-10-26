@@ -1,14 +1,32 @@
+import { useState } from "react";
 import { Form, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
-
 import {
-  Notice,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
+  GastarioPage,
+  GastarioHeader,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioNotice,
+  GastarioSection,
+  GastarioFormGrid,
+  GastarioField,
+  GastarioInput,
+  GastarioSelect,
+  GastarioTextarea,
+  GastarioToolbar,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioEmptyState,
+  GastarioStack,
+  GastarioDialog,
+  GastarioDetailDialog,
+  GastarioDetailTabs,
+  GastarioDetailPane,
+  gastarioButtonClass,
+} from "../components/ui";
 
-import "../styles/gastario-module-workspace.css";
+
+
 
 const FIELD_OPTIONS = [
   { value: "customerName", label: "Kunde" },
@@ -232,25 +250,47 @@ export async function action({ request }: { request: Request }) {
   }
 
   if (intent === "createClassificationRule") {
-    const name = safeText(formData.get("name"));
-    const sourceName = safeText(formData.get("sourceName"));
-    const senderContains = safeText(formData.get("senderContains"));
-    const subjectContains = safeText(formData.get("subjectContains"));
-    const bodyContains = safeText(formData.get("bodyContains"));
+    const ruleId =
+      safeText(formData.get("ruleId"));
+
+    const name =
+      safeText(formData.get("name"));
+
+    const sourceName =
+      safeText(formData.get("sourceName"));
+
+    const senderContains =
+      safeText(formData.get("senderContains"));
+
+    const subjectContains =
+      safeText(formData.get("subjectContains"));
+
+    const bodyContains =
+      safeText(formData.get("bodyContains"));
 
     const matchMode =
-      safeText(formData.get("matchMode")).toUpperCase() === "ALL"
+      safeText(
+        formData.get("matchMode")
+      ).toUpperCase() === "ALL"
         ? "ALL"
         : "ANY";
 
     const documentType =
-      safeText(formData.get("documentType"));
+      safeText(
+        formData.get("documentType")
+      );
 
     const ruleAction =
-      safeText(formData.get("action"));
+      safeText(
+        formData.get("action")
+      );
 
     const parsedPriority =
-      Number(safeText(formData.get("priority")) || "0");
+      Number(
+        safeText(
+          formData.get("priority")
+        ) || "0"
+      );
 
     const priority =
       Number.isFinite(parsedPriority)
@@ -265,7 +305,8 @@ export async function action({ request }: { request: Request }) {
 
     if (!name) {
       return {
-        error: "Bitte einen Namen für die feste Importregel eintragen.",
+        error:
+          "Bitte einen Namen für die feste Importregel eintragen.",
       };
     }
 
@@ -280,10 +321,58 @@ export async function action({ request }: { request: Request }) {
       };
     }
 
-    if (!documentType || !ruleAction) {
+    if (
+      !documentType ||
+      !ruleAction
+    ) {
       return {
         error:
           "Bitte Dokumenttyp und Aktion auswählen.",
+      };
+    }
+
+    if (ruleId) {
+      const updated =
+        await prisma.$executeRawUnsafe(
+          `UPDATE "OrderImportRule"
+           SET
+             "name" = $1,
+             "sourceName" = $2,
+             "senderContains" = $3,
+             "subjectContains" = $4,
+             "bodyContains" = $5,
+             "matchMode" = $6,
+             "documentType" = $7,
+             "action" = $8,
+             "priority" = $9,
+             "updatedAt" = CURRENT_TIMESTAMP
+           WHERE
+             "id" = $10
+             AND "tenantId" = $11
+             AND "fieldKey" = '__classification__'`,
+          name,
+          sourceName || null,
+          senderContains || null,
+          subjectContains || null,
+          bodyContains || null,
+          matchMode,
+          documentType,
+          ruleAction,
+          priority,
+          ruleId,
+          access.tenantId
+        );
+
+      if (!updated) {
+        return {
+          error:
+            "Die E-Mail-Regel wurde nicht gefunden.",
+        };
+      }
+
+      return {
+        success:
+          "E-Mail-Regel wurde gespeichert.",
       };
     }
 
@@ -327,10 +416,10 @@ export async function action({ request }: { request: Request }) {
     );
 
     return {
-      success: "Feste Importregel wurde gespeichert.",
+      success:
+        "Feste Importregel wurde gespeichert.",
     };
   }
-
   const sourceName = safeText(formData.get("sourceName"));
   const fieldKey = safeText(formData.get("fieldKey"));
   const keywords = safeText(formData.get("keywords"));
@@ -380,52 +469,659 @@ export default function ImportRegelnPage() {
         "__classification__"
     );
 
+  const activeEmailRules =
+    safeEmailRules.filter(
+      (rule) => Boolean(rule.active)
+    ).length;
+  const [
+    selectedRuleId,
+    setSelectedRuleId,
+  ] = useState<string | null>(null);
+
+  const [
+    selectedRuleTab,
+    setSelectedRuleTab,
+  ] = useState("detection");
+
+  const [
+    createRuleOpen,
+    setCreateRuleOpen,
+  ] = useState(false);
+
+  const [
+    fieldRuleOpen,
+    setFieldRuleOpen,
+  ] = useState(false);
+
+  const [
+    pdfTestOpen,
+    setPdfTestOpen,
+  ] = useState(false);
+
+  const selectedRule =
+    safeEmailRules.find(
+      (rule) =>
+        rule.id === selectedRuleId
+    ) || null;
+
   return (
     <AppLayout>
-      <PageShell className="modulePage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Eingang"
           title="Import-Regeln"
-          subtitle="Lege fest, wie Gastario bestätigte Aufträge und wichtige Felder zuverlässig erkennt."
+          description="Lege fest, wie Gastario bestätigte Aufträge und wichtige Felder zuverlässig erkennt."
           actions={
-            <div className="moduleHeaderStatus">
-              <span className="moduleBadge moduleBadgeSuccess">
-                {safeEmailRules.filter(
-                  (rule) => rule.active
-                ).length}
-                {" aktiv"}
-              </span>
-
-              <span className="moduleBadge">
-                {pdfFieldRules.length}
-                {" PDF-Regeln"}
-              </span>
-            </div>
+            <button
+              type="button"
+              className={gastarioButtonClass("primary")}
+              onClick={() =>
+                setCreateRuleOpen(true)
+              }
+            >
+              Neue Regel
+            </button>
           }
         />
 
+        <GastarioMetricGrid>
+          <GastarioMetric
+            label="Aktive E-Mail-Regeln"
+            value={activeEmailRules}
+            description="Werden beim automatischen Abruf angewendet"
+          />
+
+          <GastarioMetric
+            label="E-Mail-Regeln"
+            value={safeEmailRules.length}
+            description="Regeln zur sicheren Auftragserkennung"
+          />
+
+          <GastarioMetric
+            label="PDF-Feldregeln"
+            value={pdfFieldRules.length}
+            description="Zusätzliche Regeln zur Dokumenterkennung"
+          />
+        </GastarioMetricGrid>
+
         {actionData &&
         "error" in actionData ? (
-          <Notice type="danger">
+          <GastarioNotice type="danger">
             {actionData.error}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
         {actionData &&
         "success" in actionData ? (
-          <Notice type="success">
+          <GastarioNotice type="success">
             {actionData.success}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
-        <PageSection
-          eyebrow="Neue Regel"
-          title="Wann ist eine E-Mail ein Auftrag?"
-          description="Bei einem eindeutigen Treffer erstellt Gastario einen Prüfauftrag in der Eingangszentrale."
+        <GastarioStack>
+          <GastarioSection
+            eyebrow="Gespeichert"
+            title="Sichere E-Mail-Regeln"
+            description="Aktive Regeln werden beim automatischen E-Mail-Abruf angewendet."
+          >
+            {safeEmailRules.length === 0 ? (
+              <GastarioEmptyState title="Noch keine Regel vorhanden">
+                Lege oben die erste sichere Erkennungsregel an.
+              </GastarioEmptyState>
+            ) : (
+              <GastarioDataList>
+                {safeEmailRules.map(
+                  (rule) => (
+                    <GastarioDataRow
+                      key={rule.id}
+                      onClick={() => {
+                        setSelectedRuleId(
+                          rule.id
+                        );
+                        setSelectedRuleTab(
+                          "detection"
+                        );
+                      }}
+                    >
+                      <div className="g-ui-data-row-main">
+                        <strong className="g-ui-data-row-title">
+                          {rule.name || "E-Mail-Regel"}
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          Plattform: {rule.senderContains || "Alle"}
+                          {" · "}
+                          Ergebnis: Prüfauftrag
+                          {rule.subjectContains
+                            ? ` · Betreff: ${rule.subjectContains}`
+                            : ""}
+                          {rule.bodyContains
+                            ? ` · Text: ${rule.bodyContains}`
+                            : ""}
+                        </span>
+                      </div>
+
+                      <div className="g-ui-data-row-meta">
+                        <strong>
+                          {rule.active
+                            ? "Aktiv"
+                            : "Aus"}
+                        </strong>
+                      </div>
+                      <span
+                        className="g-ui-data-row-chevron"
+                        aria-hidden="true"
+                      >
+                        →
+                      </span>
+                    </GastarioDataRow>
+                  )
+                )}
+              </GastarioDataList>
+            )}
+          </GastarioSection>
+
+          <GastarioSection
+            eyebrow="PDF-Erkennung"
+            title="Dokumenterkennung"
+            description="Teste Dokumenttext und ergänze zusätzliche Erkennungswörter für wichtige Auftragsfelder."
+          >
+            <GastarioToolbar align="end">
+              <Form method="post">
+                <input
+                  type="hidden"
+                  name="_intent"
+                  value="seedDefaults"
+                />
+
+                <button
+                  type="submit"
+                  className={gastarioButtonClass("secondary")}
+                >
+                  Standardregeln einspielen
+                </button>
+              </Form>
+            </GastarioToolbar>
+
+            <GastarioToolbar>
+              <button
+                type="button"
+                className={gastarioButtonClass("secondary")}
+                onClick={() =>
+                  setPdfTestOpen(true)
+                }
+              >
+                Dokumenttext prüfen
+              </button>
+            </GastarioToolbar>
+
+            <GastarioToolbar>
+              <button
+                type="button"
+                className={gastarioButtonClass("secondary")}
+                onClick={() =>
+                  setFieldRuleOpen(true)
+                }
+              >
+                Erkennungswort hinzufügen
+              </button>
+            </GastarioToolbar>
+          </GastarioSection>
+        </GastarioStack>
+
+
+
+        <GastarioDialog
+          open={pdfTestOpen}
+          title="Dokumenttext prüfen"
+          description="Füge Text aus einem PDF ein und prüfe die aktuelle Erkennung."
+          onClose={() =>
+            setPdfTestOpen(false)
+          }
+          size="lg"
+          footer={
+            <GastarioToolbar>
+              <button
+                type="button"
+                className={gastarioButtonClass("secondary")}
+                onClick={() =>
+                  setPdfTestOpen(false)
+                }
+              >
+                Schließen
+              </button>
+
+              <button
+                type="submit"
+                form="pdf-test-form"
+                className={gastarioButtonClass("primary")}
+              >
+                Testen
+              </button>
+            </GastarioToolbar>
+          }
         >
           <Form
+            id="pdf-test-form"
             method="post"
-            className="moduleFormGrid moduleFormGridRule"
+          >
+            <input
+              type="hidden"
+              name="_intent"
+              value="testText"
+            />
+
+            <GastarioField label="PDF-Text">
+              <GastarioTextarea
+                name="testText"
+                rows={8}
+                placeholder="Text aus einem PDF einfügen"
+                defaultValue={
+                  anyAction?.testText || ""
+                }
+              />
+            </GastarioField>
+
+            <GastarioNotice type="info">
+              Der Test verändert keine Regeln oder Aufträge.
+              Gastario prüft nur, welche vorhandenen
+              Erkennungsregeln auf den Text reagieren.
+            </GastarioNotice>
+          </Form>
+        </GastarioDialog>
+
+        <GastarioDialog
+          open={fieldRuleOpen}
+          title="Erkennungswort hinzufügen"
+          description="Lege zusätzliche Begriffe für Lieferdatum, Kunde, Adresse oder andere Felder fest."
+          onClose={() =>
+            setFieldRuleOpen(false)
+          }
+          size="lg"
+          footer={
+            <GastarioToolbar>
+              <button
+                type="button"
+                className={gastarioButtonClass("secondary")}
+                onClick={() =>
+                  setFieldRuleOpen(false)
+                }
+              >
+                Abbrechen
+              </button>
+
+              <button
+                type="submit"
+                form="create-field-rule-form"
+                className={gastarioButtonClass("primary")}
+              >
+                Feldregel speichern
+              </button>
+            </GastarioToolbar>
+          }
+        >
+          <Form
+            id="create-field-rule-form"
+            method="post"
+          >
+            <input
+              type="hidden"
+              name="_intent"
+              value="create"
+            />
+
+            <GastarioFormGrid>
+              <GastarioField label="Quelle – optional">
+                <GastarioInput
+                  name="sourceName"
+                  placeholder="Heycater, Feedr oder Egora"
+                />
+              </GastarioField>
+
+              <GastarioField
+                label="Feld"
+                required
+              >
+                <GastarioSelect
+                  name="fieldKey"
+                  defaultValue="deliveryDate"
+                  required
+                >
+                  {FIELD_OPTIONS.map(
+                    (option) => (
+                      <option
+                        key={option.value}
+                        value={option.value}
+                      >
+                        {option.label}
+                      </option>
+                    )
+                  )}
+                </GastarioSelect>
+              </GastarioField>
+
+              <GastarioField
+                label="Erkennungswörter"
+                required
+              >
+                <GastarioInput
+                  name="keywords"
+                  placeholder="Lieferdatum, Eventdatum"
+                  required
+                />
+              </GastarioField>
+            </GastarioFormGrid>
+
+            <GastarioNotice type="info">
+              Mehrere Begriffe können kommasepariert eingetragen werden.
+            </GastarioNotice>
+          </Form>
+        </GastarioDialog>
+
+        <GastarioDetailDialog
+          open={Boolean(selectedRule)}
+          title={
+            selectedRule?.name ||
+            "E-Mail-Regel"
+          }
+          description="Erkennungsregel bearbeiten und verwalten."
+          onClose={() =>
+            setSelectedRuleId(null)
+          }
+          footer={
+            selectedRule ? (
+              <GastarioToolbar>
+                <button
+                  type="button"
+                  className={gastarioButtonClass("secondary")}
+                  onClick={() =>
+                    setSelectedRuleId(null)
+                  }
+                >
+                  Schließen
+                </button>
+
+                <button
+                  type="submit"
+                  form="email-rule-detail-form"
+                  name="_intent"
+                  value="toggle"
+                  formNoValidate
+                  className={gastarioButtonClass("secondary")}
+                >
+                  {selectedRule.active
+                    ? "Deaktivieren"
+                    : "Aktivieren"}
+                </button>
+
+                <button
+                  type="submit"
+                  form="email-rule-detail-form"
+                  name="_intent"
+                  value="delete"
+                  formNoValidate
+                  className={gastarioButtonClass("danger")}
+                  onClick={(event) => {
+                    if (
+                      !window.confirm(
+                        "Diese E-Mail-Regel wirklich löschen?"
+                      )
+                    ) {
+                      event.preventDefault();
+                    }
+                  }}
+                >
+                  Löschen
+                </button>
+
+                <button
+                  type="submit"
+                  form="email-rule-detail-form"
+                  name="_intent"
+                  value="createClassificationRule"
+                  className={gastarioButtonClass("primary")}
+                >
+                  Änderungen speichern
+                </button>
+              </GastarioToolbar>
+            ) : null
+          }
+        >
+          {selectedRule ? (
+            <Form
+              id="email-rule-detail-form"
+              method="post"
+              key={`${selectedRule.id}-${String(
+                selectedRule.updatedAt || ""
+              )}`}
+            >
+              <input
+                type="hidden"
+                name="ruleId"
+                value={selectedRule.id}
+              />
+
+              <input
+                type="hidden"
+                name="active"
+                value={String(
+                  selectedRule.active
+                )}
+              />
+
+              <input
+                type="hidden"
+                name="sourceName"
+                value={
+                  selectedRule.sourceName ||
+                  ""
+                }
+              />
+
+              <input
+                type="hidden"
+                name="documentType"
+                value={
+                  selectedRule.documentType ||
+                  "ORDER_CONFIRMATION"
+                }
+              />
+
+              <input
+                type="hidden"
+                name="action"
+                value={
+                  selectedRule.action ||
+                  "CREATE_REVIEW_ORDER"
+                }
+              />
+
+              <GastarioDetailTabs
+                items={[
+                  {
+                    id: "detection",
+                    label: "Erkennung",
+                  },
+                  {
+                    id: "processing",
+                    label: "Verarbeitung",
+                  },
+                ]}
+                activeId={selectedRuleTab}
+                onChange={setSelectedRuleTab}
+              />
+
+              <GastarioDetailPane
+                active={
+                  selectedRuleTab ===
+                  "detection"
+                }
+              >
+                <GastarioFormGrid>
+                  <GastarioField
+                    label="Regelname"
+                    required
+                  >
+                    <GastarioInput
+                      name="name"
+                      defaultValue={
+                        selectedRule.name ||
+                        ""
+                      }
+                      required
+                    />
+                  </GastarioField>
+
+                  <GastarioField label="Plattform oder Absender">
+                    <GastarioInput
+                      name="senderContains"
+                      defaultValue={
+                        selectedRule.senderContains ||
+                        ""
+                      }
+                      placeholder="z. B. Heycater"
+                    />
+                  </GastarioField>
+
+                  <GastarioField label="Betreff enthält">
+                    <GastarioInput
+                      name="subjectContains"
+                      defaultValue={
+                        selectedRule.subjectContains ||
+                        ""
+                      }
+                      placeholder="z. B. Auftragsbestätigung"
+                    />
+                  </GastarioField>
+
+                  <GastarioField label="Text enthält – optional">
+                    <GastarioInput
+                      name="bodyContains"
+                      defaultValue={
+                        selectedRule.bodyContains ||
+                        ""
+                      }
+                      placeholder="Optionaler Begriff im Nachrichtentext"
+                    />
+                  </GastarioField>
+
+                  <GastarioField label="Trefferlogik">
+                    <GastarioSelect
+                      name="matchMode"
+                      defaultValue={
+                        selectedRule.matchMode ||
+                        "ALL"
+                      }
+                    >
+                      <option value="ALL">
+                        Alle Bedingungen müssen zutreffen
+                      </option>
+
+                      <option value="ANY">
+                        Eine Bedingung reicht aus
+                      </option>
+                    </GastarioSelect>
+                  </GastarioField>
+                </GastarioFormGrid>
+              </GastarioDetailPane>
+
+              <GastarioDetailPane
+                active={
+                  selectedRuleTab ===
+                  "processing"
+                }
+              >
+                <GastarioDataList>
+                  <GastarioDataRow>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Ergebnis
+                      </strong>
+
+                      <span className="g-ui-data-row-description">
+                        Erkannte Nachricht wird als Prüfauftrag
+                        in die Eingangszentrale übernommen.
+                      </span>
+                    </div>
+
+                    <div className="g-ui-data-row-meta">
+                      Prüfauftrag
+                    </div>
+                  </GastarioDataRow>
+
+                  <GastarioDataRow>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Status
+                      </strong>
+
+                      <span className="g-ui-data-row-description">
+                        Legt fest, ob diese Regel aktuell angewendet wird.
+                      </span>
+                    </div>
+
+                    <div className="g-ui-data-row-meta">
+                      <strong>
+                        {selectedRule.active
+                          ? "Aktiv"
+                          : "Deaktiviert"}
+                      </strong>
+                    </div>
+                  </GastarioDataRow>
+                </GastarioDataList>
+
+                <GastarioFormGrid>
+                  <GastarioField label="Priorität">
+                    <GastarioInput
+                      name="priority"
+                      type="number"
+                      min="0"
+                      max="1000"
+                      defaultValue={
+                        selectedRule.priority ??
+                        100
+                      }
+                    />
+                  </GastarioField>
+                </GastarioFormGrid>
+              </GastarioDetailPane>
+            </Form>
+          ) : null}
+        </GastarioDetailDialog>
+
+        <GastarioDialog
+          open={createRuleOpen}
+          title="Neue E-Mail-Regel"
+          description="Lege fest, wann eine eingehende Nachricht automatisch als Auftrag erkannt wird."
+          onClose={() =>
+            setCreateRuleOpen(false)
+          }
+          size="lg"
+          footer={
+            <GastarioToolbar>
+              <button
+                type="button"
+                className={gastarioButtonClass("secondary")}
+                onClick={() =>
+                  setCreateRuleOpen(false)
+                }
+              >
+                Abbrechen
+              </button>
+
+              <button
+                type="submit"
+                form="create-email-rule-form"
+                className={gastarioButtonClass("primary")}
+              >
+                Regel speichern
+              </button>
+            </GastarioToolbar>
+          }
+        >
+          <Form
+            id="create-email-rule-form"
+            method="post"
           >
             <input
               type="hidden"
@@ -457,371 +1153,67 @@ export default function ImportRegelnPage() {
               value="100"
             />
 
-            <Field label="Regelname">
-              <input
-                name="name"
+            <GastarioFormGrid>
+              <GastarioField
+                label="Regelname"
                 required
-                placeholder="Heycater – finale Bestätigung"
-              />
-            </Field>
-
-            <Field label="Plattform oder Absender">
-              <select
-                name="senderContains"
-                defaultValue="heycater"
               >
-                <option value="heycater">
-                  Heycater
-                </option>
-
-                <option value="feedr">
-                  Feedr
-                </option>
-
-                <option value="egora">
-                  Egora
-                </option>
-
-                <option value="">
-                  Andere oder nicht festlegen
-                </option>
-              </select>
-            </Field>
-
-            <Field label="Betreff enthält">
-              <input
-                name="subjectContains"
-                required
-                placeholder="Bitte bestätige den Auftrag"
-              />
-            </Field>
-
-            <Field label="Text enthält – optional">
-              <input
-                name="bodyContains"
-                placeholder="hat Euer Angebot bestätigt"
-              />
-            </Field>
-
-            <div className="moduleFormActions">
-              <button
-                type="submit"
-                className="moduleButton moduleButtonPrimary"
-              >
-                Regel speichern
-              </button>
-            </div>
-          </Form>
-        </PageSection>
-
-        <PageSection
-          eyebrow="Gespeichert"
-          title="Sichere E-Mail-Regeln"
-          description="Aktive Regeln werden beim automatischen E-Mail-Abruf angewendet."
-          actions={
-            <span className="moduleCount">
-              {safeEmailRules.length}
-            </span>
-          }
-        >
-          {safeEmailRules.length === 0 ? (
-            <div className="moduleEmpty">
-              <strong>
-                Noch keine Regel vorhanden
-              </strong>
-
-              <span>
-                Lege oben die erste sichere
-                Erkennungsregel an.
-              </span>
-            </div>
-          ) : (
-            <div className="moduleList">
-              {safeEmailRules.map(
-                (rule) => (
-                  <article
-                    key={rule.id}
-                    className="moduleListRow moduleRuleRow"
-                  >
-                    <div className="moduleListMain">
-                      <div className="moduleTitleLine">
-                        <strong>
-                          {rule.name ||
-                            "E-Mail-Regel"}
-                        </strong>
-
-                        <span
-                          className={
-                            rule.active
-                              ? "moduleBadge moduleBadgeSuccess"
-                              : "moduleBadge"
-                          }
-                        >
-                          {rule.active
-                            ? "Aktiv"
-                            : "Aus"}
-                        </span>
-                      </div>
-
-                      <div className="moduleMetaLine">
-                        <span>
-                          <small>
-                            Plattform
-                          </small>
-
-                          <strong>
-                            {rule.senderContains ||
-                              "Alle"}
-                          </strong>
-                        </span>
-
-                        <span>
-                          <small>
-                            Ergebnis
-                          </small>
-
-                          <strong>
-                            Prüfauftrag
-                          </strong>
-                        </span>
-                      </div>
-
-                      {rule.subjectContains ? (
-                        <div className="moduleKeyword">
-                          <small>Betreff</small>
-
-                          <span>
-                            {rule.subjectContains}
-                          </span>
-                        </div>
-                      ) : null}
-
-                      {rule.bodyContains ? (
-                        <div className="moduleKeyword">
-                          <small>Text</small>
-
-                          <span>
-                            {rule.bodyContains}
-                          </span>
-                        </div>
-                      ) : null}
-                    </div>
-
-                    <div className="moduleRowActions moduleRuleActions">
-                      <Form method="post">
-                        <input
-                          type="hidden"
-                          name="_intent"
-                          value="toggle"
-                        />
-
-                        <input
-                          type="hidden"
-                          name="ruleId"
-                          value={rule.id}
-                        />
-
-                        <input
-                          type="hidden"
-                          name="active"
-                          value={String(
-                            rule.active
-                          )}
-                        />
-
-                        <button
-                          type="submit"
-                          className="moduleButton moduleButtonSecondary"
-                        >
-                          {rule.active
-                            ? "Deaktivieren"
-                            : "Aktivieren"}
-                        </button>
-                      </Form>
-
-                      <Form
-                        method="post"
-                        onSubmit={(event) => {
-                          if (
-                            !window.confirm(
-                              "Diese E-Mail-Regel wirklich löschen?"
-                            )
-                          ) {
-                            event.preventDefault();
-                          }
-                        }}
-                      >
-                        <input
-                          type="hidden"
-                          name="_intent"
-                          value="delete"
-                        />
-
-                        <input
-                          type="hidden"
-                          name="ruleId"
-                          value={rule.id}
-                        />
-
-                        <button
-                          type="submit"
-                          className="moduleButton moduleButtonDanger"
-                        >
-                          Löschen
-                        </button>
-                      </Form>
-                    </div>
-                  </article>
-                )
-              )}
-            </div>
-          )}
-        </PageSection>
-
-        <details className="moduleAdvanced">
-          <summary>
-            <span>
-              Erweiterte PDF-Erkennung
-            </span>
-
-            <small>
-              {pdfFieldRules.length}
-              {" Feldregeln"}
-            </small>
-          </summary>
-
-          <div className="moduleAdvancedBody">
-            <PageSection
-              eyebrow="PDF-Test"
-              title="Dokumenttext prüfen"
-              description="Füge Text aus einem PDF ein und prüfe die aktuelle Erkennung."
-              flat
-            >
-              <div className="moduleSectionActions">
-                <Form method="post">
-                  <input
-                    type="hidden"
-                    name="_intent"
-                    value="seedDefaults"
-                  />
-
-                  <button
-                    type="submit"
-                    className="moduleButton moduleButtonSecondary"
-                  >
-                    Standardregeln einspielen
-                  </button>
-                </Form>
-              </div>
-
-              <Form
-                method="post"
-                className="moduleTestGrid"
-              >
-                <input
-                  type="hidden"
-                  name="_intent"
-                  value="testText"
+                <GastarioInput
+                  name="name"
+                  required
+                  placeholder="z. B. Heycater – finale Bestätigung"
                 />
+              </GastarioField>
 
-                <label className="moduleField">
-                  <span>PDF-Text</span>
-
-                  <textarea
-                    name="testText"
-                    rows={5}
-                    placeholder="Text aus einem PDF einfügen"
-                    defaultValue={
-                      anyAction?.testText || ""
-                    }
-                  />
-                </label>
-
-                <button
-                  type="submit"
-                  className="moduleButton moduleButtonPrimary"
+              <GastarioField label="Plattform oder Absender">
+                <GastarioSelect
+                  name="senderContains"
+                  defaultValue="heycater"
                 >
-                  Testen
-                </button>
-              </Form>
-            </PageSection>
+                  <option value="heycater">
+                    Heycater
+                  </option>
 
-            <PageSection
-              eyebrow="Felderkennung"
-              title="Erkennungswort hinzufügen"
-              description="Lege zusätzliche Begriffe für Lieferdatum, Kunde, Adresse oder andere Felder fest."
-              flat
-            >
-              <Form
-                method="post"
-                className="moduleFormGrid moduleFormGridPdf"
+                  <option value="feedr">
+                    Feedr
+                  </option>
+
+                  <option value="egora">
+                    Egora
+                  </option>
+
+                  <option value="">
+                    Andere oder nicht festlegen
+                  </option>
+                </GastarioSelect>
+              </GastarioField>
+
+              <GastarioField
+                label="Betreff enthält"
+                required
               >
-                <input
-                  type="hidden"
-                  name="_intent"
-                  value="create"
+                <GastarioInput
+                  name="subjectContains"
+                  required
+                  placeholder="Bitte bestätige den Auftrag"
                 />
+              </GastarioField>
 
-                <Field label="Quelle – optional">
-                  <input
-                    name="sourceName"
-                    placeholder="Heycater, Feedr oder Egora"
-                  />
-                </Field>
+              <GastarioField label="Text enthält – optional">
+                <GastarioInput
+                  name="bodyContains"
+                  placeholder="hat Euer Angebot bestätigt"
+                />
+              </GastarioField>
+            </GastarioFormGrid>
 
-                <Field label="Feld">
-                  <select
-                    name="fieldKey"
-                    defaultValue="deliveryDate"
-                  >
-                    {FIELD_OPTIONS.map(
-                      (option) => (
-                        <option
-                          key={option.value}
-                          value={option.value}
-                        >
-                          {option.label}
-                        </option>
-                      )
-                    )}
-                  </select>
-                </Field>
-
-                <Field label="Erkennungswörter">
-                  <input
-                    name="keywords"
-                    placeholder="Lieferdatum, Eventdatum"
-                  />
-                </Field>
-
-                <div className="moduleFormActions">
-                  <button
-                    type="submit"
-                    className="moduleButton moduleButtonPrimary"
-                  >
-                    Feldregel speichern
-                  </button>
-                </div>
-              </Form>
-            </PageSection>
-          </div>
-        </details>
-      </PageShell>
+            <GastarioNotice type="info">
+              Bei einem eindeutigen Treffer erstellt Gastario einen
+              Prüfauftrag in der Eingangszentrale.
+            </GastarioNotice>
+          </Form>
+        </GastarioDialog>
+      </GastarioPage>
     </AppLayout>
-  );
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="moduleField">
-      <span>{label}</span>
-      {children}
-    </label>
   );
 }

@@ -1,14 +1,29 @@
-﻿import { Form, Link, useActionData, useLoaderData } from "react-router";
+import { useState } from "react";
+import { Form, Link, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 import {
-  MetricCard,
-  MetricGrid,
-  Notice,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
-import "../styles/kunden.css";
+  GastarioPage,
+  GastarioHeader,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioNotice,
+  GastarioSection,
+  gastarioButtonClass,
+  GastarioDialog,
+  GastarioFormGrid,
+  GastarioField,
+  GastarioInput,
+  GastarioSelect,
+  GastarioTextarea,
+  GastarioToolbar,
+  GastarioCheckRow,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioEmptyState,
+  GastarioDetailDialog,
+  GastarioDetailTabs,
+  GastarioDetailPane,
+} from "../components/ui";
 
 export function meta() {
   return [{ title: "Kunden · Gastario" }];
@@ -481,25 +496,38 @@ export async function action({ request }: { request: Request }) {
   return { error: "Unbekannte Aktion." };
 }
 
-const inputStyle = {
-  border: "1px solid #cbd5e1",
-  borderRadius: 12,
-  padding: "11px 12px",
-  fontWeight: 750,
-  width: "100%",
-};
 
 export default function CustomersPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
+  const [
+    createCustomerOpen,
+    setCreateCustomerOpen,
+  ] = useState(false);
+  const [
+    selectedCustomerId,
+    setSelectedCustomerId,
+  ] = useState<string | null>(null);
+
+  const [
+    selectedCustomerTab,
+    setSelectedCustomerTab,
+  ] = useState("master");
+
+  const selectedCustomer =
+    data.customers.find(
+      (customer: any) =>
+        customer.id === selectedCustomerId
+    ) || null;
+
   return (
     <AppLayout>
-      <PageShell className="customersPage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Verkauf"
           title="Kunden"
-          subtitle={
+          description={
             <>
               {data.tenant?.name || "Kein Mandant"} · Kunden,
               Ansprechpartner und Kontaktdaten zentral verwalten.
@@ -508,323 +536,74 @@ export default function CustomersPage() {
           actions={
             <>
               <Link
-                className="g-ui-button g-ui-button--secondary"
+                className={gastarioButtonClass("secondary")}
                 to="/auftragseingang"
               >
                 Auftrag erfassen
               </Link>
 
-              <a
-                className="g-ui-button g-ui-button--primary"
-                href="#kunde-anlegen"
+              <button
+                type="button"
+                className={gastarioButtonClass("primary")}
+                onClick={() =>
+                  setCreateCustomerOpen(true)
+                }
               >
                 Neuer Kunde
-              </a>
+              </button>
             </>
           }
         />
 
         {data.setupError ? (
-          <Notice type="warning">
+          <GastarioNotice type="warning">
             {data.setupError}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
         {actionData?.success ? (
-          <Notice type="success">
+          <GastarioNotice type="success">
             {actionData.success}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
         {actionData?.error ? (
-          <Notice type="danger">
+          <GastarioNotice type="danger">
             {actionData.error}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
-        <MetricGrid>
-          <MetricCard
+        <GastarioMetricGrid>
+          <GastarioMetric
             label="Kunden gesamt"
             value={data.stats.total}
             description="im Mandanten"
             badge="Gesamt"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Mit E-Mail"
             value={data.stats.withEmail}
             description="direkt kontaktierbar"
             badge="E-Mail"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Mit Telefon"
             value={data.stats.withPhone}
             description="für Rückfragen erreichbar"
             badge="Kontakt"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Mit Aufträgen"
             value={data.stats.withOrders}
             description="aktive Kundenbeziehungen"
             badge="Aufträge"
           />
-        </MetricGrid>
+        </GastarioMetricGrid>
 
-        <PageSection
-          className="customerCreateSection"
-          eyebrow="Neuer Kunde"
-          title="Kunde anlegen"
-          description="Lege Firmen, Ansprechpartner und Kontaktdaten vollständig an."
-        >
-          <Form
-            id="kunde-anlegen"
-            method="post"
-            className="customerCreateForm"
-          >
-            <input
-              type="hidden"
-              name="intent"
-              value="createCustomer"
-            />
-
-            {/* gastario-customer-master-data-form-20260716 */}
-            <fieldset className="customerFormGroup">
-              <legend>Grunddaten</legend>
-
-              <div className="customerFormGrid">
-                <label className="g-ui-field">
-                  <span>Kundentyp</span>
-                  <select name="customerType" defaultValue="BUSINESS">
-                    <option value="BUSINESS">Firmenkunde</option>
-                    <option value="PRIVATE">Privatkunde</option>
-                  </select>
-                </label>
-
-                <label className="g-ui-field customerFormWide">
-                  <span>Firmen- oder Kundenname *</span>
-                  <input
-                    name="name"
-                    placeholder="Firma oder Kunde"
-                    required
-                  />
-                </label>
-
-                <label className="customerCheckboxField">
-                  <input
-                    type="checkbox"
-                    name="active"
-                    value="true"
-                    defaultChecked
-                  />
-                  <span>Kunde ist aktiv</span>
-                </label>
-              </div>
-            </fieldset>
-
-            <fieldset className="customerFormGroup">
-              <legend>Kontakt</legend>
-
-              <div className="customerFormGrid">
-                <label className="g-ui-field">
-                  <span>Ansprechpartner</span>
-                  <input
-                    name="contactName"
-                    placeholder="Vor- und Nachname"
-                  />
-                </label>
-
-                <label className="g-ui-field">
-                  <span>E-Mail</span>
-                  <input
-                    name="email"
-                    type="email"
-                    placeholder="kunde@firma.de"
-                  />
-                </label>
-
-                <label className="g-ui-field">
-                  <span>Rechnungs-E-Mail</span>
-                  <input
-                    name="invoiceEmail"
-                    type="email"
-                    placeholder="rechnung@firma.de"
-                  />
-                </label>
-
-                <label className="g-ui-field">
-                  <span>Telefon</span>
-                  <input
-                    name="phone"
-                    type="tel"
-                    placeholder="030 12345678"
-                  />
-                </label>
-              </div>
-            </fieldset>
-
-            <fieldset className="customerFormGroup">
-              <legend>Rechnungsadresse</legend>
-
-              <div className="customerFormGrid customerAddressGrid">
-                <label className="g-ui-field customerStreetField">
-                  <span>Straße</span>
-                  <input name="street" placeholder="Musterstraße" />
-                </label>
-
-                <label className="g-ui-field">
-                  <span>Hausnummer</span>
-                  <input name="houseNumber" placeholder="12a" />
-                </label>
-
-                <label className="g-ui-field">
-                  <span>PLZ</span>
-                  <input
-                    name="postalCode"
-                    inputMode="numeric"
-                    placeholder="10115"
-                  />
-                </label>
-
-                <label className="g-ui-field">
-                  <span>Ort</span>
-                  <input name="city" placeholder="Berlin" />
-                </label>
-
-                <label className="g-ui-field">
-                  <span>Land</span>
-                  <select name="country" defaultValue="DE">
-                    <option value="DE">Deutschland</option>
-                    <option value="AT">Österreich</option>
-                    <option value="CH">Schweiz</option>
-                    <option value="OTHER">Anderes Land</option>
-                  </select>
-                </label>
-              </div>
-            </fieldset>
-
-            <fieldset className="customerFormGroup">
-              <legend>Abrechnung</legend>
-
-              <div className="customerFormGrid">
-                <label className="g-ui-field">
-                  <span>USt-IdNr.</span>
-                  <input name="vatId" placeholder="DE123456789" />
-                </label>
-
-                <label className="g-ui-field">
-                  <span>Kostenstelle</span>
-                  <input name="costCenter" placeholder="z. B. Marketing" />
-                </label>
-
-                <label className="g-ui-field">
-                  <span>Zahlungsziel</span>
-                  <select name="paymentTermDays" defaultValue="14">
-                    <option value="0">Sofort fällig</option>
-                    <option value="7">7 Tage</option>
-                    <option value="14">14 Tage</option>
-                    <option value="30">30 Tage</option>
-                  </select>
-                </label>
-
-                <label className="g-ui-field">
-                  <span>Belegsprache</span>
-                  <select name="invoiceLanguage" defaultValue="DE">
-                    <option value="DE">Deutsch</option>
-                    <option value="EN">Englisch</option>
-                  </select>
-                </label>
-              </div>
-            </fieldset>
-
-            <details className="customerOptionalSection">
-              <summary>Abweichende Lieferadresse hinzufügen</summary>
-
-              <div className="customerOptionalContent">
-                <label className="customerCheckboxField">
-                  <input
-                    type="checkbox"
-                    name="differentDeliveryAddress"
-                  />
-                  <span>Abweichende Lieferadresse verwenden</span>
-                </label>
-
-                <div className="customerFormGrid customerAddressGrid">
-                  <label className="g-ui-field customerStreetField">
-                    <span>Lieferstraße</span>
-                    <input
-                      name="deliveryStreet"
-                      placeholder="Lieferstraße"
-                    />
-                  </label>
-
-                  <label className="g-ui-field">
-                    <span>Hausnummer</span>
-                    <input
-                      name="deliveryHouseNumber"
-                      placeholder="12a"
-                    />
-                  </label>
-
-                  <label className="g-ui-field">
-                    <span>PLZ</span>
-                    <input
-                      name="deliveryPostalCode"
-                      placeholder="10115"
-                    />
-                  </label>
-
-                  <label className="g-ui-field">
-                    <span>Ort</span>
-                    <input
-                      name="deliveryCity"
-                      placeholder="Berlin"
-                    />
-                  </label>
-
-                  <label className="g-ui-field">
-                    <span>Land</span>
-                    <select
-                      name="deliveryCountry"
-                      defaultValue="DE"
-                    >
-                      <option value="DE">Deutschland</option>
-                      <option value="AT">Österreich</option>
-                      <option value="CH">Schweiz</option>
-                      <option value="OTHER">Anderes Land</option>
-                    </select>
-                  </label>
-                </div>
-              </div>
-            </details>
-
-            <fieldset className="customerFormGroup">
-              <legend>Interne Angaben</legend>
-
-              <label className="g-ui-field">
-                <span>Interne Notiz</span>
-                <textarea
-                  name="notes"
-                  rows={3}
-                  placeholder="Besonderheiten, Bestellabläufe oder interne Hinweise"
-                />
-              </label>
-            </fieldset>
-
-            <div className="customerCreateActions">
-              <button
-                className="g-ui-button g-ui-button--primary"
-                type="submit"
-              >
-                Kunde anlegen
-              </button>
-            </div>
-          </Form>
-        </PageSection>
-
-        <PageSection
-          className="customerListSection"
+        <GastarioSection
           eyebrow="Kundenübersicht"
           title="Aktuelle Kunden"
           description={
@@ -834,452 +613,818 @@ export default function CustomersPage() {
           }
         >
           {data.customers.length === 0 ? (
-            <div className="g-ui-empty customerEmptyState">
-              <strong>Noch keine Kunden angelegt</strong>
-              <span>
-                Lege deinen ersten Kunden an oder übernimm die
-                Kundendaten aus einem neuen Auftrag.
-              </span>
-            </div>
+            <GastarioEmptyState title="Noch keine Kunden angelegt">
+              Lege deinen ersten Kunden an oder übernimm Kundendaten
+              aus einem neuen Auftrag.
+            </GastarioEmptyState>
           ) : (
-            <div className="customersGrid">
-              {data.customers.map((customer: any) => (
-                <article
-                  className="customerCard"
-                  key={customer.id}
-                >
-                  <div className="customerCardHeader">
-                    <div className="customerIdentity">
-                      <div
-                        className="customerInitial"
-                        aria-hidden="true"
-                      >
-                        {String(customer.name || "K")
-                          .trim()
-                          .slice(0, 1)
-                          .toUpperCase()}
-                      </div>
+            <GastarioDataList>
+              {data.customers.map(
+                (customer: any) => (
+                  <GastarioDataRow
+                    key={customer.id}
+                    onClick={() => {
+                      setSelectedCustomerId(
+                        customer.id
+                      );
+                      setSelectedCustomerTab(
+                        "master"
+                      );
+                    }}
+                  >
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        {customer.name}
+                      </strong>
 
-                      <div>
-                        <div className="customerTitleLine">
-                          <h3>{customer.name}</h3>
-                          <span className="customerNumberBadge">
-                            {customer.customerNumber || "Ohne Nummer"}
-                          </span>
-                        </div>
-                        <p>
-                          {customer.contactName ||
-                            "Kein Ansprechpartner"}
-                        </p>
-                      </div>
+                      <span className="g-ui-data-row-description">
+                        {customer.customerNumber ||
+                          "Ohne Kundennummer"}
+                        {" · "}
+                        {customer.contactName ||
+                          "Kein Ansprechpartner"}
+                        {customer.email
+                          ? ` · ${customer.email}`
+                          : ""}
+                      </span>
                     </div>
 
-                    <span className="customerOrderBadge g-ui-pill">
-                      {customer._count?.orders || 0}{" "}
+                    <div className="g-ui-data-row-meta">
+                      <strong>
+                        {customer._count?.orders || 0}
+                      </strong>
+                      {" "}
                       {(customer._count?.orders || 0) === 1
                         ? "Auftrag"
                         : "Aufträge"}
+                    </div>
+
+                    <span
+                      className="g-ui-data-row-chevron"
+                      aria-hidden="true"
+                    >
+                      →
                     </span>
-                  </div>
-
-                  <div className="customerDetails">
-                    <div>
-                      <span>Ansprechpartner</span>
-                      <strong>
-                        {customer.contactName || "Nicht hinterlegt"}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>E-Mail</span>
-                      <strong>
-                        {customer.email || "Nicht hinterlegt"}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Telefon</span>
-                      <strong>
-                        {customer.phone || "Nicht hinterlegt"}
-                      </strong>
-                    </div>
-
-                    <div className="customerAddressDetail">
-                      <span>Adresse</span>
-                      <strong>
-                        {[
-                            [customer.street, customer.houseNumber]
-                              .filter(Boolean)
-                              .join(" "),
-                            [customer.postalCode, customer.city]
-                              .filter(Boolean)
-                              .join(" "),
-                          ]
-                            .filter(Boolean)
-                            .join(", ") ||
-                            customer.address ||
-                            "Nicht hinterlegt"}
-                      </strong>
-                    </div>
-                  </div>
-
-                  <div className="customerCardActions">
-                    <details className="customerEditDetails">
-                      <summary className="g-ui-button g-ui-button--secondary">
-                        Bearbeiten
-                      </summary>
-
-                      <Form
-                        method="post"
-                        className="customerEditForm"
-                      >
-                        <input
-                          type="hidden"
-                          name="intent"
-                          value="updateCustomer"
-                        />
-                        <input
-                          type="hidden"
-                          name="customerId"
-                          value={customer.id}
-                        />
-
-                        <div className="customerEditSection">
-                          <h4>Grunddaten</h4>
-
-                          <div className="customerFormGrid">
-                            <label className="g-ui-field">
-                              <span>Kundennummer</span>
-                              <input
-                                value={customer.customerNumber || ""}
-                                readOnly
-                              />
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>Kundentyp</span>
-                              <select
-                                name="customerType"
-                                defaultValue={
-                                  customer.customerType || "BUSINESS"
-                                }
-                              >
-                                <option value="BUSINESS">
-                                  Firmenkunde
-                                </option>
-                                <option value="PRIVATE">
-                                  Privatkunde
-                                </option>
-                              </select>
-                            </label>
-
-                            <label className="g-ui-field customerFormWide">
-                              <span>Firmen- oder Kundenname *</span>
-                              <input
-                                name="name"
-                                defaultValue={customer.name}
-                                required
-                              />
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>Status</span>
-                              <select
-                                name="active"
-                                defaultValue={
-                                  customer.active === false
-                                    ? "false"
-                                    : "true"
-                                }
-                              >
-                                <option value="true">Aktiv</option>
-                                <option value="false">Inaktiv</option>
-                              </select>
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="customerEditSection">
-                          <h4>Kontakt</h4>
-
-                          <div className="customerFormGrid">
-                            <label className="g-ui-field">
-                              <span>Ansprechpartner</span>
-                              <input
-                                name="contactName"
-                                defaultValue={
-                                  customer.contactName || ""
-                                }
-                              />
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>E-Mail</span>
-                              <input
-                                name="email"
-                                type="email"
-                                defaultValue={customer.email || ""}
-                              />
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>Rechnungs-E-Mail</span>
-                              <input
-                                name="invoiceEmail"
-                                type="email"
-                                defaultValue={
-                                  customer.invoiceEmail || ""
-                                }
-                              />
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>Telefon</span>
-                              <input
-                                name="phone"
-                                type="tel"
-                                defaultValue={customer.phone || ""}
-                              />
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="customerEditSection">
-                          <h4>Rechnungsadresse</h4>
-
-                          <div className="customerFormGrid customerAddressGrid">
-                            <label className="g-ui-field customerStreetField">
-                              <span>Straße</span>
-                              <input
-                                name="street"
-                                defaultValue={customer.street || ""}
-                              />
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>Hausnummer</span>
-                              <input
-                                name="houseNumber"
-                                defaultValue={
-                                  customer.houseNumber || ""
-                                }
-                              />
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>PLZ</span>
-                              <input
-                                name="postalCode"
-                                defaultValue={
-                                  customer.postalCode || ""
-                                }
-                              />
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>Ort</span>
-                              <input
-                                name="city"
-                                defaultValue={customer.city || ""}
-                              />
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>Land</span>
-                              <select
-                                name="country"
-                                defaultValue={customer.country || "DE"}
-                              >
-                                <option value="DE">Deutschland</option>
-                                <option value="AT">Österreich</option>
-                                <option value="CH">Schweiz</option>
-                                <option value="OTHER">
-                                  Anderes Land
-                                </option>
-                              </select>
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="customerEditSection">
-                          <h4>Abrechnung</h4>
-
-                          <div className="customerFormGrid">
-                            <label className="g-ui-field">
-                              <span>USt-IdNr.</span>
-                              <input
-                                name="vatId"
-                                defaultValue={customer.vatId || ""}
-                              />
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>Kostenstelle</span>
-                              <input
-                                name="costCenter"
-                                defaultValue={
-                                  customer.costCenter || ""
-                                }
-                              />
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>Zahlungsziel</span>
-                              <select
-                                name="paymentTermDays"
-                                defaultValue={String(
-                                  customer.paymentTermDays ?? 14
-                                )}
-                              >
-                                <option value="0">Sofort fällig</option>
-                                <option value="7">7 Tage</option>
-                                <option value="14">14 Tage</option>
-                                <option value="30">30 Tage</option>
-                              </select>
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>Belegsprache</span>
-                              <select
-                                name="invoiceLanguage"
-                                defaultValue={
-                                  customer.invoiceLanguage || "DE"
-                                }
-                              >
-                                <option value="DE">Deutsch</option>
-                                <option value="EN">Englisch</option>
-                              </select>
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="customerEditSection">
-                          <h4>Abweichende Lieferadresse</h4>
-
-                          <label className="customerCheckboxField">
-                            <input
-                              type="checkbox"
-                              name="differentDeliveryAddress"
-                              defaultChecked={
-                                customer.differentDeliveryAddress === true
-                              }
-                            />
-                            <span>
-                              Abweichende Lieferadresse verwenden
-                            </span>
-                          </label>
-
-                          <div className="customerFormGrid customerAddressGrid">
-                            <label className="g-ui-field customerStreetField">
-                              <span>Lieferstraße</span>
-                              <input
-                                name="deliveryStreet"
-                                defaultValue={
-                                  customer.deliveryStreet || ""
-                                }
-                              />
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>Hausnummer</span>
-                              <input
-                                name="deliveryHouseNumber"
-                                defaultValue={
-                                  customer.deliveryHouseNumber || ""
-                                }
-                              />
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>PLZ</span>
-                              <input
-                                name="deliveryPostalCode"
-                                defaultValue={
-                                  customer.deliveryPostalCode || ""
-                                }
-                              />
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>Ort</span>
-                              <input
-                                name="deliveryCity"
-                                defaultValue={
-                                  customer.deliveryCity || ""
-                                }
-                              />
-                            </label>
-
-                            <label className="g-ui-field">
-                              <span>Land</span>
-                              <select
-                                name="deliveryCountry"
-                                defaultValue={
-                                  customer.deliveryCountry || "DE"
-                                }
-                              >
-                                <option value="DE">Deutschland</option>
-                                <option value="AT">Österreich</option>
-                                <option value="CH">Schweiz</option>
-                                <option value="OTHER">
-                                  Anderes Land
-                                </option>
-                              </select>
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="customerEditSection">
-                          <h4>Interne Angaben</h4>
-
-                          <label className="g-ui-field">
-                            <span>Interne Notiz</span>
-                            <textarea
-                              name="notes"
-                              rows={3}
-                              defaultValue={customer.notes || ""}
-                            />
-                          </label>
-                        </div>
-
-                        <div className="customerEditActions">
-                          <button
-                            className="g-ui-button g-ui-button--primary"
-                            type="submit"
-                          >
-                            Änderungen speichern
-                          </button>
-                        </div>
-                      </Form>
-                    </details>
-
-                    <Form method="post">
-                      <input
-                        type="hidden"
-                        name="intent"
-                        value="deleteCustomer"
-                      />
-                      <input
-                        type="hidden"
-                        name="customerId"
-                        value={customer.id}
-                      />
-
-                      <button
-                        className="g-ui-button g-ui-button--danger"
-                        type="submit"
-                      >
-                        Löschen
-                      </button>
-                    </Form>
-                  </div>
-                </article>
-              ))}
-            </div>
+                  </GastarioDataRow>
+                )
+              )}
+            </GastarioDataList>
           )}
-        </PageSection>
-      </PageShell>
+        </GastarioSection>
+
+        <GastarioDetailDialog
+          open={Boolean(selectedCustomer)}
+          title={
+            selectedCustomer?.name ||
+            "Kunde"
+          }
+          description={
+            selectedCustomer
+              ? `${
+                  selectedCustomer.customerNumber ||
+                  "Ohne Kundennummer"
+                } · ${
+                  selectedCustomer._count?.orders ||
+                  0
+                } Aufträge`
+              : undefined
+          }
+          onClose={() =>
+            setSelectedCustomerId(null)
+          }
+          footer={
+            selectedCustomer ? (
+              <GastarioToolbar>
+                <button
+                  type="button"
+                  className={gastarioButtonClass("secondary")}
+                  onClick={() =>
+                    setSelectedCustomerId(null)
+                  }
+                >
+                  Schließen
+                </button>
+
+                <button
+                  type="submit"
+                  form="delete-customer-form"
+                  className={gastarioButtonClass("danger")}
+                  onClick={(event) => {
+                    if (
+                      !window.confirm(
+                        "Diesen Kunden wirklich löschen?"
+                      )
+                    ) {
+                      event.preventDefault();
+                    }
+                  }}
+                >
+                  Löschen
+                </button>
+
+                <button
+                  type="submit"
+                  form="customer-detail-form"
+                  className={gastarioButtonClass("primary")}
+                >
+                  Änderungen speichern
+                </button>
+              </GastarioToolbar>
+            ) : null
+          }
+        >
+          {selectedCustomer ? (
+            <>
+              <Form
+                id="customer-detail-form"
+                method="post"
+                key={selectedCustomer.id}
+              >
+                <input
+                  type="hidden"
+                  name="intent"
+                  value="updateCustomer"
+                />
+
+                <input
+                  type="hidden"
+                  name="customerId"
+                  value={selectedCustomer.id}
+                />
+
+                <GastarioDetailTabs
+                  items={[
+                    {
+                      id: "master",
+                      label: "Stammdaten",
+                    },
+                    {
+                      id: "address",
+                      label: "Adressen",
+                    },
+                    {
+                      id: "billing",
+                      label: "Abrechnung",
+                    },
+                  ]}
+                  activeId={selectedCustomerTab}
+                  onChange={setSelectedCustomerTab}
+                />
+
+                <GastarioDetailPane
+                  active={
+                    selectedCustomerTab ===
+                    "master"
+                  }
+                >
+                  <GastarioFormGrid>
+                    <GastarioField label="Kundennummer">
+                      <GastarioInput
+                        value={
+                          selectedCustomer.customerNumber ||
+                          ""
+                        }
+                        readOnly
+                      />
+                    </GastarioField>
+
+                    <GastarioField label="Kundentyp">
+                      <GastarioSelect
+                        name="customerType"
+                        defaultValue={
+                          selectedCustomer.customerType ||
+                          "BUSINESS"
+                        }
+                      >
+                        <option value="BUSINESS">
+                          Firmenkunde
+                        </option>
+
+                        <option value="PRIVATE">
+                          Privatkunde
+                        </option>
+                      </GastarioSelect>
+                    </GastarioField>
+
+                    <GastarioField
+                      label="Firmen- oder Kundenname"
+                      required
+                    >
+                      <GastarioInput
+                        name="name"
+                        defaultValue={
+                          selectedCustomer.name ||
+                          ""
+                        }
+                        required
+                      />
+                    </GastarioField>
+
+                    <GastarioField label="Status">
+                      <GastarioSelect
+                        name="active"
+                        defaultValue={
+                          selectedCustomer.active === false
+                            ? "false"
+                            : "true"
+                        }
+                      >
+                        <option value="true">
+                          Aktiv
+                        </option>
+
+                        <option value="false">
+                          Inaktiv
+                        </option>
+                      </GastarioSelect>
+                    </GastarioField>
+
+                    <GastarioField label="Ansprechpartner">
+                      <GastarioInput
+                        name="contactName"
+                        defaultValue={
+                          selectedCustomer.contactName ||
+                          ""
+                        }
+                      />
+                    </GastarioField>
+
+                    <GastarioField label="E-Mail">
+                      <GastarioInput
+                        name="email"
+                        type="email"
+                        defaultValue={
+                          selectedCustomer.email ||
+                          ""
+                        }
+                      />
+                    </GastarioField>
+
+                    <GastarioField label="Rechnungs-E-Mail">
+                      <GastarioInput
+                        name="invoiceEmail"
+                        type="email"
+                        defaultValue={
+                          selectedCustomer.invoiceEmail ||
+                          ""
+                        }
+                      />
+                    </GastarioField>
+
+                    <GastarioField label="Telefon">
+                      <GastarioInput
+                        name="phone"
+                        type="tel"
+                        defaultValue={
+                          selectedCustomer.phone ||
+                          ""
+                        }
+                      />
+                    </GastarioField>
+                  </GastarioFormGrid>
+
+                  <GastarioField label="Interne Notiz">
+                    <GastarioTextarea
+                      name="notes"
+                      rows={4}
+                      defaultValue={
+                        selectedCustomer.notes ||
+                        ""
+                      }
+                    />
+                  </GastarioField>
+                </GastarioDetailPane>
+
+                <GastarioDetailPane
+                  active={
+                    selectedCustomerTab ===
+                    "address"
+                  }
+                >
+                  <GastarioFormGrid>
+                    <GastarioField label="Straße">
+                      <GastarioInput
+                        name="street"
+                        defaultValue={
+                          selectedCustomer.street ||
+                          ""
+                        }
+                      />
+                    </GastarioField>
+
+                    <GastarioField label="Hausnummer">
+                      <GastarioInput
+                        name="houseNumber"
+                        defaultValue={
+                          selectedCustomer.houseNumber ||
+                          ""
+                        }
+                      />
+                    </GastarioField>
+
+                    <GastarioField label="PLZ">
+                      <GastarioInput
+                        name="postalCode"
+                        defaultValue={
+                          selectedCustomer.postalCode ||
+                          ""
+                        }
+                      />
+                    </GastarioField>
+
+                    <GastarioField label="Ort">
+                      <GastarioInput
+                        name="city"
+                        defaultValue={
+                          selectedCustomer.city ||
+                          ""
+                        }
+                      />
+                    </GastarioField>
+
+                    <GastarioField label="Land">
+                      <GastarioSelect
+                        name="country"
+                        defaultValue={
+                          selectedCustomer.country ||
+                          "DE"
+                        }
+                      >
+                        <option value="DE">
+                          Deutschland
+                        </option>
+                        <option value="AT">
+                          Österreich
+                        </option>
+                        <option value="CH">
+                          Schweiz
+                        </option>
+                        <option value="OTHER">
+                          Anderes Land
+                        </option>
+                      </GastarioSelect>
+                    </GastarioField>
+                  </GastarioFormGrid>
+
+                  <GastarioCheckRow
+                    name="differentDeliveryAddress"
+                    value="on"
+                    title="Abweichende Lieferadresse verwenden"
+                    description="Wenn aktiviert, verwendet Gastario diese Adresse für Lieferungen."
+                    defaultChecked={
+                      selectedCustomer.differentDeliveryAddress ===
+                      true
+                    }
+                  />
+
+                  <GastarioFormGrid>
+                    <GastarioField label="Lieferstraße">
+                      <GastarioInput
+                        name="deliveryStreet"
+                        defaultValue={
+                          selectedCustomer.deliveryStreet ||
+                          ""
+                        }
+                      />
+                    </GastarioField>
+
+                    <GastarioField label="Hausnummer">
+                      <GastarioInput
+                        name="deliveryHouseNumber"
+                        defaultValue={
+                          selectedCustomer.deliveryHouseNumber ||
+                          ""
+                        }
+                      />
+                    </GastarioField>
+
+                    <GastarioField label="Liefer-PLZ">
+                      <GastarioInput
+                        name="deliveryPostalCode"
+                        defaultValue={
+                          selectedCustomer.deliveryPostalCode ||
+                          ""
+                        }
+                      />
+                    </GastarioField>
+
+                    <GastarioField label="Lieferort">
+                      <GastarioInput
+                        name="deliveryCity"
+                        defaultValue={
+                          selectedCustomer.deliveryCity ||
+                          ""
+                        }
+                      />
+                    </GastarioField>
+
+                    <GastarioField label="Lieferland">
+                      <GastarioSelect
+                        name="deliveryCountry"
+                        defaultValue={
+                          selectedCustomer.deliveryCountry ||
+                          "DE"
+                        }
+                      >
+                        <option value="DE">
+                          Deutschland
+                        </option>
+                        <option value="AT">
+                          Österreich
+                        </option>
+                        <option value="CH">
+                          Schweiz
+                        </option>
+                        <option value="OTHER">
+                          Anderes Land
+                        </option>
+                      </GastarioSelect>
+                    </GastarioField>
+                  </GastarioFormGrid>
+                </GastarioDetailPane>
+
+                <GastarioDetailPane
+                  active={
+                    selectedCustomerTab ===
+                    "billing"
+                  }
+                >
+                  <GastarioFormGrid>
+                    <GastarioField label="USt-IdNr.">
+                      <GastarioInput
+                        name="vatId"
+                        defaultValue={
+                          selectedCustomer.vatId ||
+                          ""
+                        }
+                      />
+                    </GastarioField>
+
+                    <GastarioField label="Kostenstelle">
+                      <GastarioInput
+                        name="costCenter"
+                        defaultValue={
+                          selectedCustomer.costCenter ||
+                          ""
+                        }
+                      />
+                    </GastarioField>
+
+                    <GastarioField label="Zahlungsziel">
+                      <GastarioSelect
+                        name="paymentTermDays"
+                        defaultValue={String(
+                          selectedCustomer.paymentTermDays ??
+                          14
+                        )}
+                      >
+                        <option value="0">
+                          Sofort fällig
+                        </option>
+                        <option value="7">
+                          7 Tage
+                        </option>
+                        <option value="14">
+                          14 Tage
+                        </option>
+                        <option value="30">
+                          30 Tage
+                        </option>
+                      </GastarioSelect>
+                    </GastarioField>
+
+                    <GastarioField label="Belegsprache">
+                      <GastarioSelect
+                        name="invoiceLanguage"
+                        defaultValue={
+                          selectedCustomer.invoiceLanguage ||
+                          "DE"
+                        }
+                      >
+                        <option value="DE">
+                          Deutsch
+                        </option>
+                        <option value="EN">
+                          Englisch
+                        </option>
+                      </GastarioSelect>
+                    </GastarioField>
+                  </GastarioFormGrid>
+                </GastarioDetailPane>
+              </Form>
+
+              <Form
+                id="delete-customer-form"
+                method="post"
+              >
+                <input
+                  type="hidden"
+                  name="intent"
+                  value="deleteCustomer"
+                />
+
+                <input
+                  type="hidden"
+                  name="customerId"
+                  value={selectedCustomer.id}
+                />
+              </Form>
+            </>
+          ) : null}
+        </GastarioDetailDialog>
+
+        <GastarioDialog
+          open={createCustomerOpen}
+          title="Neuen Kunden anlegen"
+          description="Firmen-, Kontakt-, Rechnungs- und Lieferdaten zentral erfassen."
+          onClose={() =>
+            setCreateCustomerOpen(false)
+          }
+          size="xl"
+          footer={
+            <GastarioToolbar>
+              <button
+                type="button"
+                className={gastarioButtonClass("secondary")}
+                onClick={() =>
+                  setCreateCustomerOpen(false)
+                }
+              >
+                Abbrechen
+              </button>
+
+              <button
+                type="submit"
+                form="create-customer-form"
+                className={gastarioButtonClass("primary")}
+              >
+                Kunde anlegen
+              </button>
+            </GastarioToolbar>
+          }
+        >
+          <Form
+            id="create-customer-form"
+            method="post"
+          >
+            <input
+              type="hidden"
+              name="intent"
+              value="createCustomer"
+            />
+
+            <GastarioFormGrid>
+              <GastarioField
+                label="Kundentyp"
+                required
+              >
+                <GastarioSelect
+                  name="customerType"
+                  defaultValue="BUSINESS"
+                >
+                  <option value="BUSINESS">
+                    Firmenkunde
+                  </option>
+
+                  <option value="PRIVATE">
+                    Privatkunde
+                  </option>
+                </GastarioSelect>
+              </GastarioField>
+
+              <GastarioField
+                label="Firmen- oder Kundenname"
+                required
+              >
+                <GastarioInput
+                  name="name"
+                  placeholder="Firma oder Kunde"
+                  required
+                />
+              </GastarioField>
+
+              <GastarioField label="Status">
+                <GastarioSelect
+                  name="active"
+                  defaultValue="true"
+                >
+                  <option value="true">
+                    Aktiv
+                  </option>
+
+                  <option value="false">
+                    Inaktiv
+                  </option>
+                </GastarioSelect>
+              </GastarioField>
+
+              <GastarioField label="Ansprechpartner">
+                <GastarioInput
+                  name="contactName"
+                  placeholder="Vor- und Nachname"
+                />
+              </GastarioField>
+
+              <GastarioField label="E-Mail">
+                <GastarioInput
+                  name="email"
+                  type="email"
+                  placeholder="kunde@firma.de"
+                />
+              </GastarioField>
+
+              <GastarioField label="Rechnungs-E-Mail">
+                <GastarioInput
+                  name="invoiceEmail"
+                  type="email"
+                  placeholder="rechnung@firma.de"
+                />
+              </GastarioField>
+
+              <GastarioField label="Telefon">
+                <GastarioInput
+                  name="phone"
+                  type="tel"
+                  placeholder="030 12345678"
+                />
+              </GastarioField>
+
+              <GastarioField label="Straße">
+                <GastarioInput
+                  name="street"
+                  placeholder="Musterstraße"
+                />
+              </GastarioField>
+
+              <GastarioField label="Hausnummer">
+                <GastarioInput
+                  name="houseNumber"
+                  placeholder="12a"
+                />
+              </GastarioField>
+
+              <GastarioField label="PLZ">
+                <GastarioInput
+                  name="postalCode"
+                  inputMode="numeric"
+                  placeholder="10115"
+                />
+              </GastarioField>
+
+              <GastarioField label="Ort">
+                <GastarioInput
+                  name="city"
+                  placeholder="Berlin"
+                />
+              </GastarioField>
+
+              <GastarioField label="Land">
+                <GastarioSelect
+                  name="country"
+                  defaultValue="DE"
+                >
+                  <option value="DE">
+                    Deutschland
+                  </option>
+
+                  <option value="AT">
+                    Österreich
+                  </option>
+
+                  <option value="CH">
+                    Schweiz
+                  </option>
+
+                  <option value="OTHER">
+                    Anderes Land
+                  </option>
+                </GastarioSelect>
+              </GastarioField>
+
+              <GastarioField label="USt-IdNr.">
+                <GastarioInput
+                  name="vatId"
+                  placeholder="DE123456789"
+                />
+              </GastarioField>
+
+              <GastarioField label="Kostenstelle">
+                <GastarioInput
+                  name="costCenter"
+                  placeholder="z. B. Marketing"
+                />
+              </GastarioField>
+
+              <GastarioField label="Zahlungsziel">
+                <GastarioSelect
+                  name="paymentTermDays"
+                  defaultValue="14"
+                >
+                  <option value="0">
+                    Sofort fällig
+                  </option>
+
+                  <option value="7">
+                    7 Tage
+                  </option>
+
+                  <option value="14">
+                    14 Tage
+                  </option>
+
+                  <option value="30">
+                    30 Tage
+                  </option>
+                </GastarioSelect>
+              </GastarioField>
+
+              <GastarioField label="Belegsprache">
+                <GastarioSelect
+                  name="invoiceLanguage"
+                  defaultValue="DE"
+                >
+                  <option value="DE">
+                    Deutsch
+                  </option>
+
+                  <option value="EN">
+                    Englisch
+                  </option>
+                </GastarioSelect>
+              </GastarioField>
+            </GastarioFormGrid>
+
+            <GastarioCheckRow
+              name="differentDeliveryAddress"
+              value="on"
+              title="Abweichende Lieferadresse verwenden"
+              description="Die folgenden Lieferdaten werden nur verwendet, wenn diese Option aktiviert ist."
+            />
+
+            <GastarioFormGrid>
+              <GastarioField label="Lieferstraße">
+                <GastarioInput
+                  name="deliveryStreet"
+                  placeholder="Lieferstraße"
+                />
+              </GastarioField>
+
+              <GastarioField label="Hausnummer">
+                <GastarioInput
+                  name="deliveryHouseNumber"
+                  placeholder="12a"
+                />
+              </GastarioField>
+
+              <GastarioField label="Liefer-PLZ">
+                <GastarioInput
+                  name="deliveryPostalCode"
+                  placeholder="10115"
+                />
+              </GastarioField>
+
+              <GastarioField label="Lieferort">
+                <GastarioInput
+                  name="deliveryCity"
+                  placeholder="Berlin"
+                />
+              </GastarioField>
+
+              <GastarioField label="Lieferland">
+                <GastarioSelect
+                  name="deliveryCountry"
+                  defaultValue="DE"
+                >
+                  <option value="DE">
+                    Deutschland
+                  </option>
+
+                  <option value="AT">
+                    Österreich
+                  </option>
+
+                  <option value="CH">
+                    Schweiz
+                  </option>
+
+                  <option value="OTHER">
+                    Anderes Land
+                  </option>
+                </GastarioSelect>
+              </GastarioField>
+            </GastarioFormGrid>
+
+            <GastarioField label="Interne Notiz">
+              <GastarioTextarea
+                name="notes"
+                rows={4}
+                placeholder="Besonderheiten, Bestellabläufe oder interne Hinweise"
+              />
+            </GastarioField>
+          </Form>
+        </GastarioDialog>
+
+      </GastarioPage>
     </AppLayout>
   );
 }
-

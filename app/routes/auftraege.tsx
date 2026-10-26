@@ -20,6 +20,8 @@ import {
   GastarioDataList,
   GastarioDataRow,
   GastarioDetailDialog,
+  GastarioDetailTabs,
+  GastarioDetailPane,
   GastarioToolbar,
   GastarioTabs,
   GastarioStack,
@@ -536,6 +538,13 @@ export default function OrdersPage() {
    */
   const [selectedOrderId, setSelectedOrderId] =
     useState<string | null>(null);
+
+  const [selectedOrderDetailTab, setSelectedOrderDetailTab] =
+    useState("overview");
+
+  useEffect(() => {
+    setSelectedOrderDetailTab("overview");
+  }, [selectedOrderId]);
 
   const selectedOrder =
     data.orders.find(
@@ -1120,367 +1129,367 @@ export default function OrdersPage() {
             ) : null
           }
         >
-
           {selectedOrder ? (
+            <GastarioStack key={selectedOrder.id}>
 
-            <div className="g-ui-detail-stack">
-
-
-              <GastarioToolbar>
-
-                <GastarioBadge variant="neutral">
-                  {String(
-                    selectedOrder.platformName ||
-                    selectedOrder.source ||
-                    "Direkt"
-                  )}
-                </GastarioBadge>
-
-                <Link
-                  className={gastarioButtonClass(
-                    "secondary"
-                  )}
-                  to={
-                    `/auftrag-pruefung/${selectedOrder.id}`
-                  }
-                >
-                  Operative Zuordnung
-                </Link>
-
-              </GastarioToolbar>
+              <GastarioDetailTabs
+                items={[
+                  {
+                    id: "overview",
+                    label: "Übersicht",
+                  },
+                  {
+                    id: "items",
+                    label: "Positionen",
+                  },
+                  {
+                    id: "billing",
+                    label: "Abrechnung",
+                  },
+                ]}
+                activeId={selectedOrderDetailTab}
+                onChange={setSelectedOrderDetailTab}
+              />
 
 
-              <GastarioMetricGrid>
-
-                <GastarioMetric
-                  label="Lieferung"
-                  value={formatDate(
-                    selectedOrder.deliveryDate
-                  )}
-                  description={
-                    selectedOrder.deliveryTimeText ||
-                    "Uhrzeit offen"
-                  }
-                />
-
-                <GastarioMetric
-                  label="Gesamt"
-                  value={centsToEuro(
-                    selectedOrderTotal
-                  )}
-                  description={
-                    data.view === "past"
-                      ? "Vergangener Auftrag"
-                      : "Aktueller Auftrag"
-                  }
-                  badge="EUR"
-                />
-
-              </GastarioMetricGrid>
-
-
-              <GastarioPanel variant="soft">
-
-                <strong>
-                  Lieferadresse
-                </strong>
-
-                <div>
-                  {selectedOrder.deliveryAddress ||
-                    "Keine Lieferadresse eingetragen"}
-                </div>
-
-                {selectedOrder.contactPhone ? (
-                  <div>
-                    Telefon:{" "}
-                    {selectedOrder.contactPhone}
-                  </div>
-                ) : null}
-
-              </GastarioPanel>
-
-
-              <GastarioSection
-                eyebrow="Auftrag"
-                title="Positionen"
-                description={
-                  selectedOrderItems.length === 1
-                    ? "1 Position"
-                    : `${selectedOrderItems.length} Positionen`
+              <GastarioDetailPane
+                active={
+                  selectedOrderDetailTab ===
+                  "overview"
                 }
               >
+                <GastarioSection
+                  eyebrow="Auftragsübersicht"
+                  title="Auftrag auf einen Blick"
+                  description={
+                    data.view === "past"
+                      ? "Die wichtigsten Daten des vergangenen Auftrags."
+                      : "Die wichtigsten Daten für die operative Bearbeitung."
+                  }
+                >
+                  <GastarioToolbar>
+                    <GastarioBadge variant="neutral">
+                      {String(
+                        selectedOrder.platformName ||
+                        selectedOrder.source ||
+                        "Direkt"
+                      )}
+                    </GastarioBadge>
 
-                {selectedOrderItems.length === 0 ? (
-
-                  <GastarioEmptyState title="Keine Positionen">
-                    Für diesen Auftrag sind keine Positionen hinterlegt.
-                  </GastarioEmptyState>
-
-                ) : (
-
-                  <GastarioDataList>
-
-                    {selectedOrderItems.map(
-                      (item: any) => (
-
-                        <GastarioDataRow
-                          key={
-                            item.id ||
-                            item.name
-                          }
-                        >
-
-                          <div className="g-ui-data-row-main">
-
-                            <strong className="g-ui-data-row-title">
-                              {item.quantity || 1}x{" "}
-                              {item.name ||
-                                "Position"}
-                            </strong>
-
-                            {item.notes ||
-                            item.itemNotes ? (
-                              <span className="g-ui-data-row-description">
-                                {item.notes ||
-                                  item.itemNotes}
-                              </span>
-                            ) : null}
-
-                          </div>
-
-                          <div className="g-ui-data-row-meta">
-                            <span>
-                              {centsToEuro(
-                                Number(
-                                  item.totalCents ||
-                                  item.totalPriceCents ||
-                                  0
-                                )
-                              )}
-                            </span>
-                          </div>
-
-                        </GastarioDataRow>
-                      )
-                    )}
-
-                  </GastarioDataList>
-                )}
-
-              </GastarioSection>
-
-
-              <GastarioSection
-                eyebrow="Finanzen"
-                title="Abrechnung"
-                description="Lege fest, wie dieser Auftrag fakturiert wird."
-              >
-
-                <GastarioBadge variant="neutral">
-                  {selectedOrder.billingStatus ===
-                  "READY_TO_INVOICE"
-                    ? "Rechnung vorbereiten"
-                    : selectedOrder.billingStatus ===
-                        "INVOICED_EXTERNALLY"
-                      ? "Extern abgerechnet"
-                      : selectedOrder.billingStatus ===
-                          "WAITING_FOR_CREDIT"
-                        ? "Gutschrift ausstehend"
-                        : selectedOrder.billingStatus ===
-                            "CREDIT_RECEIVED"
-                          ? "Gutschrift erhalten"
-                          : selectedOrder.billingStatus ===
-                              "NOT_RELEVANT"
-                            ? "Nicht erforderlich"
-                            : selectedOrder.billingStatus ===
-                                "INVOICED"
-                              ? "Rechnung erstellt"
-                              : "Noch offen"}
-                </GastarioBadge>
-
-
-                <Form method="post">
-
-                  <input
-                    type="hidden"
-                    name="intent"
-                    value="updateBillingMode"
-                  />
-
-                  <input
-                    type="hidden"
-                    name="orderId"
-                    value={selectedOrder.id}
-                  />
-
-                  <GastarioField label="Abrechnungsart">
-
-                    <GastarioSelect
-                      name="billingMode"
-                      defaultValue={
-                        selectedOrder.billingMode ||
-                        "UNDECIDED"
+                    <Link
+                      className={gastarioButtonClass(
+                        "secondary"
+                      )}
+                      to={
+                        `/auftrag-pruefung/${selectedOrder.id}`
                       }
                     >
-                      <option value="UNDECIDED">
-                        Noch nicht entschieden
-                      </option>
-
-                      <option value="DIRECT_INVOICE">
-                        Eigene Rechnung mit Gastario
-                      </option>
-
-                      <option value="EXTERNAL_INVOICE">
-                        Über anderes System abgerechnet
-                      </option>
-
-                      <option value="PLATFORM_CREDIT">
-                        Plattformgutschrift
-                      </option>
-
-                      <option value="NO_INVOICE">
-                        Keine Rechnung erforderlich
-                      </option>
-                    </GastarioSelect>
-
-                  </GastarioField>
-
-                  <GastarioToolbar>
-
-                    <GastarioButton
-                      variant="primary"
-                      type="submit"
-                    >
-                      Abrechnungsart speichern
-                    </GastarioButton>
-
+                      Operative Zuordnung
+                    </Link>
                   </GastarioToolbar>
 
-                </Form>
+                  <GastarioMetricGrid>
+                    <GastarioMetric
+                      label="Lieferdatum"
+                      value={formatDate(
+                        selectedOrder.deliveryDate
+                      )}
+                      description={
+                        data.view === "past"
+                          ? "Vergangene Lieferung"
+                          : "Geplanter Liefertag"
+                      }
+                    />
 
+                    <GastarioMetric
+                      label="Lieferuhrzeit"
+                      value={
+                        selectedOrder.deliveryTimeText ||
+                        "Uhrzeit offen"
+                      }
+                      description="Anlieferung vor Ort"
+                    />
 
-                {selectedOrder.billingMode ===
-                "DIRECT_INVOICE" ? (
-
-                  <GastarioPanel variant="soft">
-
-                    {Array.isArray(
-                      selectedOrder.invoices
-                    ) &&
-                    selectedOrder.invoices.length >
-                      0 ? (
-                      <>
-                        <strong>
-                          Rechnung bereits vorhanden
-                        </strong>
-
-                        <div>
-                          {selectedOrder.invoices[0]
-                            .externalInvoiceNumber ||
-                            "Rechnungsentwurf ohne Nummer"}
-                        </div>
-
-                        <Link
-                          className={gastarioButtonClass(
-                            "secondary"
-                          )}
-                          to={
-                            "/rechnungen/" +
-                            selectedOrder.invoices[0]
-                              .id
-                          }
-                        >
-                          Rechnung öffnen
-                        </Link>
-                      </>
-                    ) : (
-                      <>
-                        <strong>
-                          Rechnungsentwurf vorbereiten
-                        </strong>
-
-                        <div>
-                          Kunde und Positionen werden
-                          in den Rechnungseditor
-                          übernommen.
-                        </div>
-
-                        <Link
-                          className={gastarioButtonClass(
-                            "secondary"
-                          )}
-                          to={
-                            "/rechnungen/neu?orderId=" +
-                            selectedOrder.id
-                          }
-                        >
-                          Rechnungsentwurf vorbereiten
-                        </Link>
-                      </>
-                    )}
-
-                  </GastarioPanel>
-
-                ) : null}
-
-
-                {selectedOrder.billingMode ===
-                "PLATFORM_CREDIT" ? (
+                    <GastarioMetric
+                      label="Gesamt"
+                      value={centsToEuro(
+                        selectedOrderTotal
+                      )}
+                      description={
+                        data.view === "past"
+                          ? "Vergangener Auftrag"
+                          : "Aktueller Auftragswert"
+                      }
+                      badge="EUR"
+                    />
+                  </GastarioMetricGrid>
 
                   <GastarioPanel variant="soft">
-                    <strong>
-                      Plattformgutschrift
-                    </strong>
+                    <strong>Lieferadresse</strong>
 
                     <div>
-                      Gastario erzeugt für diesen
-                      Auftrag keine eigene Rechnung.
+                      {selectedOrder.deliveryAddress ||
+                        "Keine Lieferadresse eingetragen"}
                     </div>
+
+                    {selectedOrder.contactPhone ? (
+                      <div>
+                        Telefon:{" "}
+                        {selectedOrder.contactPhone}
+                      </div>
+                    ) : null}
                   </GastarioPanel>
+                </GastarioSection>
+              </GastarioDetailPane>
 
-                ) : null}
+
+              <GastarioDetailPane
+                active={
+                  selectedOrderDetailTab ===
+                  "items"
+                }
+              >
+                <GastarioSection
+                  eyebrow="Auftragsinhalt"
+                  title="Positionen im Auftrag"
+                  description={
+                    selectedOrderItems.length === 1
+                      ? "1 Position"
+                      : `${selectedOrderItems.length} Positionen`
+                  }
+                >
+                  {selectedOrderItems.length === 0 ? (
+                    <GastarioEmptyState title="Keine Positionen">
+                      Für diesen Auftrag sind keine Positionen hinterlegt.
+                    </GastarioEmptyState>
+                  ) : (
+                    <GastarioDataList>
+                      {selectedOrderItems.map(
+                        (item: any) => (
+                          <GastarioDataRow
+                            key={
+                              item.id ||
+                              item.name
+                            }
+                          >
+                            <div className="g-ui-data-row-main">
+                              <strong className="g-ui-data-row-title">
+                                {item.quantity || 1}x{" "}
+                                {item.name || "Position"}
+                              </strong>
+
+                              {item.notes ||
+                              item.itemNotes ? (
+                                <span className="g-ui-data-row-description">
+                                  {item.notes ||
+                                    item.itemNotes}
+                                </span>
+                              ) : null}
+                            </div>
+
+                            <div className="g-ui-data-row-meta">
+                              <strong>
+                                {centsToEuro(
+                                  Number(
+                                    item.totalCents ||
+                                    item.totalPriceCents ||
+                                    0
+                                  )
+                                )}
+                              </strong>
+                            </div>
+                          </GastarioDataRow>
+                        )
+                      )}
+                    </GastarioDataList>
+                  )}
+                </GastarioSection>
+              </GastarioDetailPane>
 
 
-                {selectedOrder.billingMode ===
-                "EXTERNAL_INVOICE" ? (
-
+              <GastarioDetailPane
+                active={
+                  selectedOrderDetailTab ===
+                  "billing"
+                }
+              >
+                <GastarioSection
+                  eyebrow="Finanzen"
+                  title="Abrechnung"
+                  description="Lege fest, wie dieser Auftrag fakturiert wird."
+                >
                   <GastarioPanel variant="soft">
-                    <strong>
-                      Extern abgerechnet
-                    </strong>
+                    <GastarioStack>
+                      <GastarioBadge variant="neutral">
+                        {selectedOrder.billingStatus ===
+                        "READY_TO_INVOICE"
+                          ? "Rechnung vorbereiten"
+                          : selectedOrder.billingStatus ===
+                              "INVOICED_EXTERNALLY"
+                            ? "Extern abgerechnet"
+                            : selectedOrder.billingStatus ===
+                                "WAITING_FOR_CREDIT"
+                              ? "Gutschrift ausstehend"
+                              : selectedOrder.billingStatus ===
+                                  "CREDIT_RECEIVED"
+                                ? "Gutschrift erhalten"
+                                : selectedOrder.billingStatus ===
+                                    "NOT_RELEVANT"
+                                  ? "Nicht erforderlich"
+                                  : selectedOrder.billingStatus ===
+                                      "INVOICED"
+                                    ? "Rechnung erstellt"
+                                    : "Noch offen"}
+                      </GastarioBadge>
 
-                    <div>
-                      Der Auftrag wird in einem
-                      anderen System fakturiert.
-                    </div>
+                      <Form method="post">
+                        <input
+                          type="hidden"
+                          name="intent"
+                          value="updateBillingMode"
+                        />
+
+                        <input
+                          type="hidden"
+                          name="orderId"
+                          value={selectedOrder.id}
+                        />
+
+                        <GastarioField label="Abrechnungsart">
+                          <GastarioSelect
+                            name="billingMode"
+                            defaultValue={
+                              selectedOrder.billingMode ||
+                              "UNDECIDED"
+                            }
+                          >
+                            <option value="UNDECIDED">
+                              Noch nicht entschieden
+                            </option>
+
+                            <option value="DIRECT_INVOICE">
+                              Eigene Rechnung mit Gastario
+                            </option>
+
+                            <option value="EXTERNAL_INVOICE">
+                              Über anderes System abgerechnet
+                            </option>
+
+                            <option value="PLATFORM_CREDIT">
+                              Plattformgutschrift
+                            </option>
+
+                            <option value="NO_INVOICE">
+                              Keine Rechnung erforderlich
+                            </option>
+                          </GastarioSelect>
+                        </GastarioField>
+
+                        <GastarioToolbar align="end">
+                          <GastarioButton
+                            variant="primary"
+                            type="submit"
+                          >
+                            Abrechnungsart speichern
+                          </GastarioButton>
+                        </GastarioToolbar>
+                      </Form>
+                    </GastarioStack>
                   </GastarioPanel>
 
-                ) : null}
+                  {selectedOrder.billingMode ===
+                  "DIRECT_INVOICE" ? (
+                    <GastarioPanel variant="soft">
+                      <GastarioStack>
+                        {Array.isArray(
+                          selectedOrder.invoices
+                        ) &&
+                        selectedOrder.invoices.length > 0 ? (
+                          <>
+                            <strong>
+                              Rechnung bereits vorhanden
+                            </strong>
 
+                            <div>
+                              {selectedOrder.invoices[0]
+                                .externalInvoiceNumber ||
+                                "Rechnungsentwurf ohne Nummer"}
+                            </div>
 
-                {selectedOrder.billingMode ===
-                "NO_INVOICE" ? (
+                            <Link
+                              className={gastarioButtonClass(
+                                "secondary"
+                              )}
+                              to={
+                                "/rechnungen/" +
+                                selectedOrder.invoices[0].id
+                              }
+                            >
+                              Rechnung öffnen
+                            </Link>
+                          </>
+                        ) : (
+                          <>
+                            <strong>
+                              Rechnungsentwurf vorbereiten
+                            </strong>
 
-                  <GastarioPanel variant="soft">
-                    <strong>
-                      Keine Rechnung erforderlich
-                    </strong>
+                            <div>
+                              Kunde und Positionen werden in den
+                              Rechnungseditor übernommen.
+                            </div>
 
-                    <div>
-                      Der Auftrag wird nicht in die
-                      offene Rechnungsbearbeitung
-                      aufgenommen.
-                    </div>
-                  </GastarioPanel>
+                            <Link
+                              className={gastarioButtonClass(
+                                "secondary"
+                              )}
+                              to={
+                                "/rechnungen/neu?orderId=" +
+                                selectedOrder.id
+                              }
+                            >
+                              Rechnungsentwurf vorbereiten
+                            </Link>
+                          </>
+                        )}
+                      </GastarioStack>
+                    </GastarioPanel>
+                  ) : null}
 
-                ) : null}
+                  {selectedOrder.billingMode ===
+                  "PLATFORM_CREDIT" ? (
+                    <GastarioPanel variant="soft">
+                      <strong>Plattformgutschrift</strong>
+                      <div>
+                        Gastario erzeugt für diesen Auftrag keine eigene Rechnung.
+                      </div>
+                    </GastarioPanel>
+                  ) : null}
 
-              </GastarioSection>
+                  {selectedOrder.billingMode ===
+                  "EXTERNAL_INVOICE" ? (
+                    <GastarioPanel variant="soft">
+                      <strong>Extern abgerechnet</strong>
+                      <div>
+                        Der Auftrag wird in einem anderen System fakturiert.
+                      </div>
+                    </GastarioPanel>
+                  ) : null}
 
-            </div>
+                  {selectedOrder.billingMode ===
+                  "NO_INVOICE" ? (
+                    <GastarioPanel variant="soft">
+                      <strong>Keine Rechnung erforderlich</strong>
+                      <div>
+                        Der Auftrag wird nicht in die offene Rechnungsbearbeitung aufgenommen.
+                      </div>
+                    </GastarioPanel>
+                  ) : null}
+                </GastarioSection>
+              </GastarioDetailPane>
 
+            </GastarioStack>
           ) : null}
-
         </GastarioDetailDialog>
 
       </GastarioStack>
