@@ -3117,3 +3117,252 @@
   }
 
 }
+
+/* =========================================================
+   GASTARIO CENTRAL ROW AND SPLIT FIX 2026
+   Einheitliches Listen- und Master/Detail-Layout
+========================================================= */
+
+@media screen {
+
+  /* -------------------------------------------------------
+     SPLIT VIEW
+     Liste links / Detail rechts
+  ------------------------------------------------------- */
+
+  .g-ui-split {
+    width: 100%;
+
+    display: grid !important;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(340px, 430px) !important;
+
+    gap: 24px !important;
+
+    align-items: start !important;
+  }
+
+
+  .g-ui-split--wide {
+    grid-template-columns:
+      minmax(0, 1.55fr)
+      minmax(360px, .85fr) !important;
+  }
+
+
+  /*
+   * Wenn kein Aside vorhanden ist,
+   * darf Main die komplette Breite verwenden.
+   */
+  .g-ui-split > .g-ui-main:only-child {
+    grid-column:
+      1 / -1;
+  }
+
+
+  .g-ui-split > .g-ui-main,
+  .g-ui-split > .g-ui-aside {
+    min-width: 0;
+  }
+
+
+  .g-ui-split > .g-ui-aside {
+    align-self: start;
+  }
+
+
+  /* -------------------------------------------------------
+     DATA ROW
+     Main links / Meta rechts / Action / Pfeil
+  ------------------------------------------------------- */
+
+  .g-ui-data-row {
+    grid-template-columns:
+      minmax(0, 1fr)
+      auto
+      auto
+      28px !important;
+
+    gap:
+      14px !important;
+
+    align-items:
+      center !important;
+  }
+
+
+  /*
+   * Positionierung erfolgt nach zentraler Rolle und
+   * nicht mehr nach Reihenfolge im JSX.
+   *
+   * Dadurch funktionieren auch ältere Rows,
+   * bei denen Meta vor Main steht.
+   */
+
+  .g-ui-data-row > .g-ui-data-row-main {
+    grid-column:
+      1 !important;
+
+    grid-row:
+      1 !important;
+
+    min-width:
+      0;
+  }
+
+
+  .g-ui-data-row > .g-ui-data-row-meta {
+    grid-column:
+      2 !important;
+
+    grid-row:
+      1 !important;
+
+    justify-self:
+      end;
+  }
+
+
+  .g-ui-data-row > .g-ui-data-row-actions {
+    grid-column:
+      3 !important;
+
+    grid-row:
+      1 !important;
+
+    justify-self:
+      end;
+  }
+
+
+  .g-ui-data-row > .g-ui-data-row-chevron {
+    grid-column:
+      4 !important;
+
+    grid-row:
+      1 !important;
+
+    justify-self:
+      end;
+  }
+
+
+  /*
+   * Checklisten verwenden ein Label als kompletten Inhalt.
+   */
+  .g-ui-data-row > label {
+    grid-column:
+      1 / span 3;
+
+    min-width:
+      0;
+
+    display:
+      flex;
+
+    align-items:
+      center;
+
+    gap:
+      12px;
+
+    cursor:
+      pointer;
+  }
+
+
+  /* -------------------------------------------------------
+     TABLET
+  ------------------------------------------------------- */
+
+  @media (max-width: 1150px) {
+
+    .g-ui-split,
+    .g-ui-split--wide {
+      grid-template-columns:
+        minmax(0, 1fr) !important;
+    }
+
+
+    .g-ui-split > .g-ui-aside {
+      position:
+        static !important;
+    }
+
+  }
+
+
+  /* -------------------------------------------------------
+     MOBILE DATA ROW
+  ------------------------------------------------------- */
+
+  @media (max-width: 850px) {
+
+    .g-ui-data-row {
+      grid-template-columns:
+        minmax(0, 1fr)
+        28px !important;
+
+      gap:
+        8px 12px !important;
+    }
+
+
+    .g-ui-data-row > .g-ui-data-row-main {
+      grid-column:
+        1 !important;
+
+      grid-row:
+        1 !important;
+    }
+
+
+    .g-ui-data-row > .g-ui-data-row-meta {
+      grid-column:
+        1 !important;
+
+      grid-row:
+        2 !important;
+
+      justify-self:
+        start;
+
+      justify-content:
+        flex-start;
+    }
+
+
+    .g-ui-data-row > .g-ui-data-row-actions {
+      grid-column:
+        1 !important;
+
+      grid-row:
+        3 !important;
+
+      justify-self:
+        start;
+    }
+
+
+    .g-ui-data-row > .g-ui-data-row-chevron {
+      grid-column:
+        2 !important;
+
+      grid-row:
+        1 / span 3 !important;
+
+      align-self:
+        center;
+    }
+
+
+    .g-ui-data-row > label {
+      grid-column:
+        1 !important;
+    }
+
+  }
+
+}

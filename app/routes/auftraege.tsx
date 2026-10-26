@@ -1,4 +1,4 @@
-import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
+import { Form, Link, redirect, useActionData, useLoaderData, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
 import {
@@ -21,10 +21,10 @@ import {
   GastarioDataRow,
   GastarioDrawer,
   GastarioToolbar,
+  GastarioTabs,
+  GastarioStack,
 } from "../components/ui";
 import DeliveryNoteButton from "../components/DeliveryNoteButton";
-import auftraegeStyles from "../styles/auftraege.css?url";
-import auftragseingangStyles from "../styles/auftragseingang.css?url";
 import deliveryNoteDocumentStyles from "../styles/delivery-note-document.css?url";
 
 const STATUSES = [
@@ -106,15 +106,7 @@ export function links() {
   return [
     {
       rel: "stylesheet",
-      href: auftragseingangStyles,
-    },
-    {
-      rel: "stylesheet",
       href: deliveryNoteDocumentStyles,
-    },
-    {
-      rel: "stylesheet",
-      href: auftraegeStyles,
     },
   ];
 }
@@ -536,6 +528,7 @@ export async function action({ request }: { request: Request }) {
 export default function OrdersPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const navigate = useNavigate();
 
   /*
    * gastario-inline-order-details-20260714
@@ -580,13 +573,7 @@ export default function OrdersPage() {
   return (
     <AppLayout>
 
-      <GastarioPage
-        className={
-          data.view === "past"
-            ? "ordersPagePast"
-            : "ordersPageUpcoming"
-        }
-      >
+      <GastarioPage>
       <GastarioHeader
         eyebrow="Verkauf"
         title="Aufträge"
@@ -697,7 +684,7 @@ export default function OrdersPage() {
         />
       </GastarioMetricGrid>
 
-      <section className="g-ui-orders-content">
+      <GastarioStack>
         <GastarioSection
           eyebrow="Auftragsübersicht"
           title={
@@ -836,59 +823,36 @@ export default function OrdersPage() {
 
 
           {data.view !== "past" ? (
-            <nav
-              className="g-ui-tabs"
-              aria-label="Auftragsstatus"
-            >
-              {STATUSES.map((status) => {
-                const params =
-                  new URLSearchParams();
+            <GastarioTabs
+              items={STATUSES.map((status) => ({
+                id: status.value || "all",
+                label: status.label,
+              }))}
+              activeId={data.activeStatus || "all"}
+              onChange={(id) => {
+                const params = new URLSearchParams();
 
-                if (status.value) {
-                  params.set(
-                    "status",
-                    status.value
-                  );
+                if (id !== "all") {
+                  params.set("status", id);
                 }
 
                 if (data.searchQuery) {
-                  params.set(
-                    "q",
-                    data.searchQuery
-                  );
+                  params.set("q", data.searchQuery);
                 }
 
                 if (data.dateRange) {
-                  params.set(
-                    "dateRange",
-                    data.dateRange
-                  );
+                  params.set("dateRange", data.dateRange);
                 }
 
-                const href =
-                  params.toString()
-                    ? "/auftraege?" +
-                      params.toString()
-                    : "/auftraege";
+                const query = params.toString();
 
-                return (
-                  <Link
-                    key={
-                      status.value || "all"
-                    }
-                    className={
-                      data.activeStatus ===
-                      status.value
-                        ? "g-ui-tab g-ui-tab--active"
-                        : "g-ui-tab"
-                    }
-                    to={href}
-                  >
-                    {status.label}
-                  </Link>
+                navigate(
+                  query
+                    ? `/auftraege?${query}`
+                    : "/auftraege"
                 );
-              })}
-            </nav>
+              }}
+            />
           ) : (
             <GastarioPanel variant="soft">
               <strong>
@@ -1528,19 +1492,12 @@ export default function OrdersPage() {
 
         </GastarioDrawer>
 
-      </section>
+      </GastarioStack>
       </GastarioPage>
 </AppLayout>
   );
 }
 
-const selectStyle = {
-  border: "1px solid #cbd5e1",
-  borderRadius: 999,
-  padding: "9px 11px",
-  fontWeight: 850,
-  background: "white",
-};
 
 
 

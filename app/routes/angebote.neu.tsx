@@ -15,13 +15,26 @@ import {
 import AppLayout from "../components/AppLayout";
 
 import {
-  Notice,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
+  GastarioPage,
+  GastarioHeader,
+  GastarioNotice,
+  GastarioSplitView,
+  GastarioMain,
+  GastarioAside,  GastarioSection,  GastarioFormGrid,  GastarioField,  GastarioInput,  GastarioSelect,  GastarioMetricGrid,  GastarioMetric,
 
-import "../styles/angebote.css";
+
+
+
+
+
+
+  gastarioButtonClass,
+} from "../components/ui";
+
+import { GastarioPanel, GastarioTextarea, GastarioButton, GastarioToolbar } from "../components/ui";
+
+import { GastarioDataList, GastarioDataRow } from "../components/ui";
+
 
 type QuoteBuilderItem = {
   key: string;
@@ -1039,8 +1052,8 @@ export default function NewQuotePage() {
 
   return (
     <AppLayout>
-      <PageShell className="quotesPage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Verkauf"
           title="Neues Angebot"
           subtitle={
@@ -1056,7 +1069,7 @@ export default function NewQuotePage() {
           actions={
             <Link
               to="/angebote"
-              className="quoteButton quoteButtonSecondary"
+              className={gastarioButtonClass("secondary")}
             >
               Zur Übersicht
             </Link>
@@ -1064,21 +1077,18 @@ export default function NewQuotePage() {
         />
 
         {data.setupError ? (
-          <Notice type="warning">
+          <GastarioNotice type="warning">
             {data.setupError}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
         {actionData?.error ? (
-          <Notice type="danger">
+          <GastarioNotice type="danger">
             {actionData.error}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
-        <Form
-          method="post"
-          className="quoteCreateForm"
-        >
+        <Form method="post">
           <input
             type="hidden"
             name="customerId"
@@ -1099,35 +1109,32 @@ export default function NewQuotePage() {
             }
           />
 
-          <div className="quoteBuilderGrid">
-            <div className="quoteBuilderMain">
-              <PageSection
+          <GastarioSplitView wide>
+            <GastarioMain>
+              <GastarioSection
                 eyebrow="Angebotsdaten"
                 title="Kunde und Veranstaltung"
                 description="Grunddaten für Empfänger, Termin und Lieferung."
               >
-                <div className="quoteFormGrid">
-                  <label className="quoteField quoteFormFull">
-                    <span>Kunde *</span>
 
-                    <select
+                <GastarioFormGrid columns={2}>
+
+                  <GastarioField
+                    label="Kunde"
+                    required
+                  >
+                    <GastarioSelect
                       value={customerId}
                       required
                       onChange={(event) => {
-                        const value =
-                          event.target.value;
+                        const value = event.target.value;
 
-                        setCustomerId(
-                          value
-                        );
+                        setCustomerId(value);
 
                         const customer =
                           data.customers.find(
-                            (
-                              entry: any
-                            ) =>
-                              entry.id ===
-                              value
+                            (entry: any) =>
+                              entry.id === value
                           );
 
                         if (
@@ -1147,16 +1154,10 @@ export default function NewQuotePage() {
                       </option>
 
                       {data.customers.map(
-                        (
-                          customer: any
-                        ) => (
+                        (customer: any) => (
                           <option
-                            key={
-                              customer.id
-                            }
-                            value={
-                              customer.id
-                            }
+                            key={customer.id}
+                            value={customer.id}
                           >
                             {customer.customerNumber
                               ? `${customer.customerNumber} · `
@@ -1165,66 +1166,12 @@ export default function NewQuotePage() {
                           </option>
                         )
                       )}
-                    </select>
-                  </label>
+                    </GastarioSelect>
+                  </GastarioField>
 
-                  {selectedCustomer ? (
-                    <div className="quoteCustomerPreview quoteFormFull">
-                      <div>
-                        <small>
-                          Ansprechpartner
-                        </small>
 
-                        <strong>
-                          {selectedCustomer.contactName ||
-                            "Nicht hinterlegt"}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <small>
-                          E-Mail
-                        </small>
-
-                        <strong>
-                          {selectedCustomer.email ||
-                            selectedCustomer.invoiceEmail ||
-                            "Nicht hinterlegt"}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <small>
-                          Zahlungsziel
-                        </small>
-
-                        <strong>
-                          {selectedCustomer.paymentTermDays}
-                          {" Tage"}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <small>
-                          Sprache
-                        </small>
-
-                        <strong>
-                          {selectedCustomer.invoiceLanguage ===
-                          "EN"
-                            ? "Englisch"
-                            : "Deutsch"}
-                        </strong>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  <label className="quoteField">
-                    <span>
-                      Veranstaltung
-                    </span>
-
-                    <input
+                  <GastarioField label="Veranstaltung">
+                    <GastarioInput
                       name="eventName"
                       value={eventName}
                       onChange={(event) =>
@@ -1234,14 +1181,11 @@ export default function NewQuotePage() {
                       }
                       placeholder="z. B. Office Lunch"
                     />
-                  </label>
+                  </GastarioField>
 
-                  <label className="quoteField">
-                    <span>
-                      Veranstaltungsdatum
-                    </span>
 
-                    <input
+                  <GastarioField label="Veranstaltungsdatum">
+                    <GastarioInput
                       name="eventDate"
                       type="date"
                       value={eventDate}
@@ -1251,33 +1195,25 @@ export default function NewQuotePage() {
                         )
                       }
                     />
-                  </label>
+                  </GastarioField>
 
-                  <label className="quoteField">
-                    <span>
-                      Lieferzeit
-                    </span>
 
-                    <input
+                  <GastarioField label="Lieferzeit">
+                    <GastarioInput
                       name="deliveryTimeText"
                       type="time"
-                      value={
-                        deliveryTimeText
-                      }
+                      value={deliveryTimeText}
                       onChange={(event) =>
                         setDeliveryTimeText(
                           event.target.value
                         )
                       }
                     />
-                  </label>
+                  </GastarioField>
 
-                  <label className="quoteField">
-                    <span>
-                      Gültig bis
-                    </span>
 
-                    <input
+                  <GastarioField label="Gültig bis">
+                    <GastarioInput
                       name="validUntil"
                       type="date"
                       value={validUntil}
@@ -1287,18 +1223,13 @@ export default function NewQuotePage() {
                         )
                       }
                     />
-                  </label>
+                  </GastarioField>
 
-                  <label className="quoteField quoteFormFull">
-                    <span>
-                      Lieferadresse
-                    </span>
 
-                    <input
+                  <GastarioField label="Lieferadresse">
+                    <GastarioInput
                       name="deliveryAddress"
-                      value={
-                        deliveryAddress
-                      }
+                      value={deliveryAddress}
                       onChange={(event) =>
                         setDeliveryAddress(
                           event.target.value
@@ -1306,409 +1237,375 @@ export default function NewQuotePage() {
                       }
                       placeholder="Wird andernfalls aus dem Kunden übernommen"
                     />
-                  </label>
-                </div>
-              </PageSection>
+                  </GastarioField>
 
-              <PageSection
+                </GastarioFormGrid>
+
+
+                {selectedCustomer ? (
+                  <GastarioMetricGrid>
+
+                    <GastarioMetric
+                      label="Ansprechpartner"
+                      value={
+                        selectedCustomer.contactName ||
+                        "Nicht hinterlegt"
+                      }
+                    />
+
+                    <GastarioMetric
+                      label="E-Mail"
+                      value={
+                        selectedCustomer.email ||
+                        selectedCustomer.invoiceEmail ||
+                        "Nicht hinterlegt"
+                      }
+                    />
+
+                    <GastarioMetric
+                      label="Zahlungsziel"
+                      value={`${selectedCustomer.paymentTermDays} Tage`}
+                    />
+
+                    <GastarioMetric
+                      label="Sprache"
+                      value={
+                        selectedCustomer.invoiceLanguage === "EN"
+                          ? "Englisch"
+                          : "Deutsch"
+                      }
+                    />
+
+                  </GastarioMetricGrid>
+                ) : null}
+
+              </GastarioSection>
+
+              <GastarioSection
                 eyebrow="Leistungen"
                 title="Angebotspositionen"
                 description="Produkte übernehmen oder freie Leistungen erfassen."
-                actions={
-                  <button
+                action={
+                  <GastarioButton
                     type="button"
-                    className="quoteButton quoteButtonPrimary"
+                    variant="primary"
                     onClick={addItem}
                   >
                     + Position hinzufügen
-                  </button>
+                  </GastarioButton>
                 }
               >
-                <div className="quotePositionList">
-                  {items.map(
-                    (
-                      item,
-                      index
-                    ) => {
-                      const lineTotal =
-                        Math.max(
-                          1,
-                          Number(
-                            item.quantity ||
-                              1
-                          )
-                        ) *
-                        moneyInputToCents(
-                          item.unitPrice
-                        );
 
-                      return (
-                        <article
-                          key={item.key}
-                          className="quotePositionCard"
-                        >
-                          <header className="quotePositionHeader">
-                            <div>
-                              <span className="quotePositionNumber">
-                                {index + 1}
-                              </span>
+                {items.map((item, index) => {
+                  const lineTotal =
+                    Math.max(
+                      1,
+                      Number(
+                        item.quantity || 1
+                      )
+                    ) *
+                    moneyInputToCents(
+                      item.unitPrice
+                    );
 
-                              <div>
-                                <strong>
-                                  {item.name ||
-                                    "Neue Position"}
-                                </strong>
+                  return (
+                    <GastarioPanel
+                      key={item.key}
+                      variant="soft"
+                    >
 
-                                <small>
-                                  {centsToEuro(
-                                    lineTotal
-                                  )}
-                                  {" netto"}
-                                </small>
-                              </div>
-                            </div>
+                      <GastarioToolbar align="between">
 
-                            <div className="quotePositionActions">
-                              <button
-                                type="button"
-                                className="quoteIconButton"
-                                disabled={
-                                  index === 0
-                                }
-                                onClick={() =>
-                                  moveItem(
-                                    index,
-                                    -1
-                                  )
-                                }
-                                aria-label="Position nach oben"
-                              >
-                                ↑
-                              </button>
+                        <div>
+                          <strong>
+                            {index + 1}.{" "}
+                            {item.name ||
+                              "Neue Position"}
+                          </strong>
 
-                              <button
-                                type="button"
-                                className="quoteIconButton"
-                                disabled={
-                                  index ===
-                                  items.length -
-                                    1
-                                }
-                                onClick={() =>
-                                  moveItem(
-                                    index,
-                                    1
-                                  )
-                                }
-                                aria-label="Position nach unten"
-                              >
-                                ↓
-                              </button>
-
-                              <button
-                                type="button"
-                                className="quoteIconButton"
-                                onClick={() =>
-                                  duplicateItem(
-                                    index
-                                  )
-                                }
-                              >
-                                Duplizieren
-                              </button>
-
-                              <button
-                                type="button"
-                                className="quoteIconButton quoteIconButtonDanger"
-                                disabled={
-                                  items.length ===
-                                  1
-                                }
-                                onClick={() =>
-                                  deleteItem(
-                                    index
-                                  )
-                                }
-                              >
-                                Löschen
-                              </button>
-                            </div>
-                          </header>
-
-                          <div className="quotePositionGrid">
-                            <label className="quoteField quotePositionProduct">
-                              <span>
-                                Produkt
-                              </span>
-
-                              <select
-                                value={
-                                  item.productId
-                                }
-                                onChange={(
-                                  event
-                                ) =>
-                                  selectProduct(
-                                    index,
-                                    event
-                                      .target
-                                      .value
-                                  )
-                                }
-                              >
-                                <option value="">
-                                  Freie Position
-                                </option>
-
-                                {data.products.map(
-                                  (
-                                    product: any
-                                  ) => (
-                                    <option
-                                      key={
-                                        product.id
-                                      }
-                                      value={
-                                        product.id
-                                      }
-                                    >
-                                      {product.category
-                                        ? `${product.category} · `
-                                        : ""}
-                                      {product.name}
-                                    </option>
-                                  )
-                                )}
-                              </select>
-                            </label>
-
-                            <label className="quoteField quotePositionName">
-                              <span>
-                                Bezeichnung *
-                              </span>
-
-                              <input
-                                value={
-                                  item.name
-                                }
-                                onChange={(
-                                  event
-                                ) =>
-                                  updateItem(
-                                    index,
-                                    {
-                                      name:
-                                        event
-                                          .target
-                                          .value,
-                                    }
-                                  )
-                                }
-                                placeholder="Leistung oder Produkt"
-                              />
-                            </label>
-
-                            <label className="quoteField">
-                              <span>
-                                Menge
-                              </span>
-
-                              <input
-                                type="number"
-                                min="1"
-                                step="1"
-                                value={
-                                  item.quantity
-                                }
-                                onChange={(
-                                  event
-                                ) =>
-                                  updateItem(
-                                    index,
-                                    {
-                                      quantity:
-                                        Math.max(
-                                          1,
-                                          Number(
-                                            event
-                                              .target
-                                              .value ||
-                                              1
-                                          )
-                                        ),
-                                    }
-                                  )
-                                }
-                              />
-                            </label>
-
-                            <label className="quoteField">
-                              <span>
-                                Einheit
-                              </span>
-
-                              <select
-                                value={
-                                  item.unit
-                                }
-                                onChange={(
-                                  event
-                                ) =>
-                                  updateItem(
-                                    index,
-                                    {
-                                      unit:
-                                        event
-                                          .target
-                                          .value,
-                                    }
-                                  )
-                                }
-                              >
-                                {UNIT_OPTIONS.map(
-                                  (
-                                    unit
-                                  ) => (
-                                    <option
-                                      key={
-                                        unit
-                                      }
-                                      value={
-                                        unit
-                                      }
-                                    >
-                                      {unit}
-                                    </option>
-                                  )
-                                )}
-                              </select>
-                            </label>
-
-                            <label className="quoteField">
-                              <span>
-                                Einzelpreis netto
-                              </span>
-
-                              <input
-                                inputMode="decimal"
-                                value={
-                                  item.unitPrice
-                                }
-                                onChange={(
-                                  event
-                                ) =>
-                                  updateItem(
-                                    index,
-                                    {
-                                      unitPrice:
-                                        event
-                                          .target
-                                          .value,
-                                    }
-                                  )
-                                }
-                                placeholder="0,00"
-                              />
-                            </label>
-
-                            <label className="quoteField">
-                              <span>
-                                Umsatzsteuer
-                              </span>
-
-                              <select
-                                value={
-                                  item.taxRate
-                                }
-                                onChange={(
-                                  event
-                                ) =>
-                                  updateItem(
-                                    index,
-                                    {
-                                      taxRate:
-                                        Number(
-                                          event
-                                            .target
-                                            .value
-                                        ),
-                                    }
-                                  )
-                                }
-                              >
-                                {TAX_OPTIONS.map(
-                                  (
-                                    taxRate
-                                  ) => (
-                                    <option
-                                      key={
-                                        taxRate
-                                      }
-                                      value={
-                                        taxRate
-                                      }
-                                    >
-                                      {taxRate}
-                                      {" %"}
-                                    </option>
-                                  )
-                                )}
-                              </select>
-                            </label>
-
-                            <div className="quoteLineTotal">
-                              <span>
-                                Positionssumme
-                              </span>
-
-                              <strong>
-                                {centsToEuro(
-                                  lineTotal
-                                )}
-                              </strong>
-                            </div>
-
-                            <label className="quoteField quoteFormFull">
-                              <span>
-                                Beschreibung oder Hinweis
-                              </span>
-
-                              <textarea
-                                rows={2}
-                                value={
-                                  item.notes
-                                }
-                                onChange={(
-                                  event
-                                ) =>
-                                  updateItem(
-                                    index,
-                                    {
-                                      notes:
-                                        event
-                                          .target
-                                          .value,
-                                    }
-                                  )
-                                }
-                                placeholder="Optionale Beschreibung für diese Position"
-                              />
-                            </label>
+                          <div>
+                            {centsToEuro(
+                              lineTotal
+                            )}
+                            {" netto"}
                           </div>
-                        </article>
-                      );
-                    }
-                  )}
-                </div>
-              </PageSection>
+                        </div>
 
-              <PageSection
+
+                        <GastarioToolbar align="end">
+
+                          <GastarioButton
+                            type="button"
+                            variant="secondary"
+                            disabled={
+                              index === 0
+                            }
+                            onClick={() =>
+                              moveItem(
+                                index,
+                                -1
+                              )
+                            }
+                            aria-label="Position nach oben"
+                          >
+                            ↑
+                          </GastarioButton>
+
+
+                          <GastarioButton
+                            type="button"
+                            variant="secondary"
+                            disabled={
+                              index ===
+                              items.length - 1
+                            }
+                            onClick={() =>
+                              moveItem(
+                                index,
+                                1
+                              )
+                            }
+                            aria-label="Position nach unten"
+                          >
+                            ↓
+                          </GastarioButton>
+
+
+                          <GastarioButton
+                            type="button"
+                            variant="secondary"
+                            onClick={() =>
+                              duplicateItem(
+                                index
+                              )
+                            }
+                          >
+                            Duplizieren
+                          </GastarioButton>
+
+
+                          <GastarioButton
+                            type="button"
+                            variant="danger"
+                            disabled={
+                              items.length === 1
+                            }
+                            onClick={() =>
+                              deleteItem(
+                                index
+                              )
+                            }
+                          >
+                            Löschen
+                          </GastarioButton>
+
+                        </GastarioToolbar>
+
+                      </GastarioToolbar>
+
+
+                      <GastarioFormGrid columns={4}>
+
+                        <GastarioField label="Produkt">
+                          <GastarioSelect
+                            value={
+                              item.productId
+                            }
+                            onChange={(event) =>
+                              selectProduct(
+                                index,
+                                event.target.value
+                              )
+                            }
+                          >
+                            <option value="">
+                              Freie Position
+                            </option>
+
+                            {data.products.map(
+                              (product: any) => (
+                                <option
+                                  key={product.id}
+                                  value={product.id}
+                                >
+                                  {product.category
+                                    ? `${product.category} · `
+                                    : ""}
+                                  {product.name}
+                                </option>
+                              )
+                            )}
+                          </GastarioSelect>
+                        </GastarioField>
+
+
+                        <GastarioField label="Bezeichnung *">
+                          <GastarioInput
+                            value={item.name}
+                            onChange={(event) =>
+                              updateItem(
+                                index,
+                                {
+                                  name:
+                                    event.target.value,
+                                }
+                              )
+                            }
+                            placeholder="Leistung oder Produkt"
+                          />
+                        </GastarioField>
+
+
+                        <GastarioField label="Menge">
+                          <GastarioInput
+                            type="number"
+                            min="1"
+                            step="1"
+                            value={
+                              item.quantity
+                            }
+                            onChange={(event) =>
+                              updateItem(
+                                index,
+                                {
+                                  quantity:
+                                    Math.max(
+                                      1,
+                                      Number(
+                                        event.target.value ||
+                                        1
+                                      )
+                                    ),
+                                }
+                              )
+                            }
+                          />
+                        </GastarioField>
+
+
+                        <GastarioField label="Einheit">
+                          <GastarioSelect
+                            value={item.unit}
+                            onChange={(event) =>
+                              updateItem(
+                                index,
+                                {
+                                  unit:
+                                    event.target.value,
+                                }
+                              )
+                            }
+                          >
+                            {UNIT_OPTIONS.map(
+                              (unit) => (
+                                <option
+                                  key={unit}
+                                  value={unit}
+                                >
+                                  {unit}
+                                </option>
+                              )
+                            )}
+                          </GastarioSelect>
+                        </GastarioField>
+
+
+                        <GastarioField label="Einzelpreis netto">
+                          <GastarioInput
+                            inputMode="decimal"
+                            value={
+                              item.unitPrice
+                            }
+                            onChange={(event) =>
+                              updateItem(
+                                index,
+                                {
+                                  unitPrice:
+                                    event.target.value,
+                                }
+                              )
+                            }
+                            placeholder="0,00"
+                          />
+                        </GastarioField>
+
+
+                        <GastarioField label="Umsatzsteuer">
+                          <GastarioSelect
+                            value={
+                              item.taxRate
+                            }
+                            onChange={(event) =>
+                              updateItem(
+                                index,
+                                {
+                                  taxRate:
+                                    Number(
+                                      event.target.value
+                                    ),
+                                }
+                              )
+                            }
+                          >
+                            {TAX_OPTIONS.map(
+                              (taxRate) => (
+                                <option
+                                  key={taxRate}
+                                  value={taxRate}
+                                >
+                                  {taxRate} %
+                                </option>
+                              )
+                            )}
+                          </GastarioSelect>
+                        </GastarioField>
+
+
+                        <GastarioField label="Beschreibung oder Hinweis">
+                          <GastarioTextarea
+                            rows={2}
+                            value={item.notes}
+                            onChange={(event) =>
+                              updateItem(
+                                index,
+                                {
+                                  notes:
+                                    event.target.value,
+                                }
+                              )
+                            }
+                            placeholder="Optionale Beschreibung für diese Position"
+                          />
+                        </GastarioField>
+
+                      </GastarioFormGrid>
+
+
+                      <GastarioMetricGrid>
+                        <GastarioMetric
+                          label="Positionssumme"
+                          value={
+                            centsToEuro(
+                              lineTotal
+                            )
+                          }
+                          description="Netto"
+                        />
+                      </GastarioMetricGrid>
+
+                    </GastarioPanel>
+                  );
+                })}
+
+              </GastarioSection>
+
+              <GastarioSection
                 eyebrow="Hinweise"
                 title="Interne Notiz"
                 description="Diese Notiz wird zunächst intern am Angebot gespeichert."
               >
-                <label className="quoteField">
-                  <textarea
+                <GastarioField label="Interne Notiz">
+                  <GastarioTextarea
                     name="notes"
                     rows={4}
                     value={notes}
@@ -1719,118 +1616,118 @@ export default function NewQuotePage() {
                     }
                     placeholder="Absprachen, Kalkulationshinweise oder interne Informationen"
                   />
-                </label>
-              </PageSection>
-            </div>
+                </GastarioField>
+              </GastarioSection>
 
-            <aside className="quoteBuilderSidebar">
-              <section className="quoteSummaryCard">
-                <header>
-                  <p>
-                    Kalkulation
-                  </p>
+              </GastarioMain>
 
-                  <h2>
-                    Angebotssumme
-                  </h2>
+            <GastarioAside>
+              <GastarioSection
+                eyebrow="Kalkulation"
+                title="Angebotssumme"
+                description="Alle Werte werden live berechnet."
+              >
 
-                  <span>
-                    Alle Werte werden live
-                    berechnet.
-                  </span>
-                </header>
+                <GastarioMetricGrid>
 
-                <div className="quoteSummaryLines">
-                  <div>
-                    <span>
-                      Positionen
-                    </span>
+                  <GastarioMetric
+                    label="Positionen"
+                    value={items.length}
+                  />
 
-                    <strong>
-                      {items.length}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>
-                      Zwischensumme netto
-                    </span>
-
-                    <strong>
-                      {centsToEuro(
+                  <GastarioMetric
+                    label="Zwischensumme netto"
+                    value={
+                      centsToEuro(
                         summary.subtotalCents
-                      )}
-                    </strong>
-                  </div>
+                      )
+                    }
+                  />
 
-                  <label className="quoteSummaryDiscount">
-                    <span>
-                      Gesamtrabatt
-                    </span>
-
-                    <input
-                      inputMode="decimal"
-                      value={discount}
-                      onChange={(event) =>
-                        setDiscount(
-                          event.target.value
-                        )
-                      }
-                    />
-
-                    <small>EUR</small>
-                  </label>
-
-                  <div>
-                    <span>
-                      Nettobetrag
-                    </span>
-
-                    <strong>
-                      {centsToEuro(
+                  <GastarioMetric
+                    label="Nettobetrag"
+                    value={
+                      centsToEuro(
                         summary.netCents
-                      )}
-                    </strong>
-                  </div>
+                      )
+                    }
+                  />
 
-                  {summary.taxes.map(
-                    (tax) => (
-                      <div
-                        key={
-                          tax.taxRate
-                        }
-                      >
-                        <span>
-                          Umsatzsteuer{" "}
-                          {tax.taxRate}
-                          {" %"}
-                        </span>
+                  <GastarioMetric
+                    label="Gesamt brutto"
+                    value={
+                      centsToEuro(
+                        summary.grossCents
+                      )
+                    }
+                    badge="EUR"
+                  />
 
-                        <strong>
-                          {centsToEuro(
-                            tax.taxCents
-                          )}
-                        </strong>
-                      </div>
-                    )
-                  )}
-                </div>
+                </GastarioMetricGrid>
 
-                <div className="quoteSummaryTotal">
-                  <span>
-                    Gesamt brutto
-                  </span>
 
+                <GastarioField
+                  label="Gesamtrabatt"
+                  hint="Betrag in EUR"
+                >
+                  <GastarioInput
+                    inputMode="decimal"
+                    value={discount}
+                    onChange={(event) =>
+                      setDiscount(
+                        event.target.value
+                      )
+                    }
+                    placeholder="0,00"
+                  />
+                </GastarioField>
+
+
+                {summary.taxes.length > 0 ? (
+                  <GastarioDataList>
+
+                    {summary.taxes.map(
+                      (tax) => (
+                        <GastarioDataRow
+                          key={tax.taxRate}
+                        >
+                          <div className="g-ui-data-row-main">
+                            <strong className="g-ui-data-row-title">
+                              Umsatzsteuer {tax.taxRate} %
+                            </strong>
+                            <span className="g-ui-data-row-description">
+                              Steuerbetrag
+                            </span>
+                          </div>
+
+                          <div className="g-ui-data-row-meta">
+                            <strong>
+                              {centsToEuro(
+                                tax.taxCents
+                              )}
+                            </strong>
+                          </div>
+                        </GastarioDataRow>
+                      )
+                    )}
+
+                  </GastarioDataList>
+                ) : null}
+
+
+                <GastarioPanel variant="soft">
                   <strong>
+                    Gesamt brutto:{" "}
                     {centsToEuro(
                       summary.grossCents
                     )}
                   </strong>
-                </div>
+                </GastarioPanel>
 
-                <button
+
+                <GastarioButton
                   type="submit"
-                  className="quoteButton quoteButtonPrimary quoteBuilderSubmit"
+                  variant="primary"
                   disabled={
                     isSubmitting ||
                     !customerId
@@ -1839,18 +1736,19 @@ export default function NewQuotePage() {
                   {isSubmitting
                     ? "Angebot wird angelegt …"
                     : "Als Entwurf anlegen"}
-                </button>
+                </GastarioButton>
 
-                <p className="quoteSummaryHint">
-                  Nach dem Speichern öffnet
-                  sich die vollständige
-                  Angebotsansicht.
-                </p>
-              </section>
-            </aside>
-          </div>
+
+                <GastarioNotice type="neutral">
+                  Nach dem Speichern öffnet sich die vollständige Angebotsansicht.
+                </GastarioNotice>
+
+              </GastarioSection>
+
+              </GastarioAside>
+          </GastarioSplitView>
         </Form>
-      </PageShell>
+      </GastarioPage>
     </AppLayout>
   );
 }

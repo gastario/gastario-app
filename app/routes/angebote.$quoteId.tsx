@@ -9,13 +9,22 @@ import {
 import AppLayout from "../components/AppLayout";
 
 import {
-  Notice,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
+  GastarioPage,
+  GastarioHeader,
+  GastarioNotice,
+  GastarioSplitView,
+  GastarioMain,
+  GastarioAside,
+  gastarioButtonClass,
+} from "../components/ui";
 
-import "../styles/angebote.css";
+import { GastarioSection, GastarioMetricGrid, GastarioMetric, GastarioBadge } from "../components/ui";
+
+import { GastarioDataList, GastarioDataRow } from "../components/ui";
+
+import { GastarioPanel } from "../components/ui";
+
+import { GastarioField, GastarioSelect, GastarioButton, GastarioToolbar } from "../components/ui";
 
 const QUOTE_STATUSES = [
   {
@@ -92,16 +101,6 @@ function statusLabel(
   );
 }
 
-function statusClass(
-  status: string
-) {
-  return (
-    "quoteStatus " +
-    `quoteStatus--${String(
-      status || "draft"
-    ).toLowerCase()}`
-  );
-}
 
 export function meta({
   data,
@@ -469,8 +468,8 @@ export default function QuoteDetailPage() {
 
   return (
     <AppLayout>
-      <PageShell className="quotesPage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Angebot"
           title={quote.quoteNumber}
           subtitle={
@@ -482,10 +481,10 @@ export default function QuoteDetailPage() {
             </>
           }
           actions={
-            <div className="quoteHeaderActions">
+            <GastarioToolbar align="end">
               <Link
                 to="/angebote"
-                className="quoteButton quoteButtonSecondary"
+                className={gastarioButtonClass("secondary")}
               >
                 Übersicht
               </Link>
@@ -499,139 +498,113 @@ export default function QuoteDetailPage() {
 
                 <button
                   type="submit"
-                  className="quoteButton quoteButtonSecondary"
+                  className={gastarioButtonClass("secondary")}
                 >
                   Duplizieren
                 </button>
               </Form>
-            </div>
+            </GastarioToolbar>
           }
         />
 
         {actionData?.error ? (
-          <Notice type="danger">
+          <GastarioNotice type="danger">
             {actionData.error}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
         {actionData?.success ? (
-          <Notice type="success">
+          <GastarioNotice type="success">
             {actionData.success}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
-        <div className="quoteDetailGrid">
-          <div className="quoteDetailMain">
-            <PageSection
+        <GastarioSplitView wide>
+          <GastarioMain>
+            <GastarioSection
               eyebrow="Empfänger"
               title={quote.customerName}
               description="Kunden- und Veranstaltungsdaten des Angebots."
-              actions={
-                <span
-                  className={statusClass(
-                    quote.status
-                  )}
-                >
-                  {statusLabel(
-                    quote.status
-                  )}
-                </span>
+              action={
+                <GastarioBadge variant="neutral">
+                  {statusLabel(quote.status)}
+                </GastarioBadge>
               }
             >
-              <div className="quoteDetailFacts">
-                <div>
-                  <small>
-                    Ansprechpartner
-                  </small>
 
-                  <strong>
-                    {quote.contactName ||
-                      "Nicht hinterlegt"}
-                  </strong>
-                </div>
+              <GastarioMetricGrid>
 
-                <div>
-                  <small>
-                    E-Mail
-                  </small>
+                <GastarioMetric
+                  label="Ansprechpartner"
+                  value={
+                    quote.contactName ||
+                    "Nicht hinterlegt"
+                  }
+                />
 
-                  <strong>
-                    {quote.contactEmail ||
-                      "Nicht hinterlegt"}
-                  </strong>
-                </div>
+                <GastarioMetric
+                  label="E-Mail"
+                  value={
+                    quote.contactEmail ||
+                    "Nicht hinterlegt"
+                  }
+                />
 
-                <div>
-                  <small>
-                    Telefon
-                  </small>
+                <GastarioMetric
+                  label="Telefon"
+                  value={
+                    quote.contactPhone ||
+                    "Nicht hinterlegt"
+                  }
+                />
 
-                  <strong>
-                    {quote.contactPhone ||
-                      "Nicht hinterlegt"}
-                  </strong>
-                </div>
+                <GastarioMetric
+                  label="Veranstaltung"
+                  value={
+                    quote.eventName ||
+                    "Nicht festgelegt"
+                  }
+                />
 
-                <div>
-                  <small>
-                    Veranstaltung
-                  </small>
-
-                  <strong>
-                    {quote.eventName ||
-                      "Nicht festgelegt"}
-                  </strong>
-                </div>
-
-                <div>
-                  <small>
-                    Datum
-                  </small>
-
-                  <strong>
-                    {formatDate(
+                <GastarioMetric
+                  label="Datum"
+                  value={
+                    formatDate(
                       quote.eventDate
-                    )}
-                  </strong>
-                </div>
+                    )
+                  }
+                />
 
-                <div>
-                  <small>
-                    Lieferzeit
-                  </small>
+                <GastarioMetric
+                  label="Lieferzeit"
+                  value={
+                    quote.deliveryTimeText ||
+                    "Nicht festgelegt"
+                  }
+                />
 
-                  <strong>
-                    {quote.deliveryTimeText ||
-                      "Nicht festgelegt"}
-                  </strong>
-                </div>
+                <GastarioMetric
+                  label="Lieferadresse"
+                  value={
+                    quote.deliveryAddress ||
+                    "Nicht festgelegt"
+                  }
+                />
 
-                <div className="quoteDetailFactWide">
-                  <small>
-                    Lieferadresse
-                  </small>
-
-                  <strong>
-                    {quote.deliveryAddress ||
-                      "Nicht festgelegt"}
-                  </strong>
-                </div>
-
-                <div>
-                  <small>
-                    Gültig bis
-                  </small>
-
-                  <strong>
-                    {formatDate(
+                <GastarioMetric
+                  label="Gültig bis"
+                  value={
+                    formatDate(
                       quote.validUntil
-                    )}
-                  </strong>
-                </div>
-              </div>
-            </PageSection>
+                    )
+                  }
+                />
 
-            <PageSection
+              </GastarioMetricGrid>
+
+            </GastarioSection>
+
+            <GastarioSection
               eyebrow="Leistungen"
               title="Angebotspositionen"
               description={
@@ -640,237 +613,242 @@ export default function QuoteDetailPage() {
                   : `${quote.items.length} Positionen`
               }
             >
-              <div className="quoteDetailItems">
-                <div className="quoteDetailItemsHead">
-                  <span>Position</span>
-                  <span>Menge</span>
-                  <span>Einzelpreis</span>
-                  <span>Steuer</span>
-                  <span>Gesamt</span>
-                </div>
+
+              <GastarioDataList>
 
                 {quote.items.map(
                   (
                     item: any,
                     index: number
                   ) => (
-                    <article
-                      key={item.id}
-                      className="quoteDetailItem"
-                    >
-                      <div>
-                        <small>
-                          Position{" "}
-                          {index + 1}
-                        </small>
 
-                        <strong>
+                    <GastarioDataRow
+                      key={item.id}
+                    >
+
+                      <div className="g-ui-data-row-main">
+
+                        <span className="g-ui-data-row-description">
+                          Position {index + 1}
+                        </span>
+
+                        <strong className="g-ui-data-row-title">
                           {item.name}
                         </strong>
 
                         {item.notes ? (
-                          <p>
+                          <span className="g-ui-data-row-description">
                             {item.notes}
-                          </p>
+                          </span>
                         ) : null}
+
+                        <span className="g-ui-data-row-description">
+                          {item.quantity} {item.unit}
+                          {" · "}
+                          Einzelpreis{" "}
+                          {centsToEuro(
+                            item.unitCents
+                          )}
+                          {" · "}
+                          USt. {item.taxRate} %
+                        </span>
+
                       </div>
 
-                      <span>
-                        {item.quantity}
-                        {" "}
-                        {item.unit}
-                      </span>
 
-                      <span>
-                        {centsToEuro(
-                          item.unitCents
-                        )}
-                      </span>
+                      <div className="g-ui-data-row-meta">
 
-                      <span>
-                        {item.taxRate}
-                        {" %"}
-                      </span>
+                        <span>
+                          {item.quantity} {item.unit}
+                        </span>
 
-                      <strong>
-                        {centsToEuro(
-                          item.totalCents
-                        )}
-                      </strong>
-                    </article>
+                        <span>
+                          {item.taxRate} % USt.
+                        </span>
+
+                        <strong>
+                          {centsToEuro(
+                            item.totalCents
+                          )}
+                        </strong>
+
+                      </div>
+
+                    </GastarioDataRow>
+
                   )
                 )}
-              </div>
-            </PageSection>
+
+              </GastarioDataList>
+
+            </GastarioSection>
 
             {quote.notes ? (
-              <PageSection
+              <GastarioSection
                 eyebrow="Hinweise"
                 title="Interne Notiz"
               >
-                <p className="quoteDetailNotes">
+                <GastarioPanel variant="soft">
                   {quote.notes}
-                </p>
-              </PageSection>
+                </GastarioPanel>
+              </GastarioSection>
             ) : null}
-          </div>
+          </GastarioMain>
 
-          <aside className="quoteDetailSidebar">
-            <section className="quoteSummaryCard">
-              <header>
-                <p>
-                  Kalkulation
-                </p>
+          <GastarioAside>
+            <GastarioSection
+              eyebrow="Kalkulation"
+              title="Angebotssumme"
+              description="Stand des gespeicherten Entwurfs."
+            >
 
-                <h2>
-                  Angebotssumme
-                </h2>
+              <GastarioMetricGrid>
 
-                <span>
-                  Stand des gespeicherten
-                  Entwurfs.
-                </span>
-              </header>
-
-              <div className="quoteSummaryLines">
-                <div>
-                  <span>
-                    Zwischensumme netto
-                  </span>
-
-                  <strong>
-                    {centsToEuro(
+                <GastarioMetric
+                  label="Zwischensumme netto"
+                  value={
+                    centsToEuro(
                       subtotalCents
-                    )}
-                  </strong>
-                </div>
+                    )
+                  }
+                />
 
-                <div>
-                  <span>
-                    Rabatt
-                  </span>
-
-                  <strong>
-                    −{" "}
-                    {centsToEuro(
+                <GastarioMetric
+                  label="Rabatt"
+                  value={
+                    `− ${centsToEuro(
                       quote.discountCents
-                    )}
-                  </strong>
-                </div>
+                    )}`
+                  }
+                />
 
-                <div>
-                  <span>
-                    Nettobetrag
-                  </span>
-
-                  <strong>
-                    {centsToEuro(
+                <GastarioMetric
+                  label="Nettobetrag"
+                  value={
+                    centsToEuro(
                       totalCents
-                    )}
-                  </strong>
-                </div>
+                    )
+                  }
+                />
 
-                {taxRows.map(
-                  (tax) => (
-                    <div
-                      key={
-                        tax.taxRate
-                      }
+                <GastarioMetric
+                  label="Gesamt brutto"
+                  value={
+                    centsToEuro(
+                      grossCents
+                    )
+                  }
+                  badge="EUR"
+                />
+
+              </GastarioMetricGrid>
+
+
+              {taxRows.length > 0 ? (
+                <GastarioDataList>
+
+                  {taxRows.map((tax) => (
+                    <GastarioDataRow
+                      key={tax.taxRate}
                     >
-                      <span>
-                        Umsatzsteuer{" "}
-                        {tax.taxRate}
-                        {" %"}
-                      </span>
+                      <div className="g-ui-data-row-main">
+                        <strong className="g-ui-data-row-title">
+                          Umsatzsteuer {tax.taxRate} %
+                        </strong>
 
-                      <strong>
-                        {centsToEuro(
-                          tax.taxCents
-                        )}
-                      </strong>
-                    </div>
-                  )
-                )}
-              </div>
+                        <span className="g-ui-data-row-description">
+                          Steuerbetrag
+                        </span>
+                      </div>
 
-              <div className="quoteSummaryTotal">
-                <span>
-                  Gesamt brutto
-                </span>
+                      <div className="g-ui-data-row-meta">
+                        <strong>
+                          {centsToEuro(
+                            tax.taxCents
+                          )}
+                        </strong>
+                      </div>
+                    </GastarioDataRow>
+                  ))}
 
+                </GastarioDataList>
+              ) : null}
+
+
+              <GastarioPanel variant="soft">
                 <strong>
+                  Gesamt brutto:{" "}
                   {centsToEuro(
                     grossCents
                   )}
                 </strong>
-              </div>
-            </section>
+              </GastarioPanel>
 
-            <PageSection
+            </GastarioSection>
+
+            <GastarioSection
               eyebrow="Workflow"
               title="Angebotsstatus"
               description="Dokumentiere den aktuellen Bearbeitungsstand."
             >
-              <Form
-                method="post"
-                className="quoteStatusForm"
-              >
+
+              <Form method="post">
+
                 <input
                   type="hidden"
                   name="intent"
                   value="updateStatus"
                 />
 
-                <label className="quoteField">
-                  <span>Status</span>
-
-                  <select
+                <GastarioField label="Status">
+                  <GastarioSelect
                     name="status"
-                    defaultValue={
-                      quote.status
-                    }
+                    defaultValue={quote.status}
                   >
                     {QUOTE_STATUSES.map(
                       (entry) => (
                         <option
-                          key={
-                            entry.value
-                          }
-                          value={
-                            entry.value
-                          }
+                          key={entry.value}
+                          value={entry.value}
                         >
                           {entry.label}
                         </option>
                       )
                     )}
-                  </select>
-                </label>
+                  </GastarioSelect>
+                </GastarioField>
 
-                <button
-                  type="submit"
-                  className="quoteButton quoteButtonPrimary"
-                >
-                  Status speichern
-                </button>
+                <GastarioToolbar align="end">
+                  <GastarioButton
+                    type="submit"
+                    variant="primary"
+                  >
+                    Status speichern
+                  </GastarioButton>
+                </GastarioToolbar>
+
               </Form>
 
+
               {quote.convertedOrderId ? (
-                <Notice type="success">
-                  Dieses Angebot wurde bereits
-                  in einen Auftrag übernommen.
-                </Notice>
+                <GastarioNotice type="success">
+                  Dieses Angebot wurde bereits in einen Auftrag übernommen.
+                </GastarioNotice>
               ) : null}
-            </PageSection>
+
+            </GastarioSection>
 
             {quote.status === "DRAFT" ? (
-              <PageSection
+              <GastarioSection
                 eyebrow="Entwurf"
                 title="Angebot löschen"
                 description="Diese Aktion kann nicht rückgängig gemacht werden."
-                soft
-                flat
               >
+
+                <GastarioNotice type="warning">
+                  Der Angebotsentwurf wird dauerhaft gelöscht.
+                </GastarioNotice>
+
                 <Form
                   method="post"
                   onSubmit={(event) => {
@@ -889,18 +867,22 @@ export default function QuoteDetailPage() {
                     value="delete"
                   />
 
-                  <button
-                    type="submit"
-                    className="quoteButton quoteButtonDanger quoteButtonFull"
-                  >
-                    Entwurf löschen
-                  </button>
+                  <GastarioToolbar align="end">
+                    <GastarioButton
+                      type="submit"
+                      variant="danger"
+                    >
+                      Entwurf löschen
+                    </GastarioButton>
+                  </GastarioToolbar>
+
                 </Form>
-              </PageSection>
+
+              </GastarioSection>
             ) : null}
-          </aside>
-        </div>
-      </PageShell>
+          </GastarioAside>
+        </GastarioSplitView>
+      </GastarioPage>
     </AppLayout>
   );
 }

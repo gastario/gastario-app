@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import auftraegeStyles from "../styles/auftraege.css?url";
 import AppLayout from "../components/AppLayout";
 import {
   GastarioField,
@@ -16,17 +15,10 @@ import {
   GastarioMetricGrid,
   GastarioPanel,
   GastarioToolbar,
+  GastarioStack,
 } from "../components/ui";
 import { Form, redirect, useActionData } from "react-router";
 
-export function links() {
-  return [
-    {
-      rel: "stylesheet",
-      href: auftraegeStyles,
-    },
-  ];
-}
 
 
 type ManualItem = {
@@ -296,156 +288,21 @@ export default function NeuerAuftragPage() {
     });
   }
 
-  const pageStyle: any = {
-    padding: "0 0 44px",
-    color: "#0f172a",
-    fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  };
 
-  const shellStyle: any = {
-    maxWidth: 1180,
-    margin: "0 auto",
-    padding: "0 24px",
-  };
 
-  const cardStyle: any = {
-    background: "#ffffff",
-    border: "1px solid #dbe5ec",
-    borderRadius: 18,
-    boxShadow: "0 8px 22px rgba(15, 23, 42, 0.035)",
-    padding: 24,
-  };
 
-  const smallOverlineStyle: any = {
-    color: "#047857",
-    textTransform: "uppercase",
-    letterSpacing: ".09em",
-    fontSize: 11,
-    fontWeight: 700,
-  };
 
-  const titleStyle: any = {
-    margin: "8px 0 0",
-    fontSize: 32,
-    lineHeight: 1.05,
-    letterSpacing: "-0.04em",
-    fontWeight: 600,
-    color: "#0f172a",
-  };
 
-  const subtitleStyle: any = {
-    margin: "10px 0 0",
-    color: "#64748b",
-    fontSize: 14,
-    lineHeight: 1.45,
-    fontWeight: 500,
-  };
 
-  const sectionTitleStyle: any = {
-    margin: "0 0 16px",
-    fontSize: 18,
-    letterSpacing: "-0.02em",
-    fontWeight: 600,
-    color: "#0f172a",
-  };
 
-  const sectionSubtextStyle: any = {
-    margin: "-6px 0 0",
-    color: "#64748b",
-    fontSize: 14,
-    lineHeight: 1.45,
-    fontWeight: 450,
-  };
 
-  const labelStyle: any = {
-    display: "grid",
-    gap: 7,
-    color: "#334155",
-    fontSize: 12,
-    fontWeight: 600,
-  };
 
-  const inputStyle: any = {
-    width: "100%",
-    minHeight: 40,
-    border: "1px solid #d6e1ea",
-    borderRadius: 10,
-    padding: "0 13px",
-    fontSize: 14,
-    fontWeight: 450,
-    color: "#0f172a",
-    background: "#ffffff",
-    boxSizing: "border-box",
-    outline: "none",
-  };
 
-  const textareaStyle: any = {
-    ...inputStyle,
-    minHeight: 82,
-    padding: 13,
-    resize: "vertical",
-    lineHeight: 1.45,
-  };
 
-  const primaryButtonStyle: any = {
-    border: "1px solid #0f9f7a",
-    background: "#0f9f7a",
-    color: "#ffffff",
-    borderRadius: 10,
-    padding: "10px 14px",
-    fontWeight: 600,
-    fontSize: 14,
-    cursor: "pointer",
-    boxShadow: "0 6px 14px rgba(15, 159, 122, 0.12)",
-  };
 
-  const secondaryButtonStyle: any = {
-    border: "1px solid #d7e2ea",
-    background: "#ffffff",
-    color: "#0f172a",
-    borderRadius: 10,
-    padding: "10px 14px",
-    fontWeight: 600,
-    fontSize: 14,
-    textDecoration: "none",
-    cursor: "pointer",
-  };
 
-  const subtleButtonStyle: any = {
-    border: "1px solid #cfe9df",
-    background: "#edf9f3",
-    color: "#047857",
-    borderRadius: 10,
-    padding: "10px 14px",
-    fontWeight: 600,
-    fontSize: 14,
-    cursor: "pointer",
-  };
 
-  const dangerButtonStyle: any = {
-    border: "1px solid #f3caca",
-    background: "#fffafa",
-    color: "#b91c1c",
-    borderRadius: 10,
-    padding: "10px 13px",
-    fontWeight: 600,
-    fontSize: 14,
-    cursor: "pointer",
-    minWidth: 96,
-  };
 
-  const darkTotalBarStyle: any = {
-    marginTop: 18,
-    borderRadius: 14,
-    background: "#111827",
-    color: "#ffffff",
-    padding: "18px 20px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 16,
-    flexWrap: "wrap",
-  };
 
   return (
     <AppLayout>
@@ -471,10 +328,8 @@ export default function NeuerAuftragPage() {
           </GastarioNotice>
         ) : null}
 
-        <Form
-          method="post"
-          className="g-ui-stack"
-        >
+        <Form method="post">
+          <GastarioStack>
 
           <GastarioSection
             eyebrow="Kunde"
@@ -756,6 +611,7 @@ export default function NeuerAuftragPage() {
             </GastarioToolbar>
 
           </GastarioSection>
+          </GastarioStack>
           </Form>
       </GastarioPage>
     </AppLayout>

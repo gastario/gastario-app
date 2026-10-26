@@ -5,12 +5,24 @@ import {
 } from "react-router";
 import AppLayout from "../components/AppLayout";
 import {
-  Notice,
-  PageHeader,
-  PageShell,
-} from "../components/ui/PageShell";
-import "../styles/produkte.css";
-import "../styles/angebote.css";
+  GastarioPage,
+  GastarioHeader,
+  GastarioNotice,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioSection,
+  GastarioBadge,
+  GastarioFilterBar,
+  GastarioField,
+  GastarioInput,
+  GastarioSelect,
+  GastarioButton,
+  GastarioEmptyState,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioToolbar,
+  gastarioButtonClass,
+} from "../components/ui";
 
 const STATUS_OPTIONS = [
   { value: "", label: "Alle Status" },
@@ -48,25 +60,6 @@ function statusLabel(status: string) {
   );
 }
 
-function statusClass(status: string) {
-  if (status === "CONFIRMED") {
-    return "quoteStatus quoteStatus--confirmed";
-  }
-
-  if (status === "SENT") {
-    return "quoteStatus quoteStatus--sent";
-  }
-
-  if (status === "DRAFT") {
-    return "quoteStatus quoteStatus--draft";
-  }
-
-  if (status === "REJECTED" || status === "EXPIRED") {
-    return "quoteStatus quoteStatus--rejected";
-  }
-
-  return "quoteStatus quoteStatus--waiting";
-}
 
 function nextStep(status: string) {
   if (status === "DRAFT") return "Angebot prüfen und versenden";
@@ -215,21 +208,21 @@ export default function QuotesPage() {
 
   return (
     <AppLayout>
-      <PageShell className="productsPage quotesPage">
-        <PageHeader
+      <GastarioPage>
+
+        <GastarioHeader
           eyebrow="Verkauf"
           title="Angebote"
           subtitle={
             <>
-              {data.tenant?.name || "Kein Mandant"} · Angebote
-              erstellen, versenden und nach Bestätigung in Aufträge
-              überführen.
+              {data.tenant?.name || "Kein Mandant"} · Angebote erstellen,
+              versenden und nach Bestätigung in Aufträge überführen.
             </>
           }
           actions={
             <Link
               to="/angebote/neu"
-              className="productsPrimaryButton g-ui-button g-ui-button--primary"
+              className={gastarioButtonClass("primary")}
             >
               Neues Angebot
             </Link>
@@ -237,219 +230,205 @@ export default function QuotesPage() {
         />
 
         {data.setupError ? (
-          <Notice type="warning">
+          <GastarioNotice type="warning">
             {data.setupError}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
-        <section className="productsMetrics">
-          <article className="productsMetricCard">
-            <div>
-              <p>Angebote gesamt</p>
-              <strong>{data.stats.total}</strong>
-              <span>im Mandanten</span>
-            </div>
-            <small>Gesamt</small>
-          </article>
+        <GastarioMetricGrid>
 
-          <article className="productsMetricCard">
-            <div>
-              <p>Entwürfe</p>
-              <strong>{data.stats.drafts}</strong>
-              <span>noch nicht versendet</span>
-            </div>
-            <small>Offen</small>
-          </article>
+          <GastarioMetric
+            label="Angebote gesamt"
+            value={data.stats.total}
+            description="Im Mandanten"
+            badge="Gesamt"
+          />
 
-          <article className="productsMetricCard">
-            <div>
-              <p>In Klärung</p>
-              <strong>{data.stats.active}</strong>
-              <span>versendet oder Rückmeldung offen</span>
-            </div>
-            <small>Aktiv</small>
-          </article>
+          <GastarioMetric
+            label="Entwürfe"
+            value={data.stats.drafts}
+            description="Noch nicht versendet"
+            badge="Offen"
+          />
 
-          <article className="productsMetricCard">
-            <div>
-              <p>Angebotswert</p>
-              <strong>{centsToEuro(data.stats.totalValueCents)}</strong>
-              <span>{data.stats.confirmed} bestätigt</span>
-            </div>
-            <small>EUR</small>
-          </article>
-        </section>
+          <GastarioMetric
+            label="In Klärung"
+            value={data.stats.active}
+            description="Versendet oder Rückmeldung offen"
+            badge="Aktiv"
+          />
 
-        <section className="productsWorkspace quotesWorkspace">
-          <div className="productsWorkspaceHeader g-ui-section-header">
-            <div>
-              <p className="eyebrow">Angebotsübersicht</p>
-              <h2>Aktuelle Angebote</h2>
-              <span>
-                Angebote erstellen, prüfen und weiterbearbeiten.
-              </span>
-            </div>
+          <GastarioMetric
+            label="Angebotswert"
+            value={centsToEuro(data.stats.totalValueCents)}
+            description={`${data.stats.confirmed} bestätigt`}
+            badge="EUR"
+          />
 
-            <div className="productsWorkspaceCount">
-              <strong>{data.quotes.length}</strong>
-              <small>
-                {data.quotes.length === 1
-                  ? "von 1 Angebot"
-                  : `von ${data.quotes.length} Angeboten`}
-              </small>
-            </div>
-          </div>
-          <Form
-            method="get"
-            className="productsFilters quotesFilterBar"
-          >
-            <label className="productsSearchField quotesSearchField">
-              <span>Suche</span>
-              <input
-                type="search"
-                name="q"
-                defaultValue={data.searchQuery}
-                placeholder="Nummer, Kunde oder Veranstaltung"
-              />
-            </label>
+        </GastarioMetricGrid>
 
-            <label className="productsFilterField">
-              <span>Status</span>
-              <select
-                name="status"
-                defaultValue={data.activeStatus}
-              >
-                {STATUS_OPTIONS.map((option) => (
-                  <option
-                    key={option.value || "all"}
-                    value={option.value}
+
+        <GastarioSection
+          eyebrow="Angebotsübersicht"
+          title="Aktuelle Angebote"
+          description="Angebote erstellen, prüfen und weiterbearbeiten."
+          action={
+            <GastarioBadge variant="neutral">
+              {data.quotes.length === 1
+                ? "1 Angebot"
+                : `${data.quotes.length} Angebote`}
+            </GastarioBadge>
+          }
+        >
+
+          <Form method="get">
+
+            <GastarioFilterBar
+              actions={
+                <>
+                  <GastarioButton
+                    type="submit"
+                    variant="primary"
                   >
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+                    Anzeigen
+                  </GastarioButton>
 
-            <button
-              type="submit"
-              className="productsPrimaryButton g-ui-button g-ui-button--primary"
+                  <Link
+                    to="/angebote"
+                    className={gastarioButtonClass("secondary")}
+                  >
+                    Zurücksetzen
+                  </Link>
+                </>
+              }
             >
-              Anzeigen
-            </button>
 
-            <Link
-              to="/angebote"
-              className="productsSecondaryButton g-ui-button g-ui-button--secondary"
-            >
-              Zurücksetzen
-            </Link>
+              <GastarioField label="Suche">
+                <GastarioInput
+                  type="search"
+                  name="q"
+                  defaultValue={data.searchQuery}
+                  placeholder="Nummer, Kunde oder Veranstaltung"
+                />
+              </GastarioField>
+
+              <GastarioField label="Status">
+                <GastarioSelect
+                  name="status"
+                  defaultValue={data.activeStatus}
+                >
+                  {STATUS_OPTIONS.map((option) => (
+                    <option
+                      key={option.value || "all"}
+                      value={option.value}
+                    >
+                      {option.label}
+                    </option>
+                  ))}
+                </GastarioSelect>
+              </GastarioField>
+
+            </GastarioFilterBar>
+
           </Form>
 
+
           {data.quotes.length === 0 ? (
-            <div className="productsEmptyState quotesEmptyState">
-              <div
-                className="productsEmptyIcon quoteIcon"
-                aria-hidden="true"
-              >
-                A
-              </div>
 
-              <strong>
-                Noch keine passenden Angebote vorhanden
-              </strong>
+            <GastarioEmptyState title="Noch keine passenden Angebote vorhanden">
 
-              <span>
-                Lege ein neues Angebot an oder setze die Filter
-                zurück.
-              </span>
+              Lege ein neues Angebot an oder setze die Filter zurück.
 
-              <Link
-                to="/angebote/neu"
-                className="productsPrimaryButton g-ui-button g-ui-button--primary"
-              >
-                Erstes Angebot anlegen
-              </Link>
-            </div>
-          ) : (
-            <div className="productCardList quotesList">
-              {data.quotes.map((quote: any) => (
-                <article
-                  className="quoteCard"
-                  key={quote.id}
+              <GastarioToolbar align="start">
+                <Link
+                  to="/angebote/neu"
+                  className={gastarioButtonClass("primary")}
                 >
-                  <div className="quoteIdentity">
-                    <div
-                      className="productsEmptyIcon quoteIcon"
-                      aria-hidden="true"
-                    >
-                      A
-                    </div>
+                  Erstes Angebot anlegen
+                </Link>
+              </GastarioToolbar>
 
-                    <div className="quoteIdentityText">
-                      <div className="quoteNumber">
-                        {quote.quoteNumber}
-                      </div>
+            </GastarioEmptyState>
 
-                      <h3>{quote.customerName}</h3>
+          ) : (
 
-                      <p>
-                        {quote.eventName ||
-                          "Keine Veranstaltung angegeben"}
-                      </p>
+            <GastarioDataList>
 
-                      <span>
-                        {quote.items.length === 1
-                          ? "1 Position"
-                          : `${quote.items.length} Positionen`}
-                      </span>
-                    </div>
+              {data.quotes.map((quote: any) => (
+
+                <GastarioDataRow key={quote.id}>
+
+                  <div className="g-ui-data-row-main">
+
+                    <span className="g-ui-data-row-description">
+                      {quote.quoteNumber}
+                    </span>
+
+                    <strong className="g-ui-data-row-title">
+                      {quote.customerName}
+                    </strong>
+
+                    <span className="g-ui-data-row-description">
+                      {quote.eventName ||
+                        "Keine Veranstaltung angegeben"}
+                    </span>
+
+                    <span className="g-ui-data-row-description">
+                      {quote.items.length === 1
+                        ? "1 Position"
+                        : `${quote.items.length} Positionen`}
+                      {" · "}
+                      {formatDate(quote.eventDate)}
+                      {" · "}
+                      {nextStep(quote.status)}
+                    </span>
+
                   </div>
 
-                  <div className="quoteDetails">
-                    <div>
-                      <span>Veranstaltung</span>
-                      <strong>
-                        {quote.eventName || "Nicht angegeben"}
-                      </strong>
-                    </div>
 
-                    <div>
-                      <span>Datum</span>
-                      <strong>
-                        {formatDate(quote.eventDate)}
-                      </strong>
-                    </div>
+                  <div className="g-ui-data-row-meta">
 
-                    <div>
-                      <span>Nächster Schritt</span>
-                      <strong>
-                        {nextStep(quote.status)}
-                      </strong>
-                    </div>
-                  </div>
-
-                  <div className="quoteCommercial">
-                    <em className={statusClass(quote.status)}>
+                    <GastarioBadge variant="neutral">
                       {statusLabel(quote.status)}
-                    </em>
+                    </GastarioBadge>
 
                     <strong>
                       {centsToEuro(quote.totalCents)}
                     </strong>
 
+                  </div>
+
+
+                  <div className="g-ui-data-row-actions">
+
                     <Link
                       to={`/angebote/${quote.id}`}
-                      className="productsSecondaryButton g-ui-button g-ui-button--secondary"
+                      className={gastarioButtonClass("secondary")}
                     >
                       Öffnen
                     </Link>
+
                   </div>
-                </article>
+
+
+                  <span
+                    className="g-ui-data-row-chevron"
+                    aria-hidden="true"
+                  >
+                    →
+                  </span>
+
+                </GastarioDataRow>
+
               ))}
-            </div>
+
+            </GastarioDataList>
+
           )}
-        </section>
-      </PageShell>
+
+        </GastarioSection>
+
+      </GastarioPage>
     </AppLayout>
   );
 }
