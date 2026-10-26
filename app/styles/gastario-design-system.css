@@ -2771,3 +2771,218 @@
   }
 
 }
+
+/* =========================================================
+   GASTARIO INTERACTION STANDARD 2026
+   Zentral für Buttons, Tabs, Cards und Rows
+========================================================= */
+
+@media screen {
+
+  /* -------------------------------------------------------
+     BUTTONS
+  ------------------------------------------------------- */
+
+  .g-ui-button {
+    cursor: pointer;
+
+    transition:
+      background-color .14s ease,
+      border-color .14s ease,
+      color .14s ease,
+      box-shadow .14s ease,
+      transform .10s ease;
+  }
+
+  .g-ui-button:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .g-ui-button:active:not(:disabled) {
+    transform:
+      translateY(1px)
+      scale(.985);
+
+    box-shadow: none !important;
+  }
+
+  .g-ui-button--secondary:hover:not(:disabled),
+  .g-ui-button--ghost:hover:not(:disabled) {
+    background:
+      var(--g26-accent-soft) !important;
+
+    border-color:
+      var(--g26-line-strong) !important;
+
+    color:
+      var(--g26-text) !important;
+  }
+
+
+  /* -------------------------------------------------------
+     TABS
+  ------------------------------------------------------- */
+
+  .g-ui-tab {
+    cursor: pointer;
+
+    transition:
+      background-color .14s ease,
+      color .14s ease,
+      box-shadow .14s ease,
+      transform .10s ease;
+  }
+
+  .g-ui-tab:hover:not(.g-ui-tab--active) {
+    background:
+      rgba(255,255,255,.72);
+
+    color:
+      var(--g26-text);
+  }
+
+  .g-ui-tab:active {
+    transform:
+      scale(.975);
+  }
+
+  .g-ui-tab--active {
+    background:
+      var(--g26-surface);
+
+    color:
+      var(--g26-text);
+
+    box-shadow:
+      0 1px 4px rgba(42,35,30,.05),
+      inset 0 -2px 0 var(--g26-accent);
+  }
+
+
+  /* -------------------------------------------------------
+     DATA ROWS
+  ------------------------------------------------------- */
+
+  .g-ui-data-row--clickable {
+    cursor: pointer;
+
+    transition:
+      background-color .14s ease,
+      box-shadow .14s ease,
+      padding-left .14s ease,
+      transform .10s ease;
+  }
+
+  .g-ui-data-row--clickable:hover {
+    background:
+      var(--g26-accent-soft);
+
+    box-shadow:
+      inset 2px 0 0 var(--g26-accent);
+
+    padding-left:
+      19px;
+  }
+
+  .g-ui-data-row--clickable:active {
+    background:
+      var(--g26-surface-muted);
+
+    transform:
+      scale(.997);
+  }
+
+  .g-ui-data-row--clickable:hover
+  .g-ui-data-row-title {
+    color:
+      var(--g26-text);
+  }
+
+  .g-ui-data-row--clickable:hover
+  .g-ui-data-row-chevron {
+    background:
+      var(--g26-accent-soft);
+
+    color:
+      var(--g26-accent);
+
+    transform:
+      translateX(3px);
+  }
+
+
+  /* -------------------------------------------------------
+     ACTION CARDS
+  ------------------------------------------------------- */
+
+  .g-ui-action-card {
+    cursor: pointer;
+
+    transition:
+      background-color .14s ease,
+      border-color .14s ease,
+      box-shadow .14s ease,
+      transform .10s ease;
+  }
+
+  .g-ui-action-card:hover:not(:disabled) {
+    background:
+      #ffffff;
+
+    border-color:
+      var(--g-action-accent, var(--g26-line-strong));
+
+    box-shadow:
+      0 10px 26px rgba(42,35,30,.055);
+
+    transform:
+      translateY(-2px);
+  }
+
+  .g-ui-action-card:active:not(:disabled) {
+    transform:
+      translateY(0)
+      scale(.992);
+
+    box-shadow:
+      0 2px 8px rgba(42,35,30,.04);
+  }
+
+  .g-ui-action-card:hover::after {
+    background:
+      var(--g-action-accent, var(--g26-accent));
+  }
+
+
+  /* -------------------------------------------------------
+     KEYBOARD FOCUS
+  ------------------------------------------------------- */
+
+  .g-ui-button:focus-visible,
+  .g-ui-tab:focus-visible,
+  .g-ui-action-card:focus-visible,
+  .g-ui-data-row--clickable:focus-visible {
+    outline:
+      2px solid var(--g26-accent);
+
+    outline-offset:
+      2px;
+  }
+
+
+  /* -------------------------------------------------------
+     REDUCED MOTION
+  ------------------------------------------------------- */
+
+  @media (prefers-reduced-motion: reduce) {
+
+    .g-ui-button,
+    .g-ui-tab,
+    .g-ui-action-card,
+    .g-ui-data-row--clickable {
+      transition: none;
+    }
+
+  }
+
+}
