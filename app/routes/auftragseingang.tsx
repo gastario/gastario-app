@@ -1,5 +1,4 @@
 import { GastarioStack } from "../components/ui";
-import { GastarioSplitView, GastarioMain, GastarioAside } from "../components/ui";
 import { GastarioDataList, GastarioDataRow, GastarioEmptyState, GastarioToolbar } from "../components/ui";
 import { GastarioPage, GastarioHeader, GastarioNotice, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioFilterBar, GastarioField, GastarioInput, GastarioSelect, gastarioButtonClass } from "../components/ui";
 import {
@@ -1965,10 +1964,10 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                 : "Keine Aufträge in dieser Ansicht."}
             </GastarioEmptyState>
           ) : (
-            <GastarioSplitView wide>
-              <GastarioMain>
+            <>
+            {!selectedOrder ? (
               <GastarioDataList>
-                {visibleOrders.map((order: any, index: number) => {
+{visibleOrders.map((order: any, index: number) => {
                   const items = Array.isArray(order.items) ? order.items : [];
                   const totalInfo = getDisplayedOrderTotal(order);
                   const previewItems = items
@@ -2080,11 +2079,10 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                   <span>Weitere Ergebnisse laden</span>
                 </GastarioToolbar>
               </GastarioDataList>
-              </GastarioMain>
+            ) : null}
 
               {selectedOrder ? (
-              <GastarioAside>
-                <GastarioStack
+              <GastarioStack
                   key={selectedOrder.id}
                 >
                   <GastarioSection
@@ -2457,9 +2455,8 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
                   </GastarioToolbar>
                 </GastarioStack>
-              </GastarioAside>
-              ) : null}
-            </GastarioSplitView>
+            ) : null}
+          </>
           )}
 
           {hiddenPastOrderCount > 0 ? (

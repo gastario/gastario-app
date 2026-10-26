@@ -622,67 +622,65 @@ export default function OrdersPage() {
         </GastarioNotice>
       ) : null}
 
-      <GastarioMetricGrid>
-        <GastarioMetric
-          label={
-            data.view === "past"
-              ? "Vergangene Aufträge"
-              : "Aufträge gesamt"
-          }
-          value={data.counts.all}
-          description={
-            data.view === "past"
-              ? "bereits vergangene Lieferungen"
-              : `${data.counts.confirmed} bestätigt`
-          }
-          badge={data.view === "past" ? "Archiv" : "echt"}
-        />
+      {data.view === "past" ? (
 
-        <GastarioMetric
-          label={
-            data.view === "past"
-              ? "Archivierte Aufträge"
-              : "Bestätigt"
-          }
-          value={
-            data.view === "past"
-              ? data.orders.length
-              : data.counts.confirmed
-          }
-          description={
-            data.view === "past"
-              ? "aktuell in dieser Archivansicht"
-              : "für die Ausführung vorgesehen"
-          }
-          badge={data.view === "past" ? "Historie" : "aktiv"}
-        />
+        <GastarioMetricGrid>
 
-        <GastarioMetric
-          label={
-            data.view === "past"
-              ? "Lieferungen im Archiv"
-              : "Operative Aufträge"
-          }
-          value={data.orders.length}
-          description={
-            data.view === "past"
-              ? "vergangene Lieferungen sichtbar"
-              : "aktuell in dieser Ansicht"
-          }
-          badge={data.view === "past" ? "Archiv" : "live"}
-        />
+          <GastarioMetric
+            label="Vergangene Aufträge"
+            value={data.orders.length}
+            description="Abgeschlossene und vergangene Lieferungen"
+            badge="Archiv"
+          />
 
-        <GastarioMetric
-          label="Auftragswert"
-          value={centsToEuro(data.counts.totalValueCents)}
-          description={
-            data.view === "past"
-              ? "Wert der vergangenen Lieferungen"
-              : "Summe aller Positionen"
-          }
-          badge="EUR"
-        />
-      </GastarioMetricGrid>
+          <GastarioMetric
+            label="Auftragswert"
+            value={centsToEuro(
+              data.counts.totalValueCents
+            )}
+            description="Wert der vergangenen Lieferungen"
+            badge="EUR"
+          />
+
+        </GastarioMetricGrid>
+
+      ) : (
+
+        <GastarioMetricGrid>
+
+          <GastarioMetric
+            label="Aufträge gesamt"
+            value={data.counts.all}
+            description={`${data.counts.confirmed} bestätigt`}
+            badge="echt"
+          />
+
+          <GastarioMetric
+            label="Bestätigt"
+            value={data.counts.confirmed}
+            description="für die Ausführung vorgesehen"
+            badge="aktiv"
+          />
+
+          <GastarioMetric
+            label="Operative Aufträge"
+            value={data.orders.length}
+            description="aktuell in dieser Ansicht"
+            badge="live"
+          />
+
+          <GastarioMetric
+            label="Auftragswert"
+            value={centsToEuro(
+              data.counts.totalValueCents
+            )}
+            description="Summe aller Positionen"
+            badge="EUR"
+          />
+
+        </GastarioMetricGrid>
+
+      )}
 
       <GastarioStack>
         <GastarioSection
@@ -823,6 +821,7 @@ export default function OrdersPage() {
 
 
           {data.view !== "past" ? (
+
             <GastarioTabs
               items={STATUSES.map((status) => ({
                 id: status.value || "all",
@@ -853,22 +852,14 @@ export default function OrdersPage() {
                 );
               }}
             />
+
           ) : (
-            <GastarioPanel variant="soft">
-              <strong>
-                Auftragsarchiv
-              </strong>
 
-              <div>
-                Bereits vergangene Lieferungen
-                werden unabhängig vom Produktions-
-                oder Packstatus angezeigt.
-              </div>
+            <GastarioNotice type="neutral">
+              Vergangene Lieferungen werden hier unabhängig vom
+              Produktions- oder Packstatus angezeigt.
+            </GastarioNotice>
 
-              <GastarioBadge variant="neutral">
-                {data.orders.length} archiviert
-              </GastarioBadge>
-            </GastarioPanel>
           )}
 
         </GastarioSection>

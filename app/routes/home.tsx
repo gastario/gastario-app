@@ -16,12 +16,9 @@ import {
   GastarioInsight,
 } from "../components/ui";
 import { GastarioNotice } from "../components/ui";
-import { GastarioMain, GastarioAside } from "../components/ui";
 import { GastarioPage, GastarioStack, GastarioSplitView } from "../components/ui";
 import { GastarioActionGrid, GastarioActionCard } from "../components/ui";
 import { GastarioSection, GastarioDataList, GastarioDataRow, GastarioEmptyState } from "../components/ui";
-
-import "../styles/gastario-dashboard.css";
 
 function todayRange() {
   const start = new Date();
@@ -1513,272 +1510,9 @@ export default function Home() {
           </GastarioStack>
         ) : null}
 
-        <GastarioSplitView wide>
-          <GastarioMain>
-            <GastarioSection
-              eyebrow="Tagesplan"
-              title="Heutige Lieferungen"
-              description="Alle für heute geplanten Auslieferungen nach Uhrzeit."
-              action={
-                <Link
-                  to="/auftraege"
-                  className={gastarioButtonClass("secondary")}
-                >
-                  Alle Aufträge
-                </Link>
-              }
-            >
+        <GastarioStack>
 
-              {todayOrdersSorted.length === 0 ? (
-
-                <GastarioStack compact>
-
-                  <GastarioEmptyState title="Heute keine Lieferungen">
-                    Für heute ist kein Auftrag mit Lieferdatum geplant.
-                  </GastarioEmptyState>
-
-                  {nextPlannedOrder ? (
-
-                    <GastarioDataList>
-
-                      <GastarioDataRow
-                        to={
-                          "/auftrag-pruefung/" +
-                          nextPlannedOrder.id
-                        }
-                      >
-
-                        <div className="g-ui-data-row-main">
-
-                          <strong className="g-ui-data-row-title">
-                            Nächster Auftrag
-                          </strong>
-
-                          <span className="g-ui-data-row-description">
-                            {nextPlannedOrder.customerName ||
-                              "Kunde nicht erkannt"}
-                          </span>
-
-                        </div>
-
-                        <div className="g-ui-data-row-meta">
-
-                          <span>
-                            {planningDateLabel(
-                              nextPlannedOrder.deliveryDate
-                            )}
-                          </span>
-
-                          <span>
-                            {formatTime(
-                              nextPlannedOrder.deliveryTimeText
-                            )}
-                            {" Uhr"}
-                          </span>
-
-                        </div>
-
-                        <span
-                          className="g-ui-data-row-chevron"
-                          aria-hidden="true"
-                        >
-                          →
-                        </span>
-
-                      </GastarioDataRow>
-
-                    </GastarioDataList>
-
-                  ) : null}
-
-                </GastarioStack>
-
-              ) : (
-
-                <GastarioDataList>
-
-                  {todayOrdersSorted.map(
-                    (order: any) => (
-
-                      <GastarioDataRow
-                        key={order.id}
-                        to={
-                          "/auftrag-pruefung/" +
-                          order.id
-                        }
-                      >
-
-                        <div className="g-ui-data-row-main">
-
-                          <strong className="g-ui-data-row-title">
-                            {order.customerName ||
-                              "Kunde nicht erkannt"}
-                          </strong>
-
-                          <span className="g-ui-data-row-description">
-                            {order.eventName ||
-                              order.orderNumber}
-                          </span>
-
-                          <span className="g-ui-data-row-description">
-                            {order.deliveryAddress ||
-                              "Lieferadresse noch offen"}
-                          </span>
-
-                        </div>
-
-
-                        <div className="g-ui-data-row-meta">
-
-                          <span>
-                            {formatTime(
-                              order.deliveryTimeText
-                            )}
-                            {" Uhr"}
-                          </span>
-
-                          <span>
-                            {order.items.length}
-                            {" Positionen"}
-                          </span>
-
-                          <span>
-                            {String(order.status)
-                              .replaceAll("_", " ")}
-                          </span>
-
-                        </div>
-
-
-                        <span
-                          className="g-ui-data-row-chevron"
-                          aria-hidden="true"
-                        >
-                          →
-                        </span>
-
-                      </GastarioDataRow>
-                    )
-                  )}
-
-                </GastarioDataList>
-
-              )}
-
-            </GastarioSection>
-
-            <GastarioSection
-              eyebrow="Planung"
-              title="Lieferplan"
-              description={
-                filteredPlanningOrders.length === 1
-                  ? "1 geplante Lieferung"
-                  : `${filteredPlanningOrders.length} geplante Lieferungen`
-              }
-            >
-
-              {filteredOrderGroups.length === 0 ? (
-
-                <GastarioEmptyState title="Keine kommenden Lieferungen">
-                  Aktuell sind keine zukünftigen Aufträge eingeplant.
-                </GastarioEmptyState>
-
-              ) : (
-
-                <GastarioStack compact>
-
-                  {filteredOrderGroups.map(
-                    ([dateKey, orders]) => (
-
-                      <GastarioSection
-                        key={dateKey}
-                        eyebrow="Lieferdatum"
-                        title={planningDateLabel(
-                          orders[0]?.deliveryDate
-                        )}
-                        description={
-                          orders.length === 1
-                            ? "1 Lieferung"
-                            : `${orders.length} Lieferungen`
-                        }
-                      >
-
-                        <GastarioDataList>
-
-                          {orders.map(
-                            (order: any) => (
-
-                              <GastarioDataRow
-                                key={order.id}
-                                to={
-                                  "/auftrag-pruefung/" +
-                                  order.id
-                                }
-                              >
-
-                                <div className="g-ui-data-row-main">
-
-                                  <strong className="g-ui-data-row-title">
-                                    {order.customerName ||
-                                      "Kunde nicht erkannt"}
-                                  </strong>
-
-                                  <span className="g-ui-data-row-description">
-                                    {order.eventName ||
-                                      order.orderNumber}
-                                  </span>
-
-                                </div>
-
-
-                                <div className="g-ui-data-row-meta">
-
-                                  <span>
-                                    {order.deliveryTimeText ||
-                                      "Zeit offen"}
-                                  </span>
-
-                                  <span>
-                                    {order.items.length}
-                                    {" Positionen"}
-                                  </span>
-
-                                  <span>
-                                    {String(order.status)
-                                      .replaceAll("_", " ")}
-                                  </span>
-
-                                </div>
-
-
-                                <span
-                                  className="g-ui-data-row-chevron"
-                                  aria-hidden="true"
-                                >
-                                  →
-                                </span>
-
-                              </GastarioDataRow>
-                            )
-                          )}
-
-                        </GastarioDataList>
-
-                      </GastarioSection>
-                    )
-                  )}
-
-                </GastarioStack>
-
-              )}
-
-            </GastarioSection>
-          </GastarioMain>
-
-          <GastarioAside>
-            {/* gastario-dashboard-compact-workbar-20260726 */}
-
-            <GastarioSection
+          <GastarioSection
               eyebrow="Betriebssteuerung"
               title="Arbeitsbereich"
               description={`${openReviewCount +
@@ -2082,8 +1816,268 @@ export default function Home() {
                 </GastarioActionGrid>
               ) : null}
             </GastarioSection>
-          </GastarioAside>
-        </GastarioSplitView>
+
+
+          <GastarioSection
+              eyebrow="Tagesplan"
+              title="Heutige Lieferungen"
+              description="Alle für heute geplanten Auslieferungen nach Uhrzeit."
+              action={
+                <Link
+                  to="/auftraege"
+                  className={gastarioButtonClass("secondary")}
+                >
+                  Alle Aufträge
+                </Link>
+              }
+            >
+
+              {todayOrdersSorted.length === 0 ? (
+
+                <GastarioStack compact>
+
+                  <GastarioEmptyState title="Heute keine Lieferungen">
+                    Für heute ist kein Auftrag mit Lieferdatum geplant.
+                  </GastarioEmptyState>
+
+                  {nextPlannedOrder ? (
+
+                    <GastarioDataList>
+
+                      <GastarioDataRow
+                        to={
+                          "/auftrag-pruefung/" +
+                          nextPlannedOrder.id
+                        }
+                      >
+
+                        <div className="g-ui-data-row-main">
+
+                          <strong className="g-ui-data-row-title">
+                            Nächster Auftrag
+                          </strong>
+
+                          <span className="g-ui-data-row-description">
+                            {nextPlannedOrder.customerName ||
+                              "Kunde nicht erkannt"}
+                          </span>
+
+                        </div>
+
+                        <div className="g-ui-data-row-meta">
+
+                          <span>
+                            {planningDateLabel(
+                              nextPlannedOrder.deliveryDate
+                            )}
+                          </span>
+
+                          <span>
+                            {formatTime(
+                              nextPlannedOrder.deliveryTimeText
+                            )}
+                            {" Uhr"}
+                          </span>
+
+                        </div>
+
+                        <span
+                          className="g-ui-data-row-chevron"
+                          aria-hidden="true"
+                        >
+                          →
+                        </span>
+
+                      </GastarioDataRow>
+
+                    </GastarioDataList>
+
+                  ) : null}
+
+                </GastarioStack>
+
+              ) : (
+
+                <GastarioDataList>
+
+                  {todayOrdersSorted.map(
+                    (order: any) => (
+
+                      <GastarioDataRow
+                        key={order.id}
+                        to={
+                          "/auftrag-pruefung/" +
+                          order.id
+                        }
+                      >
+
+                        <div className="g-ui-data-row-main">
+
+                          <strong className="g-ui-data-row-title">
+                            {order.customerName ||
+                              "Kunde nicht erkannt"}
+                          </strong>
+
+                          <span className="g-ui-data-row-description">
+                            {order.eventName ||
+                              order.orderNumber}
+                          </span>
+
+                          <span className="g-ui-data-row-description">
+                            {order.deliveryAddress ||
+                              "Lieferadresse noch offen"}
+                          </span>
+
+                        </div>
+
+
+                        <div className="g-ui-data-row-meta">
+
+                          <span>
+                            {formatTime(
+                              order.deliveryTimeText
+                            )}
+                            {" Uhr"}
+                          </span>
+
+                          <span>
+                            {order.items.length}
+                            {" Positionen"}
+                          </span>
+
+                          <span>
+                            {String(order.status)
+                              .replaceAll("_", " ")}
+                          </span>
+
+                        </div>
+
+
+                        <span
+                          className="g-ui-data-row-chevron"
+                          aria-hidden="true"
+                        >
+                          →
+                        </span>
+
+                      </GastarioDataRow>
+                    )
+                  )}
+
+                </GastarioDataList>
+
+              )}
+
+            </GastarioSection>
+
+            <GastarioSection
+              eyebrow="Planung"
+              title="Lieferplan"
+              description={
+                filteredPlanningOrders.length === 1
+                  ? "1 geplante Lieferung"
+                  : `${filteredPlanningOrders.length} geplante Lieferungen`
+              }
+            >
+
+              {filteredOrderGroups.length === 0 ? (
+
+                <GastarioEmptyState title="Keine kommenden Lieferungen">
+                  Aktuell sind keine zukünftigen Aufträge eingeplant.
+                </GastarioEmptyState>
+
+              ) : (
+
+                <GastarioStack compact>
+
+                  {filteredOrderGroups.map(
+                    ([dateKey, orders]) => (
+
+                      <GastarioSection
+                        key={dateKey}
+                        eyebrow="Lieferdatum"
+                        title={planningDateLabel(
+                          orders[0]?.deliveryDate
+                        )}
+                        description={
+                          orders.length === 1
+                            ? "1 Lieferung"
+                            : `${orders.length} Lieferungen`
+                        }
+                      >
+
+                        <GastarioDataList>
+
+                          {orders.map(
+                            (order: any) => (
+
+                              <GastarioDataRow
+                                key={order.id}
+                                to={
+                                  "/auftrag-pruefung/" +
+                                  order.id
+                                }
+                              >
+
+                                <div className="g-ui-data-row-main">
+
+                                  <strong className="g-ui-data-row-title">
+                                    {order.customerName ||
+                                      "Kunde nicht erkannt"}
+                                  </strong>
+
+                                  <span className="g-ui-data-row-description">
+                                    {order.eventName ||
+                                      order.orderNumber}
+                                  </span>
+
+                                </div>
+
+
+                                <div className="g-ui-data-row-meta">
+
+                                  <span>
+                                    {order.deliveryTimeText ||
+                                      "Zeit offen"}
+                                  </span>
+
+                                  <span>
+                                    {order.items.length}
+                                    {" Positionen"}
+                                  </span>
+
+                                  <span>
+                                    {String(order.status)
+                                      .replaceAll("_", " ")}
+                                  </span>
+
+                                </div>
+
+
+                                <span
+                                  className="g-ui-data-row-chevron"
+                                  aria-hidden="true"
+                                >
+                                  →
+                                </span>
+
+                              </GastarioDataRow>
+                            )
+                          )}
+
+                        </GastarioDataList>
+
+                      </GastarioSection>
+                    )
+                  )}
+
+                </GastarioStack>
+
+              )}
+
+            </GastarioSection>
+
+        </GastarioStack>
 
         <GastarioSection
           eyebrow="Finanzen"
