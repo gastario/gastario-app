@@ -1,6 +1,7 @@
 import { Form, Link, redirect, useActionData, useLoaderData, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
+import NewOrderDialog from "../components/orders/NewOrderDialog";
 import {
   GastarioPage,
   GastarioEmptyState,
@@ -589,6 +590,11 @@ export default function OrdersPage() {
   const [selectedOrderId, setSelectedOrderId] =
     useState<string | null>(null);
 
+  const [
+    newOrderOpen,
+    setNewOrderOpen,
+  ] = useState(false);
+
   const [selectedOrderDetailTab, setSelectedOrderDetailTab] =
     useState("overview");
 
@@ -653,12 +659,15 @@ export default function OrdersPage() {
               Eingangszentrale
             </Link>
 
-            <Link
-              className={gastarioButtonClass("primary")}
-              to="/neuer-auftrag"
+            <GastarioButton
+              type="button"
+              variant="primary"
+              onClick={() =>
+                setNewOrderOpen(true)
+              }
             >
               + Neuer Auftrag
-            </Link>
+            </GastarioButton>
           </>
         }
       />
@@ -1626,7 +1635,15 @@ export default function OrdersPage() {
         </GastarioDetailDialog>
 
       </GastarioStack>
-      </GastarioPage>
+      
+      <NewOrderDialog
+        open={newOrderOpen}
+        onClose={() =>
+          setNewOrderOpen(false)
+        }
+        formAction="/neuer-auftrag"
+      />
+</GastarioPage>
 </AppLayout>
   );
 }

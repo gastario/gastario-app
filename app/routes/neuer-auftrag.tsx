@@ -1,23 +1,10 @@
-import { useMemo, useState } from "react";
 import AppLayout from "../components/AppLayout";
+import NewOrderDialog from "../components/orders/NewOrderDialog";
 import {
-  GastarioField,
-  GastarioFormGrid,
   GastarioHeader,
-  GastarioInput,
-  GastarioNotice,
   GastarioPage,
-  GastarioSection,
-  GastarioTextarea,
-  gastarioButtonClass,
-  GastarioButton,
-  GastarioMetric,
-  GastarioMetricGrid,
-  GastarioPanel,
-  GastarioToolbar,
-  GastarioStack,
 } from "../components/ui";
-import { Form, redirect, useActionData } from "react-router";
+import { Form, redirect, useActionData, useNavigate } from "react-router";
 
 
 
@@ -243,376 +230,31 @@ export async function action({ request }: { request: Request }) {
 }
 
 export default function NeuerAuftragPage() {
-  const actionData = useActionData<typeof action>();
+  const actionData =
+    useActionData<typeof action>();
 
-  const [items, setItems] = useState<ManualItem[]>([
-    makeItem({ name: "", quantity: "1" }),
-    makeItem({ name: "", quantity: "1" }),
-  ]);
-
-  const total = useMemo(() => {
-    return items.reduce((sum, item) => {
-      const quantity = Number(String(item.quantity || "1").replace(",", "."));
-      const cleanQuantity = Number.isFinite(quantity) && quantity > 0 ? quantity : 0;
-      const unit = euroInputToNumber(item.unitPriceEuro);
-      return sum + cleanQuantity * unit;
-    }, 0);
-  }, [items]);
-
-  function updateItem(id: string, field: keyof ManualItem, value: string) {
-    setItems((current) =>
-      current.map((item) => (item.id === id ? { ...item, [field]: value } : item))
-    );
-  }
-
-  function addItem() {
-    setItems((current) => [...current, makeItem({ quantity: "1" })]);
-  }
-
-  function addTextItem() {
-    setItems((current) => [
-      ...current,
-      makeItem({
-        name: "Freitextposition",
-        quantity: "1",
-        unitPriceEuro: "",
-        itemNotes: "",
-      }),
-    ]);
-  }
-
-  function removeItem(id: string) {
-    setItems((current) => {
-      if (current.length <= 1) return current;
-      return current.filter((item) => item.id !== id);
-    });
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  const navigate =
+    useNavigate();
 
   return (
     <AppLayout>
       <GastarioPage>
-
         <GastarioHeader
-          eyebrow="Auftrag"
-          title="Neuer Auftrag"
-          subtitle="Manuell erfassen und anschließend im Auftragseingang prüfen."
-          actions={
-            <a
-              href="/auftragseingang"
-              className={gastarioButtonClass("secondary")}
-            >
-              Zurück zum Eingang
-            </a>
-          }
+          eyebrow="Verkauf"
+          title="Aufträge"
+          description="Manuellen Auftrag schnell und geführt erfassen."
         />
 
-        {actionData?.error ? (
-          <GastarioNotice type="danger">
-            {actionData.error}
-          </GastarioNotice>
-        ) : null}
-
-        <Form method="post">
-          <GastarioStack>
-
-          <GastarioSection
-            eyebrow="Kunde"
-            title="Kundendaten"
-            description="Kontakt- und Ansprechpartnerdaten für diesen Auftrag."
-          >
-            <GastarioFormGrid columns={3}>
-
-              <GastarioField
-                label="Kunde"
-                required
-              >
-                <GastarioInput
-                  name="customerName"
-                  placeholder="z. B. Muster GmbH"
-                  required
-                />
-              </GastarioField>
-
-              <GastarioField label="E-Mail">
-                <GastarioInput
-                  name="customerEmail"
-                  type="email"
-                  placeholder="kunde@example.de"
-                />
-              </GastarioField>
-
-              <GastarioField label="Telefon">
-                <GastarioInput
-                  name="customerPhone"
-                  placeholder="030..."
-                />
-              </GastarioField>
-
-              <GastarioField label="Kontaktperson">
-                <GastarioInput
-                  name="contactName"
-                  placeholder="Name"
-                />
-              </GastarioField>
-
-              <GastarioField label="Kontakt Telefon">
-                <GastarioInput
-                  name="contactPhone"
-                  placeholder="Mobil / Büro"
-                />
-              </GastarioField>
-
-            </GastarioFormGrid>
-          </GastarioSection>
-
-
-          <GastarioSection
-            eyebrow="Logistik"
-            title="Lieferung"
-            description="Lieferdatum, Zeitfenster und Zieladresse des Auftrags."
-          >
-            <GastarioFormGrid columns={3}>
-
-              <GastarioField
-                label="Lieferdatum"
-                required
-              >
-                <GastarioInput
-                  name="deliveryDate"
-                  inputMode="numeric"
-                  placeholder="TT.MM.JJJJ"
-                  required
-                />
-              </GastarioField>
-
-              <GastarioField label="Lieferzeit">
-                <GastarioInput
-                  name="deliveryTime"
-                  placeholder="z. B. 12:00"
-                />
-              </GastarioField>
-
-              <GastarioField label="Straße / Hausnummer">
-                <GastarioInput
-                  name="deliveryStreet"
-                  placeholder="Straße 12"
-                />
-              </GastarioField>
-
-              <GastarioField label="PLZ">
-                <GastarioInput
-                  name="deliveryZip"
-                  inputMode="numeric"
-                  placeholder="10115"
-                />
-              </GastarioField>
-
-              <GastarioField label="Ort">
-                <GastarioInput
-                  name="deliveryCity"
-                  placeholder="Berlin"
-                />
-              </GastarioField>
-
-            </GastarioFormGrid>
-
-            <GastarioField label="Zusatz zur Lieferadresse">
-              <GastarioTextarea
-                name="deliveryAddressNote"
-                placeholder="z. B. Hinterhof, Etage, Ansprechpartner vor Ort, Klingelname..."
-              />
-            </GastarioField>
-          </GastarioSection>
-
-          <GastarioSection
-            eyebrow="Leistung"
-            title="Positionen"
-            description="Positionen frei ergänzen, als Freitext erfassen oder wieder entfernen."
-          >
-
-            {items.map((item, index) => (
-              <GastarioPanel
-                key={item.id}
-                variant="soft"
-              >
-                <GastarioFormGrid columns={4}>
-
-                  <GastarioField
-                    label={`Position ${index + 1}`}
-                  >
-                    <GastarioInput
-                      name="itemName"
-                      value={item.name}
-                      onChange={(event) =>
-                        updateItem(
-                          item.id,
-                          "name",
-                          event.target.value
-                        )
-                      }
-                      placeholder={
-                        index === 0
-                          ? "z. B. Chicken Bowl"
-                          : "Weitere Position"
-                      }
-                    />
-                  </GastarioField>
-
-                  <GastarioField label="Menge">
-                    <GastarioInput
-                      name="quantity"
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={item.quantity}
-                      onChange={(event) =>
-                        updateItem(
-                          item.id,
-                          "quantity",
-                          event.target.value
-                        )
-                      }
-                    />
-                  </GastarioField>
-
-                  <GastarioField label="Einzelpreis netto">
-                    <GastarioInput
-                      name="unitPriceEuro"
-                      value={item.unitPriceEuro}
-                      onChange={(event) =>
-                        updateItem(
-                          item.id,
-                          "unitPriceEuro",
-                          event.target.value
-                        )
-                      }
-                      placeholder="0,00"
-                    />
-                  </GastarioField>
-
-                  <GastarioField label="Freitext / Hinweis">
-                    <GastarioInput
-                      name="itemNotes"
-                      value={item.itemNotes}
-                      onChange={(event) =>
-                        updateItem(
-                          item.id,
-                          "itemNotes",
-                          event.target.value
-                        )
-                      }
-                      placeholder="Allergene, Besonderheit, Beschreibung..."
-                    />
-                  </GastarioField>
-
-                </GastarioFormGrid>
-
-                <GastarioToolbar>
-                  <GastarioButton
-                    type="button"
-                    variant="danger"
-                    onClick={() =>
-                      removeItem(item.id)
-                    }
-                    disabled={items.length <= 1}
-                  >
-                    Löschen
-                  </GastarioButton>
-                </GastarioToolbar>
-
-              </GastarioPanel>
-            ))}
-
-
-            <GastarioToolbar>
-
-              <GastarioButton
-                type="button"
-                variant="primary"
-                onClick={addItem}
-              >
-                + Position hinzufügen
-              </GastarioButton>
-
-              <GastarioButton
-                type="button"
-                variant="secondary"
-                onClick={addTextItem}
-              >
-                + Freitextposition
-              </GastarioButton>
-
-            </GastarioToolbar>
-
-
-            <GastarioMetricGrid>
-              <GastarioMetric
-                label="Gesamtsumme netto"
-                value={formatEuro(total)}
-                description="Summe aller aktuell erfassten Positionen"
-                badge="EUR"
-              />
-            </GastarioMetricGrid>
-
-          </GastarioSection>
-
-
-          <GastarioSection
-            eyebrow="Intern"
-            title="Notizen"
-            description="Interne Hinweise und Abschluss des manuellen Auftrags."
-          >
-
-            <GastarioField label="Interne Notizen">
-              <GastarioTextarea
-                name="notes"
-                placeholder="Besonderheiten, Absprachen, Hinweise..."
-              />
-            </GastarioField>
-
-            <GastarioPanel variant="soft">
-              Der Auftrag wird zuerst im Auftragseingang geprüft.
-            </GastarioPanel>
-
-            <GastarioToolbar>
-
-              <a
-                href="/auftragseingang"
-                className={gastarioButtonClass(
-                  "secondary"
-                )}
-              >
-                Abbrechen
-              </a>
-
-              <GastarioButton
-                variant="primary"
-                type="submit"
-              >
-                Auftrag anlegen
-              </GastarioButton>
-
-            </GastarioToolbar>
-
-          </GastarioSection>
-          </GastarioStack>
-          </Form>
+        <NewOrderDialog
+          open
+          onClose={() =>
+            navigate("/auftraege")
+          }
+          serverError={
+            actionData?.error
+          }
+          formAction="/neuer-auftrag"
+        />
       </GastarioPage>
     </AppLayout>
   );

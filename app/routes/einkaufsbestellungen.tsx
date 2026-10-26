@@ -19,6 +19,18 @@ import {
   GastarioNotice,
   gastarioButtonClass,
   GastarioToolbar,
+  GastarioSection,
+  GastarioFilterBar,
+  GastarioField,
+  GastarioSelect,
+  GastarioInput,
+  GastarioEmptyState,
+  GastarioStack,
+  GastarioTable,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioPanel,
+  GastarioTextarea,
 } from "../components/ui";
 
 import "../styles/gastario-page-shell.css";
@@ -1082,393 +1094,403 @@ export default function ProcurementOrdersPage() {
           />
         </MetricGrid>
 
-        <PageSection
+        <GastarioSection
           eyebrow="Filter"
           title="Bestellungen durchsuchen"
           description="Nach Status, Lieferant und Planungstag filtern."
         >
-          <Form
-            method="get"
-            className="procurementOrdersFilters"
-          >
+          <Form method="get">
             <input
               type="hidden"
               name="view"
               value={data.filters.view}
             />
 
-            <label>
-              <span>Status</span>
-              <select
-                name="status"
-                defaultValue={
-                  data.filters.status
-                }
-                disabled={
-                  data.filters.view !== "all"
-                }
-              >
-                <option value="">
-                  Alle Status
-                </option>
-                <option value="DRAFT">
-                  Entwurf
-                </option>
-                <option value="ORDERED">
-                  Bestellt
-                </option>
-                <option value="PARTIALLY_RECEIVED">
-                  Teilweise geliefert
-                </option>
-                <option value="RECEIVED">
-                  Geliefert
-                </option>
-                <option value="CANCELLED">
-                  Storniert
-                </option>
-              </select>
-            </label>
+            <GastarioFilterBar
+              actions={
+                <>
+                  <button
+                    type="submit"
+                    className={gastarioButtonClass(
+                      "primary"
+                    )}
+                  >
+                    Filtern
+                  </button>
 
-            <label>
-              <span>Lieferant</span>
-              <select
-                name="supplier"
-                defaultValue={
-                  data.filters.supplier
-                }
-              >
-                <option value="">
-                  Alle Lieferanten
-                </option>
-                {data.suppliers.map(
-                  (supplier: string) => (
-                    <option
-                      value={supplier}
-                      key={supplier}
-                    >
-                      {supplier}
-                    </option>
-                  )
-                )}
-              </select>
-            </label>
-
-            <label>
-              <span>Von</span>
-              <input
-                type="date"
-                name="dateFrom"
-                defaultValue={
-                  data.filters.dateFrom
-                }
-              />
-            </label>
-
-            <label>
-              <span>Bis</span>
-              <input
-                type="date"
-                name="dateTo"
-                defaultValue={
-                  data.filters.dateTo
-                }
-              />
-            </label>
-
-            <button
-              type="submit"
-              className={gastarioButtonClass("primary")}
+                  <Link
+                    className={gastarioButtonClass(
+                      "secondary"
+                    )}
+                    to={`/einkaufsbestellungen?view=${data.filters.view}`}
+                  >
+                    Zurücksetzen
+                  </Link>
+                </>
+              }
             >
-              Filtern
-            </button>
+              <GastarioField label="Status">
+                <GastarioSelect
+                  name="status"
+                  defaultValue={
+                    data.filters.status
+                  }
+                  disabled={
+                    data.filters.view !== "all"
+                  }
+                >
+                  <option value="">
+                    Alle Status
+                  </option>
 
-            <Link
-              className="procurementOrdersButton procurementOrdersButton--secondary"
-              to={`/einkaufsbestellungen?view=${data.filters.view}`}
-            >
-              Zurücksetzen
-            </Link>
+                  <option value="DRAFT">
+                    Entwurf
+                  </option>
+
+                  <option value="ORDERED">
+                    Bestellt
+                  </option>
+
+                  <option value="PARTIALLY_RECEIVED">
+                    Teilweise geliefert
+                  </option>
+
+                  <option value="RECEIVED">
+                    Geliefert
+                  </option>
+
+                  <option value="CANCELLED">
+                    Storniert
+                  </option>
+                </GastarioSelect>
+              </GastarioField>
+
+              <GastarioField label="Lieferant">
+                <GastarioSelect
+                  name="supplier"
+                  defaultValue={
+                    data.filters.supplier
+                  }
+                >
+                  <option value="">
+                    Alle Lieferanten
+                  </option>
+
+                  {data.suppliers.map(
+                    (supplier: string) => (
+                      <option
+                        value={supplier}
+                        key={supplier}
+                      >
+                        {supplier}
+                      </option>
+                    )
+                  )}
+                </GastarioSelect>
+              </GastarioField>
+
+              <GastarioField label="Von">
+                <GastarioInput
+                  type="date"
+                  name="dateFrom"
+                  defaultValue={
+                    data.filters.dateFrom
+                  }
+                />
+              </GastarioField>
+
+              <GastarioField label="Bis">
+                <GastarioInput
+                  type="date"
+                  name="dateTo"
+                  defaultValue={
+                    data.filters.dateTo
+                  }
+                />
+              </GastarioField>
+            </GastarioFilterBar>
           </Form>
-        </PageSection>
+        </GastarioSection>
 
         {data.filters.view ===
         "suppliers" ? (
-          <PageSection
+          <GastarioSection
             eyebrow="Bündelung"
             title="Offene Bestellungen nach Lieferant"
             description="Mehrere Planungstage desselben Lieferanten werden zusammengefasst. Einzelbestellungen bleiben separat erhalten."
           >
-            {data.supplierBundles.length ===
-            0 ? (
-              <div className="procurementOrdersEmpty">
-                Keine offenen Lieferantenbestellungen gefunden.
-              </div>
+            {data.supplierBundles.length === 0 ? (
+              <GastarioEmptyState title="Keine offenen Lieferantenbestellungen">
+                Für die aktuellen Filter wurden keine offenen Lieferantenbestellungen gefunden.
+              </GastarioEmptyState>
             ) : (
-              <div className="procurementSupplierBundles">
+              <GastarioStack>
                 {data.supplierBundles.map(
                   (bundle: any) => (
-                    <article
+                    <GastarioSection
                       key={bundle.key}
-                      className="procurementSupplierBundle"
+                      eyebrow={`${bundle.drafts.length} Bestellung(en)`}
+                      title={bundle.supplierName}
+                      description={`Planung von ${formatDate(
+                        bundle.earliestPlanningDate
+                      )} bis ${formatDate(
+                        bundle.latestPlanningDate
+                      )}`}
                     >
-                      <header className="procurementSupplierBundleHeader">
-                        <div>
-                          <span>
-                            {bundle.drafts.length} Bestellung(en)
-                          </span>
-                          <h3>
-                            {bundle.supplierName}
-                          </h3>
-                          <p>
-                            Planung von{" "}
-                            {formatDate(
-                              bundle.earliestPlanningDate
-                            )}{" "}
-                            bis{" "}
-                            {formatDate(
-                              bundle.latestPlanningDate
-                            )}
-                          </p>
-                        </div>
-
-                        <strong>
-                          {formatMoney(
+                      <GastarioMetricGrid>
+                        <GastarioMetric
+                          label="Netto"
+                          value={formatMoney(
                             bundle.netTotalCents
                           )}
-                        </strong>
-                      </header>
+                          description="Gesamtwert der Sammelbestellung"
+                        />
 
-                      <div className="procurementOrdersProgressBlock">
-                        <div className="procurementOrdersProgressHeader">
-                          <span>
-                            Gemeinsame Warenannahme
-                          </span>
-                          <strong>
-                            {bundle.percentage} %
-                          </strong>
-                        </div>
-
-                        <div className="procurementOrdersProgressTrack">
-                          <span
-                            style={{
-                              width: `${bundle.percentage}%`,
-                            }}
-                          />
-                        </div>
-
-                        <small>
-                          {formatNumber(
+                        <GastarioMetric
+                          label="Warenannahme"
+                          value={`${bundle.percentage} %`}
+                          description={`${formatNumber(
                             bundle.receivedPackages
-                          )}{" "}
-                          von{" "}
-                          {formatNumber(
+                          )} von ${formatNumber(
                             bundle.totalPackages
-                          )}{" "}
-                          Packungen erhalten
-                        </small>
-                      </div>
+                          )} Packungen erhalten`}
+                        />
+                      </GastarioMetricGrid>
 
-                      <div className="procurementSupplierBundleTableWrap">
-                        <table className="procurementSupplierBundleTable">
-                          <thead>
-                            <tr>
-                              <th>Artikel</th>
-                              <th>Art.-Nr.</th>
-                              <th>Gesamt</th>
-                              <th>Erhalten</th>
-                              <th>Netto</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {bundle.items.map(
-                              (item: any) => (
-                                <tr
-                                  key={
-                                    item.key
-                                  }
-                                >
-                                  <td>
-                                    <strong>
-                                      {
-                                        item.catalogItemName
-                                      }
-                                    </strong>
-                                    <span>
+                      <GastarioTable>
+                        <thead>
+                          <tr>
+                            <th>Artikel</th>
+                            <th>Art.-Nr.</th>
+                            <th>Gesamt</th>
+                            <th>Erhalten</th>
+                            <th>Netto</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {bundle.items.map(
+                            (item: any) => (
+                              <tr key={item.key}>
+                                <td>
+                                  <strong>
+                                    {item.catalogItemName}
+                                  </strong>
+
+                                  {item.ingredientNames.length >
+                                  0 ? (
+                                    <div>
                                       {item.ingredientNames.join(
                                         ", "
                                       )}
-                                    </span>
-                                  </td>
-                                  <td>
-                                    {item.articleNumber ||
-                                      "–"}
-                                  </td>
-                                  <td>
-                                    {formatNumber(
-                                      item.packageCount
-                                    )}{" "}
-                                    Pack.
-                                  </td>
-                                  <td>
-                                    {formatNumber(
-                                      item.receivedPackageCount
-                                    )}{" "}
-                                    Pack.
-                                  </td>
-                                  <td>
-                                    {formatMoney(
-                                      item.netTotalCents
-                                    )}
-                                  </td>
-                                </tr>
-                              )
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
+                                    </div>
+                                  ) : null}
+                                </td>
 
-                      <div className="procurementSupplierBundleDrafts">
-                        {bundle.drafts.map(
-                          (draft: any) => (
-                            <Link
-                              key={draft.id}
-                              to={`/einkaufsbestellungen/${draft.id}`}
-                            >
-                              <span>
-                                {formatDate(
-                                  draft.planningDate
-                                )}
-                              </span>
-                              <strong>
-                                {statusLabel(
-                                  draft.status
-                                )}
-                              </strong>
-                            </Link>
-                          )
-                        )}
-                      </div>
+                                <td>
+                                  {item.articleNumber || "–"}
+                                </td>
 
-                      <div className="procurementSupplierBundleOrderBox">
-                        <div className="procurementSupplierBundleOrderIntro">
-                          <strong>
-                            Sammelbestellung erstellen
-                          </strong>
-                          <span>
-                            Gemeinsame PDF für alle oben aufgeführten Einzelbestellungen.
-                          </span>
-                        </div>
+                                <td>
+                                  {formatNumber(
+                                    item.packageCount
+                                  )}{" "}
+                                  Pack.
+                                </td>
 
-                        <a
-                          className="procurementOrdersButton procurementOrdersButton--secondary"
-                          href={`/einkaufsbestellungen/sammelbestellung/pdf?draftIds=${encodeURIComponent(
-                            bundle.draftIds.join(
-                              ","
+                                <td>
+                                  {formatNumber(
+                                    item.receivedPackageCount
+                                  )}{" "}
+                                  Pack.
+                                </td>
+
+                                <td>
+                                  {formatMoney(
+                                    item.netTotalCents
+                                  )}
+                                </td>
+                              </tr>
                             )
-                          )}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Sammel-PDF öffnen
-                        </a>
+                          )}
+                        </tbody>
+                      </GastarioTable>
 
-                        <Form
-                          method="post"
-                          className="procurementSupplierBundleMailForm"
-                        >
-                          <input
-                            type="hidden"
-                            name="intent"
-                            value="send-supplier-bundle-email"
-                          />
-                          <input
-                            type="hidden"
-                            name="draftIds"
-                            value={bundle.draftIds.join(
-                              ","
-                            )}
-                          />
+                      <GastarioSection
+                        eyebrow="Einzelbestellungen"
+                        title="Enthaltene Planungstage"
+                        description="Die ursprünglichen Einzelbestellungen bleiben separat aufrufbar."
+                      >
+                        <GastarioDataList>
+                          {bundle.drafts.map(
+                            (draft: any) => (
+                              <GastarioDataRow
+                                key={draft.id}
+                              >
+                                <div className="g-ui-data-row-main">
+                                  <strong className="g-ui-data-row-title">
+                                    {formatDate(
+                                      draft.planningDate
+                                    )}
+                                  </strong>
 
-                          <label>
-                            <span>Empfänger</span>
-                            <input
-                              type="email"
-                              name="recipientEmail"
-                              placeholder="bestellung@lieferant.de"
-                              required
-                            />
-                          </label>
+                                  <span className="g-ui-data-row-description">
+                                    {statusLabel(
+                                      draft.status
+                                    )}
+                                  </span>
+                                </div>
 
-                          <label>
-                            <span>Ansprechpartner</span>
-                            <input
-                              name="recipientName"
-                              defaultValue={
-                                bundle.supplierName
-                              }
-                            />
-                          </label>
+                                <div className="g-ui-data-row-meta">
+                                  <Link
+                                    to={`/einkaufsbestellungen/${draft.id}`}
+                                    className={gastarioButtonClass(
+                                      "secondary"
+                                    )}
+                                  >
+                                    Öffnen
+                                  </Link>
+                                </div>
+                              </GastarioDataRow>
+                            )
+                          )}
+                        </GastarioDataList>
+                      </GastarioSection>
 
-                          <label className="procurementSupplierBundleMailWide">
-                            <span>Betreff</span>
-                            <input
-                              name="emailSubject"
-                              defaultValue={`Sammelbestellung ${bundle.supplierName} · ${formatDate(
-                                bundle.earliestPlanningDate
-                              )} bis ${formatDate(
-                                bundle.latestPlanningDate
+                      <GastarioPanel variant="soft">
+                        <GastarioStack>
+                          <div>
+                            <strong>
+                              Sammelbestellung erstellen
+                            </strong>
+
+                            <div>
+                              Gemeinsame PDF für alle oben aufgeführten Einzelbestellungen.
+                            </div>
+                          </div>
+
+                          <GastarioToolbar>
+                            <a
+                              className={gastarioButtonClass(
+                                "secondary"
+                              )}
+                              href={`/einkaufsbestellungen/sammelbestellung/pdf?draftIds=${encodeURIComponent(
+                                bundle.draftIds.join(
+                                  ","
+                                )
                               )}`}
-                              required
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Sammel-PDF öffnen
+                            </a>
+                          </GastarioToolbar>
+
+                          <Form method="post">
+                            <input
+                              type="hidden"
+                              name="intent"
+                              value="send-supplier-bundle-email"
                             />
-                          </label>
 
-                          <label className="procurementSupplierBundleMailWide">
-                            <span>Nachricht</span>
-                            <textarea
-                              name="emailMessage"
-                              rows={5}
-                              defaultValue={[
-                                "Guten Tag,",
-                                "",
-                                `anbei erhalten Sie unsere Sammelbestellung für den Zeitraum ${formatDate(
-                                  bundle.earliestPlanningDate
-                                )} bis ${formatDate(
-                                  bundle.latestPlanningDate
-                                )}.`,
-                                "",
-                                "Bitte bestätigen Sie uns kurz den Erhalt und die Liefermöglichkeit.",
-                                "",
-                                "Vielen Dank und freundliche Grüße",
-                                data.tenant.name,
-                              ].join("\n")}
+                            <input
+                              type="hidden"
+                              name="draftIds"
+                              value={bundle.draftIds.join(
+                                ","
+                              )}
                             />
-                          </label>
 
-                          <button
-                            type="submit"
-                            className={gastarioButtonClass("primary")}
-                            disabled={
-                              !data.mailConfigured
-                            }
-                          >
-                            Sammelbestellung senden
-                          </button>
+                            <GastarioStack>
+                              <GastarioField
+                                label="Empfänger"
+                                required
+                              >
+                                <GastarioInput
+                                  type="email"
+                                  name="recipientEmail"
+                                  placeholder="bestellung@lieferant.de"
+                                  required
+                                />
+                              </GastarioField>
 
-                          {!data.mailConfigured ? (
-                            <span className="procurementOrderMailWarning procurementSupplierBundleMailWide">
-                              Mailjet ist noch nicht vollständig konfiguriert.
-                            </span>
-                          ) : null}
-                        </Form>
-                      </div>
+                              <GastarioField label="Ansprechpartner">
+                                <GastarioInput
+                                  name="recipientName"
+                                  defaultValue={
+                                    bundle.supplierName
+                                  }
+                                />
+                              </GastarioField>
 
-                      <div className="procurementOrdersWorkActions">
+                              <GastarioField
+                                label="Betreff"
+                                required
+                              >
+                                <GastarioInput
+                                  name="emailSubject"
+                                  defaultValue={`Sammelbestellung ${bundle.supplierName} · ${formatDate(
+                                    bundle.earliestPlanningDate
+                                  )} bis ${formatDate(
+                                    bundle.latestPlanningDate
+                                  )}`}
+                                  required
+                                />
+                              </GastarioField>
+
+                              <GastarioField label="Nachricht">
+                                <GastarioTextarea
+                                  name="emailMessage"
+                                  rows={5}
+                                  defaultValue={[
+                                    "Guten Tag,",
+                                    "",
+                                    `anbei erhalten Sie unsere Sammelbestellung für den Zeitraum ${formatDate(
+                                      bundle.earliestPlanningDate
+                                    )} bis ${formatDate(
+                                      bundle.latestPlanningDate
+                                    )}.`,
+                                    "",
+                                    "Bitte bestätigen Sie uns kurz den Erhalt und die Liefermöglichkeit.",
+                                    "",
+                                    "Vielen Dank und freundliche Grüße",
+                                    data.tenant.name,
+                                  ].join("\n")}
+                                />
+                              </GastarioField>
+
+                              {!data.mailConfigured ? (
+                                <GastarioNotice type="warning">
+                                  Mailjet ist noch nicht vollständig konfiguriert.
+                                </GastarioNotice>
+                              ) : null}
+
+                              <GastarioToolbar>
+                                <button
+                                  type="submit"
+                                  className={gastarioButtonClass(
+                                    "primary"
+                                  )}
+                                  disabled={
+                                    !data.mailConfigured
+                                  }
+                                >
+                                  Sammelbestellung senden
+                                </button>
+                              </GastarioToolbar>
+                            </GastarioStack>
+                          </Form>
+                        </GastarioStack>
+                      </GastarioPanel>
+
+                      <GastarioToolbar>
                         <Form method="post">
                           <input
                             type="hidden"
                             name="intent"
                             value="mark-supplier-bundle-received"
                           />
+
                           <input
                             type="hidden"
                             name="draftIds"
@@ -1476,20 +1498,23 @@ export default function ProcurementOrdersPage() {
                               ","
                             )}
                           />
+
                           <button
                             type="submit"
-                            className={gastarioButtonClass("primary")}
+                            className={gastarioButtonClass(
+                              "primary"
+                            )}
                           >
                             Alle Bestellungen komplett erhalten
                           </button>
                         </Form>
-                      </div>
-                    </article>
+                      </GastarioToolbar>
+                    </GastarioSection>
                   )
                 )}
-              </div>
+              </GastarioStack>
             )}
-          </PageSection>
+          </GastarioSection>
         ) : (
           <PageSection
             eyebrow={
