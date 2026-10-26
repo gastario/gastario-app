@@ -960,6 +960,55 @@ export function GastarioDialog({
 ========================================================= */
 
 /* =========================================================
+   CHECK ROW
+========================================================= */
+
+type GastarioCheckRowProps = {
+  name: string;
+  title: ReactNode;
+  description?: ReactNode;
+  value?: string;
+  required?: boolean;
+  defaultChecked?: boolean;
+  disabled?: boolean;
+};
+
+export function GastarioCheckRow({
+  name,
+  title,
+  description,
+  value = "1",
+  required = false,
+  defaultChecked = false,
+  disabled = false,
+}: GastarioCheckRowProps) {
+  return (
+    <label className="g-ui-check-row">
+      <input
+        className="g-ui-check-row-control"
+        type="checkbox"
+        name={name}
+        value={value}
+        required={required}
+        defaultChecked={defaultChecked}
+        disabled={disabled}
+      />
+
+      <span className="g-ui-check-row-copy">
+        <strong className="g-ui-check-row-title">{title}</strong>
+
+        {description ? (
+          <span className="g-ui-check-row-description">
+            {description}
+          </span>
+        ) : null}
+      </span>
+    </label>
+  );
+}
+
+
+/* =========================================================
    DETAIL DIALOG
 
    GASTARIO DETAIL INTERACTION STANDARD

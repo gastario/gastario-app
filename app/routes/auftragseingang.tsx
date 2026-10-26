@@ -1,5 +1,6 @@
 import { GastarioStack } from "../components/ui";
 import { GastarioDetailDialog } from "../components/ui";
+import { GastarioCheckRow } from "../components/ui";
 import { GastarioDataList, GastarioDataRow, GastarioEmptyState, GastarioToolbar } from "../components/ui";
 import { GastarioPage, GastarioHeader, GastarioNotice, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioFilterBar, GastarioField, GastarioInput, GastarioSelect, gastarioButtonClass } from "../components/ui";
 import {
@@ -2096,29 +2097,49 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                     .filter(Boolean)
                     .join(" · ")
                 }
+                footer={
+                  <>
+                    <button
+                      type="button"
+                      className={gastarioButtonClass("secondary")}
+                      onClick={() => updateSelectedOrder(null)}
+                    >
+                      Schließen
+                    </button>
+
+                    <Form method="post">
+                      <input
+                        type="hidden"
+                        name="intent"
+                        value="deleteOrder"
+                      />
+                      <input
+                        type="hidden"
+                        name="orderId"
+                        value={selectedOrder.id}
+                      />
+                      <button
+                        type="submit"
+                        className={gastarioButtonClass("danger")}
+                      >
+                        Auftrag löschen
+                      </button>
+                    </Form>
+
+                    <button
+                      type="submit"
+                      form="incoming-confirm-order-form"
+                      className={gastarioButtonClass("primary")}
+                    >
+                      Auftrag bestätigen und übernehmen
+                    </button>
+                  </>
+                }
                 onClose={() => updateSelectedOrder(null)}
               >
               <GastarioStack
                   key={selectedOrder.id}
                 >
-                  <GastarioSection
-                    eyebrow="Auftrag prüfen"
-                    title={
-                      selectedOrder.customer?.name ||
-                      selectedOrder.customerName ||
-                      "Kunde unbekannt"
-                    }
-                    description={
-                      [
-                        selectedOrder.orderNumber,
-                        selectedOrder.contactName,
-                        sourceLabel(selectedOrder.source),
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")
-                    }
-                  >
-
                     <GastarioMetricGrid>
 
                       <GastarioMetric
@@ -2162,7 +2183,6 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
                     </GastarioMetricGrid>
 
-                  </GastarioSection>
 
                   <GastarioSection
                     eyebrow="Auftragsinhalt"
@@ -2241,6 +2261,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                   </GastarioSection>
 
                   <Form
+                    id="incoming-confirm-order-form"
                     method="post"
                   >
                     <input
@@ -2301,120 +2322,44 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                       title="Vor der Übernahme kontrollieren"
                       description="Alle fünf Punkte müssen bestätigt werden."
                     >
+                      <div className="g-ui-check-list">
 
-                      <GastarioDataList>
+                        <GastarioCheckRow
+                          name="customerChecked"
+                          title="Kundendaten geprüft"
+                          description="Firmenname und Ansprechpartner stimmen."
+                          required
+                        />
 
-                        <GastarioDataRow>
-                          <label>
-                            <input
-                              type="checkbox"
-                              name="customerChecked"
-                              value="1"
-                              required
-                            />
+                        <GastarioCheckRow
+                          name="addressChecked"
+                          title="Lieferadresse geprüft"
+                          description="Straße, Hausnummer und Ort sind vollständig."
+                          required
+                        />
 
-                            <span className="g-ui-data-row-main">
-                              <strong className="g-ui-data-row-title">
-                                Kundendaten geprüft
-                              </strong>
+                        <GastarioCheckRow
+                          name="scheduleChecked"
+                          title="Datum und Uhrzeit geprüft"
+                          description="Liefertermin und Zeitfenster sind korrekt."
+                          required
+                        />
 
-                              <span className="g-ui-data-row-description">
-                                Firmenname und Ansprechpartner stimmen.
-                              </span>
-                            </span>
-                          </label>
-                        </GastarioDataRow>
+                        <GastarioCheckRow
+                          name="itemsChecked"
+                          title="Positionen und Mengen geprüft"
+                          description="Alle Speisen, Mengen und Preise stimmen."
+                          required
+                        />
 
+                        <GastarioCheckRow
+                          name="billingChecked"
+                          title="Abrechnungsart geprüft"
+                          description="Die spätere Rechnungsbearbeitung ist festgelegt."
+                          required
+                        />
 
-                        <GastarioDataRow>
-                          <label>
-                            <input
-                              type="checkbox"
-                              name="addressChecked"
-                              value="1"
-                              required
-                            />
-
-                            <span className="g-ui-data-row-main">
-                              <strong className="g-ui-data-row-title">
-                                Lieferadresse geprüft
-                              </strong>
-
-                              <span className="g-ui-data-row-description">
-                                Straße, Hausnummer und Ort sind vollständig.
-                              </span>
-                            </span>
-                          </label>
-                        </GastarioDataRow>
-
-
-                        <GastarioDataRow>
-                          <label>
-                            <input
-                              type="checkbox"
-                              name="scheduleChecked"
-                              value="1"
-                              required
-                            />
-
-                            <span className="g-ui-data-row-main">
-                              <strong className="g-ui-data-row-title">
-                                Datum und Uhrzeit geprüft
-                              </strong>
-
-                              <span className="g-ui-data-row-description">
-                                Liefertermin und Zeitfenster sind korrekt.
-                              </span>
-                            </span>
-                          </label>
-                        </GastarioDataRow>
-
-
-                        <GastarioDataRow>
-                          <label>
-                            <input
-                              type="checkbox"
-                              name="itemsChecked"
-                              value="1"
-                              required
-                            />
-
-                            <span className="g-ui-data-row-main">
-                              <strong className="g-ui-data-row-title">
-                                Positionen und Mengen geprüft
-                              </strong>
-
-                              <span className="g-ui-data-row-description">
-                                Alle Speisen, Mengen und Preise stimmen.
-                              </span>
-                            </span>
-                          </label>
-                        </GastarioDataRow>
-
-
-                        <GastarioDataRow>
-                          <label>
-                            <input
-                              type="checkbox"
-                              name="billingChecked"
-                              value="1"
-                              required
-                            />
-
-                            <span className="g-ui-data-row-main">
-                              <strong className="g-ui-data-row-title">
-                                Abrechnungsart geprüft
-                              </strong>
-
-                              <span className="g-ui-data-row-description">
-                                Die spätere Rechnungsbearbeitung ist festgelegt.
-                              </span>
-                            </span>
-                          </label>
-                        </GastarioDataRow>
-
-                      </GastarioDataList>
-
+                      </div>
                     </GastarioSection>
 
                     <GastarioNotice type="neutral">
@@ -2426,50 +2371,8 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                       nicht fortgesetzt werden.
                     </GastarioNotice>
 
-                    <GastarioToolbar align="end">
-                      <button
-                        type="submit"
-                        className={gastarioButtonClass("primary")}
-                      >
-                        Auftrag bestätigen und übernehmen
-                      </button>
-                    </GastarioToolbar>
                   </Form>
 
-                  <GastarioToolbar align="between">
-
-                    <button
-                      type="button"
-                      className={gastarioButtonClass("secondary")}
-                      onClick={() =>
-                        updateSelectedOrder(null)
-                      }
-                    >
-                      Fenster schließen
-                    </button>
-
-                    <Form method="post">
-                      <input
-                        type="hidden"
-                        name="intent"
-                        value="deleteOrder"
-                      />
-
-                      <input
-                        type="hidden"
-                        name="orderId"
-                        value={selectedOrder.id}
-                      />
-
-                      <button
-                        type="submit"
-                        className={gastarioButtonClass("danger")}
-                      >
-                        Auftrag löschen
-                      </button>
-                    </Form>
-
-                  </GastarioToolbar>
                 </GastarioStack>
               </GastarioDetailDialog>
             ) : null}
