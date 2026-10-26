@@ -248,7 +248,7 @@ export default function FoodLabelsPage() {
   const actionData = useActionData<typeof action>() as any;
 
   const [searchParams] = useSearchParams();
-  const selectedId = searchParams.get("print");
+  const [selectedId, setSelectedId] = useState<string | null>(     () => searchParams.get("print")   );
 
   const selected = selectedId
     ? data.labels.find((label: any) => label.id === selectedId)
@@ -339,9 +339,7 @@ export default function FoodLabelsPage() {
                 <GastarioDataRow
                   key={label.id}
                   onClick={() => {
-                    setSearchParams({
-                      print: label.id,
-                    });
+                    setSelectedId(label.id);
                   }}
                 >
                   <div className="g-ui-data-row-copy">
@@ -753,7 +751,7 @@ export default function FoodLabelsPage() {
           title={selected?.name || "Foodlabel"}
           description="Vorschau und Aktionen"
           onClose={() => {
-            setSearchParams({});
+            setSelectedId(null);
           }}
           footer={
             selected ? (

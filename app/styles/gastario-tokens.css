@@ -54,8 +54,8 @@
   --g-color-border-subtle: #e7eeeb;
 
   /* Akzent */
-  --g-color-accent: #d5921c;
-  --g-color-accent-soft: #fff5df;
+  --g-color-accent: var(--g-color-brand);
+  --g-color-accent-soft: var(--g-color-brand-soft);
 
   /* Status */
   --g-color-success: #147354;

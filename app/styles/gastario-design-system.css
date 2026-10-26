@@ -22,9 +22,9 @@
     --g26-line: #ece8e3;
     --g26-line-strong: #dfdad4;
 
-    --g26-accent: #938474;
-    --g26-accent-hover: #7f7163;
-    --g26-accent-soft: #ede8e2;
+    --g26-accent: var(--g-color-brand);
+    --g26-accent-hover: var(--g-color-brand-hover);
+    --g26-accent-soft: var(--g-color-brand-soft);
 
     --g26-success: #68836e;
     --g26-success-soft: #edf4ee;
