@@ -1,5 +1,8 @@
 import { GastarioStack } from "../components/ui";
 import { GastarioDetailDialog } from "../components/ui";
+import { GastarioDetailTabs } from "../components/ui";
+import { GastarioDetailPane } from "../components/ui";
+import { GastarioTabs } from "../components/ui";
 import { GastarioCheckRow } from "../components/ui";
 import { GastarioDataList, GastarioDataRow, GastarioEmptyState, GastarioToolbar } from "../components/ui";
 import { GastarioPage, GastarioHeader, GastarioNotice, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioFilterBar, GastarioField, GastarioInput, GastarioSelect, gastarioButtonClass } from "../components/ui";
@@ -1504,6 +1507,13 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
   const selectedOrderId =
     selectedOrderSearchParams.get("selectedOrder") || null;
 
+  const [selectedOrderDetailTab, setSelectedOrderDetailTab] =
+    useState("overview");
+
+  useEffect(() => {
+    setSelectedOrderDetailTab("overview");
+  }, [selectedOrderId]);
+
   function updateSelectedOrder(nextOrderId: string | null) {
     const nextParams = new URLSearchParams(selectedOrderSearchParams);
 
@@ -2126,13 +2136,23 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                       </button>
                     </Form>
 
-                    <button
-                      type="submit"
-                      form="incoming-confirm-order-form"
-                      className={gastarioButtonClass("primary")}
-                    >
-                      Auftrag bestätigen und übernehmen
-                    </button>
+                    {selectedOrderDetailTab === "review" ? (
+                      <button
+                        type="submit"
+                        form="incoming-confirm-order-form"
+                        className={gastarioButtonClass("primary")}
+                      >
+                        Auftrag bestätigen und übernehmen
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className={gastarioButtonClass("primary")}
+                        onClick={() => setSelectedOrderDetailTab("review")}
+                      >
+                        Zur Prüfung
+                      </button>
+                    )}
                   </>
                 }
                 onClose={() => updateSelectedOrder(null)}
@@ -2140,6 +2160,18 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
               <GastarioStack
                   key={selectedOrder.id}
                 >
+
+                  <GastarioDetailTabs
+                    items={[
+                      { id: "overview", label: "Übersicht" },
+                      { id: "items", label: "Positionen" },
+                      { id: "review", label: "Prüfung" },
+                    ]}
+                    activeId={selectedOrderDetailTab}
+                    onChange={setSelectedOrderDetailTab}
+                  />
+
+                  <GastarioDetailPane active={selectedOrderDetailTab === "overview"}>
                     <GastarioMetricGrid>
 
                       <GastarioMetric
@@ -2182,8 +2214,10 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                       />
 
                     </GastarioMetricGrid>
+                  </GastarioDetailPane>
 
 
+                  <GastarioDetailPane active={selectedOrderDetailTab === "items"}>
                   <GastarioSection
                     eyebrow="Auftragsinhalt"
                     title="Positionen"
@@ -2259,7 +2293,9 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                     ) : null}
 
                   </GastarioSection>
+                  </GastarioDetailPane>
 
+                  <GastarioDetailPane active={selectedOrderDetailTab === "review"}>
                   <Form
                     id="incoming-confirm-order-form"
                     method="post"
@@ -2372,6 +2408,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                     </GastarioNotice>
 
                   </Form>
+                  </GastarioDetailPane>
 
                 </GastarioStack>
               </GastarioDetailDialog>

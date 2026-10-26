@@ -1024,16 +1024,80 @@ export function GastarioCheckRow({
 export type GastarioDetailDialogProps =
   Omit<GastarioDialogProps, "size">;
 
-export function GastarioDetailDialog(
-  props: GastarioDetailDialogProps
-) {
+export function GastarioDetailDialog({
+  className,
+  ...props
+}: GastarioDetailDialogProps) {
   return (
     <GastarioDialog
       {...props}
       size="xl"
+      className={joinClasses(
+        "g-ui-detail-dialog",
+        className
+      )}
     />
   );
 }
+
+
+/* =========================================================
+   DETAIL WORKSPACE
+
+   Zentraler Gastario-Standard innerhalb von Detailfenstern:
+   Tabs oben, darunter genau ein aktiver Inhaltsbereich.
+========================================================= */
+
+type GastarioDetailTabsProps = {
+  items: Array<{
+    id: string;
+    label: ReactNode;
+  }>;
+  activeId: string;
+  onChange: (id: string) => void;
+};
+
+export function GastarioDetailTabs({
+  items,
+  activeId,
+  onChange,
+}: GastarioDetailTabsProps) {
+  return (
+    <div className="g-ui-detail-tabs">
+      <GastarioTabs
+        items={items}
+        activeId={activeId}
+        onChange={onChange}
+      />
+    </div>
+  );
+}
+
+type GastarioDetailPaneProps = {
+  active: boolean;
+  children: ReactNode;
+  className?: string;
+};
+
+export function GastarioDetailPane({
+  active,
+  children,
+  className,
+}: GastarioDetailPaneProps) {
+  if (!active) return null;
+
+  return (
+    <div
+      className={joinClasses(
+        "g-ui-detail-pane",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
 
 type GastarioDrawerProps = {
   open: boolean;
