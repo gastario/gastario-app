@@ -2172,6 +2172,11 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                   />
 
                   <GastarioDetailPane active={selectedOrderDetailTab === "overview"}>
+                    <GastarioSection
+                      eyebrow="Auftragsübersicht"
+                      title="Auftrag auf einen Blick"
+                      description="Die wichtigsten Eckdaten vor der Übernahme."
+                    >
                     <GastarioMetricGrid>
 
                       <GastarioMetric
@@ -2214,6 +2219,11 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                       />
 
                     </GastarioMetricGrid>
+
+                      <GastarioNotice type="neutral">
+                        Prüfe danach die Positionen und anschließend die Pflichtprüfung.
+                      </GastarioNotice>
+                    </GastarioSection>
                   </GastarioDetailPane>
 
 

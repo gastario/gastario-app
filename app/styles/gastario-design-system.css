@@ -3632,3 +3632,77 @@
 .g-ui-detail-pane > .g-ui-section {
   margin: 0;
 }
+
+/* =========================================================
+   GASTARIO DETAIL TABS STANDARD
+   Nicht sticky, normal im Dialogfluss.
+========================================================= */
+
+.g-ui-detail-tabs {
+  position: static !important;
+  top: auto !important;
+  z-index: auto !important;
+  background: transparent !important;
+  margin: 8px 0 18px;
+  padding: 0;
+}
+
+.g-ui-detail-tabs .g-ui-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid #e5ebe8;
+  border-radius: 12px;
+  background: #f7faf8;
+}
+
+.g-ui-detail-tabs .g-ui-tabs button {
+  min-height: 36px;
+}
+
+/* =========================================================
+   GASTARIO DETAIL WORKSPACE POLISH
+========================================================= */
+
+.g-ui-detail-dialog .g-ui-section + .g-ui-section {
+  margin-top: 18px;
+}
+
+.g-ui-detail-pane {
+  padding-top: 2px;
+}
+
+.g-ui-detail-pane .g-ui-metric-grid {
+  margin-bottom: 14px;
+}
+
+.g-ui-detail-pane .g-ui-notice {
+  margin-top: 12px;
+}
+
+/* =========================================================
+   GASTARIO DETAIL DIALOG ADAPTIVE HEIGHT 2026
+
+   Kurze Detailansichten bleiben kompakt.
+   Lange Inhalte nutzen maximal die verfügbare Fensterhöhe
+   und scrollen ausschließlich im Body.
+========================================================= */
+
+.g-ui-detail-dialog {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100vh - 48px) !important;
+}
+
+.g-ui-detail-dialog > .g-ui-dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+@media (max-width: 760px) {
+  .g-ui-detail-dialog {
+    height: auto !important;
+    max-height: calc(100vh - 20px) !important;
+  }
+}
