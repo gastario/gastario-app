@@ -223,6 +223,42 @@ export function GastarioSplitView({
   );
 }
 
+type GastarioSplitAreaProps = {
+  children: ReactNode;
+  className?: string;
+};
+
+export function GastarioSplitMain({
+  children,
+  className,
+}: GastarioSplitAreaProps) {
+  return (
+    <div
+      className={joinClasses(
+        "g-ui-split-main",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function GastarioSplitAside({
+  children,
+  className,
+}: GastarioSplitAreaProps) {
+  return (
+    <aside
+      className={joinClasses(
+        "g-ui-split-aside",
+        className
+      )}
+    >
+      {children}
+    </aside>
+  );
+}
 type GastarioEmptyStateProps = {
   title?: ReactNode;
   children?: ReactNode;
@@ -964,13 +1000,15 @@ export function GastarioDialog({
 ========================================================= */
 
 type GastarioCheckRowProps = {
-  name: string;
+  name?: string;
   title: ReactNode;
   description?: ReactNode;
   value?: string;
   required?: boolean;
   defaultChecked?: boolean;
+  checked?: boolean;
   disabled?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
 };
 
 export function GastarioCheckRow({
@@ -980,7 +1018,9 @@ export function GastarioCheckRow({
   value = "1",
   required = false,
   defaultChecked = false,
+  checked,
   disabled = false,
+  onCheckedChange,
 }: GastarioCheckRowProps) {
   return (
     <label className="g-ui-check-row">
@@ -990,12 +1030,24 @@ export function GastarioCheckRow({
         name={name}
         value={value}
         required={required}
-        defaultChecked={defaultChecked}
+        checked={checked}
+        defaultChecked={
+          checked === undefined
+            ? defaultChecked
+            : undefined
+        }
         disabled={disabled}
+        onChange={(event) =>
+          onCheckedChange?.(
+            event.currentTarget.checked
+          )
+        }
       />
 
       <span className="g-ui-check-row-copy">
-        <strong className="g-ui-check-row-title">{title}</strong>
+        <strong className="g-ui-check-row-title">
+          {title}
+        </strong>
 
         {description ? (
           <span className="g-ui-check-row-description">
@@ -1006,7 +1058,6 @@ export function GastarioCheckRow({
     </label>
   );
 }
-
 
 /* =========================================================
    DETAIL DIALOG

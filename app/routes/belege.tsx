@@ -1,14 +1,19 @@
 import AppLayout from "../components/AppLayout";
 
 import {
-  MetricCard,
-  MetricGrid,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
-
-import "../styles/gastario-receipts.css";
+  GastarioPage,
+  GastarioHeader,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioSection,
+  GastarioPanel,
+  GastarioStack,
+  GastarioToolbar,
+  GastarioButton,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioEmptyState,
+} from "../components/ui";
 
 export function meta() {
   return [
@@ -21,150 +26,126 @@ export function meta() {
 export default function BelegePage() {
   return (
     <AppLayout>
-      <PageShell className="receiptsPage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Finanzen"
           title="Belege"
-          subtitle="Einkaufsbelege, Quittungen und Lieferantenrechnungen zentral erfassen und für die Buchhaltung vorbereiten."
+          description="Einkaufsbelege, Quittungen und Lieferantenrechnungen zentral erfassen und für die Buchhaltung vorbereiten."
         />
 
-        <MetricGrid className="receiptsMetricGrid">
-          <MetricCard
+        <GastarioMetricGrid>
+          <GastarioMetric
             label="Unbearbeitet"
             value="0"
-            description="müssen geprüft werden"
+            description="Müssen geprüft werden"
             badge="Eingang"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Bereit"
             value="0"
-            description="für die Buchhaltung"
+            description="Für die Buchhaltung"
             badge="Geprüft"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Exportiert"
             value="0"
-            description="an die Buchhaltung"
+            description="An die Buchhaltung"
             badge="Erledigt"
           />
-        </MetricGrid>
+        </GastarioMetricGrid>
 
-        <PageSection
+        <GastarioSection
           eyebrow="Belegscan"
           title="Belege erfassen"
           description="Hier entsteht der zentrale Arbeitsbereich für Rechnungen, Kassenbons und Lieferantenbelege."
         >
-          <div className="receiptsUploadArea">
-            <div className="receiptsUploadIcon">
-              <span>+</span>
-            </div>
+          <GastarioPanel variant="soft">
+            <GastarioStack>
+              <div>
+                <strong>
+                  Dokument hochladen
+                </strong>
 
-            <div className="receiptsUploadContent">
-              <strong>
-                Dokument hochladen
-              </strong>
+                <p>
+                  PDF-, JPG- und PNG-Belege werden künftig automatisch
+                  ausgelesen, kategorisiert und dem passenden Lieferanten
+                  zugeordnet.
+                </p>
+              </div>
 
-              <p>
-                PDF-, JPG- und PNG-Belege werden
-                künftig automatisch ausgelesen,
-                kategorisiert und dem passenden
-                Lieferanten zugeordnet.
-              </p>
-            </div>
+              <GastarioToolbar>
+                <GastarioButton
+                  type="button"
+                  variant="primary"
+                  disabled
+                >
+                  Upload folgt
+                </GastarioButton>
+              </GastarioToolbar>
+            </GastarioStack>
+          </GastarioPanel>
+        </GastarioSection>
 
-            <button
-              type="button"
-              className="receiptsPrimaryButton"
-              disabled
-            >
-              Upload folgt
-            </button>
-          </div>
-        </PageSection>
-
-        <PageSection
+        <GastarioSection
           eyebrow="Workflow"
           title="Vom Beleg zur Buchhaltung"
           description="Der geplante Ablauf bleibt transparent und nachvollziehbar."
         >
-          <div className="receiptsWorkflow">
-            <article>
-              <span>1</span>
-
-              <div>
-                <strong>
-                  Beleg erfassen
+          <GastarioDataList>
+            <GastarioDataRow>
+              <div className="g-ui-data-row-main">
+                <strong className="g-ui-data-row-title">
+                  1 · Beleg erfassen
                 </strong>
 
-                <p>
-                  Datei hochladen oder später
-                  direkt mit dem Smartphone
+                <span className="g-ui-data-row-description">
+                  Datei hochladen oder später direkt mit dem Smartphone
                   fotografieren.
-                </p>
+                </span>
               </div>
-            </article>
+            </GastarioDataRow>
 
-            <article>
-              <span>2</span>
-
-              <div>
-                <strong>
-                  Daten prüfen
+            <GastarioDataRow>
+              <div className="g-ui-data-row-main">
+                <strong className="g-ui-data-row-title">
+                  2 · Daten prüfen
                 </strong>
 
-                <p>
-                  Lieferant, Datum, Betrag,
-                  Steuer und Kategorie werden
+                <span className="g-ui-data-row-description">
+                  Lieferant, Datum, Betrag, Steuer und Kategorie werden
                   kontrolliert.
-                </p>
+                </span>
               </div>
-            </article>
+            </GastarioDataRow>
 
-            <article>
-              <span>3</span>
-
-              <div>
-                <strong>
-                  Buchhaltung übergeben
+            <GastarioDataRow>
+              <div className="g-ui-data-row-main">
+                <strong className="g-ui-data-row-title">
+                  3 · Buchhaltung übergeben
                 </strong>
 
-                <p>
-                  Geprüfte Belege werden für
-                  Lexware Office oder den
+                <span className="g-ui-data-row-description">
+                  Geprüfte Belege werden für Lexware Office oder den
                   Steuerberater vorbereitet.
-                </p>
+                </span>
               </div>
-            </article>
-          </div>
-        </PageSection>
+            </GastarioDataRow>
+          </GastarioDataList>
+        </GastarioSection>
 
-        <PageSection
+        <GastarioSection
           eyebrow="Belegarchiv"
           title="Gespeicherte Belege"
           description="Alle erfassten Dokumente erscheinen später in dieser Übersicht."
         >
-          <div className="receiptsEmptyState">
-            <div className="receiptsEmptyIcon">
-              0
-            </div>
-
-            <div>
-              <strong>
-                Noch keine Belege vorhanden
-              </strong>
-
-              <p>
-                Sobald der Belegscan aktiviert
-                ist, werden hochgeladene Dokumente
-                hier mit Status und Buchungsdaten
-                angezeigt.
-              </p>
-            </div>
-          </div>
-        </PageSection>
-      </PageShell>
+          <GastarioEmptyState title="Noch keine Belege vorhanden">
+            Sobald der Belegscan aktiviert ist, werden hochgeladene
+            Dokumente hier mit Status und Buchungsdaten angezeigt.
+          </GastarioEmptyState>
+        </GastarioSection>
+      </GastarioPage>
     </AppLayout>
   );
 }

@@ -5,15 +5,20 @@ import {
 import AppLayout from "../components/AppLayout";
 
 import {
-  MetricCard,
-  MetricGrid,
-  Notice,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
-
-import "../styles/gastario-administration.css";
+  GastarioPage,
+  GastarioHeader,
+  GastarioNotice,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioSection,
+  GastarioSplitView,
+  GastarioSplitMain,
+  GastarioSplitAside,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioBadge,
+  GastarioEmptyState,
+} from "../components/ui";
 
 export function meta() {
   return [
@@ -100,21 +105,21 @@ export default function KontoAboPage() {
 
   return (
     <AppLayout>
-      <PageShell className="adminPage accountPage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Verwaltung"
           title="Plan & Abo"
-          subtitle="Aktuelles Gastario-Paket, enthaltene Limits und spätere Abo-Rechnungen zentral einsehen."
+          description="Aktuelles Gastario-Paket, enthaltene Limits und spätere Abo-Rechnungen zentral einsehen."
         />
 
         {data.error ? (
-          <Notice type="danger">
+          <GastarioNotice type="danger">
             {data.error}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
-        <MetricGrid className="adminMetricGrid adminMetricGridFour">
-          <MetricCard
+        <GastarioMetricGrid>
+          <GastarioMetric
             label="Aktueller Plan"
             value={data.planCode}
             description={data.tenantName}
@@ -123,131 +128,153 @@ export default function KontoAboPage() {
             }
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Nutzer"
             value={data.maxUsers}
-            description="im Paket enthalten"
+            description="Im Paket enthalten"
             badge="Limit"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Marken"
             value={data.maxBrands}
-            description="im Paket enthalten"
+            description="Im Paket enthalten"
             badge="Limit"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="E-Mail-Konten"
             value={
               data.maxEmailAccounts
             }
-            description="für automatische Importe"
+            description="Für automatische Importe"
             badge="Limit"
           />
-        </MetricGrid>
+        </GastarioMetricGrid>
 
-        <div className="adminSplitGrid">
-          <PageSection
-            eyebrow="Aktueller Plan"
-            title={data.planCode}
-            description={`Mandant: ${data.tenantName}`}
-          >
-            <div className="adminPlanSummary">
-              <div>
-                <span>Status</span>
+        <GastarioSplitView>
+          <GastarioSplitMain>
+            <GastarioSection
+              eyebrow="Aktueller Plan"
+              title={data.planCode}
+              description={`Mandant: ${data.tenantName}`}
+              actions={
+                <GastarioBadge variant="neutral">
+                  {data.subscriptionStatus}
+                </GastarioBadge>
+              }
+            >
+              <GastarioDataList>
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      Status
+                    </strong>
 
-                <strong>
-                  {
-                    data.subscriptionStatus
-                  }
-                </strong>
-              </div>
+                    <span className="g-ui-data-row-description">
+                      Aktueller Abonnementstatus
+                    </span>
+                  </div>
 
-              <div>
-                <span>
-                  Testphase bis
-                </span>
+                  <div className="g-ui-data-row-meta">
+                    <strong>
+                      {data.subscriptionStatus}
+                    </strong>
+                  </div>
+                </GastarioDataRow>
 
-                <strong>
-                  {formatDate(
-                    data.trialEndsAt
-                  )}
-                </strong>
-              </div>
-            </div>
-          </PageSection>
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      Testphase bis
+                    </strong>
 
-          <PageSection
-            eyebrow="Paketumfang"
-            title="Enthaltene Limits"
-            description="Die Limits stammen direkt aus dem aktuell zugewiesenen Paket."
-          >
-            <div className="adminLimitGrid">
-              <article>
-                <strong>
-                  {data.maxUsers}
-                </strong>
+                    <span className="g-ui-data-row-description">
+                      Ende der aktuellen Testphase
+                    </span>
+                  </div>
 
-                <span>
-                  Nutzer
-                </span>
-              </article>
+                  <div className="g-ui-data-row-meta">
+                    <strong>
+                      {formatDate(
+                        data.trialEndsAt
+                      )}
+                    </strong>
+                  </div>
+                </GastarioDataRow>
+              </GastarioDataList>
+            </GastarioSection>
+          </GastarioSplitMain>
 
-              <article>
-                <strong>
-                  {data.maxBrands}
-                </strong>
+          <GastarioSplitAside>
+            <GastarioSection
+              eyebrow="Paketumfang"
+              title="Enthaltene Limits"
+              description="Die Limits stammen direkt aus dem aktuell zugewiesenen Paket."
+            >
+              <GastarioDataList>
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      Nutzer
+                    </strong>
+                  </div>
 
-                <span>
-                  Marken
-                </span>
-              </article>
+                  <div className="g-ui-data-row-meta">
+                    <strong>
+                      {data.maxUsers}
+                    </strong>
+                  </div>
+                </GastarioDataRow>
 
-              <article>
-                <strong>
-                  {
-                    data.maxEmailAccounts
-                  }
-                </strong>
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      Marken
+                    </strong>
+                  </div>
 
-                <span>
-                  E-Mail-Konten
-                </span>
-              </article>
-            </div>
-          </PageSection>
-        </div>
+                  <div className="g-ui-data-row-meta">
+                    <strong>
+                      {data.maxBrands}
+                    </strong>
+                  </div>
+                </GastarioDataRow>
 
-        <PageSection
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      E-Mail-Konten
+                    </strong>
+                  </div>
+
+                  <div className="g-ui-data-row-meta">
+                    <strong>
+                      {data.maxEmailAccounts}
+                    </strong>
+                  </div>
+                </GastarioDataRow>
+              </GastarioDataList>
+            </GastarioSection>
+          </GastarioSplitAside>
+        </GastarioSplitView>
+
+        <GastarioSection
           eyebrow="Abrechnung"
           title="Abo-Rechnungen"
           description="Sobald die Gastario-Abrechnung aktiv ist, stehen Rechnungen hier als PDF bereit."
           actions={
-            <span className="adminSoftBadge">
+            <GastarioBadge variant="neutral">
               Noch keine Rechnungen
-            </span>
+            </GastarioBadge>
           }
         >
-          <div className="adminEmptyState">
-            <div className="adminEmptyStateIcon">
-              0
-            </div>
-
-            <div>
-              <strong>
-                Noch keine Abo-Rechnungen vorhanden
-              </strong>
-
-              <p>
-                Die Übersicht wird automatisch
-                gefüllt, sobald für den Mandanten
-                eine Abrechnung erstellt wurde.
-              </p>
-            </div>
-          </div>
-        </PageSection>
-      </PageShell>
+          <GastarioEmptyState title="Noch keine Abo-Rechnungen vorhanden">
+            Die Übersicht wird automatisch gefüllt, sobald für den
+            Mandanten eine Abrechnung erstellt wurde.
+          </GastarioEmptyState>
+        </GastarioSection>
+      </GastarioPage>
     </AppLayout>
   );
 }

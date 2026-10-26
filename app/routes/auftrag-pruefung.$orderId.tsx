@@ -11,16 +11,30 @@ import {
 import AppLayout from "../components/AppLayout";
 
 import {
-  MetricCard,
-  MetricGrid,
-  Notice,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
+  GastarioPage,
+  GastarioHeader,
+  GastarioNotice,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioSection,
+  GastarioToolbar,
+  GastarioBadge,
+  gastarioButtonClass,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioEmptyState,
+  GastarioPanel,
+  GastarioFormGrid,
+  GastarioField,
+  GastarioInput,
+  GastarioSelect,
+  GastarioStack,
+  GastarioSplitView,
+  GastarioSplitMain,
+  GastarioSplitAside,
+  GastarioCheckRow,
+} from "../components/ui";
 
-import orderReviewStyles from "../styles/auftrag-pruefung.css?url";
-import "../styles/gastario-operations.css";
 
 function formatDate(value: string | Date | null | undefined) {
   if (!value) return "-";
@@ -222,15 +236,6 @@ function getOrderReviewState(order: any) {
 
 function getMissingOrderChecks(order: any) {
   return getOrderReviewState(order).missing;
-}
-
-export function links() {
-  return [
-    {
-      rel: "stylesheet",
-      href: orderReviewStyles,
-    },
-  ];
 }
 
 export function meta() {
@@ -763,8 +768,8 @@ export default function AuftragPruefungPage() {
 
   return (
     <AppLayout>
-      <PageShell className="orderReviewMasterPage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow={
             isAlreadyConfirmed
               ? "Auftragsdetails"
@@ -774,7 +779,7 @@ export default function AuftragPruefungPage() {
             order.customerName ||
             "Kunde unbekannt"
           }
-          subtitle={
+          description={
             <>
               {order.orderNumber}
               {" · "}
@@ -784,30 +789,23 @@ export default function AuftragPruefungPage() {
             </>
           }
           actions={
-            <div className="orderReviewHeaderActions">
+            <GastarioToolbar>
               <Link
                 to="/auftraege"
-                className="orderReviewButton orderReviewButtonSecondary"
+                className={gastarioButtonClass("secondary")}
               >
                 Zurück zu den Aufträgen
               </Link>
 
-              <span
-                className={
-                  "orderReviewStatus " +
-                  `orderReviewStatus--${String(
-                    order.status || "open"
-                  ).toLowerCase()}`
-                }
-              >
+              <GastarioBadge variant="neutral">
                 {statusLabel}
-              </span>
-            </div>
+              </GastarioBadge>
+            </GastarioToolbar>
           }
         />
 
         {actionData?.error ? (
-          <Notice type="danger">
+          <GastarioNotice type="danger">
             <strong>
               Operative Zuordnung konnte
               nicht gespeichert werden.
@@ -815,28 +813,27 @@ export default function AuftragPruefungPage() {
             <span>
               {actionData.error}
             </span>
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
         {!isAlreadyConfirmed ? (
-          <Notice type="warning">
+          <GastarioNotice type="warning">
             Prüfe vor der Übernahme Kunde,
             Lieferadresse, Termin,
             Positionen und Hinweise.
-          </Notice>
+          </GastarioNotice>
         ) : (
-          <Notice type="success">
+          <GastarioNotice type="success">
             Dieser Auftrag wurde bereits
             übernommen und ist für die
             Ausführung eingeplant.
-          </Notice>
+          </GastarioNotice>
         )}
 
         {!isAlreadyConfirmed &&
         !canConfirmOrder ? (
-          <Notice
+          <GastarioNotice
             type="danger"
-            className="orderReviewMissingNotice"
           >
             <strong>
               Auftrag noch nicht
@@ -850,7 +847,7 @@ export default function AuftragPruefungPage() {
             </ul>
 
             {reviewState.hints.length > 0 ? (
-              <div className="orderReviewMissingHints">
+              <GastarioStack>
                 {reviewState.hints.map(
                   (hint) => (
                     <p key={hint}>
@@ -858,21 +855,21 @@ export default function AuftragPruefungPage() {
                     </p>
                   )
                 )}
-              </div>
+              </GastarioStack>
             ) : null}
 
             {blocked ? (
-              <p className="orderReviewBlockedHint">
+              <p>
                 Der Auftrag wurde nicht
                 übernommen, weil wichtige
                 Daten fehlen.
               </p>
             ) : null}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
-        <MetricGrid className="orderReviewMetrics">
-          <MetricCard
+        <GastarioMetricGrid>
+          <GastarioMetric
             label="Lieferdatum"
             value={formatDate(
               order.deliveryDate
@@ -882,31 +879,23 @@ export default function AuftragPruefungPage() {
               "Uhrzeit offen"
             }
             badge="Termin"
-            attention={
-              !order.deliveryDate ||
-              !order.deliveryTimeText
-            }
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Positionen"
             value={visibleItems.length}
-            description="bestellte Leistungen"
+            description="Bestellte Leistungen"
             badge="Auftrag"
-            attention={
-              visibleItems.length === 0
-            }
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Auftragswert"
             value={centsToEuro(total)}
             description="Gesamtsumme"
             badge="EUR"
-            attention={total <= 0}
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Kontakt"
             value={
               order.contactName || "–"
@@ -916,76 +905,84 @@ export default function AuftragPruefungPage() {
               "Kein Telefon hinterlegt"
             }
             badge="Kunde"
-            attention={!order.contactName}
           />
-        </MetricGrid>
+        </GastarioMetricGrid>
 
-        <div className="orderReviewLayout">
-          <div className="orderReviewMainColumn">
-            <PageSection
+        <GastarioSplitView>
+          <GastarioSplitMain>
+            <GastarioSection
               eyebrow="Auftragsdaten"
               title="Lieferung und Kontakt"
               description="Alle zentralen Angaben für die operative Ausführung."
             >
-              <div className="orderReviewFacts">
-                <OrderFact
-                  label="Kunde"
-                  value={
-                    order.customerName || "–"
-                  }
-                />
+              <GastarioDataList>
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      Kunde
+                    </strong>
 
-                <OrderFact
-                  label="Kontakt"
-                  value={
-                    order.contactName || "–"
-                  }
-                />
+                    <span className="g-ui-data-row-description">
+                      {order.customerName || "–"}
+                    </span>
+                  </div>
 
-                <OrderFact
-                  label="Telefon"
-                  value={
-                    order.contactPhone || "–"
-                  }
-                />
+                  <div className="g-ui-data-row-meta">
+                    {sourceLabel}
+                  </div>
+                </GastarioDataRow>
 
-                <OrderFact
-                  label="Quelle"
-                  value={sourceLabel}
-                />
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      Kontakt
+                    </strong>
 
-                <OrderFact
-                  label="Status"
-                  value={statusLabel}
-                />
+                    <span className="g-ui-data-row-description">
+                      {order.contactName || "–"}
+                    </span>
+                  </div>
 
-                <OrderFact
-                  label="Lieferdatum"
-                  value={formatDate(
-                    order.deliveryDate
-                  )}
-                />
+                  <div className="g-ui-data-row-meta">
+                    {order.contactPhone || "Kein Telefon"}
+                  </div>
+                </GastarioDataRow>
 
-                <OrderFact
-                  label="Lieferzeit"
-                  value={
-                    order.deliveryTimeText ||
-                    "–"
-                  }
-                />
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      Liefertermin
+                    </strong>
 
-                <OrderFact
-                  label="Lieferadresse"
-                  value={
-                    order.deliveryAddress ||
-                    "–"
-                  }
-                  wide
-                />
-              </div>
-            </PageSection>
+                    <span className="g-ui-data-row-description">
+                      {formatDate(order.deliveryDate)}
+                    </span>
+                  </div>
 
-            <PageSection
+                  <div className="g-ui-data-row-meta">
+                    {order.deliveryTimeText || "Uhrzeit offen"}
+                  </div>
+                </GastarioDataRow>
+
+                <GastarioDataRow>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">
+                      Lieferadresse
+                    </strong>
+
+                    <span className="g-ui-data-row-description">
+                      {order.deliveryAddress || "–"}
+                    </span>
+                  </div>
+
+                  <div className="g-ui-data-row-meta">
+                    {statusLabel}
+                  </div>
+                </GastarioDataRow>
+              </GastarioDataList>
+            </GastarioSection>
+
+            <GastarioSection
               eyebrow="Leistungen"
               title="Positionen"
               description={
@@ -994,89 +991,61 @@ export default function AuftragPruefungPage() {
                   : `${visibleItems.length} Positionen im Auftrag`
               }
               actions={
-                <span className="orderReviewCountBadge">
-                  {visibleItems.length}
-                </span>
+                <GastarioBadge variant="neutral">{visibleItems.length}</GastarioBadge>
               }
             >
               {visibleItems.length > 0 ? (
-                <div className="orderReviewItems">
-                  <div className="orderReviewItemsHeader">
-                    <span>Menge</span>
-                    <span>Position</span>
-                    <span>Hinweis</span>
-                    <span>Betrag</span>
-                  </div>
-
+                <GastarioDataList>
                   {visibleItems.map(
                     (item, index) => (
-                      <article
+                      <GastarioDataRow
                         key={item.id}
-                        className="orderReviewItem"
                       >
-                        <div className="orderReviewItemQuantity">
-                          <strong>
-                            {item.quantity}x
+                        <div className="g-ui-data-row-main">
+                          <strong className="g-ui-data-row-title">
+                            {item.quantity}x{" "}
+                            {item.name}
                           </strong>
 
-                          <span>
-                            {item.unit}
+                          <span className="g-ui-data-row-description">
+                            Position {index + 1}
+                            {" · "}
+                            {item.unit || "Stück"}
+                            {item.notes
+                              ? ` · ${
+                                  String(item.notes).length > 180
+                                    ? String(item.notes).slice(0, 180) + "…"
+                                    : item.notes
+                                }`
+                              : " · Keine weiteren Hinweise"}
                           </span>
                         </div>
 
-                        <div className="orderReviewItemName">
-                          <small>
-                            Position {index + 1}
-                          </small>
-
+                        <div className="g-ui-data-row-meta">
                           <strong>
-                            {item.name}
+                            {centsToEuro(
+                              item.totalCents
+                            )}
                           </strong>
                         </div>
-
-                        <p className="orderReviewItemNotes">
-                          {item.notes
-                            ? String(
-                                item.notes
-                              ).length > 180
-                              ? String(
-                                  item.notes
-                                ).slice(
-                                  0,
-                                  180
-                                ) + "…"
-                              : item.notes
-                            : "Keine weiteren Hinweise"}
-                        </p>
-
-                        <strong className="orderReviewItemTotal">
-                          {centsToEuro(
-                            item.totalCents
-                          )}
-                        </strong>
-                      </article>
+                      </GastarioDataRow>
                     )
                   )}
-                </div>
+                </GastarioDataList>
               ) : (
-                <div className="orderReviewEmptyState">
-                  Keine echten
-                  Auftragspositionen erkannt.
-                </div>
+                <GastarioEmptyState title="Keine Positionen">
+                  Keine echten Auftragspositionen erkannt.
+                </GastarioEmptyState>
               )}
 
               {hasHeycaterCorrection ? (
-                <div className="orderReviewCorrection">
-                  <div>
-                    <strong>
-                      Heycater-Summenabgleich
-                    </strong>
+                <GastarioPanel variant="soft">
+                  <strong>
+                    Heycater-Summenabgleich
+                  </strong>
 
-                    <span>
-                      Der Korrekturwert wird in
-                      der Gesamtsumme
-                      berücksichtigt.
-                    </span>
+                  <div>
+                    Der Korrekturwert wird in der Gesamtsumme berücksichtigt.
                   </div>
 
                   <strong>
@@ -1084,25 +1053,25 @@ export default function AuftragPruefungPage() {
                       correctionTotal
                     )}
                   </strong>
-                </div>
+                </GastarioPanel>
               ) : null}
-            </PageSection>
+            </GastarioSection>
 
             <div id="operative-zuordnung">
-              <PageSection
+              <GastarioSection
                 eyebrow="Operative Zuordnung"
                 title="Arbeitsbereich, Produkt und Menge"
                 description="Die Originalposition bleibt unverändert. Hier legst du fest, was Küche, Packstation und Logistik tatsächlich bearbeiten."
                 actions={
                   <Link
                     to="/produkte"
-                    className="orderReviewButton orderReviewButtonSecondary"
+                    className={gastarioButtonClass("secondary")}
                   >
                     Produktstammdaten öffnen
                   </Link>
                 }
               >
-                <div className="orderOperationalList">
+                <GastarioStack>
                   {visibleItems.map(
                     (item: any, index: number) => {
                       const effectiveArea =
@@ -1111,197 +1080,195 @@ export default function AuftragPruefungPage() {
                         );
 
                       return (
-                        <Form
-                          method="post"
-                          className={
-                            "orderOperationalRow " +
-                            (
-                              effectiveArea ===
-                              "REVIEW"
-                                ? "is-review"
-                                : ""
-                            )
-                          }
+                        <GastarioPanel
                           key={item.id}
+                          variant="soft"
                         >
-                          <input
-                            type="hidden"
-                            name="_intent"
-                            value="updateOperationalItem"
-                          />
-
-                          <input
-                            type="hidden"
-                            name="itemId"
-                            value={item.id}
-                          />
-
-                          <div className="orderOperationalOriginal">
-                            <small>
-                              Originalposition {index + 1}
-                            </small>
-
-                            <strong>
-                              {item.quantity} ×{" "}
-                              {item.name}
-                            </strong>
-
-                            <span>
-                              {item.unit || "Stück"}
-                              {" · "}
-                              {centsToEuro(
-                                item.totalCents
-                              )}
-                            </span>
-                          </div>
-
-                          <label className="orderOperationalField orderOperationalProductField">
-                            <span>
-                              Gastario-Produkt
-                            </span>
-
-                            <select
-                              name="productId"
-                              defaultValue={
-                                item.productId || ""
-                              }
-                            >
-                              <option value="">
-                                Noch keinem Produkt zugeordnet
-                              </option>
-
-                              {products.map(
-                                (product: any) => (
-                                  <option
-                                    key={product.id}
-                                    value={product.id}
-                                  >
-                                    {product.name}
-                                    {product.active
-                                      ? ""
-                                      : " (inaktiv)"}
-                                  </option>
-                                )
-                              )}
-                            </select>
-                          </label>
-
-                          <label className="orderOperationalField">
-                            <span>
-                              Arbeitsbereich
-                            </span>
-
-                            <select
-                              name="operationalArea"
-                              defaultValue={
-                                item.operationalArea ||
-                                "INHERIT"
-                              }
-                            >
-                              <option value="INHERIT">
-                                Vom Produkt übernehmen
-                              </option>
-
-                              {OPERATIONAL_AREAS.map(
-                                (area) => (
-                                  <option
-                                    key={area.value}
-                                    value={area.value}
-                                  >
-                                    {area.label}
-                                  </option>
-                                )
-                              )}
-                            </select>
-                          </label>
-
-                          <label className="orderOperationalField">
-                            <span>
-                              Operative Menge
-                            </span>
+                          <Form method="post">
+                            <input
+                              type="hidden"
+                              name="_intent"
+                              value="updateOperationalItem"
+                            />
 
                             <input
-                              name="operationalQuantity"
-                              inputMode="decimal"
-                              defaultValue={
-                                item.operationalQuantity ??
-                                ""
-                              }
-                              placeholder={String(
-                                item.quantity || 0
-                              )}
+                              type="hidden"
+                              name="itemId"
+                              value={item.id}
                             />
-                          </label>
 
-                          <label className="orderOperationalField">
-                            <span>
-                              Operative Einheit
-                            </span>
+                            <GastarioDataList>
+                              <GastarioDataRow>
+                                <div className="g-ui-data-row-main">
+                                  <strong className="g-ui-data-row-title">
+                                    {item.quantity} ×{" "}
+                                    {item.name}
+                                  </strong>
 
-                            <input
-                              name="operationalUnit"
-                              defaultValue={
-                                item.operationalUnit ||
-                                ""
-                              }
-                              placeholder={
-                                effectiveOperationalUnit(
-                                  item
-                                )
-                              }
-                            />
-                          </label>
+                                  <span className="g-ui-data-row-description">
+                                    Originalposition {index + 1}
+                                    {" · "}
+                                    {item.unit || "Stück"}
+                                    {" · "}
+                                    {centsToEuro(
+                                      item.totalCents
+                                    )}
+                                  </span>
+                                </div>
 
-                          <div className="orderOperationalResult">
-                            <small>
-                              Aktuell wirksam
-                            </small>
+                                <div className="g-ui-data-row-meta">
+                                  <GastarioBadge
+                                    variant={
+                                      effectiveArea === "REVIEW"
+                                        ? "neutral"
+                                        : "success"
+                                    }
+                                  >
+                                    {operationalAreaLabel(
+                                      effectiveArea
+                                    )}
+                                  </GastarioBadge>
+                                </div>
+                              </GastarioDataRow>
 
-                            <strong>
-                              {effectiveOperationalQuantity(
-                                item
-                              )}{" "}
-                              {effectiveOperationalUnit(
-                                item
-                              )}
-                            </strong>
+                              <GastarioDataRow>
+                                <div className="g-ui-data-row-main">
+                                  <strong className="g-ui-data-row-title">
+                                    Aktuell wirksam
+                                  </strong>
 
-                            <span>
-                              {operationalAreaLabel(
-                                effectiveArea
-                              )}
-                              {" · "}
-                              {item.product?.name ||
-                                item.name}
-                            </span>
-                          </div>
+                                  <span className="g-ui-data-row-description">
+                                    {item.product?.name ||
+                                      item.name}
+                                  </span>
+                                </div>
 
-                          <button
-                            type="submit"
-                            className="orderReviewButton orderReviewButtonPrimary orderOperationalSaveButton"
-                          >
-                            Zuordnung speichern
-                          </button>
-                        </Form>
+                                <div className="g-ui-data-row-meta">
+                                  <strong>
+                                    {effectiveOperationalQuantity(
+                                      item
+                                    )}{" "}
+                                    {effectiveOperationalUnit(
+                                      item
+                                    )}
+                                  </strong>
+                                </div>
+                              </GastarioDataRow>
+                            </GastarioDataList>
+
+                            <GastarioFormGrid>
+                              <GastarioField label="Gastario-Produkt">
+                                <GastarioSelect
+                                  name="productId"
+                                  defaultValue={
+                                    item.productId || ""
+                                  }
+                                >
+                                  <option value="">
+                                    Noch keinem Produkt zugeordnet
+                                  </option>
+
+                                  {products.map(
+                                    (product: any) => (
+                                      <option
+                                        key={product.id}
+                                        value={product.id}
+                                      >
+                                        {product.name}
+                                        {product.active
+                                          ? ""
+                                          : " (inaktiv)"}
+                                      </option>
+                                    )
+                                  )}
+                                </GastarioSelect>
+                              </GastarioField>
+
+                              <GastarioField label="Arbeitsbereich">
+                                <GastarioSelect
+                                  name="operationalArea"
+                                  defaultValue={
+                                    item.operationalArea ||
+                                    "INHERIT"
+                                  }
+                                >
+                                  <option value="INHERIT">
+                                    Vom Produkt übernehmen
+                                  </option>
+
+                                  {OPERATIONAL_AREAS.map(
+                                    (area) => (
+                                      <option
+                                        key={area.value}
+                                        value={area.value}
+                                      >
+                                        {area.label}
+                                      </option>
+                                    )
+                                  )}
+                                </GastarioSelect>
+                              </GastarioField>
+
+                              <GastarioField label="Operative Menge">
+                                <GastarioInput
+                                  name="operationalQuantity"
+                                  inputMode="decimal"
+                                  defaultValue={
+                                    item.operationalQuantity ??
+                                    ""
+                                  }
+                                  placeholder={String(
+                                    item.quantity || 0
+                                  )}
+                                />
+                              </GastarioField>
+
+                              <GastarioField label="Operative Einheit">
+                                <GastarioInput
+                                  name="operationalUnit"
+                                  defaultValue={
+                                    item.operationalUnit ||
+                                    ""
+                                  }
+                                  placeholder={
+                                    effectiveOperationalUnit(
+                                      item
+                                    )
+                                  }
+                                />
+                              </GastarioField>
+                            </GastarioFormGrid>
+
+                            <GastarioToolbar align="end">
+                              <button
+                                type="submit"
+                                className={gastarioButtonClass(
+                                  "primary"
+                                )}
+                              >
+                                Zuordnung speichern
+                              </button>
+                            </GastarioToolbar>
+                          </Form>
+                        </GastarioPanel>
                       );
                     }
                   )}
-                </div>
-              </PageSection>
+                </GastarioStack>
+              </GastarioSection>
             </div>
-
-            {isAlreadyConfirmed ? (
-              <PageSection
+{isAlreadyConfirmed ? (
+              <GastarioSection
                 eyebrow="Dokumente"
                 title="Auftrag weiterverarbeiten"
                 description="Lieferschein, Kennzeichnung und Ausdruck für den operativen Ablauf."
               >
-                <div className="orderReviewActionGrid">
+                <GastarioToolbar>
                   <a
                     href={deliveryHref}
                     target="_blank"
                     rel="noreferrer"
-                    className="orderReviewButton orderReviewButtonSecondary"
+                    className={gastarioButtonClass("secondary")}
                   >
                     Lieferschein öffnen
                   </a>
@@ -1312,7 +1279,7 @@ export default function AuftragPruefungPage() {
                       order.id +
                       "/foodlabels"
                     }
-                    className="orderReviewButton orderReviewButtonPrimary"
+                    className={gastarioButtonClass("primary")}
                   >
                     Foodlabels erstellen
                   </Link>
@@ -1322,52 +1289,60 @@ export default function AuftragPruefungPage() {
                     onClick={() =>
                       window.print()
                     }
-                    className="orderReviewButton orderReviewButtonPrimary"
+                    className={gastarioButtonClass("primary")}
                   >
                     Drucken / als PDF speichern
                   </button>
-                </div>
-              </PageSection>
+                </GastarioToolbar>
+              </GastarioSection>
             ) : null}
-          </div>
-
-          <aside className="orderReviewSideColumn">
+          </GastarioSplitMain>
+          <GastarioSplitAside>
             {!isAlreadyConfirmed ? (
-              <PageSection
-                className="orderReviewApprovalCard"
+              <GastarioSection
                 eyebrow="Freigabe"
                 title="Prüfung abschließen"
                 description="Alle fünf Punkte bestätigen und anschließend die Abrechnung festlegen."
                 actions={
-                  <span
-                    className={
+                  <GastarioBadge
+                    variant={
                       allReviewChecksCompleted
-                        ? "orderReviewProgressBadge isComplete"
-                        : "orderReviewProgressBadge"
+                        ? "success"
+                        : "neutral"
                     }
                   >
                     {completedReviewChecks} von 5
-                  </span>
+                  </GastarioBadge>
                 }
               >
-                <progress
-                  className="orderReviewProgress"
-                  max={5}
-                  value={
-                    completedReviewChecks
-                  }
-                >
-                  {completedReviewChecks} von 5
-                </progress>
+                <GastarioDataList>
+                  <GastarioDataRow>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Prüffortschritt
+                      </strong>
 
-                <div className="orderReviewChecks">
-                  <ReviewCheck
+                      <span className="g-ui-data-row-description">
+                        Kunde, Adresse, Termin, Positionen und Hinweise
+                      </span>
+                    </div>
+
+                    <div className="g-ui-data-row-meta">
+                      <strong>
+                        {completedReviewChecks} / 5
+                      </strong>
+                    </div>
+                  </GastarioDataRow>
+                </GastarioDataList>
+
+                <GastarioStack>
+                  <GastarioCheckRow
                     checked={
                       reviewChecks.customer
                     }
                     title="Kunde stimmt"
                     description="Firmenname und Kontakt wurden geprüft."
-                    onChange={(value) =>
+                    onCheckedChange={(value) =>
                       updateReviewCheck(
                         "customer",
                         value
@@ -1375,13 +1350,13 @@ export default function AuftragPruefungPage() {
                     }
                   />
 
-                  <ReviewCheck
+                  <GastarioCheckRow
                     checked={
                       reviewChecks.deliveryAddress
                     }
                     title="Lieferadresse stimmt"
                     description="Standort, Straße und PLZ sind korrekt."
-                    onChange={(value) =>
+                    onCheckedChange={(value) =>
                       updateReviewCheck(
                         "deliveryAddress",
                         value
@@ -1389,13 +1364,13 @@ export default function AuftragPruefungPage() {
                     }
                   />
 
-                  <ReviewCheck
+                  <GastarioCheckRow
                     checked={
                       reviewChecks.deliverySchedule
                     }
                     title="Datum und Uhrzeit stimmen"
                     description="Der Liefertermin wurde abgeglichen."
-                    onChange={(value) =>
+                    onCheckedChange={(value) =>
                       updateReviewCheck(
                         "deliverySchedule",
                         value
@@ -1403,13 +1378,13 @@ export default function AuftragPruefungPage() {
                     }
                   />
 
-                  <ReviewCheck
+                  <GastarioCheckRow
                     checked={
                       reviewChecks.items
                     }
                     title="Positionen und Mengen stimmen"
                     description="Produkte, Anzahl und Preise wurden geprüft."
-                    onChange={(value) =>
+                    onCheckedChange={(value) =>
                       updateReviewCheck(
                         "items",
                         value
@@ -1417,51 +1392,42 @@ export default function AuftragPruefungPage() {
                     }
                   />
 
-                  <ReviewCheck
+                  <GastarioCheckRow
                     checked={
                       reviewChecks.notes
                     }
                     title="Hinweise und Allergene geprüft"
                     description="Besonderheiten wurden berücksichtigt."
-                    onChange={(value) =>
+                    onCheckedChange={(value) =>
                       updateReviewCheck(
                         "notes",
                         value
                       )
                     }
                   />
-                </div>
+                </GastarioStack>
 
                 {!canConfirmOrder ? (
-                  <div className="orderReviewApprovalBlocked">
+                  <GastarioNotice type="warning">
                     <strong>
                       Noch nicht freigabefähig
                     </strong>
 
                     <span>
-                      Fehlende Pflichtangaben
-                      müssen zuerst ergänzt
-                      werden.
+                      Fehlende Pflichtangaben müssen zuerst ergänzt werden.
                     </span>
-                  </div>
+                  </GastarioNotice>
                 ) : null}
 
-                <Form
-                  method="post"
-                  className="orderReviewApprovalForm"
-                >
+                <Form method="post">
                   <input
                     type="hidden"
                     name="_intent"
                     value="confirmOrder"
                   />
 
-                  <label className="orderReviewField">
-                    <span>
-                      Abrechnung nach Übernahme
-                    </span>
-
-                    <select
+                  <GastarioField label="Abrechnung nach Übernahme">
+                    <GastarioSelect
                       name="billingMode"
                       defaultValue="UNDECIDED"
                     >
@@ -1484,117 +1450,85 @@ export default function AuftragPruefungPage() {
                       <option value="NO_INVOICE">
                         Keine Rechnung erforderlich
                       </option>
-                    </select>
-                  </label>
+                    </GastarioSelect>
+                  </GastarioField>
 
-                  <button
-                    type="submit"
-                    className="orderReviewButton orderReviewButtonPrimary orderReviewConfirmButton"
-                    disabled={
-                      !canConfirmOrder ||
-                      !allReviewChecksCompleted ||
-                      isConfirming
-                    }
-                  >
-                    {isConfirming
-                      ? "Auftrag wird übernommen …"
-                      : "Auftrag bestätigen und übernehmen"}
-                  </button>
+                  <GastarioToolbar align="end">
+                    <button
+                      type="submit"
+                      className={gastarioButtonClass(
+                        "primary"
+                      )}
+                      disabled={
+                        !canConfirmOrder ||
+                        !allReviewChecksCompleted ||
+                        isConfirming
+                      }
+                    >
+                      {isConfirming
+                        ? "Auftrag wird übernommen …"
+                        : "Auftrag bestätigen und übernehmen"}
+                    </button>
+                  </GastarioToolbar>
                 </Form>
 
-                <p className="orderReviewFinePrint">
-                  Nach der Bestätigung erscheint
-                  der Auftrag unter den
-                  bevorstehenden Aufträgen.
-                </p>
-              </PageSection>
+                <GastarioNotice type="neutral">
+                  Nach der Bestätigung erscheint der Auftrag unter den bevorstehenden Aufträgen.
+                </GastarioNotice>
+              </GastarioSection>
             ) : (
-              <PageSection
-                className="orderReviewStatusCard"
+              <GastarioSection
                 eyebrow="Auftragsstatus"
                 title={statusLabel}
                 description="Der Auftrag ist übernommen und steht für die operative Bearbeitung bereit."
               >
-                <div className="orderReviewStatusSummary">
-                  <span>Auftragsnummer</span>
-                  <strong>
-                    {order.orderNumber}
-                  </strong>
-                </div>
+                <GastarioDataList>
+                  <GastarioDataRow>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Auftragsnummer
+                      </strong>
+                    </div>
 
-                <div className="orderReviewStatusSummary">
-                  <span>Quelle</span>
-                  <strong>
-                    {sourceLabel}
-                  </strong>
-                </div>
+                    <div className="g-ui-data-row-meta">
+                      <strong>
+                        {order.orderNumber}
+                      </strong>
+                    </div>
+                  </GastarioDataRow>
 
-                <div className="orderReviewStatusSummary orderReviewStatusSummaryTotal">
-                  <span>Gesamt</span>
-                  <strong>
-                    {centsToEuro(total)}
-                  </strong>
-                </div>
-              </PageSection>
+                  <GastarioDataRow>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Quelle
+                      </strong>
+                    </div>
+
+                    <div className="g-ui-data-row-meta">
+                      {sourceLabel}
+                    </div>
+                  </GastarioDataRow>
+
+                  <GastarioDataRow>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Gesamt
+                      </strong>
+                    </div>
+
+                    <div className="g-ui-data-row-meta">
+                      <strong>
+                        {centsToEuro(total)}
+                      </strong>
+                    </div>
+                  </GastarioDataRow>
+                </GastarioDataList>
+              </GastarioSection>
             )}
-          </aside>
-        </div>
-      </PageShell>
+          </GastarioSplitAside>
+        </GastarioSplitView>
+      </GastarioPage>
     </AppLayout>
-  );
-}
-
-function OrderFact({
-  label,
-  value,
-  wide = false,
-}: {
-  label: string;
-  value: string;
-  wide?: boolean;
-}) {
-  return (
-    <div
-      className={
-        wide
-          ? "orderReviewFact orderReviewFactWide"
-          : "orderReviewFact"
-      }
-    >
-      <span>{label}</span>
-      <strong>{value || "–"}</strong>
-    </div>
-  );
-}
-
-function ReviewCheck({
-  checked,
-  title,
-  description,
-  onChange,
-}: {
-  checked: boolean;
-  title: string;
-  description: string;
-  onChange: (value: boolean) => void;
-}) {
-  return (
-    <label className="orderReviewCheck">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(event) =>
-          onChange(
-            event.currentTarget.checked
-          )
-        }
-      />
-
-      <span>
-        <strong>{title}</strong>
-        <small>{description}</small>
-      </span>
-    </label>
   );
 }
 
