@@ -19,7 +19,7 @@ import {
   GastarioSelect,
   GastarioDataList,
   GastarioDataRow,
-  GastarioDrawer,
+  GastarioDetailDialog,
   GastarioToolbar,
   GastarioTabs,
   GastarioStack,
@@ -1043,7 +1043,7 @@ export default function OrdersPage() {
 
           </GastarioDataList>
 
-        <GastarioDrawer
+        <GastarioDetailDialog
           open={Boolean(selectedOrder)}
           title={
             selectedOrder
@@ -1481,7 +1481,7 @@ export default function OrdersPage() {
 
           ) : null}
 
-        </GastarioDrawer>
+        </GastarioDetailDialog>
 
       </GastarioStack>
       </GastarioPage>

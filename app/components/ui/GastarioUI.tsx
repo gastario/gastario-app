@@ -959,6 +959,33 @@ export function GastarioDialog({
    DRAWER
 ========================================================= */
 
+/* =========================================================
+   DETAIL DIALOG
+
+   GASTARIO DETAIL INTERACTION STANDARD
+
+   Datensätze aus Listen, Tabellen oder Übersichten werden
+   zum Ansehen, Prüfen oder Bearbeiten in diesem zentralen
+   Detailfenster geöffnet.
+
+   Der aktuelle Seitenkontext bleibt im Hintergrund sichtbar.
+   Keine route-spezifischen Detailfenster oder Overlays.
+========================================================= */
+
+export type GastarioDetailDialogProps =
+  Omit<GastarioDialogProps, "size">;
+
+export function GastarioDetailDialog(
+  props: GastarioDetailDialogProps
+) {
+  return (
+    <GastarioDialog
+      {...props}
+      size="xl"
+    />
+  );
+}
+
 type GastarioDrawerProps = {
   open: boolean;
   title: ReactNode;

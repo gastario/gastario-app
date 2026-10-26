@@ -9,7 +9,7 @@ import {
   GastarioDataList,
   GastarioDataRow,
   GastarioDialog,
-  GastarioDrawer,
+  GastarioDetailDialog,
   GastarioEmptyState,
   GastarioField,
   GastarioFormGrid,
@@ -746,7 +746,7 @@ export default function FoodLabelsPage() {
             LABEL DETAILS
         ================================================= */}
 
-        <GastarioDrawer
+        <GastarioDetailDialog
           open={Boolean(selected)}
           title={selected?.name || "Foodlabel"}
           description="Vorschau und Aktionen"
@@ -854,7 +854,7 @@ export default function FoodLabelsPage() {
             </div>
           ) : null}
 
-        </GastarioDrawer>
+        </GastarioDetailDialog>
       </section>
     
       <style>{`

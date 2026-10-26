@@ -53,6 +53,21 @@ for (const file of walk(routesDir)) {
   lines.forEach((line, index) => {
     const trimmed = line.trim();
 
+    /*
+     * GASTARIO DETAIL INTERACTION STANDARD
+     *
+     * Datensatzdetails aus Listen, Tabellen und Übersichten
+     * müssen GastarioDetailDialog verwenden.
+     */
+    if (/<GastarioDrawer\b/.test(line)) {
+      violations.push({
+        type: "route-detail-drawer",
+        file: rel,
+        line: index + 1,
+        snippet: normalize(trimmed),
+      });
+    }
+
     if (/\bstyle\s*=/.test(line)) {
       violations.push({
         type: "inline-style",

@@ -1,4 +1,5 @@
 import { GastarioStack } from "../components/ui";
+import { GastarioDetailDialog } from "../components/ui";
 import { GastarioDataList, GastarioDataRow, GastarioEmptyState, GastarioToolbar } from "../components/ui";
 import { GastarioPage, GastarioHeader, GastarioNotice, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioFilterBar, GastarioField, GastarioInput, GastarioSelect, gastarioButtonClass } from "../components/ui";
 import {
@@ -1965,7 +1966,6 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
             </GastarioEmptyState>
           ) : (
             <>
-            {!selectedOrder ? (
               <GastarioDataList>
 {visibleOrders.map((order: any, index: number) => {
                   const items = Array.isArray(order.items) ? order.items : [];
@@ -2079,9 +2079,25 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                   <span>Weitere Ergebnisse laden</span>
                 </GastarioToolbar>
               </GastarioDataList>
-            ) : null}
 
               {selectedOrder ? (
+              <GastarioDetailDialog
+                open
+                title="Auftrag prüfen"
+                description={
+                  [
+                    selectedOrder.customer?.name ||
+                      selectedOrder.customerName ||
+                      "Kunde unbekannt",
+                    selectedOrder.orderNumber,
+                    selectedOrder.contactName,
+                    sourceLabel(selectedOrder.source),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")
+                }
+                onClose={() => updateSelectedOrder(null)}
+              >
               <GastarioStack
                   key={selectedOrder.id}
                 >
@@ -2429,7 +2445,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                         updateSelectedOrder(null)
                       }
                     >
-                      Zurück zur Liste
+                      Fenster schließen
                     </button>
 
                     <Form method="post">
@@ -2455,6 +2471,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
                   </GastarioToolbar>
                 </GastarioStack>
+              </GastarioDetailDialog>
             ) : null}
           </>
           )}
