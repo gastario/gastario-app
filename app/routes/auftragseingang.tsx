@@ -5,7 +5,7 @@ import { GastarioDetailPane } from "../components/ui";
 import { GastarioTabs } from "../components/ui";
 import { GastarioCheckRow } from "../components/ui";
 import { GastarioDataList, GastarioDataRow, GastarioEmptyState, GastarioToolbar } from "../components/ui";
-import { GastarioPage, GastarioHeader, GastarioNotice, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioFilterBar, GastarioField, GastarioInput, GastarioSelect, gastarioButtonClass } from "../components/ui";
+import { GastarioPage, GastarioHeader, GastarioNotice, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioFilterBar, GastarioField, GastarioInput, GastarioSelect, GastarioPanel, gastarioButtonClass } from "../components/ui";
 import {
   useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
@@ -1541,6 +1541,53 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
     : [];
 
   const selectedOrderTotal = selectedOrder ? getDisplayedOrderTotal(selectedOrder) : null;
+  const selectedOrderItemQuantity = selectedOrderItems.reduce(
+    (sum: number, item: any) =>
+      sum + Number(item.quantity || 1),
+    0
+  );
+
+  const selectedOrderItemsValueCents = selectedOrderItems.reduce(
+    (sum: number, item: any) =>
+      sum + Number(item.totalCents || 0),
+    0
+  );
+
+  const selectedOrderCompanyName =
+    selectedOrder?.customer?.name ||
+    selectedOrder?.customerName ||
+    "Kunde unbekannt";
+
+  const selectedOrderAddress =
+    selectedOrder?.deliveryAddress ||
+    "Adresse prüfen";
+
+  const selectedOrderContact =
+    selectedOrder?.contactName ||
+    "Ansprechpartner prüfen";
+
+  const selectedOrderDeliveryDate =
+    selectedOrder?.deliveryDate
+      ? formatDate(selectedOrder.deliveryDate)
+      : "Datum prüfen";
+
+  const selectedOrderDeliveryTime =
+    selectedOrder?.deliveryTimeText ||
+    "Uhrzeit prüfen";
+
+  const selectedOrderEventMoment =
+    [
+      selectedOrder?.eventDate
+        ? formatDate(selectedOrder.eventDate)
+        : null,
+      selectedOrder?.eventTimeText ||
+      selectedOrder?.eventStartTimeText ||
+      selectedOrder?.deliveryTimeText ||
+      null,
+    ]
+      .filter(Boolean)
+      .join(" · ") || "Eventzeitpunkt prüfen";
+
 
 
   return (
@@ -2172,35 +2219,81 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                   />
 
                   <GastarioDetailPane active={selectedOrderDetailTab === "overview"}>
-                    <GastarioSection
-                      eyebrow="Auftragsübersicht"
-                      title="Auftrag auf einen Blick"
-                      description="Die wichtigsten Eckdaten vor der Übernahme."
-                    >
+                  <GastarioSection
+                    eyebrow="Auftragsübersicht"
+                    title="Auftrag auf einen Blick"
+                    description="Die wichtigsten Eckdaten vor der Übernahme."
+                  >
+                    <div className="g-ui-detail-identity">
+                      <GastarioPanel variant="soft">
+                        <div className="g-ui-detail-identity-main">
+                          <span className="g-ui-detail-identity-eyebrow">
+                            Firma & Lieferadresse
+                          </span>
+
+                          <strong className="g-ui-detail-identity-title">
+                            {selectedOrderCompanyName}
+                          </strong>
+
+                          <span className="g-ui-detail-identity-copy">
+                            {selectedOrderAddress}
+                          </span>
+                        </div>
+                      </GastarioPanel>
+
+                      <GastarioPanel variant="soft">
+                        <div className="g-ui-detail-identity-meta">
+                          <div className="g-ui-detail-identity-row">
+                            <span className="g-ui-detail-identity-label">
+                              Ansprechpartner
+                            </span>
+
+                            <strong className="g-ui-detail-identity-value">
+                              {selectedOrderContact}
+                            </strong>
+                          </div>
+
+                          <div className="g-ui-detail-identity-row">
+                            <span className="g-ui-detail-identity-label">
+                              Quelle
+                            </span>
+
+                            <strong className="g-ui-detail-identity-value">
+                              {sourceLabel(selectedOrder.source)}
+                            </strong>
+                          </div>
+
+                          <div className="g-ui-detail-identity-row">
+                            <span className="g-ui-detail-identity-label">
+                              Vorgang
+                            </span>
+
+                            <strong className="g-ui-detail-identity-value">
+                              {selectedOrder.orderNumber || "Nummer prüfen"}
+                            </strong>
+                          </div>
+                        </div>
+                      </GastarioPanel>
+                    </div>
+
                     <GastarioMetricGrid>
 
                       <GastarioMetric
-                        label="Lieferung"
-                        value={formatDate(
-                          selectedOrder.deliveryDate
-                        )}
-                        description={
-                          selectedOrder.deliveryTimeText ||
-                          "Uhrzeit prüfen"
-                        }
+                        label="Lieferdatum"
+                        value={selectedOrderDeliveryDate}
+                        description="Geplanter Liefertag"
                       />
 
                       <GastarioMetric
-                        label="Lieferadresse"
-                        value={
-                          selectedOrder.customer?.name ||
-                          selectedOrder.customerName ||
-                          "Kunde unbekannt"
-                        }
-                        description={
-                          selectedOrder.deliveryAddress ||
-                          "Adresse prüfen"
-                        }
+                        label="Lieferuhrzeit"
+                        value={selectedOrderDeliveryTime}
+                        description="Anlieferung vor Ort"
+                      />
+
+                      <GastarioMetric
+                        label="Eventzeitpunkt"
+                        value={selectedOrderEventMoment}
+                        description="Relevanter Termin / Start"
                       />
 
                       <GastarioMetric
@@ -2220,23 +2313,47 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
                     </GastarioMetricGrid>
 
-                      <GastarioNotice type="neutral">
-                        Prüfe danach die Positionen und anschließend die Pflichtprüfung.
-                      </GastarioNotice>
-                    </GastarioSection>
-                  </GastarioDetailPane>
+                    <GastarioNotice type="neutral">
+                      Prüfe danach die Positionen und anschließend die Pflichtprüfung.
+                    </GastarioNotice>
+                  </GastarioSection>
+                </GastarioDetailPane>
 
-
-                  <GastarioDetailPane active={selectedOrderDetailTab === "items"}>
+                <GastarioDetailPane active={selectedOrderDetailTab === "items"}>
                   <GastarioSection
                     eyebrow="Auftragsinhalt"
-                    title="Positionen"
-                    description={
-                      selectedOrderItems.length === 1
-                        ? "1 Produkt"
-                        : `${selectedOrderItems.length} Produkte`
-                    }
+                    title="Positionen im Auftrag"
+                    description="Alle erkannten Produkte, Mengen und Positionswerte."
                   >
+
+                    <GastarioMetricGrid>
+
+                      <GastarioMetric
+                        label="Positionen"
+                        value={selectedOrderItems.length}
+                        description={
+                          selectedOrderItems.length === 1
+                            ? "1 erkannte Position"
+                            : `${selectedOrderItems.length} erkannte Positionen`
+                        }
+                      />
+
+                      <GastarioMetric
+                        label="Gesamtmenge"
+                        value={selectedOrderItemQuantity}
+                        description="Summe aller bestellten Einheiten"
+                      />
+
+                      <GastarioMetric
+                        label="Positionswert"
+                        value={formatImportCurrencyFromCents(
+                          selectedOrderItemsValueCents
+                        )}
+                        description="Summe der erkannten Positionen"
+                      />
+
+                    </GastarioMetricGrid>
+
 
                     {selectedOrderItems.length > 0 ? (
 
@@ -2259,13 +2376,10 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                                 </strong>
 
                                 <span className="g-ui-data-row-description">
-                                  {item.quantity || 1}
-                                  {" × "}
-                                  {item.name || "Position"}
+                                  Menge: {item.quantity || 1}
                                 </span>
 
                               </div>
-
 
                               <div className="g-ui-data-row-meta">
 
@@ -2300,12 +2414,19 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                         Übernahme kontrolliert werden.
                       </GastarioNotice>
 
-                    ) : null}
+                    ) : (
+
+                      <GastarioNotice type="neutral">
+                        Kontrolliere Mengen und Positionen vor der endgültigen
+                        Übernahme des Auftrags.
+                      </GastarioNotice>
+
+                    )}
 
                   </GastarioSection>
-                  </GastarioDetailPane>
+                </GastarioDetailPane>
 
-                  <GastarioDetailPane active={selectedOrderDetailTab === "review"}>
+                <GastarioDetailPane active={selectedOrderDetailTab === "review"}>
                   <Form
                     id="incoming-confirm-order-form"
                     method="post"
@@ -2321,44 +2442,52 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                       name="orderId"
                       value={selectedOrder.id}
                     />
+
+
                     <GastarioSection
-                      eyebrow="Abrechnung"
-                      title="Wie soll der Auftrag abgerechnet werden?"
+                      eyebrow="Freigabe"
+                      title="Abrechnung & Übernahme"
+                      description="Lege zuerst die Abrechnungsart fest und bestätige anschließend die Pflichtprüfung."
                     >
 
-                      <GastarioField
-                        label="Abrechnungsart"
-                        required
-                      >
-                        <GastarioSelect
-                          name="billingMode"
-                          defaultValue={
-                            selectedOrder.billingMode ||
-                            "UNDECIDED"
-                          }
+                      <GastarioPanel variant="soft">
+
+                        <GastarioField
+                          label="Abrechnungsart"
+                          hint="Diese Auswahl steuert die spätere Rechnungsbearbeitung."
                           required
                         >
-                          <option value="UNDECIDED">
-                            Noch nicht entschieden
-                          </option>
+                          <GastarioSelect
+                            name="billingMode"
+                            defaultValue={
+                              selectedOrder.billingMode ||
+                              "UNDECIDED"
+                            }
+                            required
+                          >
+                            <option value="UNDECIDED">
+                              Noch nicht entschieden
+                            </option>
 
-                          <option value="DIRECT_INVOICE">
-                            Direktrechnung an den Kunden
-                          </option>
+                            <option value="DIRECT_INVOICE">
+                              Direktrechnung an den Kunden
+                            </option>
 
-                          <option value="EXTERNAL_INVOICE">
-                            Rechnung wurde extern erstellt
-                          </option>
+                            <option value="EXTERNAL_INVOICE">
+                              Rechnung wurde extern erstellt
+                            </option>
 
-                          <option value="PLATFORM_CREDIT">
-                            Plattform-Gutschrift
-                          </option>
+                            <option value="PLATFORM_CREDIT">
+                              Plattform-Gutschrift
+                            </option>
 
-                          <option value="NO_INVOICE">
-                            Keine Rechnung erforderlich
-                          </option>
-                        </GastarioSelect>
-                      </GastarioField>
+                            <option value="NO_INVOICE">
+                              Keine Rechnung erforderlich
+                            </option>
+                          </GastarioSelect>
+                        </GastarioField>
+
+                      </GastarioPanel>
 
                     </GastarioSection>
 
@@ -2368,6 +2497,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                       title="Vor der Übernahme kontrollieren"
                       description="Alle fünf Punkte müssen bestätigt werden."
                     >
+
                       <div className="g-ui-check-list">
 
                         <GastarioCheckRow
@@ -2406,19 +2536,19 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                         />
 
                       </div>
+
                     </GastarioSection>
 
+
                     <GastarioNotice type="neutral">
-                      <strong>
-                        Bereit für die vollständige Prüfung?
-                      </strong>
+                      <strong>Bereit zur Übernahme?</strong>
                       {" "}
-                      Ohne vollständige Checkliste kann der Vorgang
-                      nicht fortgesetzt werden.
+                      Sobald alle fünf Punkte bestätigt sind, kann der Auftrag
+                      über den Button unten übernommen werden.
                     </GastarioNotice>
 
                   </Form>
-                  </GastarioDetailPane>
+                </GastarioDetailPane>
 
                 </GastarioStack>
               </GastarioDetailDialog>

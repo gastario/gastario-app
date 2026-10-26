@@ -3706,3 +3706,71 @@
     max-height: calc(100vh - 20px) !important;
   }
 }
+
+
+/* =========================================================
+   GASTARIO DETAIL OVERVIEW IDENTITY
+   Firmenname, Adresse und Kerninfos im zentralen Detaildialog
+========================================================= */
+
+.g-ui-detail-identity {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.85fr);
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.g-ui-detail-identity .g-ui-panel {
+  min-height: 100%;
+}
+
+.g-ui-detail-identity-main,
+.g-ui-detail-identity-meta {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.g-ui-detail-identity-eyebrow,
+.g-ui-detail-identity-label {
+  color: #6f847c;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.g-ui-detail-identity-title {
+  color: #17322c;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.08;
+}
+
+.g-ui-detail-identity-copy {
+  color: #557067;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.g-ui-detail-identity-row {
+  display: grid;
+  gap: 4px;
+}
+
+.g-ui-detail-identity-value {
+  color: #17322c;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+@media (max-width: 900px) {
+  .g-ui-detail-identity {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .g-ui-detail-identity-title {
+    font-size: 24px;
+  }
+}
