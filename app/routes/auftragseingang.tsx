@@ -1,3 +1,5 @@
+import { GastarioDataList, GastarioDataRow, GastarioEmptyState, GastarioToolbar } from "../components/ui";
+import { GastarioPage, GastarioHeader, GastarioNotice, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioFilterBar, GastarioField, GastarioInput, GastarioSelect, gastarioButtonClass } from "../components/ui";
 import {
   useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
@@ -1547,25 +1549,27 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
       
 
       {/* gastario-incoming-page-shell-reference-20260716 */}
-      <PageShell className="incomingReferencePage">
-        <PageHeader
+      <GastarioPage>
+
+        <GastarioHeader
           eyebrow="Eingang"
           title="Auftragseingang"
-          subtitle={
+          description={
             <>
-              {data.tenant?.name || "Kein Mandant"} · Eingehende
-              Aufträge und E-Mails prüfen, bearbeiten und übernehmen.
+              {data.tenant?.name || "Kein Mandant"}
+              {" · "}
+              Eingehende Aufträge und E-Mails prüfen, bearbeiten und übernehmen.
             </>
           }
           actions={
             <>
               <button
                 type="button"
-                className={
+                className={gastarioButtonClass(
                   liveEnabled
-                    ? "incomingLiveButton isLive"
-                    : "incomingLiveButton"
-                }
+                    ? "primary"
+                    : "secondary"
+                )}
                 onClick={() =>
                   setLiveEnabled((value) => !value)
                 }
@@ -1576,48 +1580,27 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                     : "Automatischer Abruf"
                 }
               >
-                <span aria-hidden="true" />
                 {liveEnabled ? "Live an" : "Live aus"}
               </button>
 
               <Link
                 to="/import-pruefen"
-                className="incomingDocumentImportButton"
+                className={gastarioButtonClass("secondary")}
               >
-                <svg
-                  className="incomingDocumentImportButtonIcon"
-                  viewBox="0 0 24 24"
-                  width="18"
-                  height="18"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M7 3.75h7.25L18.5 8v12.25H7z"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.7"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M14 3.75V8h4.25M12.75 11.25v5.5M10 14h5.5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.7"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-
                 Dokument importieren
               </Link>
 
               <button
                 type="button"
-                className="g-ui-button g-ui-button--primary"
+                className={gastarioButtonClass("primary")}
                 onClick={runEmailImportAndReload}
-                disabled={isImportingNow || importFetcher.state !== "idle"}
+                disabled={
+                  isImportingNow ||
+                  importFetcher.state !== "idle"
+                }
               >
-                {isImportingNow || importFetcher.state !== "idle"
+                {isImportingNow ||
+                importFetcher.state !== "idle"
                   ? "Abruf läuft..."
                   : "E-Mails abrufen"}
               </button>
@@ -1625,193 +1608,219 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
           }
         />
 
+
         {data.setupError ? (
-          <Notice type="warning">
+          <GastarioNotice type="warning">
             {data.setupError}
-          </Notice>
+          </GastarioNotice>
         ) : null}
+
 
         {actionData?.success ||
         (importFetcher.data as any)?.success ? (
-          <Notice type="success">
+          <GastarioNotice type="success">
             {actionData?.success ||
               (importFetcher.data as any)?.success}
-          </Notice>
+          </GastarioNotice>
         ) : null}
+
 
         {actionData?.error ||
         (importFetcher.data as any)?.error ? (
-          <Notice type="danger">
+          <GastarioNotice type="danger">
             {actionData?.error ||
               (importFetcher.data as any)?.error}
-          </Notice>
+          </GastarioNotice>
         ) : null}
 
-        <MetricGrid>
-          <MetricCard
+
+        <GastarioMetricGrid>
+
+          <GastarioMetric
             label="Aufträge gesamt"
             value={currentOrderStats.all}
-            description="im Auftragseingang"
-            badge="Gesamt"
+            description="Im Auftragseingang"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Zu prüfen"
             value={currentOrderStats.review}
-            description="noch nicht übernommen"
-            badge="Offen"
+            description="Noch nicht übernommen"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Übernommen"
             value={currentOrderStats.confirmed}
-            description="für die Ausführung bestätigt"
-            badge="Erledigt"
+            description="Für die Ausführung bestätigt"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Anfragen"
             value={data.emailBuckets?.inquiries || 0}
-            description="für Angebote und Rückfragen"
-            badge="Leads"
+            description="Angebote und Rückfragen"
           />
-        </MetricGrid>
 
-        <PageSection
-          className="incomingReferenceSection"
+        </GastarioMetricGrid>
+
+
+        <GastarioSection
           eyebrow="Eingangsübersicht"
           title={inboxHeadline}
           description={inboxSubtitle}
         >
-          <Form
-            method="get"
-            className="incomingReferenceFilters"
-          >
-            <label className="g-ui-field incomingSearchField">
-              <span>Suche</span>
-              <input
-                type="search"
-                name="q"
-                defaultValue={data.searchQuery || ""}
-                placeholder="Absender, Kunde, Nummer oder Betreff"
-              />
-            </label>
 
-            <label className="g-ui-field">
-              <span>Zeitraum</span>
-              <select
-                name="dateRange"
-                defaultValue={data.dateRange || "last7"}
-              >
-                <option value="last7">
-                  Letzte 7 Tage
-                </option>
-                <option value="today">
-                  Heute
-                </option>
-                <option value="yesterday">
-                  Gestern
-                </option>
-              </select>
-            </label>
+          <Form method="get">
 
-            <label className="g-ui-field">
-              <span>Kategorie</span>
-              <select
-                name="emailCategory"
-                defaultValue={
-                  data.selectedEmailCategory || "orders"
-                }
-              >
-                <option value="orders">
-                  Aufträge
-                </option>
-                <option value="inquiries">
-                  Anfragen / Leads
-                </option>
-                <option value="possible">
-                  Unklare E-Mails
-                </option>
-                <option value="hidden">
-                  Ignorierte E-Mails
-                </option>
-              </select>
-            </label>
+            <GastarioFilterBar
+              actions={
+                <>
+                  <button
+                    type="submit"
+                    className={gastarioButtonClass("primary")}
+                  >
+                    Anzeigen
+                  </button>
 
-            <label className="g-ui-field">
-              <span>Status</span>
-              <select
-                name="status"
-                defaultValue={activeOrderStatus || ""}
-                disabled={isEmailFocusedView}
-              >
-                <option value="">
-                  Alle Aufträge
-                </option>
-                <option value="AUTO_CREATED">
-                  Zu prüfen
-                </option>
-                <option value="CONFIRMED">
-                  Übernommen
-                </option>
-                <option value="REJECTED">
-                  Abgelehnt
-                </option>
-              </select>
-            </label>
+                  <Link
+                    to="/auftragseingang"
+                    className={gastarioButtonClass("secondary")}
+                  >
+                    Zurücksetzen
+                  </Link>
+                </>
+              }
+            >
 
-            <div className="incomingReferenceFilterActions">
-              <button
-                type="submit"
-                className="g-ui-button g-ui-button--primary"
-              >
-                Anzeigen
-              </button>
+              <GastarioField label="Suche">
+                <GastarioInput
+                  type="search"
+                  name="q"
+                  defaultValue={data.searchQuery || ""}
+                  placeholder="Absender, Kunde, Nummer oder Betreff"
+                />
+              </GastarioField>
 
-              <Link
-                to="/auftragseingang"
-                className="g-ui-button g-ui-button--secondary"
-              >
-                Zurücksetzen
-              </Link>
-            </div>
+
+              <GastarioField label="Zeitraum">
+                <GastarioSelect
+                  name="dateRange"
+                  defaultValue={data.dateRange || "last7"}
+                >
+                  <option value="last7">
+                    Letzte 7 Tage
+                  </option>
+                  <option value="today">
+                    Heute
+                  </option>
+                  <option value="yesterday">
+                    Gestern
+                  </option>
+                </GastarioSelect>
+              </GastarioField>
+
+
+              <GastarioField label="Kategorie">
+                <GastarioSelect
+                  name="emailCategory"
+                  defaultValue={
+                    data.selectedEmailCategory ||
+                    "orders"
+                  }
+                >
+                  <option value="orders">
+                    Aufträge
+                  </option>
+
+                  <option value="inquiries">
+                    Anfragen / Leads
+                  </option>
+
+                  <option value="possible">
+                    Unklare E-Mails
+                  </option>
+
+                  <option value="hidden">
+                    Ignorierte E-Mails
+                  </option>
+                </GastarioSelect>
+              </GastarioField>
+
+
+              <GastarioField label="Status">
+                <GastarioSelect
+                  name="status"
+                  defaultValue={
+                    activeOrderStatus || ""
+                  }
+                  disabled={isEmailFocusedView}
+                >
+                  <option value="">
+                    Alle Aufträge
+                  </option>
+
+                  <option value="AUTO_CREATED">
+                    Zu prüfen
+                  </option>
+
+                  <option value="CONFIRMED">
+                    Übernommen
+                  </option>
+
+                  <option value="REJECTED">
+                    Abgelehnt
+                  </option>
+                </GastarioSelect>
+              </GastarioField>
+
+            </GastarioFilterBar>
+
           </Form>
 
 {/* gastario-restored-email-focused-view-20260713 */}
         {isEmailFocusedView ? (
-          <section className="leadEmailPanel">
-            <div className="leadEmailHeader">
-              <div>
-                <p>{inboxSubtitle}</p>
-                <h2>{inboxHeadline}</h2>
-              </div>
 
-              <strong>
-                {sortedEmails.length}{" "}
-                {sortedEmails.length === 1 ? "Eingang" : "Eingänge"}
-              </strong>
-            </div>
+          <GastarioSection
+            eyebrow="E-Mail-Eingang"
+            title={inboxHeadline}
+            description={
+              `${inboxSubtitle} · ${
+                sortedEmails.length === 1
+                  ? "1 Eingang"
+                  : `${sortedEmails.length} Eingänge`
+              }`
+            }
+          >
 
             {sortedEmails.length === 0 ? (
-              <div className="leadEmpty">
-                Keine passenden E-Mails in dieser Ansicht.
-              </div>
+
+              <GastarioEmptyState title="Keine passenden E-Mails">
+                In dieser Ansicht wurden keine passenden Eingänge gefunden.
+              </GastarioEmptyState>
+
             ) : (
-              <div className="leadEmailGrid">
+
+              <GastarioDataList>
+
                 {sortedEmails.map((mail: any) => {
-                  const extracted = mail.extractedJson || {};
-                  const aiDecision = extracted.aiDecision || {};
 
-                  const bodyPreview = repairBrokenEmailText(
-                    String(mail.bodyText || "")
-                      .replace(/\s+/g, " ")
-                      .trim()
-                      .slice(0, 260)
-                  );
+                  const extracted =
+                    mail.extractedJson || {};
 
-                  const receivedAt = mail.receivedAt
-                    ? new Date(mail.receivedAt)
-                    : null;
+                  const aiDecision =
+                    extracted.aiDecision || {};
+
+                  const bodyPreview =
+                    repairBrokenEmailText(
+                      String(mail.bodyText || "")
+                        .replace(/\s+/g, " ")
+                        .trim()
+                        .slice(0, 260)
+                    );
+
+                  const receivedAt =
+                    mail.receivedAt
+                      ? new Date(mail.receivedAt)
+                      : null;
 
                   const sender =
                     mail.fromName ||
@@ -1820,93 +1829,137 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                     mail.sender ||
                     "Absender unbekannt";
 
+                  const categoryLabel =
+                    isInquiryView
+                      ? "Anfrage"
+                      : isReviewMailView
+                        ? "Unklar"
+                        : isIgnoredMailView
+                          ? "Ignoriert"
+                          : emailCategoryLabel(
+                              classifyIncomingEmail(mail)
+                            );
+
                   return (
-                    <article className="leadEmailCard" key={mail.id}>
-                      <div className="leadEmailTop">
-                        <span className="leadTypePill">
-                          {isInquiryView
-                            ? "Anfrage"
-                            : isReviewMailView
-                              ? "Unklar"
-                              : isIgnoredMailView
-                                ? "Ignoriert"
-                                : emailCategoryLabel(
-                                    classifyIncomingEmail(mail)
-                                  )}
+
+                    <GastarioDataRow key={mail.id}>
+
+                      <div className="g-ui-data-row-main">
+
+                        <strong className="g-ui-data-row-title">
+                          {mail.subject || "Ohne Betreff"}
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          {String(sender)}
                         </span>
 
-                        <span>
-                          {receivedAt &&
-                          !Number.isNaN(receivedAt.getTime())
-                            ? receivedAt.toLocaleDateString("de-DE")
-                            : "-"}
+                        <span className="g-ui-data-row-description">
+                          {bodyPreview ||
+                            "Kein Mailtext gespeichert."}
                         </span>
-                      </div>
 
-                      <h3>{mail.subject || "Ohne Betreff"}</h3>
+                        {aiDecision?.mailType ? (
 
-                      <div className="leadEmailSender">
-                        {String(sender)}
-                      </div>
-
-                      {aiDecision?.mailType ? (
-                        <div className="leadAiBox">
-                          <strong>KI: {aiDecision.mailType}</strong>
-
-                          <span>
+                          <span className="g-ui-data-row-description">
+                            KI: {aiDecision.mailType}
+                            {" · "}
                             {Math.round(
-                              Number(aiDecision.confidence || 0) * 100
-                            )}{" "}
-                            % {"\u00b7"}{" "}
+                              Number(
+                                aiDecision.confidence || 0
+                              ) * 100
+                            )}
+                            {" % · "}
                             {repairBrokenEmailText(
                               aiDecision.reason ||
                                 "Keine Begründung gespeichert"
                             )}
                           </span>
-                        </div>
-                      ) : null}
 
-                      <p className="leadPreview">
-                        {bodyPreview || "Kein Mailtext gespeichert."}
-                      </p>
-
-                      <div className="leadEmailActions">
-                        <Link
-                          to={"/email-pruefung/" + mail.id}
-                          className="leadPrimaryAction"
-                        >
-                          Öffnen
-                        </Link>
-
-                        {!isIgnoredMailView ? (
-                          <Form method="post">
-                            <input
-                              type="hidden"
-                              name="intent"
-                              value="hideIncomingEmail"
-                            />
-
-                            <input
-                              type="hidden"
-                              name="emailId"
-                              value={mail.id}
-                            />
-
-                            <button
-                              type="submit"
-                              className="leadSecondaryAction"
-                            >
-                              Ausblenden
-                            </button>
-                          </Form>
                         ) : null}
+
+                        <GastarioToolbar align="start">
+
+                          <Link
+                            to={
+                              "/email-pruefung/" +
+                              mail.id
+                            }
+                            className={
+                              gastarioButtonClass(
+                                "primary"
+                              )
+                            }
+                          >
+                            Öffnen
+                          </Link>
+
+                          {!isIgnoredMailView ? (
+
+                            <Form method="post">
+
+                              <input
+                                type="hidden"
+                                name="intent"
+                                value="hideIncomingEmail"
+                              />
+
+                              <input
+                                type="hidden"
+                                name="emailId"
+                                value={mail.id}
+                              />
+
+                              <button
+                                type="submit"
+                                className={
+                                  gastarioButtonClass(
+                                    "secondary"
+                                  )
+                                }
+                              >
+                                Ausblenden
+                              </button>
+
+                            </Form>
+
+                          ) : null}
+
+                        </GastarioToolbar>
+
                       </div>
-                    </article>
+
+
+                      <div className="g-ui-data-row-meta">
+
+                        <span>
+                          {categoryLabel}
+                        </span>
+
+                        <span>
+                          {receivedAt &&
+                          !Number.isNaN(
+                            receivedAt.getTime()
+                          )
+                            ? receivedAt.toLocaleDateString(
+                                "de-DE"
+                              )
+                            : "-"}
+                        </span>
+
+                      </div>
+
+                    </GastarioDataRow>
+
                   );
                 })}
-              </div>
+
+              </GastarioDataList>
+
             )}
-          </section>
+
+          </GastarioSection>
+
         ) : (
 <section className="finalOrdersShell finalOrdersSplitShell">
           <div className="finalOrdersHead">
@@ -2332,8 +2385,8 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
           ) : null}
         </section>
         )}
-        </PageSection>
-      </PageShell>
+        </GastarioSection>
+      </GastarioPage>
     </AppLayout>
   );
 }

@@ -15,6 +15,7 @@ import {
   GastarioToolbar,
   GastarioInsight,
 } from "../components/ui";
+import { GastarioNotice } from "../components/ui";
 import { GastarioMain, GastarioAside } from "../components/ui";
 import { GastarioPage, GastarioStack, GastarioSplitView } from "../components/ui";
 import { GastarioActionGrid, GastarioActionCard } from "../components/ui";
@@ -633,35 +634,48 @@ export default function Home() {
   if (data.setupError) {
     return (
       <AppLayout>
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">Dashboard</p>
-            <h1>Einrichtung fehlt</h1>
-            <span className="pageSubline">{data.setupError}</span>
-          </div>
+        <GastarioPage>
 
-          <div className="topActions">
-            <a className="secondaryButton" href="/logout">Ausloggen</a>
-            <a className="primaryButton" href="/login">Neu einloggen</a>
-          </div>
-        </header>
+          <GastarioHeader
+            eyebrow="Dashboard"
+            title="Einrichtung fehlt"
+            description={data.setupError}
+          />
 
-        <section className="panel">
-          <div className="panelHeader">
-            <div>
-              <p className="eyebrow">Hinweis</p>
-              <h2>Benutzer ist noch keinem Mandanten zugeordnet</h2>
-            </div>
-          </div>
+          <GastarioSection
+            eyebrow="Hinweis"
+            title="Benutzer ist noch keinem Mandanten zugeordnet"
+            description="Die Gastario-Einrichtung für diesen Benutzer ist noch nicht vollständig."
+          >
 
-          <div className="noteBox">
-            <strong>Was jetzt?</strong>
-            <p>
-              Lege im Super Admin einen Mandanten an oder fuege diesen Benutzer
+            <GastarioNotice type="warning">
+              <strong>Was jetzt?</strong>
+              {" "}
+              Lege im Super Admin einen Mandanten an oder füge diesen Benutzer
               einem bestehenden Mandanten als OWNER hinzu.
-            </p>
-          </div>
-        </section>
+            </GastarioNotice>
+
+            <GastarioToolbar>
+
+              <a
+                className={gastarioButtonClass("secondary")}
+                href="/logout"
+              >
+                Ausloggen
+              </a>
+
+              <a
+                className={gastarioButtonClass("primary")}
+                href="/login"
+              >
+                Neu einloggen
+              </a>
+
+            </GastarioToolbar>
+
+          </GastarioSection>
+
+        </GastarioPage>
       </AppLayout>
     );
   }
@@ -1501,580 +1515,641 @@ export default function Home() {
 
         <GastarioSplitView wide>
           <GastarioMain>
-            <section className="dashPanel dashTodayPanel">
-              <div className="dashPanelHead">
-                <div>
-                  <p className="dashEyebrow">
-                    Tagesplan
-                  </p>
-
-                  <h2>Heutige Lieferungen</h2>
-
-                  <span>
-                    Alle für heute geplanten
-                    Auslieferungen nach Uhrzeit.
-                  </span>
-                </div>
-
-                <Link to="/auftraege">
+            <GastarioSection
+              eyebrow="Tagesplan"
+              title="Heutige Lieferungen"
+              description="Alle für heute geplanten Auslieferungen nach Uhrzeit."
+              action={
+                <Link
+                  to="/auftraege"
+                  className={gastarioButtonClass("secondary")}
+                >
                   Alle Aufträge
                 </Link>
-              </div>
+              }
+            >
 
               {todayOrdersSorted.length === 0 ? (
-                <div className="dashTodayEmpty">
-                  <div>
-                    <strong>
-                      Heute keine Lieferungen
-                    </strong>
 
-                    <span>
-                      Für heute ist kein Auftrag
-                      mit Lieferdatum geplant.
-                    </span>
-                  </div>
+                <GastarioStack compact>
+
+                  <GastarioEmptyState title="Heute keine Lieferungen">
+                    Für heute ist kein Auftrag mit Lieferdatum geplant.
+                  </GastarioEmptyState>
 
                   {nextPlannedOrder ? (
-                    <Link
-                      to={
-                        "/auftrag-pruefung/" +
-                        nextPlannedOrder.id
-                      }
-                    >
-                      <small>
-                        Nächster Auftrag
-                      </small>
 
-                      <strong>
-                        {planningDateLabel(
-                          nextPlannedOrder
-                            .deliveryDate
-                        )}
-                        {" · "}
-                        {formatTime(
-                          nextPlannedOrder
-                            .deliveryTimeText
-                        )}
-                        {" Uhr"}
-                      </strong>
+                    <GastarioDataList>
 
-                      <span>
-                        {
-                          nextPlannedOrder
-                            .customerName
+                      <GastarioDataRow
+                        to={
+                          "/auftrag-pruefung/" +
+                          nextPlannedOrder.id
                         }
-                      </span>
-                    </Link>
+                      >
+
+                        <div className="g-ui-data-row-main">
+
+                          <strong className="g-ui-data-row-title">
+                            Nächster Auftrag
+                          </strong>
+
+                          <span className="g-ui-data-row-description">
+                            {nextPlannedOrder.customerName ||
+                              "Kunde nicht erkannt"}
+                          </span>
+
+                        </div>
+
+                        <div className="g-ui-data-row-meta">
+
+                          <span>
+                            {planningDateLabel(
+                              nextPlannedOrder.deliveryDate
+                            )}
+                          </span>
+
+                          <span>
+                            {formatTime(
+                              nextPlannedOrder.deliveryTimeText
+                            )}
+                            {" Uhr"}
+                          </span>
+
+                        </div>
+
+                        <span
+                          className="g-ui-data-row-chevron"
+                          aria-hidden="true"
+                        >
+                          →
+                        </span>
+
+                      </GastarioDataRow>
+
+                    </GastarioDataList>
+
                   ) : null}
-                </div>
+
+                </GastarioStack>
+
               ) : (
-                <div className="dashOrderTable">
-                  <div className="dashOrderTableHead">
-                    <span>Zeit</span>
-                    <span>Kunde und Auftrag</span>
-                    <span>Umfang</span>
-                    <span>Status</span>
-                  </div>
+
+                <GastarioDataList>
 
                   {todayOrdersSorted.map(
                     (order: any) => (
-                      <Link
-                        className="dashOrderRow"
+
+                      <GastarioDataRow
+                        key={order.id}
                         to={
                           "/auftrag-pruefung/" +
                           order.id
                         }
-                        key={order.id}
                       >
-                        <div className="dashOrderTime">
-                          <strong>
-                            {formatTime(
-                              order.deliveryTimeText
-                            )}
-                          </strong>
 
-                          <span>Uhr</span>
-                        </div>
+                        <div className="g-ui-data-row-main">
 
-                        <div className="dashOrderIdentity">
-                          <strong>
+                          <strong className="g-ui-data-row-title">
                             {order.customerName ||
                               "Kunde nicht erkannt"}
                           </strong>
 
-                          <span>
+                          <span className="g-ui-data-row-description">
                             {order.eventName ||
                               order.orderNumber}
                           </span>
 
-                          <small>
+                          <span className="g-ui-data-row-description">
                             {order.deliveryAddress ||
                               "Lieferadresse noch offen"}
-                          </small>
+                          </span>
+
                         </div>
 
-                        <div className="dashOrderQuantity">
-                          <strong>
+
+                        <div className="g-ui-data-row-meta">
+
+                          <span>
+                            {formatTime(
+                              order.deliveryTimeText
+                            )}
+                            {" Uhr"}
+                          </span>
+
+                          <span>
                             {order.items.length}
-                          </strong>
+                            {" Positionen"}
+                          </span>
 
-                          <span>Positionen</span>
+                          <span>
+                            {String(order.status)
+                              .replaceAll("_", " ")}
+                          </span>
+
                         </div>
 
-                        <em>
-                          {String(order.status)
-                            .replaceAll("_", " ")}
-                        </em>
-                      </Link>
+
+                        <span
+                          className="g-ui-data-row-chevron"
+                          aria-hidden="true"
+                        >
+                          →
+                        </span>
+
+                      </GastarioDataRow>
                     )
                   )}
-                </div>
+
+                </GastarioDataList>
+
               )}
-            </section>
 
-            <section className="dashPanel dashUpcomingPanel">
-              <div className="dashPanelHead">
-                <div>
-                  <p className="dashEyebrow">
-                    Planung
-                  </p>
+            </GastarioSection>
 
-                  <h2>Lieferplan</h2>
-
-                  <span>
-                    Alle geplanten Lieferungen
-                    nach Zeitraum und Filter gruppiert.
-                  </span>
-                </div>
-
-                <strong className="dashPanelCount">
-                  {filteredPlanningOrders.length}
-                </strong>
-              </div>
+            <GastarioSection
+              eyebrow="Planung"
+              title="Lieferplan"
+              description={
+                filteredPlanningOrders.length === 1
+                  ? "1 geplante Lieferung"
+                  : `${filteredPlanningOrders.length} geplante Lieferungen`
+              }
+            >
 
               {filteredOrderGroups.length === 0 ? (
-                <div className="dashSimpleEmpty">
-                  <strong>
-                    Keine kommenden Lieferungen
-                  </strong>
 
-                  <span>
-                    Aktuell sind keine zukünftigen
-                    Aufträge eingeplant.
-                  </span>
-                </div>
+                <GastarioEmptyState title="Keine kommenden Lieferungen">
+                  Aktuell sind keine zukünftigen Aufträge eingeplant.
+                </GastarioEmptyState>
+
               ) : (
-                <div className="dashUpcomingScroll">
+
+                <GastarioStack compact>
+
                   {filteredOrderGroups.map(
                     ([dateKey, orders]) => (
-                      <section
-                        className="dashDateGroup"
+
+                      <GastarioSection
                         key={dateKey}
+                        eyebrow="Lieferdatum"
+                        title={planningDateLabel(
+                          orders[0]?.deliveryDate
+                        )}
+                        description={
+                          orders.length === 1
+                            ? "1 Lieferung"
+                            : `${orders.length} Lieferungen`
+                        }
                       >
-                        <header>
-                          <div>
-                            <strong>
-                              {planningDateLabel(
-                                orders[0]
-                                  ?.deliveryDate
-                              )}
-                            </strong>
 
-                            <span>
-                              {orders.length === 1
-                                ? "1 Lieferung"
-                                : `${orders.length} Lieferungen`}
-                            </span>
-                          </div>
-                        </header>
+                        <GastarioDataList>
 
-                        <div className="dashDateOrders">
                           {orders.map(
                             (order: any) => (
-                              <Link
-                                className="dashCompactOrder"
+
+                              <GastarioDataRow
+                                key={order.id}
                                 to={
                                   "/auftrag-pruefung/" +
                                   order.id
                                 }
-                                key={order.id}
                               >
-                                {/* gastario-dashboard-delivery-time-text-20260726 */}
-                                <strong className="dashCompactTime">
-                                  {order.deliveryTimeText ||
-                                    "Zeit offen"}
-                                </strong>
 
-                                <div>
-                                  <strong>
+                                <div className="g-ui-data-row-main">
+
+                                  <strong className="g-ui-data-row-title">
                                     {order.customerName ||
                                       "Kunde nicht erkannt"}
                                   </strong>
 
-                                  <span>
+                                  <span className="g-ui-data-row-description">
                                     {order.eventName ||
                                       order.orderNumber}
                                   </span>
+
                                 </div>
 
-                                <small>
-                                  {order.items.length}
-                                  {" Positionen"}
-                                </small>
 
-                                <em>
-                                  {String(order.status)
-                                    .replaceAll(
-                                      "_",
-                                      " "
-                                    )}
-                                </em>
-                              </Link>
+                                <div className="g-ui-data-row-meta">
+
+                                  <span>
+                                    {order.deliveryTimeText ||
+                                      "Zeit offen"}
+                                  </span>
+
+                                  <span>
+                                    {order.items.length}
+                                    {" Positionen"}
+                                  </span>
+
+                                  <span>
+                                    {String(order.status)
+                                      .replaceAll("_", " ")}
+                                  </span>
+
+                                </div>
+
+
+                                <span
+                                  className="g-ui-data-row-chevron"
+                                  aria-hidden="true"
+                                >
+                                  →
+                                </span>
+
+                              </GastarioDataRow>
                             )
                           )}
-                        </div>
-                      </section>
+
+                        </GastarioDataList>
+
+                      </GastarioSection>
                     )
                   )}
-                </div>
+
+                </GastarioStack>
+
               )}
-            </section>
+
+            </GastarioSection>
           </GastarioMain>
 
           <GastarioAside>
             {/* gastario-dashboard-compact-workbar-20260726 */}
 
-            <section className="dashPanel dashWorkbar">
-              <div className="dashWorkbarHeader">
-                <div>
-                  <p className="dashEyebrow">
-                    Betriebssteuerung
-                  </p>
-
-                  <h2>Arbeitsbereich</h2>
-                </div>
-
-                <span>
-                  {openReviewCount +
-                    data.finance.ordersWithoutInvoice +
-                    data.taxAdvisor.missingInvoiceSettings +
-                    data.counts.lowInventory}
-                </span>
-              </div>
-
-              <nav
-                className="dashWorkbarTabs"
-                aria-label="Arbeitsbereich auswählen"
-              >
-                <button
-                  type="button"
-                  data-active={
-                    dashboardSidePanel === "tasks"
-                      ? "true"
-                      : "false"
-                  }
-                  onClick={() =>
-                    setDashboardSidePanel("tasks")
-                  }
-                >
-                  Aufgaben
-                </button>
-
-                <button
-                  type="button"
-                  data-active={
-                    dashboardSidePanel === "inventory"
-                      ? "true"
-                      : "false"
-                  }
-                  onClick={() =>
-                    setDashboardSidePanel("inventory")
-                  }
-                >
-                  Lager
-                </button>
-
-                <button
-                  type="button"
-                  data-active={
-                    dashboardSidePanel === "quick"
-                      ? "true"
-                      : "false"
-                  }
-                  onClick={() =>
-                    setDashboardSidePanel("quick")
-                  }
-                >
-                  Schnellzugriff
-                </button>
-              </nav>
+            <GastarioSection
+              eyebrow="Betriebssteuerung"
+              title="Arbeitsbereich"
+              description={`${openReviewCount +
+                data.finance.ordersWithoutInvoice +
+                data.taxAdvisor.missingInvoiceSettings +
+                data.counts.lowInventory} offene Punkte`}
+            >
+              <GastarioTabs
+                items={[
+                  {
+                    id: "tasks",
+                    label: "Aufgaben",
+                  },
+                  {
+                    id: "inventory",
+                    label: "Lager",
+                  },
+                  {
+                    id: "quick",
+                    label: "Schnellzugriff",
+                  },
+                ]}
+                activeId={dashboardSidePanel}
+                onChange={(id) =>
+                  setDashboardSidePanel(
+                    id as "tasks" | "inventory" | "quick"
+                  )
+                }
+              />
 
               {dashboardSidePanel === "tasks" ? (
-                <div className="dashWorkbarList dashWorkbarTaskGrid">
-                  <Link to="/auftragseingang">
-                    <strong>
-                      {dashboardTaskCounts.review}
-                    </strong>
-                    <div>
-                      <span>Auftragseingänge prüfen</span>
-                      <small>Neue Aufträge und E-Mails</small>
-                    </div>
-                    <b>›</b>
-                  </Link>
+                <GastarioDataList>
 
-                  <Link to="/auftraege">
-                    <strong>
-                      {dashboardTaskCounts.incomplete}
-                    </strong>
-                    <div>
-                      <span>Unvollständige Aufträge</span>
-                      <small>Fehlende Auftragsangaben</small>
+                  <GastarioDataRow to="/auftragseingang">
+                    <div className="g-ui-data-row-meta">
+                      <strong>{dashboardTaskCounts.review}</strong>
                     </div>
-                    <b>›</b>
-                  </Link>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Auftragseingänge prüfen
+                      </strong>
+                      <span className="g-ui-data-row-description">
+                        Neue Aufträge und E-Mails
+                      </span>
+                    </div>
+                    <span className="g-ui-data-row-chevron">→</span>
+                  </GastarioDataRow>
 
-                  <Link to="/auftragseingang">
-                    <strong>
-                      {dashboardTaskCounts.duplicates}
-                    </strong>
-                    <div>
-                      <span>Mögliche Duplikate</span>
-                      <small>Doppelte Eingänge kontrollieren</small>
+                  <GastarioDataRow to="/auftraege">
+                    <div className="g-ui-data-row-meta">
+                      <strong>{dashboardTaskCounts.incomplete}</strong>
                     </div>
-                    <b>›</b>
-                  </Link>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Unvollständige Aufträge
+                      </strong>
+                      <span className="g-ui-data-row-description">
+                        Fehlende Auftragsangaben
+                      </span>
+                    </div>
+                    <span className="g-ui-data-row-chevron">→</span>
+                  </GastarioDataRow>
 
-                  <Link to="/produktion">
-                    <strong>
-                      {dashboardTaskCounts.production}
-                    </strong>
-                    <div>
-                      <span>Produktion bearbeiten</span>
-                      <small>Aufträge in Produktion</small>
+                  <GastarioDataRow to="/auftragseingang">
+                    <div className="g-ui-data-row-meta">
+                      <strong>{dashboardTaskCounts.duplicates}</strong>
                     </div>
-                    <b>›</b>
-                  </Link>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Mögliche Duplikate
+                      </strong>
+                      <span className="g-ui-data-row-description">
+                        Doppelte Eingänge kontrollieren
+                      </span>
+                    </div>
+                    <span className="g-ui-data-row-chevron">→</span>
+                  </GastarioDataRow>
 
-                  <Link to="/packlisten">
-                    <strong>
-                      {dashboardTaskCounts.packing}
-                    </strong>
-                    <div>
-                      <span>Packen offen</span>
-                      <small>Packlisten fertigstellen</small>
+                  <GastarioDataRow to="/produktion">
+                    <div className="g-ui-data-row-meta">
+                      <strong>{dashboardTaskCounts.production}</strong>
                     </div>
-                    <b>›</b>
-                  </Link>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Produktion bearbeiten
+                      </strong>
+                      <span className="g-ui-data-row-description">
+                        Aufträge in Produktion
+                      </span>
+                    </div>
+                    <span className="g-ui-data-row-chevron">→</span>
+                  </GastarioDataRow>
 
-                  <Link to="/auftraege">
-                    <strong>
-                      {dashboardTaskCounts.missingTime}
-                    </strong>
-                    <div>
-                      <span>Lieferzeit fehlt</span>
-                      <small>Uhrzeiten ergänzen</small>
+                  <GastarioDataRow to="/packlisten">
+                    <div className="g-ui-data-row-meta">
+                      <strong>{dashboardTaskCounts.packing}</strong>
                     </div>
-                    <b>›</b>
-                  </Link>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Packen offen
+                      </strong>
+                      <span className="g-ui-data-row-description">
+                        Packlisten fertigstellen
+                      </span>
+                    </div>
+                    <span className="g-ui-data-row-chevron">→</span>
+                  </GastarioDataRow>
 
-                  <Link to="/auftraege">
-                    <strong>
-                      {dashboardTaskCounts.missingAddress}
-                    </strong>
-                    <div>
-                      <span>Lieferadresse fehlt</span>
-                      <small>Lieferdaten vervollständigen</small>
+                  <GastarioDataRow to="/auftraege">
+                    <div className="g-ui-data-row-meta">
+                      <strong>{dashboardTaskCounts.missingTime}</strong>
                     </div>
-                    <b>›</b>
-                  </Link>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Lieferzeit fehlt
+                      </strong>
+                      <span className="g-ui-data-row-description">
+                        Uhrzeiten ergänzen
+                      </span>
+                    </div>
+                    <span className="g-ui-data-row-chevron">→</span>
+                  </GastarioDataRow>
 
-                  <Link to="/rechnungen">
-                    <strong>
-                      {dashboardTaskCounts.withoutInvoice}
-                    </strong>
-                    <div>
-                      <span>Aufträge ohne Rechnung</span>
-                      <small>Abrechnung noch offen</small>
+                  <GastarioDataRow to="/auftraege">
+                    <div className="g-ui-data-row-meta">
+                      <strong>{dashboardTaskCounts.missingAddress}</strong>
                     </div>
-                    <b>›</b>
-                  </Link>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Lieferadresse fehlt
+                      </strong>
+                      <span className="g-ui-data-row-description">
+                        Lieferdaten vervollständigen
+                      </span>
+                    </div>
+                    <span className="g-ui-data-row-chevron">→</span>
+                  </GastarioDataRow>
 
-                  <Link to="/einstellungen/rechnungen">
-                    <strong>
-                      {dashboardTaskCounts.missingInvoiceSettings}
-                    </strong>
-                    <div>
-                      <span>Rechnungsstammdaten fehlen</span>
-                      <small>Einstellungen vervollständigen</small>
+                  <GastarioDataRow to="/rechnungen">
+                    <div className="g-ui-data-row-meta">
+                      <strong>{dashboardTaskCounts.withoutInvoice}</strong>
                     </div>
-                    <b>›</b>
-                  </Link>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Aufträge ohne Rechnung
+                      </strong>
+                      <span className="g-ui-data-row-description">
+                        Abrechnung noch offen
+                      </span>
+                    </div>
+                    <span className="g-ui-data-row-chevron">→</span>
+                  </GastarioDataRow>
 
-                  <Link to="/lager">
-                    <strong>
-                      {dashboardTaskCounts.inventory}
-                    </strong>
-                    <div>
-                      <span>Lagerwarnungen</span>
-                      <small>Mindestbestände kontrollieren</small>
+                  <GastarioDataRow to="/einstellungen/rechnungen">
+                    <div className="g-ui-data-row-meta">
+                      <strong>{dashboardTaskCounts.missingInvoiceSettings}</strong>
                     </div>
-                    <b>›</b>
-                  </Link>
-                </div>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Rechnungsstammdaten fehlen
+                      </strong>
+                      <span className="g-ui-data-row-description">
+                        Einstellungen vervollständigen
+                      </span>
+                    </div>
+                    <span className="g-ui-data-row-chevron">→</span>
+                  </GastarioDataRow>
+
+                  <GastarioDataRow to="/lager">
+                    <div className="g-ui-data-row-meta">
+                      <strong>{dashboardTaskCounts.inventory}</strong>
+                    </div>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">
+                        Lagerwarnungen
+                      </strong>
+                      <span className="g-ui-data-row-description">
+                        Mindestbestände kontrollieren
+                      </span>
+                    </div>
+                    <span className="g-ui-data-row-chevron">→</span>
+                  </GastarioDataRow>
+
+                </GastarioDataList>
               ) : null}
 
               {dashboardSidePanel === "inventory" ? (
-                <div className="dashWorkbarInventory">
-                  <div className="dashWorkbarInventoryStatus">
-                    <strong>
-                      {data.counts.lowInventory}
-                    </strong>
+                <GastarioStack compact>
 
-                    <div>
-                      <span>Lagerwarnungen</span>
-                      <small>Artikel unter Mindestbestand</small>
-                    </div>
-                  </div>
+                  <GastarioNotice
+                    type={
+                      data.counts.lowInventory > 0
+                        ? "warning"
+                        : "success"
+                    }
+                  >
+                    <strong>
+                      {data.counts.lowInventory} Lagerwarnungen
+                    </strong>
+                    {" · "}
+                    Artikel unter Mindestbestand
+                  </GastarioNotice>
 
                   {safeLowInventoryItems.length === 0 ? (
-                    <div className="dashWorkbarOkay">
-                      <strong>Keine Lagerwarnung</strong>
 
-                      <span>
-                        Alle Bestände liegen über dem Mindestbestand.
-                      </span>
-                    </div>
+                    <GastarioEmptyState title="Keine Lagerwarnung">
+                      Alle Bestände liegen über dem Mindestbestand.
+                    </GastarioEmptyState>
+
                   ) : (
-                    <div className="dashWorkbarStockList">
+
+                    <GastarioDataList>
+
                       {safeLowInventoryItems.map(
                         (item: any) => (
-                          <Link
-                            to="/lager"
-                            key={item.id}
-                          >
-                            <strong>{item.name}</strong>
 
-                            <span>
-                              {item.currentStock}
-                              {" / Mindest "}
-                              {item.minStock}
-                              {" "}
-                              {item.unit}
+                          <GastarioDataRow
+                            key={item.id}
+                            to="/lager"
+                          >
+
+                            <div className="g-ui-data-row-main">
+
+                              <strong className="g-ui-data-row-title">
+                                {item.name}
+                              </strong>
+
+                              <span className="g-ui-data-row-description">
+                                {item.currentStock}
+                                {" / Mindest "}
+                                {item.minStock}
+                                {" "}
+                                {item.unit}
+                              </span>
+
+                            </div>
+
+                            <span
+                              className="g-ui-data-row-chevron"
+                              aria-hidden="true"
+                            >
+                              →
                             </span>
-                          </Link>
+
+                          </GastarioDataRow>
                         )
                       )}
-                    </div>
+
+                    </GastarioDataList>
+
                   )}
 
                   <Link
-                    className="dashWorkbarOpenButton"
                     to="/lager"
+                    className={gastarioButtonClass("secondary")}
                   >
                     Lager öffnen
                   </Link>
-                </div>
+
+                </GastarioStack>
               ) : null}
 
               {dashboardSidePanel === "quick" ? (
-                <div className="dashWorkbarQuick">
-                  <Link to="/produktion">
-                    <div>
-                      <strong>Produktion</strong>
-                      <span>Produktionsplanung öffnen</span>
-                    </div>
-                    <b>›</b>
-                  </Link>
+                <GastarioActionGrid columns={2}>
 
-                  <Link to="/packlisten">
-                    <div>
-                      <strong>Packlisten</strong>
-                      <span>Kommissionierung vorbereiten</span>
-                    </div>
-                    <b>›</b>
-                  </Link>
+                  <GastarioActionCard
+                    title="Produktion"
+                    description="Produktionsplanung öffnen"
+                    to="/produktion"
+                    tone="sage"
+                  />
 
-                  <Link to="/lieferungen">
-                    <div>
-                      <strong>Lieferungen</strong>
-                      <span>Fahrer und Touren verwalten</span>
-                    </div>
-                    <b>›</b>
-                  </Link>
+                  <GastarioActionCard
+                    title="Packlisten"
+                    description="Kommissionierung vorbereiten"
+                    to="/packlisten"
+                    tone="sand"
+                  />
 
-                  <Link to="/auftragseingang">
-                    <div>
-                      <strong>Neuer Auftrag</strong>
-                      <span>Auftrag manuell anlegen</span>
-                    </div>
-                    <b>›</b>
-                  </Link>
+                  <GastarioActionCard
+                    title="Lieferungen"
+                    description="Fahrer und Touren verwalten"
+                    to="/lieferungen"
+                    tone="blue"
+                  />
 
-                  <Link to="/rechnungen">
-                    <div>
-                      <strong>Rechnungen</strong>
-                      <span>Abrechnung bearbeiten</span>
-                    </div>
-                    <b>›</b>
-                  </Link>
-                </div>
+                  <GastarioActionCard
+                    title="Neuer Auftrag"
+                    description="Auftrag manuell anlegen"
+                    to="/auftragseingang"
+                    tone="neutral"
+                  />
+
+                  <GastarioActionCard
+                    title="Rechnungen"
+                    description="Abrechnung bearbeiten"
+                    to="/rechnungen"
+                    tone="neutral"
+                  />
+
+                </GastarioActionGrid>
               ) : null}
-            </section>
+            </GastarioSection>
           </GastarioAside>
         </GastarioSplitView>
 
-        <section className="dashFinanceStrip">
-          <div>
-            <p className="dashEyebrow">
-              Finanzen
-            </p>
+        <GastarioSection
+          eyebrow="Finanzen"
+          title="Abrechnungsstand"
+          description="Aktueller Überblick über Umsatz und offene Abrechnung."
+          action={
+            <Link
+              to="/rechnungen"
+              className={gastarioButtonClass("secondary")}
+            >
+              Finanzen öffnen
+            </Link>
+          }
+        >
 
-            <h2>Abrechnungsstand</h2>
-          </div>
+          <GastarioMetricGrid>
 
-          <Link to="/rechnungen">
-            <span>Monatsumsatz</span>
+            <Link
+              to="/rechnungen"
+              className="g-ui-metric-link"
+            >
+              <GastarioMetric
+                label="Monatsumsatz"
+                value={centsToEuro(
+                  data.finance.currentMonthGrossCents
+                )}
+                description="Aktueller Monat"
+              />
+            </Link>
 
-            <strong>
-              {centsToEuro(
-                data.finance
-                  .currentMonthGrossCents
-              )}
-            </strong>
-          </Link>
+            <Link
+              to="/rechnungen"
+              className="g-ui-metric-link"
+            >
+              <GastarioMetric
+                label="Offene Rechnungen"
+                value={data.finance.openInvoiceCount}
+                description="Noch nicht abgeschlossen"
+              />
+            </Link>
 
-          <Link to="/rechnungen">
-            <span>Offene Rechnungen</span>
+            <Link
+              to="/auftraege"
+              className="g-ui-metric-link"
+            >
+              <GastarioMetric
+                label="Ohne Rechnung"
+                value={data.finance.ordersWithoutInvoice}
+                description="Aufträge ohne Abrechnung"
+              />
+            </Link>
 
-            <strong>
-              {data.finance.openInvoiceCount}
-            </strong>
-          </Link>
+            <Link
+              to="/rechnungen"
+              className="g-ui-metric-link"
+            >
+              <GastarioMetric
+                label="Entwürfe"
+                value={data.taxAdvisor.draftInvoices}
+                description="Rechnungsentwürfe"
+              />
+            </Link>
 
-          <Link to="/auftraege">
-            <span>Ohne Rechnung</span>
+          </GastarioMetricGrid>
 
-            <strong>
-              {data.finance
-                .ordersWithoutInvoice}
-            </strong>
-          </Link>
-
-          <Link to="/rechnungen">
-            <span>Entwürfe</span>
-
-            <strong>
-              {data.taxAdvisor.draftInvoices}
-            </strong>
-          </Link>
-
-          <Link
-            to="/rechnungen"
-            className="dashFinanceOpen"
-          >
-            Finanzen öffnen
-          </Link>
-        </section>
+        </GastarioSection>
       </GastarioPage>
     </AppLayout>
   );

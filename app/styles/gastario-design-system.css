@@ -2986,3 +2986,110 @@
   }
 
 }
+
+/* =========================================================
+   GASTARIO BRAND SIGNAL STANDARD 2026
+   Eine gemeinsame dezente Markenfarbe für alle Kategorien
+========================================================= */
+
+@media screen {
+
+  /* -------------------------------------------------------
+     CATEGORY / ACTION COLORS
+     Alle normalen Kategorien verwenden Gastario Brand
+  ------------------------------------------------------- */
+
+  .g-ui-action-card,
+  .g-ui-action-card--neutral,
+  .g-ui-action-card--sand,
+  .g-ui-action-card--sage,
+  .g-ui-action-card--blue {
+    --g-action-accent: var(--g26-accent) !important;
+    --g-action-soft: var(--g26-accent-soft) !important;
+  }
+
+
+  /* -------------------------------------------------------
+     INSIGHTS
+  ------------------------------------------------------- */
+
+  .g-ui-insight--neutral,
+  .g-ui-insight--sand,
+  .g-ui-insight--sage,
+  .g-ui-insight--blue {
+    box-shadow:
+      inset 3px 0 0 var(--g26-accent);
+  }
+
+
+  /* -------------------------------------------------------
+     SECTION / PAGE ORIENTATION
+  ------------------------------------------------------- */
+
+  .g-ui-eyebrow,
+  .g-ui-section-eyebrow {
+    color:
+      var(--g26-accent);
+  }
+
+
+  /* -------------------------------------------------------
+     METRICS
+     Weiß als Basis, Grün nur als Signal
+  ------------------------------------------------------- */
+
+  .g-ui-metric-card {
+    transition:
+      border-color .14s ease,
+      box-shadow .14s ease,
+      transform .10s ease;
+  }
+
+  a.g-ui-metric-card:hover,
+  .g-ui-metric-card--clickable:hover {
+    border-color:
+      var(--g26-accent);
+
+    box-shadow:
+      inset 0 2px 0 var(--g26-accent),
+      0 8px 22px rgba(11,125,101,.055);
+
+    transform:
+      translateY(-1px);
+  }
+
+
+  /* -------------------------------------------------------
+     DATA ROWS / LISTS
+  ------------------------------------------------------- */
+
+  .g-ui-data-row--clickable:hover {
+    background:
+      var(--g26-accent-soft);
+
+    box-shadow:
+      inset 2px 0 0 var(--g26-accent);
+  }
+
+
+  /* -------------------------------------------------------
+     TABS
+  ------------------------------------------------------- */
+
+  .g-ui-tab--active {
+    box-shadow:
+      0 1px 4px rgba(42,35,30,.05),
+      inset 0 -2px 0 var(--g26-accent);
+  }
+
+
+  /* -------------------------------------------------------
+     KEEP SEMANTIC DANGER / WARNING DISTINCT
+  ------------------------------------------------------- */
+
+  .g-ui-action-card--rose {
+    --g-action-accent: var(--g26-danger) !important;
+    --g-action-soft: var(--g26-danger-soft) !important;
+  }
+
+}
