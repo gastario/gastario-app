@@ -122,6 +122,56 @@ function statusClass(status: string) {
   if (status === "REJECTED") return "danger";
   return "neutral";
 }
+function isOperationalAssignmentComplete(
+  item: any
+) {
+  const area = String(
+    item?.operationalArea || ""
+  ).toUpperCase();
+
+  if (
+    !area ||
+    area === "REVIEW"
+  ) {
+    return false;
+  }
+
+  if (
+    area ===
+    "NON_OPERATIONAL"
+  ) {
+    return true;
+  }
+
+  if (
+    !String(
+      item?.productId || ""
+    ).trim()
+  ) {
+    return false;
+  }
+
+  const quantity = Number(
+    item?.operationalQuantity
+  );
+
+  if (
+    !Number.isFinite(quantity) ||
+    quantity <= 0
+  ) {
+    return false;
+  }
+
+  if (
+    !String(
+      item?.operationalUnit || ""
+    ).trim()
+  ) {
+    return false;
+  }
+
+  return true;
+}
 
 export function links() {
   return [
@@ -450,6 +500,9 @@ export async function action({ request }: { request: Request }) {
       id: orderId,
       tenantId: access.tenantId,
     },
+    include: {
+      items: true,
+    },
   });
 
   if (!order) {
@@ -519,6 +572,28 @@ export async function action({ request }: { request: Request }) {
     const status = String(
       formData.get("status") || "AUTO_CREATED"
     );
+    if (
+      status === "IN_PRODUCTION"
+    ) {
+      const incompleteItems =
+        Array.isArray(order.items)
+          ? order.items.filter(
+              (item: any) =>
+                !isOperationalAssignmentComplete(
+                  item
+                )
+            )
+          : [];
+
+      if (
+        incompleteItems.length > 0
+      ) {
+        return {
+          error:
+            "Operative Zuordnung ist noch nicht vollständig. Bitte zuerst alle Positionen Produkt, Arbeitsbereich, Menge und Einheit zuordnen.",
+        };
+      }
+    }
 
     const now = new Date();
 
@@ -618,6 +693,20 @@ export default function OrdersPage() {
             .includes("fehlende position")
       )
     : [];
+  const selectedOrderIncompleteOperationalItems =
+    selectedOrderItems.filter(
+      (item: any) =>
+        !isOperationalAssignmentComplete(
+          item
+        )
+    );
+
+  const selectedOrderOperationalReady =
+    selectedOrderItems.length > 0 &&
+    selectedOrderIncompleteOperationalItems.length === 0;
+
+  const selectedOrderOperationalMissingCount =
+    selectedOrderIncompleteOperationalItems.length;
 
   const selectedOrderTotal = selectedOrder
     ? (Array.isArray(selectedOrder.items)
@@ -796,7 +885,16 @@ export default function OrdersPage() {
                   <GastarioButton
                     variant="primary"
                     type="submit"
-                  >
+
+                      disabled={
+                        !selectedOrderOperationalReady
+                      }
+                      title={
+                        selectedOrderOperationalReady
+                          ? "Produktion starten"
+                          : `${selectedOrderOperationalMissingCount} Position(en) müssen zuerst operativ zugeordnet werden.`
+                      }
+                    >
                     Anzeigen
                   </GastarioButton>
 
@@ -1147,6 +1245,17 @@ export default function OrdersPage() {
                 >
                   Operative Zuordnung
                 </Link>
+
+                {!selectedOrderOperationalReady ? (
+                  <GastarioNotice type="warning">
+                    <strong>
+                      Vor Produktion noch zuzuordnen:
+                    </strong>{" "}
+                    {selectedOrderOperationalMissingCount} Position(en).
+                    Öffne die operative Zuordnung und vervollständige
+                    Produkt, Arbeitsbereich, operative Menge und Einheit.
+                  </GastarioNotice>
+                ) : null}
 
                 {String(
                   selectedOrder.status || ""

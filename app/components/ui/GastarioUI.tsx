@@ -1382,3 +1382,142 @@ export function GastarioFilterBar({
     </div>
   );
 }
+
+
+/* =========================================================
+   WORKFLOW
+
+   Zentraler Gastario-Prozess für geführte Abläufe.
+   Schritte können abgeschlossen, aktuell, verfügbar
+   oder gesperrt sein.
+========================================================= */
+
+export type GastarioWorkflowState =
+  | "done"
+  | "current"
+  | "available"
+  | "locked";
+
+export type GastarioWorkflowItem = {
+  id: string;
+  label: ReactNode;
+  description?: ReactNode;
+  state: GastarioWorkflowState;
+};
+
+type GastarioWorkflowProps = {
+  items: GastarioWorkflowItem[];
+  activeId?: string;
+  onChange?: (id: string) => void;
+};
+
+export function GastarioWorkflow({
+  items,
+  activeId,
+  onChange,
+}: GastarioWorkflowProps) {
+  return (
+    <ol
+      className="g-ui-workflow"
+      aria-label="Arbeitsablauf"
+    >
+      {items.map(
+        (
+          item,
+          index
+        ) => {
+          const locked =
+            item.state ===
+            "locked";
+
+          const current =
+            item.state ===
+              "current" ||
+            item.id ===
+              activeId;
+
+          const done =
+            item.state ===
+            "done";
+
+          return (
+            <li
+              key={item.id}
+              className={[
+                "g-ui-workflow-item",
+                `g-ui-workflow-item--${item.state}`,
+                current
+                  ? "is-current"
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            >
+              <button
+                type="button"
+                className={gastarioButtonClass(
+                  "ghost",
+                  "g-ui-workflow-step"
+                )}
+                disabled={
+                  locked
+                }
+                aria-current={
+                  current
+                    ? "step"
+                    : undefined
+                }
+                onClick={() => {
+                  if (
+                    locked ||
+                    !onChange
+                  ) {
+                    return;
+                  }
+
+                  onChange(
+                    item.id
+                  );
+                }}
+              >
+                <span className="g-ui-workflow-index">
+                  {done
+                    ? "✓"
+                    : index +
+                      1}
+                </span>
+
+                <span className="g-ui-workflow-copy">
+                  <strong>
+                    {item.label}
+                  </strong>
+
+                  {item.description ? (
+                    <small>
+                      {
+                        item.description
+                      }
+                    </small>
+                  ) : null}
+                </span>
+
+                <span
+                  className="g-ui-workflow-state"
+                  aria-hidden="true"
+                >
+                  {locked
+                    ? "Gesperrt"
+                    : done
+                      ? "Erledigt"
+                      : current
+                        ? "Aktuell"
+                        : "Offen"}
+                </span>
+              </button>
+            </li>
+          );
+        }
+      )}
+    </ol>
+  );
+}

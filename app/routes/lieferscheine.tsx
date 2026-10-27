@@ -1,18 +1,24 @@
+import { useState } from "react";
 import { Link, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
-import DeliveryNoteButton from "../components/DeliveryNoteButton";
+
 import {
-  MetricCard,
-  MetricGrid,
-  Notice,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
-import lieferscheineStyles from "../styles/lieferscheine.css?url";
-import deliveryNoteDocumentStyles from "../styles/delivery-note-document.css?url";
-import "../styles/gastario-documents.css";
-import "../styles/gastario-operations.css";
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioDetailDialog,
+  GastarioDetailPane,
+  GastarioDetailTabs,
+  GastarioEmptyState,
+  GastarioHeader,
+  GastarioMetric,
+  GastarioMetricGrid,
+  GastarioNotice,
+  GastarioPage,
+  GastarioSection,
+  GastarioStack,
+  GastarioToolbar,
+  gastarioButtonClass,
+} from "../components/ui";
 
 function todayInput() {
   return new Date().toISOString().slice(0, 10);
@@ -48,19 +54,6 @@ function emptyData(error: string | null = null) {
     },
     error,
   };
-}
-
-export function links() {
-  return [
-    {
-      rel: "stylesheet",
-      href: lieferscheineStyles,
-    },
-    {
-      rel: "stylesheet",
-      href: deliveryNoteDocumentStyles,
-    },
-  ];
 }
 
 export function meta() {
@@ -230,216 +223,399 @@ export async function loader({ request }: { request: Request }) {
 }
 
 export default function DeliveryNotesPage() {
-  const data = useLoaderData<typeof loader>();
+  const data =
+    useLoaderData<typeof loader>();
+
+  const [
+    selectedNoteId,
+    setSelectedNoteId,
+  ] = useState<string | null>(
+    null
+  );
+
+  const [
+    detailTab,
+    setDetailTab,
+  ] = useState("overview");
+
+  const selectedNote =
+    selectedNoteId
+      ? data.savedNotes.find(
+          (note: any) =>
+            note.id ===
+            selectedNoteId
+        ) || null
+      : null;
+
+  function openNote(
+    noteId: string
+  ) {
+    setSelectedNoteId(
+      noteId
+    );
+
+    setDetailTab(
+      "overview"
+    );
+  }
+
+  function closeNote() {
+    setSelectedNoteId(
+      null
+    );
+
+    setDetailTab(
+      "overview"
+    );
+  }
 
   return (
     <AppLayout>
-      <PageShell className="documentsPage deliveryNotesMasterPage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Betrieb"
           title="Lieferscheine"
-          subtitle={
-            <>
-              {data.tenantName} · Gespeicherte Lieferscheine für
-              bevorstehende und vergangene Aufträge.
-            </>
-          }
+          description={`${data.tenantName} · gespeicherte Lieferscheine zentral verwalten.`}
           actions={
-            <>
+            <GastarioToolbar>
               <Link
-                className="g-doc-button g-doc-button--secondary"
-                to="/lieferscheine?refresh=1"
+                className={gastarioButtonClass(
+                  "secondary"
+                )}
+                to={`/lieferscheine?date=${encodeURIComponent(
+                  data.selectedDate
+                )}&refresh=1`}
               >
-                Dokumente aktualisieren
+                PDFs aktualisieren
               </Link>
 
               <Link
-                className="g-doc-button g-doc-button--primary"
+                className={gastarioButtonClass(
+                  "primary"
+                )}
                 to="/lieferungen"
               >
                 Zu Lieferungen
               </Link>
-            </>
+            </GastarioToolbar>
           }
         />
 
         {data.error ? (
-          <Notice type="danger">
-            <strong>Lieferscheine konnten nicht vollständig geladen werden.</strong>
-            <span>{data.error}</span>
-          </Notice>
+          <GastarioNotice type="danger">
+            {data.error}
+          </GastarioNotice>
         ) : null}
 
-        <MetricGrid>
-          <MetricCard
-            label="Aufträge am ausgewählten Tag"
-            value={data.stats.orders}
-            description={
-              data.selectedDate
-                ? formatDate(data.selectedDate)
-                : "Kein Datum ausgewählt"
+        <GastarioMetricGrid>
+          <GastarioMetric
+            label="Aufträge"
+            value={
+              data.stats.orders
             }
-            badge="Tag"
+            description="am ausgewählten Tag"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Positionen"
-            value={data.stats.positions}
-            description="Positionen der Tagesauswahl"
-            badge="Liste"
+            value={
+              data.stats.positions
+            }
+            description="in diesen Aufträgen"
           />
 
-          <MetricCard
-            label="Gespeicherte Dokumente"
-            value={data.savedNotes.length}
-            description="Dauerhaft im PDF-Archiv"
-            badge="Archiv"
+          <GastarioMetric
+            label="Gespeicherte Lieferscheine"
+            value={
+              data.savedNotes.length
+            }
+            description="dauerhaft erzeugte PDFs"
           />
 
-          <MetricCard
-            label="Automatische Erzeugung"
-            value="Aktiv"
-            description="Für operative, bevorstehende Aufträge"
-            badge="System"
+          <GastarioMetric
+            label="Datum"
+            value={formatDate(
+              data.selectedDate
+            )}
+            description="aktuelle Auswahl"
           />
-        </MetricGrid>
+        </GastarioMetricGrid>
 
-        <PageSection
-          className="deliveryNotesArchiveSection"
-          eyebrow="PDF-Archiv"
-          title="Gespeicherte Lieferscheine"
-          description="Alle automatisch erzeugten Lieferscheine mit Lieferdatum, Status und direktem PDF-Zugriff."
-          actions={
-            <span className="g-doc-count">
-              {data.savedNotes.length}
-              <small>Dokumente</small>
-            </span>
-          }
+        <GastarioSection
+          eyebrow="Dokumente"
+          title="Lieferschein-Archiv"
+          description="Vorhandenen Lieferschein auswählen und im Detailfenster öffnen oder neu erzeugen."
         >
-          {data.savedNotes.length === 0 ? (
-            <div className="g-doc-empty-state">
-              <span aria-hidden="true">PDF</span>
-              <div>
-                <strong>Noch keine Lieferscheine gespeichert</strong>
-                <p>
-                  Beim Übernehmen eines operativen Auftrags wird der
-                  Lieferschein automatisch erzeugt und hier archiviert.
-                </p>
-              </div>
-              <Link
-                className="g-doc-button g-doc-button--primary"
-                to="/lieferungen"
-              >
-                Lieferungen öffnen
-              </Link>
-            </div>
+          {data.savedNotes.length ===
+          0 ? (
+            <GastarioEmptyState title="Noch keine Lieferscheine">
+              Sobald operative Aufträge vorhanden sind, erzeugt Gastario die Lieferscheine automatisch.
+            </GastarioEmptyState>
           ) : (
-            <div className="deliveryNotesArchiveList">
-              <div className="deliveryNotesArchiveHead">
-                <span>Lieferschein</span>
-                <span>Kunde</span>
-                <span>Lieferung</span>
-                <span>Status</span>
-                <span>Erstellt</span>
-                <span>Aktionen</span>
-              </div>
+            <GastarioDataList>
+              {data.savedNotes.map(
+                (note: any) => {
+                  const status =
+                    String(
+                      note.order
+                        ?.status ||
+                        ""
+                    );
 
-              {data.savedNotes.map((note: any) => {
-                const status = String(
-                  note.order?.status || ""
-                );
+                  const statusText =
+                    status ===
+                    "CONFIRMED"
+                      ? "Bestätigt"
+                      : status ===
+                          "IN_PRODUCTION"
+                        ? "In Produktion"
+                        : status ===
+                            "PACKING_OPEN"
+                          ? "Lieferbereit"
+                          : status ===
+                              "DELIVERED"
+                            ? "Ausgeliefert"
+                            : status ||
+                              "–";
 
-                const readableStatus =
-                  status === "CONFIRMED"
-                    ? "Bestätigt"
-                    : status === "IN_PRODUCTION"
-                      ? "In Produktion"
-                      : status === "PACKING_OPEN"
-                        ? "Packen"
-                        : status === "DELIVERED"
-                          ? "Ausgeliefert"
-                          : status || "-";
+                  return (
+                    <GastarioDataRow
+                      key={note.id}
+                    >
+                      <div className="g-ui-data-row-main">
+                        <strong className="g-ui-data-row-title">
+                          {note.number}
+                        </strong>
 
-                return (
-                  <article
-                    className="deliveryNotesArchiveRow"
-                    key={note.id}
-                  >
-                    <div className="deliveryNotesPrimaryCell">
-                      <strong>{note.number}</strong>
-                      <small>
-                        Auftrag {note.order?.orderNumber || "-"}
-                      </small>
-                    </div>
+                        <span className="g-ui-data-row-description">
+                          Auftrag{" "}
+                          {note.order
+                            ?.orderNumber ||
+                            "–"}{" "}
+                          ·{" "}
+                          {note.order
+                            ?.customerName ||
+                            "Ohne Kunde"}
+                        </span>
+                      </div>
 
-                    <div>
-                      <strong>
-                        {note.order?.customerName || "Ohne Kunde"}
-                      </strong>
-                      <small>
-                        {note.order?.deliveryAddress || "-"}
-                      </small>
-                    </div>
+                      <div className="g-ui-data-row-meta">
+                        <span>
+                          {formatDate(
+                            note.order
+                              ?.deliveryDate
+                          )}
+                        </span>
 
-                    <div>
-                      <strong>
-                        {formatDate(note.order?.deliveryDate)}
-                      </strong>
-                      <small>
-                        {note.order?.deliveryTimeText
-                          ? note.order.deliveryTimeText + " Uhr"
-                          : "-"}
-                      </small>
-                    </div>
+                        <span>
+                          {statusText}
+                        </span>
 
-                    <div>
-                      <span
-                        className={
-                          "g-doc-status is-" +
-                          status
-                            .toLowerCase()
-                            .replace(/_/g, "-")
-                        }
-                      >
-                        {readableStatus}
-                      </span>
-                    </div>
-
-                    <div>
-                      <strong>
-                        {new Date(
-                          note.generatedAt
-                        ).toLocaleDateString("de-DE")}
-                      </strong>
-                      <small>
-                        {new Date(
-                          note.generatedAt
-                        ).toLocaleTimeString("de-DE", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}{" "}
-                        Uhr
-                      </small>
-                    </div>
-
-                    <div className="deliveryNoteArchiveActions">
-                      <DeliveryNoteButton
-                        orderId={note.orderId}
-                      />
-
-                      <DeliveryNoteButton
-                        orderId={note.orderId}
-                        refresh
-                        compact
-                      />
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
+                        <button
+                          type="button"
+                          className={gastarioButtonClass(
+                            "secondary"
+                          )}
+                          onClick={() =>
+                            openNote(
+                              note.id
+                            )
+                          }
+                        >
+                          Öffnen
+                        </button>
+                      </div>
+                    </GastarioDataRow>
+                  );
+                }
+              )}
+            </GastarioDataList>
           )}
-        </PageSection>
-      </PageShell>
+        </GastarioSection>
+
+        {selectedNote ? (
+          <GastarioDetailDialog
+            open
+            title={
+              selectedNote.number
+            }
+            description={`Auftrag ${
+              selectedNote.order
+                ?.orderNumber ||
+              "–"
+            } · ${
+              selectedNote.order
+                ?.customerName ||
+              "Ohne Kunde"
+            }`}
+            onClose={
+              closeNote
+            }
+            footer={
+              <>
+                <button
+                  type="button"
+                  className={gastarioButtonClass(
+                    "secondary"
+                  )}
+                  onClick={
+                    closeNote
+                  }
+                >
+                  Schließen
+                </button>
+
+                <a
+                  href={`/lieferschein-pdf/${selectedNote.orderId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={gastarioButtonClass(
+                    "primary"
+                  )}
+                >
+                  PDF öffnen
+                </a>
+              </>
+            }
+          >
+            <GastarioStack>
+              <GastarioDetailTabs
+                items={[
+                  {
+                    id: "overview",
+                    label:
+                      "Übersicht",
+                  },
+                  {
+                    id: "document",
+                    label:
+                      "Dokument",
+                  },
+                ]}
+                activeId={
+                  detailTab
+                }
+                onChange={
+                  setDetailTab
+                }
+              />
+
+              <GastarioDetailPane
+                active={
+                  detailTab ===
+                  "overview"
+                }
+              >
+                <GastarioMetricGrid>
+                  <GastarioMetric
+                    label="Kunde"
+                    value={
+                      selectedNote.order
+                        ?.customerName ||
+                      "Ohne Kunde"
+                    }
+                    description="Empfänger"
+                  />
+
+                  <GastarioMetric
+                    label="Lieferdatum"
+                    value={formatDate(
+                      selectedNote.order
+                        ?.deliveryDate
+                    )}
+                    description={
+                      selectedNote.order
+                        ?.deliveryTimeText
+                        ? `${selectedNote.order.deliveryTimeText} Uhr`
+                        : "Keine Uhrzeit"
+                    }
+                  />
+
+                  <GastarioMetric
+                    label="Auftrag"
+                    value={
+                      selectedNote.order
+                        ?.orderNumber ||
+                      "–"
+                    }
+                    description="Auftragsnummer"
+                  />
+                </GastarioMetricGrid>
+
+                <GastarioSection
+                  eyebrow="Lieferung"
+                  title="Lieferadresse"
+                >
+                  {selectedNote.order
+                    ?.deliveryAddress ||
+                    "Keine Lieferadresse hinterlegt."}
+                </GastarioSection>
+              </GastarioDetailPane>
+
+              <GastarioDetailPane
+                active={
+                  detailTab ===
+                  "document"
+                }
+              >
+                <GastarioSection
+                  eyebrow="PDF"
+                  title="Gespeicherter Lieferschein"
+                  description="Der Lieferschein wird dauerhaft gespeichert und kann bei Änderungen gezielt neu erzeugt werden."
+                >
+                  <GastarioStack>
+                    <GastarioNotice type="neutral">
+                      Erstellt am{" "}
+                      {new Date(
+                        selectedNote.generatedAt
+                      ).toLocaleDateString(
+                        "de-DE"
+                      )}{" "}
+                      um{" "}
+                      {new Date(
+                        selectedNote.generatedAt
+                      ).toLocaleTimeString(
+                        "de-DE",
+                        {
+                          hour:
+                            "2-digit",
+                          minute:
+                            "2-digit",
+                        }
+                      )}{" "}
+                      Uhr.
+                    </GastarioNotice>
+
+                    <GastarioToolbar>
+                      <a
+                        href={`/lieferschein-pdf/${selectedNote.orderId}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={gastarioButtonClass(
+                          "primary"
+                        )}
+                      >
+                        PDF öffnen
+                      </a>
+
+                      <a
+                        href={`/lieferschein-pdf/${selectedNote.orderId}?refresh=1`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={gastarioButtonClass(
+                          "secondary"
+                        )}
+                      >
+                        Neu erzeugen
+                      </a>
+                    </GastarioToolbar>
+                  </GastarioStack>
+                </GastarioSection>
+              </GastarioDetailPane>
+            </GastarioStack>
+          </GastarioDetailDialog>
+        ) : null}
+      </GastarioPage>
     </AppLayout>
   );
 }

@@ -21,6 +21,7 @@ import {
   classifyIncomingEmail,
 } from "../lib/incoming-email-classification";
 
+import { GastarioWorkflow } from "../components/ui";
 import { Form, Link, redirect, useActionData, useFetcher, useLoaderData,
   useSearchParams,
 } from "react-router";
@@ -1510,8 +1511,58 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
   const [selectedOrderDetailTab, setSelectedOrderDetailTab] =
     useState("overview");
 
+  const [incomingReviewChecks, setIncomingReviewChecks] =
+    useState({
+      customer: false,
+      address: false,
+      schedule: false,
+      items: false,
+      billing: false,
+    });
+
+  const [
+    incomingBillingMode,
+    setIncomingBillingMode,
+  ] = useState("UNDECIDED");
+
+  function updateIncomingReviewCheck(
+    key: keyof typeof incomingReviewChecks,
+    value: boolean
+  ) {
+    setIncomingReviewChecks(
+      (current) => ({
+        ...current,
+        [key]: value,
+      })
+    );
+  }
+
   useEffect(() => {
-    setSelectedOrderDetailTab("overview");
+    setSelectedOrderDetailTab(
+      "overview"
+    );
+
+    setIncomingReviewChecks({
+      customer: false,
+      address: false,
+      schedule: false,
+      items: false,
+      billing: false,
+    });
+
+    const nextOrder =
+      selectedOrderId
+        ? visibleOrders.find(
+            (order: any) =>
+              order.id ===
+              selectedOrderId
+          ) || null
+        : null;
+
+    setIncomingBillingMode(
+      nextOrder?.billingMode ||
+        "UNDECIDED"
+    );
   }, [selectedOrderId]);
 
   function updateSelectedOrder(nextOrderId: string | null) {
@@ -1539,6 +1590,22 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
         (item: any) => !String(item.name || "").toLowerCase().includes("fehlende position")
       )
     : [];
+
+  const incomingOverviewReady =
+    incomingReviewChecks.customer &&
+    incomingReviewChecks.address &&
+    incomingReviewChecks.schedule;
+
+  const incomingItemsReady =
+    selectedOrderItems.length > 0 &&
+    incomingReviewChecks.items;
+
+  const incomingReviewReady =
+    incomingOverviewReady &&
+    incomingItemsReady &&
+    incomingReviewChecks.billing &&
+    incomingBillingMode !==
+      "UNDECIDED";
 
   const selectedOrderTotal = selectedOrder ? getDisplayedOrderTotal(selectedOrder) : null;
   const selectedOrderItemQuantity = selectedOrderItems.reduce(
@@ -2158,8 +2225,14 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                   <>
                     <button
                       type="button"
-                      className={gastarioButtonClass("secondary")}
-                      onClick={() => updateSelectedOrder(null)}
+                      className={gastarioButtonClass(
+                        "secondary"
+                      )}
+                      onClick={() =>
+                        updateSelectedOrder(
+                          null
+                        )
+                      }
                     >
                       Schließen
                     </button>
@@ -2170,34 +2243,93 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                         name="intent"
                         value="deleteOrder"
                       />
+
                       <input
                         type="hidden"
                         name="orderId"
-                        value={selectedOrder.id}
+                        value={
+                          selectedOrder.id
+                        }
                       />
+
                       <button
                         type="submit"
-                        className={gastarioButtonClass("danger")}
+                        className={gastarioButtonClass(
+                          "danger"
+                        )}
                       >
                         Auftrag löschen
                       </button>
                     </Form>
 
-                    {selectedOrderDetailTab === "review" ? (
+                    {selectedOrderDetailTab !==
+                    "overview" ? (
                       <button
-                        type="submit"
-                        form="incoming-confirm-order-form"
-                        className={gastarioButtonClass("primary")}
+                        type="button"
+                        className={gastarioButtonClass(
+                          "secondary"
+                        )}
+                        onClick={() =>
+                          setSelectedOrderDetailTab(
+                            selectedOrderDetailTab ===
+                              "review"
+                              ? "items"
+                              : "overview"
+                          )
+                        }
                       >
-                        Auftrag bestätigen und übernehmen
+                        Zurück
+                      </button>
+                    ) : null}
+
+                    {selectedOrderDetailTab ===
+                    "overview" ? (
+                      <button
+                        type="button"
+                        className={gastarioButtonClass(
+                          "primary"
+                        )}
+                        disabled={
+                          !incomingOverviewReady
+                        }
+                        onClick={() =>
+                          setSelectedOrderDetailTab(
+                            "items"
+                          )
+                        }
+                      >
+                        Weiter zu Positionen
+                      </button>
+                    ) : selectedOrderDetailTab ===
+                      "items" ? (
+                      <button
+                        type="button"
+                        className={gastarioButtonClass(
+                          "primary"
+                        )}
+                        disabled={
+                          !incomingItemsReady
+                        }
+                        onClick={() =>
+                          setSelectedOrderDetailTab(
+                            "review"
+                          )
+                        }
+                      >
+                        Weiter zur Freigabe
                       </button>
                     ) : (
                       <button
-                        type="button"
-                        className={gastarioButtonClass("primary")}
-                        onClick={() => setSelectedOrderDetailTab("review")}
+                        type="submit"
+                        form="incoming-confirm-order-form"
+                        className={gastarioButtonClass(
+                          "primary"
+                        )}
+                        disabled={
+                          !incomingReviewReady
+                        }
                       >
-                        Zur Prüfung
+                        Auftrag bestätigen und übernehmen
                       </button>
                     )}
                   </>
@@ -2208,14 +2340,91 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                   key={selectedOrder.id}
                 >
 
-                  <GastarioDetailTabs
+                  <GastarioWorkflow
+                    activeId={
+                      selectedOrderDetailTab
+                    }
                     items={[
-                      { id: "overview", label: "Übersicht" },
-                      { id: "items", label: "Positionen" },
-                      { id: "review", label: "Prüfung" },
+                      {
+                        id: "overview",
+                        label:
+                          "Auftragsdaten",
+                        description:
+                          "Kunde, Adresse und Termin prüfen",
+                        state:
+                          selectedOrderDetailTab ===
+                          "overview"
+                            ? "current"
+                            : incomingOverviewReady
+                              ? "done"
+                              : "available",
+                      },
+                      {
+                        id: "items",
+                        label:
+                          "Positionen",
+                        description:
+                          "Speisen, Mengen und Preise prüfen",
+                        state:
+                          !incomingOverviewReady
+                            ? "locked"
+                            : selectedOrderDetailTab ===
+                                "items"
+                              ? "current"
+                              : incomingItemsReady
+                                ? "done"
+                                : "available",
+                      },
+                      {
+                        id: "review",
+                        label:
+                          "Freigabe",
+                        description:
+                          "Abrechnung festlegen und übernehmen",
+                        state:
+                          !incomingOverviewReady ||
+                          !incomingItemsReady
+                            ? "locked"
+                            : selectedOrderDetailTab ===
+                                "review"
+                              ? "current"
+                              : incomingReviewReady
+                                ? "done"
+                                : "available",
+                      },
                     ]}
-                    activeId={selectedOrderDetailTab}
-                    onChange={setSelectedOrderDetailTab}
+                    onChange={(id) => {
+                      if (
+                        id === "overview"
+                      ) {
+                        setSelectedOrderDetailTab(
+                          "overview"
+                        );
+
+                        return;
+                      }
+
+                      if (
+                        id === "items" &&
+                        incomingOverviewReady
+                      ) {
+                        setSelectedOrderDetailTab(
+                          "items"
+                        );
+
+                        return;
+                      }
+
+                      if (
+                        id === "review" &&
+                        incomingOverviewReady &&
+                        incomingItemsReady
+                      ) {
+                        setSelectedOrderDetailTab(
+                          "review"
+                        );
+                      }
+                    }}
                   />
 
                   <GastarioDetailPane active={selectedOrderDetailTab === "overview"}>
@@ -2317,6 +2526,62 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                       Prüfe danach die Positionen und anschließend die Pflichtprüfung.
                     </GastarioNotice>
                   </GastarioSection>
+
+                    <GastarioSection
+                      eyebrow="Schritt bestätigen"
+                      title="Auftragsdaten geprüft"
+                      description="Alle drei Punkte müssen bestätigt sein, bevor es weitergeht."
+                    >
+                      <div className="g-ui-check-list">
+                        <GastarioCheckRow
+                          title="Kundendaten stimmen"
+                          description="Firma und Ansprechpartner wurden geprüft."
+                          checked={
+                            incomingReviewChecks.customer
+                          }
+                          onCheckedChange={(
+                            value
+                          ) =>
+                            updateIncomingReviewCheck(
+                              "customer",
+                              value
+                            )
+                          }
+                        />
+
+                        <GastarioCheckRow
+                          title="Lieferadresse stimmt"
+                          description="Straße, Hausnummer und Ort wurden geprüft."
+                          checked={
+                            incomingReviewChecks.address
+                          }
+                          onCheckedChange={(
+                            value
+                          ) =>
+                            updateIncomingReviewCheck(
+                              "address",
+                              value
+                            )
+                          }
+                        />
+
+                        <GastarioCheckRow
+                          title="Datum und Uhrzeit stimmen"
+                          description="Liefertermin und Zeitfenster wurden geprüft."
+                          checked={
+                            incomingReviewChecks.schedule
+                          }
+                          onCheckedChange={(
+                            value
+                          ) =>
+                            updateIncomingReviewCheck(
+                              "schedule",
+                              value
+                            )
+                          }
+                        />
+                      </div>
+                    </GastarioSection>
                 </GastarioDetailPane>
 
                 <GastarioDetailPane active={selectedOrderDetailTab === "items"}>
@@ -2424,6 +2689,34 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                     )}
 
                   </GastarioSection>
+
+                    <GastarioSection
+                      eyebrow="Schritt bestätigen"
+                      title="Positionen geprüft"
+                      description="Bestätige diesen Schritt erst nach Kontrolle aller Positionen."
+                    >
+                      {selectedOrderItems.length > 0 ? (
+                        <GastarioCheckRow
+                          title="Positionen und Mengen stimmen"
+                          description="Produkte, Anzahl und Preise wurden vollständig kontrolliert."
+                          checked={
+                            incomingReviewChecks.items
+                          }
+                          onCheckedChange={(
+                            value
+                          ) =>
+                            updateIncomingReviewCheck(
+                              "items",
+                              value
+                            )
+                          }
+                        />
+                      ) : (
+                        <GastarioNotice type="danger">
+                          Ohne erkannte Positionen kann der Auftrag nicht übernommen werden.
+                        </GastarioNotice>
+                      )}
+                    </GastarioSection>
                 </GastarioDetailPane>
 
                 <GastarioDetailPane active={selectedOrderDetailTab === "review"}>
@@ -2443,6 +2736,46 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                       value={selectedOrder.id}
                     />
 
+                    <input
+                      type="hidden"
+                      name="customerChecked"
+                      value={
+                        incomingReviewChecks.customer
+                          ? "1"
+                          : "0"
+                      }
+                    />
+
+                    <input
+                      type="hidden"
+                      name="addressChecked"
+                      value={
+                        incomingReviewChecks.address
+                          ? "1"
+                          : "0"
+                      }
+                    />
+
+                    <input
+                      type="hidden"
+                      name="scheduleChecked"
+                      value={
+                        incomingReviewChecks.schedule
+                          ? "1"
+                          : "0"
+                      }
+                    />
+
+                    <input
+                      type="hidden"
+                      name="itemsChecked"
+                      value={
+                        incomingReviewChecks.items
+                          ? "1"
+                          : "0"
+                      }
+                    />
+
 
                     <GastarioSection
                       eyebrow="Freigabe"
@@ -2459,10 +2792,24 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                         >
                           <GastarioSelect
                             name="billingMode"
-                            defaultValue={
-                              selectedOrder.billingMode ||
-                              "UNDECIDED"
+                            value={
+                              incomingBillingMode
                             }
+                            onChange={(event) => {
+                              setIncomingBillingMode(
+                                event.target.value
+                              );
+
+                              if (
+                                event.target.value ===
+                                "UNDECIDED"
+                              ) {
+                                updateIncomingReviewCheck(
+                                  "billing",
+                                  false
+                                );
+                              }
+                            }}
                             required
                           >
                             <option value="UNDECIDED">
@@ -2493,50 +2840,35 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
 
                     <GastarioSection
-                      eyebrow="Pflichtprüfung"
-                      title="Vor der Übernahme kontrollieren"
-                      description="Alle fünf Punkte müssen bestätigt werden."
+                      eyebrow="Letzter Prüfschritt"
+                      title="Abrechnung bestätigen"
+                      description="Danach kann der Auftrag endgültig übernommen werden."
                     >
-
-                      <div className="g-ui-check-list">
-
-                        <GastarioCheckRow
-                          name="customerChecked"
-                          title="Kundendaten geprüft"
-                          description="Firmenname und Ansprechpartner stimmen."
-                          required
-                        />
-
-                        <GastarioCheckRow
-                          name="addressChecked"
-                          title="Lieferadresse geprüft"
-                          description="Straße, Hausnummer und Ort sind vollständig."
-                          required
-                        />
-
-                        <GastarioCheckRow
-                          name="scheduleChecked"
-                          title="Datum und Uhrzeit geprüft"
-                          description="Liefertermin und Zeitfenster sind korrekt."
-                          required
-                        />
-
-                        <GastarioCheckRow
-                          name="itemsChecked"
-                          title="Positionen und Mengen geprüft"
-                          description="Alle Speisen, Mengen und Preise stimmen."
-                          required
-                        />
-
+                      {incomingBillingMode ===
+                      "UNDECIDED" ? (
+                        <GastarioNotice type="warning">
+                          Bitte zuerst eine Abrechnungsart auswählen.
+                        </GastarioNotice>
+                      ) : (
                         <GastarioCheckRow
                           name="billingChecked"
+                          value="1"
                           title="Abrechnungsart geprüft"
-                          description="Die spätere Rechnungsbearbeitung ist festgelegt."
+                          description="Die spätere Rechnungsbearbeitung ist eindeutig festgelegt."
+                          checked={
+                            incomingReviewChecks.billing
+                          }
+                          onCheckedChange={(
+                            value
+                          ) =>
+                            updateIncomingReviewCheck(
+                              "billing",
+                              value
+                            )
+                          }
                           required
                         />
-
-                      </div>
-
+                      )}
                     </GastarioSection>
 
 

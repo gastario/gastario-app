@@ -3774,3 +3774,147 @@
     font-size: 24px;
   }
 }
+
+
+/* =========================================================
+   Gastario Workflow
+========================================================= */
+
+.g-ui-workflow {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(150px, 1fr)
+  );
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.g-ui-workflow-item {
+  min-width: 0;
+}
+
+.g-ui-workflow-step {
+  width: 100%;
+  min-height: 76px;
+  display: grid;
+  grid-template-columns:
+    auto
+    minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  text-align: left;
+  border: 1px solid
+    var(
+      --g-border,
+      rgba(17, 24, 39, 0.1)
+    );
+  border-radius: 14px;
+  background:
+    var(
+      --g-surface,
+      #ffffff
+    );
+}
+
+.g-ui-workflow-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.g-ui-workflow-copy strong {
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.g-ui-workflow-copy small {
+  font-size: 11px;
+  line-height: 1.35;
+  opacity: 0.65;
+}
+
+.g-ui-workflow-index {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background:
+    rgba(
+      17,
+      24,
+      39,
+      0.06
+    );
+}
+
+.g-ui-workflow-state {
+  grid-column: 2;
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.55;
+}
+
+.g-ui-workflow-item--done
+  .g-ui-workflow-index {
+  background:
+    rgba(
+      22,
+      163,
+      74,
+      0.12
+    );
+}
+
+.g-ui-workflow-item--current
+  .g-ui-workflow-step,
+.g-ui-workflow-item.is-current
+  .g-ui-workflow-step {
+  border-color:
+    rgba(
+      22,
+      163,
+      74,
+      0.35
+    );
+  background:
+    rgba(
+      22,
+      163,
+      74,
+      0.045
+    );
+}
+
+.g-ui-workflow-item--current
+  .g-ui-workflow-index,
+.g-ui-workflow-item.is-current
+  .g-ui-workflow-index {
+  background:
+    rgba(
+      22,
+      163,
+      74,
+      0.13
+    );
+}
+
+.g-ui-workflow-item--locked
+  .g-ui-workflow-step {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+@media (
+  max-width: 760px
+) {
+  .g-ui-workflow {
+    grid-template-columns: 1fr;
+  }
+}

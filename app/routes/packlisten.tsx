@@ -8,6 +8,7 @@ import {
 } from "react-router";
 
 import AppLayout from "../components/AppLayout";
+import { GastarioWorkflow } from "../components/ui";
 
 import {
   MetricCard,
@@ -883,6 +884,15 @@ export async function action({
     intent ===
     "complete-packing"
   ) {
+    if (
+      order.status !== "PACKING_OPEN" ||
+      order.packingCompletedAt
+    ) {
+      return {
+        error:
+          "Nur eine aktive Packliste kann als lieferbereit abgeschlossen werden.",
+      };
+    }
     const checklist =
       checklistObject(
         order.packingChecklist
@@ -1277,7 +1287,81 @@ export default function PackingListsPage() {
                       </span>
                     </header>
 
-                    <div className="packingOrderMeta">
+
+                  <GastarioWorkflow
+                    items={[
+                      {
+                        id: "items",
+                        label:
+                          "Positionen gepackt",
+                        description:
+                          "Alle Auftragspositionen einzeln bestätigen",
+                        state:
+                          order.isPacked ||
+                          (
+                            order.items.length > 0 &&
+                            order.items.every(
+                              (item: any) =>
+                                item.checked
+                            )
+                          )
+                            ? "done"
+                            : "current",
+                      },
+                      {
+                        id: "checks",
+                        label:
+                          "Packkontrolle",
+                        description:
+                          "Ware, Lieferschein, Besteck und Equipment prüfen",
+                        state:
+                          !(
+                            order.items.length > 0 &&
+                            order.items.every(
+                              (item: any) =>
+                                item.checked
+                            )
+                          )
+                            ? "locked"
+                            : order.isPacked ||
+                                (
+                                  order.tasks.length > 0 &&
+                                  order.tasks.every(
+                                    (task: any) =>
+                                      task.checked
+                                  )
+                                )
+                              ? "done"
+                              : "current",
+                      },
+                      {
+                        id: "ready",
+                        label:
+                          "Lieferbereit",
+                        description:
+                          "Auftrag für die Lieferung freigeben",
+                        state:
+                          order.isPacked
+                            ? "done"
+                            : (
+                                order.items.length > 0 &&
+                                order.items.every(
+                                  (item: any) =>
+                                    item.checked
+                                ) &&
+                                order.tasks.length > 0 &&
+                                order.tasks.every(
+                                  (task: any) =>
+                                    task.checked
+                                )
+                              )
+                              ? "current"
+                              : "locked",
+                      },
+                    ]}
+                  />
+
+                  <div className="packingOrderMeta">
                       <div>
                         <span>
                           Kontakt
@@ -1609,7 +1693,7 @@ export default function PackingListsPage() {
                               )}`}
                               className="g-ops-button g-ops-button--primary g-ops-button--compact"
                             >
-                              Zur Lieferung
+                              Weiter zur Lieferung
                             </Link>
                           </>
                         ) : order.packingStarted ? (
@@ -1644,7 +1728,7 @@ export default function PackingListsPage() {
                                 !order.canComplete
                               }
                             >
-                              Als lieferbereit markieren
+                              Packen abschließen · Lieferbereit
                             </button>
                           </Form>
                         ) : null}

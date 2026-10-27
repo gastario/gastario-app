@@ -15,6 +15,21 @@ import {
   PageShell,
 } from "../components/ui/PageShell";
 
+import {
+  GastarioButton,
+  gastarioButtonClass,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioField,
+  GastarioMetric,
+  GastarioMetricGrid,
+  GastarioPanel,
+  GastarioSection,
+  GastarioSelect,
+  GastarioStack,
+  GastarioToolbar,
+} from "../components/ui";
+
 import "../styles/gastario-deliveries.css";
 
 function todayInput() {
@@ -534,20 +549,22 @@ export default function DeliveriesPage() {
             </>
           }
           actions={
-            <div className="deliveriesHeaderActions">
-              <button
+            <GastarioToolbar>
+              <GastarioButton
                 type="button"
-                className="deliveriesButton deliveriesButtonSecondary"
+                variant="secondary"
                 onClick={() =>
                   window.print()
                 }
               >
                 Drucken
-              </button>
+              </GastarioButton>
 
               {routeAvailable ? (
                 <a
-                  className="deliveriesButton deliveriesButtonPrimary"
+                  className={gastarioButtonClass(
+                    "primary"
+                  )}
                   href={data.tourMapUrl}
                   target="_blank"
                   rel="noreferrer"
@@ -555,14 +572,15 @@ export default function DeliveriesPage() {
                   Tagesroute öffnen
                 </a>
               ) : (
-                <span
-                  className="deliveriesButton deliveriesButtonPrimary isDisabled"
-                  aria-disabled="true"
+                <GastarioButton
+                  type="button"
+                  variant="primary"
+                  disabled
                 >
                   Keine Route verfügbar
-                </span>
+                </GastarioButton>
               )}
-            </div>
+            </GastarioToolbar>
           }
         />
 
@@ -579,156 +597,141 @@ export default function DeliveriesPage() {
           </Notice>
         ) : null}
 
-        <MetricGrid className="deliveriesMetrics">
-          <MetricCard
+        <GastarioMetricGrid>
+          <GastarioMetric
             label="Heute"
             value={data.stats.today}
             description="Lieferungen für heute"
-            badge="Tagesplan"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Künftig"
             value={data.stats.future}
             description="Kommende Lieferungen"
-            badge="Planung"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Gesamt"
             value={data.stats.all}
             description="Operative Lieferaufträge"
-            badge="Aktiv"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Daten prüfen"
             value={data.stats.incomplete}
-            description="Lieferdaten oder Packstatus offen"
-            badge={
+            description={
               data.stats.incomplete > 0
-                ? "Prüfen"
-                : "Vollständig"
-            }
-            attention={
-              data.stats.incomplete > 0
+                ? "Adresse, Telefon oder Packstatus prüfen"
+                : "Alle Lieferdaten vollständig"
             }
           />
-        </MetricGrid>
+        </GastarioMetricGrid>
 
-        <PageSection
-          className="deliveriesFilterSection"
+        <GastarioSection
           eyebrow="Filter"
           title="Lieferungen anzeigen"
           description="Zeitraum auswählen oder gezielt ein Lieferdatum öffnen."
-          actions={
-            <nav
-              className="deliveriesRangeTabs"
-              aria-label="Lieferzeitraum"
-            >
-              <Link
-                to="/lieferungen?range=today"
-                data-active={
-                  data.range === "today"
-                    ? "true"
-                    : "false"
-                }
-              >
-                Heute
-              </Link>
-
-              <Link
-                to="/lieferungen?range=future"
-                data-active={
-                  data.range === "future"
-                    ? "true"
-                    : "false"
-                }
-              >
-                Künftig
-              </Link>
-
-              <Link
-                to="/lieferungen?range=past"
-                data-active={
-                  data.range === "past"
-                    ? "true"
-                    : "false"
-                }
-              >
-                Vergangen
-              </Link>
-
-              <Link
-                to="/lieferungen?range=all"
-                data-active={
-                  data.range === "all"
-                    ? "true"
-                    : "false"
-                }
-              >
-                Alle
-              </Link>
-            </nav>
-          }
         >
-          <Form
-            method="get"
-            className="deliveriesDateForm"
-          >
+          <GastarioToolbar>
+            <Link
+              to="/lieferungen?range=today"
+              className={gastarioButtonClass(
+                data.range === "today"
+                  ? "primary"
+                  : "secondary"
+              )}
+            >
+              Heute
+            </Link>
+
+            <Link
+              to="/lieferungen?range=future"
+              className={gastarioButtonClass(
+                data.range === "future"
+                  ? "primary"
+                  : "secondary"
+              )}
+            >
+              Künftig
+            </Link>
+
+            <Link
+              to="/lieferungen?range=past"
+              className={gastarioButtonClass(
+                data.range === "past"
+                  ? "primary"
+                  : "secondary"
+              )}
+            >
+              Vergangen
+            </Link>
+
+            <Link
+              to="/lieferungen?range=all"
+              className={gastarioButtonClass(
+                data.range === "all"
+                  ? "primary"
+                  : "secondary"
+              )}
+            >
+              Alle
+            </Link>
+          </GastarioToolbar>
+
+          <Form method="get">
             <input
               type="hidden"
               name="range"
               value="date"
             />
 
-            <label className="deliveriesDateField">
-              <span>Lieferdatum</span>
-
-              <select
-                name="date"
-                defaultValue={
-                  data.selectedDate
-                }
-              >
-                {data.availableDates
-                  .length > 0 ? (
-                  data.availableDates.map(
-                    (date: string) => (
-                      <option
-                        key={date}
-                        value={date}
-                      >
-                        {formatSelectDate(
-                          date
-                        )}
-                      </option>
+            <GastarioToolbar>
+              <GastarioField label="Lieferdatum">
+                <GastarioSelect
+                  name="date"
+                  defaultValue={
+                    data.selectedDate
+                  }
+                >
+                  {data.availableDates.length > 0 ? (
+                    data.availableDates.map(
+                      (date: string) => (
+                        <option
+                          key={date}
+                          value={date}
+                        >
+                          {formatSelectDate(
+                            date
+                          )}
+                        </option>
+                      )
                     )
-                  )
-                ) : (
-                  <option
-                    value={
-                      data.selectedDate
-                    }
-                  >
-                    Keine Lieferdaten
-                  </option>
-                )}
-              </select>
-            </label>
+                  ) : (
+                    <option
+                      value={
+                        data.selectedDate
+                      }
+                    >
+                      Keine Lieferdaten
+                    </option>
+                  )}
+                </GastarioSelect>
+              </GastarioField>
 
-            <button
-              type="submit"
-              className="deliveriesButton deliveriesButtonPrimary"
-            >
-              Datum anzeigen
-            </button>
+              <button
+                type="submit"
+                className={gastarioButtonClass(
+                  "primary"
+                )}
+              >
+                Datum anzeigen
+              </button>
+            </GastarioToolbar>
           </Form>
-        </PageSection>
+        </GastarioSection>
 
         <section className="deliveriesMainGrid">
-          <PageSection
-            className="deliveriesSchedulePanel"
+          <GastarioSection
             eyebrow="Fahrerplan"
             title={rangeTitle(data.range)}
             description={
@@ -739,7 +742,7 @@ export default function DeliveriesPage() {
             actions={
               routeAvailable ? (
                 <a
-                  className="deliveriesButton deliveriesButtonSecondary"
+                  className={gastarioButtonClass("secondary")}
                   href={data.tourMapUrl}
                   target="_blank"
                   rel="noreferrer"
@@ -836,127 +839,102 @@ export default function DeliveriesPage() {
                       packingReady;
 
                     return (
-                      <article
-                        className="deliveriesRouteCard"
+                      <GastarioPanel
                         key={order.id}
                       >
-                        <div className="deliveriesRouteTime">
-                          <small>
-                            Stopp {index + 1}
-                          </small>
+                        <GastarioStack>
+                          <GastarioMetricGrid>
+                            <GastarioMetric
+                              label={`Stopp ${index + 1}`}
+                              value={
+                                order.deliveryTimeText ||
+                                "–"
+                              }
+                              description={`${formatDate(
+                                order.deliveryDate
+                              )} · Uhrzeit`}
+                            />
 
-                          <strong>
-                            {order.deliveryTimeText ||
-                              "–"}
-                          </strong>
+                            <GastarioMetric
+                              label="Kunde"
+                              value={
+                                order.customerName ||
+                                "Ohne Kunde"
+                              }
+                              description={orderSummary(
+                                order
+                              )}
+                            />
 
-                          <span>Uhr</span>
-                        </div>
+                            <GastarioMetric
+                              label="Status"
+                              value={statusLabel(
+                                order.status
+                              )}
+                              description="Auftragsstatus"
+                            />
 
-                        <div className="deliveriesRouteContent">
-                          <header className="deliveriesRouteHeader">
-                            <div>
-                              <p>
-                                {formatDate(
-                                  order.deliveryDate
-                                )}
-                              </p>
-
-                              <h3>
-                                {order.customerName ||
-                                  "Ohne Kunde"}
-                              </h3>
-
-                              <span>
-                                {orderSummary(
-                                  order
-                                )}
-                              </span>
-                            </div>
-
-                            <div className="deliveriesStatusArea">
-                              <span
-                                className="deliveriesStatusBadge"
-                                data-status={String(
-                                  order.status ||
-                                    ""
-                                ).toLowerCase()}
-                              >
-                                {order.packingCompletedAt
-                                  ? "Lieferbereit"
-                                  : statusLabel(
-                                      order.status
-                                    )}
-                              </span>
-
-                              <span
-                                className={
-                                  "deliveriesDataBadge " +
-                                  (
-                                    complete
-                                      ? "isComplete"
-                                      : "isIncomplete"
-                                  )
-                                }
-                              >
-                                {complete
+                            <GastarioMetric
+                              label="Lieferfähigkeit"
+                              value={
+                                complete
                                   ? "Fahrbereit"
-                                  : !deliveryDataComplete
-                                    ? "Daten fehlen"
-                                    : "Packen offen"}
-                              </span>
-                            </div>
-                          </header>
+                                  : "Daten fehlen"
+                              }
+                              description={
+                                complete
+                                  ? "Adresse und Telefon vorhanden"
+                                  : "Lieferdaten vervollständigen"
+                              }
+                            />
+                          </GastarioMetricGrid>
 
-                          <div className="deliveriesRouteDetails">
-                            <div>
-                              <small>
-                                Adresse
-                              </small>
+                          <GastarioDataList>
+                            <GastarioDataRow>
+                              <div>
+                                <strong>Adresse</strong>
+                                <div>
+                                  {address ||
+                                    "Keine Adresse eingetragen"}
+                                </div>
+                              </div>
+                            </GastarioDataRow>
 
-                              <strong>
-                                {address ||
-                                  "Keine Adresse eingetragen"}
-                              </strong>
-                            </div>
+                            <GastarioDataRow>
+                              <div>
+                                <strong>Kontakt</strong>
+                                <div>
+                                  {order.contactName ||
+                                    "Kein Ansprechpartner"}
+                                </div>
+                                <div>
+                                  {order.contactPhone ||
+                                    "Keine Telefonnummer"}
+                                </div>
+                              </div>
+                            </GastarioDataRow>
 
-                            <div>
-                              <small>
-                                Kontakt
-                              </small>
+                            <GastarioDataRow>
+                              <div>
+                                <strong>Auftrag</strong>
+                                <div>
+                                  {order.orderNumber ||
+                                    order.id}
+                                </div>
+                                <div>
+                                  {order.eventName ||
+                                    "Kein Eventname"}
+                                </div>
+                              </div>
+                            </GastarioDataRow>
+                          </GastarioDataList>
 
-                              <strong>
-                                {order.contactName ||
-                                  "Kein Ansprechpartner"}
-                              </strong>
-
-                              <span>
-                                {order.contactPhone ||
-                                  "Keine Telefonnummer"}
-                              </span>
-                            </div>
-
-                            <div>
-                              <small>
-                                Auftrag
-                              </small>
-
-                              <strong>
-                                {order.orderNumber ||
-                                  order.id}
-                              </strong>
-
-                              <span>
-                                {order.eventName ||
-                                  "Kein Eventname"}
-                              </span>
-                            </div>
-                          </div>
-
-                          <footer className="deliveriesRouteActions">
+                          <GastarioToolbar>
                             {address ? (
                               <a
-                                className="deliveriesButton deliveriesButtonPrimary"
+                                className={gastarioButtonClass(
+                                  "primary"
+                                )}
                                 href={map}
                                 target="_blank"
                                 rel="noreferrer"
@@ -964,33 +942,39 @@ export default function DeliveriesPage() {
                                 Route öffnen
                               </a>
                             ) : (
-                              <span
-                                className="deliveriesButton deliveriesButtonPrimary isDisabled"
-                                aria-disabled="true"
+                              <GastarioButton
+                                type="button"
+                                variant="primary"
+                                disabled
                               >
                                 Adresse fehlt
-                              </span>
+                              </GastarioButton>
                             )}
 
                             {phone ? (
                               <a
-                                className="deliveriesButton deliveriesButtonSecondary"
+                                className={gastarioButtonClass(
+                                  "secondary"
+                                )}
                                 href={`tel:${phone}`}
                               >
                                 Anrufen
                               </a>
                             ) : (
-                              <span
-                                className="deliveriesButton deliveriesButtonSecondary isDisabled"
-                                aria-disabled="true"
+                              <GastarioButton
+                                type="button"
+                                variant="secondary"
+                                disabled
                               >
                                 Keine Nummer
-                              </span>
+                              </GastarioButton>
                             )}
 
                             {phone ? (
                               <a
-                                className="deliveriesButton deliveriesButtonSecondary"
+                                className={gastarioButtonClass(
+                                  "secondary"
+                                )}
                                 href={whatsapp}
                                 target="_blank"
                                 rel="noreferrer"
@@ -1000,7 +984,9 @@ export default function DeliveriesPage() {
                             ) : null}
 
                             <a
-                              className="deliveriesButton deliveriesButtonSecondary"
+                              className={gastarioButtonClass(
+                                "secondary"
+                              )}
                               href={`mailto:?subject=${encodeURIComponent(
                                 `Lieferung ${
                                   order.orderNumber ||
@@ -1014,22 +1000,24 @@ export default function DeliveriesPage() {
                             </a>
 
                             <Link
-                              className="deliveriesButton deliveriesButtonSecondary"
+                              className={gastarioButtonClass(
+                                "secondary"
+                              )}
                               to={`/lieferscheine?date=${normalizeDate(
                                 order.deliveryDate
                               )}`}
                             >
                               Lieferschein
                             </Link>
-                          </footer>
-                        </div>
-                      </article>
+                          </GastarioToolbar>
+                        </GastarioStack>
+                      </GastarioPanel>
                     );
                   }
                 )
               )}
             </div>
-          </PageSection>
+          </GastarioSection>
 
           <aside className="deliveriesSideStack">
             <PageSection

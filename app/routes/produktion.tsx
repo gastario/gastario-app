@@ -7,6 +7,7 @@ import {
 } from "react-router";
 
 import AppLayout from "../components/AppLayout";
+import { GastarioCheckRow } from "../components/ui";
 
 import {
   MetricCard,
@@ -604,6 +605,13 @@ export async function action({
     formData.get("date") || ""
   );
 
+  const productionConfirmed =
+    String(
+      formData.get(
+        "productionConfirmed"
+      ) || ""
+    ) === "1";
+
   if (!orderId) {
     return {
       error:
@@ -712,6 +720,13 @@ export async function action({
       return {
         error:
           "Nur Aufträge in Produktion können an die Packstation übergeben werden.",
+      };
+    }
+
+    if (!productionConfirmed) {
+      return {
+        error:
+          "Bitte bestätige zuerst, dass die Produktion vollständig abgeschlossen ist.",
       };
     }
 
@@ -1208,6 +1223,15 @@ export default function ProductionPage() {
                                 value={
                                   data.selectedDate
                                 }
+                              />
+
+
+                              <GastarioCheckRow
+                                name="productionConfirmed"
+                                value="1"
+                                title="Produktion vollständig"
+                                description="Alle Küchenpositionen dieses Auftrags sind fertig und können an die Packstation übergeben werden."
+                                required
                               />
 
                               <button
