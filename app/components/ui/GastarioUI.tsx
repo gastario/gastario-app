@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Children, useEffect } from "react";
 import { Link } from "react-router";
 import type {
   ButtonHTMLAttributes,
@@ -1384,14 +1384,28 @@ export function GastarioFilterBar({
   actions,
   className,
 }: GastarioFilterBarProps) {
+  const controlCount =
+    Children.count(children);
+
+  const singleControl =
+    controlCount === 1;
+
   return (
     <div
       className={joinClasses(
         "g-ui-filter-bar",
+        singleControl &&
+          "g-ui-filter-bar--single",
         className
       )}
     >
-      <div className="g-ui-filter-controls">
+      <div
+        className={joinClasses(
+          "g-ui-filter-controls",
+          singleControl &&
+            "g-ui-filter-controls--single"
+        )}
+      >
         {children}
       </div>
 

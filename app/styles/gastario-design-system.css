@@ -2228,6 +2228,20 @@
     flex: 0 0 auto;
   }
 
+  .g-ui-filter-bar--single {
+    justify-content: flex-start;
+  }
+
+  .g-ui-filter-controls.g-ui-filter-controls--single {
+    width: min(420px, 100%);
+
+    flex:
+      0 1 420px;
+
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
   .g-ui-filter-bar .g-ui-field {
     margin: 0;
   }

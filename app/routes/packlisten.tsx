@@ -17,11 +17,11 @@ import {
   GastarioCheckRow,
   GastarioDataList,
   GastarioDataRow,
-  GastarioDetailDialog,
-  GastarioDetailPane,
-  GastarioDetailTabs,
+  GastarioDialog,
+  GastarioTabs,
   GastarioEmptyState,
   GastarioField,
+  GastarioFilterBar,
   GastarioHeader,
   GastarioMetric,
   GastarioMetricGrid,
@@ -29,7 +29,6 @@ import {
   GastarioPage,
   GastarioSection,
   GastarioSelect,
-  GastarioStack,
   GastarioToolbar,
   gastarioButtonClass,
 } from "../components/ui";
@@ -1198,11 +1197,29 @@ export default function PackingListsPage() {
           eyebrow="Packlisten"
           title="Nach Auftrag"
           description="Wähle einen Auftrag aus, um Positionen und Packkontrolle zu bearbeiten."
+          action={
+            <GastarioBadge variant="neutral">
+              {data.packingItems.length}
+              {" "}
+              {data.packingItems.length === 1
+                ? "Packliste"
+                : "Packlisten"}
+            </GastarioBadge>
+          }
         >
 
           <Form method="get">
 
-            <GastarioToolbar align="start">
+            <GastarioFilterBar
+              actions={
+                <GastarioButton
+                  variant="primary"
+                  type="submit"
+                >
+                  Anzeigen
+                </GastarioButton>
+              }
+            >
 
               <GastarioField
                 label="Planungstag"
@@ -1242,15 +1259,7 @@ export default function PackingListsPage() {
                 </GastarioSelect>
               </GastarioField>
 
-
-              <GastarioButton
-                variant="primary"
-                type="submit"
-              >
-                Anzeigen
-              </GastarioButton>
-
-            </GastarioToolbar>
+            </GastarioFilterBar>
 
           </Form>
 
@@ -1285,7 +1294,7 @@ export default function PackingListsPage() {
                     }}
                   >
 
-                    <div className="g-ui-data-row-copy">
+                    <div className="g-ui-data-row-main">
 
                       <strong className="g-ui-data-row-title">
                         {order.customerName ||
@@ -1361,9 +1370,8 @@ export default function PackingListsPage() {
         </GastarioSection>
 
 
-        <GastarioDetailDialog
+        <GastarioDialog
           open={Boolean(selectedOrder)}
-          size="lg"
           title={
             selectedOrder?.customerName ||
             "Packliste"
@@ -1382,6 +1390,7 @@ export default function PackingListsPage() {
                 } Uhr`
               : undefined
           }
+          size="xl"
           onClose={() => {
             setSelectedOrderId(null);
             setSelectedDetailTab(
@@ -1390,7 +1399,7 @@ export default function PackingListsPage() {
           }}
           footer={
             selectedOrder ? (
-              <GastarioToolbar>
+              <>
 
                 <GastarioButton
                   variant="secondary"
@@ -1573,20 +1582,21 @@ export default function PackingListsPage() {
 
                 ) : null}
 
-              </GastarioToolbar>
+              </>
             ) : null
           }
         >
 
           {selectedOrder ? (
+            <>
 
-            <GastarioStack
-              key={
-                selectedOrder.id
-              }
-            >
-
-              <GastarioDetailTabs
+              <GastarioTabs
+                activeId={
+                  selectedDetailTab
+                }
+                onChange={
+                  setSelectedDetailTab
+                }
                 items={[
                   {
                     id: "overview",
@@ -1605,42 +1615,31 @@ export default function PackingListsPage() {
                       selectedOrder.tasks.length,
                   },
                 ]}
-                activeId={
-                  selectedDetailTab
-                }
-                onChange={
-                  setSelectedDetailTab
-                }
               />
 
 
-              <GastarioDetailPane
-                active={
-                  selectedDetailTab ===
-                  "overview"
-                }
-              >
+              <div className="g-ui-dialog-form">
 
-                <GastarioSection
-                  eyebrow="Packliste"
-                  title="Auftrag auf einen Blick"
-                  description="Die wichtigsten Daten und der aktuelle Packstatus."
-                  action={
-                    <GastarioBadge
-                      variant={
-                        selectedOrder.isPacked
-                          ? "success"
-                          : selectedOrder.packingStarted
-                            ? "info"
-                            : "neutral"
-                      }
-                    >
-                      {packingStatusLabel(
-                        selectedOrder
-                      )}
-                    </GastarioBadge>
+
+                <div
+                  className="g-ui-form-section"
+                  hidden={
+                    selectedDetailTab !==
+                    "overview"
                   }
                 >
+
+                  <div className="g-ui-form-section-heading">
+                    <h3>
+                      Übersicht
+                    </h3>
+
+                    <p>
+                      Die wichtigsten Daten und
+                      der aktuelle Packstatus.
+                    </p>
+                  </div>
+
 
                   <GastarioDataList>
 
@@ -1648,7 +1647,37 @@ export default function PackingListsPage() {
                     <GastarioDataRow>
 
                       <div className="g-ui-data-row-main">
+                        <strong className="g-ui-data-row-title">
+                          Status
+                        </strong>
 
+                        <span className="g-ui-data-row-description">
+                          Aktueller Packstatus
+                        </span>
+                      </div>
+
+                      <div className="g-ui-data-row-meta">
+                        <GastarioBadge
+                          variant={
+                            selectedOrder.isPacked
+                              ? "success"
+                              : selectedOrder.packingStarted
+                                ? "info"
+                                : "neutral"
+                          }
+                        >
+                          {packingStatusLabel(
+                            selectedOrder
+                          )}
+                        </GastarioBadge>
+                      </div>
+
+                    </GastarioDataRow>
+
+
+                    <GastarioDataRow>
+
+                      <div className="g-ui-data-row-main">
                         <strong className="g-ui-data-row-title">
                           Lieferzeit
                         </strong>
@@ -1656,17 +1685,14 @@ export default function PackingListsPage() {
                         <span className="g-ui-data-row-description">
                           Anlieferung vor Ort
                         </span>
-
                       </div>
 
                       <div className="g-ui-data-row-meta">
-
                         <strong>
                           {selectedOrder.deliveryTime ||
                             "-"}
                           {" Uhr"}
                         </strong>
-
                       </div>
 
                     </GastarioDataRow>
@@ -1675,7 +1701,6 @@ export default function PackingListsPage() {
                     <GastarioDataRow>
 
                       <div className="g-ui-data-row-main">
-
                         <strong className="g-ui-data-row-title">
                           Lieferadresse
                         </strong>
@@ -1683,16 +1708,13 @@ export default function PackingListsPage() {
                         <span className="g-ui-data-row-description">
                           Ziel der Lieferung
                         </span>
-
                       </div>
 
                       <div className="g-ui-data-row-meta">
-
                         <span>
                           {selectedOrder.deliveryAddress ||
                             "Keine Lieferadresse eingetragen"}
                         </span>
-
                       </div>
 
                     </GastarioDataRow>
@@ -1701,7 +1723,6 @@ export default function PackingListsPage() {
                     <GastarioDataRow>
 
                       <div className="g-ui-data-row-main">
-
                         <strong className="g-ui-data-row-title">
                           Kontakt
                         </strong>
@@ -1709,11 +1730,9 @@ export default function PackingListsPage() {
                         <span className="g-ui-data-row-description">
                           Ansprechpartner vor Ort
                         </span>
-
                       </div>
 
                       <div className="g-ui-data-row-meta">
-
                         <span>
                           {selectedOrder.contactName ||
                             "Kein Ansprechpartner"}
@@ -1724,7 +1743,6 @@ export default function PackingListsPage() {
                             {selectedOrder.contactPhone}
                           </span>
                         ) : null}
-
                       </div>
 
                     </GastarioDataRow>
@@ -1733,7 +1751,6 @@ export default function PackingListsPage() {
                     <GastarioDataRow>
 
                       <div className="g-ui-data-row-main">
-
                         <strong className="g-ui-data-row-title">
                           Gesamtmenge
                         </strong>
@@ -1741,15 +1758,12 @@ export default function PackingListsPage() {
                         <span className="g-ui-data-row-description">
                           Packpositionen
                         </span>
-
                       </div>
 
                       <div className="g-ui-data-row-meta">
-
                         <strong>
                           {selectedOrder.totalQuantity}
                         </strong>
-
                       </div>
 
                     </GastarioDataRow>
@@ -1758,7 +1772,6 @@ export default function PackingListsPage() {
                     <GastarioDataRow>
 
                       <div className="g-ui-data-row-main">
-
                         <strong className="g-ui-data-row-title">
                           Packfortschritt
                         </strong>
@@ -1766,7 +1779,6 @@ export default function PackingListsPage() {
                         <span className="g-ui-data-row-description">
                           Prüfungen dieses Auftrags
                         </span>
-
                       </div>
 
                       <div className="g-ui-data-row-meta">
@@ -1797,7 +1809,6 @@ export default function PackingListsPage() {
                       <GastarioDataRow>
 
                         <div className="g-ui-data-row-main">
-
                           <strong className="g-ui-data-row-title">
                             Logistik
                           </strong>
@@ -1805,11 +1816,9 @@ export default function PackingListsPage() {
                           <span className="g-ui-data-row-description">
                             Lieferung und Abholung
                           </span>
-
                         </div>
 
                         <div className="g-ui-data-row-meta">
-
                           <span>
                             {selectedOrder.logisticsItems
                               .map(
@@ -1818,7 +1827,6 @@ export default function PackingListsPage() {
                               )
                               .join(", ")}
                           </span>
-
                         </div>
 
                       </GastarioDataRow>
@@ -1849,29 +1857,35 @@ export default function PackingListsPage() {
                   selectedOrder.unresolvedItems.length === 0 ? (
 
                     <GastarioNotice type="info">
-                      Die Packliste ist vorbereitet und kann
-                      gestartet werden.
+                      Die Packliste ist vorbereitet
+                      und kann gestartet werden.
                     </GastarioNotice>
 
                   ) : null}
 
-                </GastarioSection>
 
-              </GastarioDetailPane>
+                </div>
 
 
-              <GastarioDetailPane
-                active={
-                  selectedDetailTab ===
-                  "positions"
-                }
-              >
-
-                <GastarioSection
-                  eyebrow="Positionen"
-                  title="Packpositionen"
-                  description="Alle Positionen dieses Auftrags einzeln bestätigen."
+                <div
+                  className="g-ui-form-section"
+                  hidden={
+                    selectedDetailTab !==
+                    "positions"
+                  }
                 >
+
+                  <div className="g-ui-form-section-heading">
+                    <h3>
+                      Positionen
+                    </h3>
+
+                    <p>
+                      Alle Positionen dieses
+                      Auftrags einzeln bestätigen.
+                    </p>
+                  </div>
+
 
                   {selectedOrder.items.length === 0 ? (
 
@@ -1931,23 +1945,29 @@ export default function PackingListsPage() {
 
                   )}
 
-                </GastarioSection>
 
-              </GastarioDetailPane>
+                </div>
 
 
-              <GastarioDetailPane
-                active={
-                  selectedDetailTab ===
-                  "checks"
-                }
-              >
-
-                <GastarioSection
-                  eyebrow="Packkontrolle"
-                  title="Zusatzkontrollen"
-                  description="Ware, Dokumente und Equipment vor der Freigabe prüfen."
+                <div
+                  className="g-ui-form-section"
+                  hidden={
+                    selectedDetailTab !==
+                    "checks"
+                  }
                 >
+
+                  <div className="g-ui-form-section-heading">
+                    <h3>
+                      Packkontrolle
+                    </h3>
+
+                    <p>
+                      Ware, Dokumente und Equipment
+                      vor der Freigabe prüfen.
+                    </p>
+                  </div>
+
 
                   <div className="g-ui-check-list">
 
@@ -1983,15 +2003,16 @@ export default function PackingListsPage() {
 
                   </div>
 
-                </GastarioSection>
 
-              </GastarioDetailPane>
+                </div>
 
-            </GastarioStack>
 
+              </div>
+
+            </>
           ) : null}
 
-        </GastarioDetailDialog>
+        </GastarioDialog>
 
       </GastarioPage>
 
