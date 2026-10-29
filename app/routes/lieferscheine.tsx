@@ -3,6 +3,7 @@ import { Link, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 
 import {
+  GastarioButton,
   GastarioDataList,
   GastarioDataRow,
   GastarioDetailDialog,
@@ -436,9 +437,8 @@ export default function DeliveryNotesPage() {
         {selectedNote ? (
           <GastarioDetailDialog
             open
-            title={
-              selectedNote.number
-            }
+            size="lg"
+            title={selectedNote.number}
             description={`Auftrag ${
               selectedNote.order
                 ?.orderNumber ||
@@ -448,25 +448,19 @@ export default function DeliveryNotesPage() {
                 ?.customerName ||
               "Ohne Kunde"
             }`}
-            onClose={
-              closeNote
-            }
+            onClose={closeNote}
             footer={
               <>
-                <button
+                <GastarioButton
                   type="button"
-                  className={gastarioButtonClass(
-                    "secondary"
-                  )}
-                  onClick={
-                    closeNote
-                  }
+                  variant="secondary"
+                  onClick={closeNote}
                 >
                   Schließen
-                </button>
+                </GastarioButton>
 
                 <a
-                  href={`/lieferschein-pdf/${selectedNote.orderId}`}
+                  href={`/lieferscheine/${selectedNote.orderId}/pdf`}
                   target="_blank"
                   rel="noreferrer"
                   className={gastarioButtonClass(
@@ -478,27 +472,23 @@ export default function DeliveryNotesPage() {
               </>
             }
           >
-            <GastarioStack>
+            <div className="g-ui-detail-stack">
+
               <GastarioDetailTabs
                 items={[
                   {
                     id: "overview",
-                    label:
-                      "Übersicht",
+                    label: "Übersicht",
                   },
                   {
                     id: "document",
-                    label:
-                      "Dokument",
+                    label: "Dokument",
                   },
                 ]}
-                activeId={
-                  detailTab
-                }
-                onChange={
-                  setDetailTab
-                }
+                activeId={detailTab}
+                onChange={setDetailTab}
               />
+
 
               <GastarioDetailPane
                 active={
@@ -506,51 +496,83 @@ export default function DeliveryNotesPage() {
                   "overview"
                 }
               >
-                <GastarioMetricGrid>
-                  <GastarioMetric
-                    label="Kunde"
-                    value={
-                      selectedNote.order
-                        ?.customerName ||
-                      "Ohne Kunde"
-                    }
-                    description="Empfänger"
-                  />
 
-                  <GastarioMetric
-                    label="Lieferdatum"
-                    value={formatDate(
-                      selectedNote.order
-                        ?.deliveryDate
-                    )}
-                    description={
-                      selectedNote.order
-                        ?.deliveryTimeText
-                        ? `${selectedNote.order.deliveryTimeText} Uhr`
-                        : "Keine Uhrzeit"
-                    }
-                  />
+                <div className="g-ui-detail-stack">
 
-                  <GastarioMetric
-                    label="Auftrag"
-                    value={
-                      selectedNote.order
-                        ?.orderNumber ||
-                      "–"
-                    }
-                    description="Auftragsnummer"
-                  />
-                </GastarioMetricGrid>
+                  <div className="g-ui-detail-meta">
 
-                <GastarioSection
-                  eyebrow="Lieferung"
-                  title="Lieferadresse"
-                >
-                  {selectedNote.order
-                    ?.deliveryAddress ||
-                    "Keine Lieferadresse hinterlegt."}
-                </GastarioSection>
+                    <div>
+                      <span>Kunde</span>
+                      <strong>
+                        {selectedNote.order
+                          ?.customerName ||
+                          "Ohne Kunde"}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>Lieferdatum</span>
+                      <strong>
+                        {formatDate(
+                          selectedNote.order
+                            ?.deliveryDate
+                        )}
+                      </strong>
+
+                      <small>
+                        {selectedNote.order
+                          ?.deliveryTimeText
+                          ? `${selectedNote.order.deliveryTimeText} Uhr`
+                          : "Keine Uhrzeit"}
+                      </small>
+                    </div>
+
+                    <div>
+                      <span>Auftrag</span>
+                      <strong>
+                        {selectedNote.order
+                          ?.orderNumber ||
+                          "–"}
+                      </strong>
+                    </div>
+
+                  </div>
+
+
+                  <GastarioDataList>
+
+                    <GastarioDataRow>
+
+                      <div className="g-ui-data-row-main">
+
+                        <strong className="g-ui-data-row-title">
+                          Lieferadresse
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          Empfängeradresse des Lieferscheins
+                        </span>
+
+                      </div>
+
+                      <div className="g-ui-data-row-meta">
+
+                        <span>
+                          {selectedNote.order
+                            ?.deliveryAddress ||
+                            "Keine Lieferadresse hinterlegt."}
+                        </span>
+
+                      </div>
+
+                    </GastarioDataRow>
+
+                  </GastarioDataList>
+
+                </div>
+
               </GastarioDetailPane>
+
 
               <GastarioDetailPane
                 active={
@@ -558,61 +580,88 @@ export default function DeliveryNotesPage() {
                   "document"
                 }
               >
-                <GastarioSection
-                  eyebrow="PDF"
-                  title="Gespeicherter Lieferschein"
-                  description="Der Lieferschein wird dauerhaft gespeichert und kann bei Änderungen gezielt neu erzeugt werden."
-                >
-                  <GastarioStack>
-                    <GastarioNotice type="neutral">
-                      Erstellt am{" "}
-                      {new Date(
-                        selectedNote.generatedAt
-                      ).toLocaleDateString(
-                        "de-DE"
-                      )}{" "}
-                      um{" "}
-                      {new Date(
-                        selectedNote.generatedAt
-                      ).toLocaleTimeString(
-                        "de-DE",
-                        {
-                          hour:
-                            "2-digit",
-                          minute:
-                            "2-digit",
-                        }
-                      )}{" "}
-                      Uhr.
-                    </GastarioNotice>
 
-                    <GastarioToolbar>
-                      <a
-                        href={`/lieferschein-pdf/${selectedNote.orderId}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className={gastarioButtonClass(
-                          "primary"
-                        )}
-                      >
-                        PDF öffnen
-                      </a>
+                <div className="g-ui-detail-stack">
 
-                      <a
-                        href={`/lieferschein-pdf/${selectedNote.orderId}?refresh=1`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className={gastarioButtonClass(
-                          "secondary"
-                        )}
-                      >
-                        Neu erzeugen
-                      </a>
-                    </GastarioToolbar>
-                  </GastarioStack>
-                </GastarioSection>
+                  <GastarioNotice type="neutral">
+
+                    Erstellt am{" "}
+
+                    {new Date(
+                      selectedNote.generatedAt
+                    ).toLocaleDateString(
+                      "de-DE"
+                    )}
+
+                    {" um "}
+
+                    {new Date(
+                      selectedNote.generatedAt
+                    ).toLocaleTimeString(
+                      "de-DE",
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )}
+
+                    {" Uhr."}
+
+                  </GastarioNotice>
+
+
+                  <GastarioDataList>
+
+                    <GastarioDataRow>
+
+                      <div className="g-ui-data-row-main">
+
+                        <strong className="g-ui-data-row-title">
+                          Gespeicherter Lieferschein
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          Das PDF wird dauerhaft gespeichert und nur bei Bedarf neu erzeugt.
+                        </span>
+
+                      </div>
+
+                      <div className="g-ui-data-row-meta">
+
+                        <a
+                          href={`/lieferscheine/${selectedNote.orderId}/pdf`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={gastarioButtonClass(
+                            "primary"
+                          )}
+                        >
+                          PDF öffnen
+                        </a>
+
+                        <a
+                          href={`/lieferscheine/${selectedNote.orderId}/pdf?refresh=1`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={gastarioButtonClass(
+                            "secondary"
+                          )}
+                        >
+                          Neu erzeugen
+                        </a>
+
+                      </div>
+
+                    </GastarioDataRow>
+
+                  </GastarioDataList>
+
+                </div>
+
               </GastarioDetailPane>
-            </GastarioStack>
+
+            </div>
+
           </GastarioDetailDialog>
         ) : null}
       </GastarioPage>
