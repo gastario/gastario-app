@@ -1076,16 +1076,19 @@ export function GastarioCheckRow({
 ========================================================= */
 
 export type GastarioDetailDialogProps =
-  Omit<GastarioDialogProps, "size">;
+  Omit<GastarioDialogProps, "size"> & {
+    size?: GastarioDialogSize;
+  };
 
 export function GastarioDetailDialog({
   className,
+  size = "xl",
   ...props
 }: GastarioDetailDialogProps) {
   return (
     <GastarioDialog
       {...props}
-      size="xl"
+      size={size}
       className={joinClasses(
         "g-ui-detail-dialog",
         className
@@ -1106,6 +1109,8 @@ type GastarioDetailTabsProps = {
   items: Array<{
     id: string;
     label: ReactNode;
+    badge?: ReactNode;
+    disabled?: boolean;
   }>;
   activeId: string;
   onChange: (id: string) => void;

@@ -9,6 +9,8 @@ import {
   GastarioMetric,
   GastarioDialog,
   GastarioDetailDialog,
+  GastarioDetailTabs,
+  GastarioDetailPane,
   GastarioToolbar,
   GastarioButton,
   GastarioFormGrid,
@@ -22,7 +24,6 @@ import {
   GastarioDataRow,
   GastarioBadge,
   GastarioEmptyState,
-  GastarioTabs,
   gastarioButtonClass,
 } from "../components/ui";
 import productsStyles from "../styles/produkte.css?url";
@@ -806,6 +807,7 @@ export default function ProductsPage() {
 
         <GastarioDetailDialog
           open={Boolean(selectedProduct)}
+          size="lg"
           title={
             selectedProduct?.name ||
             "Produkt"
@@ -849,7 +851,7 @@ export default function ProductsPage() {
           {selectedProduct ? (
             <>
 
-              <GastarioTabs
+              <GastarioDetailTabs
                 activeId={
                   selectedProductTab
                 }
@@ -879,9 +881,9 @@ export default function ProductsPage() {
               />
 
 
-              <div
-                hidden={
-                  selectedProductTab !==
+              <GastarioDetailPane
+                active={
+                  selectedProductTab ===
                   "overview"
                 }
               >
@@ -889,7 +891,7 @@ export default function ProductsPage() {
                 <GastarioSection
                   eyebrow="Produktübersicht"
                   title="Produkt auf einen Blick"
-                  description="Die wichtigsten Stammdaten und der aktuelle Produktstatus."
+                  description="Die wichtigsten Produktdaten kompakt zusammengefasst."
                   action={
                     <GastarioBadge
                       variant={
@@ -905,69 +907,107 @@ export default function ProductsPage() {
                   }
                 >
 
-                  <GastarioMetricGrid>
+                  <GastarioDataList>
 
-                    <GastarioMetric
-                      label="Verkaufspreis"
-                      value={centsToEuro(
-                        selectedProduct.priceCents
-                      )}
-                      description={
-                        "je " +
-                        (
-                          selectedProduct.unit ||
-                          "Portion"
-                        )
-                      }
-                      badge="EUR"
-                    />
+                    <GastarioDataRow>
 
-                    <GastarioMetric
-                      label="Kategorie"
-                      value={
-                        selectedProduct.category ||
-                        "Ohne Kategorie"
-                      }
-                      description="Produktgruppe"
-                    />
+                      <div className="g-ui-data-row-main">
+                        <strong className="g-ui-data-row-title">
+                          Verkaufspreis
+                        </strong>
 
-                    <GastarioMetric
-                      label="Arbeitsbereich"
-                      value={
-                        operationalAreaLabel(
-                          selectedProduct.operationalArea
-                        )
-                      }
-                      description="Operative Zuordnung"
-                    />
+                        <span className="g-ui-data-row-description">
+                          je {selectedProduct.unit || "Portion"}
+                        </span>
+                      </div>
 
-                    <GastarioMetric
-                      label="Mehrwertsteuer"
-                      value={
-                        String(
-                          selectedProduct.taxRate ??
-                          7
-                        ) + " %"
-                      }
-                      description="Steuersatz"
-                    />
+                      <div className="g-ui-data-row-meta">
+                        <strong>
+                          {centsToEuro(
+                            selectedProduct.priceCents
+                          )}
+                        </strong>
 
-                  </GastarioMetricGrid>
+                        <GastarioBadge variant="neutral">
+                          EUR
+                        </GastarioBadge>
+                      </div>
 
-                </GastarioSection>
+                    </GastarioDataRow>
 
 
-                <GastarioSection
-                  eyebrow="Produktstatus"
-                  title="Status und Verwaltung"
-                  description="Produkt aktivieren, deaktivieren oder endgültig entfernen."
-                >
+                    <GastarioDataRow>
 
-                  <GastarioToolbar
-                    align="start"
-                  >
+                      <div className="g-ui-data-row-main">
+                        <strong className="g-ui-data-row-title">
+                          Kategorie
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          Produktgruppe
+                        </span>
+                      </div>
+
+                      <div className="g-ui-data-row-meta">
+                        <span>
+                          {selectedProduct.category ||
+                            "Ohne Kategorie"}
+                        </span>
+                      </div>
+
+                    </GastarioDataRow>
+
+
+                    <GastarioDataRow>
+
+                      <div className="g-ui-data-row-main">
+                        <strong className="g-ui-data-row-title">
+                          Arbeitsbereich
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          Operative Zuordnung
+                        </span>
+                      </div>
+
+                      <div className="g-ui-data-row-meta">
+                        <span>
+                          {operationalAreaLabel(
+                            selectedProduct.operationalArea
+                          )}
+                        </span>
+                      </div>
+
+                    </GastarioDataRow>
+
+
+                    <GastarioDataRow>
+
+                      <div className="g-ui-data-row-main">
+                        <strong className="g-ui-data-row-title">
+                          Mehrwertsteuer
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          Steuersatz
+                        </span>
+                      </div>
+
+                      <div className="g-ui-data-row-meta">
+                        <span>
+                          {selectedProduct.taxRate ?? 7} %
+                        </span>
+                      </div>
+
+                    </GastarioDataRow>
+
+                  </GastarioDataList>
+
+
+                  <GastarioToolbar align="start">
 
                     <Form method="post">
+
                       <input
                         type="hidden"
                         name="intent"
@@ -1000,6 +1040,7 @@ export default function ProductsPage() {
                           ? "Produkt deaktivieren"
                           : "Produkt aktivieren"}
                       </GastarioButton>
+
                     </Form>
 
 
@@ -1017,6 +1058,7 @@ export default function ProductsPage() {
                         }
                       }}
                     >
+
                       <input
                         type="hidden"
                         name="intent"
@@ -1037,18 +1079,19 @@ export default function ProductsPage() {
                       >
                         Produkt löschen
                       </GastarioButton>
+
                     </Form>
 
                   </GastarioToolbar>
 
                 </GastarioSection>
 
-              </div>
+              </GastarioDetailPane>
 
 
-              <div
-                hidden={
-                  selectedProductTab !==
+              <GastarioDetailPane
+                active={
+                  selectedProductTab ===
                   "master"
                 }
               >
@@ -1211,12 +1254,12 @@ export default function ProductsPage() {
 
                 </GastarioSection>
 
-              </div>
+              </GastarioDetailPane>
 
 
-              <div
-                hidden={
-                  selectedProductTab !==
+              <GastarioDetailPane
+                active={
+                  selectedProductTab ===
                   "procurement"
                 }
               >
@@ -1480,12 +1523,12 @@ export default function ProductsPage() {
 
                 </GastarioSection>
 
-              </div>
+              </GastarioDetailPane>
 
 
-              <div
-                hidden={
-                  selectedProductTab !==
+              <GastarioDetailPane
+                active={
+                  selectedProductTab ===
                   "recipe"
                 }
               >
@@ -1735,7 +1778,7 @@ export default function ProductsPage() {
 
                 </GastarioSection>
 
-              </div>
+              </GastarioDetailPane>
 
             </>
           ) : null}
