@@ -18,10 +18,8 @@ import {
   GastarioInput,
   GastarioSelect,
   GastarioButton,
-  GastarioEmptyState,
   GastarioDataList,
   GastarioDataRow,
-  GastarioToolbar,
   gastarioButtonClass,
 } from "../components/ui";
 
@@ -335,24 +333,7 @@ export default function QuotesPage() {
           </Form>
 
 
-          {data.quotes.length === 0 ? (
-
-            <GastarioEmptyState title="Noch keine passenden Angebote vorhanden">
-
-              Lege ein neues Angebot an oder setze die Filter zurück.
-
-              <GastarioToolbar align="start">
-                <Link
-                  to="/angebote/neu"
-                  className={gastarioButtonClass("primary")}
-                >
-                  Erstes Angebot anlegen
-                </Link>
-              </GastarioToolbar>
-
-            </GastarioEmptyState>
-
-          ) : (
+          {data.quotes.length > 0 ? (
 
             <GastarioDataList>
 
@@ -433,7 +414,7 @@ export default function QuotesPage() {
 
             </GastarioDataList>
 
-          )}
+          ) : null}
 
         </GastarioSection>
 
