@@ -419,6 +419,7 @@ export default function ProduktImport() {
 
             <GastarioToolbar
               align="between"
+              className="g-ui-form-narrow"
             >
 
               <span className="g-ui-field-hint">

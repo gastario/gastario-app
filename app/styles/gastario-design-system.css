@@ -2275,7 +2275,8 @@
   ------------------------------------------------------- */
 
   .g-ui-form-narrow {
-    width: min(620px, 100%);
+    width: 100%;
+    max-width: 620px;
 
     margin-inline: auto;
   }
