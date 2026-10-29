@@ -18,9 +18,9 @@ import {
   GastarioPage,
   GastarioHeader,
   GastarioNotice,
-  GastarioSplitView,
+  GastarioWorkspace,
   GastarioMain,
-  GastarioAside,  GastarioSection,  GastarioFormGrid,  GastarioField,  GastarioInput,  GastarioSelect,  GastarioMetricGrid,  GastarioMetric,
+  GastarioAside,  GastarioCard,  GastarioFormGrid,  GastarioField,  GastarioInput,  GastarioSelect,  GastarioMetricGrid,  GastarioMetric,
 
 
 
@@ -1109,9 +1109,9 @@ export default function NewQuotePage() {
             }
           />
 
-          <GastarioSplitView wide>
+          <GastarioWorkspace>
             <GastarioMain>
-              <GastarioSection
+              <GastarioCard
                 eyebrow="Angebotsdaten"
                 title="Kunde und Veranstaltung"
                 description="Grunddaten für Empfänger, Termin und Lieferung."
@@ -1279,13 +1279,13 @@ export default function NewQuotePage() {
                   </GastarioMetricGrid>
                 ) : null}
 
-              </GastarioSection>
+              </GastarioCard>
 
-              <GastarioSection
+              <GastarioCard
                 eyebrow="Leistungen"
                 title="Angebotspositionen"
                 description="Produkte übernehmen oder freie Leistungen erfassen."
-                action={
+                actions={
                   <GastarioButton
                     type="button"
                     variant="primary"
@@ -1597,9 +1597,9 @@ export default function NewQuotePage() {
                   );
                 })}
 
-              </GastarioSection>
+              </GastarioCard>
 
-              <GastarioSection
+              <GastarioCard
                 eyebrow="Hinweise"
                 title="Interne Notiz"
                 description="Diese Notiz wird zunächst intern am Angebot gespeichert."
@@ -1617,12 +1617,12 @@ export default function NewQuotePage() {
                     placeholder="Absprachen, Kalkulationshinweise oder interne Informationen"
                   />
                 </GastarioField>
-              </GastarioSection>
+              </GastarioCard>
 
               </GastarioMain>
 
             <GastarioAside>
-              <GastarioSection
+              <GastarioCard
                 eyebrow="Kalkulation"
                 title="Angebotssumme"
                 description="Alle Werte werden live berechnet."
@@ -1743,10 +1743,10 @@ export default function NewQuotePage() {
                   Nach dem Speichern öffnet sich die vollständige Angebotsansicht.
                 </GastarioNotice>
 
-              </GastarioSection>
+              </GastarioCard>
 
               </GastarioAside>
-          </GastarioSplitView>
+          </GastarioWorkspace>
         </Form>
       </GastarioPage>
     </AppLayout>
