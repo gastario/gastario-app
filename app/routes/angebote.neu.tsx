@@ -39,6 +39,8 @@ import { GastarioDataList, GastarioDataRow } from "../components/ui";
 
 import { GastarioTabs } from "../components/ui";
 
+import { GastarioSection } from "../components/ui";
+
 
 type QuoteBuilderItem = {
   key: string;
@@ -1187,16 +1189,14 @@ export default function NewQuotePage() {
             }
           />
 
-              <div
-                className="g-ui-form-section"
-                hidden={createTab !== "general"}
-              >
-                <div className="g-ui-form-section-heading">
-                  <h3>Kunde und Veranstaltung</h3>
-                  <p>
-                    Grunddaten für Empfänger, Termin und Lieferung.
-                  </p>
-                </div>
+              <div hidden={createTab !== "general"}>
+                <GastarioSection
+                  eyebrow="Angebotsdaten"
+                  title="Kunde und Veranstaltung"
+                  description="Grunddaten für Empfänger, Termin und Lieferung."
+                >
+
+
 
 <GastarioFormGrid columns={2}>
 
@@ -1360,28 +1360,28 @@ export default function NewQuotePage() {
                   </GastarioMetricGrid>
                 ) : null}
 
+              </GastarioSection>
               </div>
 
-              <div
-                className="g-ui-form-section"
-                hidden={createTab !== "items"}
-              >
-                <div className="g-ui-form-section-heading">
-                  <h3>Angebotspositionen</h3>
-                  <p>
-                    Produkte übernehmen oder freie Leistungen erfassen.
-                  </p>
-                </div>
+              <div hidden={createTab !== "items"}>
+                <GastarioSection
+                  eyebrow="Leistungen"
+                  title="Angebotspositionen"
+                  description="Produkte übernehmen oder freie Leistungen erfassen."
+                  action={
+                    <GastarioButton
+                      type="button"
+                      variant="secondary"
+                      onClick={addItem}
+                    >
+                      + Position hinzufügen
+                    </GastarioButton>
+                  }
+                >
 
-                <GastarioToolbar align="end">
-                  <GastarioButton
-                    type="button"
-                    variant="primary"
-                    onClick={addItem}
-                  >
-                    + Position hinzufügen
-                  </GastarioButton>
-                </GastarioToolbar>
+
+
+
 
                 {items.map((item, index) => {
                   const lineTotal =
@@ -1403,19 +1403,22 @@ export default function NewQuotePage() {
 
                       <GastarioToolbar align="between">
 
-                        <div>
-                          <strong>
-                            {index + 1}.{" "}
+                        <div className="g-ui-data-row-main">
+                          <span className="g-ui-data-row-description">
+                            Position {index + 1}
+                          </span>
+
+                          <strong className="g-ui-data-row-title">
                             {item.name ||
                               "Neue Position"}
                           </strong>
 
-                          <div>
+                          <span className="g-ui-data-row-description">
                             {centsToEuro(
                               lineTotal
                             )}
                             {" netto"}
-                          </div>
+                          </span>
                         </div>
 
 
@@ -1686,18 +1689,17 @@ export default function NewQuotePage() {
                   );
                 })}
 
+              </GastarioSection>
               </div>
 
-              <div
-                className="g-ui-form-section"
-                hidden={createTab !== "notes"}
-              >
-                <div className="g-ui-form-section-heading">
-                  <h3>Interne Notiz</h3>
-                  <p>
-                    Absprachen und interne Informationen zum Angebot.
-                  </p>
-                </div>
+              <div hidden={createTab !== "notes"}>
+                <GastarioSection
+                  eyebrow="Hinweise"
+                  title="Interne Notiz"
+                  description="Absprachen und interne Informationen zum Angebot."
+                >
+
+
 
 <GastarioField label="Interne Notiz">
                   <GastarioTextarea
@@ -1712,19 +1714,18 @@ export default function NewQuotePage() {
                     placeholder="Absprachen, Kalkulationshinweise oder interne Informationen"
                   />
                 </GastarioField>
+              </GastarioSection>
               </div>
 
 
-              <div
-                className="g-ui-form-section"
-                hidden={createTab !== "calculation"}
-              >
-                <div className="g-ui-form-section-heading">
-                  <h3>Angebotssumme</h3>
-                  <p>
-                    Alle Werte werden live aus den Angebotspositionen berechnet.
-                  </p>
-                </div>
+              <div hidden={createTab !== "calculation"}>
+                <GastarioSection
+                  eyebrow="Kalkulation"
+                  title="Angebotssumme"
+                  description="Alle Werte werden live aus den Angebotspositionen berechnet."
+                >
+
+
 
 <GastarioMetricGrid>
 
@@ -1830,6 +1831,7 @@ export default function NewQuotePage() {
                   Nach dem Speichern öffnet sich die vollständige Angebotsansicht.
                 </GastarioNotice>
 
+              </GastarioSection>
               </div>
 
         </Form>
