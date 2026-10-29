@@ -2282,24 +2282,6 @@ body {
   box-shadow: none !important;
 }
 
-/* Primary Actions neutral wie bei CaterSmart */
-html body .appShell .workspace button[type="submit"],
-html body .appShell .workspace .primaryButton,
-html body .appShell .workspace [class*="Button"][class*="primary"],
-html body .appShell .workspace [class*="button"][class*="primary"] {
-  background: #302d29 !important;
-  border-color: #302d29 !important;
-  color: #ffffff !important;
-  box-shadow: none !important;
-}
-
-/* Hover nur leicht heller */
-html body .appShell .workspace button[type="submit"]:hover,
-html body .appShell .workspace .primaryButton:hover {
-  background: #46413c !important;
-  border-color: #46413c !important;
-}
-
 /* =========================================================
    GASTARIO SIDEBAR 2026 FINAL
    Nur App-Navigation / keine Content-Styles
