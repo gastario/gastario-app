@@ -816,6 +816,7 @@ export type GastarioTabItem = {
   id: string;
   label: ReactNode;
   badge?: ReactNode;
+  disabled?: boolean;
 };
 
 type GastarioTabsProps = {
@@ -848,6 +849,8 @@ export function GastarioTabs({
             type="button"
             role="tab"
             aria-selected={active}
+            aria-disabled={item.disabled || undefined}
+            disabled={item.disabled}
             className={joinClasses(
               "g-ui-tab",
               active && "g-ui-tab--active"

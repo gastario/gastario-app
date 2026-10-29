@@ -1217,6 +1217,25 @@
     color: var(--g26-text-soft);
   }
 
+  /* GASTARIO TAB DISABLED STANDARD */
+
+  .g-ui-tab:disabled {
+    color:
+      var(--g26-muted);
+
+    opacity:
+      .40;
+
+    cursor:
+      not-allowed;
+  }
+
+  .g-ui-tab:disabled:hover {
+    color:
+      var(--g26-muted);
+  }
+
+
   .g-ui-tab--active {
     background: #fff;
 

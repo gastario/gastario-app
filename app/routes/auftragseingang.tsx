@@ -21,7 +21,6 @@ import {
   classifyIncomingEmail,
 } from "../lib/incoming-email-classification";
 
-import { GastarioWorkflow } from "../components/ui";
 import { Form, Link, redirect, useActionData, useFetcher, useLoaderData,
   useSearchParams,
 } from "react-router";
@@ -1066,8 +1065,8 @@ export default function AuftragseingangPage() {
             </section>
           </div>
         </div>
-      
-      
+
+
 
     </AppLayout>
     );
@@ -1659,7 +1658,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
 
   return (
     <AppLayout>
-      
+
 
       {/* gastario-incoming-page-shell-reference-20260716 */}
       <GastarioPage>
@@ -2340,67 +2339,34 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                   key={selectedOrder.id}
                 >
 
-                  <GastarioWorkflow
+                                    <GastarioTabs
                     activeId={
                       selectedOrderDetailTab
                     }
                     items={[
                       {
                         id: "overview",
-                        label:
-                          "Auftragsdaten",
-                        description:
-                          "Kunde, Adresse und Termin prüfen",
-                        state:
-                          selectedOrderDetailTab ===
-                          "overview"
-                            ? "current"
-                            : incomingOverviewReady
-                              ? "done"
-                              : "available",
+                        label: "Auftragsdaten",
                       },
                       {
                         id: "items",
-                        label:
-                          "Positionen",
-                        description:
-                          "Speisen, Mengen und Preise prüfen",
-                        state:
-                          !incomingOverviewReady
-                            ? "locked"
-                            : selectedOrderDetailTab ===
-                                "items"
-                              ? "current"
-                              : incomingItemsReady
-                                ? "done"
-                                : "available",
+                        label: "Positionen",
+                        disabled:
+                          !incomingOverviewReady,
                       },
                       {
                         id: "review",
-                        label:
-                          "Freigabe",
-                        description:
-                          "Abrechnung festlegen und übernehmen",
-                        state:
+                        label: "Freigabe",
+                        disabled:
                           !incomingOverviewReady ||
-                          !incomingItemsReady
-                            ? "locked"
-                            : selectedOrderDetailTab ===
-                                "review"
-                              ? "current"
-                              : incomingReviewReady
-                                ? "done"
-                                : "available",
+                          !incomingItemsReady,
                       },
                     ]}
                     onChange={(id) => {
-                      if (
-                        id === "overview"
-                      ) {
+                      if (id === "overview") {
                         setSelectedOrderDetailTab(
                           "overview"
                         );
-
                         return;
                       }
 
@@ -2411,7 +2377,6 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                         setSelectedOrderDetailTab(
                           "items"
                         );
-
                         return;
                       }
 
@@ -2427,7 +2392,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                     }}
                   />
 
-                  <GastarioDetailPane active={selectedOrderDetailTab === "overview"}>
+<GastarioDetailPane active={selectedOrderDetailTab === "overview"}>
                   <GastarioSection
                     eyebrow="Auftragsübersicht"
                     title="Auftrag auf einen Blick"
@@ -2912,103 +2877,3 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
     </AppLayout>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
