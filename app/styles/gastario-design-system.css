@@ -3542,56 +3542,14 @@
 }
 
 /* =========================================================
-   GASTARIO DETAIL DIALOG SYSTEM STANDARD 2026
+   GASTARIO DETAIL CONTENT STANDARD 2026
 
-   Verbindlicher Gastario-Standard für bestehende Datensätze.
+   Der äußere Dialog erbt vollständig den zentralen
+   GastarioDialog-Standard.
 
-   Übersicht bleibt im Hintergrund sichtbar.
-   Detail öffnet zentral darüber.
-   Header und Footer bleiben fest.
-   Nur der Inhaltsbereich scrollt.
+   Detail-spezifisch bleiben ausschließlich Regeln
+   für den Inhalt innerhalb des Dialogs.
 ========================================================= */
-
-.g-ui-detail-dialog {
-  width: min(1080px, calc(100vw - 48px)) !important;
-  max-width: 1080px !important;
-  height: min(760px, calc(100vh - 48px)) !important;
-  max-height: calc(100vh - 48px) !important;
-
-  display: flex !important;
-  flex-direction: column !important;
-
-  overflow: hidden !important;
-}
-
-.g-ui-detail-dialog > .g-ui-dialog-header {
-  flex: 0 0 auto;
-  padding: 20px 22px 16px;
-}
-
-.g-ui-detail-dialog > .g-ui-dialog-body {
-  flex: 1 1 auto;
-  min-height: 0;
-
-  padding: 18px 22px 22px;
-
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-.g-ui-detail-dialog > .g-ui-dialog-footer {
-  flex: 0 0 auto;
-
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-
-  padding: 14px 22px;
-
-  border-top: 1px solid var(--g26-line);
-  background: var(--g26-page);
-}
 
 .g-ui-detail-dialog .g-ui-section {
   margin: 0;
@@ -3609,20 +3567,6 @@
   margin: 0;
 }
 
-@media (max-width: 760px) {
-  .g-ui-detail-dialog {
-    width: calc(100vw - 20px) !important;
-    height: calc(100vh - 20px) !important;
-    max-height: calc(100vh - 20px) !important;
-  }
-
-  .g-ui-detail-dialog > .g-ui-dialog-header,
-  .g-ui-detail-dialog > .g-ui-dialog-body,
-  .g-ui-detail-dialog > .g-ui-dialog-footer {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-}
 
 /* =========================================================
    GASTARIO DETAIL WORKSPACE STANDARD 2026
@@ -3696,33 +3640,6 @@
 .g-ui-detail-pane .g-ui-notice {
   margin-top: 12px;
 }
-
-/* =========================================================
-   GASTARIO DETAIL DIALOG ADAPTIVE HEIGHT 2026
-
-   Kurze Detailansichten bleiben kompakt.
-   Lange Inhalte nutzen maximal die verfügbare Fensterhöhe
-   und scrollen ausschließlich im Body.
-========================================================= */
-
-.g-ui-detail-dialog {
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: calc(100vh - 48px) !important;
-}
-
-.g-ui-detail-dialog > .g-ui-dialog-body {
-  flex: 1 1 auto;
-  min-height: 0;
-}
-
-@media (max-width: 760px) {
-  .g-ui-detail-dialog {
-    height: auto !important;
-    max-height: calc(100vh - 20px) !important;
-  }
-}
-
 
 /* =========================================================
    GASTARIO DETAIL OVERVIEW IDENTITY
