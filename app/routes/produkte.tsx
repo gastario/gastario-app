@@ -2,12 +2,22 @@ import { useMemo, useState } from "react";
 import { Form, useActionData, useFetcher, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 import {
-  MetricCard,
-  MetricGrid,
-  Notice,
-  PageHeader,
-  PageShell,
-} from "../components/ui/PageShell";
+  GastarioPage,
+  GastarioHeader,
+  GastarioNotice,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioDialog,
+  GastarioDetailDialog,
+  GastarioToolbar,
+  GastarioButton,
+  GastarioFormGrid,
+  GastarioField,
+  GastarioInput,
+  GastarioSelect,
+  GastarioTextarea,
+  gastarioButtonClass,
+} from "../components/ui";
 import productsStyles from "../styles/produkte.css?url";
 
 function euroToCents(value: FormDataEntryValue | null) {
@@ -580,8 +590,8 @@ export default function ProductsPage() {
 
   return (
     <AppLayout>
-      <PageShell className="productsPage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Verkauf"
           title="Produkte"
           subtitle={
@@ -593,126 +603,136 @@ export default function ProductsPage() {
           actions={
             <>
               <a
-                className="productsSecondaryButton g-ui-button g-ui-button--secondary"
+                className={gastarioButtonClass("secondary")}
                 href="/einkauf"
               >
                 Einkauf öffnen
               </a>
 
-              <button
-                className="productsPrimaryButton g-ui-button g-ui-button--primary"
+              <GastarioButton
+                variant="primary"
                 type="button"
                 onClick={() => {
                   setSelectedProductId(null);
-                  setShowCreateForm((current) => !current);
+                  setShowCreateForm(true);
                 }}
               >
-                {showCreateForm
-                  ? "Formular schließen"
-                  : "Neues Produkt"}
-              </button>
+                Neues Produkt
+              </GastarioButton>
             </>
           }
         />
 
         {data.setupError ? (
-          <div className="productsNotice productsNoticeWarning g-ui-notice g-ui-notice--warning">
+          <GastarioNotice type="warning">
             {data.setupError}
-          </div>
+          </GastarioNotice>
         ) : null}
 
         {actionData?.success ? (
-          <div className="productsNotice productsNoticeSuccess g-ui-notice g-ui-notice--success">
+          <GastarioNotice type="success">
             {actionData.success}
-          </div>
+          </GastarioNotice>
         ) : null}
 
         {actionData?.error ? (
-          <div className="productsNotice productsNoticeError g-ui-notice g-ui-notice--danger">
+          <GastarioNotice type="danger">
             {actionData.error}
-          </div>
+          </GastarioNotice>
         ) : null}
 
-        <section className="productsMetrics">
-          <article className="productsMetricCard">
-            <div>
-              <p>Produkte</p>
-              <strong>{data.stats.total}</strong>
-              <span>{data.stats.active} aktiv</span>
-            </div>
-            <small>Sortiment</small>
-          </article>
+        <GastarioMetricGrid>
+          <GastarioMetric
+            label="Produkte"
+            value={data.stats.total}
+            description={`${data.stats.active} aktiv`}
+            badge="Sortiment"
+          />
 
-          <article className="productsMetricCard">
-            <div>
-              <p>Kategorien</p>
-              <strong>{data.stats.categories}</strong>
-              <span>Produktgruppen</span>
-            </div>
-            <small>Übersicht</small>
-          </article>
+          <GastarioMetric
+            label="Kategorien"
+            value={data.stats.categories}
+            description="Produktgruppen"
+            badge="Übersicht"
+          />
 
-          <article className="productsMetricCard">
-            <div>
-              <p>Rezepturpositionen</p>
-              <strong>{data.stats.recipeItems}</strong>
-              <span>Zutaten und Material</span>
-            </div>
-            <small>Einkauf</small>
-          </article>
+          <GastarioMetric
+            label="Rezepturpositionen"
+            value={data.stats.recipeItems}
+            description="Zutaten und Material"
+            badge="Einkauf"
+          />
 
-          <article className="productsMetricCard productsMetricAttention">
-            <div>
-              <p>Operativ zu prüfen</p>
-              <strong>{data.stats.review}</strong>
-              <span>
-                Noch keinem Arbeitsbereich zugeordnet
-              </span>
-            </div>
-            <small>Prüfen</small>
-          </article>
-        </section>
+          <GastarioMetric
+            label="Operativ zu prüfen"
+            value={data.stats.review}
+            description="Noch keinem Arbeitsbereich zugeordnet"
+            badge="Prüfen"
+          />
+        </GastarioMetricGrid>
 
-        {showCreateForm ? (
-          <section className="productsCreatePanel g-ui-card">
-            <div className="productsSectionHeader g-ui-section-header">
-              <div>
-                <p className="eyebrow">Neues Produkt</p>
-                <h2>Produkt manuell anlegen</h2>
-                <span>
-                  Produkte können zusätzlich automatisch aus übernommenen
-                  Aufträgen entstehen.
-                </span>
-              </div>
-            </div>
+        <GastarioDialog
+          open={showCreateForm}
+          title="Neues Produkt"
+          description="Stammdaten, Verkaufspreis und Produktionsinformationen erfassen."
+          size="xl"
+          onClose={() =>
+            setShowCreateForm(false)
+          }
+          footer={
+            <GastarioToolbar>
+              <GastarioButton
+                variant="secondary"
+                type="button"
+                onClick={() =>
+                  setShowCreateForm(false)
+                }
+              >
+                Abbrechen
+              </GastarioButton>
 
-            <Form method="post" className="productsCreateForm">
-              <input
-                type="hidden"
-                name="intent"
-                value="createProduct"
-              />
+              <GastarioButton
+                variant="primary"
+                type="submit"
+                form="create-product-form"
+              >
+                Produkt anlegen
+              </GastarioButton>
+            </GastarioToolbar>
+          }
+        >
+          <Form
+            id="create-product-form"
+            method="post"
+            className="g-ui-dialog-form"
+          >
+            <input
+              type="hidden"
+              name="intent"
+              value="createProduct"
+            />
 
-              <label className="productsField productsFieldWide g-ui-field">
-                <span>Produktname</span>
-                <input
+            <GastarioFormGrid columns={2}>
+              <GastarioField
+                label="Produktname"
+                required
+              >
+                <GastarioInput
                   name="name"
                   placeholder="Zum Beispiel Chicken Bowl"
                   required
                 />
-              </label>
+              </GastarioField>
 
-              <label className="productsField g-ui-field">
-                <span>Kategorie</span>
-                <input
+              <GastarioField label="Kategorie">
+                <GastarioInput
                   name="category"
                   placeholder="Zum Beispiel Bowls"
                 />
-              </label>
+              </GastarioField>
 
-              <label className="productsField g-ui-field">
-                <span>Arbeitsbereich</span>
-                <select
+              <GastarioField label="Arbeitsbereich">
+                <GastarioSelect
                   name="operationalArea"
                   defaultValue="REVIEW"
                 >
@@ -726,138 +746,130 @@ export default function ProductsPage() {
                       </option>
                     )
                   )}
-                </select>
-              </label>
+                </GastarioSelect>
+              </GastarioField>
 
-              <label className="productsField g-ui-field">
-                <span>Einheit</span>
-                <input
+              <GastarioField label="Einheit">
+                <GastarioInput
                   name="unit"
                   defaultValue="Portion"
                   placeholder="Portion"
                 />
-              </label>
+              </GastarioField>
 
-              <label className="productsField g-ui-field">
-                <span>Verkaufspreis</span>
-                <div className="productsInputSuffix">
-                  <input
-                    name="priceEuro"
-                    inputMode="decimal"
-                    placeholder="10,90"
-                  />
-                  <small>EUR</small>
-                </div>
-              </label>
-
-              <label className="productsField g-ui-field">
-                <span>Mehrwertsteuer</span>
-                <div className="productsInputSuffix">
-                  <input
-                    name="taxRate"
-                    type="number"
-                    step="0.01"
-                    defaultValue="7"
-                  />
-                  <small>%</small>
-                </div>
-              </label>
-
-              <label className="productsField productsFieldFull g-ui-field">
-                <span>Produktionsnotiz</span>
-                <textarea
-                  name="notes"
-                  rows={3}
-                  placeholder="Hinweise für Produktion, Portionierung oder Ausgabe"
-                />
-              </label>
-
-              <div className="productsCreateActions">
-                <button
-                  className="productsSecondaryButton g-ui-button g-ui-button--secondary"
-                  type="button"
-                  onClick={() => setShowCreateForm(false)}
-                >
-                  Abbrechen
-                </button>
-
-                <button
-                  className="productsPrimaryButton g-ui-button g-ui-button--primary"
-                  type="submit"
-                >
-                  Produkt anlegen
-                </button>
-              </div>
-            </Form>
-          </section>
-        ) : null}
-
-        {selectedProduct ? (
-          <section className="productDetailPanel g-ui-card">
-            <div className="productDetailHeader">
-              <button
-                className="productBackButton g-ui-button g-ui-button--secondary"
-                type="button"
-                onClick={() => setSelectedProductId(null)}
+              <GastarioField
+                label="Verkaufspreis"
+                hint="EUR netto"
               >
-                <span aria-hidden="true">←</span>
-                Zurück zur Produktübersicht
-              </button>
+                <GastarioInput
+                  name="priceEuro"
+                  inputMode="decimal"
+                  placeholder="10,90"
+                />
+              </GastarioField>
 
-              <div className="productDetailHeading">
-                <div className="productDetailInitial">
-                  {String(selectedProduct.name || "P")
-                    .trim()
-                    .slice(0, 1)
-                    .toUpperCase()}
-                </div>
+              <GastarioField
+                label="Mehrwertsteuer"
+                hint="in Prozent"
+              >
+                <GastarioInput
+                  name="taxRate"
+                  type="number"
+                  step="0.01"
+                  defaultValue="7"
+                />
+              </GastarioField>
+            </GastarioFormGrid>
 
-                <div>
-                  <div className="productDetailTitleLine">
-                    <h2>{selectedProduct.name}</h2>
+            <GastarioField label="Produktionsnotiz">
+              <GastarioTextarea
+                name="notes"
+                rows={3}
+                placeholder="Hinweise für Produktion, Portionierung oder Ausgabe"
+              />
+            </GastarioField>
+          </Form>
+        </GastarioDialog>
 
-                    <span
-                      className={
-                        selectedProduct.active
-                          ? "productStatusBadge productStatusActive g-ui-pill"
-                          : "productStatusBadge productStatusInactive g-ui-pill"
-                      }
-                    >
-                      {selectedProduct.active ? "Aktiv" : "Inaktiv"}
-                    </span>
 
-                    <span
-                      className={
-                        "productOperationalBadge " +
-                        `is-${normalizedOperationalArea(
-                          selectedProduct.operationalArea
-                        ).toLowerCase()}`
-                      }
-                    >
-                      {operationalAreaLabel(
-                        selectedProduct.operationalArea
-                      )}
-                    </span>
-                  </div>
+        <GastarioDetailDialog
+          open={Boolean(selectedProduct)}
+          title={
+            selectedProduct?.name ||
+            "Produkt"
+          }
+          description={
+            selectedProduct
+              ? `${
+                  selectedProduct.category ||
+                  "Ohne Kategorie"
+                } · ${
+                  selectedProduct.unit ||
+                  "Portion"
+                } · MwSt. ${
+                  selectedProduct.taxRate ??
+                  7
+                } %`
+              : undefined
+          }
+          onClose={() =>
+            setSelectedProductId(null)
+          }
+          footer={
+            selectedProduct ? (
+              <GastarioToolbar>
+                <GastarioButton
+                  variant="secondary"
+                  type="button"
+                  onClick={() =>
+                    setSelectedProductId(null)
+                  }
+                >
+                  Schließen
+                </GastarioButton>
+              </GastarioToolbar>
+            ) : null
+          }
+        >
+          {selectedProduct ? (
+            <>
+              <GastarioMetricGrid>
+              <GastarioMetric
+                label="Verkaufspreis"
+                value={centsToEuro(
+                  selectedProduct.priceCents
+                )}
+                description={`je ${selectedProduct.unit || "Portion"}`}
+                badge="EUR"
+              />
 
-                  <p>
-                    {selectedProduct.category || "Ohne Kategorie"} ·{" "}
-                    {selectedProduct.unit || "Portion"} · MwSt.{" "}
-                    {selectedProduct.taxRate ?? 7} %
-                  </p>
-                </div>
-              </div>
+              <GastarioMetric
+                label="Kategorie"
+                value={
+                  selectedProduct.category ||
+                  "Ohne Kategorie"
+                }
+                description="Produktgruppe"
+              />
 
-              <div className="productDetailPrice">
-                <small>Verkaufspreis</small>
-                <strong>
-                  {centsToEuro(selectedProduct.priceCents)}
-                </strong>
-                <span>
-                  je {selectedProduct.unit || "Portion"}
-                </span>
-              </div>
-            </div>
+              <GastarioMetric
+                label="Arbeitsbereich"
+                value={operationalAreaLabel(
+                  selectedProduct.operationalArea
+                )}
+                description="Operative Zuordnung"
+              />
+
+              <GastarioMetric
+                label="Status"
+                value={
+                  selectedProduct.active
+                    ? "Aktiv"
+                    : "Inaktiv"
+                }
+                description={`MwSt. ${selectedProduct.taxRate ?? 7} %`}
+              />
+            </GastarioMetricGrid>
 
             <section className="productProcurementPanel g-ui-card g-ui-card--flat g-ui-card--soft">
               <div className="productDetailSectionHeader g-ui-section-header">
@@ -1483,9 +1495,12 @@ export default function ProductsPage() {
                 </Form>
               </div>
             </div>
-          </section>
-        ) : (
-          <section className="productsWorkspace">
+            </>
+          ) : null}
+        </GastarioDetailDialog>
+
+
+        <section className="productsWorkspace">
             <div className="productsWorkspaceHeader g-ui-section-header">
               <div>
                 <p className="eyebrow">Produktübersicht</p>
@@ -1737,7 +1752,7 @@ export default function ProductsPage() {
                             {!requiresRecipe
                               ? "Keine Rezeptur nötig"
                               : hasRecipe
-                                ? `${recipeItems.length} Position${ 
+                                ? `${recipeItems.length} Position${
                                     recipeItems.length === 1
                                       ? ""
                                       : "en"
@@ -1783,8 +1798,8 @@ export default function ProductsPage() {
               </div>
             )}
           </section>
-        )}
-      </PageShell>
+
+      </GastarioPage>
     </AppLayout>
   );
 }
