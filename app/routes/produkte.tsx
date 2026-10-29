@@ -16,6 +16,12 @@ import {
   GastarioInput,
   GastarioSelect,
   GastarioTextarea,
+  GastarioSection,
+  GastarioFilterBar,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioBadge,
+  GastarioEmptyState,
   gastarioButtonClass,
 } from "../components/ui";
 import productsStyles from "../styles/produkte.css?url";
@@ -1500,304 +1506,298 @@ export default function ProductsPage() {
         </GastarioDetailDialog>
 
 
-        <section className="productsWorkspace">
-            <div className="productsWorkspaceHeader g-ui-section-header">
-              <div>
-                <p className="eyebrow">Produktübersicht</p>
-                <h2>Produkte und Rezepturen</h2>
-                <span>
-                  Wähle ein Produkt aus, um Stammdaten und Rezeptur
-                  direkt auf dieser Seite zu bearbeiten.
-                </span>
-              </div>
+        <GastarioSection
+          eyebrow="Produktübersicht"
+          title="Produkte und Rezepturen"
+          description="Produkte filtern und zur Bearbeitung im zentralen Produktdialog öffnen."
+          action={
+            <GastarioBadge variant="neutral">
+              {filteredProducts.length} von {products.length}
+            </GastarioBadge>
+          }
+        >
 
-              <div className="productsWorkspaceCount">
-                <strong>{filteredProducts.length}</strong>
-                <small>
-                  von {products.length} Produkten
-                </small>
-              </div>
-            </div>
+          <GastarioFilterBar
+            actions={
+              <GastarioButton
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setSearchTerm("");
+                  setCategoryFilter("all");
+                  setStatusFilter("all");
+                  setRecipeFilter("all");
+                  setOperationalFilter("all");
+                }}
+              >
+                Zurücksetzen
+              </GastarioButton>
+            }
+          >
 
-            <div className="productsFilters">
-              <label className="productsSearchField">
-                <span>Produkte durchsuchen</span>
-                <input
-                  type="search"
-                  value={searchTerm}
-                  onChange={(event) =>
-                    setSearchTerm(event.target.value)
-                  }
-                  placeholder="Produkt, Kategorie, Zutat oder Notiz"
-                />
-              </label>
+            <GastarioField label="Suche">
+              <GastarioInput
+                type="search"
+                value={searchTerm}
+                onChange={(event) =>
+                  setSearchTerm(
+                    event.target.value
+                  )
+                }
+                placeholder="Produkt, Kategorie, Zutat oder Notiz"
+              />
+            </GastarioField>
 
-              <label className="productsFilterField">
-                <span>Kategorie</span>
-                <select
-                  value={categoryFilter}
-                  onChange={(event) =>
-                    setCategoryFilter(event.target.value)
-                  }
-                >
-                  <option value="all">Alle Kategorien</option>
-                  {categories.map((category) => (
-                    <option value={category} key={category}>
+            <GastarioField label="Kategorie">
+              <GastarioSelect
+                value={categoryFilter}
+                onChange={(event) =>
+                  setCategoryFilter(
+                    event.target.value
+                  )
+                }
+              >
+                <option value="all">
+                  Alle Kategorien
+                </option>
+
+                {categories.map(
+                  (category) => (
+                    <option
+                      value={category}
+                      key={category}
+                    >
                       {category}
                     </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="productsFilterField">
-                <span>Status</span>
-                <select
-                  value={statusFilter}
-                  onChange={(event) =>
-                    setStatusFilter(event.target.value)
-                  }
-                >
-                  <option value="all">Alle Produkte</option>
-                  <option value="active">Nur aktive</option>
-                  <option value="inactive">Nur inaktive</option>
-                </select>
-              </label>
-
-              <label className="productsFilterField">
-                <span>Arbeitsbereich</span>
-                <select
-                  value={operationalFilter}
-                  onChange={(event) =>
-                    setOperationalFilter(
-                      event.target.value
-                    )
-                  }
-                >
-                  <option value="all">
-                    Alle Arbeitsbereiche
-                  </option>
-                  {OPERATIONAL_AREAS.map(
-                    (area) => (
-                      <option
-                        key={area.value}
-                        value={area.value}
-                      >
-                        {area.label}
-                      </option>
-                    )
-                  )}
-                </select>
-              </label>
-
-              <label className="productsFilterField">
-                <span>Rezeptur</span>
-                <select
-                  value={recipeFilter}
-                  onChange={(event) =>
-                    setRecipeFilter(event.target.value)
-                  }
-                >
-                  <option value="all">Alle Rezepturen</option>
-                  <option value="complete">
-                    Rezeptur vorhanden
-                  </option>
-                  <option value="missing">Rezeptur fehlt</option>
-                </select>
-              </label>
-            </div>
-
-            {filteredProducts.length === 0 ? (
-              <div className="productsEmptyState">
-                <div className="productsEmptyIcon">P</div>
-                <strong>Keine passenden Produkte gefunden</strong>
-                <span>
-                  Suche oder Filter zurücksetzen oder ein neues Produkt
-                  anlegen.
-                </span>
-
-                <button
-                  className="productsSecondaryButton g-ui-button g-ui-button--secondary"
-                  type="button"
-                  onClick={() => {
-                    setSearchTerm("");
-                    setCategoryFilter("all");
-                    setStatusFilter("all");
-                    setRecipeFilter("all");
-                    setOperationalFilter("all");
-                  }}
-                >
-                  Filter zurücksetzen
-                </button>
-              </div>
-            ) : (
-              <div className="productCardList">
-                {filteredProducts.map((product: any) => {
-                  const recipeItems = Array.isArray(
-                    product.recipeItems
                   )
-                    ? product.recipeItems
-                    : [];
+                )}
+              </GastarioSelect>
+            </GastarioField>
 
-                  const hasRecipe = recipeItems.length > 0;
+            <GastarioField label="Status">
+              <GastarioSelect
+                value={statusFilter}
+                onChange={(event) =>
+                  setStatusFilter(
+                    event.target.value
+                  )
+                }
+              >
+                <option value="all">
+                  Alle Produkte
+                </option>
 
-                  /*
-                   * gastario-product-list-recipe-status-robust-20260716
-                   *
-                   * Nur Eigenproduktionen benötigen eine Rezeptur.
-                   */
+                <option value="active">
+                  Nur aktive
+                </option>
+
+                <option value="inactive">
+                  Nur inaktive
+                </option>
+              </GastarioSelect>
+            </GastarioField>
+
+            <GastarioField label="Arbeitsbereich">
+              <GastarioSelect
+                value={operationalFilter}
+                onChange={(event) =>
+                  setOperationalFilter(
+                    event.target.value
+                  )
+                }
+              >
+                <option value="all">
+                  Alle Arbeitsbereiche
+                </option>
+
+                {OPERATIONAL_AREAS.map(
+                  (area) => (
+                    <option
+                      key={area.value}
+                      value={area.value}
+                    >
+                      {area.label}
+                    </option>
+                  )
+                )}
+              </GastarioSelect>
+            </GastarioField>
+
+            <GastarioField label="Rezeptur">
+              <GastarioSelect
+                value={recipeFilter}
+                onChange={(event) =>
+                  setRecipeFilter(
+                    event.target.value
+                  )
+                }
+              >
+                <option value="all">
+                  Alle Rezepturen
+                </option>
+
+                <option value="complete">
+                  Rezeptur vorhanden
+                </option>
+
+                <option value="missing">
+                  Rezeptur fehlt
+                </option>
+              </GastarioSelect>
+            </GastarioField>
+
+          </GastarioFilterBar>
+
+
+          {filteredProducts.length === 0 ? (
+
+            <GastarioEmptyState
+              title="Keine passenden Produkte gefunden"
+            >
+              Suche oder Filter zurücksetzen.
+            </GastarioEmptyState>
+
+          ) : (
+
+            <GastarioDataList>
+
+              {filteredProducts.map(
+                (product: any) => {
+
+                  const recipeItems =
+                    Array.isArray(
+                      product.recipeItems
+                    )
+                      ? product.recipeItems
+                      : [];
+
+                  const hasRecipe =
+                    recipeItems.length > 0;
+
                   const requiresRecipe =
-                    (product.procurementType || "RECIPE") ===
-                    "RECIPE";
+                    (
+                      product.procurementType ||
+                      "RECIPE"
+                    ) === "RECIPE";
 
-                  const recipeStatusClass =
+                  const recipeLabel =
                     !requiresRecipe
-                      ? "productCardRecipe productCardRecipeNotRequired"
+                      ? "Keine Rezeptur nötig"
                       : hasRecipe
-                        ? "productCardRecipe productCardRecipeComplete"
-                        : "productCardRecipe productCardRecipeMissing";
+                        ? `${recipeItems.length} Rezepturposition${
+                            recipeItems.length === 1
+                              ? ""
+                              : "en"
+                          }`
+                        : "Rezeptur fehlt";
+
+                  const recipeVariant =
+                    !requiresRecipe
+                      ? "info"
+                      : hasRecipe
+                        ? "success"
+                        : "warning";
+
+                  const detailText =
+                    product.notes
+                      ? product.notes
+                      : hasRecipe
+                        ? recipeItems
+                            .slice(0, 3)
+                            .map(
+                              (item: any) =>
+                                item.ingredientName
+                            )
+                            .join(", ")
+                        : "Keine Produktionsnotiz hinterlegt";
 
                   return (
-                    <article
-                      className={
-                        product.active
-                          ? "productCard"
-                          : "productCard productCardInactive"
-                      }
+
+                    <GastarioDataRow
                       key={product.id}
+                      onClick={() => {
+                        setShowCreateForm(false);
+                        setSelectedProductId(
+                          product.id
+                        );
+                      }}
                     >
-                      <button
-                        className="productCardTrigger"
-                        type="button"
-                        onClick={() => {
-                          setShowCreateForm(false);
-                          setSelectedProductId(product.id);
-                        }}
-                      >
-                        <div className="productCardIcon">
-                          {String(product.name || "P")
-                            .trim()
-                            .slice(0, 1)
-                            .toUpperCase()}
-                        </div>
 
-                        <div className="productCardIdentity">
-                          <div className="productCardTitleLine">
-                            <h3>{product.name}</h3>
+                      <div className="g-ui-data-row-main">
 
-                            <span
-                              className={
-                                product.active
-                                  ? "productStatusBadge productStatusActive g-ui-pill"
-                                  : "productStatusBadge productStatusInactive g-ui-pill"
-                              }
-                            >
-                              {product.active
-                                ? "Aktiv"
-                                : "Inaktiv"}
-                            </span>
+                        <strong className="g-ui-data-row-title">
+                          {product.name}
+                        </strong>
 
-                            <span
-                              className={
-                                "productOperationalBadge " +
-                                `is-${normalizedOperationalArea(
-                                  product.operationalArea
-                                ).toLowerCase()}`
-                              }
-                            >
-                              {operationalAreaLabel(
-                                product.operationalArea
-                              )}
-                            </span>
-                          </div>
-
-                          <div className="productCardMeta">
-                            <span>
-                              {product.category ||
-                                "Ohne Kategorie"}
-                            </span>
-                            <span>
-                              {product.unit || "Portion"}
-                            </span>
-                            <span>
-                              MwSt. {product.taxRate ?? 7} %
-                            </span>
-                          </div>
-
-                          {product.notes ? (
-                            <p>{product.notes}</p>
-                          ) : (
-                            <p className="productCardEmptyNote">
-                              Keine Produktionsnotiz hinterlegt
-                            </p>
+                        <span className="g-ui-data-row-description">
+                          {product.category ||
+                            "Ohne Kategorie"}
+                          {" · "}
+                          {product.unit ||
+                            "Portion"}
+                          {" · "}
+                          MwSt.{" "}
+                          {product.taxRate ?? 7} %
+                          {" · "}
+                          {operationalAreaLabel(
+                            product.operationalArea
                           )}
-                        </div>
+                        </span>
 
-                        <div className="productCardPrice">
-                          <small>Verkaufspreis</small>
-                          <strong>
-                            {centsToEuro(product.priceCents)}
-                          </strong>
-                          <span>
-                            je {product.unit || "Portion"}
-                          </span>
-                        </div>
-                        <div className={recipeStatusClass}>
-                          <small>
-                            {requiresRecipe
-                              ? "Rezeptur"
-                              : "Beschaffung"}
-                          </small>
+                        <span className="g-ui-data-row-description">
+                          {detailText}
+                        </span>
 
-                          <strong>
-                            {!requiresRecipe
-                              ? "Keine Rezeptur nötig"
-                              : hasRecipe
-                                ? `${recipeItems.length} Position${
-                                    recipeItems.length === 1
-                                      ? ""
-                                      : "en"
-                                  }`
-                                : "Rezeptur fehlt"}
-                          </strong>
+                      </div>
 
-                          <span>
-                            {!requiresRecipe
-                              ? "Einkaufsdaten verwenden"
-                              : hasRecipe
-                                ? "Für Einkauf vorbereitet"
-                                : "Zutaten und Mengen ergänzen"}
-                          </span>
-                        </div>
 
-                        <span className="productCardArrow">→</span>
-                      </button>
+                      <div className="g-ui-data-row-meta">
 
-                      {requiresRecipe && hasRecipe ? (
-                        <div className="productIngredientsPreview">
-                          {recipeItems
-                            .slice(0, 4)
-                            .map((item: any) => (
-                              <span key={item.id}>
-                                <strong>
-                                  {item.quantityPerUnit} {item.unit}
-                                </strong>
-                                {item.ingredientName}
-                              </span>
-                            ))}
+                        <GastarioBadge
+                          variant={
+                            product.active
+                              ? "success"
+                              : "neutral"
+                          }
+                        >
+                          {product.active
+                            ? "Aktiv"
+                            : "Inaktiv"}
+                        </GastarioBadge>
 
-                          {recipeItems.length > 4 ? (
-                            <span className="productMoreIngredients">
-                              + {recipeItems.length - 4} weitere
-                            </span>
-                          ) : null}
-                        </div>
-                      ) : null}
-                    </article>
+                        <GastarioBadge
+                          variant={recipeVariant}
+                        >
+                          {recipeLabel}
+                        </GastarioBadge>
+
+                        <strong>
+                          {centsToEuro(
+                            product.priceCents
+                          )}
+                        </strong>
+
+                      </div>
+
+
+                      <span
+                        className="g-ui-data-row-chevron"
+                        aria-hidden="true"
+                      >
+                        →
+                      </span>
+
+                    </GastarioDataRow>
+
                   );
-                })}
-              </div>
-            )}
-          </section>
+                }
+              )}
+
+            </GastarioDataList>
+
+          )}
+
+        </GastarioSection>
 
       </GastarioPage>
     </AppLayout>
