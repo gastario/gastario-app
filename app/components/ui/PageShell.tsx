@@ -40,7 +40,7 @@ type MetricCardProps = {
 
 type NoticeProps = {
   children: ReactNode;
-  type?: "success" | "warning" | "danger" | "info";
+  type?: "success" | "warning" | "danger" | "info" | "neutral";
   className?: string;
 };
 

@@ -399,7 +399,7 @@
       transform .15s ease !important;
   }
 
-  html body .appShell .workspace button[type="submit"],
+  html body .appShell .workspace button[type="submit"]:not(.g-ui-button--secondary):not(.g-ui-button--danger):not(.g-ui-button--ghost):not(.foodlabelsButton--secondary):not(.foodlabelsButton--danger),
   html body .appShell .workspace .primaryButton,
   html body .appShell .workspace .g-ui-button--primary,
   html body .appShell .workspace .foodlabelsButton--primary,
@@ -418,7 +418,7 @@
       none !important;
   }
 
-  html body .appShell .workspace button[type="submit"]:hover,
+  html body .appShell .workspace button[type="submit"]:not(.g-ui-button--secondary):not(.g-ui-button--danger):not(.g-ui-button--ghost):not(.foodlabelsButton--secondary):not(.foodlabelsButton--danger):hover,
   html body .appShell .workspace .primaryButton:hover,
   html body .appShell .workspace .g-ui-button--primary:hover,
   html body .appShell .workspace .foodlabelsButton--primary:hover {
@@ -475,6 +475,22 @@
     font-size: 11.5px !important;
     line-height: 1.45 !important;
   }
+
+  /* =====================================================
+     GASTARIO NEUTRAL NOTICE
+  ===================================================== */
+
+  html body .appShell .workspace .g-ui-notice--neutral {
+    background:
+      var(--g26-surface-soft) !important;
+
+    border:
+      1px solid var(--g26-line) !important;
+
+    color:
+      var(--g26-text-soft) !important;
+  }
+
 
   html body .appShell .workspace .g-ui-notice--success {
     background:
@@ -3573,8 +3589,8 @@
 
   padding: 14px 22px;
 
-  border-top: 1px solid var(--g-color-border, #e2e8e5);
-  background: #ffffff;
+  border-top: 1px solid var(--g26-line);
+  background: var(--g26-page);
 }
 
 .g-ui-detail-dialog .g-ui-section {
@@ -3778,143 +3794,255 @@
 
 /* =========================================================
    Gastario Workflow
+   Zentraler geführter Ablauf
 ========================================================= */
 
 .g-ui-workflow {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(150px, 1fr)
-  );
-  gap: 8px;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(170px, 1fr)
+    );
+
+  gap: 6px;
+
   margin: 0;
-  padding: 0;
+
+  padding: 4px;
+
   list-style: none;
+
+  background:
+    var(--g26-surface-soft);
+
+  border:
+    1px solid var(--g26-line);
+
+  border-radius:
+    var(--g26-radius-md);
 }
+
 
 .g-ui-workflow-item {
   min-width: 0;
 }
 
+
 .g-ui-workflow-step {
   width: 100%;
-  min-height: 76px;
-  display: grid;
+
+  min-height:
+    60px !important;
+
+  display: grid !important;
+
   grid-template-columns:
-    auto
+    28px
     minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
-  text-align: left;
-  border: 1px solid
-    var(
-      --g-border,
-      rgba(17, 24, 39, 0.1)
-    );
-  border-radius: 14px;
+
+  align-items: center !important;
+
+  gap:
+    10px !important;
+
+  padding:
+    9px 11px !important;
+
+  text-align:
+    left !important;
+
   background:
-    var(
-      --g-surface,
-      #ffffff
-    );
+    transparent !important;
+
+  border:
+    1px solid transparent !important;
+
+  border-radius:
+    var(--g26-radius-sm) !important;
+
+  color:
+    var(--g26-text-soft) !important;
+
+  box-shadow:
+    none !important;
+
+  transform:
+    none !important;
 }
 
-.g-ui-workflow-copy {
-  display: grid;
-  gap: 3px;
-  min-width: 0;
+
+.g-ui-workflow-step:hover:not(:disabled) {
+  background:
+    var(--g26-surface) !important;
+
+  border-color:
+    var(--g26-line) !important;
+
+  transform:
+    none !important;
 }
 
-.g-ui-workflow-copy strong {
-  font-size: 13px;
-  line-height: 1.3;
-}
-
-.g-ui-workflow-copy small {
-  font-size: 11px;
-  line-height: 1.35;
-  opacity: 0.65;
-}
 
 .g-ui-workflow-index {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
+
   display: grid;
+
   place-items: center;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
+
+  border-radius:
+    999px;
+
   background:
-    rgba(
-      17,
-      24,
-      39,
-      0.06
-    );
+    var(--g26-surface-muted);
+
+  color:
+    var(--g26-text-soft);
+
+  font-size:
+    10.5px;
+
+  line-height: 1;
+
+  font-weight:
+    650;
 }
+
+
+.g-ui-workflow-copy {
+  min-width: 0;
+
+  display: grid;
+
+  gap: 2px;
+}
+
+
+.g-ui-workflow-copy strong {
+  color:
+    var(--g26-text);
+
+  font-size:
+    11.5px;
+
+  line-height:
+    1.25;
+
+  font-weight:
+    610;
+}
+
+
+.g-ui-workflow-copy small {
+  color:
+    var(--g26-muted);
+
+  font-size:
+    9.5px;
+
+  line-height:
+    1.3;
+
+  opacity: 1;
+}
+
 
 .g-ui-workflow-state {
   grid-column: 2;
-  font-size: 10px;
+
+  margin-top: 2px;
+
+  color:
+    var(--g26-muted);
+
+  font-size:
+    8.5px;
+
   line-height: 1;
-  opacity: 0.55;
+
+  font-weight:
+    600;
+
+  opacity: 1;
 }
+
+
+/* DONE */
+
+.g-ui-workflow-item--done
+  .g-ui-workflow-step {
+  background:
+    var(--g26-surface) !important;
+}
+
 
 .g-ui-workflow-item--done
   .g-ui-workflow-index {
   background:
-    rgba(
-      22,
-      163,
-      74,
-      0.12
-    );
+    var(--g26-success-soft);
+
+  color:
+    var(--g26-success);
 }
+
+
+/* CURRENT */
 
 .g-ui-workflow-item--current
   .g-ui-workflow-step,
 .g-ui-workflow-item.is-current
   .g-ui-workflow-step {
-  border-color:
-    rgba(
-      22,
-      163,
-      74,
-      0.35
-    );
   background:
-    rgba(
-      22,
-      163,
-      74,
-      0.045
-    );
+    var(--g26-accent-soft) !important;
+
+  border-color:
+    var(--g26-line-strong) !important;
 }
+
 
 .g-ui-workflow-item--current
   .g-ui-workflow-index,
 .g-ui-workflow-item.is-current
   .g-ui-workflow-index {
   background:
-    rgba(
-      22,
-      163,
-      74,
-      0.13
-    );
+    var(--g26-accent);
+
+  color:
+    #ffffff;
 }
+
+
+.g-ui-workflow-item--current
+  .g-ui-workflow-state,
+.g-ui-workflow-item.is-current
+  .g-ui-workflow-state {
+  color:
+    var(--g26-accent);
+}
+
+
+/* LOCKED */
 
 .g-ui-workflow-item--locked
   .g-ui-workflow-step {
-  opacity: 0.48;
-  cursor: not-allowed;
+  opacity:
+    .40;
+
+  cursor:
+    not-allowed !important;
 }
+
+
+/* MOBILE */
 
 @media (
   max-width: 760px
 ) {
   .g-ui-workflow {
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      1fr;
   }
 }
