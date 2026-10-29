@@ -1100,6 +1100,20 @@ export default function NewQuotePage() {
                 Abbrechen
               </GastarioButton>
 
+              <GastarioButton
+                type="submit"
+                form="new-quote-form"
+                variant="primary"
+                disabled={
+                  isSubmitting ||
+                  !customerId
+                }
+              >
+                {isSubmitting
+                  ? "Angebot wird angelegt …"
+                  : "Als Entwurf anlegen"}
+              </GastarioButton>
+
 
             </>
           }
@@ -1757,18 +1771,7 @@ export default function NewQuotePage() {
                 </GastarioPanel>
 
 
-                <GastarioButton
-                  type="submit"
-                  variant="primary"
-                  disabled={
-                    isSubmitting ||
-                    !customerId
-                  }
-                >
-                  {isSubmitting
-                    ? "Angebot wird angelegt …"
-                    : "Als Entwurf anlegen"}
-                </GastarioButton>
+
 
 
                 <GastarioNotice type="neutral">
