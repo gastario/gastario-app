@@ -22,18 +22,15 @@ import {
   GastarioDetailTabs,
   GastarioEmptyState,
   GastarioField,
-  GastarioFilterBar,
   GastarioHeader,
   GastarioMetric,
   GastarioMetricGrid,
   GastarioNotice,
   GastarioPage,
-  GastarioPanel,
   GastarioSection,
   GastarioSelect,
   GastarioStack,
   GastarioToolbar,
-  GastarioWorkflow,
   gastarioButtonClass,
 } from "../components/ui";
 
@@ -1205,16 +1202,7 @@ export default function PackingListsPage() {
 
           <Form method="get">
 
-            <GastarioFilterBar
-              actions={
-                <GastarioButton
-                  variant="primary"
-                  type="submit"
-                >
-                  Anzeigen
-                </GastarioButton>
-              }
-            >
+            <GastarioToolbar align="start">
 
               <GastarioField
                 label="Planungstag"
@@ -1254,7 +1242,15 @@ export default function PackingListsPage() {
                 </GastarioSelect>
               </GastarioField>
 
-            </GastarioFilterBar>
+
+              <GastarioButton
+                variant="primary"
+                type="submit"
+              >
+                Anzeigen
+              </GastarioButton>
+
+            </GastarioToolbar>
 
           </Form>
 
@@ -1367,6 +1363,7 @@ export default function PackingListsPage() {
 
         <GastarioDetailDialog
           open={Boolean(selectedOrder)}
+          size="lg"
           title={
             selectedOrder?.customerName ||
             "Packliste"
@@ -1645,166 +1642,198 @@ export default function PackingListsPage() {
                   }
                 >
 
-                  <GastarioWorkflow
-                    items={[
-                      {
-                        id: "items",
-                        label:
-                          "Positionen gepackt",
-                        description:
-                          "Alle Auftragspositionen einzeln bestätigen",
-                        state:
-                          selectedOrder.isPacked ||
-                          (
-                            selectedOrder.items.length > 0 &&
-                            selectedOrder.items.every(
-                              (item: any) =>
-                                item.checked
-                            )
-                          )
-                            ? "done"
-                            : "current",
-                      },
-                      {
-                        id: "checks",
-                        label:
-                          "Packkontrolle",
-                        description:
-                          "Ware, Lieferschein, Besteck und Equipment prüfen",
-                        state:
-                          !(
-                            selectedOrder.items.length > 0 &&
-                            selectedOrder.items.every(
-                              (item: any) =>
-                                item.checked
-                            )
-                          )
-                            ? "locked"
-                            : selectedOrder.isPacked ||
-                                (
-                                  selectedOrder.tasks.length > 0 &&
-                                  selectedOrder.tasks.every(
-                                    (task: any) =>
-                                      task.checked
-                                  )
-                                )
-                              ? "done"
-                              : "current",
-                      },
-                      {
-                        id: "ready",
-                        label:
-                          "Lieferbereit",
-                        description:
-                          "Auftrag für die Lieferung freigeben",
-                        state:
-                          selectedOrder.isPacked
-                            ? "done"
-                            : (
-                                selectedOrder.items.length > 0 &&
-                                selectedOrder.items.every(
-                                  (item: any) =>
-                                    item.checked
-                                ) &&
-                                selectedOrder.tasks.length > 0 &&
-                                selectedOrder.tasks.every(
-                                  (task: any) =>
-                                    task.checked
-                                )
+                  <GastarioDataList>
+
+
+                    <GastarioDataRow>
+
+                      <div className="g-ui-data-row-main">
+
+                        <strong className="g-ui-data-row-title">
+                          Lieferzeit
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          Anlieferung vor Ort
+                        </span>
+
+                      </div>
+
+                      <div className="g-ui-data-row-meta">
+
+                        <strong>
+                          {selectedOrder.deliveryTime ||
+                            "-"}
+                          {" Uhr"}
+                        </strong>
+
+                      </div>
+
+                    </GastarioDataRow>
+
+
+                    <GastarioDataRow>
+
+                      <div className="g-ui-data-row-main">
+
+                        <strong className="g-ui-data-row-title">
+                          Lieferadresse
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          Ziel der Lieferung
+                        </span>
+
+                      </div>
+
+                      <div className="g-ui-data-row-meta">
+
+                        <span>
+                          {selectedOrder.deliveryAddress ||
+                            "Keine Lieferadresse eingetragen"}
+                        </span>
+
+                      </div>
+
+                    </GastarioDataRow>
+
+
+                    <GastarioDataRow>
+
+                      <div className="g-ui-data-row-main">
+
+                        <strong className="g-ui-data-row-title">
+                          Kontakt
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          Ansprechpartner vor Ort
+                        </span>
+
+                      </div>
+
+                      <div className="g-ui-data-row-meta">
+
+                        <span>
+                          {selectedOrder.contactName ||
+                            "Kein Ansprechpartner"}
+                        </span>
+
+                        {selectedOrder.contactPhone ? (
+                          <span>
+                            {selectedOrder.contactPhone}
+                          </span>
+                        ) : null}
+
+                      </div>
+
+                    </GastarioDataRow>
+
+
+                    <GastarioDataRow>
+
+                      <div className="g-ui-data-row-main">
+
+                        <strong className="g-ui-data-row-title">
+                          Gesamtmenge
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          Packpositionen
+                        </span>
+
+                      </div>
+
+                      <div className="g-ui-data-row-meta">
+
+                        <strong>
+                          {selectedOrder.totalQuantity}
+                        </strong>
+
+                      </div>
+
+                    </GastarioDataRow>
+
+
+                    <GastarioDataRow>
+
+                      <div className="g-ui-data-row-main">
+
+                        <strong className="g-ui-data-row-title">
+                          Packfortschritt
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          Prüfungen dieses Auftrags
+                        </span>
+
+                      </div>
+
+                      <div className="g-ui-data-row-meta">
+
+                        <strong>
+                          {selectedOrder.checkedCount}
+                          {" / "}
+                          {selectedOrder.totalChecks}
+                        </strong>
+
+                        <GastarioBadge
+                          variant={
+                            selectedOrder.isPacked
+                              ? "success"
+                              : "neutral"
+                          }
+                        >
+                          {selectedOrder.progress} %
+                        </GastarioBadge>
+
+                      </div>
+
+                    </GastarioDataRow>
+
+
+                    {selectedOrder.logisticsItems.length > 0 ? (
+
+                      <GastarioDataRow>
+
+                        <div className="g-ui-data-row-main">
+
+                          <strong className="g-ui-data-row-title">
+                            Logistik
+                          </strong>
+
+                          <span className="g-ui-data-row-description">
+                            Lieferung und Abholung
+                          </span>
+
+                        </div>
+
+                        <div className="g-ui-data-row-meta">
+
+                          <span>
+                            {selectedOrder.logisticsItems
+                              .map(
+                                (item: any) =>
+                                  `${item.quantity} × ${item.name}`
                               )
-                              ? "current"
-                              : "locked",
-                      },
-                    ]}
-                  />
+                              .join(", ")}
+                          </span>
+
+                        </div>
+
+                      </GastarioDataRow>
+
+                    ) : null}
 
 
-                  <GastarioMetricGrid>
-
-                    <GastarioMetric
-                      label="Lieferzeit"
-                      value={
-                        selectedOrder.deliveryTime ||
-                        "-"
-                      }
-                      description="Anlieferung vor Ort"
-                    />
-
-                    <GastarioMetric
-                      label="Gesamtmenge"
-                      value={
-                        selectedOrder.totalQuantity
-                      }
-                      description="Packpositionen"
-                    />
-
-                    <GastarioMetric
-                      label="Fortschritt"
-                      value={
-                        `${
-                          selectedOrder.progress
-                        } %`
-                      }
-                      description={
-                        `${
-                          selectedOrder.checkedCount
-                        } von ${
-                          selectedOrder.totalChecks
-                        } Prüfungen`
-                      }
-                    />
-
-                  </GastarioMetricGrid>
+                  </GastarioDataList>
 
 
-                  <GastarioPanel variant="soft">
-
-                    <strong>
-                      Lieferadresse
-                    </strong>
-
-                    <div>
-                      {selectedOrder.deliveryAddress ||
-                        "Keine Lieferadresse eingetragen"}
-                    </div>
-
-                    <div>
-                      Kontakt:{" "}
-                      {selectedOrder.contactName ||
-                        "-"}
-                      {" · "}
-                      {selectedOrder.contactPhone ||
-                        "-"}
-                    </div>
-
-                  </GastarioPanel>
-
-
-                  {selectedOrder.logisticsItems
-                    .length > 0 ? (
-
-                    <GastarioNotice type="neutral">
-                      <strong>
-                        Logistik:
-                      </strong>
-                      {" "}
-                      {selectedOrder.logisticsItems
-                        .map(
-                          (item: any) =>
-                            `${item.quantity} × ${item.name}`
-                        )
-                        .join(", ")}
-                    </GastarioNotice>
-
-                  ) : null}
-
-
-                  {selectedOrder.unresolvedItems
-                    .length > 0 ? (
+                  {selectedOrder.unresolvedItems.length > 0 ? (
 
                     <GastarioNotice type="warning">
                       <strong>
-                        Operative Zuordnung fehlt:
+                        Operative Zuordnung fehlt.
                       </strong>
                       {" "}
                       {selectedOrder.unresolvedItems.length}
@@ -1817,12 +1846,11 @@ export default function PackingListsPage() {
 
                   {!selectedOrder.packingStarted &&
                   !selectedOrder.isPacked &&
-                  selectedOrder.unresolvedItems.length ===
-                    0 ? (
+                  selectedOrder.unresolvedItems.length === 0 ? (
 
                     <GastarioNotice type="info">
-                      Die Packliste ist vorbereitet
-                      und kann gestartet werden.
+                      Die Packliste ist vorbereitet und kann
+                      gestartet werden.
                     </GastarioNotice>
 
                   ) : null}
