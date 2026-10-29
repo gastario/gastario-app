@@ -16,7 +16,6 @@ import {
   GastarioDataRow,
   GastarioEmptyState,
   GastarioField,
-  GastarioFilterBar,
   GastarioHeader,
   GastarioMetric,
   GastarioMetricGrid,
@@ -856,16 +855,19 @@ export default function ProductionPage() {
 
           <GastarioNotice type="warning">
 
-            <strong>
-              Operative Zuordnung erforderlich.
-            </strong>
-            {" "}
-            {data.reviewItems.length} Position(en)
-            sind noch nicht als Küche,
-            Packstation, Logistik oder
-            nicht operativ eingeordnet.
+            <GastarioToolbar align="between">
 
-            <GastarioToolbar align="start">
+              <span>
+                <strong>
+                  Operative Zuordnung erforderlich.
+                </strong>
+                {" "}
+                {data.reviewItems.length} Position(en)
+                sind noch nicht als Küche,
+                Packstation, Logistik oder
+                nicht operativ eingeordnet.
+              </span>
+
               <Link
                 className={
                   gastarioButtonClass(
@@ -880,6 +882,7 @@ export default function ProductionPage() {
               >
                 Zuordnungen prüfen
               </Link>
+
             </GastarioToolbar>
 
           </GastarioNotice>
@@ -932,69 +935,62 @@ export default function ProductionPage() {
           eyebrow="Produktionsliste"
           title="Zu produzieren"
           description="Nur der Küche zugeordnete Positionen werden für den gewählten Planungstag zusammengefasst."
-        >
+          action={
+            <Form
+              method="get"
+              className="g-ui-section-control"
+            >
+              <GastarioToolbar align="start">
 
-          <Form method="get">
+                <GastarioField
+                  label="Planungstag"
+                >
+                  <GastarioSelect
+                    name="date"
+                    defaultValue={
+                      data.selectedDate
+                    }
+                  >
 
-            <GastarioFilterBar
-              actions={
+                    {data.availableDates.length > 0 ? (
+
+                      data.availableDates.map(
+                        (date: string) => (
+                          <option
+                            key={date}
+                            value={date}
+                          >
+                            {formatDate(date)}
+                          </option>
+                        )
+                      )
+
+                    ) : (
+
+                      <option
+                        value={
+                          data.selectedDate
+                        }
+                      >
+                        Keine Auftragsdaten
+                      </option>
+
+                    )}
+
+                  </GastarioSelect>
+                </GastarioField>
+
                 <GastarioButton
                   variant="primary"
                   type="submit"
                 >
                   Anzeigen
                 </GastarioButton>
-              }
-            >
 
-              <GastarioField
-                label="Planungstag"
-              >
-                <GastarioSelect
-                  name="date"
-                  defaultValue={
-                    data.selectedDate
-                  }
-                >
-
-                  {data.availableDates
-                    .length > 0 ? (
-
-                    data.availableDates.map(
-                      (
-                        date: string
-                      ) => (
-
-                        <option
-                          key={date}
-                          value={date}
-                        >
-                          {formatDate(
-                            date
-                          )}
-                        </option>
-
-                      )
-                    )
-
-                  ) : (
-
-                    <option
-                      value={
-                        data.selectedDate
-                      }
-                    >
-                      Keine Auftragsdaten
-                    </option>
-
-                  )}
-
-                </GastarioSelect>
-              </GastarioField>
-
-            </GastarioFilterBar>
-
-          </Form>
+              </GastarioToolbar>
+            </Form>
+          }
+        >
 
 
           {data.productionItems

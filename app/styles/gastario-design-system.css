@@ -2274,6 +2274,38 @@
      FORM GRID
   ------------------------------------------------------- */
 
+  .g-ui-section-control {
+    min-width: 280px;
+  }
+
+  .g-ui-section-control .g-ui-toolbar {
+    align-items: flex-end;
+    flex-wrap: nowrap;
+  }
+
+  .g-ui-section-control .g-ui-field {
+    width: 190px;
+  }
+
+  @media (max-width: 700px) {
+
+    .g-ui-section-control {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .g-ui-section-control .g-ui-toolbar {
+      align-items: stretch;
+    }
+
+    .g-ui-section-control .g-ui-field {
+      width: auto;
+      flex: 1 1 auto;
+    }
+
+  }
+
+
   .g-ui-form-narrow {
     width: 100%;
     max-width: 620px;
