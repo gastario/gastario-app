@@ -22,6 +22,7 @@ import {
   GastarioDataRow,
   GastarioBadge,
   GastarioEmptyState,
+  GastarioTabs,
   gastarioButtonClass,
 } from "../components/ui";
 import productsStyles from "../styles/produkte.css?url";
@@ -493,6 +494,11 @@ export default function ProductsPage() {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
     null
   );
+
+  const [
+    selectedProductTab,
+    setSelectedProductTab,
+  ] = useState("overview");
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -818,9 +824,12 @@ export default function ProductsPage() {
                 } %`
               : undefined
           }
-          onClose={() =>
-            setSelectedProductId(null)
-          }
+          onClose={() => {
+            setSelectedProductId(null);
+            setSelectedProductTab(
+              "overview"
+            );
+          }}
           footer={
             selectedProduct ? (
               <GastarioToolbar>
@@ -839,670 +848,898 @@ export default function ProductsPage() {
         >
           {selectedProduct ? (
             <>
-              <GastarioMetricGrid>
-              <GastarioMetric
-                label="Verkaufspreis"
-                value={centsToEuro(
-                  selectedProduct.priceCents
-                )}
-                description={`je ${selectedProduct.unit || "Portion"}`}
-                badge="EUR"
-              />
 
-              <GastarioMetric
-                label="Kategorie"
-                value={
-                  selectedProduct.category ||
-                  "Ohne Kategorie"
+              <GastarioTabs
+                activeId={
+                  selectedProductTab
                 }
-                description="Produktgruppe"
-              />
-
-              <GastarioMetric
-                label="Arbeitsbereich"
-                value={operationalAreaLabel(
-                  selectedProduct.operationalArea
-                )}
-                description="Operative Zuordnung"
-              />
-
-              <GastarioMetric
-                label="Status"
-                value={
-                  selectedProduct.active
-                    ? "Aktiv"
-                    : "Inaktiv"
+                onChange={
+                  setSelectedProductTab
                 }
-                description={`MwSt. ${selectedProduct.taxRate ?? 7} %`}
+                items={[
+                  {
+                    id: "overview",
+                    label: "Übersicht",
+                  },
+                  {
+                    id: "master",
+                    label: "Stammdaten",
+                  },
+                  {
+                    id: "procurement",
+                    label: "Beschaffung",
+                  },
+                  {
+                    id: "recipe",
+                    label: "Rezeptur",
+                    badge:
+                      selectedRecipeItems.length,
+                  },
+                ]}
               />
-            </GastarioMetricGrid>
 
-            <section className="productProcurementPanel g-ui-card g-ui-card--flat g-ui-card--soft">
-              <div className="productDetailSectionHeader g-ui-section-header">
-                <div>
-                  <p className="eyebrow">Herstellung und Beschaffung</p>
-                  <h3>Wie wird dieses Produkt bereitgestellt?</h3>
-                  <span>
-                    Lege fest, ob das Produkt selbst hergestellt,
-                    fertig eingekauft, aufgebacken oder nur vorbereitet wird.
-                  </span>
-                </div>
 
-                <div className="productProcurementBadge">
-                  {selectedProduct.procurementType === "READY_MADE"
-                    ? "Fertigprodukt"
-                    : selectedProduct.procurementType === "BAKE_OFF"
-                      ? "Aufbacken"
-                      : selectedProduct.procurementType === "THAW"
-                        ? "Auftauen"
-                        : selectedProduct.procurementType === "REHEAT"
-                          ? "Erwärmen"
-                          : selectedProduct.procurementType === "EXTERNAL"
-                            ? "Extern"
-                            : "Eigenproduktion"}
-                </div>
-              </div>
-
-              <procurementFetcher.Form
-                method="post"
-                className="productProcurementForm"
+              <div
+                hidden={
+                  selectedProductTab !==
+                  "overview"
+                }
               >
-                <input
-                  type="hidden"
-                  name="intent"
-                  value="updateProcurement"
-                />
-                <input
-                  type="hidden"
-                  name="productId"
-                  value={selectedProduct.id}
-                />
 
-                <label className="productsField productsFieldFull g-ui-field">
-                  <span>Beschaffungsart</span>
-                  <select
-                    name="procurementType"
-                    defaultValue={
-                      selectedProduct.procurementType || "RECIPE"
-                    }
-                  >
-                    <option value="RECIPE">
-                      Eigenproduktion mit Rezeptur
-                    </option>
-                    <option value="READY_MADE">
-                      Fertig einkaufen
-                    </option>
-                    <option value="BAKE_OFF">
-                      Fertig einkaufen und aufbacken
-                    </option>
-                    <option value="THAW">
-                      Fertig einkaufen und auftauen
-                    </option>
-                    <option value="REHEAT">
-                      Fertig einkaufen und erwärmen
-                    </option>
-                    <option value="EXTERNAL">
-                      Extern produzieren lassen
-                    </option>
-                  </select>
-                </label>
-
-                <div className="productProcurementHint productsFieldFull">
-                  <strong>Eigenproduktion</strong>
-                  <span>
-                    Nutzt die hinterlegte Rezeptur. Bei allen anderen
-                    Beschaffungsarten werden Lieferant, Einkaufsartikel
-                    und Gebinde für die Einkaufsliste verwendet.
-                  </span>
-                </div>
-
-                <label className="productsField g-ui-field">
-                  <span>Lieferant</span>
-                  <input
-                    name="supplierName"
-                    defaultValue={
-                      selectedProduct.supplierName || ""
-                    }
-                    placeholder="Zum Beispiel Transgourmet"
-                  />
-                </label>
-
-                <label className="productsField g-ui-field">
-                  <span>Einkaufsartikel</span>
-                  <input
-                    name="supplierArticleName"
-                    defaultValue={
-                      selectedProduct.supplierArticleName || ""
-                    }
-                    placeholder="Bezeichnung beim Lieferanten"
-                  />
-                </label>
-
-                <label className="productsField g-ui-field">
-                  <span>Artikelnummer</span>
-                  <input
-                    name="supplierArticleNumber"
-                    defaultValue={
-                      selectedProduct.supplierArticleNumber || ""
-                    }
-                    placeholder="Optional"
-                  />
-                </label>
-
-                <label className="productsField g-ui-field">
-                  <span>Einkaufseinheit</span>
-                  <input
-                    name="purchaseUnit"
-                    defaultValue={
-                      selectedProduct.purchaseUnit || "Stück"
-                    }
-                    placeholder="Stück, kg, Liter"
-                  />
-                </label>
-
-                <label className="productsField g-ui-field">
-                  <span>Bedarf je verkaufter Einheit</span>
-                  <input
-                    name="purchaseQuantityPerUnit"
-                    type="number"
-                    min="0"
-                    step="0.001"
-                    defaultValue={
-                      selectedProduct.purchaseQuantityPerUnit ?? ""
-                    }
-                    placeholder="1"
-                  />
-                </label>
-
-                <label className="productsField g-ui-field">
-                  <span>Gebindeart</span>
-                  <input
-                    name="packageUnit"
-                    defaultValue={
-                      selectedProduct.packageUnit || ""
-                    }
-                    placeholder="Karton, Beutel, Kiste"
-                  />
-                </label>
-
-                <label className="productsField g-ui-field">
-                  <span>Inhalt je Gebinde</span>
-                  <input
-                    name="packageQuantity"
-                    type="number"
-                    min="0"
-                    step="0.001"
-                    defaultValue={
-                      selectedProduct.packageQuantity ?? ""
-                    }
-                    placeholder="48"
-                  />
-                </label>
-
-                <label className="productsField g-ui-field">
-                  <span>Einkaufspreis je Gebinde</span>
-                  <div className="productsInputSuffix">
-                    <input
-                      name="purchasePriceEuro"
-                      inputMode="decimal"
-                      defaultValue={
-                        selectedProduct.purchasePriceCents == null
-                          ? ""
-                          : String(
-                              selectedProduct.purchasePriceCents / 100
-                            ).replace(".", ",")
+                <GastarioSection
+                  eyebrow="Produktübersicht"
+                  title="Produkt auf einen Blick"
+                  description="Die wichtigsten Stammdaten und der aktuelle Produktstatus."
+                  action={
+                    <GastarioBadge
+                      variant={
+                        selectedProduct.active
+                          ? "success"
+                          : "neutral"
                       }
-                      placeholder="31,90"
-                    />
-                    <small>EUR</small>
-                  </div>
-                </label>
-
-                <label className="productsField productsFieldFull g-ui-field">
-                  <span>Vorbereitung und Verarbeitung</span>
-                  <textarea
-                    name="preparationNotes"
-                    rows={3}
-                    defaultValue={
-                      selectedProduct.preparationNotes || ""
-                    }
-                    placeholder="Zum Beispiel über Nacht auftauen und vor Ausgabe vier Minuten aufbacken"
-                  />
-                </label>
-
-                <div className="productProcurementPreview productsFieldFull">
-                  <div>
-                    <small>Einkaufsgrundlage</small>
-                    <strong>
-                      {selectedProduct.purchaseQuantityPerUnit
-                        ? `${selectedProduct.purchaseQuantityPerUnit} ${selectedProduct.purchaseUnit || "Stück"} je ${selectedProduct.unit || "Portion"}`
-                        : "Noch keine Bedarfsmenge hinterlegt"}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <small>Gebinde</small>
-                    <strong>
-                      {selectedProduct.packageQuantity
-                        ? `${selectedProduct.packageQuantity} ${selectedProduct.purchaseUnit || "Stück"} je ${selectedProduct.packageUnit || "Gebinde"}`
-                        : "Noch kein Gebinde hinterlegt"}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <small>Lieferant</small>
-                    <strong>
-                      {selectedProduct.supplierName ||
-                        "Noch nicht hinterlegt"}
-                    </strong>
-                  </div>
-                </div>
-
-                {procurementFetcher.data?.success ? (
-                  <div className="productProcurementMessage productProcurementMessageSuccess">
-                    <strong>Gespeichert</strong>
-                    <span>{procurementFetcher.data.success}</span>
-                  </div>
-                ) : null}
-
-                {procurementFetcher.data?.error ? (
-                  <div className="productProcurementMessage productProcurementMessageError">
-                    <strong>Speichern nicht möglich</strong>
-                    <span>{procurementFetcher.data.error}</span>
-                  </div>
-                ) : null}
-
-                <div className="productProcurementActions">
-                  <button
-                    className="productsPrimaryButton g-ui-button g-ui-button--primary"
-                    type="submit"
-                    disabled={procurementFetcher.state !== "idle"}
-                  >
-                    {procurementFetcher.state !== "idle"
-                      ? "Wird gespeichert …"
-                      : "Beschaffungsdaten speichern"}
-                  </button>
-                </div>
-              </procurementFetcher.Form>
-            </section>
-
-            <div className="productDetailGrid">
-              <section className="productDetailSection g-ui-card g-ui-card--flat">
-                <div className="productDetailSectionHeader g-ui-section-header">
-                  <div>
-                    <p className="eyebrow">Stammdaten</p>
-                    <h3>Produktdetails bearbeiten</h3>
-                  </div>
-                </div>
-
-                <Form method="post" className="productEditForm">
-                  <input
-                    type="hidden"
-                    name="intent"
-                    value="updateProduct"
-                  />
-                  <input
-                    type="hidden"
-                    name="productId"
-                    value={selectedProduct.id}
-                  />
-
-                  <label className="productsField productsFieldFull g-ui-field">
-                    <span>Produktname</span>
-                    <input
-                      name="name"
-                      defaultValue={selectedProduct.name}
-                      required
-                    />
-                  </label>
-
-                  <label className="productsField g-ui-field">
-                    <span>Kategorie</span>
-                    <input
-                      name="category"
-                      defaultValue={selectedProduct.category || ""}
-                    />
-                  </label>
-
-                  <label className="productsField g-ui-field">
-                    <span>Arbeitsbereich</span>
-                    <select
-                      name="operationalArea"
-                      defaultValue={normalizedOperationalArea(
-                        selectedProduct.operationalArea
-                      )}
                     >
-                      {OPERATIONAL_AREAS.map(
-                        (area) => (
-                          <option
-                            key={area.value}
-                            value={area.value}
-                          >
-                            {area.label}
-                          </option>
-                        )
+                      {selectedProduct.active
+                        ? "Aktiv"
+                        : "Inaktiv"}
+                    </GastarioBadge>
+                  }
+                >
+
+                  <GastarioMetricGrid>
+
+                    <GastarioMetric
+                      label="Verkaufspreis"
+                      value={centsToEuro(
+                        selectedProduct.priceCents
                       )}
-                    </select>
-                  </label>
-
-                  <label className="productsField g-ui-field">
-                    <span>Einheit</span>
-                    <input
-                      name="unit"
-                      defaultValue={
-                        selectedProduct.unit || "Portion"
+                      description={
+                        "je " +
+                        (
+                          selectedProduct.unit ||
+                          "Portion"
+                        )
                       }
+                      badge="EUR"
                     />
-                  </label>
 
-                  <label className="productsField g-ui-field">
-                    <span>Verkaufspreis</span>
-                    <div className="productsInputSuffix">
+                    <GastarioMetric
+                      label="Kategorie"
+                      value={
+                        selectedProduct.category ||
+                        "Ohne Kategorie"
+                      }
+                      description="Produktgruppe"
+                    />
+
+                    <GastarioMetric
+                      label="Arbeitsbereich"
+                      value={
+                        operationalAreaLabel(
+                          selectedProduct.operationalArea
+                        )
+                      }
+                      description="Operative Zuordnung"
+                    />
+
+                    <GastarioMetric
+                      label="Mehrwertsteuer"
+                      value={
+                        String(
+                          selectedProduct.taxRate ??
+                          7
+                        ) + " %"
+                      }
+                      description="Steuersatz"
+                    />
+
+                  </GastarioMetricGrid>
+
+                </GastarioSection>
+
+
+                <GastarioSection
+                  eyebrow="Produktstatus"
+                  title="Status und Verwaltung"
+                  description="Produkt aktivieren, deaktivieren oder endgültig entfernen."
+                >
+
+                  <GastarioToolbar
+                    align="start"
+                  >
+
+                    <Form method="post">
                       <input
-                        name="priceEuro"
-                        inputMode="decimal"
-                        defaultValue={String(
-                          (selectedProduct.priceCents || 0) / 100
-                        ).replace(".", ",")}
+                        type="hidden"
+                        name="intent"
+                        value="toggleActive"
                       />
-                      <small>EUR</small>
-                    </div>
-                  </label>
 
-                  <label className="productsField g-ui-field">
-                    <span>Mehrwertsteuer</span>
-                    <div className="productsInputSuffix">
                       <input
-                        name="taxRate"
-                        type="number"
-                        step="0.01"
-                        defaultValue={
-                          selectedProduct.taxRate ?? 7
+                        type="hidden"
+                        name="productId"
+                        value={
+                          selectedProduct.id
                         }
                       />
-                      <small>%</small>
-                    </div>
-                  </label>
 
-                  <label className="productsField productsFieldFull g-ui-field">
-                    <span>Produktionsnotiz</span>
-                    <textarea
-                      name="notes"
-                      rows={4}
-                      defaultValue={selectedProduct.notes || ""}
-                      placeholder="Hinweise für Produktion oder Ausgabe"
-                    />
-                  </label>
+                      <input
+                        type="hidden"
+                        name="active"
+                        value={
+                          selectedProduct.active
+                            ? "false"
+                            : "true"
+                        }
+                      />
 
-                  <div className="productEditActions">
-                    <button
-                      className="productsPrimaryButton g-ui-button g-ui-button--primary"
-                      type="submit"
-                    >
-                      Änderungen speichern
-                    </button>
-                  </div>
-                </Form>
-              </section>
-
-              <section className="productDetailSection g-ui-card g-ui-card--flat">
-                <div className="productDetailSectionHeader g-ui-section-header">
-                  <div>
-                    <p className="eyebrow">Rezeptur</p>
-                    <h3>Rezeptur pro Verkaufseinheit</h3>
-                    <span>
-                      Grundlage für Produktion und automatische
-                      Einkaufsliste.
-                    </span>
-                  </div>
-
-                  <div
-                    className={
-                      selectedProduct.procurementType !== "RECIPE"
-                        ? "productRecipeState productRecipeNotNeeded"
-                        : selectedRecipeItems.length > 0
-                          ? "productRecipeState productRecipeComplete"
-                          : "productRecipeState productRecipeMissing"
-                    }
-                  >
-                    {selectedProduct.procurementType !== "RECIPE"
-                      ? "Nicht erforderlich"
-                      : selectedRecipeItems.length > 0
-                        ? `${selectedRecipeItems.length} Position${
-                            selectedRecipeItems.length === 1 ? "" : "en"
-                          }`
-                        : "Rezeptur fehlt"}
-                  </div>
-                </div>
-
-                {selectedProduct.procurementType !== "RECIPE" ? (
-                  <div className="productRecipeEmpty productRecipeNotRequired">
-                    <div>✓</div>
-                    <strong>Keine Rezeptur erforderlich</strong>
-                    <span>
-                      Dieses Produkt wird fertig beschafft. Für die
-                      Einkaufsliste verwendet Gastario stattdessen die
-                      Lieferanten-, Bedarfs- und Gebindedaten.
-                    </span>
-                  </div>
-                ) : selectedRecipeItems.length > 0 ? (
-                  <div className="productRecipeList">
-                    {selectedRecipeItems.map((item: any) => (
-                      <div
-                        className="productRecipeRow"
-                        key={item.id}
+                      <GastarioButton
+                        variant="secondary"
+                        type="submit"
                       >
-                        <div className="productRecipeQuantity">
-                          <strong>{item.quantityPerUnit}</strong>
-                          <span>{item.unit}</span>
-                        </div>
+                        {selectedProduct.active
+                          ? "Produkt deaktivieren"
+                          : "Produkt aktivieren"}
+                      </GastarioButton>
+                    </Form>
 
-                        <div className="productRecipeIdentity">
-                          <strong>{item.ingredientName}</strong>
-                          <span>
-                            {item.supplierName ||
-                              "Kein Lieferant hinterlegt"}
-                            {item.notes ? ` · ${item.notes}` : ""}
-                          </span>
-                        </div>
 
-                        <Form
-                          method="post"
-                          onSubmit={(event) => {
-                            if (
-                              !window.confirm(
-                                "Diese Rezepturposition wirklich löschen?"
-                              )
-                            ) {
-                              event.preventDefault();
-                            }
-                          }}
-                        >
-                          <input
-                            type="hidden"
-                            name="intent"
-                            value="deleteRecipeItem"
-                          />
-                          <input
-                            type="hidden"
-                            name="productId"
-                            value={selectedProduct.id}
-                          />
-                          <input
-                            type="hidden"
-                            name="recipeItemId"
-                            value={item.id}
-                          />
-
-                          <button
-                            className="productIconDeleteButton"
-                            type="submit"
-                            aria-label={`${item.ingredientName} löschen`}
-                            title="Rezepturposition löschen"
-                          >
-                            ×
-                          </button>
-                        </Form>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="productRecipeEmpty">
-                    <div>!</div>
-                    <strong>Noch keine Rezeptur hinterlegt</strong>
-                    <span>
-                      Ohne Rezeptur kann Gastario den Bedarf für die
-                      Einkaufsliste nicht automatisch berechnen.
-                    </span>
-                  </div>
-                )}
-
-                {selectedProduct.procurementType === "RECIPE" ? (
-                <Form method="post" className="productRecipeForm">
-                  <input
-                    type="hidden"
-                    name="intent"
-                    value="addRecipeItem"
-                  />
-                  <input
-                    type="hidden"
-                    name="productId"
-                    value={selectedProduct.id}
-                  />
-
-                  <label className="productsField productsFieldWide g-ui-field">
-                    <span>Zutat oder Material</span>
-                    <input
-                      name="ingredientName"
-                      placeholder="Zum Beispiel Basmatireis"
-                      required
-                    />
-                  </label>
-
-                  <label className="productsField g-ui-field">
-                    <span>Menge pro Einheit</span>
-                    <input
-                      name="quantityPerUnit"
-                      type="number"
-                      min="0.001"
-                      step="0.001"
-                      placeholder="150"
-                      required
-                    />
-                  </label>
-
-                  <label className="productsField g-ui-field">
-                    <span>Einheit</span>
-                    <input
-                      name="ingredientUnit"
-                      defaultValue="g"
-                      placeholder="g"
-                      required
-                    />
-                  </label>
-
-                  <label className="productsField g-ui-field">
-                    <span>Lieferant</span>
-                    <input
-                      name="supplierName"
-                      placeholder="Optional"
-                    />
-                  </label>
-
-                  <label className="productsField productsFieldFull g-ui-field">
-                    <span>Notiz</span>
-                    <input
-                      name="recipeNotes"
-                      placeholder="Optionaler Hinweis zur Zutat"
-                    />
-                  </label>
-
-                  <div className="productRecipeFormActions">
-                    <button
-                      className="productsPrimaryButton g-ui-button g-ui-button--primary"
-                      type="submit"
+                    <Form
+                      method="post"
+                      onSubmit={(event) => {
+                        if (
+                          !window.confirm(
+                            "Produkt „" +
+                              selectedProduct.name +
+                              "“ wirklich endgültig löschen?"
+                          )
+                        ) {
+                          event.preventDefault();
+                        }
+                      }}
                     >
-                      Rezepturposition hinzufügen
-                    </button>
-                  </div>
-                </Form>
-              ) : null}
-              </section>
-            </div>
+                      <input
+                        type="hidden"
+                        name="intent"
+                        value="deleteProduct"
+                      />
 
-            <div className="productDangerZone">
-              <div>
-                <strong>Produktstatus und Löschen</strong>
-                <span>
-                  Inaktive Produkte bleiben erhalten, erscheinen aber
-                  nicht mehr als regulär verwendbares Sortiment.
-                </span>
+                      <input
+                        type="hidden"
+                        name="productId"
+                        value={
+                          selectedProduct.id
+                        }
+                      />
+
+                      <GastarioButton
+                        variant="danger"
+                        type="submit"
+                      >
+                        Produkt löschen
+                      </GastarioButton>
+                    </Form>
+
+                  </GastarioToolbar>
+
+                </GastarioSection>
+
               </div>
 
-              <div className="productDangerActions">
-                <Form method="post">
-                  <input
-                    type="hidden"
-                    name="intent"
-                    value="toggleActive"
-                  />
-                  <input
-                    type="hidden"
-                    name="productId"
-                    value={selectedProduct.id}
-                  />
-                  <input
-                    type="hidden"
-                    name="active"
-                    value={
-                      selectedProduct.active ? "false" : "true"
-                    }
-                  />
 
-                  <button
-                    className="productsSecondaryButton g-ui-button g-ui-button--secondary"
-                    type="submit"
-                  >
-                    {selectedProduct.active
-                      ? "Produkt deaktivieren"
-                      : "Produkt aktivieren"}
-                  </button>
-                </Form>
+              <div
+                hidden={
+                  selectedProductTab !==
+                  "master"
+                }
+              >
 
-                <Form
-                  method="post"
-                  onSubmit={(event) => {
-                    if (
-                      !window.confirm(
-                        `Produkt „${selectedProduct.name}“ wirklich endgültig löschen?`
-                      )
-                    ) {
-                      event.preventDefault();
-                    }
-                  }}
+                <GastarioSection
+                  eyebrow="Stammdaten"
+                  title="Produktdetails bearbeiten"
+                  description="Name, Kategorie, Preis, Steuer und Produktionsinformationen verwalten."
                 >
-                  <input
-                    type="hidden"
-                    name="intent"
-                    value="deleteProduct"
-                  />
-                  <input
-                    type="hidden"
-                    name="productId"
-                    value={selectedProduct.id}
-                  />
 
-                  <button
-                    className="productDeleteButton g-ui-button g-ui-button--danger"
-                    type="submit"
+                  <Form
+                    method="post"
+                    className="g-ui-dialog-form"
                   >
-                    Produkt löschen
-                  </button>
-                </Form>
+                    <input
+                      type="hidden"
+                      name="intent"
+                      value="updateProduct"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="productId"
+                      value={
+                        selectedProduct.id
+                      }
+                    />
+
+
+                    <GastarioFormGrid
+                      columns={2}
+                    >
+
+                      <GastarioField
+                        label="Produktname"
+                        required
+                      >
+                        <GastarioInput
+                          name="name"
+                          defaultValue={
+                            selectedProduct.name
+                          }
+                          required
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField label="Kategorie">
+                        <GastarioInput
+                          name="category"
+                          defaultValue={
+                            selectedProduct.category ||
+                            ""
+                          }
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField label="Arbeitsbereich">
+                        <GastarioSelect
+                          name="operationalArea"
+                          defaultValue={
+                            normalizedOperationalArea(
+                              selectedProduct.operationalArea
+                            )
+                          }
+                        >
+                          {OPERATIONAL_AREAS.map(
+                            (area) => (
+                              <option
+                                key={
+                                  area.value
+                                }
+                                value={
+                                  area.value
+                                }
+                              >
+                                {area.label}
+                              </option>
+                            )
+                          )}
+                        </GastarioSelect>
+                      </GastarioField>
+
+
+                      <GastarioField label="Einheit">
+                        <GastarioInput
+                          name="unit"
+                          defaultValue={
+                            selectedProduct.unit ||
+                            "Portion"
+                          }
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField
+                        label="Verkaufspreis"
+                        hint="EUR netto"
+                      >
+                        <GastarioInput
+                          name="priceEuro"
+                          inputMode="decimal"
+                          defaultValue={
+                            String(
+                              (
+                                selectedProduct.priceCents ||
+                                0
+                              ) / 100
+                            ).replace(
+                              ".",
+                              ","
+                            )
+                          }
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField
+                        label="Mehrwertsteuer"
+                        hint="in Prozent"
+                      >
+                        <GastarioInput
+                          name="taxRate"
+                          type="number"
+                          step="0.01"
+                          defaultValue={
+                            selectedProduct.taxRate ??
+                            7
+                          }
+                        />
+                      </GastarioField>
+
+                    </GastarioFormGrid>
+
+
+                    <GastarioField label="Produktionsnotiz">
+                      <GastarioTextarea
+                        name="notes"
+                        rows={4}
+                        defaultValue={
+                          selectedProduct.notes ||
+                          ""
+                        }
+                        placeholder="Hinweise für Produktion oder Ausgabe"
+                      />
+                    </GastarioField>
+
+
+                    <GastarioToolbar>
+                      <GastarioButton
+                        variant="primary"
+                        type="submit"
+                      >
+                        Änderungen speichern
+                      </GastarioButton>
+                    </GastarioToolbar>
+
+                  </Form>
+
+                </GastarioSection>
+
               </div>
-            </div>
+
+
+              <div
+                hidden={
+                  selectedProductTab !==
+                  "procurement"
+                }
+              >
+
+                <GastarioSection
+                  eyebrow="Beschaffung"
+                  title="Herstellung und Beschaffung"
+                  description="Festlegen, ob das Produkt selbst hergestellt oder fertig beschafft wird."
+                  action={
+                    <GastarioBadge
+                      variant="neutral"
+                    >
+                      {
+                        selectedProduct.procurementType ===
+                        "READY_MADE"
+                          ? "Fertigprodukt"
+                          : selectedProduct.procurementType ===
+                              "BAKE_OFF"
+                            ? "Aufbacken"
+                            : selectedProduct.procurementType ===
+                                "THAW"
+                              ? "Auftauen"
+                              : selectedProduct.procurementType ===
+                                  "REHEAT"
+                                ? "Erwärmen"
+                                : selectedProduct.procurementType ===
+                                    "EXTERNAL"
+                                  ? "Extern"
+                                  : "Eigenproduktion"
+                      }
+                    </GastarioBadge>
+                  }
+                >
+
+                  <procurementFetcher.Form
+                    method="post"
+                    className="g-ui-dialog-form"
+                  >
+                    <input
+                      type="hidden"
+                      name="intent"
+                      value="updateProcurement"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="productId"
+                      value={
+                        selectedProduct.id
+                      }
+                    />
+
+
+                    <GastarioField label="Beschaffungsart">
+                      <GastarioSelect
+                        name="procurementType"
+                        defaultValue={
+                          selectedProduct.procurementType ||
+                          "RECIPE"
+                        }
+                      >
+                        <option value="RECIPE">
+                          Eigenproduktion mit Rezeptur
+                        </option>
+
+                        <option value="READY_MADE">
+                          Fertig einkaufen
+                        </option>
+
+                        <option value="BAKE_OFF">
+                          Fertig einkaufen und aufbacken
+                        </option>
+
+                        <option value="THAW">
+                          Fertig einkaufen und auftauen
+                        </option>
+
+                        <option value="REHEAT">
+                          Fertig einkaufen und erwärmen
+                        </option>
+
+                        <option value="EXTERNAL">
+                          Extern produzieren lassen
+                        </option>
+                      </GastarioSelect>
+                    </GastarioField>
+
+
+                    <GastarioNotice type="info">
+                      Bei Eigenproduktion wird die hinterlegte
+                      Rezeptur verwendet. Bei allen anderen
+                      Beschaffungsarten nutzt Gastario Lieferant,
+                      Einkaufsartikel und Gebindedaten.
+                    </GastarioNotice>
+
+
+                    <GastarioFormGrid
+                      columns={2}
+                    >
+
+                      <GastarioField label="Lieferant">
+                        <GastarioInput
+                          name="supplierName"
+                          defaultValue={
+                            selectedProduct.supplierName ||
+                            ""
+                          }
+                          placeholder="Zum Beispiel Transgourmet"
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField label="Einkaufsartikel">
+                        <GastarioInput
+                          name="supplierArticleName"
+                          defaultValue={
+                            selectedProduct.supplierArticleName ||
+                            ""
+                          }
+                          placeholder="Bezeichnung beim Lieferanten"
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField label="Artikelnummer">
+                        <GastarioInput
+                          name="supplierArticleNumber"
+                          defaultValue={
+                            selectedProduct.supplierArticleNumber ||
+                            ""
+                          }
+                          placeholder="Optional"
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField label="Einkaufseinheit">
+                        <GastarioInput
+                          name="purchaseUnit"
+                          defaultValue={
+                            selectedProduct.purchaseUnit ||
+                            "Stück"
+                          }
+                          placeholder="Stück, kg, Liter"
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField label="Bedarf je verkaufter Einheit">
+                        <GastarioInput
+                          name="purchaseQuantityPerUnit"
+                          type="number"
+                          min="0"
+                          step="0.001"
+                          defaultValue={
+                            selectedProduct.purchaseQuantityPerUnit ??
+                            ""
+                          }
+                          placeholder="1"
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField label="Gebindeart">
+                        <GastarioInput
+                          name="packageUnit"
+                          defaultValue={
+                            selectedProduct.packageUnit ||
+                            ""
+                          }
+                          placeholder="Karton, Beutel, Kiste"
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField label="Inhalt je Gebinde">
+                        <GastarioInput
+                          name="packageQuantity"
+                          type="number"
+                          min="0"
+                          step="0.001"
+                          defaultValue={
+                            selectedProduct.packageQuantity ??
+                            ""
+                          }
+                          placeholder="48"
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField
+                        label="Einkaufspreis je Gebinde"
+                        hint="EUR"
+                      >
+                        <GastarioInput
+                          name="purchasePriceEuro"
+                          inputMode="decimal"
+                          defaultValue={
+                            selectedProduct.purchasePriceCents ==
+                            null
+                              ? ""
+                              : String(
+                                  selectedProduct.purchasePriceCents /
+                                    100
+                                ).replace(
+                                  ".",
+                                  ","
+                                )
+                          }
+                          placeholder="31,90"
+                        />
+                      </GastarioField>
+
+                    </GastarioFormGrid>
+
+
+                    <GastarioField label="Vorbereitung und Verarbeitung">
+                      <GastarioTextarea
+                        name="preparationNotes"
+                        rows={3}
+                        defaultValue={
+                          selectedProduct.preparationNotes ||
+                          ""
+                        }
+                        placeholder="Zum Beispiel auftauen, aufbacken oder vorbereiten"
+                      />
+                    </GastarioField>
+
+
+                    {procurementFetcher.data?.success ? (
+                      <GastarioNotice type="success">
+                        {procurementFetcher.data.success}
+                      </GastarioNotice>
+                    ) : null}
+
+
+                    {procurementFetcher.data?.error ? (
+                      <GastarioNotice type="danger">
+                        {procurementFetcher.data.error}
+                      </GastarioNotice>
+                    ) : null}
+
+
+                    <GastarioToolbar>
+                      <GastarioButton
+                        variant="primary"
+                        type="submit"
+                        disabled={
+                          procurementFetcher.state !==
+                          "idle"
+                        }
+                      >
+                        {procurementFetcher.state !==
+                        "idle"
+                          ? "Wird gespeichert …"
+                          : "Beschaffungsdaten speichern"}
+                      </GastarioButton>
+                    </GastarioToolbar>
+
+                  </procurementFetcher.Form>
+
+                </GastarioSection>
+
+              </div>
+
+
+              <div
+                hidden={
+                  selectedProductTab !==
+                  "recipe"
+                }
+              >
+
+                <GastarioSection
+                  eyebrow="Rezeptur"
+                  title="Rezeptur pro Verkaufseinheit"
+                  description="Zutaten und Mengen für Produktion und automatische Einkaufsliste."
+                  action={
+                    <GastarioBadge
+                      variant={
+                        selectedProduct.procurementType !==
+                        "RECIPE"
+                          ? "neutral"
+                          : selectedRecipeItems.length >
+                              0
+                            ? "success"
+                            : "warning"
+                      }
+                    >
+                      {selectedProduct.procurementType !==
+                      "RECIPE"
+                        ? "Nicht erforderlich"
+                        : selectedRecipeItems.length ===
+                            1
+                          ? "1 Position"
+                          : selectedRecipeItems.length +
+                            " Positionen"}
+                    </GastarioBadge>
+                  }
+                >
+
+                  {selectedProduct.procurementType !==
+                  "RECIPE" ? (
+
+                    <GastarioEmptyState
+                      title="Keine Rezeptur erforderlich"
+                    >
+                      Dieses Produkt wird fertig beschafft.
+                      Für die Einkaufsliste verwendet Gastario
+                      stattdessen die Beschaffungsdaten.
+                    </GastarioEmptyState>
+
+                  ) : (
+
+                    <>
+
+                      {selectedRecipeItems.length >
+                      0 ? (
+
+                        <GastarioDataList>
+
+                          {selectedRecipeItems.map(
+                            (item: any) => (
+
+                              <GastarioDataRow
+                                key={item.id}
+                              >
+
+                                <div className="g-ui-data-row-main">
+
+                                  <strong className="g-ui-data-row-title">
+                                    {item.ingredientName}
+                                  </strong>
+
+                                  <span className="g-ui-data-row-description">
+                                    {item.supplierName ||
+                                      "Kein Lieferant hinterlegt"}
+                                    {item.notes
+                                      ? " · " +
+                                        item.notes
+                                      : ""}
+                                  </span>
+
+                                </div>
+
+
+                                <div className="g-ui-data-row-meta">
+
+                                  <strong>
+                                    {item.quantityPerUnit}
+                                    {" "}
+                                    {item.unit}
+                                  </strong>
+
+
+                                  <Form
+                                    method="post"
+                                    onSubmit={(event) => {
+                                      if (
+                                        !window.confirm(
+                                          "Diese Rezepturposition wirklich löschen?"
+                                        )
+                                      ) {
+                                        event.preventDefault();
+                                      }
+                                    }}
+                                  >
+                                    <input
+                                      type="hidden"
+                                      name="intent"
+                                      value="deleteRecipeItem"
+                                    />
+
+                                    <input
+                                      type="hidden"
+                                      name="productId"
+                                      value={
+                                        selectedProduct.id
+                                      }
+                                    />
+
+                                    <input
+                                      type="hidden"
+                                      name="recipeItemId"
+                                      value={item.id}
+                                    />
+
+                                    <GastarioButton
+                                      variant="danger"
+                                      type="submit"
+                                      aria-label={
+                                        item.ingredientName +
+                                        " löschen"
+                                      }
+                                    >
+                                      Löschen
+                                    </GastarioButton>
+                                  </Form>
+
+                                </div>
+
+                              </GastarioDataRow>
+
+                            )
+                          )}
+
+                        </GastarioDataList>
+
+                      ) : (
+
+                        <GastarioEmptyState
+                          title="Noch keine Rezeptur hinterlegt"
+                        >
+                          Füge die erste Zutat oder das erste
+                          Material hinzu.
+                        </GastarioEmptyState>
+
+                      )}
+
+
+                      <Form
+                        method="post"
+                        className="g-ui-dialog-form"
+                      >
+                        <input
+                          type="hidden"
+                          name="intent"
+                          value="addRecipeItem"
+                        />
+
+                        <input
+                          type="hidden"
+                          name="productId"
+                          value={
+                            selectedProduct.id
+                          }
+                        />
+
+
+                        <GastarioFormGrid
+                          columns={2}
+                        >
+
+                          <GastarioField
+                            label="Zutat oder Material"
+                            required
+                          >
+                            <GastarioInput
+                              name="ingredientName"
+                              placeholder="Zum Beispiel Basmatireis"
+                              required
+                            />
+                          </GastarioField>
+
+
+                          <GastarioField
+                            label="Menge pro Einheit"
+                            required
+                          >
+                            <GastarioInput
+                              name="quantityPerUnit"
+                              type="number"
+                              min="0.001"
+                              step="0.001"
+                              placeholder="150"
+                              required
+                            />
+                          </GastarioField>
+
+
+                          <GastarioField
+                            label="Einheit"
+                            required
+                          >
+                            <GastarioInput
+                              name="ingredientUnit"
+                              defaultValue="g"
+                              placeholder="g"
+                              required
+                            />
+                          </GastarioField>
+
+
+                          <GastarioField label="Lieferant">
+                            <GastarioInput
+                              name="supplierName"
+                              placeholder="Optional"
+                            />
+                          </GastarioField>
+
+                        </GastarioFormGrid>
+
+
+                        <GastarioField label="Notiz">
+                          <GastarioInput
+                            name="recipeNotes"
+                            placeholder="Optionaler Hinweis zur Zutat"
+                          />
+                        </GastarioField>
+
+
+                        <GastarioToolbar>
+                          <GastarioButton
+                            variant="primary"
+                            type="submit"
+                          >
+                            Rezepturposition hinzufügen
+                          </GastarioButton>
+                        </GastarioToolbar>
+
+                      </Form>
+
+                    </>
+
+                  )}
+
+                </GastarioSection>
+
+              </div>
+
             </>
           ) : null}
+
         </GastarioDetailDialog>
 
 
@@ -1719,6 +1956,9 @@ export default function ProductsPage() {
                         setShowCreateForm(false);
                         setSelectedProductId(
                           product.id
+                        );
+                        setSelectedProductTab(
+                          "overview"
                         );
                       }}
                     >
