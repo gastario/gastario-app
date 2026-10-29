@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router";
 import type {
   ButtonHTMLAttributes,
@@ -81,73 +81,6 @@ export function GastarioInput({
   );
 }
 
-
-type GastarioFileInputProps =
-  Omit<
-    InputHTMLAttributes<HTMLInputElement>,
-    "type"
-  > & {
-    buttonLabel?: ReactNode;
-    emptyLabel?: ReactNode;
-  };
-
-export function GastarioFileInput({
-  id,
-  className,
-  buttonLabel = "Datei auswählen",
-  emptyLabel = "Keine Datei ausgewählt",
-  onChange,
-  ...props
-}: GastarioFileInputProps) {
-  const generatedId = useId();
-
-  const inputId =
-    id || generatedId;
-
-  const [
-    fileName,
-    setFileName,
-  ] = useState("");
-
-  return (
-    <div
-      className={joinClasses(
-        "g-ui-file-input",
-        className
-      )}
-    >
-      <input
-        {...props}
-        id={inputId}
-        type="file"
-        className="g-ui-file-input-control"
-        onChange={(event) => {
-          setFileName(
-            event.currentTarget.files?.[0]
-              ?.name || ""
-          );
-
-          onChange?.(event);
-        }}
-      />
-
-      <label
-        htmlFor={inputId}
-        className={
-          gastarioButtonClass(
-            "secondary"
-          )
-        }
-      >
-        {buttonLabel}
-      </label>
-
-      <span className="g-ui-file-input-name">
-        {fileName || emptyLabel}
-      </span>
-    </div>
-  );
-}
 
 type GastarioSelectProps =
   SelectHTMLAttributes<HTMLSelectElement>;
@@ -887,79 +820,6 @@ export function GastarioBadge({
 /* =========================================================
    WORKFLOW STEPS
 ========================================================= */
-
-export type GastarioStepStatus =
-  | "complete"
-  | "current"
-  | "upcoming";
-
-type GastarioStepsProps = {
-  items: Array<{
-    label: ReactNode;
-    description?: ReactNode;
-    status?: GastarioStepStatus;
-  }>;
-  className?: string;
-};
-
-export function GastarioSteps({
-  items,
-  className,
-}: GastarioStepsProps) {
-  return (
-    <div
-      className={joinClasses(
-        "g-ui-steps",
-        className
-      )}
-    >
-      {items.map(
-        (item, index) => {
-          const status =
-            item.status ||
-            "upcoming";
-
-          return (
-            <div
-              key={index}
-              className={joinClasses(
-                "g-ui-step",
-                `g-ui-step--${status}`
-              )}
-            >
-              <span className="g-ui-step-index">
-                {status === "complete"
-                  ? "✓"
-                  : index + 1}
-              </span>
-
-              <span className="g-ui-step-copy">
-                <strong className="g-ui-step-title">
-                  {item.label}
-                </strong>
-
-                {item.description ? (
-                  <span className="g-ui-step-description">
-                    {item.description}
-                  </span>
-                ) : null}
-              </span>
-
-              <span className="g-ui-step-status">
-                {status === "complete"
-                  ? "Erledigt"
-                  : status === "current"
-                    ? "Aktuell"
-                    : "Danach"}
-              </span>
-            </div>
-          );
-        }
-      )}
-    </div>
-  );
-}
-
 
 /* =========================================================
    TABS
