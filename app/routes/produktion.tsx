@@ -24,7 +24,6 @@ import {
   GastarioPage,
   GastarioSection,
   GastarioSelect,
-  GastarioTable,
   GastarioToolbar,
   gastarioButtonClass,
 } from "../components/ui";
@@ -913,6 +912,15 @@ export default function ProductionPage() {
           eyebrow="Produktionsliste"
           title="Zu produzieren"
           description="Nur der Küche zugeordnete Positionen werden für den gewählten Planungstag zusammengefasst."
+          action={
+            <GastarioBadge variant="neutral">
+              {data.productionItems.length}
+              {" "}
+              {data.productionItems.length === 1
+                ? "Position"
+                : "Positionen"}
+            </GastarioBadge>
+          }
         >
 
           <Form method="get">
@@ -984,92 +992,84 @@ export default function ProductionPage() {
 
           ) : (
 
-            <GastarioTable>
+            <GastarioDataList>
 
-              <thead>
-                <tr>
-                  <th>Produkt</th>
-                  <th>Menge</th>
-                  <th>Einheit</th>
-                  <th>Aufträge</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
+              {data.productionItems.map(
+                (
+                  item: any
+                ) => (
 
+                  <GastarioDataRow
+                    key={
+                      `${item.name}-${item.unit}`
+                    }
+                  >
 
-              <tbody>
+                    <div className="g-ui-data-row-main">
 
-                {data.productionItems.map(
-                  (
-                    item: any
-                  ) => (
+                      <strong className="g-ui-data-row-title">
+                        {item.name}
+                      </strong>
 
-                    <tr
-                      key={
-                        `${item.name}-${item.unit}`
-                      }
-                    >
-
-                      <td>
-                        <strong>
-                          {item.name}
-                        </strong>
-                      </td>
-
-
-                      <td>
-                        <strong>
-                          {item.quantity}
-                        </strong>
-                      </td>
-
-
-                      <td>
-                        {item.unit}
-                      </td>
-
-
-                      <td>
+                      <span className="g-ui-data-row-description">
                         {item.orders
                           .slice(0, 3)
-                          .join(", ")}
+                          .join(" · ")}
 
                         {item.orders.length > 3
-                          ? ` +${
+                          ? ` · +${
                               item.orders.length -
                               3
-                            }`
+                            } weitere`
                           : ""}
-                      </td>
+                      </span>
+
+                    </div>
 
 
-                      <td>
-                        <GastarioBadge
-                          variant={
-                            item.statusClassName ===
-                            "is-ready"
-                              ? "success"
+                    <div className="g-ui-data-row-meta">
+
+                      <strong>
+                        {item.quantity}
+                        {" "}
+                        {item.unit}
+                      </strong>
+
+                      <GastarioBadge
+                        variant="neutral"
+                      >
+                        {item.orders.length}
+                        {" "}
+                        {item.orders.length === 1
+                          ? "Auftrag"
+                          : "Aufträge"}
+                      </GastarioBadge>
+
+                      <GastarioBadge
+                        variant={
+                          item.statusClassName ===
+                          "is-ready"
+                            ? "success"
+                            : item.statusClassName ===
+                                "is-production"
+                              ? "info"
                               : item.statusClassName ===
-                                  "is-production"
-                                ? "info"
-                                : item.statusClassName ===
-                                    "is-packing"
-                                  ? "warning"
-                                  : "neutral"
-                          }
-                        >
-                          {item.statusLabel}
-                        </GastarioBadge>
-                      </td>
+                                  "is-packing"
+                                ? "warning"
+                                : "neutral"
+                        }
+                      >
+                        {item.statusLabel}
+                      </GastarioBadge>
 
-                    </tr>
+                    </div>
 
-                  )
-                )}
+                  </GastarioDataRow>
 
-              </tbody>
+                )
+              )}
 
-            </GastarioTable>
+            </GastarioDataList>
 
           )}
 
