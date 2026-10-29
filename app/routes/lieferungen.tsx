@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
   Form,
   Link,
@@ -7,30 +9,25 @@ import {
 import AppLayout from "../components/AppLayout";
 
 import {
-  MetricCard,
-  MetricGrid,
-  Notice,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
-
-import {
+  GastarioBadge,
   GastarioButton,
-  gastarioButtonClass,
   GastarioDataList,
   GastarioDataRow,
+  GastarioDetailDialog,
+  GastarioEmptyState,
   GastarioField,
+  GastarioFilterBar,
+  GastarioHeader,
   GastarioMetric,
   GastarioMetricGrid,
-  GastarioPanel,
+  GastarioNotice,
+  GastarioPage,
   GastarioSection,
   GastarioSelect,
-  GastarioStack,
   GastarioToolbar,
+  gastarioButtonClass,
 } from "../components/ui";
 
-import "../styles/gastario-deliveries.css";
 
 function todayInput() {
   const now = new Date();
@@ -530,13 +527,101 @@ export default function DeliveriesPage() {
   const data =
     useLoaderData<typeof loader>();
 
+  const [
+    selectedOrderId,
+    setSelectedOrderId,
+  ] =
+    useState<string | null>(
+      null
+    );
+
+  const selectedOrder =
+    data.orders.find(
+      (order: any) =>
+        order.id ===
+        selectedOrderId
+    ) || null;
+
   const routeAvailable =
     data.tourMapUrl !== "#";
 
+
+  const selectedAddress =
+    selectedOrder
+      ? String(
+          selectedOrder.deliveryAddress ||
+            ""
+        ).trim()
+      : "";
+
+
+  const selectedPhone =
+    selectedOrder
+      ? cleanPhone(
+          selectedOrder.contactPhone
+        )
+      : "";
+
+
+  const selectedMap =
+    mapsUrl(
+      selectedAddress
+    );
+
+
+  const selectedWhatsapp =
+    selectedPhone
+      ? `https://wa.me/${selectedPhone.replace(
+          "+",
+          ""
+        )}?text=${encodeURIComponent(
+          `Hallo, hier ist der Fahrer für die Lieferung ${
+            selectedOrder?.orderNumber ||
+            ""
+          } von Gastario.`
+        )}`
+      : "#";
+
+
+  const selectedMailBody =
+    selectedOrder
+      ? buildDriverMail(
+          selectedOrder,
+          selectedAddress,
+          selectedMap
+        )
+      : "";
+
+
+  const selectedPackingReady =
+    selectedOrder
+      ? (
+          Boolean(
+            selectedOrder.packingCompletedAt
+          ) ||
+          String(
+            selectedOrder.status ||
+            ""
+          ).toUpperCase() ===
+            "DELIVERED"
+        )
+      : false;
+
+
+  const selectedComplete =
+    Boolean(
+      selectedAddress &&
+      selectedPhone &&
+      selectedPackingReady
+    );
+
+
   return (
     <AppLayout>
-      <PageShell className="deliveriesPage">
-        <PageHeader
+
+      <GastarioPage>
+
+        <GastarioHeader
           eyebrow="Betrieb"
           title="Lieferungen"
           subtitle={
@@ -549,7 +634,8 @@ export default function DeliveriesPage() {
             </>
           }
           actions={
-            <GastarioToolbar>
+            <>
+
               <GastarioButton
                 type="button"
                 variant="secondary"
@@ -560,18 +646,26 @@ export default function DeliveriesPage() {
                 Drucken
               </GastarioButton>
 
+
               {routeAvailable ? (
+
                 <a
-                  className={gastarioButtonClass(
-                    "primary"
-                  )}
-                  href={data.tourMapUrl}
+                  className={
+                    gastarioButtonClass(
+                      "primary"
+                    )
+                  }
+                  href={
+                    data.tourMapUrl
+                  }
                   target="_blank"
                   rel="noreferrer"
                 >
                   Tagesroute öffnen
                 </a>
+
               ) : (
+
                 <GastarioButton
                   type="button"
                   variant="primary"
@@ -579,123 +673,184 @@ export default function DeliveriesPage() {
                 >
                   Keine Route verfügbar
                 </GastarioButton>
+
               )}
-            </GastarioToolbar>
+
+            </>
           }
         />
 
+
         {data.error ? (
-          <Notice type="danger">
+
+          <GastarioNotice type="danger">
+
             <strong>
               Lieferungen konnten
               nicht geladen werden.
             </strong>
 
-            <span>
-              {data.error}
-            </span>
-          </Notice>
+            {" "}
+
+            {data.error}
+
+          </GastarioNotice>
+
         ) : null}
 
+
         <GastarioMetricGrid>
+
           <GastarioMetric
             label="Heute"
-            value={data.stats.today}
+            value={
+              data.stats.today
+            }
             description="Lieferungen für heute"
+            badge="Heute"
           />
 
           <GastarioMetric
             label="Künftig"
-            value={data.stats.future}
+            value={
+              data.stats.future
+            }
             description="Kommende Lieferungen"
+            badge="Planung"
           />
 
           <GastarioMetric
             label="Gesamt"
-            value={data.stats.all}
+            value={
+              data.stats.all
+            }
             description="Operative Lieferaufträge"
+            badge="Touren"
           />
 
           <GastarioMetric
             label="Daten prüfen"
-            value={data.stats.incomplete}
+            value={
+              data.stats.incomplete
+            }
             description={
               data.stats.incomplete > 0
                 ? "Adresse, Telefon oder Packstatus prüfen"
                 : "Alle Lieferdaten vollständig"
             }
+            badge={
+              data.stats.incomplete > 0
+                ? "Prüfen"
+                : "Bereit"
+            }
           />
+
         </GastarioMetricGrid>
 
+
         <GastarioSection
-          eyebrow="Filter"
-          title="Lieferungen anzeigen"
-          description="Zeitraum auswählen oder gezielt ein Lieferdatum öffnen."
+          eyebrow="Fahrerplan"
+          title={
+            rangeTitle(
+              data.range
+            )
+          }
+          description={
+            data.orders.length === 1
+              ? "1 Lieferung im ausgewählten Zeitraum."
+              : `${data.orders.length} Lieferungen im ausgewählten Zeitraum.`
+          }
+          action={
+            <GastarioBadge variant="neutral">
+              {data.orders.length}
+              {" "}
+              {data.orders.length === 1
+                ? "Lieferung"
+                : "Lieferungen"}
+            </GastarioBadge>
+          }
         >
-          <GastarioToolbar>
-            <Link
-              to="/lieferungen?range=today"
-              className={gastarioButtonClass(
-                data.range === "today"
-                  ? "primary"
-                  : "secondary"
-              )}
-            >
-              Heute
-            </Link>
-
-            <Link
-              to="/lieferungen?range=future"
-              className={gastarioButtonClass(
-                data.range === "future"
-                  ? "primary"
-                  : "secondary"
-              )}
-            >
-              Künftig
-            </Link>
-
-            <Link
-              to="/lieferungen?range=past"
-              className={gastarioButtonClass(
-                data.range === "past"
-                  ? "primary"
-                  : "secondary"
-              )}
-            >
-              Vergangen
-            </Link>
-
-            <Link
-              to="/lieferungen?range=all"
-              className={gastarioButtonClass(
-                data.range === "all"
-                  ? "primary"
-                  : "secondary"
-              )}
-            >
-              Alle
-            </Link>
-          </GastarioToolbar>
 
           <Form method="get">
-            <input
-              type="hidden"
-              name="range"
-              value="date"
-            />
 
-            <GastarioToolbar>
-              <GastarioField label="Lieferdatum">
+            <GastarioFilterBar
+              actions={
+                <>
+
+                  <GastarioButton
+                    type="submit"
+                    variant="primary"
+                  >
+                    Anzeigen
+                  </GastarioButton>
+
+                  <Link
+                    to="/lieferungen?range=today"
+                    className={
+                      gastarioButtonClass(
+                        "secondary"
+                      )
+                    }
+                  >
+                    Zurücksetzen
+                  </Link>
+
+                </>
+              }
+            >
+
+              <GastarioField
+                label="Zeitraum"
+              >
+
+                <GastarioSelect
+                  name="range"
+                  defaultValue={
+                    data.range
+                  }
+                >
+
+                  <option value="today">
+                    Heute
+                  </option>
+
+                  <option value="future">
+                    Künftig
+                  </option>
+
+                  <option value="past">
+                    Vergangen
+                  </option>
+
+                  <option value="all">
+                    Alle
+                  </option>
+
+                  <option value="date">
+                    Bestimmtes Datum
+                  </option>
+
+                </GastarioSelect>
+
+              </GastarioField>
+
+
+              <GastarioField
+                label="Lieferdatum"
+              >
+
                 <GastarioSelect
                   name="date"
                   defaultValue={
                     data.selectedDate
                   }
                 >
+
                   {data.availableDates.length > 0 ? (
+
                     data.availableDates.map(
                       (date: string) => (
+
                         <option
                           key={date}
                           value={date}
@@ -704,9 +859,12 @@ export default function DeliveriesPage() {
                             date
                           )}
                         </option>
+
                       )
                     )
+
                   ) : (
+
                     <option
                       value={
                         data.selectedDate
@@ -714,446 +872,530 @@ export default function DeliveriesPage() {
                     >
                       Keine Lieferdaten
                     </option>
+
                   )}
+
                 </GastarioSelect>
+
               </GastarioField>
 
-              <button
-                type="submit"
-                className={gastarioButtonClass(
-                  "primary"
-                )}
-              >
-                Datum anzeigen
-              </button>
-            </GastarioToolbar>
+            </GastarioFilterBar>
+
           </Form>
+
+
+          {data.orders.length === 0 ? (
+
+            <GastarioEmptyState
+              title="Keine Lieferungen gefunden"
+            >
+              Für diesen Filter sind
+              aktuell keine Lieferungen
+              vorhanden.
+            </GastarioEmptyState>
+
+          ) : (
+
+            <GastarioDataList>
+
+              {data.orders.map(
+                (
+                  order: any,
+                  index: number
+                ) => {
+
+                  const address =
+                    String(
+                      order.deliveryAddress ||
+                      ""
+                    ).trim();
+
+                  const phone =
+                    cleanPhone(
+                      order.contactPhone
+                    );
+
+                  const packingReady =
+                    Boolean(
+                      order.packingCompletedAt
+                    ) ||
+                    String(
+                      order.status ||
+                      ""
+                    ).toUpperCase() ===
+                      "DELIVERED";
+
+                  const complete =
+                    Boolean(
+                      address &&
+                      phone &&
+                      packingReady
+                    );
+
+
+                  return (
+
+                    <GastarioDataRow
+                      key={
+                        order.id
+                      }
+                      onClick={() =>
+                        setSelectedOrderId(
+                          order.id
+                        )
+                      }
+                    >
+
+                      <div className="g-ui-data-row-main">
+
+                        <strong className="g-ui-data-row-title">
+                          {order.customerName ||
+                            "Kunde unbekannt"}
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          Stopp {index + 1}
+                          {" · "}
+                          {order.orderNumber ||
+                            order.id}
+                          {" · "}
+                          {address ||
+                            "Keine Lieferadresse"}
+                        </span>
+
+                        <span className="g-ui-data-row-description">
+                          {orderSummary(
+                            order
+                          )}
+                        </span>
+
+                      </div>
+
+
+                      <div className="g-ui-data-row-meta">
+
+                        <span>
+                          {formatDate(
+                            order.deliveryDate
+                          )}
+                        </span>
+
+                        <strong>
+                          {order.deliveryTimeText ||
+                            "–"}
+                        </strong>
+
+                        <GastarioBadge
+                          variant={
+                            complete
+                              ? "success"
+                              : "warning"
+                          }
+                        >
+                          {complete
+                            ? "Fahrbereit"
+                            : "Daten prüfen"}
+                        </GastarioBadge>
+
+                        <GastarioBadge
+                          variant="neutral"
+                        >
+                          {statusLabel(
+                            order.status
+                          )}
+                        </GastarioBadge>
+
+                      </div>
+
+
+                      <span
+                        className="g-ui-data-row-chevron"
+                        aria-hidden="true"
+                      >
+                        →
+                      </span>
+
+                    </GastarioDataRow>
+
+                  );
+
+                }
+              )}
+
+            </GastarioDataList>
+
+          )}
+
         </GastarioSection>
 
-        <section className="deliveriesMainGrid">
-          <GastarioSection
-            eyebrow="Fahrerplan"
-            title={rangeTitle(data.range)}
-            description={
-              data.orders.length === 1
-                ? "1 Lieferung im ausgewählten Zeitraum."
-                : `${data.orders.length} Lieferungen im ausgewählten Zeitraum.`
-            }
-            actions={
-              routeAvailable ? (
-                <a
-                  className={gastarioButtonClass("secondary")}
-                  href={data.tourMapUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Komplette Route
-                </a>
-              ) : null
-            }
-          >
-            <div className="deliveriesRouteList">
-              {data.orders.length === 0 ? (
-                <div className="deliveriesEmptyState">
-                  <div
-                    className="deliveriesEmptyIcon"
-                    aria-hidden="true"
-                  >
-                    ↗
-                  </div>
 
-                  <div>
-                    <strong>
-                      Keine Lieferungen gefunden
-                    </strong>
+        <GastarioDetailDialog
+          open={
+            Boolean(
+              selectedOrder
+            )
+          }
+          size="lg"
+          title={
+            selectedOrder?.customerName ||
+            "Lieferung"
+          }
+          description={
+            selectedOrder
+              ? `${
+                  selectedOrder.orderNumber ||
+                  selectedOrder.id
+                } · ${
+                  formatDate(
+                    selectedOrder.deliveryDate
+                  )
+                } · ${
+                  selectedOrder.deliveryTimeText ||
+                  "–"
+                }`
+              : undefined
+          }
+          onClose={() =>
+            setSelectedOrderId(
+              null
+            )
+          }
+          footer={
+            selectedOrder ? (
 
-                    <span>
-                      Für diesen Filter sind
-                      aktuell keine Aufträge
-                      vorhanden.
-                    </span>
-                  </div>
+              <GastarioToolbar>
 
-                  <Link
-                    to="/lieferungen?range=future"
-                    className="deliveriesButton deliveriesButtonSecondary"
-                  >
-                    Künftige anzeigen
-                  </Link>
-                </div>
-              ) : (
-                data.orders.map(
-                  (
-                    order: any,
-                    index: number
-                  ) => {
-                    const phone =
-                      cleanPhone(
-                        order.contactPhone
-                      );
-
-                    const address =
-                      String(
-                        order.deliveryAddress ||
-                          ""
-                      ).trim();
-
-                    const map =
-                      mapsUrl(address);
-
-                    const whatsapp =
-                      phone
-                        ? `https://wa.me/${phone.replace(
-                            "+",
-                            ""
-                          )}?text=${encodeURIComponent(
-                            `Hallo, hier ist der Fahrer für die Lieferung ${
-                              order.orderNumber
-                            } von Gastario.`
-                          )}`
-                        : "#";
-
-                    const mailBody =
-                      buildDriverMail(
-                        order,
-                        address,
-                        map
-                      );
-
-                    const deliveryDataComplete =
-                      Boolean(
-                        address && phone
-                      );
-
-                    const packingReady =
-                      Boolean(
-                        order.packingCompletedAt
-                      ) ||
-                      String(
-                        order.status || ""
-                      ).toUpperCase() ===
-                        "DELIVERED";
-
-                    const complete =
-                      deliveryDataComplete &&
-                      packingReady;
-
-                    return (
-                      <GastarioPanel
-                        key={order.id}
-                      >
-                        <GastarioStack>
-                          <GastarioMetricGrid>
-                            <GastarioMetric
-                              label={`Stopp ${index + 1}`}
-                              value={
-                                order.deliveryTimeText ||
-                                "–"
-                              }
-                              description={`${formatDate(
-                                order.deliveryDate
-                              )} · Uhrzeit`}
-                            />
-
-                            <GastarioMetric
-                              label="Kunde"
-                              value={
-                                order.customerName ||
-                                "Ohne Kunde"
-                              }
-                              description={orderSummary(
-                                order
-                              )}
-                            />
-
-                            <GastarioMetric
-                              label="Status"
-                              value={statusLabel(
-                                order.status
-                              )}
-                              description="Auftragsstatus"
-                            />
-
-                            <GastarioMetric
-                              label="Lieferfähigkeit"
-                              value={
-                                complete
-                                  ? "Fahrbereit"
-                                  : "Daten fehlen"
-                              }
-                              description={
-                                complete
-                                  ? "Adresse und Telefon vorhanden"
-                                  : "Lieferdaten vervollständigen"
-                              }
-                            />
-                          </GastarioMetricGrid>
-
-                          <GastarioDataList>
-                            <GastarioDataRow>
-                              <div>
-                                <strong>Adresse</strong>
-                                <div>
-                                  {address ||
-                                    "Keine Adresse eingetragen"}
-                                </div>
-                              </div>
-                            </GastarioDataRow>
-
-                            <GastarioDataRow>
-                              <div>
-                                <strong>Kontakt</strong>
-                                <div>
-                                  {order.contactName ||
-                                    "Kein Ansprechpartner"}
-                                </div>
-                                <div>
-                                  {order.contactPhone ||
-                                    "Keine Telefonnummer"}
-                                </div>
-                              </div>
-                            </GastarioDataRow>
-
-                            <GastarioDataRow>
-                              <div>
-                                <strong>Auftrag</strong>
-                                <div>
-                                  {order.orderNumber ||
-                                    order.id}
-                                </div>
-                                <div>
-                                  {order.eventName ||
-                                    "Kein Eventname"}
-                                </div>
-                              </div>
-                            </GastarioDataRow>
-                          </GastarioDataList>
-
-                          <GastarioToolbar>
-                            {address ? (
-                              <a
-                                className={gastarioButtonClass(
-                                  "primary"
-                                )}
-                                href={map}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                Route öffnen
-                              </a>
-                            ) : (
-                              <GastarioButton
-                                type="button"
-                                variant="primary"
-                                disabled
-                              >
-                                Adresse fehlt
-                              </GastarioButton>
-                            )}
-
-                            {phone ? (
-                              <a
-                                className={gastarioButtonClass(
-                                  "secondary"
-                                )}
-                                href={`tel:${phone}`}
-                              >
-                                Anrufen
-                              </a>
-                            ) : (
-                              <GastarioButton
-                                type="button"
-                                variant="secondary"
-                                disabled
-                              >
-                                Keine Nummer
-                              </GastarioButton>
-                            )}
-
-                            {phone ? (
-                              <a
-                                className={gastarioButtonClass(
-                                  "secondary"
-                                )}
-                                href={whatsapp}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                WhatsApp
-                              </a>
-                            ) : null}
-
-                            <a
-                              className={gastarioButtonClass(
-                                "secondary"
-                              )}
-                              href={`mailto:?subject=${encodeURIComponent(
-                                `Lieferung ${
-                                  order.orderNumber ||
-                                  order.id
-                                }`
-                              )}&body=${encodeURIComponent(
-                                mailBody
-                              )}`}
-                            >
-                              Fahrer-Mail
-                            </a>
-
-                            <Link
-                              className={gastarioButtonClass(
-                                "secondary"
-                              )}
-                              to={`/lieferscheine?date=${normalizeDate(
-                                order.deliveryDate
-                              )}`}
-                            >
-                              Lieferschein
-                            </Link>
-                          </GastarioToolbar>
-                        </GastarioStack>
-                      </GastarioPanel>
-                    );
+                <GastarioButton
+                  type="button"
+                  variant="secondary"
+                  onClick={() =>
+                    setSelectedOrderId(
+                      null
+                    )
                   }
-                )
-              )}
-            </div>
-          </GastarioSection>
+                >
+                  Schließen
+                </GastarioButton>
 
-          <aside className="deliveriesSideStack">
-            <PageSection
-              className="deliveriesAppsPanel"
-              eyebrow="Schnellzugriff"
-              title="Direkt nutzbar"
-              description="Fahreraktionen ohne zusätzliche App."
-              flat
+
+                {selectedAddress ? (
+
+                  <a
+                    className={
+                      gastarioButtonClass(
+                        "primary"
+                      )
+                    }
+                    href={
+                      selectedMap
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Route öffnen
+                  </a>
+
+                ) : (
+
+                  <GastarioButton
+                    type="button"
+                    variant="primary"
+                    disabled
+                  >
+                    Adresse fehlt
+                  </GastarioButton>
+
+                )}
+
+
+                {selectedPhone ? (
+
+                  <a
+                    className={
+                      gastarioButtonClass(
+                        "secondary"
+                      )
+                    }
+                    href={
+                      `tel:${selectedPhone}`
+                    }
+                  >
+                    Anrufen
+                  </a>
+
+                ) : null}
+
+
+                {selectedPhone ? (
+
+                  <a
+                    className={
+                      gastarioButtonClass(
+                        "secondary"
+                      )
+                    }
+                    href={
+                      selectedWhatsapp
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    WhatsApp
+                  </a>
+
+                ) : null}
+
+
+                <a
+                  className={
+                    gastarioButtonClass(
+                      "secondary"
+                    )
+                  }
+                  href={
+                    `mailto:?subject=${encodeURIComponent(
+                      `Lieferung ${
+                        selectedOrder.orderNumber ||
+                        selectedOrder.id
+                      }`
+                    )}&body=${encodeURIComponent(
+                      selectedMailBody
+                    )}`
+                  }
+                >
+                  Fahrer-Mail
+                </a>
+
+
+                <Link
+                  className={
+                    gastarioButtonClass(
+                      "secondary"
+                    )
+                  }
+                  to={
+                    `/lieferscheine?date=${normalizeDate(
+                      selectedOrder.deliveryDate
+                    )}`
+                  }
+                >
+                  Lieferschein
+                </Link>
+
+              </GastarioToolbar>
+
+            ) : null
+          }
+        >
+
+          {selectedOrder ? (
+
+            <GastarioSection
+              eyebrow="Lieferung"
+              title="Lieferdaten"
+              description="Alle wichtigen Informationen für die Auslieferung."
+              action={
+                <GastarioBadge
+                  variant={
+                    selectedComplete
+                      ? "success"
+                      : "warning"
+                  }
+                >
+                  {selectedComplete
+                    ? "Fahrbereit"
+                    : "Daten prüfen"}
+                </GastarioBadge>
+              }
             >
-              <div className="deliveriesUtilityList">
-                <div className="deliveriesUtilityItem">
-                  <div className="deliveriesUtilityIcon">
-                    ↗
+
+              <GastarioDataList>
+
+
+                <GastarioDataRow>
+
+                  <div className="g-ui-data-row-main">
+
+                    <strong className="g-ui-data-row-title">
+                      Lieferzeit
+                    </strong>
+
+                    <span className="g-ui-data-row-description">
+                      Geplanter Liefertermin
+                    </span>
+
                   </div>
 
-                  <div>
+                  <div className="g-ui-data-row-meta">
+
                     <strong>
-                      Google Maps
+                      {selectedOrder.deliveryTimeText ||
+                        "–"}
                     </strong>
 
                     <span>
-                      Einzelroute oder
-                      Tagesroute öffnen.
+                      {formatDate(
+                        selectedOrder.deliveryDate
+                      )}
                     </span>
+
                   </div>
 
-                  <small>
-                    Ohne API
-                  </small>
-                </div>
+                </GastarioDataRow>
 
-                <div className="deliveriesUtilityItem">
-                  <div className="deliveriesUtilityIcon">
-                    ☎
-                  </div>
 
-                  <div>
-                    <strong>
-                      Telefon
+                <GastarioDataRow>
+
+                  <div className="g-ui-data-row-main">
+
+                    <strong className="g-ui-data-row-title">
+                      Lieferadresse
                     </strong>
 
-                    <span>
-                      Ansprechpartner direkt
-                      anrufen.
+                    <span className="g-ui-data-row-description">
+                      Ziel der Lieferung
                     </span>
+
                   </div>
 
-                  <small>Aktiv</small>
-                </div>
+                  <div className="g-ui-data-row-meta">
 
-                <div className="deliveriesUtilityItem">
-                  <div className="deliveriesUtilityIcon">
-                    ◌
+                    <span>
+                      {selectedAddress ||
+                        "Keine Lieferadresse eingetragen"}
+                    </span>
+
                   </div>
 
-                  <div>
-                    <strong>
-                      WhatsApp
+                </GastarioDataRow>
+
+
+                <GastarioDataRow>
+
+                  <div className="g-ui-data-row-main">
+
+                    <strong className="g-ui-data-row-title">
+                      Ansprechpartner
                     </strong>
 
-                    <span>
-                      Nachricht automatisch
-                      vorbereiten.
+                    <span className="g-ui-data-row-description">
+                      Kontakt vor Ort
                     </span>
+
                   </div>
 
-                  <small>Aktiv</small>
-                </div>
+                  <div className="g-ui-data-row-meta">
 
-                <div className="deliveriesUtilityItem">
-                  <div className="deliveriesUtilityIcon">
-                    ✉
+                    <span>
+                      {selectedOrder.contactName ||
+                        "Kein Ansprechpartner"}
+                    </span>
+
+                    <span>
+                      {selectedOrder.contactPhone ||
+                        "Keine Telefonnummer"}
+                    </span>
+
                   </div>
 
-                  <div>
-                    <strong>
-                      Fahrer-Mail
+                </GastarioDataRow>
+
+
+                <GastarioDataRow>
+
+                  <div className="g-ui-data-row-main">
+
+                    <strong className="g-ui-data-row-title">
+                      Auftrag
                     </strong>
 
-                    <span>
-                      Tourdaten per Mail
-                      übergeben.
+                    <span className="g-ui-data-row-description">
+                      {selectedOrder.eventName ||
+                        "Kein Veranstaltungsname"}
                     </span>
+
                   </div>
 
-                  <small>Aktiv</small>
-                </div>
-              </div>
-            </PageSection>
+                  <div className="g-ui-data-row-meta">
 
-            <PageSection
-              className="deliveriesDriverPanel"
-              eyebrow="Nächster Schritt"
-              title="Mobiler Fahrerlink"
-              description="Geplante Erweiterung für externe Fahrer."
-              soft
-              flat
-            >
-              <div className="deliveriesDriverPreview">
-                <span>
-                  In Vorbereitung
-                </span>
+                    <strong>
+                      {selectedOrder.orderNumber ||
+                        selectedOrder.id}
+                    </strong>
 
-                <strong>
-                  Fahrer ohne Gastario-Login
-                </strong>
+                    <GastarioBadge variant="neutral">
+                      {statusLabel(
+                        selectedOrder.status
+                      )}
+                    </GastarioBadge>
 
-                <p>
-                  Der Fahrer erhält später
-                  einen sicheren Tourlink und
-                  kann Route öffnen, Kunden
-                  anrufen und Lieferungen als
-                  zugestellt markieren.
-                </p>
+                  </div>
 
-                <div>
-                  <small>
-                    Mobile Touransicht
-                  </small>
+                </GastarioDataRow>
 
-                  <small>
-                    Lieferstatus
-                  </small>
 
-                  <small>
-                    Navigation
-                  </small>
-                </div>
-              </div>
-            </PageSection>
-          </aside>
-        </section>
-      </PageShell>
+                <GastarioDataRow>
+
+                  <div className="g-ui-data-row-main">
+
+                    <strong className="g-ui-data-row-title">
+                      Packstatus
+                    </strong>
+
+                    <span className="g-ui-data-row-description">
+                      Voraussetzung für die Auslieferung
+                    </span>
+
+                  </div>
+
+                  <div className="g-ui-data-row-meta">
+
+                    <GastarioBadge
+                      variant={
+                        selectedPackingReady
+                          ? "success"
+                          : "warning"
+                      }
+                    >
+                      {selectedPackingReady
+                        ? "Packen abgeschlossen"
+                        : "Noch nicht lieferbereit"}
+                    </GastarioBadge>
+
+                  </div>
+
+                </GastarioDataRow>
+
+
+              </GastarioDataList>
+
+
+              {!selectedComplete ? (
+
+                <GastarioNotice type="warning">
+                  <strong>
+                    Lieferdaten unvollständig.
+                  </strong>
+                  {" "}
+                  Prüfe Lieferadresse,
+                  Telefonnummer und Packstatus,
+                  bevor der Fahrer startet.
+                </GastarioNotice>
+
+              ) : null}
+
+            </GastarioSection>
+
+          ) : null}
+
+        </GastarioDetailDialog>
+
+      </GastarioPage>
+
     </AppLayout>
   );
 }
+
 
 export function ErrorBoundary({
   error,
@@ -1170,46 +1412,70 @@ export function ErrorBoundary({
 
   return (
     <AppLayout>
-      <PageShell className="deliveriesPage">
-        <PageHeader
-          eyebrow={`Fehler ${status}`}
+
+      <GastarioPage>
+
+        <GastarioHeader
+          eyebrow={
+            `Fehler ${status}`
+          }
           title="Lieferungen konnten nicht geladen werden"
           subtitle="Beim Laden des Fahrerplans ist ein Fehler aufgetreten."
         />
 
-        <Notice type="danger">
+
+        <GastarioNotice type="danger">
+
           <strong>
             Technischer Fehler
           </strong>
 
-          <span>
-            {String(message)}
-          </span>
-        </Notice>
+          {" "}
 
-        <div className="deliveriesErrorActions">
+          {String(message)}
+
+        </GastarioNotice>
+
+
+        <GastarioToolbar align="start">
+
           <Link
             to="/"
-            className="deliveriesButton deliveriesButtonPrimary"
+            className={
+              gastarioButtonClass(
+                "primary"
+              )
+            }
           >
             Zum Dashboard
           </Link>
 
           <Link
             to="/auftragseingang"
-            className="deliveriesButton deliveriesButtonSecondary"
+            className={
+              gastarioButtonClass(
+                "secondary"
+              )
+            }
           >
             Auftragseingang
           </Link>
 
           <a
             href="/logout"
-            className="deliveriesButton deliveriesButtonSecondary"
+            className={
+              gastarioButtonClass(
+                "secondary"
+              )
+            }
           >
             Ausloggen
           </a>
-        </div>
-      </PageShell>
+
+        </GastarioToolbar>
+
+      </GastarioPage>
+
     </AppLayout>
   );
 }
