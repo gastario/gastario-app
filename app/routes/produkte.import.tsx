@@ -10,15 +10,13 @@ import {
   GastarioMetric,
   GastarioSection,
   GastarioPanel,
-  GastarioDataList,
-  GastarioDataRow,
   GastarioField,
-  GastarioInput,
+  GastarioFileInput,
+  GastarioSteps,
   GastarioToolbar,
   GastarioButton,
   GastarioBadge,
   GastarioTable,
-  GastarioStack,
   gastarioButtonClass,
 } from "../components/ui";
 
@@ -342,45 +340,40 @@ export default function ProduktImport() {
         />
 
 
-        <GastarioMetricGrid>
-
-          <GastarioMetric
-            label="Schritt 1"
-            value="CSV auswählen"
-            description="Produktliste bereitstellen"
-            badge={
-              hasPreview ||
-              importFinished
-                ? "Erledigt"
-                : "Aktuell"
-            }
-          />
-
-          <GastarioMetric
-            label="Schritt 2"
-            value="Daten prüfen"
-            description="Fehler und Warnungen kontrollieren"
-            badge={
-              importFinished
-                ? "Erledigt"
-                : hasPreview
-                  ? "Aktuell"
-                  : "Danach"
-            }
-          />
-
-          <GastarioMetric
-            label="Schritt 3"
-            value="Importieren"
-            description="Saubere Produkte übernehmen"
-            badge={
-              importFinished
-                ? "Erledigt"
-                : "Danach"
-            }
-          />
-
-        </GastarioMetricGrid>
+        <GastarioSteps
+          items={[
+            {
+              label: "CSV auswählen",
+              description:
+                "Produktliste bereitstellen",
+              status:
+                hasPreview ||
+                importFinished
+                  ? "complete"
+                  : "current",
+            },
+            {
+              label: "Daten prüfen",
+              description:
+                "Fehler und Warnungen kontrollieren",
+              status:
+                importFinished
+                  ? "complete"
+                  : hasPreview
+                    ? "current"
+                    : "upcoming",
+            },
+            {
+              label: "Importieren",
+              description:
+                "Saubere Produkte übernehmen",
+              status:
+                importFinished
+                  ? "complete"
+                  : "upcoming",
+            },
+          ]}
+        />
 
 
         {actionData?.error ? (
@@ -427,74 +420,17 @@ export default function ProduktImport() {
           }
         >
 
-          <GastarioDataList>
-
-            <GastarioDataRow>
-
-              <div className="g-ui-data-row-main">
-                <strong className="g-ui-data-row-title">
-                  Pflichtfelder
-                </strong>
-
-                <span className="g-ui-data-row-description">
-                  Ohne Produktname oder gültigen Nettopreis
-                  wird eine Zeile nicht importiert.
-                </span>
-              </div>
-
-              <div className="g-ui-data-row-meta">
-                <GastarioBadge variant="neutral">
-                  Name + Preis
-                </GastarioBadge>
-              </div>
-
-            </GastarioDataRow>
-
-
-            <GastarioDataRow>
-
-              <div className="g-ui-data-row-main">
-                <strong className="g-ui-data-row-title">
-                  Unterstützte Spalten
-                </strong>
-
-                <span className="g-ui-data-row-description">
-                  Zusätzlich werden Preis, MwSt. und
-                  Aktiv-Status erkannt.
-                </span>
-              </div>
-
-              <div className="g-ui-data-row-meta">
-                <GastarioBadge variant="info">
-                  name · kategorie · einheit
-                </GastarioBadge>
-              </div>
-
-            </GastarioDataRow>
-
-
-            <GastarioDataRow>
-
-              <div className="g-ui-data-row-main">
-                <strong className="g-ui-data-row-title">
-                  Dateiformat
-                </strong>
-
-                <span className="g-ui-data-row-description">
-                  Komma und Semikolon werden automatisch
-                  als Trennzeichen erkannt.
-                </span>
-              </div>
-
-              <div className="g-ui-data-row-meta">
-                <GastarioBadge variant="neutral">
-                  CSV
-                </GastarioBadge>
-              </div>
-
-            </GastarioDataRow>
-
-          </GastarioDataList>
+          <GastarioNotice type="info">
+            <strong>
+              Importformat:
+            </strong>
+            {" "}
+            Produktname und Nettopreis sind Pflicht.
+            Zusätzlich unterstützt Gastario Kategorie,
+            Einheit, MwSt. und Aktiv-Status.
+            Komma und Semikolon werden als
+            CSV-Trennzeichen erkannt.
+          </GastarioNotice>
 
 
           <Form
@@ -511,43 +447,39 @@ export default function ProduktImport() {
 
             <GastarioPanel variant="soft">
 
-              <GastarioStack compact>
-
-                <GastarioField
-                  label="Produktliste"
-                  hint="Unterstützt werden CSV-Dateien aus Excel, LibreOffice und anderen Warenwirtschaftssystemen."
+              <GastarioField
+                label="Produktliste"
+                hint="CSV-Datei aus Excel, LibreOffice oder einem Warenwirtschaftssystem auswählen."
+                required
+              >
+                <GastarioFileInput
+                  name="file"
+                  accept=".csv,text/csv"
                   required
+                  buttonLabel="CSV-Datei auswählen"
+                />
+              </GastarioField>
+
+
+              <GastarioToolbar
+                align="between"
+              >
+
+                <span className="g-ui-field-hint">
+                  Die Datei wird zunächst nur geprüft.
+                  Erst nach deiner Bestätigung werden
+                  Produkte angelegt.
+                </span>
+
+
+                <GastarioButton
+                  type="submit"
+                  variant="primary"
                 >
-                  <GastarioInput
-                    type="file"
-                    name="file"
-                    accept=".csv,text/csv"
-                    required
-                  />
-                </GastarioField>
+                  CSV prüfen
+                </GastarioButton>
 
-
-                <GastarioToolbar
-                  align="between"
-                >
-
-                  <span className="g-ui-field-hint">
-                    Die Datei wird zunächst nur geprüft.
-                    Produkte werden erst nach deiner
-                    Bestätigung angelegt.
-                  </span>
-
-
-                  <GastarioButton
-                    type="submit"
-                    variant="primary"
-                  >
-                    CSV prüfen
-                  </GastarioButton>
-
-                </GastarioToolbar>
-
-              </GastarioStack>
+              </GastarioToolbar>
 
             </GastarioPanel>
 

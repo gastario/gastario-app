@@ -511,6 +511,11 @@ export default function CustomersPage() {
     createDifferentDeliveryAddress,
     setCreateDifferentDeliveryAddress,
   ] = useState(false);
+
+  const [
+    editDifferentDeliveryAddress,
+    setEditDifferentDeliveryAddress,
+  ] = useState(false);
   const [
     selectedCustomerId,
     setSelectedCustomerId,
@@ -634,6 +639,12 @@ export default function CustomersPage() {
                       setSelectedCustomerId(
                         customer.id
                       );
+
+                      setEditDifferentDeliveryAddress(
+                        customer.differentDeliveryAddress ===
+                          true
+                      );
+
                       setSelectedCustomerTab(
                         "master"
                       );
@@ -978,6 +989,10 @@ export default function CustomersPage() {
                 <GastarioTextarea
                   name="notes"
                   rows={3}
+                  defaultValue={
+                    selectedCustomer.notes ||
+                    ""
+                  }
                   placeholder="Besonderheiten, Bestellabläufe oder interne Hinweise"
                 />
               </GastarioField>
@@ -989,13 +1004,15 @@ export default function CustomersPage() {
                     value="on"
                     title="Abweichende Lieferadresse verwenden"
                     description="Wenn aktiviert, verwendet Gastario diese Adresse für Lieferungen."
-                    defaultChecked={
-                      selectedCustomer.differentDeliveryAddress ===
-                      true
+                    checked={
+                      editDifferentDeliveryAddress
+                    }
+                    onCheckedChange={
+                      setEditDifferentDeliveryAddress
                     }
                   />
 
-                  {createDifferentDeliveryAddress ? (
+                  {editDifferentDeliveryAddress ? (
               <GastarioPanel variant="soft">
                 <GastarioFormGrid>
                         <GastarioField label="Lieferstraße">
@@ -1376,6 +1393,17 @@ export default function CustomersPage() {
                   </option>
                 </GastarioSelect>
               </GastarioField>
+              <GastarioField
+                label="Interne Notiz"
+                fullWidth
+              >
+                <GastarioTextarea
+                  name="notes"
+                  rows={3}
+                  placeholder="Besonderheiten, Bestellabläufe oder interne Hinweise"
+                />
+              </GastarioField>
+
             </GastarioFormGrid>
 
             <GastarioCheckRow
@@ -1391,58 +1419,62 @@ export default function CustomersPage() {
               }
             />
 
-            <GastarioFormGrid>
-              <GastarioField label="Lieferstraße">
-                <GastarioInput
-                  name="deliveryStreet"
-                  placeholder="Lieferstraße"
-                />
-              </GastarioField>
+            {createDifferentDeliveryAddress ? (
+              <GastarioPanel variant="soft">
+                <GastarioFormGrid>
+                  <GastarioField label="Lieferstraße">
+                    <GastarioInput
+                      name="deliveryStreet"
+                      placeholder="Lieferstraße"
+                    />
+                  </GastarioField>
 
-              <GastarioField label="Hausnummer">
-                <GastarioInput
-                  name="deliveryHouseNumber"
-                  placeholder="12a"
-                />
-              </GastarioField>
+                  <GastarioField label="Hausnummer">
+                    <GastarioInput
+                      name="deliveryHouseNumber"
+                      placeholder="12a"
+                    />
+                  </GastarioField>
 
-              <GastarioField label="Liefer-PLZ">
-                <GastarioInput
-                  name="deliveryPostalCode"
-                  placeholder="10115"
-                />
-              </GastarioField>
+                  <GastarioField label="Liefer-PLZ">
+                    <GastarioInput
+                      name="deliveryPostalCode"
+                      placeholder="10115"
+                    />
+                  </GastarioField>
 
-              <GastarioField label="Lieferort">
-                <GastarioInput
-                  name="deliveryCity"
-                  placeholder="Berlin"
-                />
-              </GastarioField>
+                  <GastarioField label="Lieferort">
+                    <GastarioInput
+                      name="deliveryCity"
+                      placeholder="Berlin"
+                    />
+                  </GastarioField>
 
-              <GastarioField label="Lieferland">
-                <GastarioSelect
-                  name="deliveryCountry"
-                  defaultValue="DE"
-                >
-                  <option value="DE">
-                    Deutschland
-                  </option>
+                  <GastarioField label="Lieferland">
+                    <GastarioSelect
+                      name="deliveryCountry"
+                      defaultValue="DE"
+                    >
+                      <option value="DE">
+                        Deutschland
+                      </option>
 
-                  <option value="AT">
-                    Österreich
-                  </option>
+                      <option value="AT">
+                        Österreich
+                      </option>
 
-                  <option value="CH">
-                    Schweiz
-                  </option>
+                      <option value="CH">
+                        Schweiz
+                      </option>
 
-                  <option value="OTHER">
-                    Anderes Land
-                  </option>
-                </GastarioSelect>
-              </GastarioField>
-            </GastarioFormGrid>
+                      <option value="OTHER">
+                        Anderes Land
+                      </option>
+                    </GastarioSelect>
+                  </GastarioField>
+                </GastarioFormGrid>
+              </GastarioPanel>
+            ) : null}
 
 
           </Form>
