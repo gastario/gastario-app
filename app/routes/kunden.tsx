@@ -1414,13 +1414,15 @@ export default function CustomersPage() {
               </GastarioField>
             </GastarioFormGrid>
 
-            <GastarioField label="Interne Notiz">
-              <GastarioTextarea
-                name="notes"
-                rows={4}
-                placeholder="Besonderheiten, Bestellabläufe oder interne Hinweise"
-              />
-            </GastarioField>
+            <GastarioFormGrid columns={1}>
+              <GastarioField label="Interne Notiz">
+                <GastarioTextarea
+                  name="notes"
+                  rows={4}
+                  placeholder="Besonderheiten, Bestellabläufe oder interne Hinweise"
+                />
+              </GastarioField>
+            </GastarioFormGrid>
           </Form>
         </GastarioDialog>
 
