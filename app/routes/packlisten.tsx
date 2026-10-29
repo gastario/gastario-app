@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
   Form,
   Link,
@@ -13,8 +15,14 @@ import {
   GastarioBadge,
   GastarioButton,
   GastarioCheckRow,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioDetailDialog,
+  GastarioDetailPane,
+  GastarioDetailTabs,
   GastarioEmptyState,
   GastarioField,
+  GastarioFilterBar,
   GastarioHeader,
   GastarioMetric,
   GastarioMetricGrid,
@@ -1066,6 +1074,28 @@ export default function PackingListsPage() {
       typeof action
     >() as any;
 
+  const [
+    selectedOrderId,
+    setSelectedOrderId,
+  ] =
+    useState<string | null>(
+      null
+    );
+
+  const [
+    selectedDetailTab,
+    setSelectedDetailTab,
+  ] =
+    useState("overview");
+
+  const selectedOrder =
+    data.packingItems.find(
+      (order: any) =>
+        order.id ===
+        selectedOrderId
+    ) || null;
+
+
   return (
     <AppLayout>
 
@@ -1111,7 +1141,6 @@ export default function PackingListsPage() {
 
 
         {data.error ? (
-
           <GastarioNotice type="danger">
             <strong>
               Die Packlisten konnten nicht
@@ -1120,12 +1149,10 @@ export default function PackingListsPage() {
             {" "}
             {data.error}
           </GastarioNotice>
-
         ) : null}
 
 
         {actionData?.error ? (
-
           <GastarioNotice type="danger">
             <strong>
               Packlistenaktion konnte nicht
@@ -1134,7 +1161,6 @@ export default function PackingListsPage() {
             {" "}
             {actionData.error}
           </GastarioNotice>
-
         ) : null}
 
 
@@ -1149,9 +1175,7 @@ export default function PackingListsPage() {
 
           <GastarioMetric
             label="Positionen"
-            value={
-              data.stats.positions
-            }
+            value={data.stats.positions}
             description="in allen Packlisten"
             badge="Liste"
           />
@@ -1176,63 +1200,64 @@ export default function PackingListsPage() {
         <GastarioSection
           eyebrow="Packlisten"
           title="Nach Auftrag"
-          description="Positionen und Zusatzkontrollen werden zentral gespeichert und sind für alle Mitarbeiter identisch sichtbar."
-          action={
-            <Form
-              method="get"
-              className="g-ui-section-control"
-            >
-              <GastarioToolbar align="start">
+          description="Wähle einen Auftrag aus, um Positionen und Packkontrolle zu bearbeiten."
+        >
 
-                <GastarioField
-                  label="Planungstag"
-                >
-                  <GastarioSelect
-                    name="date"
-                    defaultValue={
-                      data.selectedDate
-                    }
-                  >
+          <Form method="get">
 
-                    {data.availableDates.length > 0 ? (
-
-                      data.availableDates.map(
-                        (date: string) => (
-                          <option
-                            key={date}
-                            value={date}
-                          >
-                            {formatDate(date)}
-                          </option>
-                        )
-                      )
-
-                    ) : (
-
-                      <option
-                        value={
-                          data.selectedDate
-                        }
-                      >
-                        Keine Auftragsdaten
-                      </option>
-
-                    )}
-
-                  </GastarioSelect>
-                </GastarioField>
-
+            <GastarioFilterBar
+              actions={
                 <GastarioButton
                   variant="primary"
                   type="submit"
                 >
                   Anzeigen
                 </GastarioButton>
+              }
+            >
 
-              </GastarioToolbar>
-            </Form>
-          }
-        >
+              <GastarioField
+                label="Planungstag"
+              >
+                <GastarioSelect
+                  name="date"
+                  defaultValue={
+                    data.selectedDate
+                  }
+                >
+
+                  {data.availableDates.length > 0 ? (
+
+                    data.availableDates.map(
+                      (date: string) => (
+                        <option
+                          key={date}
+                          value={date}
+                        >
+                          {formatDate(date)}
+                        </option>
+                      )
+                    )
+
+                  ) : (
+
+                    <option
+                      value={
+                        data.selectedDate
+                      }
+                    >
+                      Keine Auftragsdaten
+                    </option>
+
+                  )}
+
+                </GastarioSelect>
+              </GastarioField>
+
+            </GastarioFilterBar>
+
+          </Form>
+
 
           {data.packingItems.length === 0 ? (
 
@@ -1246,547 +1271,699 @@ export default function PackingListsPage() {
 
           ) : (
 
-            <GastarioStack>
+            <GastarioDataList>
 
               {data.packingItems.map(
                 (order: any) => (
 
-                  <GastarioPanel
+                  <GastarioDataRow
                     key={order.id}
+                    onClick={() => {
+                      setSelectedOrderId(
+                        order.id
+                      );
+
+                      setSelectedDetailTab(
+                        "overview"
+                      );
+                    }}
                   >
 
-                    <GastarioToolbar
-                      align="between"
-                    >
+                    <div className="g-ui-data-row-copy">
 
-                      <div className="g-ui-data-row-copy">
+                      <strong className="g-ui-data-row-title">
+                        {order.customerName ||
+                          "Kunde unbekannt"}
+                      </strong>
 
-                        <strong className="g-ui-data-row-title">
-                          {order.customerName}
-                        </strong>
-
-                        <span className="g-ui-data-row-description">
-                          Auftrag {order.orderNumber}
-                          {" · "}
-                          {formatDate(
-                            order.deliveryDate
-                          )}
-                          {" · "}
-                          {order.deliveryAddress ||
-                            "Keine Adresse"}
-                        </span>
-
-                      </div>
-
-
-                      <div className="g-ui-data-row-meta">
-
-                        <span>
-                          {order.deliveryTime ||
-                            "-"}
-                          {" Uhr"}
-                        </span>
-
-                        <GastarioBadge
-                          variant={
-                            order.isPacked
-                              ? "success"
-                              : order.packingStarted
-                                ? "info"
-                                : "neutral"
-                          }
-                        >
-                          {packingStatusLabel(
-                            order
-                          )}
-                        </GastarioBadge>
-
-                      </div>
-
-                    </GastarioToolbar>
-
-
-                    <GastarioWorkflow
-                      items={[
-                        {
-                          id: "items",
-                          label:
-                            "Positionen gepackt",
-                          description:
-                            "Alle Auftragspositionen einzeln bestätigen",
-                          state:
-                            order.isPacked ||
-                            (
-                              order.items.length > 0 &&
-                              order.items.every(
-                                (item: any) =>
-                                  item.checked
-                              )
-                            )
-                              ? "done"
-                              : "current",
-                        },
-                        {
-                          id: "checks",
-                          label:
-                            "Packkontrolle",
-                          description:
-                            "Ware, Lieferschein, Besteck und Equipment prüfen",
-                          state:
-                            !(
-                              order.items.length > 0 &&
-                              order.items.every(
-                                (item: any) =>
-                                  item.checked
-                              )
-                            )
-                              ? "locked"
-                              : order.isPacked ||
-                                  (
-                                    order.tasks.length > 0 &&
-                                    order.tasks.every(
-                                      (task: any) =>
-                                        task.checked
-                                    )
-                                  )
-                                ? "done"
-                                : "current",
-                        },
-                        {
-                          id: "ready",
-                          label:
-                            "Lieferbereit",
-                          description:
-                            "Auftrag für die Lieferung freigeben",
-                          state:
-                            order.isPacked
-                              ? "done"
-                              : (
-                                  order.items.length > 0 &&
-                                  order.items.every(
-                                    (item: any) =>
-                                      item.checked
-                                  ) &&
-                                  order.tasks.length > 0 &&
-                                  order.tasks.every(
-                                    (task: any) =>
-                                      task.checked
-                                  )
-                                )
-                                ? "current"
-                                : "locked",
-                        },
-                      ]}
-                    />
-
-
-                    <div className="g-ui-detail-meta">
-
-                      <div>
-                        <span>Kontakt</span>
-                        <strong>
-                          {order.contactName ||
-                            "-"}
-                          {" · "}
-                          {order.contactPhone ||
-                            "-"}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <span>Lieferadresse</span>
-                        <strong>
-                          {order.deliveryAddress ||
-                            "Keine Adresse eingetragen"}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <span>Gesamtmenge</span>
-                        <strong>
-                          {order.totalQuantity}
-                        </strong>
-                      </div>
+                      <span className="g-ui-data-row-description">
+                        Auftrag {order.orderNumber}
+                        {" · "}
+                        {formatDate(
+                          order.deliveryDate
+                        )}
+                        {" · "}
+                        {order.deliveryAddress ||
+                          "Keine Lieferadresse"}
+                      </span>
 
                     </div>
 
 
-                    {order.unresolvedItems.length > 0 ? (
+                    <div className="g-ui-data-row-meta">
 
-                      <GastarioNotice type="warning">
+                      <span>
+                        {order.deliveryTime ||
+                          "-"}
+                        {" Uhr"}
+                      </span>
 
-                        <GastarioToolbar
-                          align="between"
-                        >
+                      <span>
+                        {order.totalQuantity}
+                        {" gesamt"}
+                      </span>
 
-                          <span>
-                            <strong>
-                              Operative Zuordnung fehlt.
-                            </strong>
-                            {" "}
-                            {order.unresolvedItems.length}
-                            {" "}
-                            Position(en) müssen vor
-                            dem Packstart geprüft werden.
-                          </span>
+                      <span>
+                        {order.checkedCount}
+                        {" / "}
+                        {order.totalChecks}
+                      </span>
 
-                          <Link
-                            to={
-                              `/auftrag-pruefung/${
-                                order.id
-                              }`
-                            }
-                            className={
-                              gastarioButtonClass(
-                                "secondary"
-                              )
-                            }
-                          >
-                            Zuordnungen prüfen
-                          </Link>
+                      <GastarioBadge
+                        variant={
+                          order.isPacked
+                            ? "success"
+                            : order.packingStarted
+                              ? "info"
+                              : "neutral"
+                        }
+                      >
+                        {packingStatusLabel(
+                          order
+                        )}
+                      </GastarioBadge>
 
-                        </GastarioToolbar>
-
-                      </GastarioNotice>
-
-                    ) : null}
+                    </div>
 
 
-                    {order.logisticsItems.length > 0 ? (
+                    <span
+                      className="g-ui-data-row-chevron"
+                      aria-hidden="true"
+                    >
+                      →
+                    </span>
 
-                      <GastarioNotice type="neutral">
-                        <strong>
-                          Logistik:
-                        </strong>
-                        {" "}
-                        {order.logisticsItems
-                          .map(
-                            (item: any) =>
-                              `${item.quantity} × ${item.name}`
-                          )
-                          .join(", ")}
-                      </GastarioNotice>
+                  </GastarioDataRow>
 
-                    ) : null}
+                )
+              )}
 
+            </GastarioDataList>
 
-                    {!order.packingStarted &&
-                    !order.isPacked ? (
+          )}
 
-                      <GastarioNotice type="info">
-
-                        <GastarioToolbar
-                          align="between"
-                        >
-
-                          <span>
-                            <strong>
-                              Packliste ist vorbereitet.
-                            </strong>
-                            {" "}
-                            Starte den Packvorgang,
-                            damit alle Häkchen
-                            zentral gespeichert werden.
-                          </span>
-
-                          {order.unresolvedItems.length > 0 ? (
-
-                            <Link
-                              to={
-                                `/auftrag-pruefung/${
-                                  order.id
-                                }`
-                              }
-                              className={
-                                gastarioButtonClass(
-                                  "secondary"
-                                )
-                              }
-                            >
-                              Erst Zuordnung prüfen
-                            </Link>
-
-                          ) : (
-
-                            <Form method="post">
-
-                              <input
-                                type="hidden"
-                                name="intent"
-                                value="start-packing"
-                              />
-
-                              <input
-                                type="hidden"
-                                name="orderId"
-                                value={order.id}
-                              />
-
-                              <input
-                                type="hidden"
-                                name="date"
-                                value={
-                                  data.selectedDate
-                                }
-                              />
-
-                              <GastarioButton
-                                type="submit"
-                                variant="primary"
-                              >
-                                Packen starten
-                              </GastarioButton>
-
-                            </Form>
-
-                          )}
-
-                        </GastarioToolbar>
-
-                      </GastarioNotice>
-
-                    ) : null}
+        </GastarioSection>
 
 
-                    <GastarioStack compact>
+        <GastarioDetailDialog
+          open={Boolean(selectedOrder)}
+          title={
+            selectedOrder?.customerName ||
+            "Packliste"
+          }
+          description={
+            selectedOrder
+              ? `Auftrag ${
+                  selectedOrder.orderNumber
+                } · ${
+                  formatDate(
+                    selectedOrder.deliveryDate
+                  )
+                } · ${
+                  selectedOrder.deliveryTime ||
+                  "-"
+                } Uhr`
+              : undefined
+          }
+          onClose={() => {
+            setSelectedOrderId(null);
+            setSelectedDetailTab(
+              "overview"
+            );
+          }}
+          footer={
+            selectedOrder ? (
+              <GastarioToolbar>
 
-                      <div className="g-ui-section-eyebrow">
-                        Positionen
-                      </div>
+                <GastarioButton
+                  variant="secondary"
+                  type="button"
+                  onClick={() => {
+                    setSelectedOrderId(
+                      null
+                    );
 
-                      {order.items.length === 0 ? (
+                    setSelectedDetailTab(
+                      "overview"
+                    );
+                  }}
+                >
+                  Schließen
+                </GastarioButton>
 
-                        <GastarioEmptyState
-                          title="Keine Positionen"
-                        >
-                          Dieser Auftrag hat keine
-                          Packpositionen.
-                        </GastarioEmptyState>
 
-                      ) : (
+                {!selectedOrder.packingStarted &&
+                !selectedOrder.isPacked ? (
 
-                        order.items.map(
-                          (item: any) => (
+                  selectedOrder.unresolvedItems
+                    .length > 0 ? (
 
-                            <PackingCheckbox
-                              key={
-                                item.checkKey
-                              }
-                              orderId={
-                                order.id
-                              }
-                              checkKey={
-                                item.checkKey
-                              }
-                              initialChecked={
-                                item.checked
-                              }
-                              disabled={
-                                !order.canCheck
-                              }
-                              selectedDate={
-                                data.selectedDate
-                              }
-                              label={
-                                item.name ||
-                                "Position"
-                              }
-                              description={
-                                `${item.quantity || 0} × ${
-                                  item.unit || "Stück"
-                                } · ${
-                                  item.operationalArea ===
-                                  "PACKING"
-                                    ? "Equipment"
-                                    : "Küche"
-                                }`
-                              }
-                            />
-
-                          )
+                    <Link
+                      to={
+                        `/auftrag-pruefung/${
+                          selectedOrder.id
+                        }`
+                      }
+                      className={
+                        gastarioButtonClass(
+                          "secondary"
                         )
+                      }
+                    >
+                      Operative Zuordnung
+                    </Link>
 
+                  ) : (
+
+                    <Form method="post">
+
+                      <input
+                        type="hidden"
+                        name="intent"
+                        value="start-packing"
+                      />
+
+                      <input
+                        type="hidden"
+                        name="orderId"
+                        value={
+                          selectedOrder.id
+                        }
+                      />
+
+                      <input
+                        type="hidden"
+                        name="date"
+                        value={
+                          data.selectedDate
+                        }
+                      />
+
+                      <GastarioButton
+                        type="submit"
+                        variant="primary"
+                      >
+                        Packen starten
+                      </GastarioButton>
+
+                    </Form>
+
+                  )
+
+                ) : null}
+
+
+                {selectedOrder.packingStarted &&
+                !selectedOrder.isPacked ? (
+
+                  <Form method="post">
+
+                    <input
+                      type="hidden"
+                      name="intent"
+                      value="complete-packing"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="orderId"
+                      value={
+                        selectedOrder.id
+                      }
+                    />
+
+                    <input
+                      type="hidden"
+                      name="date"
+                      value={
+                        data.selectedDate
+                      }
+                    />
+
+                    <GastarioButton
+                      type="submit"
+                      variant="primary"
+                      disabled={
+                        !selectedOrder.canComplete
+                      }
+                    >
+                      Packen abschließen
+                    </GastarioButton>
+
+                  </Form>
+
+                ) : null}
+
+
+                {selectedOrder.isPacked &&
+                selectedOrder.status !==
+                  "DELIVERED" ? (
+
+                  <Form method="post">
+
+                    <input
+                      type="hidden"
+                      name="intent"
+                      value="reopen-packing"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="orderId"
+                      value={
+                        selectedOrder.id
+                      }
+                    />
+
+                    <input
+                      type="hidden"
+                      name="date"
+                      value={
+                        data.selectedDate
+                      }
+                    />
+
+                    <GastarioButton
+                      type="submit"
+                      variant="secondary"
+                    >
+                      Wieder öffnen
+                    </GastarioButton>
+
+                  </Form>
+
+                ) : null}
+
+
+                {selectedOrder.isPacked ? (
+
+                  <Link
+                    to={
+                      `/lieferungen?range=date&date=${
+                        encodeURIComponent(
+                          data.selectedDate
+                        )
+                      }`
+                    }
+                    className={
+                      gastarioButtonClass(
+                        "primary"
+                      )
+                    }
+                  >
+                    Weiter zur Lieferung
+                  </Link>
+
+                ) : null}
+
+              </GastarioToolbar>
+            ) : null
+          }
+        >
+
+          {selectedOrder ? (
+
+            <GastarioStack
+              key={
+                selectedOrder.id
+              }
+            >
+
+              <GastarioDetailTabs
+                items={[
+                  {
+                    id: "overview",
+                    label: "Übersicht",
+                  },
+                  {
+                    id: "positions",
+                    label: "Positionen",
+                    badge:
+                      selectedOrder.items.length,
+                  },
+                  {
+                    id: "checks",
+                    label: "Packkontrolle",
+                    badge:
+                      selectedOrder.tasks.length,
+                  },
+                ]}
+                activeId={
+                  selectedDetailTab
+                }
+                onChange={
+                  setSelectedDetailTab
+                }
+              />
+
+
+              <GastarioDetailPane
+                active={
+                  selectedDetailTab ===
+                  "overview"
+                }
+              >
+
+                <GastarioSection
+                  eyebrow="Packliste"
+                  title="Auftrag auf einen Blick"
+                  description="Die wichtigsten Daten und der aktuelle Packstatus."
+                  action={
+                    <GastarioBadge
+                      variant={
+                        selectedOrder.isPacked
+                          ? "success"
+                          : selectedOrder.packingStarted
+                            ? "info"
+                            : "neutral"
+                      }
+                    >
+                      {packingStatusLabel(
+                        selectedOrder
                       )}
+                    </GastarioBadge>
+                  }
+                >
 
-                    </GastarioStack>
+                  <GastarioWorkflow
+                    items={[
+                      {
+                        id: "items",
+                        label:
+                          "Positionen gepackt",
+                        description:
+                          "Alle Auftragspositionen einzeln bestätigen",
+                        state:
+                          selectedOrder.isPacked ||
+                          (
+                            selectedOrder.items.length > 0 &&
+                            selectedOrder.items.every(
+                              (item: any) =>
+                                item.checked
+                            )
+                          )
+                            ? "done"
+                            : "current",
+                      },
+                      {
+                        id: "checks",
+                        label:
+                          "Packkontrolle",
+                        description:
+                          "Ware, Lieferschein, Besteck und Equipment prüfen",
+                        state:
+                          !(
+                            selectedOrder.items.length > 0 &&
+                            selectedOrder.items.every(
+                              (item: any) =>
+                                item.checked
+                            )
+                          )
+                            ? "locked"
+                            : selectedOrder.isPacked ||
+                                (
+                                  selectedOrder.tasks.length > 0 &&
+                                  selectedOrder.tasks.every(
+                                    (task: any) =>
+                                      task.checked
+                                  )
+                                )
+                              ? "done"
+                              : "current",
+                      },
+                      {
+                        id: "ready",
+                        label:
+                          "Lieferbereit",
+                        description:
+                          "Auftrag für die Lieferung freigeben",
+                        state:
+                          selectedOrder.isPacked
+                            ? "done"
+                            : (
+                                selectedOrder.items.length > 0 &&
+                                selectedOrder.items.every(
+                                  (item: any) =>
+                                    item.checked
+                                ) &&
+                                selectedOrder.tasks.length > 0 &&
+                                selectedOrder.tasks.every(
+                                  (task: any) =>
+                                    task.checked
+                                )
+                              )
+                              ? "current"
+                              : "locked",
+                      },
+                    ]}
+                  />
 
 
-                    <GastarioStack compact>
+                  <GastarioMetricGrid>
 
-                      <div className="g-ui-section-eyebrow">
-                        Packkontrolle
-                      </div>
+                    <GastarioMetric
+                      label="Lieferzeit"
+                      value={
+                        selectedOrder.deliveryTime ||
+                        "-"
+                      }
+                      description="Anlieferung vor Ort"
+                    />
 
-                      {order.tasks.map(
-                        (task: any) => (
+                    <GastarioMetric
+                      label="Gesamtmenge"
+                      value={
+                        selectedOrder.totalQuantity
+                      }
+                      description="Packpositionen"
+                    />
+
+                    <GastarioMetric
+                      label="Fortschritt"
+                      value={
+                        `${
+                          selectedOrder.progress
+                        } %`
+                      }
+                      description={
+                        `${
+                          selectedOrder.checkedCount
+                        } von ${
+                          selectedOrder.totalChecks
+                        } Prüfungen`
+                      }
+                    />
+
+                  </GastarioMetricGrid>
+
+
+                  <GastarioPanel variant="soft">
+
+                    <strong>
+                      Lieferadresse
+                    </strong>
+
+                    <div>
+                      {selectedOrder.deliveryAddress ||
+                        "Keine Lieferadresse eingetragen"}
+                    </div>
+
+                    <div>
+                      Kontakt:{" "}
+                      {selectedOrder.contactName ||
+                        "-"}
+                      {" · "}
+                      {selectedOrder.contactPhone ||
+                        "-"}
+                    </div>
+
+                  </GastarioPanel>
+
+
+                  {selectedOrder.logisticsItems
+                    .length > 0 ? (
+
+                    <GastarioNotice type="neutral">
+                      <strong>
+                        Logistik:
+                      </strong>
+                      {" "}
+                      {selectedOrder.logisticsItems
+                        .map(
+                          (item: any) =>
+                            `${item.quantity} × ${item.name}`
+                        )
+                        .join(", ")}
+                    </GastarioNotice>
+
+                  ) : null}
+
+
+                  {selectedOrder.unresolvedItems
+                    .length > 0 ? (
+
+                    <GastarioNotice type="warning">
+                      <strong>
+                        Operative Zuordnung fehlt:
+                      </strong>
+                      {" "}
+                      {selectedOrder.unresolvedItems.length}
+                      {" "}
+                      Position(en) müssen zuerst geprüft werden.
+                    </GastarioNotice>
+
+                  ) : null}
+
+
+                  {!selectedOrder.packingStarted &&
+                  !selectedOrder.isPacked &&
+                  selectedOrder.unresolvedItems.length ===
+                    0 ? (
+
+                    <GastarioNotice type="info">
+                      Die Packliste ist vorbereitet
+                      und kann gestartet werden.
+                    </GastarioNotice>
+
+                  ) : null}
+
+                </GastarioSection>
+
+              </GastarioDetailPane>
+
+
+              <GastarioDetailPane
+                active={
+                  selectedDetailTab ===
+                  "positions"
+                }
+              >
+
+                <GastarioSection
+                  eyebrow="Positionen"
+                  title="Packpositionen"
+                  description="Alle Positionen dieses Auftrags einzeln bestätigen."
+                >
+
+                  {selectedOrder.items.length === 0 ? (
+
+                    <GastarioEmptyState
+                      title="Keine Positionen"
+                    >
+                      Dieser Auftrag enthält
+                      keine Packpositionen.
+                    </GastarioEmptyState>
+
+                  ) : (
+
+                    <div className="g-ui-check-list">
+
+                      {selectedOrder.items.map(
+                        (item: any) => (
 
                           <PackingCheckbox
                             key={
-                              task.checkKey
+                              item.checkKey
                             }
                             orderId={
-                              order.id
+                              selectedOrder.id
                             }
                             checkKey={
-                              task.checkKey
+                              item.checkKey
                             }
                             initialChecked={
-                              task.checked
+                              item.checked
                             }
                             disabled={
-                              !order.canCheck
+                              !selectedOrder.canCheck
                             }
                             selectedDate={
                               data.selectedDate
                             }
                             label={
-                              task.label
+                              item.name ||
+                              "Position"
+                            }
+                            description={
+                              `${item.quantity || 0} × ${
+                                item.unit || "Stück"
+                              } · ${
+                                item.operationalArea ===
+                                "PACKING"
+                                  ? "Equipment"
+                                  : "Küche"
+                              }`
                             }
                           />
 
                         )
                       )}
 
-                    </GastarioStack>
+                    </div>
+
+                  )}
+
+                </GastarioSection>
+
+              </GastarioDetailPane>
 
 
-                    <GastarioToolbar
-                      align="between"
-                    >
+              <GastarioDetailPane
+                active={
+                  selectedDetailTab ===
+                  "checks"
+                }
+              >
 
-                      <div className="g-ui-data-row-copy">
+                <GastarioSection
+                  eyebrow="Packkontrolle"
+                  title="Zusatzkontrollen"
+                  description="Ware, Dokumente und Equipment vor der Freigabe prüfen."
+                >
 
-                        <strong className="g-ui-data-row-title">
-                          {order.checkedCount}
-                          {" / "}
-                          {order.totalChecks}
-                          {" Prüfungen erledigt"}
-                        </strong>
+                  <div className="g-ui-check-list">
 
-                        <span className="g-ui-data-row-description">
-                          {order.progress}% abgeschlossen
-                        </span>
+                    {selectedOrder.tasks.map(
+                      (task: any) => (
 
-                      </div>
+                        <PackingCheckbox
+                          key={
+                            task.checkKey
+                          }
+                          orderId={
+                            selectedOrder.id
+                          }
+                          checkKey={
+                            task.checkKey
+                          }
+                          initialChecked={
+                            task.checked
+                          }
+                          disabled={
+                            !selectedOrder.canCheck
+                          }
+                          selectedDate={
+                            data.selectedDate
+                          }
+                          label={
+                            task.label
+                          }
+                        />
 
+                      )
+                    )}
 
-                      <GastarioToolbar align="end">
+                  </div>
 
-                        {order.isPacked ? (
+                </GastarioSection>
 
-                          <>
-                            <GastarioBadge
-                              variant="success"
-                            >
-                              Lieferbereit
-                            </GastarioBadge>
-
-                            {order.status !==
-                            "DELIVERED" ? (
-
-                              <Form method="post">
-
-                                <input
-                                  type="hidden"
-                                  name="intent"
-                                  value="reopen-packing"
-                                />
-
-                                <input
-                                  type="hidden"
-                                  name="orderId"
-                                  value={order.id}
-                                />
-
-                                <input
-                                  type="hidden"
-                                  name="date"
-                                  value={
-                                    data.selectedDate
-                                  }
-                                />
-
-                                <GastarioButton
-                                  type="submit"
-                                  variant="secondary"
-                                >
-                                  Wieder öffnen
-                                </GastarioButton>
-
-                              </Form>
-
-                            ) : null}
-
-                            <Link
-                              to={
-                                `/lieferungen?range=date&date=${
-                                  encodeURIComponent(
-                                    data.selectedDate
-                                  )
-                                }`
-                              }
-                              className={
-                                gastarioButtonClass(
-                                  "primary"
-                                )
-                              }
-                            >
-                              Weiter zur Lieferung
-                            </Link>
-                          </>
-
-                        ) : order.packingStarted ? (
-
-                          <Form method="post">
-
-                            <input
-                              type="hidden"
-                              name="intent"
-                              value="complete-packing"
-                            />
-
-                            <input
-                              type="hidden"
-                              name="orderId"
-                              value={order.id}
-                            />
-
-                            <input
-                              type="hidden"
-                              name="date"
-                              value={
-                                data.selectedDate
-                              }
-                            />
-
-                            <GastarioButton
-                              type="submit"
-                              variant="primary"
-                              disabled={
-                                !order.canComplete
-                              }
-                            >
-                              Packen abschließen
-                            </GastarioButton>
-
-                          </Form>
-
-                        ) : null}
-
-                      </GastarioToolbar>
-
-                    </GastarioToolbar>
-
-                  </GastarioPanel>
-
-                )
-              )}
+              </GastarioDetailPane>
 
             </GastarioStack>
 
-          )}
+          ) : null}
 
-        </GastarioSection>
+        </GastarioDetailDialog>
 
       </GastarioPage>
 
