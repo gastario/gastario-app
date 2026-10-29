@@ -8,6 +8,7 @@ import {
   GastarioMetric,
   GastarioNotice,
   GastarioSection,
+  GastarioPanel,
   gastarioButtonClass,
   GastarioDialog,
   GastarioFormGrid,
@@ -505,6 +506,11 @@ export default function CustomersPage() {
     createCustomerOpen,
     setCreateCustomerOpen,
   ] = useState(false);
+
+  const [
+    createDifferentDeliveryAddress,
+    setCreateDifferentDeliveryAddress,
+  ] = useState(false);
   const [
     selectedCustomerId,
     setSelectedCustomerId,
@@ -545,9 +551,10 @@ export default function CustomersPage() {
               <button
                 type="button"
                 className={gastarioButtonClass("primary")}
-                onClick={() =>
-                  setCreateCustomerOpen(true)
-                }
+                onClick={() => {
+                  setCreateDifferentDeliveryAddress(false);
+                  setCreateCustomerOpen(true);
+                }}
               >
                 Neuer Kunde
               </button>
@@ -964,7 +971,18 @@ export default function CustomersPage() {
                         </option>
                       </GastarioSelect>
                     </GastarioField>
-                  </GastarioFormGrid>
+                    <GastarioField
+                label="Interne Notiz"
+                fullWidth
+              >
+                <GastarioTextarea
+                  name="notes"
+                  rows={3}
+                  placeholder="Besonderheiten, Bestellabläufe oder interne Hinweise"
+                />
+              </GastarioField>
+
+            </GastarioFormGrid>
 
                   <GastarioCheckRow
                     name="differentDeliveryAddress"
@@ -977,70 +995,74 @@ export default function CustomersPage() {
                     }
                   />
 
-                  <GastarioFormGrid>
-                    <GastarioField label="Lieferstraße">
-                      <GastarioInput
-                        name="deliveryStreet"
-                        defaultValue={
-                          selectedCustomer.deliveryStreet ||
-                          ""
-                        }
-                      />
-                    </GastarioField>
+                  {createDifferentDeliveryAddress ? (
+              <GastarioPanel variant="soft">
+                <GastarioFormGrid>
+                        <GastarioField label="Lieferstraße">
+                          <GastarioInput
+                            name="deliveryStreet"
+                            defaultValue={
+                              selectedCustomer.deliveryStreet ||
+                              ""
+                            }
+                          />
+                        </GastarioField>
 
-                    <GastarioField label="Hausnummer">
-                      <GastarioInput
-                        name="deliveryHouseNumber"
-                        defaultValue={
-                          selectedCustomer.deliveryHouseNumber ||
-                          ""
-                        }
-                      />
-                    </GastarioField>
+                        <GastarioField label="Hausnummer">
+                          <GastarioInput
+                            name="deliveryHouseNumber"
+                            defaultValue={
+                              selectedCustomer.deliveryHouseNumber ||
+                              ""
+                            }
+                          />
+                        </GastarioField>
 
-                    <GastarioField label="Liefer-PLZ">
-                      <GastarioInput
-                        name="deliveryPostalCode"
-                        defaultValue={
-                          selectedCustomer.deliveryPostalCode ||
-                          ""
-                        }
-                      />
-                    </GastarioField>
+                        <GastarioField label="Liefer-PLZ">
+                          <GastarioInput
+                            name="deliveryPostalCode"
+                            defaultValue={
+                              selectedCustomer.deliveryPostalCode ||
+                              ""
+                            }
+                          />
+                        </GastarioField>
 
-                    <GastarioField label="Lieferort">
-                      <GastarioInput
-                        name="deliveryCity"
-                        defaultValue={
-                          selectedCustomer.deliveryCity ||
-                          ""
-                        }
-                      />
-                    </GastarioField>
+                        <GastarioField label="Lieferort">
+                          <GastarioInput
+                            name="deliveryCity"
+                            defaultValue={
+                              selectedCustomer.deliveryCity ||
+                              ""
+                            }
+                          />
+                        </GastarioField>
 
-                    <GastarioField label="Lieferland">
-                      <GastarioSelect
-                        name="deliveryCountry"
-                        defaultValue={
-                          selectedCustomer.deliveryCountry ||
-                          "DE"
-                        }
-                      >
-                        <option value="DE">
-                          Deutschland
-                        </option>
-                        <option value="AT">
-                          Österreich
-                        </option>
-                        <option value="CH">
-                          Schweiz
-                        </option>
-                        <option value="OTHER">
-                          Anderes Land
-                        </option>
-                      </GastarioSelect>
-                    </GastarioField>
-                  </GastarioFormGrid>
+                        <GastarioField label="Lieferland">
+                          <GastarioSelect
+                            name="deliveryCountry"
+                            defaultValue={
+                              selectedCustomer.deliveryCountry ||
+                              "DE"
+                            }
+                          >
+                            <option value="DE">
+                              Deutschland
+                            </option>
+                            <option value="AT">
+                              Österreich
+                            </option>
+                            <option value="CH">
+                              Schweiz
+                            </option>
+                            <option value="OTHER">
+                              Anderes Land
+                            </option>
+                          </GastarioSelect>
+                        </GastarioField>
+                      </GastarioFormGrid>
+              </GastarioPanel>
+            ) : null}
                 </GastarioDetailPane>
 
                 <GastarioDetailPane
@@ -1137,18 +1159,20 @@ export default function CustomersPage() {
           open={createCustomerOpen}
           title="Neuen Kunden anlegen"
           description="Firmen-, Kontakt-, Rechnungs- und Lieferdaten zentral erfassen."
-          onClose={() =>
-            setCreateCustomerOpen(false)
-          }
+          onClose={() => {
+            setCreateCustomerOpen(false);
+            setCreateDifferentDeliveryAddress(false);
+          }}
           size="xl"
           footer={
             <GastarioToolbar>
               <button
                 type="button"
                 className={gastarioButtonClass("secondary")}
-                onClick={() =>
-                  setCreateCustomerOpen(false)
-                }
+                onClick={() => {
+                  setCreateCustomerOpen(false);
+                  setCreateDifferentDeliveryAddress(false);
+                }}
               >
                 Abbrechen
               </button>
@@ -1358,7 +1382,13 @@ export default function CustomersPage() {
               name="differentDeliveryAddress"
               value="on"
               title="Abweichende Lieferadresse verwenden"
-              description="Die folgenden Lieferdaten werden nur verwendet, wenn diese Option aktiviert ist."
+              description="Aktivieren, wenn die Lieferung an eine andere Adresse als die Rechnungsadresse geht."
+              checked={
+                createDifferentDeliveryAddress
+              }
+              onCheckedChange={
+                setCreateDifferentDeliveryAddress
+              }
             />
 
             <GastarioFormGrid>
@@ -1414,15 +1444,7 @@ export default function CustomersPage() {
               </GastarioField>
             </GastarioFormGrid>
 
-            <GastarioFormGrid columns={1}>
-              <GastarioField label="Interne Notiz">
-                <GastarioTextarea
-                  name="notes"
-                  rows={4}
-                  placeholder="Besonderheiten, Bestellabläufe oder interne Hinweise"
-                />
-              </GastarioField>
-            </GastarioFormGrid>
+
           </Form>
         </GastarioDialog>
 

@@ -29,6 +29,7 @@ type GastarioFieldProps = {
   required?: boolean;
   children: ReactNode;
   className?: string;
+  fullWidth?: boolean;
 };
 
 export function GastarioField({
@@ -37,9 +38,16 @@ export function GastarioField({
   required = false,
   children,
   className,
+  fullWidth = false,
 }: GastarioFieldProps) {
   return (
-    <label className={joinClasses("g-ui-field", className)}>
+    <label
+      className={joinClasses(
+        "g-ui-field",
+        fullWidth && "g-ui-field--full",
+        className
+      )}
+    >
       <span className="g-ui-field-label">
         {label}
         {required ? (

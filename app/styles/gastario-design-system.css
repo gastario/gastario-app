@@ -2390,6 +2390,11 @@
     gap: 6px;
   }
 
+  .g-ui-form-grid > .g-ui-field--full {
+    grid-column: 1 / -1;
+  }
+
+
   .g-ui-field-label {
     color: var(--g26-text-soft);
 
