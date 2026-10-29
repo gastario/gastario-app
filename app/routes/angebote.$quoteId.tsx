@@ -4,6 +4,7 @@ import {
   redirect,
   useActionData,
   useLoaderData,
+  useNavigate,
 } from "react-router";
 
 import AppLayout from "../components/AppLayout";
@@ -12,6 +13,7 @@ import {
   GastarioPage,
   GastarioHeader,
   GastarioNotice,
+  GastarioDetailDialog,
   GastarioSplitView,
   GastarioMain,
   GastarioAside,
@@ -392,6 +394,8 @@ export default function QuoteDetailPage() {
   const actionData =
     useActionData<typeof action>();
 
+  const navigate = useNavigate();
+
   const quote =
     data.quote;
 
@@ -471,7 +475,7 @@ export default function QuoteDetailPage() {
       <GastarioPage>
         <GastarioHeader
           eyebrow="Angebot"
-          title={quote.quoteNumber}
+          title="Angebote"
           subtitle={
             <>
               {quote.customerName}
@@ -506,6 +510,50 @@ export default function QuoteDetailPage() {
             </GastarioToolbar>
           }
         />
+
+        <GastarioDetailDialog
+          open
+          title={quote.quoteNumber}
+          description={
+            <>
+              {quote.customerName}
+              {" · "}
+              {quote.eventName ||
+                "Keine Veranstaltung"}
+            </>
+          }
+          onClose={() =>
+            navigate("/angebote")
+          }
+          footer={
+            <>
+              <GastarioButton
+                type="button"
+                variant="secondary"
+                onClick={() =>
+                  navigate("/angebote")
+                }
+              >
+                Schließen
+              </GastarioButton>
+
+              <Form method="post">
+                <input
+                  type="hidden"
+                  name="intent"
+                  value="duplicate"
+                />
+
+                <GastarioButton
+                  type="submit"
+                  variant="secondary"
+                >
+                  Duplizieren
+                </GastarioButton>
+              </Form>
+            </>
+          }
+        >
 
         {actionData?.error ? (
           <GastarioNotice type="danger">
@@ -882,6 +930,7 @@ export default function QuoteDetailPage() {
             ) : null}
           </GastarioAside>
         </GastarioSplitView>
+        </GastarioDetailDialog>
       </GastarioPage>
     </AppLayout>
   );

@@ -10,6 +10,7 @@ import {
   useActionData,
   useLoaderData,
   useNavigation,
+  useNavigate,
 } from "react-router";
 
 import AppLayout from "../components/AppLayout";
@@ -18,6 +19,7 @@ import {
   GastarioPage,
   GastarioHeader,
   GastarioNotice,
+  GastarioDialog,
   GastarioWorkspace,
   GastarioMain,
   GastarioAside,  GastarioCard,  GastarioFormGrid,  GastarioField,  GastarioInput,  GastarioSelect,  GastarioMetricGrid,  GastarioMetric,
@@ -698,6 +700,8 @@ export default function NewQuotePage() {
   const navigation =
     useNavigation();
 
+  const navigate = useNavigate();
+
   const [customerId, setCustomerId] =
     useState("");
 
@@ -1055,7 +1059,7 @@ export default function NewQuotePage() {
       <GastarioPage>
         <GastarioHeader
           eyebrow="Verkauf"
-          title="Neues Angebot"
+          title="Angebote"
           subtitle={
             <>
               {data.tenant?.name ||
@@ -1076,6 +1080,31 @@ export default function NewQuotePage() {
           }
         />
 
+        <GastarioDialog
+          open
+          title="Neues Angebot"
+          description="Kunde, Veranstaltung, Positionen und Kalkulation erfassen."
+          size="xl"
+          onClose={() =>
+            navigate("/angebote")
+          }
+          footer={
+            <>
+              <GastarioButton
+                variant="secondary"
+                type="button"
+                onClick={() =>
+                  navigate("/angebote")
+                }
+              >
+                Abbrechen
+              </GastarioButton>
+
+
+            </>
+          }
+        >
+
         {data.setupError ? (
           <GastarioNotice type="warning">
             {data.setupError}
@@ -1088,7 +1117,10 @@ export default function NewQuotePage() {
           </GastarioNotice>
         ) : null}
 
-        <Form method="post">
+        <Form
+            id="new-quote-form"
+            method="post"
+          >
           <input
             type="hidden"
             name="customerId"
@@ -1748,6 +1780,7 @@ export default function NewQuotePage() {
               </GastarioAside>
           </GastarioWorkspace>
         </Form>
+        </GastarioDialog>
       </GastarioPage>
     </AppLayout>
   );

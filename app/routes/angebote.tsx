@@ -2,6 +2,7 @@ import {
   Form,
   Link,
   useLoaderData,
+  useNavigate,
 } from "react-router";
 import AppLayout from "../components/AppLayout";
 import {
@@ -205,6 +206,7 @@ export async function loader({ request }: { request: Request }) {
 
 export default function QuotesPage() {
   const data = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
 
   return (
     <AppLayout>
@@ -356,7 +358,14 @@ export default function QuotesPage() {
 
               {data.quotes.map((quote: any) => (
 
-                <GastarioDataRow key={quote.id}>
+                <GastarioDataRow
+                      key={quote.id}
+                      onClick={() =>
+                        navigate(
+                          `/angebote/${quote.id}`
+                        )
+                      }
+                    >
 
                   <div className="g-ui-data-row-main">
 
