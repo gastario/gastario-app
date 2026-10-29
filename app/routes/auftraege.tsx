@@ -1028,8 +1028,6 @@ export default function OrdersPage() {
 
           )}
 
-        </GastarioSection>
-
           <GastarioDataList>
 
             {data.orders.length === 0 ? (
@@ -1209,6 +1207,9 @@ export default function OrdersPage() {
 
           </GastarioDataList>
 
+        </GastarioSection>
+
+
         <GastarioDetailDialog
           open={Boolean(selectedOrder)}
           title={
@@ -1228,166 +1229,28 @@ export default function OrdersPage() {
                 }`
               : undefined
           }
-          onClose={() =>
-            setSelectedOrderId(null)
-          }
+          onClose={() => {
+            setSelectedOrderId(null);
+            setSelectedOrderDetailTab(
+              "overview"
+            );
+          }}
           footer={
             selectedOrder ? (
-              <>
-                
-                <Link
-                  className={gastarioButtonClass(
-                    "secondary"
-                  )}
-                  to={
-                    `/auftrag-pruefung/${selectedOrder.id}`
-                  }
-                >
-                  Operative Zuordnung
-                </Link>
-
-                {!selectedOrderOperationalReady ? (
-                  <GastarioNotice type="warning">
-                    <strong>
-                      Vor Produktion noch zuzuordnen:
-                    </strong>{" "}
-                    {selectedOrderOperationalMissingCount} Position(en).
-                    Öffne die operative Zuordnung und vervollständige
-                    Produkt, Arbeitsbereich, operative Menge und Einheit.
-                  </GastarioNotice>
-                ) : null}
-
-                {String(
-                  selectedOrder.status || ""
-                ) === "CONFIRMED" ? (
-                  <Form method="post">
-                    <input
-                      type="hidden"
-                      name="intent"
-                      value="updateStatus"
-                    />
-
-                    <input
-                      type="hidden"
-                      name="orderId"
-                      value={selectedOrder.id}
-                    />
-
-                    <input
-                      type="hidden"
-                      name="status"
-                      value="IN_PRODUCTION"
-                    />
-
-                    <GastarioButton
-                      variant="primary"
-                      type="submit"
-                    >
-                      In Produktion
-                    </GastarioButton>
-                  </Form>
-                ) : null}
-
-                {String(
-                  selectedOrder.status || ""
-                ) === "IN_PRODUCTION" ? (
-                  <Form method="post">
-                    <input
-                      type="hidden"
-                      name="intent"
-                      value="updateStatus"
-                    />
-
-                    <input
-                      type="hidden"
-                      name="orderId"
-                      value={selectedOrder.id}
-                    />
-
-                    <input
-                      type="hidden"
-                      name="status"
-                      value="PACKING_OPEN"
-                    />
-
-                    <GastarioButton
-                      variant="primary"
-                      type="submit"
-                    >
-                      An Packstation
-                    </GastarioButton>
-                  </Form>
-                ) : null}
-
-                {String(
-                  selectedOrder.status || ""
-                ) === "PACKING_OPEN" ? (
-                  <Link
-                    className={gastarioButtonClass(
-                      "primary"
-                    )}
-                    to={
-                      "/packlisten?date=" +
-                      encodeURIComponent(
-                        formatDateInput(
-                          selectedOrder.deliveryDate
-                        )
-                      )
-                    }
-                  >
-                    Packliste öffnen
-                  </Link>
-                ) : null}
-
-                <DeliveryNoteButton
-                  orderId={selectedOrder.id}
-                />
-
-                <Link
-                  className={gastarioButtonClass(
-                    "secondary"
-                  )}
-                  to={
-                    "/auftraege/" +
-                    selectedOrder.id +
-                    "/foodlabels"
-                  }
-                >
-                  Foodlabels
-                </Link>
-
-                <Form
-                  method="post"
-                  onSubmit={(event) => {
-                    if (
-                      !window.confirm(
-                        "Diesen Auftrag wirklich löschen?"
-                      )
-                    ) {
-                      event.preventDefault();
-                    }
+              <GastarioToolbar>
+                <GastarioButton
+                  variant="secondary"
+                  type="button"
+                  onClick={() => {
+                    setSelectedOrderId(null);
+                    setSelectedOrderDetailTab(
+                      "overview"
+                    );
                   }}
                 >
-                  <input
-                    type="hidden"
-                    name="intent"
-                    value="deleteOrder"
-                  />
-
-                  <input
-                    type="hidden"
-                    name="orderId"
-                    value={selectedOrder.id}
-                  />
-
-                  <GastarioButton
-                    variant="danger"
-                    type="submit"
-                  >
-                    Löschen
-                  </GastarioButton>
-                </Form>
-              </>
+                  Schließen
+                </GastarioButton>
+              </GastarioToolbar>
             ) : null
           }
         >
@@ -1491,6 +1354,211 @@ export default function OrdersPage() {
                     ) : null}
                   </GastarioPanel>
                 </GastarioSection>
+
+
+                <GastarioSection
+                  eyebrow="Bearbeitung"
+                  title="Auftrag weiterführen"
+                  description="Operative Zuordnung, Produktion und Ausgabedokumente zentral steuern."
+                >
+
+                  {!selectedOrderOperationalReady ? (
+                    <GastarioNotice type="warning">
+                      <strong>
+                        Vor Produktion noch zuzuordnen:
+                      </strong>{" "}
+                      {selectedOrderOperationalMissingCount} Position(en).
+                      Vervollständige Produkt, Arbeitsbereich,
+                      operative Menge und Einheit.
+                    </GastarioNotice>
+                  ) : (
+                    <GastarioNotice type="success">
+                      Die operative Zuordnung ist vollständig.
+                    </GastarioNotice>
+                  )}
+
+
+                  <GastarioToolbar
+                    align="start"
+                  >
+
+                    <Link
+                      className={gastarioButtonClass(
+                        "secondary"
+                      )}
+                      to={
+                        `/auftrag-pruefung/${selectedOrder.id}`
+                      }
+                    >
+                      Operative Zuordnung
+                    </Link>
+
+
+                    {String(
+                      selectedOrder.status ||
+                      ""
+                    ) === "CONFIRMED" ? (
+
+                      <Form method="post">
+                        <input
+                          type="hidden"
+                          name="intent"
+                          value="updateStatus"
+                        />
+
+                        <input
+                          type="hidden"
+                          name="orderId"
+                          value={
+                            selectedOrder.id
+                          }
+                        />
+
+                        <input
+                          type="hidden"
+                          name="status"
+                          value="IN_PRODUCTION"
+                        />
+
+                        <GastarioButton
+                          variant="primary"
+                          type="submit"
+                        >
+                          In Produktion
+                        </GastarioButton>
+                      </Form>
+
+                    ) : null}
+
+
+                    {String(
+                      selectedOrder.status ||
+                      ""
+                    ) === "IN_PRODUCTION" ? (
+
+                      <Form method="post">
+                        <input
+                          type="hidden"
+                          name="intent"
+                          value="updateStatus"
+                        />
+
+                        <input
+                          type="hidden"
+                          name="orderId"
+                          value={
+                            selectedOrder.id
+                          }
+                        />
+
+                        <input
+                          type="hidden"
+                          name="status"
+                          value="PACKING_OPEN"
+                        />
+
+                        <GastarioButton
+                          variant="primary"
+                          type="submit"
+                        >
+                          An Packstation
+                        </GastarioButton>
+                      </Form>
+
+                    ) : null}
+
+
+                    {String(
+                      selectedOrder.status ||
+                      ""
+                    ) === "PACKING_OPEN" ? (
+
+                      <Link
+                        className={gastarioButtonClass(
+                          "primary"
+                        )}
+                        to={
+                          "/packlisten?date=" +
+                          encodeURIComponent(
+                            formatDateInput(
+                              selectedOrder.deliveryDate
+                            )
+                          )
+                        }
+                      >
+                        Packliste öffnen
+                      </Link>
+
+                    ) : null}
+
+
+                    <DeliveryNoteButton
+                      orderId={
+                        selectedOrder.id
+                      }
+                    />
+
+
+                    <Link
+                      className={gastarioButtonClass(
+                        "secondary"
+                      )}
+                      to={
+                        "/auftraege/" +
+                        selectedOrder.id +
+                        "/foodlabels"
+                      }
+                    >
+                      Foodlabels
+                    </Link>
+
+                  </GastarioToolbar>
+
+
+                  <GastarioToolbar
+                    align="start"
+                  >
+
+                    <Form
+                      method="post"
+                      onSubmit={(event) => {
+                        if (
+                          !window.confirm(
+                            "Diesen Auftrag wirklich löschen?"
+                          )
+                        ) {
+                          event.preventDefault();
+                        }
+                      }}
+                    >
+
+                      <input
+                        type="hidden"
+                        name="intent"
+                        value="deleteOrder"
+                      />
+
+                      <input
+                        type="hidden"
+                        name="orderId"
+                        value={
+                          selectedOrder.id
+                        }
+                      />
+
+                      <GastarioButton
+                        variant="danger"
+                        type="submit"
+                      >
+                        Auftrag löschen
+                      </GastarioButton>
+
+                    </Form>
+
+                  </GastarioToolbar>
+
+                </GastarioSection>
+
               </GastarioDetailPane>
 
 
@@ -1744,7 +1812,7 @@ export default function OrdersPage() {
         </GastarioDetailDialog>
 
       </GastarioStack>
-      
+
       <NewOrderDialog
         open={newOrderOpen}
         onClose={() =>
@@ -1756,7 +1824,3 @@ export default function OrdersPage() {
 </AppLayout>
   );
 }
-
-
-
-
