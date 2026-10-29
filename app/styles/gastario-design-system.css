@@ -2274,6 +2274,13 @@
      FORM GRID
   ------------------------------------------------------- */
 
+  .g-ui-form-narrow {
+    width: min(620px, 100%);
+
+    margin-inline: auto;
+  }
+
+
   .g-ui-form-grid {
     width: 100%;
     min-width: 0;

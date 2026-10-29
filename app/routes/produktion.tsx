@@ -7,19 +7,27 @@ import {
 } from "react-router";
 
 import AppLayout from "../components/AppLayout";
-import { GastarioCheckRow } from "../components/ui";
 
 import {
-  MetricCard,
-  MetricGrid,
-  Notice,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
-
-import "../styles/gastario-page-shell.css";
-import "../styles/gastario-operations.css";
+  GastarioBadge,
+  GastarioButton,
+  GastarioCheckRow,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioEmptyState,
+  GastarioField,
+  GastarioFilterBar,
+  GastarioHeader,
+  GastarioMetric,
+  GastarioMetricGrid,
+  GastarioNotice,
+  GastarioPage,
+  GastarioSection,
+  GastarioSelect,
+  GastarioTable,
+  GastarioToolbar,
+  gastarioButtonClass,
+} from "../components/ui";
 
 const OPERATIONAL_STATUSES = new Set([
   "CONFIRMED",
@@ -772,10 +780,13 @@ export default function ProductionPage() {
       typeof action
     >() as any;
 
+
   return (
     <AppLayout>
-      <PageShell className="operationsMasterPage productionMasterPage">
-        <PageHeader
+
+      <GastarioPage>
+
+        <GastarioHeader
           eyebrow="Betrieb"
           title="Produktion"
           subtitle={
@@ -789,18 +800,22 @@ export default function ProductionPage() {
           }
           actions={
             <>
-              <button
-                className="g-ops-button g-ops-button--secondary"
+              <GastarioButton
+                variant="secondary"
                 type="button"
                 onClick={() =>
                   window.print()
                 }
               >
                 Drucken
-              </button>
+              </GastarioButton>
 
               <Link
-                className="g-ops-button g-ops-button--primary"
+                className={
+                  gastarioButtonClass(
+                    "primary"
+                  )
+                }
                 to="/auftragseingang"
               >
                 Auftrag anlegen
@@ -809,74 +824,90 @@ export default function ProductionPage() {
           }
         />
 
-        {data.error ? (
-          <Notice type="danger">
-            <strong>
-              Die Produktionsdaten
-              konnten nicht vollständig
-              geladen werden.
-            </strong>
 
-            <span>{data.error}</span>
-          </Notice>
+        {data.error ? (
+
+          <GastarioNotice type="danger">
+            <strong>
+              Die Produktionsdaten konnten
+              nicht vollständig geladen werden.
+            </strong>
+            {" "}
+            {data.error}
+          </GastarioNotice>
+
         ) : null}
+
 
         {actionData?.error ? (
-          <Notice type="danger">
-            <strong>
-              Aktion konnte nicht
-              ausgeführt werden.
-            </strong>
 
-            <span>
-              {actionData.error}
-            </span>
-          </Notice>
+          <GastarioNotice type="danger">
+            <strong>
+              Aktion konnte nicht ausgeführt werden.
+            </strong>
+            {" "}
+            {actionData.error}
+          </GastarioNotice>
+
         ) : null}
 
+
         {data.reviewItems.length > 0 ? (
-          <Notice type="warning">
+
+          <GastarioNotice type="warning">
+
             <strong>
               Operative Zuordnung erforderlich.
             </strong>
+            {" "}
+            {data.reviewItems.length} Position(en)
+            sind noch nicht als Küche,
+            Packstation, Logistik oder
+            nicht operativ eingeordnet.
 
-            <span>
-              {data.reviewItems.length} Position(en)
-              sind noch nicht als Küche,
-              Packstation, Logistik oder
-              nicht operativ eingeordnet.
-            </span>
+            <GastarioToolbar align="start">
+              <Link
+                className={
+                  gastarioButtonClass(
+                    "secondary"
+                  )
+                }
+                to={
+                  `/auftrag-pruefung/${
+                    data.reviewItems[0].orderId
+                  }`
+                }
+              >
+                Zuordnungen prüfen
+              </Link>
+            </GastarioToolbar>
 
-            <Link
-              className="g-ops-button g-ops-button--secondary g-ops-button--compact"
-              to={`/auftrag-pruefung/${
-                data.reviewItems[0].orderId
-              }`}
-            >
-              Zuordnungen prüfen
-            </Link>
-          </Notice>
+          </GastarioNotice>
+
         ) : null}
 
-        <MetricGrid className="operationsMetricGrid">
-          <MetricCard
+
+        <GastarioMetricGrid>
+
+          <GastarioMetric
             label="Aufträge"
-            value={data.stats.orders}
+            value={
+              data.stats.orders
+            }
             description="für diesen Planungstag"
             badge="Automatisch"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="Noch offen"
-            value={data.stats.confirmed}
+            value={
+              data.stats.confirmed
+            }
             description="Produktion noch nicht gestartet"
             badge="Start"
-            attention={
-              data.stats.confirmed > 0
-            }
           />
 
-          <MetricCard
+          <GastarioMetric
             label="In Produktion"
             value={
               data.stats.inProduction
@@ -885,7 +916,7 @@ export default function ProductionPage() {
             badge="Küche"
           />
 
-          <MetricCard
+          <GastarioMetric
             label="An Packstation"
             value={
               data.stats.packingOpen
@@ -893,377 +924,418 @@ export default function ProductionPage() {
             description="Produktion abgeschlossen"
             badge="Weiter"
           />
-        </MetricGrid>
 
-        <div className="operationsWorkspaceGrid">
-          <PageSection
-            className="operationsPrimarySection"
-            eyebrow="Produktionsliste"
-            title="Zu produzieren"
-            description="Nur als Küche zugeordnete Positionen werden zusammengefasst. Produktnamen und operative Mengen stammen aus der bestätigten Zuordnung."
-            actions={
-              <form
-                className="operationsDateFilter"
-                method="get"
-              >
-                <label>
-                  <span>
-                    Planungstag
-                  </span>
+        </GastarioMetricGrid>
 
-                  <select
-                    name="date"
-                    defaultValue={
-                      data.selectedDate
-                    }
-                  >
-                    {data.availableDates
-                      .length > 0 ? (
-                      data.availableDates.map(
-                        (date: string) => (
-                          <option
-                            key={date}
-                            value={date}
-                          >
-                            {formatDate(
-                              date
-                            )}
-                          </option>
-                        )
-                      )
-                    ) : (
-                      <option
-                        value={
-                          data.selectedDate
-                        }
-                      >
-                        Keine Auftragsdaten
-                      </option>
-                    )}
-                  </select>
-                </label>
 
-                <button
-                  className="g-ops-button g-ops-button--secondary"
+        <GastarioSection
+          eyebrow="Produktionsliste"
+          title="Zu produzieren"
+          description="Nur der Küche zugeordnete Positionen werden für den gewählten Planungstag zusammengefasst."
+        >
+
+          <Form method="get">
+
+            <GastarioFilterBar
+              actions={
+                <GastarioButton
+                  variant="primary"
                   type="submit"
                 >
                   Anzeigen
-                </button>
-              </form>
-            }
-          >
-            {data.productionItems
-              .length === 0 ? (
-              <div className="operationsEmptyState">
-                <span
-                  className="operationsEmptyIcon"
-                  aria-hidden="true"
-                >
-                  0
-                </span>
+                </GastarioButton>
+              }
+            >
 
-                <div>
-                  <strong>
-                    Keine Produktionspositionen
-                    gefunden
-                  </strong>
-
-                  <p>
-                    Für den ausgewählten Tag
-                    gibt es noch keine als Küche
-                    zugeordneten Positionen.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div
-                className="operationsTable"
-                role="table"
+              <GastarioField
+                label="Planungstag"
               >
-                <div
-                  className="operationsTableHead operationsProductionColumns"
-                  role="row"
+                <GastarioSelect
+                  name="date"
+                  defaultValue={
+                    data.selectedDate
+                  }
                 >
-                  <span role="columnheader">
-                    Produkt
-                  </span>
 
-                  <span role="columnheader">
-                    Menge
-                  </span>
+                  {data.availableDates
+                    .length > 0 ? (
 
-                  <span role="columnheader">
-                    Einheit
-                  </span>
+                    data.availableDates.map(
+                      (
+                        date: string
+                      ) => (
 
-                  <span role="columnheader">
-                    Aufträge
-                  </span>
+                        <option
+                          key={date}
+                          value={date}
+                        >
+                          {formatDate(
+                            date
+                          )}
+                        </option>
 
-                  <span role="columnheader">
-                    Status
-                  </span>
-                </div>
+                      )
+                    )
+
+                  ) : (
+
+                    <option
+                      value={
+                        data.selectedDate
+                      }
+                    >
+                      Keine Auftragsdaten
+                    </option>
+
+                  )}
+
+                </GastarioSelect>
+              </GastarioField>
+
+            </GastarioFilterBar>
+
+          </Form>
+
+
+          {data.productionItems
+            .length === 0 ? (
+
+            <GastarioEmptyState
+              title="Keine Produktionspositionen gefunden"
+            >
+              Für den ausgewählten Tag gibt es
+              noch keine der Küche zugeordneten
+              Positionen.
+            </GastarioEmptyState>
+
+          ) : (
+
+            <GastarioTable>
+
+              <thead>
+                <tr>
+                  <th>Produkt</th>
+                  <th>Menge</th>
+                  <th>Einheit</th>
+                  <th>Aufträge</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+
+
+              <tbody>
 
                 {data.productionItems.map(
-                  (item: any) => (
-                    <div
-                      className="operationsTableRow operationsProductionColumns"
-                      role="row"
-                      key={`${item.name}-${item.unit}`}
+                  (
+                    item: any
+                  ) => (
+
+                    <tr
+                      key={
+                        `${item.name}-${item.unit}`
+                      }
                     >
-                      <div
-                        data-label="Produkt"
-                        role="cell"
-                      >
+
+                      <td>
                         <strong>
                           {item.name}
                         </strong>
-                      </div>
+                      </td>
 
-                      <div
-                        data-label="Menge"
-                        role="cell"
-                      >
-                        <strong className="operationsQuantity">
+
+                      <td>
+                        <strong>
                           {item.quantity}
                         </strong>
-                      </div>
+                      </td>
 
-                      <div
-                        data-label="Einheit"
-                        role="cell"
-                      >
+
+                      <td>
                         {item.unit}
-                      </div>
+                      </td>
 
-                      <div
-                        data-label="Aufträge"
-                        role="cell"
-                      >
-                        <span className="operationsOrderReferences">
-                          {item.orders
-                            .slice(0, 3)
-                            .join(", ")}
 
-                          {item.orders
-                            .length > 3
-                            ? ` +${
-                                item.orders
-                                  .length -
-                                3
-                              }`
-                            : ""}
-                        </span>
-                      </div>
+                      <td>
+                        {item.orders
+                          .slice(0, 3)
+                          .join(", ")}
 
-                      <div
-                        data-label="Status"
-                        role="cell"
-                      >
-                        <span
-                          className={
-                            `operationsStatus ${item.statusClassName}`
+                        {item.orders.length > 3
+                          ? ` +${
+                              item.orders.length -
+                              3
+                            }`
+                          : ""}
+                      </td>
+
+
+                      <td>
+                        <GastarioBadge
+                          variant={
+                            item.statusClassName ===
+                            "is-ready"
+                              ? "success"
+                              : item.statusClassName ===
+                                  "is-production"
+                                ? "info"
+                                : item.statusClassName ===
+                                    "is-packing"
+                                  ? "warning"
+                                  : "neutral"
                           }
                         >
-                          {
-                            item.statusLabel
-                          }
-                        </span>
-                      </div>
-                    </div>
+                          {item.statusLabel}
+                        </GastarioBadge>
+                      </td>
+
+                    </tr>
+
                   )
                 )}
-              </div>
-            )}
-          </PageSection>
 
-          <PageSection
-            className="operationsSecondarySection"
-            eyebrow="Auftragsbasis"
-            title="Arbeitsfortschritt"
-            description="Jeder Auftrag wird von bestätigt über Produktion bis zur Packstation weitergeführt."
-          >
-            {data.orders.length === 0 ? (
-              <div className="operationsCompactEmpty">
-                <strong>
-                  Keine Aufträge
-                </strong>
+              </tbody>
 
-                <span>
-                  Für diesen Tag wurde
-                  keine Auftragsbasis
-                  gefunden.
-                </span>
-              </div>
-            ) : (
-              <div className="operationsOrderList">
-                {data.orders.map(
-                  (order: any) => {
-                    const status =
-                      String(
-                        order.status ||
-                          ""
-                      ).toUpperCase();
+            </GastarioTable>
 
-                    return (
-                      <article
-                        className="operationsOrderCard operationsOrderCard--workflow"
-                        key={order.id}
-                      >
-                        <div>
-                          <strong>
-                            {order.customerName ||
-                              "Ohne Kunde"}
-                          </strong>
+          )}
 
-                          <span>
-                            {order.orderNumber}
-                            {" · "}
-                            {orderSummary(
-                              order
-                            )}
-                          </span>
-                        </div>
+        </GastarioSection>
 
-                        <div className="operationsOrderActions">
-                          <time>
-                            {order.deliveryTimeText ||
-                              "-"}
-                          </time>
 
-                          <span
+        <GastarioSection
+          eyebrow="Auftragsbasis"
+          title="Arbeitsfortschritt"
+          description="Jeder Auftrag wird von der Bestätigung über die Produktion bis zur Packstation weitergeführt."
+        >
+
+          {data.orders.length === 0 ? (
+
+            <GastarioEmptyState
+              title="Keine Aufträge"
+            >
+              Für diesen Planungstag wurde
+              keine Auftragsbasis gefunden.
+            </GastarioEmptyState>
+
+          ) : (
+
+            <GastarioDataList>
+
+              {data.orders.map(
+                (
+                  order: any
+                ) => {
+
+                  const status =
+                    String(
+                      order.status ||
+                      ""
+                    ).toUpperCase();
+
+
+                  return (
+                    <GastarioDataRow
+                      key={
+                        order.id
+                      }
+                    >
+
+                      <div className="g-ui-data-row-main">
+
+                        <strong className="g-ui-data-row-title">
+                          {order.customerName ||
+                            "Ohne Kunde"}
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          {order.orderNumber}
+                          {" · "}
+                          {orderSummary(
+                            order
+                          )}
+                        </span>
+
+                      </div>
+
+
+                      <div className="g-ui-data-row-meta">
+
+                        <span>
+                          {order.deliveryTimeText ||
+                            "-"}
+                        </span>
+
+                        <GastarioBadge
+                          variant={
+                            status ===
+                            "DELIVERED"
+                              ? "success"
+                              : status ===
+                                  "PACKING_OPEN"
+                                ? "warning"
+                                : status ===
+                                    "IN_PRODUCTION"
+                                  ? "info"
+                                  : "neutral"
+                          }
+                        >
+                          {orderStatusLabel(
+                            order
+                          )}
+                        </GastarioBadge>
+
+                      </div>
+
+
+                      <div className="g-ui-data-row-actions">
+
+                        {order.unresolvedOperationalItems >
+                        0 ? (
+
+                          <Link
+                            to={
+                              `/auftrag-pruefung/${
+                                order.id
+                              }`
+                            }
                             className={
-                              "operationsStatus " +
-                              (
-                                status ===
-                                "IN_PRODUCTION"
-                                  ? "is-production"
-                                  : status ===
-                                      "PACKING_OPEN"
-                                    ? "is-packing"
-                                    : status ===
-                                        "DELIVERED"
-                                      ? "is-ready"
-                                      : "is-open"
+                              gastarioButtonClass(
+                                "secondary"
                               )
                             }
                           >
-                            {orderStatusLabel(
-                              order
-                            )}
-                          </span>
+                            {order.unresolvedOperationalItems}
+                            {" "}
+                            Zuordnung(en) prüfen
+                          </Link>
 
-                          {order.unresolvedOperationalItems >
-                          0 ? (
-                            <Link
-                              to={`/auftrag-pruefung/${order.id}`}
-                              className="g-ops-button g-ops-button--secondary g-ops-button--compact"
-                            >
-                              {order.unresolvedOperationalItems} Zuordnung(en) prüfen
-                            </Link>
-                          ) : status ===
-                          "CONFIRMED" ? (
-                            <Form
-                              method="post"
-                              className="operationsInlineForm"
-                            >
-                              <input
-                                type="hidden"
-                                name="intent"
-                                value="start-production"
-                              />
+                        ) : status ===
+                        "CONFIRMED" ? (
 
-                              <input
-                                type="hidden"
-                                name="orderId"
-                                value={order.id}
-                              />
+                          <Form method="post">
 
-                              <input
-                                type="hidden"
-                                name="date"
-                                value={
-                                  data.selectedDate
-                                }
-                              />
+                            <input
+                              type="hidden"
+                              name="intent"
+                              value="start-production"
+                            />
 
-                              <button
-                                type="submit"
-                                className="g-ops-button g-ops-button--primary g-ops-button--compact"
-                              >
-                                Produktion starten
-                              </button>
-                            </Form>
-                          ) : null}
+                            <input
+                              type="hidden"
+                              name="orderId"
+                              value={
+                                order.id
+                              }
+                            />
 
-                          {order.unresolvedOperationalItems ===
-                            0 &&
-                          status ===
-                          "IN_PRODUCTION" ? (
-                            <Form
-                              method="post"
-                              className="operationsInlineForm"
-                            >
-                              <input
-                                type="hidden"
-                                name="intent"
-                                value="complete-production"
-                              />
-
-                              <input
-                                type="hidden"
-                                name="orderId"
-                                value={order.id}
-                              />
-
-                              <input
-                                type="hidden"
-                                name="date"
-                                value={
-                                  data.selectedDate
-                                }
-                              />
-
-
-                              <GastarioCheckRow
-                                name="productionConfirmed"
-                                value="1"
-                                title="Produktion vollständig"
-                                description="Alle Küchenpositionen dieses Auftrags sind fertig und können an die Packstation übergeben werden."
-                                required
-                              />
-
-                              <button
-                                type="submit"
-                                className="g-ops-button g-ops-button--primary g-ops-button--compact"
-                              >
-                                An Packstation
-                              </button>
-                            </Form>
-                          ) : null}
-
-                          {status ===
-                          "PACKING_OPEN" ? (
-                            <Link
-                              to={`/packlisten?date=${encodeURIComponent(
+                            <input
+                              type="hidden"
+                              name="date"
+                              value={
                                 data.selectedDate
-                              )}`}
-                              className="g-ops-button g-ops-button--secondary g-ops-button--compact"
+                              }
+                            />
+
+                            <GastarioButton
+                              type="submit"
+                              variant="primary"
                             >
-                              Packliste öffnen
-                            </Link>
-                          ) : null}
-                        </div>
-                      </article>
-                    );
-                  }
-                )}
-              </div>
-            )}
-          </PageSection>
-        </div>
-      </PageShell>
+                              Produktion starten
+                            </GastarioButton>
+
+                          </Form>
+
+                        ) : null}
+
+
+                        {order.unresolvedOperationalItems ===
+                          0 &&
+                        status ===
+                        "IN_PRODUCTION" ? (
+
+                          <Form method="post">
+
+                            <input
+                              type="hidden"
+                              name="intent"
+                              value="complete-production"
+                            />
+
+                            <input
+                              type="hidden"
+                              name="orderId"
+                              value={
+                                order.id
+                              }
+                            />
+
+                            <input
+                              type="hidden"
+                              name="date"
+                              value={
+                                data.selectedDate
+                              }
+                            />
+
+
+                            <GastarioCheckRow
+                              name="productionConfirmed"
+                              value="1"
+                              title="Produktion vollständig"
+                              description="Alle Küchenpositionen sind fertig."
+                              required
+                            />
+
+
+                            <GastarioButton
+                              type="submit"
+                              variant="primary"
+                            >
+                              An Packstation
+                            </GastarioButton>
+
+                          </Form>
+
+                        ) : null}
+
+
+                        {status ===
+                        "PACKING_OPEN" ? (
+
+                          <Link
+                            to={
+                              `/packlisten?date=${
+                                encodeURIComponent(
+                                  data.selectedDate
+                                )
+                              }`
+                            }
+                            className={
+                              gastarioButtonClass(
+                                "secondary"
+                              )
+                            }
+                          >
+                            Packliste öffnen
+                          </Link>
+
+                        ) : null}
+
+                      </div>
+
+                    </GastarioDataRow>
+                  );
+                }
+              )}
+
+            </GastarioDataList>
+
+          )}
+
+        </GastarioSection>
+
+      </GastarioPage>
+
     </AppLayout>
   );
 }

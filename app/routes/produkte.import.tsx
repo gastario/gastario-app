@@ -395,7 +395,10 @@ export default function ProduktImport() {
             />
 
 
-            <GastarioFormGrid columns={2}>
+            <GastarioFormGrid
+              columns={1}
+              className="g-ui-form-narrow"
+            >
 
               <GastarioField
                 label="CSV-Datei"
