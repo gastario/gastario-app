@@ -5,6 +5,9 @@ import AppLayout from "../components/AppLayout";
 
 import {
   GastarioPage,
+  GastarioActionCard,
+  GastarioActionGrid,
+  GastarioFilterBar,
   GastarioHeader,
   GastarioNotice,
   GastarioMetricGrid,
@@ -13,14 +16,10 @@ import {
   GastarioSelect,
   GastarioToolbar,
   gastarioButtonClass,
-  GastarioSplitView,
-  GastarioSplitMain,
-  GastarioSplitAside,
   GastarioSection,
   GastarioDataList,
   GastarioDataRow,
   GastarioEmptyState,
-  GastarioTable,
   GastarioStack,
   GastarioInput,
   GastarioDetailDialog,
@@ -1439,6 +1438,57 @@ export default function PurchasingPage() {
       (ingredient: any) =>
         ingredient.id === selectedIngredientId
     ) || null;
+
+
+  const [
+    selectedShoppingKey,
+    setSelectedShoppingKey,
+  ] = useState<string | null>(null);
+
+  const [
+    shoppingDetailTab,
+    setShoppingDetailTab,
+  ] = useState("overview");
+
+  const selectedShoppingItem =
+    selectedShoppingKey
+      ? data.shoppingItems.find(
+          (item: any) =>
+            [
+              item.ingredientName,
+              item.unit,
+            ].join("::") ===
+            selectedShoppingKey
+        ) || null
+      : null;
+
+
+  const [
+    selectedPlanType,
+    setSelectedPlanType,
+  ] = useState<
+    "CHEAPEST" |
+    "PRACTICAL" |
+    null
+  >(null);
+
+  const [
+    planDetailTab,
+    setPlanDetailTab,
+  ] = useState("overview");
+
+  const selectedPlan: any =
+    selectedPlanType === "CHEAPEST"
+      ? data.procurementPlan
+      : selectedPlanType === "PRACTICAL"
+        ? data.practicalProcurementPlan
+        : null;
+
+  const selectedPlanLabel =
+    selectedPlanType === "CHEAPEST"
+      ? "Günstigster Einkaufsplan"
+      : "Praktischer Einkaufsplan";
+
   return (
     <AppLayout>
       <GastarioPage>
@@ -1447,64 +1497,87 @@ export default function PurchasingPage() {
           title="Einkaufsplanung"
           description={
             <>
-              Automatisch berechneter Bedarf aus
-              bestätigten Aufträgen, operativen
-              Produktzuordnungen und Rezepturen für{" "}
-              {data.tenant.name}.
+              Bedarf, Lieferantenartikel,
+              Einkaufspläne und Bestellentwürfe
+              zentral für {data.tenant.name}.
             </>
           }
           actions={
             <>
-              <Form method="get">
-                <GastarioToolbar>
-                  <GastarioField label="Planungstag">
-                    <GastarioSelect
-                      name="date"
-                      defaultValue={
-                        data.selectedDate
-                      }
-                    >
-                      {data.availableDates.map(
-                        (date: string) => (
-                          <option
-                            key={date}
-                            value={date}
-                          >
-                            {formatDateOption(date)}
-                          </option>
-                        )
-                      )}
-                    </GastarioSelect>
-                  </GastarioField>
-
-                  <button
-                    className={gastarioButtonClass(
-                      "secondary"
-                    )}
-                    type="submit"
-                  >
-                    Anzeigen
-                  </button>
-                </GastarioToolbar>
-              </Form>
-
               <Link
-                className={gastarioButtonClass("primary")}
+                className={gastarioButtonClass(
+                  "primary"
+                )}
                 to="/einkauf/artikelsuche"
               >
                 Artikel suchen
               </Link>
 
               <button
-                className={gastarioButtonClass("secondary")}
+                className={gastarioButtonClass(
+                  "secondary"
+                )}
                 type="button"
-                onClick={() => window.print()}
+                onClick={() =>
+                  window.print()
+                }
               >
                 Drucken
               </button>
             </>
           }
         />
+
+
+        <GastarioSection
+          eyebrow="Planung"
+          title="Planungstag"
+          description="Wähle den Liefertag, für den Bedarf und Einkaufspläne berechnet werden sollen."
+        >
+          <Form method="get">
+
+            <GastarioFilterBar
+              actions={
+                <button
+                  className={gastarioButtonClass(
+                    "primary"
+                  )}
+                  type="submit"
+                >
+                  Anzeigen
+                </button>
+              }
+            >
+
+              <GastarioField
+                label="Planungstag"
+              >
+                <GastarioSelect
+                  name="date"
+                  defaultValue={
+                    data.selectedDate
+                  }
+                >
+                  {data.availableDates.map(
+                    (date: string) => (
+                      <option
+                        key={date}
+                        value={date}
+                      >
+                        {formatDateOption(
+                          date
+                        )}
+                      </option>
+                    )
+                  )}
+                </GastarioSelect>
+              </GastarioField>
+
+            </GastarioFilterBar>
+
+          </Form>
+        </GastarioSection>
+
 
         {data.automaticAssignmentResult.assignedCount >
         0 ? (
@@ -1585,578 +1658,748 @@ export default function PurchasingPage() {
             automatisch geraten.
           </GastarioNotice>
         ) : null}
-        <GastarioSplitView wide>
-          <GastarioSplitMain>
-          <GastarioSection
-            eyebrow="Bedarf"
-            title="Automatische Einkaufsliste"
-            description="Auftragsmenge × Rezepturmenge. Packstation, Logistik und nicht operative Positionen werden nicht als Küchenbedarf gerechnet."
-            actions={
-              <Link
-                className={gastarioButtonClass(
-                  "secondary"
-                )}
-                to="/produkte"
-              >
-                Produkte & Rezepturen
-              </Link>
-            }
-          >
-            {data.shoppingItems.length === 0 ? (
-              <GastarioEmptyState title="Kein Einkaufsbedarf vorhanden">
-                Für diesen Planungstag wurde noch kein
-                Bedarf aus vollständigen Rezepturen
-                berechnet.
-              </GastarioEmptyState>
-            ) : (
-              <GastarioTable>
-                <thead>
-                  <tr>
-                    <th>Zutat</th>
-                    <th>Gesamtmenge</th>
-                    <th>Einheit</th>
-                    <th>Herkunft</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {data.shoppingItems.map(
-                    (item: any) => (
-                      <tr
-                        key={[
-                          item.ingredientName,
-                          item.unit,
-                        ].join("-")}
-                      >
-                        <td>
-                          <strong>
-                            {item.ingredientName}
-                          </strong>
-                        </td>
-
-                        <td>
-                          <strong>
-                            {formatQty(
-                              item.quantity
-                            )}
-                          </strong>
-                        </td>
-
-                        <td>
-                          {item.unit}
-                        </td>
-
-                        <td>
-                          <GastarioStack compact>
-                            {item.sources
-                              .slice(0, 3)
-                              .map(
-                                (
-                                  source: any,
-                                  index: number
-                                ) => (
-                                  <span
-                                    key={[
-                                      source.orderId,
-                                      source.productName,
-                                      index,
-                                    ].join("-")}
-                                  >
-                                    {formatQty(
-                                      source.productQuantity
-                                    )}{" "}
-                                    ×{" "}
-                                    {source.productName}
-                                    {" · "}
-                                    {source.orderNumber}
-                                  </span>
-                                )
-                              )}
-
-                            {item.sources.length >
-                            3 ? (
-                              <small>
-                                +{" "}
-                                {item.sources.length -
-                                  3}{" "}
-                                weitere Quellen
-                              </small>
-                            ) : null}
-                          </GastarioStack>
-                        </td>
-                      </tr>
-                    )
-                  )}
-                </tbody>
-              </GastarioTable>
-            )}
-          </GastarioSection>
-
-          </GastarioSplitMain>
-
-          <GastarioSplitAside>
-            <GastarioSection
-              eyebrow="Gruppiert"
-              title="Nach Lieferant"
-              description="Welche Einkaufspositionen aktuell welchem Lieferanten zugeordnet sind."
+        <GastarioSection
+          eyebrow="Bedarf"
+          title="Automatische Einkaufsliste"
+          description="Der Bedarf wird aus operativer Auftragsmenge und Rezepturmenge berechnet."
+          actions={
+            <Link
+              className={gastarioButtonClass(
+                "secondary"
+              )}
+              to="/produkte"
             >
-              {data.supplierGroups.length === 0 ? (
-                <GastarioEmptyState title="Noch keine Lieferantenzuordnung">
-                  Aus den vorhandenen Rezepturen wurde noch keine
-                  Lieferantenzuordnung gefunden.
-                </GastarioEmptyState>
-              ) : (
-                <GastarioDataList>
-                  {data.supplierGroups.map(
-                    (group: any) => (
-                      <GastarioDataRow
-                        key={group.supplierName}
+              Produkte & Rezepturen
+            </Link>
+          }
+        >
+
+          {data.shoppingItems.length === 0 ? (
+
+            <GastarioEmptyState
+              title="Kein Einkaufsbedarf vorhanden"
+            >
+              Für diesen Planungstag wurde
+              noch kein Bedarf aus vollständigen
+              Rezepturen berechnet.
+            </GastarioEmptyState>
+
+          ) : (
+
+            <GastarioDataList>
+
+              {data.shoppingItems.map(
+                (item: any) => {
+
+                  const shoppingKey =
+                    [
+                      item.ingredientName,
+                      item.unit,
+                    ].join("::");
+
+                  return (
+                    <GastarioDataRow
+                      key={shoppingKey}
+                      onClick={() => {
+                        setShoppingDetailTab(
+                          "overview"
+                        );
+
+                        setSelectedShoppingKey(
+                          shoppingKey
+                        );
+                      }}
+                    >
+
+                      <div className="g-ui-data-row-main">
+
+                        <strong className="g-ui-data-row-title">
+                          {item.ingredientName}
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          {item.sources.length} Quelle(n)
+                          aus bestätigten Aufträgen
+                        </span>
+
+                      </div>
+
+
+                      <div className="g-ui-data-row-meta">
+
+                        <strong>
+                          {formatQty(
+                            item.quantity
+                          )}{" "}
+                          {item.unit}
+                        </strong>
+
+                      </div>
+
+
+                      <span
+                        className="g-ui-data-row-chevron"
+                        aria-hidden="true"
                       >
+                        →
+                      </span>
+
+                    </GastarioDataRow>
+                  );
+                }
+              )}
+
+            </GastarioDataList>
+
+          )}
+
+        </GastarioSection>
+
+
+        <GastarioDetailDialog
+          open={Boolean(
+            selectedShoppingItem
+          )}
+          title={
+            selectedShoppingItem
+              ?.ingredientName ||
+            "Einkaufsbedarf"
+          }
+          description={
+            selectedShoppingItem
+              ? "Berechneter Gesamtbedarf und Herkunft"
+              : undefined
+          }
+          onClose={() =>
+            setSelectedShoppingKey(
+              null
+            )
+          }
+          footer={
+            selectedShoppingItem ? (
+              <>
+
+                <button
+                  type="button"
+                  className={gastarioButtonClass(
+                    "secondary"
+                  )}
+                  onClick={() =>
+                    setSelectedShoppingKey(
+                      null
+                    )
+                  }
+                >
+                  Schließen
+                </button>
+
+                <Link
+                  to="/produkte"
+                  className={gastarioButtonClass(
+                    "primary"
+                  )}
+                >
+                  Rezepturen öffnen
+                </Link>
+
+              </>
+            ) : null
+          }
+        >
+
+          {selectedShoppingItem ? (
+            <>
+
+              <GastarioDetailTabs
+                activeId={
+                  shoppingDetailTab
+                }
+                onChange={
+                  setShoppingDetailTab
+                }
+                items={[
+                  {
+                    id: "overview",
+                    label: "Übersicht",
+                  },
+                  {
+                    id: "sources",
+                    label: "Herkunft",
+                    badge:
+                      selectedShoppingItem
+                        .sources.length,
+                  },
+                ]}
+              />
+
+
+              <GastarioDetailPane
+                active={
+                  shoppingDetailTab ===
+                  "overview"
+                }
+              >
+
+                <GastarioMetricGrid>
+
+                  <GastarioMetric
+                    label="Gesamtbedarf"
+                    value={
+                      formatQty(
+                        selectedShoppingItem
+                          .quantity
+                      ) +
+                      " " +
+                      selectedShoppingItem
+                        .unit
+                    }
+                    description="Berechnete Einkaufsmenge"
+                  />
+
+                  <GastarioMetric
+                    label="Auftragsquellen"
+                    value={
+                      selectedShoppingItem
+                        .sources.length
+                    }
+                    description="Verwendete Auftragspositionen"
+                  />
+
+                </GastarioMetricGrid>
+
+
+                <GastarioNotice
+                  type="neutral"
+                >
+                  <strong>
+                    Berechnung:
+                  </strong>{" "}
+                  Operative Auftragsmenge ×
+                  Rezepturmenge.
+                  Packstation, Logistik und
+                  nicht operative Positionen
+                  werden nicht als Küchenbedarf
+                  gerechnet.
+                </GastarioNotice>
+
+              </GastarioDetailPane>
+
+
+              <GastarioDetailPane
+                active={
+                  shoppingDetailTab ===
+                  "sources"
+                }
+              >
+
+                <GastarioDataList>
+
+                  {selectedShoppingItem.sources.map(
+                    (
+                      source: any,
+                      index: number
+                    ) => (
+
+                      <GastarioDataRow
+                        key={
+                          source.orderId +
+                          "-" +
+                          source.productName +
+                          "-" +
+                          index
+                        }
+                      >
+
                         <div className="g-ui-data-row-main">
+
                           <strong className="g-ui-data-row-title">
-                            {group.supplierName}
+                            {source.productName}
                           </strong>
 
                           <span className="g-ui-data-row-description">
-                            {group.items.length} Position(en)
+                            {source.orderNumber}
+                            {" · "}
+                            {source.customerName ||
+                              "Kunde"}
                           </span>
+
                         </div>
+
 
                         <div className="g-ui-data-row-meta">
-                          Einkauf
+
+                          <strong>
+                            {formatQty(
+                              source.productQuantity
+                            )}
+                          </strong>
+
                         </div>
+
                       </GastarioDataRow>
+
                     )
                   )}
+
                 </GastarioDataList>
-              )}
-            </GastarioSection>
 
-            <GastarioSection
-              eyebrow="Berechnung"
-              title="So entsteht der Bedarf"
-            >
-              <GastarioNotice type="info">
-                <strong>
-                  Operative Auftragsmenge × Rezepturmenge
-                </strong>
-                {" "}
-                Beispiel: 80 Chicken Bowls × 100 g Hähnchen =
-                8.000 g Einkaufsbedarf.
-              </GastarioNotice>
-            </GastarioSection>
-          </GastarioSplitAside>
-        </GastarioSplitView>
+              </GastarioDetailPane>
 
-        {/*
-         * gastario-procurement-cheapest-plan-v1-20260804
-         */}
+            </>
+          ) : null}
+
+        </GastarioDetailDialog>
+
+
+
+
         <GastarioSection
           eyebrow="Einkaufsvorschlag"
-          title="Günstigster Einkaufsplan"
-          description="Je Zutat wird das günstigste bestätigte und aktuell bepreiste Angebot verwendet."
-          actions={
-            <GastarioToolbar>
-              <Form method="post">
-                <input
-                  type="hidden"
-                  name="intent"
-                  value="save-procurement-drafts"
-                />
-                <input
-                  type="hidden"
-                  name="selectedDate"
-                  value={data.selectedDate}
-                />
-                <input
-                  type="hidden"
-                  name="planType"
-                  value="CHEAPEST"
-                />
-                <input
-                  type="hidden"
-                  name="groupsJson"
-                  value={JSON.stringify(
-                    data.procurementPlan.groups
-                  )}
-                />
+          title="Einkaufsplan auswählen"
+          description="Vergleiche den günstigsten Plan mit einer praktischeren Variante mit weniger Lieferanten."
+        >
+
+          <GastarioActionGrid
+            columns={2}
+          >
+
+            <GastarioActionCard
+              title="Günstigster Einkaufsplan"
+              tone="sage"
+              description="Verwendet je Zutat den günstigsten bestätigten und aktuell bepreisten Lieferantenartikel."
+              meta={
+                formatMoney(
+                  data.procurementPlan
+                    .totalNetCents
+                )
+              }
+              onClick={() => {
+                setPlanDetailTab(
+                  "overview"
+                );
+
+                setSelectedPlanType(
+                  "CHEAPEST"
+                );
+              }}
+            />
+
+
+            <GastarioActionCard
+              title="Praktischer Einkaufsplan"
+              tone="sand"
+              description={
+                "Reduziert Lieferanten, solange ein Artikel höchstens " +
+                data.practicalProcurementPlan
+                  .tolerancePercent +
+                "% über dem Bestpreis liegt."
+              }
+              meta={
+                formatMoney(
+                  data.practicalProcurementPlan
+                    .totalNetCents
+                )
+              }
+              onClick={() => {
+                setPlanDetailTab(
+                  "overview"
+                );
+
+                setSelectedPlanType(
+                  "PRACTICAL"
+                );
+              }}
+            />
+
+          </GastarioActionGrid>
+
+        </GastarioSection>
+
+
+        <GastarioDetailDialog
+          open={Boolean(
+            selectedPlan
+          )}
+          title={
+            selectedPlanLabel
+          }
+          description={
+            selectedPlanType ===
+            "CHEAPEST"
+              ? "Preisoptimierter Einkaufsplan"
+              : "Lieferantenoptimierter Einkaufsplan"
+          }
+          onClose={() =>
+            setSelectedPlanType(
+              null
+            )
+          }
+          footer={
+            selectedPlan ? (
+              <>
 
                 <button
-                  type="submit"
+                  type="button"
                   className={gastarioButtonClass(
-                    "primary"
+                    "secondary"
+                  )}
+                  onClick={() =>
+                    setSelectedPlanType(
+                      null
+                    )
+                  }
+                >
+                  Schließen
+                </button>
+
+
+                <button
+                  type="button"
+                  className={gastarioButtonClass(
+                    "secondary"
                   )}
                   disabled={
-                    data.procurementPlan.groups
+                    selectedPlan.groups
                       .length === 0
                   }
-                >
-                  Bestellentwürfe erstellen
-                </button>
-              </Form>
-
-              <button
-                type="button"
-                className={gastarioButtonClass(
-                  "secondary"
-                )}
-                onClick={() =>
-                  downloadProcurementCsv({
-                    plan: data.procurementPlan,
-                    selectedDate:
-                      data.selectedDate,
-                    planLabel:
-                      "Günstigster Einkaufsplan",
-                    fileSuffix: "guenstig",
-                  })
-                }
-                disabled={
-                  data.procurementPlan.groups
-                    .length === 0
-                }
-              >
-                CSV herunterladen
-              </button>
-
-              <button
-                type="button"
-                className={gastarioButtonClass(
-                  "secondary"
-                )}
-                onClick={() =>
-                  window.print()
-                }
-              >
-                Drucken
-              </button>
-            </GastarioToolbar>
-          }
-        >
-          <GastarioMetricGrid>
-            <GastarioMetric
-              label="Gesamtsumme netto"
-              value={formatMoney(
-                data.procurementPlan.totalNetCents
-              )}
-              description="Günstigster berechneter Einkaufsplan"
-            />
-
-            <GastarioMetric
-              label="Lieferanten"
-              value={
-                data.procurementPlan.supplierCount
-              }
-              description="Im günstigsten Plan"
-            />
-
-            <GastarioMetric
-              label="Noch offen"
-              value={
-                data.procurementPlan.missingItemCount
-              }
-              description="Positionen ohne vollständigen Preisplan"
-            />
-          </GastarioMetricGrid>
-
-          {data.procurementPlan.groups.length ===
-          0 ? (
-            <GastarioEmptyState title="Noch kein vollständiger Preisplan">
-              Ordne Zutaten zuerst passenden
-              Lieferantenartikeln zu.
-            </GastarioEmptyState>
-          ) : (
-            <GastarioStack>
-              {data.procurementPlan.groups.map(
-                (group: any) => (
-                  <GastarioSection
-                    key={
-                      group.supplierId ||
-                      group.supplierName
-                    }
-                    eyebrow="Lieferant"
-                    title={group.supplierName}
-                    description={`${group.itemCount} Position(en)`}
-                    actions={
-                      <strong>
-                        {formatMoney(
-                          group.netTotalCents
-                        )}
-                      </strong>
-                    }
-                  >
-                    <GastarioDataList>
-                      {group.items.map(
-                        (item: any) => (
-                          <GastarioDataRow
-                            key={[
-                              item.catalogItemId,
-                              item.ingredientName,
-                            ].join("-")}
-                          >
-                            <div className="g-ui-data-row-main">
-                              <strong className="g-ui-data-row-title">
-                                {item.ingredientName}
-                              </strong>
-
-                              <span className="g-ui-data-row-description">
-                                {item.catalogItemName}
-                                {item.articleNumber
-                                  ? ` · Art.-Nr. ${item.articleNumber}`
-                                  : ""}
-                                {" · "}
-                                {item.packageCount} ×{" "}
-                                {formatQty(
-                                  item.packContent
-                                )}{" "}
-                                {item.baseUnit}
-                              </span>
-                            </div>
-
-                            <div className="g-ui-data-row-meta">
-                              <strong>
-                                {formatMoney(
-                                  item.netTotalCents
-                                )}
-                              </strong>
-
-                              <span>
-                                {formatMoney(
-                                  item.netUnitPriceCents
-                                )}{" "}
-                                je Packung
-                              </span>
-                            </div>
-                          </GastarioDataRow>
-                        )
-                      )}
-                    </GastarioDataList>
-                  </GastarioSection>
-                )
-              )}
-            </GastarioStack>
-          )}
-
-          {data.procurementPlan.missingItemCount >
-          0 ? (
-            <GastarioNotice type="warning">
-              <strong>
-                {
-                  data.procurementPlan
-                    .missingItemCount
-                }{" "}
-                Position(en) fehlen noch im
-                Preisplan.
-              </strong>{" "}
-              Dafür fehlt eine bestätigte
-              Zuordnung, ein aktueller Preis oder
-              eine passende Einheit.
-            </GastarioNotice>
-          ) : null}
-        </GastarioSection>
-
-        {/*
-         * gastario-procurement-practical-plan-v1-20260804
-         */}
-        <GastarioSection
-          eyebrow="Alternative"
-          title="Praktischer Einkaufsplan"
-          description={`Bevorzugt möglichst wenige Lieferanten. Ein Artikel darf dabei höchstens ${data.practicalProcurementPlan.tolerancePercent}% teurer als das günstigste Angebot sein.`}
-          actions={
-            <GastarioToolbar>
-              <Form method="post">
-                <input
-                  type="hidden"
-                  name="intent"
-                  value="save-procurement-drafts"
-                />
-
-                <input
-                  type="hidden"
-                  name="selectedDate"
-                  value={data.selectedDate}
-                />
-
-                <input
-                  type="hidden"
-                  name="planType"
-                  value="PRACTICAL"
-                />
-
-                <input
-                  type="hidden"
-                  name="groupsJson"
-                  value={JSON.stringify(
-                    data.practicalProcurementPlan.groups
-                  )}
-                />
-
-                <button
-                  type="submit"
-                  className={gastarioButtonClass(
-                    "primary"
-                  )}
-                  disabled={
-                    data.practicalProcurementPlan
-                      .groups.length === 0
+                  onClick={() =>
+                    downloadProcurementCsv({
+                      plan:
+                        selectedPlan,
+                      selectedDate:
+                        data.selectedDate,
+                      planLabel:
+                        selectedPlanLabel,
+                      fileSuffix:
+                        selectedPlanType ===
+                        "CHEAPEST"
+                          ? "guenstig"
+                          : "praktisch",
+                    })
                   }
                 >
-                  Bestellentwürfe erstellen
+                  CSV herunterladen
                 </button>
-              </Form>
 
-              <button
-                type="button"
-                className={gastarioButtonClass(
-                  "secondary"
-                )}
-                onClick={() =>
-                  downloadProcurementCsv({
-                    plan:
-                      data.practicalProcurementPlan,
-                    selectedDate:
-                      data.selectedDate,
-                    planLabel:
-                      "Praktischer Einkaufsplan",
-                    fileSuffix: "praktisch",
-                  })
-                }
-                disabled={
-                  data.practicalProcurementPlan
-                    .groups.length === 0
-                }
-              >
-                CSV herunterladen
-              </button>
 
-              <button
-                type="button"
-                className={gastarioButtonClass(
-                  "secondary"
-                )}
-                onClick={() =>
-                  window.print()
-                }
-              >
-                Drucken
-              </button>
-            </GastarioToolbar>
-          }
-        >
-          <GastarioMetricGrid>
-            <GastarioMetric
-              label="Gesamtsumme netto"
-              value={formatMoney(
-                data.practicalProcurementPlan
-                  .totalNetCents
-              )}
-              description="Berechneter praktischer Einkaufsplan"
-            />
+                <Form method="post">
 
-            <GastarioMetric
-              label="Lieferanten"
-              value={
-                data.practicalProcurementPlan
-                  .supplierCount
-              }
-              description="Im praktischen Plan"
-            />
+                  <input
+                    type="hidden"
+                    name="intent"
+                    value="save-procurement-drafts"
+                  />
 
-            <GastarioMetric
-              label="Mehrkosten"
-              value={formatMoney(
-                data.practicalProcurementPlan
-                  .surchargeCents
-              )}
-              description="Gegenüber dem günstigsten Plan"
-            />
+                  <input
+                    type="hidden"
+                    name="selectedDate"
+                    value={
+                      data.selectedDate
+                    }
+                  />
 
-            <GastarioMetric
-              label="Schwerpunkt"
-              value={
-                data.practicalProcurementPlan
-                  .preferredSupplierName ||
-                "Noch offen"
-              }
-              description="Bevorzugter Lieferant"
-            />
-          </GastarioMetricGrid>
+                  <input
+                    type="hidden"
+                    name="planType"
+                    value={
+                      selectedPlanType ||
+                      ""
+                    }
+                  />
 
-          {data.practicalProcurementPlan.groups
-            .length === 0 ? (
-            <GastarioEmptyState title="Noch kein praktischer Einkaufsplan">
-              Der praktische Plan kann mit den
-              aktuellen Preis- und Artikeldaten noch
-              nicht berechnet werden.
-            </GastarioEmptyState>
-          ) : (
-            <GastarioStack>
-              {data.practicalProcurementPlan.groups.map(
-                (group: any) => (
-                  <GastarioSection
-                    key={`practical-${
-                      group.supplierId ||
-                      group.supplierName
-                    }`}
-                    eyebrow="Lieferant"
-                    title={group.supplierName}
-                    description={`${group.itemCount} Position(en)`}
-                    actions={
-                      <strong>
-                        {formatMoney(
-                          group.netTotalCents
-                        )}
-                      </strong>
+                  <input
+                    type="hidden"
+                    name="groupsJson"
+                    value={
+                      JSON.stringify(
+                        selectedPlan.groups
+                      )
+                    }
+                  />
+
+                  <button
+                    type="submit"
+                    className={gastarioButtonClass(
+                      "primary"
+                    )}
+                    disabled={
+                      selectedPlan.groups
+                        .length === 0
                     }
                   >
-                    <GastarioDataList>
-                      {group.items.map(
-                        (item: any) => (
-                          <GastarioDataRow
-                            key={[
-                              "practical",
-                              item.catalogItemId,
-                              item.ingredientName,
-                            ].join("-")}
-                          >
-                            <div className="g-ui-data-row-main">
-                              <strong className="g-ui-data-row-title">
-                                {item.ingredientName}
-                              </strong>
+                    Bestellentwürfe erstellen
+                  </button>
 
-                              <span className="g-ui-data-row-description">
-                                {item.catalogItemName}
-                                {" · "}
-                                {item.packageCount} ×{" "}
-                                {formatQty(
-                                  item.packContent
-                                )}{" "}
-                                {item.baseUnit}
-                                {item.surchargeCents >
-                                0
-                                  ? ` · ${formatMoney(
-                                      item.surchargeCents
-                                    )} über Bestpreis`
-                                  : " · Bestpreis"}
-                              </span>
-                            </div>
+                </Form>
 
-                            <div className="g-ui-data-row-meta">
-                              <strong>
-                                {formatMoney(
-                                  item.netTotalCents
-                                )}
-                              </strong>
-                            </div>
-                          </GastarioDataRow>
+              </>
+            ) : null
+          }
+        >
+
+          {selectedPlan ? (
+            <>
+
+              <GastarioDetailTabs
+                activeId={
+                  planDetailTab
+                }
+                onChange={
+                  setPlanDetailTab
+                }
+                items={[
+                  {
+                    id: "overview",
+                    label: "Übersicht",
+                  },
+                  {
+                    id: "suppliers",
+                    label: "Lieferanten",
+                    badge:
+                      selectedPlan
+                        .supplierCount,
+                  },
+                ]}
+              />
+
+
+              <GastarioDetailPane
+                active={
+                  planDetailTab ===
+                  "overview"
+                }
+              >
+
+                <GastarioMetricGrid>
+
+                  <GastarioMetric
+                    label="Gesamtsumme netto"
+                    value={
+                      formatMoney(
+                        selectedPlan
+                          .totalNetCents
+                      )
+                    }
+                    description="Berechneter Einkaufswert"
+                  />
+
+                  <GastarioMetric
+                    label="Lieferanten"
+                    value={
+                      selectedPlan
+                        .supplierCount
+                    }
+                    description="Im ausgewählten Plan"
+                  />
+
+
+                  {selectedPlanType ===
+                  "CHEAPEST" ? (
+
+                    <GastarioMetric
+                      label="Noch offen"
+                      value={
+                        selectedPlan
+                          .missingItemCount
+                      }
+                      description="Positionen ohne vollständigen Preisplan"
+                      attention={
+                        selectedPlan
+                          .missingItemCount >
+                        0
+                      }
+                    />
+
+                  ) : (
+
+                    <GastarioMetric
+                      label="Mehrkosten"
+                      value={
+                        formatMoney(
+                          selectedPlan
+                            .surchargeCents
                         )
-                      )}
-                    </GastarioDataList>
-                  </GastarioSection>
-                )
-              )}
-            </GastarioStack>
-          )}
-        </GastarioSection>
+                      }
+                      description="Gegenüber dem günstigsten Plan"
+                    />
+
+                  )}
+
+
+                  {selectedPlanType ===
+                  "PRACTICAL" ? (
+
+                    <GastarioMetric
+                      label="Schwerpunkt"
+                      value={
+                        selectedPlan
+                          .preferredSupplierName ||
+                        "Noch offen"
+                      }
+                      description="Bevorzugter Lieferant"
+                    />
+
+                  ) : null}
+
+                </GastarioMetricGrid>
+
+
+                {selectedPlanType ===
+                  "CHEAPEST" &&
+                selectedPlan
+                  .missingItemCount >
+                  0 ? (
+
+                  <GastarioNotice
+                    type="warning"
+                  >
+                    <strong>
+                      {
+                        selectedPlan
+                          .missingItemCount
+                      }{" "}
+                      Position(en) sind noch
+                      nicht vollständig.
+                    </strong>{" "}
+                    Dafür fehlt eine bestätigte
+                    Artikelzuordnung,
+                    ein aktueller Preis oder
+                    eine passende Einheit.
+                  </GastarioNotice>
+
+                ) : null}
+
+              </GastarioDetailPane>
+
+
+              <GastarioDetailPane
+                active={
+                  planDetailTab ===
+                  "suppliers"
+                }
+              >
+
+                {selectedPlan.groups
+                  .length === 0 ? (
+
+                  <GastarioEmptyState
+                    title="Noch kein vollständiger Einkaufsplan"
+                  >
+                    Ordne zunächst Zutaten
+                    passenden Lieferantenartikeln
+                    zu.
+                  </GastarioEmptyState>
+
+                ) : (
+
+                  <GastarioStack>
+
+                    {selectedPlan.groups.map(
+                      (group: any) => (
+
+                        <GastarioSection
+                          key={
+                            group.supplierId ||
+                            group.supplierName
+                          }
+                          eyebrow="Lieferant"
+                          title={
+                            group.supplierName
+                          }
+                          description={
+                            group.itemCount +
+                            " Position(en)"
+                          }
+                          actions={
+                            <strong>
+                              {formatMoney(
+                                group.netTotalCents
+                              )}
+                            </strong>
+                          }
+                        >
+
+                          <GastarioDataList>
+
+                            {group.items.map(
+                              (item: any) => (
+
+                                <GastarioDataRow
+                                  key={
+                                    (
+                                      item.catalogItemId ||
+                                      item.catalogItemName
+                                    ) +
+                                    "-" +
+                                    item.ingredientName
+                                  }
+                                >
+
+                                  <div className="g-ui-data-row-main">
+
+                                    <strong className="g-ui-data-row-title">
+                                      {item.ingredientName}
+                                    </strong>
+
+                                    <span className="g-ui-data-row-description">
+                                      {item.catalogItemName}
+                                      {item.articleNumber
+                                        ? " · Art.-Nr. " +
+                                          item.articleNumber
+                                        : ""}
+                                      {" · "}
+                                      {item.packageCount}
+                                      {" × "}
+                                      {formatQty(
+                                        item.packContent
+                                      )}
+                                      {" "}
+                                      {item.baseUnit}
+                                    </span>
+
+                                  </div>
+
+
+                                  <div className="g-ui-data-row-meta">
+
+                                    <strong>
+                                      {formatMoney(
+                                        item.netTotalCents
+                                      )}
+                                    </strong>
+
+                                    <span>
+                                      {formatMoney(
+                                        item.netUnitPriceCents
+                                      )}{" "}
+                                      je Packung
+                                    </span>
+
+                                  </div>
+
+                                </GastarioDataRow>
+
+                              )
+                            )}
+
+                          </GastarioDataList>
+
+                        </GastarioSection>
+
+                      )
+                    )}
+
+                  </GastarioStack>
+
+                )}
+
+              </GastarioDetailPane>
+
+            </>
+          ) : null}
+
+        </GastarioDetailDialog>
+
 
         <GastarioSection
           eyebrow="Gespeichert"
@@ -2176,6 +2419,15 @@ export default function PurchasingPage() {
                 (draft: any) => (
                   <GastarioDataRow
                     key={draft.id}
+                    onClick={() => {
+                      setSelectedDraftId(
+                        draft.id
+                      );
+
+                      setDraftDetailTab(
+                        "overview"
+                      );
+                    }}
                   >
                     <div className="g-ui-data-row-main">
                       <strong className="g-ui-data-row-title">
@@ -2203,22 +2455,12 @@ export default function PurchasingPage() {
                         )}
                       </strong>
 
-                      <button
-                        type="button"
-                        className={gastarioButtonClass(
-                          "ghost"
-                        )}
-                        onClick={() => {
-                          setSelectedDraftId(
-                            draft.id
-                          );
-                          setDraftDetailTab(
-                            "overview"
-                          );
-                        }}
+                      <span
+                        className="g-ui-data-row-chevron"
+                        aria-hidden="true"
                       >
-                        Öffnen
-                      </button>
+                        →
+                      </span>
                     </div>
                   </GastarioDataRow>
                 )
@@ -2462,6 +2704,15 @@ export default function PurchasingPage() {
                 (ingredient: any) => (
                   <GastarioDataRow
                     key={ingredient.id}
+                    onClick={() => {
+                      setSelectedIngredientId(
+                        ingredient.id
+                      );
+
+                      setIngredientDetailTab(
+                        "matches"
+                      );
+                    }}
                   >
                     <div className="g-ui-data-row-main">
                       <strong className="g-ui-data-row-title">
@@ -2483,22 +2734,12 @@ export default function PurchasingPage() {
                     </div>
 
                     <div className="g-ui-data-row-meta">
-                      <button
-                        type="button"
-                        className={gastarioButtonClass(
-                          "ghost"
-                        )}
-                        onClick={() => {
-                          setSelectedIngredientId(
-                            ingredient.id
-                          );
-                          setIngredientDetailTab(
-                            "matches"
-                          );
-                        }}
+                      <span
+                        className="g-ui-data-row-chevron"
+                        aria-hidden="true"
                       >
-                        Zuordnung öffnen
-                      </button>
+                        →
+                      </span>
                     </div>
                   </GastarioDataRow>
                 )
@@ -2838,6 +3079,3 @@ export default function PurchasingPage() {
     </AppLayout>
   );
 }
-
-
-
