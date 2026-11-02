@@ -1969,6 +1969,167 @@ export default function PurchasingPage() {
   };
 
 
+
+
+  const buildManualShoppingShareText = () => {
+    if (!selectedManualList) {
+      return "";
+    }
+
+    const form =
+      document.getElementById(
+        "manual-shopping-list-edit"
+      );
+
+    const formData =
+      form instanceof HTMLFormElement
+        ? new FormData(form)
+        : null;
+
+    const title =
+      String(
+        formData?.get("title") ||
+          selectedManualList.title ||
+          "Einkaufsliste"
+      ).trim();
+
+    const planningDateRaw =
+      String(
+        formData?.get("planningDate") ||
+          normalizeDate(
+            selectedManualList.planningDate
+          )
+      ).trim();
+
+    const notes =
+      String(
+        formData?.get("notes") || ""
+      ).trim();
+
+    const itemLines =
+      manualEditItems
+        .filter(
+          (item: any) =>
+            String(
+              item.name || ""
+            ).trim()
+        )
+        .map(
+          (item: any) => {
+            const status =
+              item.checked
+                ? "[x]"
+                : "[ ]";
+
+            const quantity =
+              String(
+                item.quantity || ""
+              ).trim();
+
+            const unit =
+              String(
+                item.unit || ""
+              ).trim();
+
+            const name =
+              String(
+                item.name || ""
+              ).trim();
+
+            const itemNote =
+              String(
+                item.notes || ""
+              ).trim();
+
+            return [
+              status,
+              quantity,
+              unit,
+              name,
+              itemNote
+                ? "- " + itemNote
+                : "",
+            ]
+              .filter(Boolean)
+              .join(" ");
+          }
+        );
+
+    const lines = [
+      "Einkaufsliste: " + title,
+      "Planungstag: " +
+        formatDateOption(
+          planningDateRaw
+        ),
+      "",
+      ...itemLines,
+    ];
+
+    if (notes) {
+      lines.push(
+        "",
+        "Notiz: " + notes
+      );
+    }
+
+    return lines.join("\n");
+  };
+
+
+  const sendManualShoppingByMail = () => {
+    if (!selectedManualList) {
+      return;
+    }
+
+    const text =
+      buildManualShoppingShareText();
+
+    const subject =
+      "Einkaufsliste - " +
+      selectedManualList.title;
+
+    window.location.href =
+      "mailto:?subject=" +
+      encodeURIComponent(subject) +
+      "&body=" +
+      encodeURIComponent(text);
+  };
+
+
+  const sendManualShoppingByWhatsApp = () => {
+    const text =
+      buildManualShoppingShareText();
+
+    window.open(
+      "https://wa.me/?text=" +
+        encodeURIComponent(text),
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
+
+  const copyManualShoppingForNotes =
+    async () => {
+      const text =
+        buildManualShoppingShareText();
+
+      try {
+        await navigator.clipboard.writeText(
+          text
+        );
+
+        window.alert(
+          "Einkaufsliste wurde kopiert."
+        );
+      } catch {
+        window.prompt(
+          "Einkaufsliste kopieren:",
+          text
+        );
+      }
+    };
+
   return (
     <AppLayout>
       <GastarioPage>
@@ -3186,6 +3347,49 @@ export default function PurchasingPage() {
                     />
 
                   </GastarioMetricGrid>
+
+
+                  <GastarioToolbar>
+
+                    <button
+                      type="button"
+                      className={gastarioButtonClass(
+                        "secondary"
+                      )}
+                      onClick={
+                        copyManualShoppingForNotes
+                      }
+                    >
+                      Für Notizen kopieren
+                    </button>
+
+
+                    <button
+                      type="button"
+                      className={gastarioButtonClass(
+                        "secondary"
+                      )}
+                      onClick={
+                        sendManualShoppingByMail
+                      }
+                    >
+                      E-Mail
+                    </button>
+
+
+                    <button
+                      type="button"
+                      className={gastarioButtonClass(
+                        "secondary"
+                      )}
+                      onClick={
+                        sendManualShoppingByWhatsApp
+                      }
+                    >
+                      WhatsApp
+                    </button>
+
+                  </GastarioToolbar>
 
                 </GastarioStack>
 
