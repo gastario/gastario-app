@@ -1810,6 +1810,11 @@ export async function loader({
 export default function PurchasingPage() {
   const data = useLoaderData<typeof loader>();
 
+  const manualShoppingLists =
+    Array.isArray((data as any).manualShoppingLists)
+      ? (data as any).manualShoppingLists
+      : [];
+
   const [selectedDraftId, setSelectedDraftId] =
     useState<string | null>(null);
 
