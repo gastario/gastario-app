@@ -267,7 +267,7 @@ function emptyManualShoppingItem() {
   return {
     name: "",
     quantity: "1",
-    unit: "Stück",
+    unit: "StÃ¼ck",
     notes: "",
     checked: false,
   };
@@ -304,7 +304,7 @@ function parseManualShoppingListItems(
 
   if (!Array.isArray(parsed)) {
     throw new Response(
-      "Ungültige Einkaufspositionen.",
+      "UngÃ¼ltige Einkaufspositionen.",
       {
         status: 400,
       }
@@ -363,7 +363,7 @@ function parseManualShoppingListItems(
 
   if (items.length === 0) {
     throw new Response(
-      "Mindestens eine vollständige Einkaufsposition ist erforderlich.",
+      "Mindestens eine vollstÃ¤ndige Einkaufsposition ist erforderlich.",
       {
         status: 400,
       }
@@ -433,7 +433,7 @@ export async function action({
 
     if (!title) {
       throw new Response(
-        "Bitte einen Namen für die Einkaufsliste eingeben.",
+        "Bitte einen Namen fÃ¼r die Einkaufsliste eingeben.",
         {
           status: 400,
         }
@@ -446,7 +446,7 @@ export async function action({
       )
     ) {
       throw new Response(
-        "Bitte einen gültigen Planungstag auswählen.",
+        "Bitte einen gÃ¼ltigen Planungstag auswÃ¤hlen.",
         {
           status: 400,
         }
@@ -522,7 +522,7 @@ export async function action({
       )
     ) {
       throw new Response(
-        "Die Einkaufsliste ist unvollständig.",
+        "Die Einkaufsliste ist unvollstÃ¤ndig.",
         {
           status: 400,
         }
@@ -652,7 +652,7 @@ export async function action({
       !/^\d{4}-\d{2}-\d{2}$/.test(selectedDate)
     ) {
       throw new Response(
-        "Ungültiger Planungstag.",
+        "UngÃ¼ltiger Planungstag.",
         {
           status: 400,
         }
@@ -664,7 +664,7 @@ export async function action({
       planTypeRaw !== "PRACTICAL"
     ) {
       throw new Response(
-        "Ungültige Planart.",
+        "UngÃ¼ltige Planart.",
         {
           status: 400,
         }
@@ -689,7 +689,7 @@ export async function action({
       groups.length === 0
     ) {
       throw new Response(
-        "Der Einkaufsplan enthält keine Lieferanten.",
+        "Der Einkaufsplan enthÃ¤lt keine Lieferanten.",
         {
           status: 400,
         }
@@ -884,7 +884,7 @@ export async function action({
 
     if (sanitizedGroups.length === 0) {
       throw new Response(
-        "Es konnten keine gültigen Bestellpositionen übernommen werden.",
+        "Es konnten keine gÃ¼ltigen Bestellpositionen Ã¼bernommen werden.",
         {
           status: 400,
         }
@@ -967,7 +967,7 @@ export async function action({
       !allowedStatuses.has(statusRaw)
     ) {
       throw new Response(
-        "Ungültiger Bestellentwurf oder Status.",
+        "UngÃ¼ltiger Bestellentwurf oder Status.",
         {
           status: 400,
         }
@@ -1031,7 +1031,7 @@ export async function action({
         receivedPackageCount > packageCount
       ) {
         throw new Response(
-          `Ungültige Menge bei ${item.ingredientName}.`,
+          `UngÃ¼ltige Menge bei ${item.ingredientName}.`,
           {
             status: 400,
           }
@@ -1263,7 +1263,7 @@ export async function action({
   );
 }
 export function meta() {
-  return [{ title: "Einkaufsplanung · Gastario" }];
+  return [{ title: "Einkaufsplanung Â· Gastario" }];
 }
 
 export async function loader({
@@ -1432,7 +1432,7 @@ export async function loader({
           "Operative Zuordnung fehlt";
       } else if (!product) {
         missingReason =
-          "Kein Gastario-Produkt verknüpft";
+          "Kein Gastario-Produkt verknÃ¼pft";
       } else if (
         !Array.isArray(product.recipeItems) ||
         product.recipeItems.length === 0
@@ -1491,7 +1491,7 @@ export async function loader({
             recipeItem.quantityPerUnit || 0
           ) * orderQty;
 
-        // Einkaufsliste unabhängig von Lieferant und Preis.
+        // Einkaufsliste unabhÃ¤ngig von Lieferant und Preis.
         // Gleiche Zutat + gleiche Einheit werden zusammengefasst.
         const shoppingKey = [
           ingredientName.toLocaleLowerCase("de-DE"),
@@ -1881,7 +1881,7 @@ export default function PurchasingPage() {
 
   const selectedPlanLabel =
     selectedPlanType === "CHEAPEST"
-      ? "Günstigster Einkaufsplan"
+      ? "GÃ¼nstigster Einkaufsplan"
       : "Praktischer Einkaufsplan";
 
 
@@ -1917,7 +1917,7 @@ export default function PurchasingPage() {
 
 
   const selectedManualList =
-    data.manualShoppingLists.find(
+    manualShoppingLists.find(
       (list: any) =>
         list.id ===
         selectedManualListId
@@ -1938,6 +1938,8 @@ export default function PurchasingPage() {
     setManualEditItems(
       list.items.map(
         (item: any) => ({
+          id:
+            item.id,
           name:
             item.name,
           quantity:
@@ -1978,8 +1980,8 @@ export default function PurchasingPage() {
           description={
             <>
               Bedarf, Lieferantenartikel,
-              Einkaufspläne und Bestellentwürfe
-              zentral für {data.tenant.name}.
+              EinkaufsplÃ¤ne und BestellentwÃ¼rfe
+              zentral fÃ¼r {data.tenant.name}.
             </>
           }
           actions={
@@ -2012,7 +2014,7 @@ export default function PurchasingPage() {
         <GastarioSection
           eyebrow="Planung"
           title="Planungstag"
-          description="Wähle den Liefertag, für den Bedarf und Einkaufspläne berechnet werden sollen."
+          description="WÃ¤hle den Liefertag, fÃ¼r den Bedarf und EinkaufsplÃ¤ne berechnet werden sollen."
         >
           <Form method="get">
 
@@ -2063,7 +2065,7 @@ export default function PurchasingPage() {
         0 ? (
           <GastarioNotice type="success">
             <strong>
-              Automatische Zuordnung ausgeführt.
+              Automatische Zuordnung ausgefÃ¼hrt.
             </strong>{" "}
             {
               data.automaticAssignmentResult
@@ -2080,9 +2082,9 @@ export default function PurchasingPage() {
 
         <GastarioMetricGrid>
           <GastarioMetric
-            label="Aufträge"
+            label="AuftrÃ¤ge"
             value={data.orders.length}
-            description="für den ausgewählten Planungstag"
+            description="fÃ¼r den ausgewÃ¤hlten Planungstag"
             badge="Operativ"
           />
 
@@ -2096,12 +2098,12 @@ export default function PurchasingPage() {
           <GastarioMetric
             label="Lieferanten"
             value={data.procurementPlan.supplierCount}
-            description="im günstigsten Einkaufsplan"
+            description="im gÃ¼nstigsten Einkaufsplan"
             badge="Preisplan"
           />
 
           <GastarioMetric
-            label="Zu prüfen"
+            label="Zu prÃ¼fen"
             value={data.unresolvedCount}
             description="fehlende Zuordnung oder Rezeptur"
             badge={
@@ -2119,10 +2121,10 @@ export default function PurchasingPage() {
           <GastarioNotice type="warning">
             <strong>
               Einkaufsbedarf ist noch nicht
-              vollständig.
+              vollstÃ¤ndig.
             </strong>{" "}
             {data.unresolvedCount} Position(en)
-            benötigen eine operative Zuordnung
+            benÃ¶tigen eine operative Zuordnung
             oder Rezeptur.
           </GastarioNotice>
         ) : null}
@@ -2133,7 +2135,7 @@ export default function PurchasingPage() {
               Preisvergleich vorbereitet.
             </strong>{" "}
             {data.comparisonStats.unmatched} Zutat(en)
-            benötigen noch eine Zuordnung zu einem
+            benÃ¶tigen noch eine Zuordnung zu einem
             Lieferantenartikel. Diese werden nicht
             automatisch geraten.
           </GastarioNotice>
@@ -2159,8 +2161,8 @@ export default function PurchasingPage() {
             <GastarioEmptyState
               title="Kein Einkaufsbedarf vorhanden"
             >
-              Für diesen Planungstag wurde
-              noch kein Bedarf aus vollständigen
+              FÃ¼r diesen Planungstag wurde
+              noch kein Bedarf aus vollstÃ¤ndigen
               Rezepturen berechnet.
             </GastarioEmptyState>
 
@@ -2199,7 +2201,7 @@ export default function PurchasingPage() {
 
                         <span className="g-ui-data-row-description">
                           {item.sources.length} Quelle(n)
-                          aus bestätigten Aufträgen
+                          aus bestÃ¤tigten AuftrÃ¤gen
                         </span>
 
                       </div>
@@ -2221,7 +2223,7 @@ export default function PurchasingPage() {
                         className="g-ui-data-row-chevron"
                         aria-hidden="true"
                       >
-                        →
+                        â†’
                       </span>
 
                     </GastarioDataRow>
@@ -2270,7 +2272,7 @@ export default function PurchasingPage() {
                     )
                   }
                 >
-                  Schließen
+                  SchlieÃŸen
                 </button>
 
                 <Link
@@ -2279,7 +2281,7 @@ export default function PurchasingPage() {
                     "primary"
                   )}
                 >
-                  Rezepturen öffnen
+                  Rezepturen Ã¶ffnen
                 </Link>
 
               </>
@@ -2300,7 +2302,7 @@ export default function PurchasingPage() {
                 items={[
                   {
                     id: "overview",
-                    label: "Übersicht",
+                    label: "Ãœbersicht",
                   },
                   {
                     id: "sources",
@@ -2354,11 +2356,11 @@ export default function PurchasingPage() {
                   <strong>
                     Berechnung:
                   </strong>{" "}
-                  Operative Auftragsmenge ×
+                  Operative Auftragsmenge Ã—
                   Rezepturmenge.
                   Packstation, Logistik und
                   nicht operative Positionen
-                  werden nicht als Küchenbedarf
+                  werden nicht als KÃ¼chenbedarf
                   gerechnet.
                 </GastarioNotice>
 
@@ -2398,7 +2400,7 @@ export default function PurchasingPage() {
 
                           <span className="g-ui-data-row-description">
                             {source.orderNumber}
-                            {" · "}
+                            {" Â· "}
                             {source.customerName ||
                               "Kunde"}
                           </span>
@@ -2437,7 +2439,7 @@ export default function PurchasingPage() {
           id="manual-shopping-lists"
           eyebrow="Eigene Planung"
           title="Eigene Einkaufslisten"
-          description="Erstelle freie Einkaufslisten unabhängig vom automatisch berechneten Rezepturbedarf."
+          description="Erstelle freie Einkaufslisten unabhÃ¤ngig vom automatisch berechneten Rezepturbedarf."
           action={
             <button
               type="button"
@@ -2459,13 +2461,13 @@ export default function PurchasingPage() {
           }
         >
 
-          {data.manualShoppingLists
+          {manualShoppingLists
             .length === 0 ? (
 
             <GastarioEmptyState
               title="Noch keine eigene Einkaufsliste"
             >
-              Für diesen Planungstag wurde
+              FÃ¼r diesen Planungstag wurde
               noch keine manuelle Einkaufsliste
               angelegt.
             </GastarioEmptyState>
@@ -2474,7 +2476,7 @@ export default function PurchasingPage() {
 
             <GastarioDataList>
 
-              {data.manualShoppingLists.map(
+              {manualShoppingLists.map(
                 (list: any) => {
 
                   const completed =
@@ -2505,11 +2507,11 @@ export default function PurchasingPage() {
                               list.planningDate
                             )
                           )}
-                          {" · "}
+                          {" Â· "}
                           {list.items.length}
                           {" Position(en)"}
                           {list.notes
-                            ? " · " +
+                            ? " Â· " +
                               list.notes
                             : ""}
                         </span>
@@ -2536,7 +2538,7 @@ export default function PurchasingPage() {
                         className="g-ui-data-row-chevron"
                         aria-hidden="true"
                       >
-                        →
+                        â†’
                       </span>
 
                     </GastarioDataRow>
@@ -2557,7 +2559,7 @@ export default function PurchasingPage() {
           }
           size="lg"
           title="Neue Einkaufsliste"
-          description="Artikel frei erfassen und für einen Planungstag speichern."
+          description="Artikel frei erfassen und fÃ¼r einen Planungstag speichern."
           onClose={
             closeManualCreate
           }
@@ -2655,7 +2657,7 @@ export default function PurchasingPage() {
               >
                 <GastarioTextarea
                   name="notes"
-                  placeholder="z. B. Metro, Selgros, Getränke, Sonderbedarf ..."
+                  placeholder="z. B. Metro, Selgros, GetrÃ¤nke, Sonderbedarf ..."
                 />
               </GastarioField>
 
@@ -2681,7 +2683,7 @@ export default function PurchasingPage() {
                       )
                     }
                   >
-                    + Position hinzufügen
+                    + Position hinzufÃ¼gen
                   </button>
                 }
               >
@@ -2715,7 +2717,7 @@ export default function PurchasingPage() {
                                 value={
                                   item.name
                                 }
-                                placeholder="z. B. Hähnchenbrust"
+                                placeholder="z. B. HÃ¤hnchenbrust"
                                 onChange={(
                                   event
                                 ) =>
@@ -2793,7 +2795,7 @@ export default function PurchasingPage() {
                                 value={
                                   item.unit
                                 }
-                                placeholder="Stück, kg, Karton ..."
+                                placeholder="StÃ¼ck, kg, Karton ..."
                                 onChange={(
                                   event
                                 ) =>
@@ -2924,7 +2926,7 @@ export default function PurchasingPage() {
           }
           description={
             selectedManualList
-              ? "Eigene Einkaufsliste · " +
+              ? "Eigene Einkaufsliste Â· " +
                 formatDateOption(
                   normalizeDate(
                     selectedManualList
@@ -2953,7 +2955,7 @@ export default function PurchasingPage() {
                     )
                   }
                 >
-                  Schließen
+                  SchlieÃŸen
                 </button>
 
 
@@ -2992,14 +2994,14 @@ export default function PurchasingPage() {
                     ) => {
                       if (
                         !window.confirm(
-                          "Diese Einkaufsliste wirklich löschen?"
+                          "Diese Einkaufsliste wirklich lÃ¶schen?"
                         )
                       ) {
                         event.preventDefault();
                       }
                     }}
                   >
-                    Liste löschen
+                    Liste lÃ¶schen
                   </button>
 
                 </Form>
@@ -3012,7 +3014,7 @@ export default function PurchasingPage() {
                     "primary"
                   )}
                 >
-                  Änderungen speichern
+                  Ã„nderungen speichern
                 </button>
 
               </>
@@ -3070,7 +3072,7 @@ export default function PurchasingPage() {
                     id:
                       "overview",
                     label:
-                      "Übersicht",
+                      "Ãœbersicht",
                   },
                   {
                     id:
@@ -3219,7 +3221,7 @@ export default function PurchasingPage() {
                         )
                       }
                     >
-                      + Position hinzufügen
+                      + Position hinzufÃ¼gen
                     </button>
 
                   </GastarioToolbar>
@@ -3495,8 +3497,8 @@ export default function PurchasingPage() {
 
         <GastarioSection
           eyebrow="Einkaufsvorschlag"
-          title="Einkaufsplan auswählen"
-          description="Vergleiche den günstigsten Plan mit einer praktischeren Variante mit weniger Lieferanten."
+          title="Einkaufsplan auswÃ¤hlen"
+          description="Vergleiche den gÃ¼nstigsten Plan mit einer praktischeren Variante mit weniger Lieferanten."
         >
 
           <GastarioActionGrid
@@ -3504,9 +3506,9 @@ export default function PurchasingPage() {
           >
 
             <GastarioActionCard
-              title="Günstigster Einkaufsplan"
+              title="GÃ¼nstigster Einkaufsplan"
               tone="sage"
-              description="Verwendet je Zutat den günstigsten bestätigten und aktuell bepreisten Lieferantenartikel."
+              description="Verwendet je Zutat den gÃ¼nstigsten bestÃ¤tigten und aktuell bepreisten Lieferantenartikel."
               meta={
                 formatMoney(
                   data.procurementPlan
@@ -3529,10 +3531,10 @@ export default function PurchasingPage() {
               title="Praktischer Einkaufsplan"
               tone="sand"
               description={
-                "Reduziert Lieferanten, solange ein Artikel höchstens " +
+                "Reduziert Lieferanten, solange ein Artikel hÃ¶chstens " +
                 data.practicalProcurementPlan
                   .tolerancePercent +
-                "% über dem Bestpreis liegt."
+                "% Ã¼ber dem Bestpreis liegt."
               }
               meta={
                 formatMoney(
@@ -3589,7 +3591,7 @@ export default function PurchasingPage() {
                     )
                   }
                 >
-                  Schließen
+                  SchlieÃŸen
                 </button>
 
 
@@ -3667,7 +3669,7 @@ export default function PurchasingPage() {
                         .length === 0
                     }
                   >
-                    Bestellentwürfe erstellen
+                    BestellentwÃ¼rfe erstellen
                   </button>
 
                 </Form>
@@ -3690,7 +3692,7 @@ export default function PurchasingPage() {
                 items={[
                   {
                     id: "overview",
-                    label: "Übersicht",
+                    label: "Ãœbersicht",
                   },
                   {
                     id: "suppliers",
@@ -3729,7 +3731,7 @@ export default function PurchasingPage() {
                       selectedPlan
                         .supplierCount
                     }
-                    description="Im ausgewählten Plan"
+                    description="Im ausgewÃ¤hlten Plan"
                   />
 
 
@@ -3742,7 +3744,7 @@ export default function PurchasingPage() {
                         selectedPlan
                           .missingItemCount
                       }
-                      description="Positionen ohne vollständigen Preisplan"
+                      description="Positionen ohne vollstÃ¤ndigen Preisplan"
                       attention={
                         selectedPlan
                           .missingItemCount >
@@ -3760,7 +3762,7 @@ export default function PurchasingPage() {
                             .surchargeCents
                         )
                       }
-                      description="Gegenüber dem günstigsten Plan"
+                      description="GegenÃ¼ber dem gÃ¼nstigsten Plan"
                     />
 
                   )}
@@ -3799,9 +3801,9 @@ export default function PurchasingPage() {
                           .missingItemCount
                       }{" "}
                       Position(en) sind noch
-                      nicht vollständig.
+                      nicht vollstÃ¤ndig.
                     </strong>{" "}
-                    Dafür fehlt eine bestätigte
+                    DafÃ¼r fehlt eine bestÃ¤tigte
                     Artikelzuordnung,
                     ein aktueller Preis oder
                     eine passende Einheit.
@@ -3823,9 +3825,9 @@ export default function PurchasingPage() {
                   .length === 0 ? (
 
                   <GastarioEmptyState
-                    title="Noch kein vollständiger Einkaufsplan"
+                    title="Noch kein vollstÃ¤ndiger Einkaufsplan"
                   >
-                    Ordne zunächst Zutaten
+                    Ordne zunÃ¤chst Zutaten
                     passenden Lieferantenartikeln
                     zu.
                   </GastarioEmptyState>
@@ -3884,12 +3886,12 @@ export default function PurchasingPage() {
                                     <span className="g-ui-data-row-description">
                                       {item.catalogItemName}
                                       {item.articleNumber
-                                        ? " · Art.-Nr. " +
+                                        ? " Â· Art.-Nr. " +
                                           item.articleNumber
                                         : ""}
-                                      {" · "}
+                                      {" Â· "}
                                       {item.packageCount}
-                                      {" × "}
+                                      {" Ã— "}
                                       {formatQty(
                                         item.packContent
                                       )}
@@ -3943,15 +3945,15 @@ export default function PurchasingPage() {
 
         <GastarioSection
           eyebrow="Gespeichert"
-          title="Bestellentwürfe"
-          description="Dauerhaft gespeicherte Lieferantenentwürfe für den gewählten Planungstag."
+          title="BestellentwÃ¼rfe"
+          description="Dauerhaft gespeicherte LieferantenentwÃ¼rfe fÃ¼r den gewÃ¤hlten Planungstag."
           id="saved-procurement-drafts"
         >
           {data.savedProcurementDrafts.length ===
           0 ? (
-            <GastarioEmptyState title="Noch keine Bestellentwürfe">
-              Für diesen Planungstag wurden noch
-              keine Bestellentwürfe gespeichert.
+            <GastarioEmptyState title="Noch keine BestellentwÃ¼rfe">
+              FÃ¼r diesen Planungstag wurden noch
+              keine BestellentwÃ¼rfe gespeichert.
             </GastarioEmptyState>
           ) : (
             <GastarioDataList>
@@ -3978,10 +3980,10 @@ export default function PurchasingPage() {
                         {draft.planType ===
                         "PRACTICAL"
                           ? "Praktischer Plan"
-                          : "Günstigster Plan"}
-                        {" · "}
+                          : "GÃ¼nstigster Plan"}
+                        {" Â· "}
                         {draft.items.length} Position(en)
-                        {" · "}
+                        {" Â· "}
                         {procurementDraftStatusLabel(
                           draft.status
                         )}
@@ -3999,7 +4001,7 @@ export default function PurchasingPage() {
                         className="g-ui-data-row-chevron"
                         aria-hidden="true"
                       >
-                        →
+                        â†’
                       </span>
                     </div>
                   </GastarioDataRow>
@@ -4022,8 +4024,8 @@ export default function PurchasingPage() {
                   selectedDraft.planType ===
                   "PRACTICAL"
                     ? "Praktischer Plan"
-                    : "Günstigster Plan"
-                } · ${procurementDraftStatusLabel(
+                    : "GÃ¼nstigster Plan"
+                } Â· ${procurementDraftStatusLabel(
                   selectedDraft.status
                 )}`
               : undefined
@@ -4043,7 +4045,7 @@ export default function PurchasingPage() {
                     setSelectedDraftId(null)
                   }
                 >
-                  Schließen
+                  SchlieÃŸen
                 </button>
 
                 <button
@@ -4053,7 +4055,7 @@ export default function PurchasingPage() {
                     "primary"
                   )}
                 >
-                  Änderungen speichern
+                  Ã„nderungen speichern
                 </button>
               </GastarioToolbar>
             ) : null
@@ -4086,7 +4088,7 @@ export default function PurchasingPage() {
                 items={[
                   {
                     id: "overview",
-                    label: "Übersicht",
+                    label: "Ãœbersicht",
                   },
                   {
                     id: "items",
@@ -4165,7 +4167,7 @@ export default function PurchasingPage() {
 
                           <span className="g-ui-data-row-description">
                             {item.catalogItemName}
-                            {" · "}
+                            {" Â· "}
                             {item.articleNumber
                               ? `Art.-Nr. ${item.articleNumber}`
                               : "Keine Artikelnummer"}
@@ -4218,7 +4220,7 @@ export default function PurchasingPage() {
         <GastarioSection
           eyebrow="Artikelzuordnung"
           title="Zutaten mit Lieferantenartikeln verbinden"
-          description="Ordne jede Zutat einem oder mehreren echten Katalogartikeln zu. Gastario vergleicht anschließend automatisch Packungsgrößen und aktuelle Preise."
+          description="Ordne jede Zutat einem oder mehreren echten Katalogartikeln zu. Gastario vergleicht anschlieÃŸend automatisch PackungsgrÃ¶ÃŸen und aktuelle Preise."
           id="ingredient-mapping"
           action={
             <Link
@@ -4233,10 +4235,10 @@ export default function PurchasingPage() {
         >
           {data.ingredientMappings.length === 0 ? (
             <GastarioEmptyState title="Keine berechenbaren Zutaten">
-              Für den gewählten Planungstag gibt es
+              FÃ¼r den gewÃ¤hlten Planungstag gibt es
               noch keine Zutaten, die einem
               Lieferantenartikel zugeordnet werden
-              können.
+              kÃ¶nnen.
             </GastarioEmptyState>
           ) : (
             <GastarioDataList>
@@ -4262,14 +4264,14 @@ export default function PurchasingPage() {
                       <span className="g-ui-data-row-description">
                         Basiseinheit:{" "}
                         {ingredient.baseUnit}
-                        {" · "}
+                        {" Â· "}
                         {ingredient.matches.length}{" "}
                         Zuordnung(en)
-                        {" · "}
+                        {" Â· "}
                         {(data.candidateSuggestions[
                           ingredient.id
                         ] || []).length}{" "}
-                        Vorschlag/Vorschläge
+                        Vorschlag/VorschlÃ¤ge
                       </span>
                     </div>
 
@@ -4278,7 +4280,7 @@ export default function PurchasingPage() {
                         className="g-ui-data-row-chevron"
                         aria-hidden="true"
                       >
-                        →
+                        â†’
                       </span>
                     </div>
                   </GastarioDataRow>
@@ -4313,7 +4315,7 @@ export default function PurchasingPage() {
                 setSelectedIngredientId(null)
               }
             >
-              Schließen
+              SchlieÃŸen
             </button>
           }
         >
@@ -4343,7 +4345,7 @@ export default function PurchasingPage() {
                 {selectedIngredient.matches
                   .length === 0 ? (
                   <GastarioEmptyState title="Noch keine Zuordnung">
-                    Für diese Zutat wurde noch kein
+                    FÃ¼r diese Zutat wurde noch kein
                     Lieferantenartikel hinterlegt.
                   </GastarioEmptyState>
                 ) : (
@@ -4371,16 +4373,16 @@ export default function PurchasingPage() {
                                   match.catalogItem
                                     .name
                                 }
-                                {" · "}
+                                {" Â· "}
                                 {price
                                   ? `${formatMoney(
                                       price.netPriceCents
-                                    )} · ${formatPriceAge(
+                                    )} Â· ${formatPriceAge(
                                       price.fetchedAt
                                     )}`
                                   : "Noch kein Preis vorhanden"}
                                 {match.preferred
-                                  ? " · Bevorzugt"
+                                  ? " Â· Bevorzugt"
                                   : ""}
                               </span>
                             </div>
@@ -4465,13 +4467,13 @@ export default function PurchasingPage() {
                           value=""
                           disabled
                         >
-                          Artikel auswählen …
+                          Artikel auswÃ¤hlen â€¦
                         </option>
 
                         {(data.candidateSuggestions[
                           selectedIngredient.id
                         ] || []).length > 0 ? (
-                          <optgroup label="Gastario Vorschläge">
+                          <optgroup label="Gastario VorschlÃ¤ge">
                             {(data.candidateSuggestions[
                               selectedIngredient.id
                             ] || []).map(
@@ -4487,17 +4489,17 @@ export default function PurchasingPage() {
                                   {
                                     suggestion.supplierName
                                   }
-                                  {" · "}
+                                  {" Â· "}
                                   {
                                     suggestion.catalogItemName
                                   }
                                   {suggestion.netPriceCents !==
                                   null
-                                    ? ` · ${formatMoney(
+                                    ? ` Â· ${formatMoney(
                                         suggestion.netPriceCents
                                       )}`
-                                    : " · ohne Preis"}
-                                  {` · Treffer ${suggestion.score}%`}
+                                    : " Â· ohne Preis"}
+                                  {` Â· Treffer ${suggestion.score}%`}
                                 </option>
                               )
                             )}
@@ -4527,15 +4529,15 @@ export default function PurchasingPage() {
                                     catalogItem
                                       .supplier.name
                                   }
-                                  {" · "}
+                                  {" Â· "}
                                   {
                                     catalogItem.name
                                   }
                                   {latestPrice
-                                    ? ` · ${formatMoney(
+                                    ? ` Â· ${formatMoney(
                                         latestPrice.netPriceCents
                                       )}`
-                                    : " · ohne Preis"}
+                                    : " Â· ohne Preis"}
                                 </option>
                               );
                             }
@@ -4570,9 +4572,9 @@ export default function PurchasingPage() {
 
         {data.missingRecipeItems.length > 0 ? (
           <GastarioSection
-            eyebrow="Prüfung"
+            eyebrow="PrÃ¼fung"
             title="Noch nicht berechenbare Positionen"
-            description="Diese Positionen werden nicht geraten. Erst nach Zuordnung und Rezeptur fließen sie in den Einkauf ein."
+            description="Diese Positionen werden nicht geraten. Erst nach Zuordnung und Rezeptur flieÃŸen sie in den Einkauf ein."
             action={
               <Link
                 className={gastarioButtonClass(
@@ -4601,13 +4603,13 @@ export default function PurchasingPage() {
                       <span className="g-ui-data-row-description">
                         {formatQty(item.quantity)}{" "}
                         {item.unit}
-                        {" · "}
+                        {" Â· "}
                         {item.reason}
                       </span>
                     </div>
 
                     <div className="g-ui-data-row-meta">
-                      Prüfen
+                      PrÃ¼fen
                     </div>
                   </GastarioDataRow>
                 )
