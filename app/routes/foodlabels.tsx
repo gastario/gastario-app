@@ -162,9 +162,9 @@ export async function action({ request }: { request: Request }) {
 
   const formData = await request.formData();
   const actionType = safeText(formData.get("_action"));
+  const labelId = safeText(formData.get("labelId"));
 
   if (actionType === "delete") {
-    const labelId = safeText(formData.get("labelId"));
 
     if (!labelId) {
       return { error: "Label wurde nicht gefunden." };
@@ -214,6 +214,68 @@ export async function action({ request }: { request: Request }) {
     }
   }
 
+  if (actionType === "update") {
+    if (!labelId) {
+      return {
+        error: "Foodlabel wurde nicht gefunden.",
+      };
+    }
+
+    const updatedRows =
+      await prisma.$queryRawUnsafe<any[]>(
+        `UPDATE "FoodProductLabel"
+         SET
+           "name" = $1,
+           "customerName" = $2,
+           "brandName" = $3,
+           "brandSubline" = $4,
+           "qrText" = $5,
+           "assetMode" = $6,
+           "labelDate" = $7,
+           "ingredients" = $8,
+           "allergens" = $9,
+           "logoDataUrl" = COALESCE(
+             NULLIF($10, ''),
+             "logoDataUrl"
+           ),
+           "labelCount" = $11,
+           "printPreset" = $12,
+           "labelSize" = $13,
+           "updatedAt" = CURRENT_TIMESTAMP
+         WHERE
+           "id" = $14
+           AND "tenantId" = $15
+         RETURNING "id"`,
+        name,
+        customerName || null,
+        brandName || null,
+        brandSubline || null,
+        qrText || null,
+        assetMode,
+        labelDate || null,
+        ingredients || null,
+        allergens || null,
+        logoDataUrl,
+        labelCount,
+        printPreset,
+        labelSize,
+        labelId,
+        access.tenantId
+      );
+
+    if (!updatedRows.length) {
+      return {
+        error: "Foodlabel wurde nicht gefunden.",
+      };
+    }
+
+    return {
+      success: "Foodlabel wurde aktualisiert.",
+      updatedLabelId: labelId,
+    };
+  }
+
+
   const id = crypto.randomUUID();
   const publicToken = createPublicToken();
 
@@ -257,6 +319,20 @@ export default function FoodLabelsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [pdfOpen, setPdfOpen] = useState(false);
   const [createTab, setCreateTab] = useState("general");
+
+  const [editMode, setEditMode] = useState(false);
+  const [editTab, setEditTab] = useState("general");
+
+  useEffect(() => {
+    if (actionData?.updatedLabelId) {
+      setSelectedId(
+        actionData.updatedLabelId
+      );
+
+      setEditMode(false);
+      setEditTab("general");
+    }
+  }, [actionData?.updatedLabelId]);
 
   return (
     <AppLayout>
@@ -339,10 +415,12 @@ export default function FoodLabelsPage() {
                 <GastarioDataRow
                   key={label.id}
                   onClick={() => {
+                    setEditMode(false);
+                    setEditTab("general");
                     setSelectedId(label.id);
                   }}
                 >
-                  <div className="g-ui-data-row-copy">
+                  <div className="g-ui-data-row-main">
                     <strong className="g-ui-data-row-title">
                       {label.name}
                     </strong>
@@ -743,35 +821,143 @@ export default function FoodLabelsPage() {
 
 
         {/* =================================================
-            LABEL DETAILS
+            LABEL DETAILS / BEARBEITEN
         ================================================= */}
 
         <GastarioDetailDialog
           open={Boolean(selected)}
-          title={selected?.name || "Foodlabel"}
-          description="Vorschau und Aktionen"
+          size="xl"
+          title={
+            editMode
+              ? "Foodlabel bearbeiten"
+              : selected?.name || "Foodlabel"
+          }
+          description={
+            editMode
+              ? "Gespeicherte Labeldaten bearbeiten."
+              : "Vorschau und Aktionen"
+          }
           onClose={() => {
+            setEditMode(false);
+            setEditTab("general");
             setSelectedId(null);
           }}
           footer={
             selected ? (
+              editMode ? (
+                <>
+                  <GastarioButton
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      setEditMode(false);
+                      setEditTab("general");
+                    }}
+                  >
+                    Abbrechen
+                  </GastarioButton>
+
+                  <GastarioButton
+                    type="submit"
+                    variant="primary"
+                    form="foodlabel-edit-form"
+                  >
+                    Änderungen speichern
+                  </GastarioButton>
+                </>
+              ) : (
+                <>
+                  <Form
+                    method="post"
+                    onSubmit={(event) => {
+                      if (
+                        !window.confirm(
+                          "Dieses Foodlabel wirklich löschen?"
+                        )
+                      ) {
+                        event.preventDefault();
+                      }
+                    }}
+                  >
+                    <input
+                      type="hidden"
+                      name="_action"
+                      value="delete"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="labelId"
+                      value={selected.id}
+                    />
+
+                    <GastarioButton
+                      type="submit"
+                      variant="danger"
+                    >
+                      Löschen
+                    </GastarioButton>
+                  </Form>
+
+                  <GastarioButton
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      setEditTab("general");
+                      setEditMode(true);
+                    }}
+                  >
+                    Bearbeiten
+                  </GastarioButton>
+
+                  <Link
+                    to={`/foodlabels/print/${selected.id}`}
+                    className="g-ui-button g-ui-button--primary"
+                  >
+                    Drucken
+                  </Link>
+                </>
+              )
+            ) : null
+          }
+        >
+
+          {selected ? (
+            editMode ? (
               <>
+
+                <GastarioTabs
+                  activeId={editTab}
+                  onChange={setEditTab}
+                  items={[
+                    {
+                      id: "general",
+                      label: "Allgemein",
+                    },
+                    {
+                      id: "content",
+                      label: "Inhalt",
+                    },
+                    {
+                      id: "output",
+                      label: "Ausgabe",
+                    },
+                  ]}
+                />
+
+
                 <Form
+                  key={selected.id}
+                  id="foodlabel-edit-form"
                   method="post"
-                  onSubmit={(event) => {
-                    if (
-                      !window.confirm(
-                        "Dieses Foodlabel wirklich löschen?"
-                      )
-                    ) {
-                      event.preventDefault();
-                    }
-                  }}
+                  encType="multipart/form-data"
+                  className="g-ui-dialog-form"
                 >
+
                   <input
                     type="hidden"
                     name="_action"
-                    value="delete"
+                    value="update"
                   />
 
                   <input
@@ -780,83 +966,326 @@ export default function FoodLabelsPage() {
                     value={selected.id}
                   />
 
-                  <GastarioButton
-                    type="submit"
-                    variant="danger"
+
+                  <div
+                    className="g-ui-form-section"
+                    hidden={
+                      editTab !== "general"
+                    }
                   >
-                    Löschen
-                  </GastarioButton>
+
+                    <div className="g-ui-form-section-heading">
+                      <h3>Allgemein</h3>
+
+                      <p>
+                        Grunddaten und Zuordnung des Labels.
+                      </p>
+                    </div>
+
+
+                    <GastarioFormGrid columns={2}>
+
+                      <GastarioField
+                        label="Name"
+                        required
+                      >
+                        <GastarioInput
+                          name="name"
+                          defaultValue={
+                            selected.name || ""
+                          }
+                          required
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField label="Name des Essers">
+                        <GastarioInput
+                          name="customerName"
+                          defaultValue={
+                            selected.customerName || ""
+                          }
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField label="Caterer / Marke">
+                        <GastarioInput
+                          name="brandName"
+                          defaultValue={
+                            selected.brandName || ""
+                          }
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField label="Unterzeile / Adresse">
+                        <GastarioInput
+                          name="brandSubline"
+                          defaultValue={
+                            selected.brandSubline || ""
+                          }
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField label="Datum">
+                        <GastarioInput
+                          name="labelDate"
+                          type="date"
+                          defaultValue={
+                            selected.labelDate || ""
+                          }
+                        />
+                      </GastarioField>
+
+                    </GastarioFormGrid>
+
+                  </div>
+
+
+                  <div
+                    className="g-ui-form-section"
+                    hidden={
+                      editTab !== "content"
+                    }
+                  >
+
+                    <div className="g-ui-form-section-heading">
+                      <h3>Inhalt</h3>
+
+                      <p>
+                        Zutaten, Allergene und sichtbare Label-Inhalte.
+                      </p>
+                    </div>
+
+
+                    <GastarioFormGrid columns={2}>
+
+                      <GastarioField label="Zutaten">
+                        <GastarioInput
+                          name="ingredients"
+                          defaultValue={
+                            selected.ingredients || ""
+                          }
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField label="Allergene">
+                        <GastarioInput
+                          name="allergens"
+                          defaultValue={
+                            selected.allergens || ""
+                          }
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField label="QR-Link / QR-Text">
+                        <GastarioInput
+                          name="qrText"
+                          defaultValue={
+                            selected.qrText || ""
+                          }
+                        />
+                      </GastarioField>
+
+
+                      <GastarioField label="Footer">
+                        <GastarioSelect
+                          name="assetMode"
+                          defaultValue={
+                            selected.assetMode ||
+                            "brand-only"
+                          }
+                        >
+                          <option value="brand-only">
+                            Nur Marke
+                          </option>
+
+                          <option value="brand-and-qr">
+                            Marke + QR-Code
+                          </option>
+
+                          <option value="qr-only">
+                            Nur QR-Code
+                          </option>
+                        </GastarioSelect>
+                      </GastarioField>
+
+
+                      <GastarioField
+                        label="Logo"
+                        hint={
+                          selected.logoDataUrl
+                            ? "Nur auswählen, wenn das vorhandene Logo ersetzt werden soll."
+                            : "Optional ein Logo hochladen."
+                        }
+                      >
+                        <GastarioInput
+                          name="logo"
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                        />
+                      </GastarioField>
+
+                    </GastarioFormGrid>
+
+                  </div>
+
+
+                  <div
+                    className="g-ui-form-section"
+                    hidden={
+                      editTab !== "output"
+                    }
+                  >
+
+                    <div className="g-ui-form-section-heading">
+                      <h3>Ausgabe</h3>
+
+                      <p>
+                        Etikettenformat und benötigte Anzahl festlegen.
+                      </p>
+                    </div>
+
+
+                    <GastarioFormGrid columns={2}>
+
+                      <GastarioField label="Druckformat">
+                        <GastarioSelect
+                          name="printPreset"
+                          defaultValue={
+                            selected.printPreset ||
+                            "roll-76x51"
+                          }
+                        >
+                          <option value="a4-2">
+                            A4 Hochformat – 2 Labels pro Reihe
+                          </option>
+
+                          <option value="a4-3">
+                            A4 Hochformat – 3 Labels pro Reihe
+                          </option>
+
+                          <option value="a4-4">
+                            A4 Hochformat – 4 Labels pro Reihe
+                          </option>
+
+                          <option value="roll-76x51">
+                            Etikettenrolle – 76 × 51 mm
+                          </option>
+
+                          <option value="roll-57x32">
+                            Etikettenrolle – 57 × 32 mm
+                          </option>
+                        </GastarioSelect>
+                      </GastarioField>
+
+
+                      <GastarioField label="Anzahl Labels">
+                        <GastarioInput
+                          name="labelCount"
+                          type="number"
+                          min="1"
+                          max="200"
+                          defaultValue={
+                            selected.labelCount || 12
+                          }
+                        />
+                      </GastarioField>
+
+                    </GastarioFormGrid>
+
+                  </div>
+
                 </Form>
 
-                <Link
-                  to={`/foodlabels/print/${selected.id}`}
-                  className="g-ui-button g-ui-button--primary"
-                >
-                  Drucken
-                </Link>
               </>
-            ) : null
-          }
-        >
+            ) : (
 
-          {selected ? (
-            <div className="g-ui-detail-stack">
+              <div className="g-ui-detail-stack">
 
-              <div className="foodlabelsPreviewWrap">
-                <FoodLabelCard label={selected} />
+                <div className="foodlabelsPreviewWrap">
+                  <FoodLabelCard
+                    label={selected}
+                  />
+                </div>
+
+
+                <div className="g-ui-detail-meta">
+
+                  <div>
+                    <span>Format</span>
+
+                    <strong>
+                      {selected.printPreset}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>Anzahl</span>
+
+                    <strong>
+                      {selected.labelCount}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>Datum</span>
+
+                    <strong>
+                      {selected.labelDate
+                        ? formatDate(
+                            selected.labelDate
+                          )
+                        : "–"}
+                    </strong>
+                  </div>
+
+                </div>
+
+
+                {selected.ingredients ? (
+                  <GastarioPanel variant="soft">
+
+                    <strong>
+                      Zutaten
+                    </strong>
+
+                    <div>
+                      {selected.ingredients}
+                    </div>
+
+                  </GastarioPanel>
+                ) : null}
+
+
+                {selected.allergens ? (
+                  <GastarioPanel variant="soft">
+
+                    <strong>
+                      Allergene
+                    </strong>
+
+                    <div>
+                      {selected.allergens}
+                    </div>
+
+                  </GastarioPanel>
+                ) : null}
+
               </div>
 
-              <div className="g-ui-detail-meta">
-
-                <div>
-                  <span>Format</span>
-                  <strong>
-                    {selected.printPreset}
-                  </strong>
-                </div>
-
-                <div>
-                  <span>Anzahl</span>
-                  <strong>
-                    {selected.labelCount}
-                  </strong>
-                </div>
-
-                <div>
-                  <span>Datum</span>
-                  <strong>
-                    {selected.labelDate
-                      ? formatDate(selected.labelDate)
-                      : "–"}
-                  </strong>
-                </div>
-
-              </div>
-
-              {selected.ingredients ? (
-                <GastarioPanel variant="soft">
-                  <strong>Zutaten</strong>
-                  <div>
-                    {selected.ingredients}
-                  </div>
-                </GastarioPanel>
-              ) : null}
-
-              {selected.allergens ? (
-                <GastarioPanel variant="soft">
-                  <strong>Allergene</strong>
-                  <div>
-                    {selected.allergens}
-                  </div>
-                </GastarioPanel>
-              ) : null}
-
-            </div>
+            )
           ) : null}
 
         </GastarioDetailDialog>
       </section>
-    
+
       <style>{`
         /* heycater-upload-card-v3 */
 
@@ -1511,32 +1940,3 @@ const orderShortcutMetaStyle: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 700,
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
