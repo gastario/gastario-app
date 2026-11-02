@@ -2741,7 +2741,7 @@ export default function PurchasingPage() {
                                                 ...row,
                                                 name:
                                                   event
-                                                    .currentTarget
+                                                    .target
                                                     .value,
                                               }
                                             : row
@@ -2781,7 +2781,7 @@ export default function PurchasingPage() {
                                                 ...row,
                                                 quantity:
                                                   event
-                                                    .currentTarget
+                                                    .target
                                                     .value,
                                               }
                                             : row
@@ -2819,7 +2819,7 @@ export default function PurchasingPage() {
                                                 ...row,
                                                 unit:
                                                   event
-                                                    .currentTarget
+                                                    .target
                                                     .value,
                                               }
                                             : row
@@ -2856,7 +2856,7 @@ export default function PurchasingPage() {
                                                 ...row,
                                                 notes:
                                                   event
-                                                    .currentTarget
+                                                    .target
                                                     .value,
                                               }
                                             : row
@@ -3319,7 +3319,7 @@ export default function PurchasingPage() {
                                                   ...row,
                                                   name:
                                                     event
-                                                      .currentTarget
+                                                      .target
                                                       .value,
                                                 }
                                               : row
@@ -3359,7 +3359,7 @@ export default function PurchasingPage() {
                                                   ...row,
                                                   quantity:
                                                     event
-                                                      .currentTarget
+                                                      .target
                                                       .value,
                                                 }
                                               : row
@@ -3396,7 +3396,7 @@ export default function PurchasingPage() {
                                                   ...row,
                                                   unit:
                                                     event
-                                                      .currentTarget
+                                                      .target
                                                       .value,
                                                 }
                                               : row
@@ -3432,7 +3432,7 @@ export default function PurchasingPage() {
                                                   ...row,
                                                   notes:
                                                     event
-                                                      .currentTarget
+                                                      .target
                                                       .value,
                                                 }
                                               : row
