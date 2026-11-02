@@ -4009,3 +4009,276 @@
       1fr;
   }
 }
+
+
+/* =========================================================
+   GASTARIO CENTRAL PRINT SYSTEM 2026
+   Bildschirm / Druckausgabe zentral geregelt
+========================================================= */
+
+.g-ui-print-only {
+  display: none !important;
+}
+
+@media print {
+
+  body {
+    background:
+      #ffffff !important;
+  }
+
+  .sidebar,
+  .topbar,
+  .g-ui-screen-only {
+    display:
+      none !important;
+  }
+
+  .appShell {
+    display:
+      block !important;
+
+    background:
+      #ffffff !important;
+  }
+
+  .workspace {
+    padding:
+      0 !important;
+  }
+
+  .workspace > * {
+    max-width:
+      none !important;
+
+    margin:
+      0 !important;
+  }
+
+  .g-ui-print-only {
+    display:
+      block !important;
+
+    padding:
+      0 !important;
+
+    margin:
+      0 !important;
+
+    background:
+      #ffffff !important;
+
+    width:
+      76mm !important;
+  }
+
+  .g-ui-print-only .g-ui-label-card {
+    width:
+      76mm !important;
+
+    height:
+      51mm !important;
+
+    box-shadow:
+      none !important;
+
+    border:
+      none !important;
+
+    border-radius:
+      0 !important;
+
+    page-break-after:
+      always !important;
+
+    page-break-inside:
+      avoid !important;
+
+    break-inside:
+      avoid !important;
+  }
+
+  @page {
+    size:
+      76mm 51mm;
+
+    margin:
+      0;
+  }
+
+}
+
+
+
+/* =========================================================
+   GASTARIO MHD LABEL SYSTEM 2026
+   Zentrales Layout fuer MHD-Etiketten
+========================================================= */
+
+.g-ui-mhd-label-card {
+  width: 76mm;
+  height: 51mm;
+  border:
+    1px solid
+    var(--g26-line);
+  border-radius: 10px;
+  padding: 3.2mm;
+  background:
+    #ffffff;
+  color:
+    var(--g26-text);
+  display: grid;
+  align-content: start;
+  gap: 0.9mm;
+  font-size: 7.8pt;
+  line-height: 1.12;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.g-ui-mhd-label-card--small {
+  width: 57mm;
+  height: 32mm;
+  padding: 2.8mm;
+  font-size: 7.5pt;
+  gap: 1mm;
+}
+
+.g-ui-mhd-label-top {
+  display: flex;
+  justify-content:
+    space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 8pt;
+  color:
+    var(--g26-text-soft);
+}
+
+.g-ui-mhd-label-brand {
+  color:
+    var(--g26-primary);
+  font-weight: 700;
+}
+
+.g-ui-mhd-label-customer {
+  font-size: 7.5pt;
+  color:
+    var(--g26-text-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow:
+    ellipsis;
+}
+
+.g-ui-mhd-label-product {
+  margin: 0;
+  font-size: 11pt;
+  line-height: 1.02;
+  font-weight: 700;
+  color:
+    var(--g26-text);
+}
+
+.g-ui-mhd-label-product--small {
+  font-size: 10pt;
+}
+
+.g-ui-mhd-label-dates {
+  display: grid;
+  gap: 0.8mm;
+  color:
+    var(--g26-text);
+}
+
+.g-ui-mhd-label-batch {
+  font-size: 8pt;
+  color:
+    var(--g26-text-soft);
+}
+
+.g-ui-mhd-label-storage {
+  border-top:
+    1px solid
+    var(--g26-line);
+  padding-top: 1mm;
+  font-size: 7pt;
+  color:
+    var(--g26-text);
+}
+
+.g-ui-mhd-label-bottom {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    20mm;
+  gap: 2mm;
+  align-items: end;
+  min-height: 20mm;
+}
+
+.g-ui-mhd-label-allergens {
+  display: grid;
+  gap: 0.4mm;
+  font-size: 6.8pt;
+  color:
+    var(--g26-text-soft);
+  overflow: hidden;
+}
+
+.g-ui-mhd-qr {
+  width: 20mm;
+  height: 20mm;
+  display: block;
+  align-self: end;
+  justify-self: end;
+  background:
+    #ffffff;
+  padding: 1mm;
+  box-sizing:
+    border-box;
+}
+
+.g-ui-mhd-qr-placeholder {
+  width: 20mm;
+  height: 20mm;
+  border:
+    1px solid
+    var(--g26-line);
+  background:
+    #ffffff;
+  box-sizing:
+    border-box;
+}
+
+
+/* Bildschirmvorschau im zentralen Dialog */
+
+.g-ui-detail-dialog
+.g-ui-mhd-label-card {
+  max-width: 100%;
+}
+
+
+/* Druckausgabe */
+
+@media print {
+
+  .g-ui-print-only
+  .g-ui-mhd-label-card {
+    border: none !important;
+    border-radius:
+      0 !important;
+    box-shadow:
+      none !important;
+    margin:
+      0 !important;
+    page-break-after:
+      always !important;
+    page-break-inside:
+      avoid !important;
+    break-inside:
+      avoid !important;
+  }
+
+}
