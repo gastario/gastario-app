@@ -2142,7 +2142,7 @@ export default function PurchasingPage() {
           eyebrow="Bedarf"
           title="Automatische Einkaufsliste"
           description="Der Bedarf wird aus operativer Auftragsmenge und Rezepturmenge berechnet."
-          actions={
+          action={
             <Link
               className={gastarioButtonClass(
                 "secondary"
@@ -2438,7 +2438,7 @@ export default function PurchasingPage() {
           eyebrow="Eigene Planung"
           title="Eigene Einkaufslisten"
           description="Erstelle freie Einkaufslisten unabhängig vom automatisch berechneten Rezepturbedarf."
-          actions={
+          action={
             <button
               type="button"
               className={gastarioButtonClass(
@@ -2664,7 +2664,7 @@ export default function PurchasingPage() {
                 eyebrow="Positionen"
                 title="Was muss eingekauft werden?"
                 description="Menge und Einheit frei festlegen."
-                actions={
+                action={
                   <button
                     type="button"
                     className={gastarioButtonClass(
@@ -3850,7 +3850,7 @@ export default function PurchasingPage() {
                             group.itemCount +
                             " Position(en)"
                           }
-                          actions={
+                          action={
                             <strong>
                               {formatMoney(
                                 group.netTotalCents
@@ -4220,7 +4220,7 @@ export default function PurchasingPage() {
           title="Zutaten mit Lieferantenartikeln verbinden"
           description="Ordne jede Zutat einem oder mehreren echten Katalogartikeln zu. Gastario vergleicht anschließend automatisch Packungsgrößen und aktuelle Preise."
           id="ingredient-mapping"
-          actions={
+          action={
             <Link
               className={gastarioButtonClass(
                 "secondary"
@@ -4573,7 +4573,7 @@ export default function PurchasingPage() {
             eyebrow="Prüfung"
             title="Noch nicht berechenbare Positionen"
             description="Diese Positionen werden nicht geraten. Erst nach Zuordnung und Rezeptur fließen sie in den Einkauf ein."
-            actions={
+            action={
               <Link
                 className={gastarioButtonClass(
                   "primary"
