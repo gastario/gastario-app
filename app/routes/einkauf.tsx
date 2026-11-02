@@ -8,6 +8,7 @@ import {
   GastarioActionCard,
   GastarioActionGrid,
   GastarioFilterBar,
+  GastarioFormGrid,
   GastarioHeader,
   GastarioNotice,
   GastarioMetricGrid,
@@ -22,6 +23,7 @@ import {
   GastarioEmptyState,
   GastarioStack,
   GastarioInput,
+  GastarioTextarea,
   GastarioDetailDialog,
   GastarioDetailTabs,
   GastarioDetailPane,
@@ -261,6 +263,117 @@ function effectiveOperationalUnit(item: any) {
   ).trim();
 }
 
+function emptyManualShoppingItem() {
+  return {
+    name: "",
+    quantity: "1",
+    unit: "Stück",
+    notes: "",
+    checked: false,
+  };
+}
+
+function parseManualShoppingListItems(
+  rawValue: unknown
+) {
+  const raw = String(
+    rawValue || ""
+  ).trim();
+
+  if (!raw) {
+    throw new Response(
+      "Mindestens eine Einkaufsposition ist erforderlich.",
+      {
+        status: 400,
+      }
+    );
+  }
+
+  let parsed: any[] = [];
+
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Response(
+      "Die Einkaufspositionen konnten nicht gelesen werden.",
+      {
+        status: 400,
+      }
+    );
+  }
+
+  if (!Array.isArray(parsed)) {
+    throw new Response(
+      "Ungültige Einkaufspositionen.",
+      {
+        status: 400,
+      }
+    );
+  }
+
+  const items = parsed
+    .map(
+      (
+        item: any,
+        index: number
+      ) => {
+        const name = String(
+          item?.name || ""
+        ).trim();
+
+        const quantity = Number(
+          String(
+            item?.quantity ?? ""
+          ).replace(",", ".")
+        );
+
+        const unit = String(
+          item?.unit || ""
+        ).trim();
+
+        const notes = String(
+          item?.notes || ""
+        ).trim();
+
+        if (
+          !name ||
+          !Number.isFinite(quantity) ||
+          quantity <= 0 ||
+          !unit
+        ) {
+          return null;
+        }
+
+        return {
+          name,
+          quantity,
+          unit,
+          notes:
+            notes || null,
+          checked:
+            Boolean(
+              item?.checked
+            ),
+          sortOrder:
+            index,
+        };
+      }
+    )
+    .filter(Boolean);
+
+  if (items.length === 0) {
+    throw new Response(
+      "Mindestens eine vollständige Einkaufsposition ist erforderlich.",
+      {
+        status: 400,
+      }
+    );
+  }
+
+  return items;
+}
+
+
 /*
  * gastario-procurement-ingredient-mapping-v1-20260803
  * Manuelle und nachvollziehbare Zuordnung von Zutaten
@@ -296,6 +409,228 @@ export async function action({
         returnDate
       )}#ingredient-mapping`
     : "/einkauf#ingredient-mapping";
+
+
+  /*
+   * gastario-manual-shopping-lists-v1-20261102
+   */
+  if (
+    intent ===
+    "create-manual-shopping-list"
+  ) {
+    const title = String(
+      formData.get("title") || ""
+    ).trim();
+
+    const planningDate = String(
+      formData.get("planningDate") ||
+        ""
+    ).trim();
+
+    const notes = String(
+      formData.get("notes") || ""
+    ).trim();
+
+    if (!title) {
+      throw new Response(
+        "Bitte einen Namen für die Einkaufsliste eingeben.",
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(
+        planningDate
+      )
+    ) {
+      throw new Response(
+        "Bitte einen gültigen Planungstag auswählen.",
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const items =
+      parseManualShoppingListItems(
+        formData.get("itemsJson")
+      );
+
+    await prisma.manualShoppingList.create({
+      data: {
+        tenantId:
+          access.tenantId,
+        title,
+        planningDate:
+          new Date(
+            planningDate +
+              "T00:00:00.000Z"
+          ),
+        notes:
+          notes || null,
+        items: {
+          create:
+            items.map(
+              (item: any) => ({
+                tenantId:
+                  access.tenantId,
+                ...item,
+              })
+            ),
+        },
+      },
+    });
+
+    return redirect(
+      "/einkauf?date=" +
+        encodeURIComponent(
+          planningDate
+        ) +
+        "#manual-shopping-lists"
+    );
+  }
+
+
+  if (
+    intent ===
+    "update-manual-shopping-list"
+  ) {
+    const listId = String(
+      formData.get("listId") || ""
+    ).trim();
+
+    const title = String(
+      formData.get("title") || ""
+    ).trim();
+
+    const planningDate = String(
+      formData.get("planningDate") ||
+        ""
+    ).trim();
+
+    const notes = String(
+      formData.get("notes") || ""
+    ).trim();
+
+    if (
+      !listId ||
+      !title ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(
+        planningDate
+      )
+    ) {
+      throw new Response(
+        "Die Einkaufsliste ist unvollständig.",
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const existing =
+      await prisma.manualShoppingList.findFirst({
+        where: {
+          id: listId,
+          tenantId:
+            access.tenantId,
+        },
+      });
+
+    if (!existing) {
+      throw new Response(
+        "Einkaufsliste wurde nicht gefunden.",
+        {
+          status: 404,
+        }
+      );
+    }
+
+    const items =
+      parseManualShoppingListItems(
+        formData.get("itemsJson")
+      );
+
+    await prisma.manualShoppingList.update({
+      where: {
+        id:
+          existing.id,
+      },
+      data: {
+        title,
+        planningDate:
+          new Date(
+            planningDate +
+              "T00:00:00.000Z"
+          ),
+        notes:
+          notes || null,
+        items: {
+          deleteMany: {},
+          create:
+            items.map(
+              (item: any) => ({
+                tenantId:
+                  access.tenantId,
+                ...item,
+              })
+            ),
+        },
+      },
+    });
+
+    return redirect(
+      "/einkauf?date=" +
+        encodeURIComponent(
+          planningDate
+        ) +
+        "#manual-shopping-lists"
+    );
+  }
+
+
+  if (
+    intent ===
+    "delete-manual-shopping-list"
+  ) {
+    const listId = String(
+      formData.get("listId") || ""
+    ).trim();
+
+    if (!listId) {
+      throw new Response(
+        "Einkaufsliste fehlt.",
+        {
+          status: 400,
+        }
+      );
+    }
+
+    await prisma.manualShoppingList.deleteMany({
+      where: {
+        id:
+          listId,
+        tenantId:
+          access.tenantId,
+      },
+    });
+
+    const targetDate =
+      /^\d{4}-\d{2}-\d{2}$/.test(
+        returnDate
+      )
+        ? returnDate
+        : todayInput();
+
+    return redirect(
+      "/einkauf?date=" +
+        encodeURIComponent(
+          targetDate
+        ) +
+        "#manual-shopping-lists"
+    );
+  }
 
   /*
    * gastario-procurement-draft-save-v1-20260804
@@ -1007,16 +1342,40 @@ export async function loader({
       orders: orders as any[],
     });
 
+  const manualShoppingListDateRows =
+    await prisma.manualShoppingList.findMany({
+      where: {
+        tenantId:
+          access.tenantId,
+      },
+      select: {
+        planningDate: true,
+      },
+      orderBy: {
+        planningDate: "asc",
+      },
+    });
+
   const availableDates = Array.from(
-    new Set(
-      (orders as any[])
+    new Set([
+      ...(orders as any[])
         .map((order) =>
           order.deliveryDate
-            ? normalizeDate(order.deliveryDate)
+            ? normalizeDate(
+                order.deliveryDate
+              )
             : "ohne-datum"
         )
-        .filter(Boolean)
-    )
+        .filter(Boolean),
+
+      ...manualShoppingListDateRows
+        .map((list: any) =>
+          normalizeDate(
+            list.planningDate
+          )
+        )
+        .filter(Boolean),
+    ])
   ).sort();
 
   if (!availableDates.includes(selectedDate)) {
@@ -1388,6 +1747,41 @@ export async function loader({
       ],
       take: 100,
     });
+  const manualShoppingLists =
+    /^\d{4}-\d{2}-\d{2}$/.test(
+      selectedDate
+    )
+      ? await prisma.manualShoppingList.findMany({
+          where: {
+            tenantId:
+              access.tenantId,
+            planningDate:
+              new Date(
+                selectedDate +
+                  "T00:00:00.000Z"
+              ),
+          },
+          include: {
+            items: {
+              orderBy: [
+                {
+                  sortOrder:
+                    "asc",
+                },
+                {
+                  createdAt:
+                    "asc",
+                },
+              ],
+            },
+          },
+          orderBy: {
+            createdAt:
+              "desc",
+          },
+        })
+      : [];
+
   const unresolvedCount =
     missingRecipeItems.length;
 
@@ -1408,6 +1802,7 @@ export async function loader({
     procurementPlan,
     practicalProcurementPlan,
     savedProcurementDrafts,
+    manualShoppingLists,
     automaticAssignmentResult,
   };
 }
@@ -1488,6 +1883,91 @@ export default function PurchasingPage() {
     selectedPlanType === "CHEAPEST"
       ? "Günstigster Einkaufsplan"
       : "Praktischer Einkaufsplan";
+
+
+  const [
+    manualCreateOpen,
+    setManualCreateOpen,
+  ] = useState(false);
+
+  const [
+    manualCreateItems,
+    setManualCreateItems,
+  ] = useState<any[]>([
+    emptyManualShoppingItem(),
+  ]);
+
+
+  const [
+    selectedManualListId,
+    setSelectedManualListId,
+  ] = useState<string | null>(
+    null
+  );
+
+  const [
+    manualListTab,
+    setManualListTab,
+  ] = useState("overview");
+
+  const [
+    manualEditItems,
+    setManualEditItems,
+  ] = useState<any[]>([]);
+
+
+  const selectedManualList =
+    data.manualShoppingLists.find(
+      (list: any) =>
+        list.id ===
+        selectedManualListId
+    ) || null;
+
+
+  const openManualList = (
+    list: any
+  ) => {
+    setSelectedManualListId(
+      list.id
+    );
+
+    setManualListTab(
+      "overview"
+    );
+
+    setManualEditItems(
+      list.items.map(
+        (item: any) => ({
+          name:
+            item.name,
+          quantity:
+            String(
+              item.quantity
+            ),
+          unit:
+            item.unit,
+          notes:
+            item.notes || "",
+          checked:
+            Boolean(
+              item.checked
+            ),
+        })
+      )
+    );
+  };
+
+
+  const closeManualCreate = () => {
+    setManualCreateOpen(
+      false
+    );
+
+    setManualCreateItems([
+      emptyManualShoppingItem(),
+    ]);
+  };
+
 
   return (
     <AppLayout>
@@ -1946,6 +2426,1066 @@ export default function PurchasingPage() {
               </GastarioDetailPane>
 
             </>
+          ) : null}
+
+        </GastarioDetailDialog>
+
+
+
+
+        <GastarioSection
+          id="manual-shopping-lists"
+          eyebrow="Eigene Planung"
+          title="Eigene Einkaufslisten"
+          description="Erstelle freie Einkaufslisten unabhängig vom automatisch berechneten Rezepturbedarf."
+          actions={
+            <button
+              type="button"
+              className={gastarioButtonClass(
+                "primary"
+              )}
+              onClick={() => {
+                setManualCreateItems([
+                  emptyManualShoppingItem(),
+                ]);
+
+                setManualCreateOpen(
+                  true
+                );
+              }}
+            >
+              + Neue Einkaufsliste
+            </button>
+          }
+        >
+
+          {data.manualShoppingLists
+            .length === 0 ? (
+
+            <GastarioEmptyState
+              title="Noch keine eigene Einkaufsliste"
+            >
+              Für diesen Planungstag wurde
+              noch keine manuelle Einkaufsliste
+              angelegt.
+            </GastarioEmptyState>
+
+          ) : (
+
+            <GastarioDataList>
+
+              {data.manualShoppingLists.map(
+                (list: any) => {
+
+                  const completed =
+                    list.items.filter(
+                      (item: any) =>
+                        item.checked
+                    ).length;
+
+                  return (
+                    <GastarioDataRow
+                      key={list.id}
+                      onClick={() =>
+                        openManualList(
+                          list
+                        )
+                      }
+                    >
+
+                      <div className="g-ui-data-row-main">
+
+                        <strong className="g-ui-data-row-title">
+                          {list.title}
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          {formatDateOption(
+                            normalizeDate(
+                              list.planningDate
+                            )
+                          )}
+                          {" · "}
+                          {list.items.length}
+                          {" Position(en)"}
+                          {list.notes
+                            ? " · " +
+                              list.notes
+                            : ""}
+                        </span>
+
+                      </div>
+
+
+                      <div className="g-ui-data-row-meta">
+
+                        <strong>
+                          {completed}
+                          {" / "}
+                          {list.items.length}
+                        </strong>
+
+                        <span>
+                          erledigt
+                        </span>
+
+                      </div>
+
+
+                      <span
+                        className="g-ui-data-row-chevron"
+                        aria-hidden="true"
+                      >
+                        →
+                      </span>
+
+                    </GastarioDataRow>
+                  );
+                }
+              )}
+
+            </GastarioDataList>
+
+          )}
+
+        </GastarioSection>
+
+
+        <GastarioDetailDialog
+          open={
+            manualCreateOpen
+          }
+          size="lg"
+          title="Neue Einkaufsliste"
+          description="Artikel frei erfassen und für einen Planungstag speichern."
+          onClose={
+            closeManualCreate
+          }
+          footer={
+            <>
+
+              <button
+                type="button"
+                className={gastarioButtonClass(
+                  "secondary"
+                )}
+                onClick={
+                  closeManualCreate
+                }
+              >
+                Abbrechen
+              </button>
+
+              <button
+                type="submit"
+                form="manual-shopping-list-create"
+                className={gastarioButtonClass(
+                  "primary"
+                )}
+              >
+                Einkaufsliste speichern
+              </button>
+
+            </>
+          }
+        >
+
+          <Form
+            method="post"
+            id="manual-shopping-list-create"
+          >
+
+            <input
+              type="hidden"
+              name="intent"
+              value="create-manual-shopping-list"
+            />
+
+            <input
+              type="hidden"
+              name="itemsJson"
+              value={JSON.stringify(
+                manualCreateItems
+              )}
+            />
+
+
+            <GastarioStack>
+
+              <GastarioFormGrid
+                columns={2}
+              >
+
+                <GastarioField
+                  label="Name der Einkaufsliste"
+                  required
+                >
+                  <GastarioInput
+                    name="title"
+                    required
+                    maxLength={120}
+                    placeholder="z. B. Metro Einkauf Montag"
+                  />
+                </GastarioField>
+
+
+                <GastarioField
+                  label="Planungstag"
+                  required
+                >
+                  <GastarioInput
+                    type="date"
+                    name="planningDate"
+                    required
+                    defaultValue={
+                      /^\d{4}-\d{2}-\d{2}$/.test(
+                        data.selectedDate
+                      )
+                        ? data.selectedDate
+                        : todayInput()
+                    }
+                  />
+                </GastarioField>
+
+              </GastarioFormGrid>
+
+
+              <GastarioField
+                label="Interne Notiz"
+              >
+                <GastarioTextarea
+                  name="notes"
+                  placeholder="z. B. Metro, Selgros, Getränke, Sonderbedarf ..."
+                />
+              </GastarioField>
+
+
+              <GastarioSection
+                eyebrow="Positionen"
+                title="Was muss eingekauft werden?"
+                description="Menge und Einheit frei festlegen."
+                actions={
+                  <button
+                    type="button"
+                    className={gastarioButtonClass(
+                      "secondary"
+                    )}
+                    onClick={() =>
+                      setManualCreateItems(
+                        (
+                          current
+                        ) => [
+                          ...current,
+                          emptyManualShoppingItem(),
+                        ]
+                      )
+                    }
+                  >
+                    + Position hinzufügen
+                  </button>
+                }
+              >
+
+                <GastarioDataList>
+
+                  {manualCreateItems.map(
+                    (
+                      item: any,
+                      index: number
+                    ) => (
+
+                      <GastarioDataRow
+                        key={
+                          "create-" +
+                          index
+                        }
+                      >
+
+                        <div className="g-ui-data-row-main">
+
+                          <GastarioFormGrid
+                            columns={4}
+                          >
+
+                            <GastarioField
+                              label="Artikel"
+                              required
+                            >
+                              <GastarioInput
+                                value={
+                                  item.name
+                                }
+                                placeholder="z. B. Hähnchenbrust"
+                                onChange={(
+                                  event
+                                ) =>
+                                  setManualCreateItems(
+                                    (
+                                      current
+                                    ) =>
+                                      current.map(
+                                        (
+                                          row,
+                                          rowIndex
+                                        ) =>
+                                          rowIndex ===
+                                          index
+                                            ? {
+                                                ...row,
+                                                name:
+                                                  event
+                                                    .currentTarget
+                                                    .value,
+                                              }
+                                            : row
+                                      )
+                                  )
+                                }
+                              />
+                            </GastarioField>
+
+
+                            <GastarioField
+                              label="Menge"
+                              required
+                            >
+                              <GastarioInput
+                                type="number"
+                                min="0.001"
+                                step="0.001"
+                                value={
+                                  item.quantity
+                                }
+                                onChange={(
+                                  event
+                                ) =>
+                                  setManualCreateItems(
+                                    (
+                                      current
+                                    ) =>
+                                      current.map(
+                                        (
+                                          row,
+                                          rowIndex
+                                        ) =>
+                                          rowIndex ===
+                                          index
+                                            ? {
+                                                ...row,
+                                                quantity:
+                                                  event
+                                                    .currentTarget
+                                                    .value,
+                                              }
+                                            : row
+                                      )
+                                  )
+                                }
+                              />
+                            </GastarioField>
+
+
+                            <GastarioField
+                              label="Einheit"
+                              required
+                            >
+                              <GastarioInput
+                                value={
+                                  item.unit
+                                }
+                                placeholder="Stück, kg, Karton ..."
+                                onChange={(
+                                  event
+                                ) =>
+                                  setManualCreateItems(
+                                    (
+                                      current
+                                    ) =>
+                                      current.map(
+                                        (
+                                          row,
+                                          rowIndex
+                                        ) =>
+                                          rowIndex ===
+                                          index
+                                            ? {
+                                                ...row,
+                                                unit:
+                                                  event
+                                                    .currentTarget
+                                                    .value,
+                                              }
+                                            : row
+                                      )
+                                  )
+                                }
+                              />
+                            </GastarioField>
+
+
+                            <GastarioField
+                              label="Hinweis"
+                            >
+                              <GastarioInput
+                                value={
+                                  item.notes
+                                }
+                                placeholder="optional"
+                                onChange={(
+                                  event
+                                ) =>
+                                  setManualCreateItems(
+                                    (
+                                      current
+                                    ) =>
+                                      current.map(
+                                        (
+                                          row,
+                                          rowIndex
+                                        ) =>
+                                          rowIndex ===
+                                          index
+                                            ? {
+                                                ...row,
+                                                notes:
+                                                  event
+                                                    .currentTarget
+                                                    .value,
+                                              }
+                                            : row
+                                      )
+                                  )
+                                }
+                              />
+                            </GastarioField>
+
+                          </GastarioFormGrid>
+
+                        </div>
+
+
+                        <div className="g-ui-data-row-meta">
+
+                          <button
+                            type="button"
+                            className={gastarioButtonClass(
+                              "danger"
+                            )}
+                            disabled={
+                              manualCreateItems
+                                .length ===
+                              1
+                            }
+                            onClick={() =>
+                              setManualCreateItems(
+                                (
+                                  current
+                                ) =>
+                                  current.filter(
+                                    (
+                                      _,
+                                      rowIndex
+                                    ) =>
+                                      rowIndex !==
+                                      index
+                                  )
+                              )
+                            }
+                          >
+                            Entfernen
+                          </button>
+
+                        </div>
+
+                      </GastarioDataRow>
+
+                    )
+                  )}
+
+                </GastarioDataList>
+
+              </GastarioSection>
+
+            </GastarioStack>
+
+          </Form>
+
+        </GastarioDetailDialog>
+
+
+        <GastarioDetailDialog
+          open={Boolean(
+            selectedManualList
+          )}
+          title={
+            selectedManualList
+              ?.title ||
+            "Einkaufsliste"
+          }
+          description={
+            selectedManualList
+              ? "Eigene Einkaufsliste · " +
+                formatDateOption(
+                  normalizeDate(
+                    selectedManualList
+                      .planningDate
+                  )
+                )
+              : undefined
+          }
+          onClose={() =>
+            setSelectedManualListId(
+              null
+            )
+          }
+          footer={
+            selectedManualList ? (
+              <>
+
+                <button
+                  type="button"
+                  className={gastarioButtonClass(
+                    "secondary"
+                  )}
+                  onClick={() =>
+                    setSelectedManualListId(
+                      null
+                    )
+                  }
+                >
+                  Schließen
+                </button>
+
+
+                <Form method="post">
+
+                  <input
+                    type="hidden"
+                    name="intent"
+                    value="delete-manual-shopping-list"
+                  />
+
+                  <input
+                    type="hidden"
+                    name="listId"
+                    value={
+                      selectedManualList
+                        .id
+                    }
+                  />
+
+                  <input
+                    type="hidden"
+                    name="returnDate"
+                    value={
+                      data.selectedDate
+                    }
+                  />
+
+                  <button
+                    type="submit"
+                    className={gastarioButtonClass(
+                      "danger"
+                    )}
+                    onClick={(
+                      event
+                    ) => {
+                      if (
+                        !window.confirm(
+                          "Diese Einkaufsliste wirklich löschen?"
+                        )
+                      ) {
+                        event.preventDefault();
+                      }
+                    }}
+                  >
+                    Liste löschen
+                  </button>
+
+                </Form>
+
+
+                <button
+                  type="submit"
+                  form="manual-shopping-list-edit"
+                  className={gastarioButtonClass(
+                    "primary"
+                  )}
+                >
+                  Änderungen speichern
+                </button>
+
+              </>
+            ) : null
+          }
+        >
+
+          {selectedManualList ? (
+
+            <Form
+              method="post"
+              id="manual-shopping-list-edit"
+            >
+
+              <input
+                type="hidden"
+                name="intent"
+                value="update-manual-shopping-list"
+              />
+
+              <input
+                type="hidden"
+                name="listId"
+                value={
+                  selectedManualList.id
+                }
+              />
+
+              <input
+                type="hidden"
+                name="returnDate"
+                value={
+                  data.selectedDate
+                }
+              />
+
+              <input
+                type="hidden"
+                name="itemsJson"
+                value={JSON.stringify(
+                  manualEditItems
+                )}
+              />
+
+
+              <GastarioDetailTabs
+                activeId={
+                  manualListTab
+                }
+                onChange={
+                  setManualListTab
+                }
+                items={[
+                  {
+                    id:
+                      "overview",
+                    label:
+                      "Übersicht",
+                  },
+                  {
+                    id:
+                      "items",
+                    label:
+                      "Positionen",
+                    badge:
+                      manualEditItems
+                        .length,
+                  },
+                ]}
+              />
+
+
+              <GastarioDetailPane
+                active={
+                  manualListTab ===
+                  "overview"
+                }
+              >
+
+                <GastarioStack>
+
+                  <GastarioFormGrid
+                    columns={2}
+                  >
+
+                    <GastarioField
+                      label="Name der Einkaufsliste"
+                      required
+                    >
+                      <GastarioInput
+                        name="title"
+                        required
+                        maxLength={120}
+                        defaultValue={
+                          selectedManualList
+                            .title
+                        }
+                      />
+                    </GastarioField>
+
+
+                    <GastarioField
+                      label="Planungstag"
+                      required
+                    >
+                      <GastarioInput
+                        type="date"
+                        name="planningDate"
+                        required
+                        defaultValue={
+                          normalizeDate(
+                            selectedManualList
+                              .planningDate
+                          )
+                        }
+                      />
+                    </GastarioField>
+
+                  </GastarioFormGrid>
+
+
+                  <GastarioField
+                    label="Interne Notiz"
+                  >
+                    <GastarioTextarea
+                      name="notes"
+                      defaultValue={
+                        selectedManualList
+                          .notes || ""
+                      }
+                      placeholder="Interner Hinweis zur Einkaufsliste"
+                    />
+                  </GastarioField>
+
+
+                  <GastarioMetricGrid>
+
+                    <GastarioMetric
+                      label="Positionen"
+                      value={
+                        manualEditItems
+                          .length
+                      }
+                      description="Artikel auf dieser Liste"
+                    />
+
+                    <GastarioMetric
+                      label="Erledigt"
+                      value={
+                        manualEditItems.filter(
+                          (
+                            item
+                          ) =>
+                            item.checked
+                        ).length
+                      }
+                      description="Bereits abgehakt"
+                    />
+
+                    <GastarioMetric
+                      label="Offen"
+                      value={
+                        manualEditItems.filter(
+                          (
+                            item
+                          ) =>
+                            !item.checked
+                        ).length
+                      }
+                      description="Noch einzukaufen"
+                    />
+
+                  </GastarioMetricGrid>
+
+                </GastarioStack>
+
+              </GastarioDetailPane>
+
+
+              <GastarioDetailPane
+                active={
+                  manualListTab ===
+                  "items"
+                }
+              >
+
+                <GastarioStack>
+
+                  <GastarioToolbar>
+
+                    <button
+                      type="button"
+                      className={gastarioButtonClass(
+                        "secondary"
+                      )}
+                      onClick={() =>
+                        setManualEditItems(
+                          (
+                            current
+                          ) => [
+                            ...current,
+                            emptyManualShoppingItem(),
+                          ]
+                        )
+                      }
+                    >
+                      + Position hinzufügen
+                    </button>
+
+                  </GastarioToolbar>
+
+
+                  <GastarioDataList>
+
+                    {manualEditItems.map(
+                      (
+                        item: any,
+                        index: number
+                      ) => (
+
+                        <GastarioDataRow
+                          key={
+                            "edit-" +
+                            index
+                          }
+                        >
+
+                          <div className="g-ui-data-row-main">
+
+                            <GastarioCheckRow
+                              checked={
+                                Boolean(
+                                  item.checked
+                                )
+                              }
+                              title={
+                                item.name ||
+                                "Neue Position"
+                              }
+                              description={
+                                item.checked
+                                  ? "Erledigt"
+                                  : "Noch einzukaufen"
+                              }
+                              onCheckedChange={(
+                                checked
+                              ) =>
+                                setManualEditItems(
+                                  (
+                                    current
+                                  ) =>
+                                    current.map(
+                                      (
+                                        row,
+                                        rowIndex
+                                      ) =>
+                                        rowIndex ===
+                                        index
+                                          ? {
+                                              ...row,
+                                              checked,
+                                            }
+                                          : row
+                                    )
+                                )
+                              }
+                            />
+
+
+                            <GastarioFormGrid
+                              columns={4}
+                            >
+
+                              <GastarioField
+                                label="Artikel"
+                                required
+                              >
+                                <GastarioInput
+                                  value={
+                                    item.name
+                                  }
+                                  onChange={(
+                                    event
+                                  ) =>
+                                    setManualEditItems(
+                                      (
+                                        current
+                                      ) =>
+                                        current.map(
+                                          (
+                                            row,
+                                            rowIndex
+                                          ) =>
+                                            rowIndex ===
+                                            index
+                                              ? {
+                                                  ...row,
+                                                  name:
+                                                    event
+                                                      .currentTarget
+                                                      .value,
+                                                }
+                                              : row
+                                        )
+                                    )
+                                  }
+                                />
+                              </GastarioField>
+
+
+                              <GastarioField
+                                label="Menge"
+                                required
+                              >
+                                <GastarioInput
+                                  type="number"
+                                  min="0.001"
+                                  step="0.001"
+                                  value={
+                                    item.quantity
+                                  }
+                                  onChange={(
+                                    event
+                                  ) =>
+                                    setManualEditItems(
+                                      (
+                                        current
+                                      ) =>
+                                        current.map(
+                                          (
+                                            row,
+                                            rowIndex
+                                          ) =>
+                                            rowIndex ===
+                                            index
+                                              ? {
+                                                  ...row,
+                                                  quantity:
+                                                    event
+                                                      .currentTarget
+                                                      .value,
+                                                }
+                                              : row
+                                        )
+                                    )
+                                  }
+                                />
+                              </GastarioField>
+
+
+                              <GastarioField
+                                label="Einheit"
+                                required
+                              >
+                                <GastarioInput
+                                  value={
+                                    item.unit
+                                  }
+                                  onChange={(
+                                    event
+                                  ) =>
+                                    setManualEditItems(
+                                      (
+                                        current
+                                      ) =>
+                                        current.map(
+                                          (
+                                            row,
+                                            rowIndex
+                                          ) =>
+                                            rowIndex ===
+                                            index
+                                              ? {
+                                                  ...row,
+                                                  unit:
+                                                    event
+                                                      .currentTarget
+                                                      .value,
+                                                }
+                                              : row
+                                        )
+                                    )
+                                  }
+                                />
+                              </GastarioField>
+
+
+                              <GastarioField
+                                label="Hinweis"
+                              >
+                                <GastarioInput
+                                  value={
+                                    item.notes
+                                  }
+                                  onChange={(
+                                    event
+                                  ) =>
+                                    setManualEditItems(
+                                      (
+                                        current
+                                      ) =>
+                                        current.map(
+                                          (
+                                            row,
+                                            rowIndex
+                                          ) =>
+                                            rowIndex ===
+                                            index
+                                              ? {
+                                                  ...row,
+                                                  notes:
+                                                    event
+                                                      .currentTarget
+                                                      .value,
+                                                }
+                                              : row
+                                        )
+                                    )
+                                  }
+                                />
+                              </GastarioField>
+
+                            </GastarioFormGrid>
+
+                          </div>
+
+
+                          <div className="g-ui-data-row-meta">
+
+                            <button
+                              type="button"
+                              className={gastarioButtonClass(
+                                "danger"
+                              )}
+                              disabled={
+                                manualEditItems
+                                  .length ===
+                                1
+                              }
+                              onClick={() =>
+                                setManualEditItems(
+                                  (
+                                    current
+                                  ) =>
+                                    current.filter(
+                                      (
+                                        _,
+                                        rowIndex
+                                      ) =>
+                                        rowIndex !==
+                                        index
+                                    )
+                                )
+                              }
+                            >
+                              Entfernen
+                            </button>
+
+                          </div>
+
+                        </GastarioDataRow>
+
+                      )
+                    )}
+
+                  </GastarioDataList>
+
+                </GastarioStack>
+
+              </GastarioDetailPane>
+
+            </Form>
+
           ) : null}
 
         </GastarioDetailDialog>

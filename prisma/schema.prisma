@@ -195,6 +195,8 @@ model Tenant {
   procurementIngredientMatches ProcurementIngredientMatch[]
   procurementOrderDrafts       ProcurementOrderDraft[]
   procurementOrderDraftItems   ProcurementOrderDraftItem[]
+  manualShoppingLists          ManualShoppingList[]
+  manualShoppingListItems      ManualShoppingListItem[]
   accountingConnections        AccountingConnection[]
   procurementOrderEmailLogs    ProcurementOrderEmailLog[]
 }
@@ -1427,6 +1429,45 @@ model ProcurementOrderDraftItem {
   @@index([draftId])
   @@index([catalogItemId])
   @@index([ingredientName])
+}
+
+model ManualShoppingList {
+  id           String   @id @default(cuid())
+  tenantId     String
+  title        String
+  planningDate DateTime
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  items  ManualShoppingListItem[]
+
+  @@index([tenantId])
+  @@index([planningDate])
+  @@index([createdAt])
+}
+
+model ManualShoppingListItem {
+  id        String   @id @default(cuid())
+  tenantId  String
+  listId    String
+  name      String
+  quantity  Float
+  unit      String
+  notes     String?
+  checked   Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  list   ManualShoppingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([listId])
+  @@index([checked])
+  @@index([sortOrder])
 }
 
 model ProcurementOrderEmailLog {
