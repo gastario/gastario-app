@@ -259,6 +259,22 @@ export async function renderDeliveryNotePdf(
       1
     );
 
+  /*
+   * Ruhige, operative Lieferschein-Hierarchie:
+   * Check -> Menge -> Einheit -> Artikel
+   */
+  const CHECK_X =
+    MARGIN + 12;
+
+  const QUANTITY_X =
+    MARGIN + 48;
+
+  const UNIT_X =
+    MARGIN + 104;
+
+  const ITEM_X =
+    MARGIN + 158;
+
   let page: PDFPage;
   let y = 0;
 
@@ -365,8 +381,8 @@ export async function renderDeliveryNotePdf(
           88,
         size:
           continuation
-            ? 18
-            : 27,
+            ? 16
+            : 23,
         font: bold,
         color: dark,
       }
@@ -573,22 +589,22 @@ export async function renderDeliveryNotePdf(
 
     page.drawRectangle({
       x: MARGIN,
-      y: top - 24,
+      y: top - 23,
       width:
         CONTENT_WIDTH,
-      height: 24,
+      height: 23,
       color:
         greenSoft,
     });
 
     page.drawText(
-      "POS.",
+      "CHECK",
       {
         x:
-          MARGIN + 10,
+          CHECK_X,
         y:
-          top - 16,
-        size: 7.5,
+          top - 15,
+        size: 6.8,
         font: bold,
         color: green,
       }
@@ -598,10 +614,10 @@ export async function renderDeliveryNotePdf(
       "MENGE",
       {
         x:
-          MARGIN + 48,
+          QUANTITY_X,
         y:
-          top - 16,
-        size: 7.5,
+          top - 15,
+        size: 7.2,
         font: bold,
         color: green,
       }
@@ -611,10 +627,10 @@ export async function renderDeliveryNotePdf(
       "EINHEIT",
       {
         x:
-          MARGIN + 104,
+          UNIT_X,
         y:
-          top - 16,
-        size: 7.5,
+          top - 15,
+        size: 7.2,
         font: bold,
         color: green,
       }
@@ -624,22 +640,35 @@ export async function renderDeliveryNotePdf(
       "ARTIKEL / BESCHREIBUNG",
       {
         x:
-          MARGIN + 170,
+          ITEM_X,
         y:
-          top - 16,
-        size: 7.5,
+          top - 15,
+        size: 7.2,
         font: bold,
         color: green,
       }
     );
 
-    y -= 31;
+    y -= 30;
   }
 
   function drawItemsHeading() {
     drawSectionLabel(
-      "Positionen"
+      "Lieferumfang"
     );
+
+    page.drawText(
+      "Beim Packen jede Zeile abhaken.",
+      {
+        x: MARGIN,
+        y,
+        size: 7.5,
+        font: regular,
+        color: muted,
+      }
+    );
+
+    y -= 16;
 
     drawTableHeader();
   }
@@ -684,7 +713,7 @@ export async function renderDeliveryNotePdf(
     x: MARGIN,
     top: cardsTop,
     width: cardWidth,
-    height: 116,
+    height: 102,
     label:
       "Lieferung an",
     title:
@@ -723,7 +752,7 @@ export async function renderDeliveryNotePdf(
       cardGap,
     top: cardsTop,
     width: cardWidth,
-    height: 116,
+    height: 102,
     label:
       "Termin & Kontakt",
     title:
@@ -742,7 +771,7 @@ export async function renderDeliveryNotePdf(
 
   y =
     cardsTop -
-    140;
+    124;
 
 
   // ---------------------------------------------------------
@@ -804,10 +833,10 @@ export async function renderDeliveryNotePdf(
           safeText(
             item.name
           ) ||
-            "Position",
+            "Artikel",
           9,
           CONTENT_WIDTH -
-            190
+            170
         );
 
       const noteText =
@@ -820,9 +849,9 @@ export async function renderDeliveryNotePdf(
           ? wrapText(
               regular,
               noteText,
-              7.5,
+              7.4,
               CONTENT_WIDTH -
-                190
+                170
             )
           : [];
 
@@ -832,10 +861,10 @@ export async function renderDeliveryNotePdf(
 
       const rowHeight =
         Math.max(
-          36,
-          16 +
+          32,
+          13 +
             contentLines *
-              11
+              10
         );
 
       if (
@@ -847,41 +876,23 @@ export async function renderDeliveryNotePdf(
         drawItemsHeading();
       }
 
-      if (
-        index % 2 === 1
-      ) {
-        page.drawRectangle({
-          x: MARGIN,
-          y:
-            y -
-            rowHeight,
-          width:
-            CONTENT_WIDTH,
-          height:
-            rowHeight,
-          color:
-            rgb(
-              0.992,
-              0.993,
-              0.992
-            ),
-        });
-      }
 
-      page.drawText(
-        String(
-          index + 1
-        ),
-        {
-          x:
-            MARGIN + 10,
-          y:
-            y - 19,
-          size: 8.5,
-          font: regular,
-          color: muted,
-        }
-      );
+      /*
+       * Großes, eindeutiges Pack-Checkboxfeld.
+       */
+      page.drawRectangle({
+        x:
+          CHECK_X + 2,
+        y:
+          y - 23,
+        width: 11,
+        height: 11,
+        color: white,
+        borderColor:
+          greenBorder,
+        borderWidth: 1.1,
+      });
+
 
       page.drawText(
         safeText(
@@ -889,14 +900,15 @@ export async function renderDeliveryNotePdf(
         ) || "0",
         {
           x:
-            MARGIN + 48,
+            QUANTITY_X,
           y:
             y - 19,
-          size: 9,
+          size: 9.5,
           font: bold,
           color: dark,
         }
       );
+
 
       page.drawText(
         safeText(
@@ -905,14 +917,15 @@ export async function renderDeliveryNotePdf(
           "Stück",
         {
           x:
-            MARGIN + 104,
+            UNIT_X,
           y:
             y - 19,
-          size: 8.5,
+          size: 8.2,
           font: regular,
           color: muted,
         }
       );
+
 
       let textY =
         y - 17;
@@ -922,21 +935,25 @@ export async function renderDeliveryNotePdf(
           safeText(
             item.name
           ) ||
-            "Position",
+            "Artikel",
           {
             x:
-              MARGIN +
-              170,
+              ITEM_X,
             y: textY,
             width:
               CONTENT_WIDTH -
-              182,
+              (
+                ITEM_X -
+                MARGIN
+              ) -
+              8,
             size: 9,
-            lineHeight: 11,
+            lineHeight: 10.5,
             font: bold,
             color: dark,
           }
         );
+
 
       if (noteText) {
         textY -= 1;
@@ -945,18 +962,22 @@ export async function renderDeliveryNotePdf(
           noteText,
           {
             x:
-              MARGIN +
-              170,
+              ITEM_X,
             y: textY,
             width:
               CONTENT_WIDTH -
-              182,
-            size: 7.5,
-            lineHeight: 10,
+              (
+                ITEM_X -
+                MARGIN
+              ) -
+              8,
+            size: 7.4,
+            lineHeight: 9.5,
             color: muted,
           }
         );
       }
+
 
       page.drawLine({
         start: {
@@ -973,7 +994,7 @@ export async function renderDeliveryNotePdf(
             y -
             rowHeight,
         },
-        thickness: 0.45,
+        thickness: 0.4,
         color: border,
       });
 
@@ -1072,65 +1093,158 @@ export async function renderDeliveryNotePdf(
 
 
   // ---------------------------------------------------------
-  // Übergabebereich
+  // Schneller Abschlusscheck
   // ---------------------------------------------------------
 
-  ensureSpace(135);
+  ensureSpace(112);
 
-  y -= 22;
+  y -= 18;
 
   drawSectionLabel(
-    "Übergabe"
+    "Abschlusscheck"
   );
+
+  const checkTop = y;
 
   page.drawRectangle({
     x: MARGIN,
-    y: y - 94,
+    y:
+      checkTop - 76,
     width:
       CONTENT_WIDTH,
-    height: 94,
-    color: white,
+    height: 76,
+    color: soft,
     borderColor:
       border,
     borderWidth: 0.7,
   });
 
   page.drawText(
-    "Die oben aufgeführten Positionen wurden vollständig übergeben.",
+    "Vor Abfahrt einmal vollständig prüfen",
     {
       x:
         MARGIN + 14,
       y:
-        y - 22,
-      size: 8.5,
+        checkTop - 19,
+      size: 9,
+      font: bold,
+      color: dark,
+    }
+  );
+
+  const quickChecks = [
+    "Alle Artikel vollständig",
+    "Alle Mengen geprüft",
+    "Equipment / Mehrweg geprüft",
+    "Fahrzeug vollständig beladen",
+  ];
+
+  const checkColumnWidth =
+    (
+      CONTENT_WIDTH -
+      36
+    ) / 2;
+
+  quickChecks.forEach(
+    (
+      label,
+      index
+    ) => {
+      const column =
+        index % 2;
+
+      const row =
+        Math.floor(
+          index / 2
+        );
+
+      const x =
+        MARGIN +
+        14 +
+        column *
+          (
+            checkColumnWidth +
+            8
+          );
+
+      const checkY =
+        checkTop -
+        41 -
+        row * 23;
+
+      page.drawRectangle({
+        x,
+        y:
+          checkY - 2,
+        width: 10,
+        height: 10,
+        color: white,
+        borderColor:
+          greenBorder,
+        borderWidth: 1.1,
+      });
+
+      page.drawText(
+        label,
+        {
+          x:
+            x + 17,
+          y:
+            checkY,
+          size: 7.8,
+          font: regular,
+          color: dark,
+        }
+      );
+    }
+  );
+
+  y =
+    checkTop -
+    84;
+
+
+  // ---------------------------------------------------------
+  // Übergabebereich
+  // ---------------------------------------------------------
+
+  ensureSpace(100);
+
+  y -= 16;
+
+  drawSectionLabel(
+    "Übergabe"
+  );
+
+  page.drawText(
+    "Ware vollständig und ordnungsgemäß übergeben.",
+    {
+      x: MARGIN,
+      y,
+      size: 8,
       font: regular,
       color: muted,
     }
   );
 
-  const signatureY =
-    y - 67;
+  y -= 38;
 
   const signatureWidth =
     (
       CONTENT_WIDTH -
-      42
+      28
     ) / 2;
 
   page.drawLine({
     start: {
-      x:
-        MARGIN + 14,
-      y:
-        signatureY,
+      x: MARGIN,
+      y,
     },
     end: {
       x:
         MARGIN +
-        14 +
         signatureWidth,
-      y:
-        signatureY,
+      y,
     },
     thickness: 0.7,
     color: muted,
@@ -1140,18 +1254,15 @@ export async function renderDeliveryNotePdf(
     start: {
       x:
         MARGIN +
-        28 +
-        signatureWidth,
-      y:
-        signatureY,
+        signatureWidth +
+        28,
+      y,
     },
     end: {
       x:
         A4_WIDTH -
-        MARGIN -
-        14,
-      y:
-        signatureY,
+        MARGIN,
+      y,
     },
     thickness: 0.7,
     color: muted,
@@ -1160,11 +1271,10 @@ export async function renderDeliveryNotePdf(
   page.drawText(
     "Übergeben durch · Datum / Unterschrift",
     {
-      x:
-        MARGIN + 14,
+      x: MARGIN,
       y:
-        signatureY - 15,
-      size: 7,
+        y - 14,
+      size: 6.8,
       font: regular,
       color: muted,
     }
@@ -1175,11 +1285,11 @@ export async function renderDeliveryNotePdf(
     {
       x:
         MARGIN +
-        28 +
-        signatureWidth,
+        signatureWidth +
+        28,
       y:
-        signatureY - 15,
-      size: 7,
+        y - 14,
+      size: 6.8,
       font: regular,
       color: muted,
     }
