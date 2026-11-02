@@ -154,6 +154,152 @@ export async function action({ request }: { request: Request }) {
 
     return { success: "Label wurde geloescht." };
   }
+
+  if (actionType === "update") {
+    const labelId =
+      String(
+        formData.get("labelId") || ""
+      ).trim();
+
+    const productName =
+      String(
+        formData.get("productName") || ""
+      ).trim();
+
+    const customerName =
+      String(
+        formData.get("customerName") || ""
+      ).trim();
+
+    const productionDate =
+      parseDateInput(
+        formData.get("productionDate")
+      );
+
+    const bestBeforeDate =
+      parseDateInput(
+        formData.get("bestBeforeDate")
+      );
+
+    const batchNumber =
+      String(
+        formData.get("batchNumber") || ""
+      ).trim();
+
+    const storageNote =
+      String(
+        formData.get("storageNote") || ""
+      ).trim();
+
+    const ingredients =
+      String(
+        formData.get("ingredients") || ""
+      ).trim();
+
+    const allergens =
+      String(
+        formData.get("allergens") || ""
+      ).trim();
+
+    const quantityText =
+      String(
+        formData.get("quantityText") || ""
+      ).trim();
+
+    const labelSize =
+      String(
+        formData.get("labelSize") ||
+          "76x51"
+      ).trim();
+
+    const labelCountRaw =
+      Number(
+        String(
+          formData.get("labelCount") ||
+            "1"
+        )
+      );
+
+    const labelCount =
+      Math.max(
+        1,
+        Math.min(
+          Number.isFinite(labelCountRaw)
+            ? labelCountRaw
+            : 1,
+          200
+        )
+      );
+
+    if (!labelId) {
+      return {
+        error:
+          "MHD-Label wurde nicht gefunden.",
+      };
+    }
+
+    if (!productName) {
+      return {
+        error:
+          "Produktname fehlt.",
+      };
+    }
+
+    if (!productionDate) {
+      return {
+        error:
+          "Produktionsdatum fehlt.",
+      };
+    }
+
+    if (!bestBeforeDate) {
+      return {
+        error:
+          "MHD fehlt.",
+      };
+    }
+
+    const result =
+      await prisma.foodLabel.updateMany({
+        where: {
+          id: labelId,
+          tenantId: access.tenantId,
+        },
+        data: {
+          productName,
+          customerName:
+            customerName || null,
+          productionDate,
+          bestBeforeDate,
+          batchNumber:
+            batchNumber || null,
+          storageNote:
+            storageNote || null,
+          ingredients:
+            ingredients || null,
+          allergens:
+            allergens || null,
+          quantityText:
+            quantityText || null,
+          labelCount,
+          labelSize,
+        },
+      });
+
+    if (!result.count) {
+      return {
+        error:
+          "MHD-Label wurde nicht gefunden.",
+      };
+    }
+
+    return {
+      success:
+        "MHD-Label wurde aktualisiert.",
+      updatedLabelId: labelId,
+    };
+  }
+
   const intent = String(formData.get("intent") || "");
 
   if (intent === "createLabel") {
@@ -232,13 +378,30 @@ export default function MhdLabelsPage() {
         )
       : null;
 
+  const [editMode, setEditMode] =
+    useState(false);
+
+  const [editTab, setEditTab] =
+    useState("general");
+
+  useEffect(() => {
+    if (actionData?.updatedLabelId) {
+      setSelectedId(
+        actionData.updatedLabelId
+      );
+
+      setEditMode(false);
+      setEditTab("general");
+    }
+  }, [actionData?.updatedLabelId]);
+
   return (
     <AppLayout>
 
 
 
 
-      <section className="g-ui-screen-only">
+      <section className="g-ui-page g-ui-screen-only">
 
         <GastarioHeader
           eyebrow="Betrieb"
@@ -320,6 +483,8 @@ export default function MhdLabelsPage() {
                   <GastarioDataRow
                     key={label.id}
                     onClick={() => {
+                      setEditMode(false);
+                      setEditTab("general");
                       setSelectedId(
                         label.id
                       );
@@ -717,45 +882,152 @@ export default function MhdLabelsPage() {
           open={Boolean(selected)}
           size="xl"
           title={
-            selected?.productName ||
-            "MHD-Label"
+            editMode
+              ? "MHD-Label bearbeiten"
+              : selected?.productName ||
+                "MHD-Label"
           }
           description={
-            selected
-              ? `MHD ${formatDate(
-                  selected.bestBeforeDate
-                )} · Charge ${
-                  selected.batchNumber ||
-                  "–"
-                }`
-              : undefined
+            editMode
+              ? "Gespeicherte Labeldaten bearbeiten."
+              : selected
+                ? `MHD ${formatDate(
+                    selected.bestBeforeDate
+                  )} · Charge ${
+                    selected.batchNumber ||
+                    "–"
+                  }`
+                : undefined
           }
-          onClose={() =>
-            setSelectedId(null)
-          }
+          onClose={() => {
+            setEditMode(false);
+            setEditTab("general");
+            setSelectedId(null);
+          }}
           footer={
             selected ? (
+              editMode ? (
+                <>
+
+                  <GastarioButton
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      setEditMode(false);
+                      setEditTab("general");
+                    }}
+                  >
+                    Abbrechen
+                  </GastarioButton>
+
+
+                  <GastarioButton
+                    type="submit"
+                    variant="primary"
+                    form="mhd-label-edit-form"
+                  >
+                    Änderungen speichern
+                  </GastarioButton>
+
+                </>
+              ) : (
+                <>
+
+                  <Form
+                    method="post"
+                    onSubmit={(event) => {
+                      if (
+                        !window.confirm(
+                          "Dieses MHD-Label wirklich löschen?"
+                        )
+                      ) {
+                        event.preventDefault();
+                      }
+                    }}
+                  >
+
+                    <input
+                      type="hidden"
+                      name="_action"
+                      value="delete"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="labelId"
+                      value={selected.id}
+                    />
+
+                    <GastarioButton
+                      type="submit"
+                      variant="danger"
+                    >
+                      Löschen
+                    </GastarioButton>
+
+                  </Form>
+
+
+                  <GastarioButton
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      setEditTab("general");
+                      setEditMode(true);
+                    }}
+                  >
+                    Bearbeiten
+                  </GastarioButton>
+
+
+                  <Link
+                    to={`/mhd-labels/print/${selected.id}`}
+                    className="g-ui-button g-ui-button--primary"
+                  >
+                    Drucken
+                  </Link>
+
+                </>
+              )
+            ) : null
+          }
+        >
+
+          {selected ? (
+            editMode ? (
               <>
 
+                <GastarioTabs
+                  activeId={editTab}
+                  onChange={setEditTab}
+                  items={[
+                    {
+                      id: "general",
+                      label: "Allgemein",
+                    },
+                    {
+                      id: "content",
+                      label: "Inhalt",
+                    },
+                    {
+                      id: "output",
+                      label: "Ausgabe",
+                    },
+                  ]}
+                />
+
+
                 <Form
+                  key={selected.id}
+                  id="mhd-label-edit-form"
                   method="post"
-                  onSubmit={(event) => {
-
-                    if (
-                      !window.confirm(
-                        "Dieses MHD-Label wirklich löschen?"
-                      )
-                    ) {
-                      event.preventDefault();
-                    }
-
-                  }}
+                  className="g-ui-dialog-form"
                 >
 
                   <input
                     type="hidden"
                     name="_action"
-                    value="delete"
+                    value="update"
                   />
 
                   <input
@@ -765,216 +1037,449 @@ export default function MhdLabelsPage() {
                   />
 
 
-                  <GastarioButton
-                    type="submit"
-                    variant="danger"
+                  {/* ALLGEMEIN */}
+
+                  <div
+                    className="g-ui-form-section"
+                    hidden={
+                      editTab !== "general"
+                    }
                   >
-                    Löschen
-                  </GastarioButton>
+
+                    <div className="g-ui-form-section-heading">
+
+                      <h3>Allgemein</h3>
+
+                      <p>
+                        Produkt und Haltbarkeit
+                        bearbeiten.
+                      </p>
+
+                    </div>
+
+
+                    <GastarioFormGrid columns={2}>
+
+                      <GastarioField
+                        label="Produktname"
+                        required
+                      >
+
+                        <GastarioInput
+                          name="productName"
+                          defaultValue={
+                            selected.productName ||
+                            ""
+                          }
+                          required
+                        />
+
+                      </GastarioField>
+
+
+                      <GastarioField label="Kunde">
+
+                        <GastarioInput
+                          name="customerName"
+                          defaultValue={
+                            selected.customerName ||
+                            ""
+                          }
+                        />
+
+                      </GastarioField>
+
+
+                      <GastarioField
+                        label="Produziert am"
+                        required
+                      >
+
+                        <GastarioInput
+                          name="productionDate"
+                          type="date"
+                          defaultValue={
+                            toInputDate(
+                              selected.productionDate
+                            )
+                          }
+                          required
+                        />
+
+                      </GastarioField>
+
+
+                      <GastarioField
+                        label="MHD / Verbrauchsdatum"
+                        required
+                      >
+
+                        <GastarioInput
+                          name="bestBeforeDate"
+                          type="date"
+                          defaultValue={
+                            toInputDate(
+                              selected.bestBeforeDate
+                            )
+                          }
+                          required
+                        />
+
+                      </GastarioField>
+
+                    </GastarioFormGrid>
+
+                  </div>
+
+
+                  {/* INHALT */}
+
+                  <div
+                    className="g-ui-form-section"
+                    hidden={
+                      editTab !== "content"
+                    }
+                  >
+
+                    <div className="g-ui-form-section-heading">
+
+                      <h3>Inhalt</h3>
+
+                      <p>
+                        Charge, Menge und
+                        Produktinformationen
+                        bearbeiten.
+                      </p>
+
+                    </div>
+
+
+                    <GastarioFormGrid columns={2}>
+
+                      <GastarioField
+                        label="Charge / Losnummer"
+                      >
+
+                        <GastarioInput
+                          name="batchNumber"
+                          defaultValue={
+                            selected.batchNumber ||
+                            ""
+                          }
+                        />
+
+                      </GastarioField>
+
+
+                      <GastarioField
+                        label="Menge / Portion"
+                      >
+
+                        <GastarioInput
+                          name="quantityText"
+                          defaultValue={
+                            selected.quantityText ||
+                            ""
+                          }
+                        />
+
+                      </GastarioField>
+
+
+                      <GastarioField
+                        label="Lagerhinweis"
+                      >
+
+                        <GastarioInput
+                          name="storageNote"
+                          defaultValue={
+                            selected.storageNote ||
+                            ""
+                          }
+                        />
+
+                      </GastarioField>
+
+
+                      <GastarioField
+                        label="Zutaten"
+                      >
+
+                        <GastarioInput
+                          name="ingredients"
+                          defaultValue={
+                            selected.ingredients ||
+                            ""
+                          }
+                        />
+
+                      </GastarioField>
+
+
+                      <GastarioField
+                        label="Allergene"
+                      >
+
+                        <GastarioInput
+                          name="allergens"
+                          defaultValue={
+                            selected.allergens ||
+                            ""
+                          }
+                        />
+
+                      </GastarioField>
+
+                    </GastarioFormGrid>
+
+                  </div>
+
+
+                  {/* AUSGABE */}
+
+                  <div
+                    className="g-ui-form-section"
+                    hidden={
+                      editTab !== "output"
+                    }
+                  >
+
+                    <div className="g-ui-form-section-heading">
+
+                      <h3>Ausgabe</h3>
+
+                      <p>
+                        Druckformat und Anzahl
+                        bearbeiten.
+                      </p>
+
+                    </div>
+
+
+                    <GastarioFormGrid columns={2}>
+
+                      <GastarioField
+                        label="Druckformat"
+                      >
+
+                        <GastarioSelect
+                          name="labelSize"
+                          defaultValue={
+                            selected.labelSize ||
+                            "76x51"
+                          }
+                        >
+
+                          <option value="a4-2">
+                            A4 Hochformat – 2 Labels pro Reihe
+                          </option>
+
+                          <option value="a4-3">
+                            A4 Hochformat – 3 Labels pro Reihe
+                          </option>
+
+                          <option value="a4-4">
+                            A4 Hochformat – 4 Labels pro Reihe
+                          </option>
+
+                          <option value="76x51">
+                            Etikettenrolle – 76 × 51 mm
+                          </option>
+
+                          <option value="57x32">
+                            Etikettenrolle – 57 × 32 mm
+                          </option>
+
+                        </GastarioSelect>
+
+                      </GastarioField>
+
+
+                      <GastarioField
+                        label="Anzahl Labels"
+                      >
+
+                        <GastarioInput
+                          name="labelCount"
+                          type="number"
+                          min="1"
+                          max="200"
+                          defaultValue={
+                            selected.labelCount ||
+                            1
+                          }
+                        />
+
+                      </GastarioField>
+
+                    </GastarioFormGrid>
+
+                  </div>
 
                 </Form>
 
-
-                <GastarioButton
-                  type="button"
-                  variant="secondary"
-                  onClick={() =>
-                    setSelectedId(null)
-                  }
-                >
-                  Schließen
-                </GastarioButton>
-
-
-                <Link
-                  to={`/mhd-labels/print/${selected.id}`}
-                  className="g-ui-button g-ui-button--primary"
-                >
-                  Drucken
-                </Link>
-
               </>
-            ) : null
-          }
-        >
+            ) : (
 
-          {selected ? (
+              <div className="g-ui-detail-stack">
 
-            <div className="g-ui-detail-stack">
+                <GastarioPanel variant="soft">
 
+                  <LabelCard
+                    label={selected}
+                    tenantName={
+                      data.tenantName
+                    }
+                  />
 
-              <GastarioPanel variant="soft">
-
-                <LabelCard
-                  label={selected}
-                  tenantName={
-                    data.tenantName
-                  }
-                />
-
-              </GastarioPanel>
+                </GastarioPanel>
 
 
-              <div className="g-ui-detail-meta">
+                <div className="g-ui-detail-meta">
 
-                <div>
+                  <div>
+                    <span>
+                      MHD / Verbrauchsdatum
+                    </span>
 
-                  <span>
-                    MHD / Verbrauchsdatum
-                  </span>
-
-                  <strong>
-                    {formatDate(
-                      selected.bestBeforeDate
-                    )}
-                  </strong>
-
-                </div>
+                    <strong>
+                      {formatDate(
+                        selected.bestBeforeDate
+                      )}
+                    </strong>
+                  </div>
 
 
-                <div>
+                  <div>
+                    <span>
+                      Produziert am
+                    </span>
 
-                  <span>
-                    Produziert am
-                  </span>
-
-                  <strong>
-                    {formatDate(
-                      selected.productionDate
-                    )}
-                  </strong>
-
-                </div>
+                    <strong>
+                      {formatDate(
+                        selected.productionDate
+                      )}
+                    </strong>
+                  </div>
 
 
-                <div>
+                  <div>
+                    <span>Charge</span>
 
-                  <span>
-                    Charge
-                  </span>
+                    <strong>
+                      {selected.batchNumber ||
+                        "–"}
+                    </strong>
+                  </div>
 
-                  <strong>
-                    {selected.batchNumber ||
-                      "–"}
-                  </strong>
+
+                  <div>
+                    <span>Anzahl</span>
+
+                    <strong>
+                      {selected.labelCount} Labels
+                    </strong>
+                  </div>
 
                 </div>
 
 
-                <div>
+                <GastarioDataList>
 
-                  <span>
-                    Anzahl
-                  </span>
+                  <GastarioDataRow>
 
-                  <strong>
-                    {selected.labelCount} Labels
-                  </strong>
+                    <div className="g-ui-data-row-main">
 
-                </div>
+                      <strong className="g-ui-data-row-title">
+                        Menge / Portion
+                      </strong>
+
+                      <span className="g-ui-data-row-description">
+                        {selected.quantityText ||
+                          "Keine Angabe"}
+                      </span>
+
+                    </div>
+
+                  </GastarioDataRow>
+
+
+                  {selected.customerName ? (
+
+                    <GastarioDataRow>
+
+                      <div className="g-ui-data-row-main">
+
+                        <strong className="g-ui-data-row-title">
+                          Kunde
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          {selected.customerName}
+                        </span>
+
+                      </div>
+
+                    </GastarioDataRow>
+
+                  ) : null}
+
+
+                  {selected.storageNote ? (
+
+                    <GastarioDataRow>
+
+                      <div className="g-ui-data-row-main">
+
+                        <strong className="g-ui-data-row-title">
+                          Lagerhinweis
+                        </strong>
+
+                        <span className="g-ui-data-row-description">
+                          {selected.storageNote}
+                        </span>
+
+                      </div>
+
+                    </GastarioDataRow>
+
+                  ) : null}
+
+                </GastarioDataList>
+
+
+                {selected.ingredients ? (
+
+                  <GastarioPanel variant="soft">
+
+                    <strong>Zutaten</strong>
+
+                    <div>
+                      {selected.ingredients}
+                    </div>
+
+                  </GastarioPanel>
+
+                ) : null}
+
+
+                {selected.allergens ? (
+
+                  <GastarioPanel variant="soft">
+
+                    <strong>Allergene</strong>
+
+                    <div>
+                      {selected.allergens}
+                    </div>
+
+                  </GastarioPanel>
+
+                ) : null}
 
               </div>
 
-
-              <GastarioDataList>
-
-                <GastarioDataRow>
-
-                  <div className="g-ui-data-row-main">
-
-                    <strong className="g-ui-data-row-title">
-                      Menge / Portion
-                    </strong>
-
-                    <span className="g-ui-data-row-description">
-                      {selected.quantityText ||
-                        "Keine Angabe"}
-                    </span>
-
-                  </div>
-
-                </GastarioDataRow>
-
-
-                {selected.customerName ? (
-
-                  <GastarioDataRow>
-
-                    <div className="g-ui-data-row-main">
-
-                      <strong className="g-ui-data-row-title">
-                        Kunde
-                      </strong>
-
-                      <span className="g-ui-data-row-description">
-                        {selected.customerName}
-                      </span>
-
-                    </div>
-
-                  </GastarioDataRow>
-
-                ) : null}
-
-
-                {selected.storageNote ? (
-
-                  <GastarioDataRow>
-
-                    <div className="g-ui-data-row-main">
-
-                      <strong className="g-ui-data-row-title">
-                        Lagerhinweis
-                      </strong>
-
-                      <span className="g-ui-data-row-description">
-                        {selected.storageNote}
-                      </span>
-
-                    </div>
-
-                  </GastarioDataRow>
-
-                ) : null}
-
-              </GastarioDataList>
-
-
-              {selected.ingredients ? (
-
-                <GastarioPanel variant="soft">
-
-                  <strong>
-                    Zutaten
-                  </strong>
-
-                  <div>
-                    {selected.ingredients}
-                  </div>
-
-                </GastarioPanel>
-
-              ) : null}
-
-
-              {selected.allergens ? (
-
-                <GastarioPanel variant="soft">
-
-                  <strong>
-                    Allergene
-                  </strong>
-
-                  <div>
-                    {selected.allergens}
-                  </div>
-
-                </GastarioPanel>
-
-              ) : null}
-
-            </div>
-
+            )
           ) : null}
 
         </GastarioDetailDialog>
