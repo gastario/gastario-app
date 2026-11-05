@@ -273,6 +273,26 @@ function emptyManualShoppingItem() {
   };
 }
 
+function quickShoppingEntries(text: string) {
+  const knownUnits = new Set(["kg", "g", "l", "ml", "stk", "stück", "stueck", "kiste", "kisten", "karton", "kartons", "packung", "packungen", "flasche", "flaschen", "dose", "dosen", "beutel", "bund", "sack"]);
+  return text.split(/\r?\n/).map((line) => {
+    const value = line.trim();
+    if (!value) return null;
+    const match = value.match(/^(\d+(?:[.,]\d+)?)\s+(.+)$/);
+    if (!match) return { ...emptyManualShoppingItem(), name: value };
+    const words = match[2].trim().split(/\s+/);
+    const hasUnit = knownUnits.has(words[0].toLowerCase()) && words.length > 1;
+    return { ...emptyManualShoppingItem(), quantity: match[1].replace(",", "."), unit: hasUnit ? words[0] : "Stück", name: hasUnit ? words.slice(1).join(" ") : words.join(" ") };
+  }).filter((row): row is ReturnType<typeof emptyManualShoppingItem> => row !== null);
+}
+
+function appendQuickShoppingEntries(rows: any[], text: string) {
+  const additions = quickShoppingEntries(text);
+  if (!additions.length) return rows;
+  const starter = rows.length === 1 && !String(rows[0]?.name || "").trim() && String(rows[0]?.quantity) === "1" && rows[0]?.unit === "Stück" && !rows[0]?.notes;
+  return [...(starter ? [] : rows), ...additions];
+}
+
 function parseManualShoppingListItems(
   rawValue: unknown
 ) {
@@ -488,7 +508,7 @@ export async function action({
         encodeURIComponent(
           planningDate
         ) +
-        "#manual-shopping-lists"
+        "&shoppingSaved=created#manual-shopping-lists"
     );
   }
 
@@ -585,7 +605,7 @@ export async function action({
         encodeURIComponent(
           planningDate
         ) +
-        "#manual-shopping-lists"
+        "&shoppingSaved=updated#manual-shopping-lists"
     );
   }
 
@@ -1829,6 +1849,7 @@ export async function loader({
     practicalProcurementPlan,
     savedProcurementDrafts,
     manualShoppingLists: manualShoppingListsWithMobilePath,
+    shoppingSaved: new URL(request.url).searchParams.get("shoppingSaved"),
     automaticAssignmentResult,
   };
 }
@@ -1916,6 +1937,9 @@ export default function PurchasingPage() {
     setManualCreateOpen,
   ] = useState(false);
 
+  const [quickCreateText, setQuickCreateText] = useState("");
+  const [quickEditText, setQuickEditText] = useState("");
+
   const [
     manualCreateItems,
     setManualCreateItems,
@@ -1960,6 +1984,7 @@ export default function PurchasingPage() {
     setManualListTab(
       "overview"
     );
+    setQuickEditText("");
 
     setManualEditItems(
       list.items.map(
@@ -1992,6 +2017,7 @@ export default function PurchasingPage() {
     setManualCreateItems([
       emptyManualShoppingItem(),
     ]);
+    setQuickCreateText("");
   };
 
 
@@ -2524,6 +2550,14 @@ export default function PurchasingPage() {
 
 
 
+        {["created", "updated"].includes(data.shoppingSaved || "") ? (
+          <GastarioNotice type="success">
+            {data.shoppingSaved === "created"
+              ? "Einkaufsliste erfolgreich gespeichert."
+              : "Änderungen erfolgreich gespeichert."}
+          </GastarioNotice>
+        ) : null}
+
         <GastarioSection
           id="manual-shopping-lists"
           eyebrow="Eigene Planung"
@@ -2750,6 +2784,29 @@ export default function PurchasingPage() {
                 />
               </GastarioField>
 
+
+              <GastarioField label="Schnelleingabe – Artikel eingeben und Enter drücken">
+                <GastarioInput
+                  value={quickCreateText}
+                  placeholder="3 kg Reis oder 2 Kisten Cola"
+                  onChange={(event) => setQuickCreateText(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+                      event.preventDefault();
+                      if (!quickCreateText.trim()) return;
+                      setManualCreateItems((current) => appendQuickShoppingEntries(current, quickCreateText));
+                      setQuickCreateText("");
+                    }
+                  }}
+                />
+                <div style={{ marginTop: 8 }}>
+                  <button type="button" className={gastarioButtonClass("secondary")} onClick={() => {
+                    if (!quickCreateText.trim()) return;
+                    setManualCreateItems((current) => appendQuickShoppingEntries(current, quickCreateText));
+                    setQuickCreateText("");
+                  }}>+ Artikel übernehmen</button>
+                </div>
+              </GastarioField>
 
               <GastarioSection
                 eyebrow="Positionen"
@@ -3323,6 +3380,31 @@ export default function PurchasingPage() {
               >
 
                 <GastarioStack>
+
+              <GastarioField label="Schnelleingabe – Artikel eingeben und Enter drücken">
+                <GastarioInput
+                  value={quickEditText}
+                  placeholder="3 kg Reis oder 2 Kisten Cola"
+                  onChange={(event) => setQuickEditText(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+                      event.preventDefault();
+                      if (!quickEditText.trim()) return;
+                      setManualEditItems((current) => appendQuickShoppingEntries(current, quickEditText));
+                      setQuickEditText("");
+                    }
+                  }}
+                />
+                <div style={{ marginTop: 8 }}>
+                  <button type="button" className={gastarioButtonClass("secondary")} onClick={() => {
+                    if (!quickEditText.trim()) return;
+                    setManualEditItems((current) => appendQuickShoppingEntries(current, quickEditText));
+                    setQuickEditText("");
+                  }}>+ Artikel übernehmen</button>
+                </div>
+              </GastarioField>
+
+
 
                   <GastarioToolbar>
 
