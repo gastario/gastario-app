@@ -1810,6 +1810,24 @@ export async function loader({
       "../lib/manual-shopping-mobile.server"
     );
 
+  const previousShoppingItems = await prisma.manualShoppingListItem.findMany({
+    where: { tenantId: access.tenantId },
+    orderBy: { createdAt: "desc" },
+    select: { name: true, unit: true, quantity: true },
+    take: 1000,
+  });
+  const knownShoppingItems = new Set<string>();
+  const savedShoppingProducts = previousShoppingItems.filter((item: any) => {
+    const key = String(item.name || "").trim().toLocaleLowerCase("de-DE") + "|" + String(item.unit || "").toLocaleLowerCase("de-DE");
+    if (!String(item.name || "").trim() || knownShoppingItems.has(key)) return false;
+    knownShoppingItems.add(key);
+    return true;
+  }).slice(0, 150).map((item: any) => ({
+    name: String(item.name),
+    unit: String(item.unit),
+    quantity: Number(item.quantity) || 1,
+  }));
+
   const manualShoppingListsWithMobilePath =
     manualShoppingLists.map(
       (list: any) => ({
@@ -1849,6 +1867,7 @@ export async function loader({
     practicalProcurementPlan,
     savedProcurementDrafts,
     manualShoppingLists: manualShoppingListsWithMobilePath,
+    savedShoppingProducts,
     shoppingSaved: new URL(request.url).searchParams.get("shoppingSaved"),
     automaticAssignmentResult,
   };
@@ -2786,8 +2805,14 @@ export default function PurchasingPage() {
 
 
               <GastarioField label="Schnelleingabe – Artikel eingeben und Enter drücken">
+                <datalist id="gastario-shopping-products-create">
+                  {data.savedShoppingProducts.map((product: any, index: number) => (
+                    <option key={index} value={String(product.quantity) + " " + product.unit + " " + product.name} />
+                  ))}
+                </datalist>
                 <GastarioInput
                   value={quickCreateText}
+                  list="gastario-shopping-products-create"
                   placeholder="3 kg Reis oder 2 Kisten Cola"
                   onChange={(event) => setQuickCreateText(event.target.value)}
                   onKeyDown={(event) => {
@@ -2799,7 +2824,7 @@ export default function PurchasingPage() {
                     }
                   }}
                 />
-                <div style={{ marginTop: 8 }}>
+                <div className="g-ui-toolbar">
                   <button type="button" className={gastarioButtonClass("secondary")} onClick={() => {
                     if (!quickCreateText.trim()) return;
                     setManualCreateItems((current) => appendQuickShoppingEntries(current, quickCreateText));
@@ -3382,8 +3407,14 @@ export default function PurchasingPage() {
                 <GastarioStack>
 
               <GastarioField label="Schnelleingabe – Artikel eingeben und Enter drücken">
+                <datalist id="gastario-shopping-products-edit">
+                  {data.savedShoppingProducts.map((product: any, index: number) => (
+                    <option key={index} value={String(product.quantity) + " " + product.unit + " " + product.name} />
+                  ))}
+                </datalist>
                 <GastarioInput
                   value={quickEditText}
+                  list="gastario-shopping-products-edit"
                   placeholder="3 kg Reis oder 2 Kisten Cola"
                   onChange={(event) => setQuickEditText(event.target.value)}
                   onKeyDown={(event) => {
@@ -3395,7 +3426,7 @@ export default function PurchasingPage() {
                     }
                   }}
                 />
-                <div style={{ marginTop: 8 }}>
+                <div className="g-ui-toolbar">
                   <button type="button" className={gastarioButtonClass("secondary")} onClick={() => {
                     if (!quickEditText.trim()) return;
                     setManualEditItems((current) => appendQuickShoppingEntries(current, quickEditText));
