@@ -1828,6 +1828,39 @@ export async function loader({
     quantity: Number(item.quantity) || 1,
   }));
 
+  const recentShoppingLists = await prisma.manualShoppingList.findMany({
+    where: { tenantId: access.tenantId },
+    orderBy: { createdAt: "desc" },
+    take: 80,
+    select: {
+      title: true,
+      items: {
+        orderBy: { sortOrder: "asc" },
+        select: { name: true, quantity: true, unit: true, notes: true },
+      },
+    },
+  });
+  const templateCounts = new Map<string, number>();
+  for (const item of recentShoppingLists) {
+    const key = item.title.trim().toLocaleLowerCase("de-DE");
+    templateCounts.set(key, (templateCounts.get(key) || 0) + 1);
+  }
+  const seenTemplates = new Set<string>();
+  const shoppingListSuggestions = recentShoppingLists.filter((list) => {
+    const key = list.title.trim().toLocaleLowerCase("de-DE");
+    if (!key || !list.items.length || seenTemplates.has(key)) return false;
+    seenTemplates.add(key);
+    return true;
+  }).sort((a, b) => {
+    const rankA = templateCounts.get(a.title.trim().toLocaleLowerCase("de-DE")) || 0;
+    const rankB = templateCounts.get(b.title.trim().toLocaleLowerCase("de-DE")) || 0;
+    return rankB - rankA;
+  }).slice(0, 3).map((list) => ({
+    title: list.title,
+    count: templateCounts.get(list.title.trim().toLocaleLowerCase("de-DE")) || 1,
+    items: list.items,
+  }));
+
   const manualShoppingListsWithMobilePath =
     manualShoppingLists.map(
       (list: any) => ({
@@ -1868,6 +1901,7 @@ export async function loader({
     savedProcurementDrafts,
     manualShoppingLists: manualShoppingListsWithMobilePath,
     savedShoppingProducts,
+    shoppingListSuggestions,
     shoppingSaved: new URL(request.url).searchParams.get("shoppingSaved"),
     automaticAssignmentResult,
   };
@@ -1965,6 +1999,7 @@ export default function PurchasingPage() {
     }
   }, [data.shoppingSaved]);
 
+  const [manualCreateTitle, setManualCreateTitle] = useState("");
   const [quickCreateText, setQuickCreateText] = useState("");
   const [quickEditText, setQuickEditText] = useState("");
 
@@ -2046,6 +2081,7 @@ export default function PurchasingPage() {
       emptyManualShoppingItem(),
     ]);
     setQuickCreateText("");
+    setManualCreateTitle("");
   };
 
 
@@ -2601,6 +2637,8 @@ export default function PurchasingPage() {
                 setManualCreateItems([
                   emptyManualShoppingItem(),
                 ]);
+                setManualCreateTitle("");
+                setQuickCreateText("");
 
                 setManualCreateOpen(
                   true
@@ -2765,6 +2803,37 @@ export default function PurchasingPage() {
 
             <GastarioStack>
 
+              {data.shoppingListSuggestions.length > 0 ? (
+                <GastarioSection
+                  eyebrow="Aus deinen bisherigen Einkaufslisten"
+                  title="Einkaufsliste vorschlagen"
+                  description="Gastario berücksichtigt häufig verwendete Listennamen und übernimmt auf Wunsch die zuletzt gespeicherten Artikel. Mengen bitte vor dem Speichern prüfen."
+                >
+                  <GastarioToolbar>
+                    {data.shoppingListSuggestions.map((template: any, index: number) => (
+                      <button
+                        type="button"
+                        key={index}
+                        className={gastarioButtonClass("secondary")}
+                        onClick={() => {
+                          setManualCreateTitle(template.title);
+                          setManualCreateItems(template.items.map((item: any) => ({
+                            name: item.name,
+                            quantity: String(item.quantity),
+                            unit: item.unit,
+                            notes: item.notes || "",
+                            checked: false,
+                          })));
+                          setQuickCreateText("");
+                        }}
+                      >
+                        {template.title} ({template.items.length} Artikel)
+                      </button>
+                    ))}
+                  </GastarioToolbar>
+                </GastarioSection>
+              ) : null}
+
               <GastarioFormGrid
                 columns={2}
               >
@@ -2777,6 +2846,8 @@ export default function PurchasingPage() {
                     name="title"
                     required
                     maxLength={120}
+                    value={manualCreateTitle}
+                    onChange={(event) => setManualCreateTitle(event.target.value)}
                     placeholder="z. B. Metro Einkauf Montag"
                   />
                 </GastarioField>
