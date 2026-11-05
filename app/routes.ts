@@ -66,6 +66,7 @@ export default [
   route("api/mailjet/inbound", "routes/api.mailjet.inbound.tsx"),
   route("api/email-import/run", "routes/api.email-import.run.tsx"),
   route("api/navigation-counts", "routes/api.navigation-counts.tsx"),
+  route("api/manual-shopping-email", "routes/api.manual-shopping-email.tsx"),
   route("api/supplier-browser-connector", "routes/api.supplier-browser-connector.tsx"),
   route("api/supplier-invoice-import", "routes/api.supplier-invoice-import.tsx"),
   route("api/supplier-hub/search", "routes/api.supplier-hub.search.tsx"),
