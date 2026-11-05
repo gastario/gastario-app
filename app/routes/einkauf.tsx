@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Form, Link, redirect, useLoaderData } from "react-router";
 
 import AppLayout from "../components/AppLayout";
@@ -278,7 +278,7 @@ function quickShoppingEntries(text: string) {
   return text.split(/\r?\n/).map((line) => {
     const value = line.trim();
     if (!value) return null;
-    const match = value.match(/^(\d+(?:[.,]\d+)?)\s+(.+)$/);
+    const match = value.match(/^(\d+(?:[.,]\d+)?)\s*(?:[x×]\s*|\s+)(.+)$/i);
     if (!match) return { ...emptyManualShoppingItem(), name: value };
     const words = match[2].trim().split(/\s+/);
     const hasUnit = knownUnits.has(words[0].toLowerCase()) && words.length > 1;
@@ -1955,6 +1955,15 @@ export default function PurchasingPage() {
     manualCreateOpen,
     setManualCreateOpen,
   ] = useState(false);
+
+  useEffect(() => {
+    if (data.shoppingSaved === "created" || data.shoppingSaved === "updated") {
+      setManualCreateOpen(false);
+      setSelectedManualListId(null);
+      setQuickCreateText("");
+      setQuickEditText("");
+    }
+  }, [data.shoppingSaved]);
 
   const [quickCreateText, setQuickCreateText] = useState("");
   const [quickEditText, setQuickEditText] = useState("");
