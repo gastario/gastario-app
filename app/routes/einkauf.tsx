@@ -1998,6 +1998,37 @@ export default function PurchasingPage() {
 
 
 
+  const [shoppingEmailSending, setShoppingEmailSending] = useState(false);
+  const [shoppingEmailMessage, setShoppingEmailMessage] = useState("");
+  const [shoppingEmailError, setShoppingEmailError] = useState(false);
+
+  const sendManualShoppingEmail = async () => {
+    if (!selectedManualList?.id || shoppingEmailSending) return;
+    setShoppingEmailSending(true);
+    setShoppingEmailMessage("");
+    setShoppingEmailError(false);
+    try {
+      const body = new FormData();
+      body.set("listId", selectedManualList.id);
+      const response = await fetch("/api/manual-shopping-email", {
+        method: "POST",
+        body,
+        credentials: "same-origin",
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Die E-Mail konnte nicht gesendet werden.");
+      }
+      setShoppingEmailMessage("Einkaufsliste per E-Mail an " + data.recipient + " gesendet. Bitte auch den Spam-Ordner prüfen.");
+    } catch (error) {
+      setShoppingEmailError(true);
+      setShoppingEmailMessage(error instanceof Error ? error.message : "E-Mail-Versand fehlgeschlagen.");
+    } finally {
+      setShoppingEmailSending(false);
+    }
+  };
+
+
   const copyManualShoppingMobileLink =
     async () => {
       if (
@@ -3262,7 +3293,22 @@ export default function PurchasingPage() {
                       Mobil-Link kopieren
                     </button>
 
+                    <button
+                      type="button"
+                      className={gastarioButtonClass("secondary")}
+                      disabled={shoppingEmailSending}
+                      onClick={sendManualShoppingEmail}
+                    >
+                      {shoppingEmailSending ? "E-Mail wird gesendet …" : "Per E-Mail an mich senden"}
+                    </button>
+
                   </GastarioToolbar>
+
+                  {shoppingEmailMessage ? (
+                    <GastarioNotice type={shoppingEmailError ? "danger" : "success"}>
+                      {shoppingEmailMessage}
+                    </GastarioNotice>
+                  ) : null}
 
                 </GastarioStack>
 
