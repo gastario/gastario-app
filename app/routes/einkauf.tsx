@@ -1828,7 +1828,7 @@ export async function loader({
     procurementPlan,
     practicalProcurementPlan,
     savedProcurementDrafts,
-    manualShoppingLists,
+    manualShoppingLists: manualShoppingListsWithMobilePath,
     automaticAssignmentResult,
   };
 }
