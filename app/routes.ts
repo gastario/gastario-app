@@ -43,6 +43,7 @@ export default [
   route("fahrerzettel", "routes/fahrerzettel.tsx"),
   route("lieferungen", "routes/lieferungen.tsx"),
   route("einkauf", "routes/einkauf.tsx"),
+  route("einkauf/mobil/:listId", "routes/einkauf.mobil.$listId.tsx"),
   route("einkauf/artikelsuche", "routes/einkauf.artikelsuche.tsx"),
   route("einkaufsbestellungen", "routes/einkaufsbestellungen.tsx"),
   route("einkaufsbestellungen/:draftId", "routes/einkaufsbestellungen.$draftId.tsx"),
