@@ -1,4 +1,4 @@
-﻿import { Form, useActionData, useLoaderData } from "react-router";
+﻿import { Form, Link, useActionData, useLoaderData } from "react-router";
 
 import AppLayout from "../components/AppLayout";
 
@@ -10,6 +10,7 @@ import {
   PageSection,
   PageShell,
 } from "../components/ui/PageShell";
+import { GastarioButton, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioInsight, gastarioButtonClass } from "../components/ui";
 
 import "../styles/gastario-page-shell.css";
 import "../styles/gastario-supply-masterdesign.css";
@@ -1228,48 +1229,20 @@ export default function SuppliersPage() {
 
   return (
     <AppLayout>
-            <PageShell className="supplyPage supplyDashboardV1Page">
-        <header className="supplyV1PageHeader">
-          <div>
-            <p>Einkauf & Lager</p>
-            <h1>Lieferanten</h1>
-            <span>
-              Lieferanten, Portale und Einkaufspreise für {data.tenant.name} verwalten.
-            </span>
-          </div>
-
-          <div className="supplyV1HeaderActions">
-            <button
-              className="supplyV1Button supplyV1Button--secondary"
-              type="button"
-              onClick={printPage}
-            >
-              Drucken
-            </button>
-
-            <a
-              className="supplyV1Button supplyV1Button--secondary"
-              href="#portal-new"
-            >
-              Portal verbinden
-            </a>
-
-            <a
-              className="supplyV1Button supplyV1Button--secondary"
-              href="/lieferanten/rechnungs-import"
-            >
-              Katalog importieren
-            </a>
-
-            <a
-              className="supplyV1Button supplyV1Button--primary"
-              href="#supplier-new"
-            >
-              <span aria-hidden="true">+</span>
-              Neuer Lieferant
-            </a>
-          </div>
-        </header>
+            <PageShell className="supplyPage">
+        <PageHeader
+          eyebrow="Einkauf & Lager"
+          title="Lieferanten"
+          subtitle={<>Lieferanten, Portale und Einkaufspreise für {data.tenant.name} verwalten.</>}
+          actions={
+            <>
+              <GastarioButton variant="secondary" onClick={printPage}>Drucken</GastarioButton>
+              <a href="#portal-new" className={gastarioButtonClass("secondary")}>Portal verbinden</a>
+              <Link to="/lieferanten/rechnungs-import" className={gastarioButtonClass("secondary")}>Katalog importieren</Link>
+              <a href="#supplier-new" className={gastarioButtonClass("primary")}>+ Neuer Lieferant</a>
+            </>
+          }
+        />
 
         {actionData?.success ? (
           <Notice type="success">
@@ -1283,71 +1256,26 @@ export default function SuppliersPage() {
           </Notice>
         ) : null}
 
-        <section className="supplyV1Intelligence">
-          <div className="supplyV1IntelligenceIcon" aria-hidden="true">
-            ✦
-          </div>
+        <GastarioInsight
+          tone={data.stats.stalePrices > 0 ? "rose" : "sage"}
+          eyebrow="Gastario Intelligence"
+          title={data.stats.stalePrices > 0
+            ? `${data.stats.stalePrices} Preisstände benötigen deine Aufmerksamkeit.`
+            : "Lieferanten und Einkaufsdaten sind übersichtlich vorbereitet."}
+          description={data.stats.connections === 0
+            ? "Lege eine Lieferantenquelle an. Gastario kann mit offiziellen Schnittstellen, Katalogen oder vorhandenen Einkaufsdaten arbeiten."
+            : `${data.stats.usableConnections} von ${data.stats.connections} Lieferantenquellen sind nutzbar. ${data.stats.liveConnections} davon liefern Live-Daten. ${data.stats.currentPrices} Preise sind aktuell.`}
+          actionLabel="Hinweise prüfen"
+          actionTo="#portal-workspace"
+        />
 
-          <div>
-            <span>Gastario Intelligence</span>
-            <strong>
-              {data.stats.stalePrices > 0
-                ? `${data.stats.stalePrices} Preisstände benötigen deine Aufmerksamkeit.`
-                : "Lieferanten und Einkaufsdaten sind übersichtlich vorbereitet."}
-            </strong>
-            <p>
-              {data.stats.connections === 0
-                ? "Lege eine Lieferantenquelle an. Gastario kann mit offiziellen Schnittstellen, Katalogen oder vorhandenen Einkaufsdaten arbeiten."
-                : `${data.stats.usableConnections} von ${data.stats.connections} Lieferantenquellen sind nutzbar. ${data.stats.liveConnections} davon liefern Live-Daten. ${data.stats.currentPrices} Preise sind aktuell.`}
-            </p>
-          </div>
-
-          <a href="#portal-workspace">
-            Hinweise prüfen
-          </a>
-        </section>
-
-        <section className="supplyV1Metrics">
-          <article>
-            <div>
-              <span>Lieferanten</span>
-              <small>{data.stats.active} aktiv</small>
-            </div>
-            <strong>{data.stats.total}</strong>
-            <i />
-          </article>
-
-          <article>
-            <div>
-              <span>Nutzbare Quellen</span>
-              <small>{data.stats.liveConnections} live</small>
-            </div>
-            <strong>{data.stats.usableConnections}</strong>
-            <i />
-          </article>
-
-          <article>
-            <div>
-              <span>Katalogartikel</span>
-              <small>Einkaufsdaten</small>
-            </div>
-            <strong>{data.stats.catalogItems}</strong>
-            <i />
-          </article>
-
-          <article>
-            <div>
-              <span>Aktuelle Preise</span>
-              <small>
-                {data.stats.stalePrices > 0
-                  ? `${data.stats.stalePrices} prüfen`
-                  : "Aktuell"}
-              </small>
-            </div>
-            <strong>{data.stats.currentPrices}</strong>
-            <i />
-          </article>
-        </section>
+        <GastarioMetricGrid>
+          <GastarioMetric label="Lieferanten" value={data.stats.total} description={`${data.stats.active} aktiv`} badge="Bestand" />
+          <GastarioMetric label="Nutzbare Quellen" value={data.stats.usableConnections} description={`${data.stats.liveConnections} live`} badge="Portale" />
+          <GastarioMetric label="Katalogartikel" value={data.stats.catalogItems} description="Einkaufsdaten" badge="Katalog" />
+          <GastarioMetric label="Aktuelle Preise" value={data.stats.currentPrices}
+            description={data.stats.stalePrices > 0 ? `${data.stats.stalePrices} prüfen` : "Aktuell"} badge="Preise" />
+        </GastarioMetricGrid>
 
         <details
           className="supplyV1InlineForm"
@@ -1467,20 +1395,13 @@ export default function SuppliersPage() {
 
         <div className="supplyV1UnifiedGrid">
           <main className="supplyV1UnifiedMain">
-            <section className="supplyV1UnifiedPanel">
-              <header className="supplyV1PanelHeader">
-                <div>
-                  <span>Lieferanten & Einkaufsdaten</span>
-                  <h2>Lieferantenübersicht</h2>
-                  <p>
-                    Lieferanten, Portale, Kataloge und Preisstände in einer gemeinsamen Arbeitsansicht.
-                  </p>
-                </div>
-
-                <a href="#supplier-new">
-                  Lieferant hinzufügen
-                </a>
-              </header>
+            <GastarioSection
+              className="supplyV1UnifiedPanel"
+              eyebrow="Lieferanten & Einkaufsdaten"
+              title="Lieferantenübersicht"
+              description="Lieferanten, Portale, Kataloge und Preisstände in einer gemeinsamen Arbeitsansicht."
+              action={<a href="#supplier-new" className={gastarioButtonClass("secondary")}>Lieferant hinzufügen</a>}
+            >
 
               {data.suppliers.length === 0 ? (
                 <div className="supplyEmpty supplyV1UnifiedEmpty">
@@ -2370,17 +2291,15 @@ export default function SuppliersPage() {
           </div>
                 </div>
               </details>
-            </section>
+            </GastarioSection>
           </main>
 
           <aside className="supplyV1UnifiedAside">
-            <section className="supplyV1Panel supplyV1ActivityPanel">
-              <header className="supplyV1PanelHeader">
-                <div>
-                  <span>Live</span>
-                  <h2>Status & Aktivität</h2>
-                </div>
-              </header>
+            <GastarioSection
+              className="supplyV1Panel supplyV1ActivityPanel"
+              eyebrow="Live"
+              title="Status & Aktivität"
+            >
 
               <div className="supplyV1ActivityList">
                 <article>
@@ -2435,7 +2354,7 @@ export default function SuppliersPage() {
               >
                 Technische Portalverwaltung
               </a>
-            </section>
+            </GastarioSection>
           </aside>
         </div>
       </PageShell>
