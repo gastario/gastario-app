@@ -10,7 +10,7 @@ import {
   PageSection,
   PageShell,
 } from "../components/ui/PageShell";
-import { GastarioButton, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioInsight, gastarioButtonClass } from "../components/ui";
+import { GastarioButton, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioInsight, GastarioDataList, GastarioDataRow, GastarioStack, GastarioBadge, gastarioButtonClass } from "../components/ui";
 
 import "../styles/gastario-page-shell.css";
 import "../styles/gastario-supply-masterdesign.css";
@@ -1393,8 +1393,8 @@ export default function SuppliersPage() {
           </div>
         </details>
 
-        <div className="supplyV1UnifiedGrid">
-          <main className="supplyV1UnifiedMain">
+        <GastarioStack>
+          <div>
             <GastarioSection
               className="supplyV1UnifiedPanel"
               eyebrow="Lieferanten & Einkaufsdaten"
@@ -1411,15 +1411,7 @@ export default function SuppliersPage() {
                   </p>
                 </div>
               ) : (
-                <div className="supplyV1SupplierTable">
-                  <div className="supplyV1SupplierTableHead">
-                    <span>Lieferant</span>
-                    <span>Portal</span>
-                    <span>Status</span>
-                    <span>Artikel</span>
-                    <span>Preisstand</span>
-                    <span>Aktionen</span>
-                  </div>
+                <GastarioDataList>
 
                   {data.suppliers.map((supplier: any) => {
                     const connection = data.connections.find(
@@ -1445,81 +1437,27 @@ export default function SuppliersPage() {
                           : "Nicht verbunden";
 
                     return (
-                      <article
-                        className="supplyV1SupplierRow"
-                        key={supplier.id}
-                      >
-                        <div className="supplyV1SupplierIdentity">
-                          <span>
-                            {supplier.category || "Ohne Kategorie"}
+                      <GastarioDataRow key={supplier.id}>
+                        <div className="g-ui-data-row-main">
+                          <strong className="g-ui-data-row-title">{supplier.name}</strong>
+                          <span className="g-ui-data-row-description">
+                            {supplier.category || "Ohne Kategorie"} · {supplier.contactName || supplier.email || "Keine Kontaktdaten"}
                           </span>
-                          <strong>{supplier.name}</strong>
-                          <small>
-                            {supplier.contactName ||
-                              supplier.email ||
-                              "Keine Kontaktdaten"}
-                          </small>
-                        </div>
-
-                        <div className="supplyV1SupplierCell">
-                          <small>Portal</small>
-                          <strong>
-                            {connection?.settingsJson
-                              ?.providerName ||
-                              connection?.label ||
-                              "–"}
-                          </strong>
-                          <span>
-                            {connection?.settingsJson
-                              ?.locationName ||
-                              "Kein Standort"}
+                          <span className="g-ui-data-row-description">
+                            {connection?.settingsJson?.providerName || connection?.label || "Kein Portal"}
+                            {" · "}{connection?.settingsJson?.locationName || "Kein Standort"}
                           </span>
                         </div>
-
-                        <div className="supplyV1SupplierCell">
-                          <small>Status</small>
-                          <span
-                            className={[
-                              "supplyV1RowStatus",
-                              connection?.status === "ACTIVE"
-                                ? "supplyV1RowStatus--success"
-                                : connection
-                                  ? "supplyV1RowStatus--warning"
-                                  : "supplyV1RowStatus--neutral",
-                            ].join(" ")}
-                          >
+                        <div className="g-ui-data-row-meta">
+                          <GastarioBadge variant={connection?.status === "ACTIVE" ? "success" : connection ? "warning" : "neutral"}>
                             {connectionStatus}
-                          </span>
-                          <span>
-                            {supplier.active
-                              ? "Lieferant aktiv"
-                              : "Lieferant inaktiv"}
-                          </span>
+                          </GastarioBadge>
+                          <span>{catalogCount} Artikel</span>
+                          <span>{currentPriceCount} Preise</span>
+                          <span>{supplier.active ? "Aktiv" : "Inaktiv"}</span>
                         </div>
-
-                        <div className="supplyV1SupplierCell">
-                          <small>Katalogartikel</small>
-                          <strong>{catalogCount}</strong>
-                          <span>übernommene Artikel</span>
-                        </div>
-
-                        <div className="supplyV1SupplierCell">
-                          <small>Preisstand</small>
-                          <strong>
-                            {currentPriceCount > 0
-                              ? `${currentPriceCount} vorhanden`
-                              : "Kein Preis"}
-                          </strong>
-                          <span>
-                            {connection?.lastSyncAt
-                              ? new Date(
-                                  connection.lastSyncAt
-                                ).toLocaleString("de-DE")
-                              : "Noch kein Abruf"}
-                          </span>
-                        </div>
-
-                        <div className="supplyV1SupplierRowActions">
+                        <div className="g-ui-data-row-actions">
+                        <>
                           <Form method="post">
                             <input
                               type="hidden"
@@ -1541,7 +1479,7 @@ export default function SuppliersPage() {
                               }
                             />
                             <button
-                              className="supplyV1RowButton"
+                              className={gastarioButtonClass("secondary")}
                               type="submit"
                             >
                               {supplier.active
@@ -1551,7 +1489,7 @@ export default function SuppliersPage() {
                           </Form>
 
                           <details className="supplyV1RowDetails">
-                            <summary className="supplyV1RowButton">
+                            <summary className={gastarioButtonClass("secondary")}>
                               Bearbeiten
                             </summary>
 
@@ -1635,7 +1573,7 @@ export default function SuppliersPage() {
                           </details>
 
                           <a
-                            className="supplyV1RowButton supplyV1RowButton--primary"
+                            className={gastarioButtonClass("secondary")}
                             href="#portal-technical"
                           >
                             {connection
@@ -1653,7 +1591,7 @@ export default function SuppliersPage() {
                             .toUpperCase()
                             .includes("METRO") ? (
                             <a
-                              className="supplyV1RowButton supplyV1RowButton--primary"
+                              className={gastarioButtonClass("secondary")}
                               href="/api/supplier-hub/connect/metro"
                               target="_blank"
                               rel="noreferrer"
@@ -1661,11 +1599,12 @@ export default function SuppliersPage() {
                               METRO verbinden
                             </a>
                           ) : null}
+                        </>
                         </div>
-                      </article>
+                      </GastarioDataRow>
                     );
                   })}
-                </div>
+                </GastarioDataList>
               )}
 
               <details
@@ -2292,9 +2231,9 @@ export default function SuppliersPage() {
                 </div>
               </details>
             </GastarioSection>
-          </main>
+          </div>
 
-          <aside className="supplyV1UnifiedAside">
+          <div>
             <GastarioSection
               className="supplyV1Panel supplyV1ActivityPanel"
               eyebrow="Live"
@@ -2355,8 +2294,8 @@ export default function SuppliersPage() {
                 Technische Portalverwaltung
               </a>
             </GastarioSection>
-          </aside>
-        </div>
+          </div>
+        </GastarioStack>
       </PageShell>
     </AppLayout>
   );
