@@ -10,7 +10,7 @@ import {
   PageSection,
   PageShell,
 } from "../components/ui/PageShell";
-import { GastarioButton, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioInsight, GastarioDataList, GastarioDataRow, GastarioStack, GastarioBadge, gastarioButtonClass } from "../components/ui";
+import { GastarioButton, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioInsight, GastarioDataList, GastarioDataRow, GastarioStack, GastarioBadge, GastarioFormGrid, GastarioField, GastarioInput, GastarioToolbar, gastarioButtonClass } from "../components/ui";
 
 import "../styles/gastario-page-shell.css";
 import "../styles/gastario-supply-masterdesign.css";
@@ -1277,121 +1277,51 @@ export default function SuppliersPage() {
             description={data.stats.stalePrices > 0 ? `${data.stats.stalePrices} prüfen` : "Aktuell"} badge="Preise" />
         </GastarioMetricGrid>
 
-        <details
-          className="supplyV1InlineForm"
-          id="supplier-new"
+        <GastarioSection
+          eyebrow="Stammdaten"
+          title="Neuen Lieferanten anlegen"
+          description="Kontaktdaten, Bestelltage und Sortiment erfassen."
         >
-          <summary>
-            <span>
-              <small>Stammdaten</small>
-              <strong>Neuen Lieferanten anlegen</strong>
-              <p>Kontaktdaten, Bestelltage und Sortiment erfassen.</p>
-            </span>
-            <b>+</b>
-          </summary>
-
-          <div className="supplyV1InlineFormBody">
-<details className="supplyDisclosure" open>
-            <summary>
-              <span>
-                <strong>Neuen Lieferanten anlegen</strong>
-                <small>
-                  Kontaktdaten, Bestelltage und Sortiment erfassen
-                </small>
-              </span>
-
-              <span className="supplyDisclosureAction">
-                Formular öffnen
-              </span>
-            </summary>
-
-            <div className="supplyDisclosureBody">          <Form
-            method="post"
-            className="supplyForm supplyForm--supplier"
-          >
-            <input
-              type="hidden"
-              name="intent"
-              value="createSupplier"
-            />
-
-            <label className="supplyField">
-              <span>Name</span>
-              <input
-                name="name"
-                placeholder="z. B. METRO"
-                required
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>Kategorie</span>
-              <input
-                name="category"
-                placeholder="Lebensmittel"
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>Ansprechpartner</span>
-              <input
-                name="contactName"
-                placeholder="Herr / Frau …"
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>Bestelltage</span>
-              <input
-                name="orderDays"
-                placeholder="Mo–Fr"
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>E-Mail</span>
-              <input
-                name="email"
-                type="email"
-                placeholder="bestellung@…"
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>Telefon</span>
-              <input
-                name="phone"
-                placeholder="030 …"
-              />
-            </label>
-
-            <label className="supplyField supplyField--wide">
-              <span>Artikel / Sortiment</span>
-              <input
-                name="items"
-                placeholder="Reis, Hähnchen, Gemüse …"
-              />
-            </label>
-
-            <label className="supplyField supplyField--grow">
-              <span>Notiz</span>
-              <input
-                name="notes"
-                placeholder="optional"
-              />
-            </label>
-
-            <button
-              className="supplyButton supplyButton--primary"
-              type="submit"
-            >
-              Lieferant anlegen
-            </button>
-          </Form>
+          <details id="supplier-new" className="supplyDisclosure">
+            <summary className={gastarioButtonClass("secondary")}>Formular öffnen</summary>
+            <div className="supplyDisclosureBody">
+              <Form method="post">
+                <input type="hidden" name="intent" value="createSupplier" />
+                <GastarioStack>
+                  <GastarioFormGrid columns={2}>
+                    <GastarioField label="Name" required>
+                      <GastarioInput name="name" placeholder="z. B. METRO" required />
+                    </GastarioField>
+                    <GastarioField label="Kategorie">
+                      <GastarioInput name="category" placeholder="Lebensmittel" />
+                    </GastarioField>
+                    <GastarioField label="Ansprechpartner">
+                      <GastarioInput name="contactName" placeholder="Herr / Frau …" />
+                    </GastarioField>
+                    <GastarioField label="Bestelltage">
+                      <GastarioInput name="orderDays" placeholder="Mo–Fr" />
+                    </GastarioField>
+                    <GastarioField label="E-Mail">
+                      <GastarioInput name="email" type="email" placeholder="bestellung@…" />
+                    </GastarioField>
+                    <GastarioField label="Telefon">
+                      <GastarioInput name="phone" placeholder="030 …" />
+                    </GastarioField>
+                    <GastarioField label="Artikel / Sortiment">
+                      <GastarioInput name="items" placeholder="Reis, Hähnchen, Gemüse …" />
+                    </GastarioField>
+                    <GastarioField label="Notiz">
+                      <GastarioInput name="notes" placeholder="Optional" />
+                    </GastarioField>
+                  </GastarioFormGrid>
+                  <GastarioToolbar>
+                    <GastarioButton variant="primary" type="submit">Lieferant anlegen</GastarioButton>
+                  </GastarioToolbar>
+                </GastarioStack>
+              </Form>
             </div>
           </details>
-          </div>
-        </details>
+        </GastarioSection>
 
         <GastarioStack>
           <div>
