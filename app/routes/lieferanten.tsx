@@ -1263,19 +1263,6 @@ export default function SuppliersPage() {
           </Notice>
         ) : null}
 
-        <GastarioInsight
-          tone={data.stats.stalePrices > 0 ? "rose" : "sage"}
-          eyebrow="Gastario Intelligence"
-          title={data.stats.stalePrices > 0
-            ? `${data.stats.stalePrices} Preisstände benötigen deine Aufmerksamkeit.`
-            : "Lieferanten und Einkaufsdaten sind übersichtlich vorbereitet."}
-          description={data.stats.connections === 0
-            ? "Lege eine Lieferantenquelle an. Gastario kann mit offiziellen Schnittstellen, Katalogen oder vorhandenen Einkaufsdaten arbeiten."
-            : `${data.stats.usableConnections} von ${data.stats.connections} Lieferantenquellen sind nutzbar. ${data.stats.liveConnections} davon liefern Live-Daten. ${data.stats.currentPrices} Preise sind aktuell.`}
-          actionLabel="Hinweise prüfen"
-          actionTo="#portal-workspace"
-        />
-
         <GastarioMetricGrid>
           <GastarioMetric label="Lieferanten" value={data.stats.total} description={`${data.stats.active} aktiv`} badge="Bestand" />
           <GastarioMetric label="Nutzbare Quellen" value={data.stats.usableConnections} description={`${data.stats.liveConnections} live`} badge="Portale" />
@@ -1546,6 +1533,28 @@ export default function SuppliersPage() {
                 </GastarioDataList>
               )}
 
+            </GastarioSection>
+          </div>
+
+        <GastarioInsight
+          tone={data.stats.stalePrices > 0 ? "rose" : "sage"}
+          eyebrow="Gastario Intelligence"
+          title={data.stats.stalePrices > 0
+            ? `${data.stats.stalePrices} Preisstände benötigen deine Aufmerksamkeit.`
+            : "Lieferanten und Einkaufsdaten sind übersichtlich vorbereitet."}
+          description={data.stats.connections === 0
+            ? "Lege eine Lieferantenquelle an. Gastario kann mit offiziellen Schnittstellen, Katalogen oder vorhandenen Einkaufsdaten arbeiten."
+            : `${data.stats.usableConnections} von ${data.stats.connections} Lieferantenquellen sind nutzbar. ${data.stats.liveConnections} davon liefern Live-Daten. ${data.stats.currentPrices} Preise sind aktuell.`}
+          actionLabel="Hinweise prüfen"
+          actionTo="#portal-workspace"
+        />
+
+
+          <GastarioSection
+            eyebrow="Verbindungen"
+            title="Technische Portalverwaltung"
+            description="Portalverbindungen einrichten oder technisch verwalten."
+          >
               <details
                 className="supplyV1TechnicalPanel"
                 id="portal-technical"
@@ -2169,8 +2178,7 @@ export default function SuppliersPage() {
           </div>
                 </div>
               </details>
-            </GastarioSection>
-          </div>
+          </GastarioSection>
 
         </GastarioStack>
       </PageShell>
