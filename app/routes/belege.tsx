@@ -6,21 +6,14 @@ import {
   GastarioMetricGrid,
   GastarioMetric,
   GastarioSection,
-  GastarioPanel,
-  GastarioStack,
-  GastarioToolbar,
-  GastarioButton,
-  GastarioDataList,
-  GastarioDataRow,
+  GastarioBadge,
+  GastarioNotice,
   GastarioEmptyState,
+  GastarioButton,
 } from "../components/ui";
 
 export function meta() {
-  return [
-    {
-      title: "Belege · Gastario",
-    },
-  ];
+  return [{ title: "Belege · Gastario" }];
 }
 
 export default function BelegePage() {
@@ -30,7 +23,12 @@ export default function BelegePage() {
         <GastarioHeader
           eyebrow="Finanzen"
           title="Belege"
-          description="Einkaufsbelege, Quittungen und Lieferantenrechnungen zentral erfassen und für die Buchhaltung vorbereiten."
+          subtitle="Einkaufsbelege, Quittungen und Lieferantenrechnungen für die Buchhaltung vorbereiten."
+          actions={
+            <GastarioButton type="button" variant="primary" disabled title="Beleg-Upload wird noch entwickelt">
+              + Beleg hochladen
+            </GastarioButton>
+          }
         />
 
         <GastarioMetricGrid>
@@ -40,14 +38,12 @@ export default function BelegePage() {
             description="Müssen geprüft werden"
             badge="Eingang"
           />
-
           <GastarioMetric
             label="Bereit"
             value="0"
             description="Für die Buchhaltung"
             badge="Geprüft"
           />
-
           <GastarioMetric
             label="Exportiert"
             value="0"
@@ -57,92 +53,18 @@ export default function BelegePage() {
         </GastarioMetricGrid>
 
         <GastarioSection
-          eyebrow="Belegscan"
-          title="Belege erfassen"
-          description="Hier entsteht der zentrale Arbeitsbereich für Rechnungen, Kassenbons und Lieferantenbelege."
-        >
-          <GastarioPanel variant="soft">
-            <GastarioStack>
-              <div>
-                <strong>
-                  Dokument hochladen
-                </strong>
-
-                <p>
-                  PDF-, JPG- und PNG-Belege werden künftig automatisch
-                  ausgelesen, kategorisiert und dem passenden Lieferanten
-                  zugeordnet.
-                </p>
-              </div>
-
-              <GastarioToolbar>
-                <GastarioButton
-                  type="button"
-                  variant="primary"
-                  disabled
-                >
-                  Upload folgt
-                </GastarioButton>
-              </GastarioToolbar>
-            </GastarioStack>
-          </GastarioPanel>
-        </GastarioSection>
-
-        <GastarioSection
-          eyebrow="Workflow"
-          title="Vom Beleg zur Buchhaltung"
-          description="Der geplante Ablauf bleibt transparent und nachvollziehbar."
-        >
-          <GastarioDataList>
-            <GastarioDataRow>
-              <div className="g-ui-data-row-main">
-                <strong className="g-ui-data-row-title">
-                  1 · Beleg erfassen
-                </strong>
-
-                <span className="g-ui-data-row-description">
-                  Datei hochladen oder später direkt mit dem Smartphone
-                  fotografieren.
-                </span>
-              </div>
-            </GastarioDataRow>
-
-            <GastarioDataRow>
-              <div className="g-ui-data-row-main">
-                <strong className="g-ui-data-row-title">
-                  2 · Daten prüfen
-                </strong>
-
-                <span className="g-ui-data-row-description">
-                  Lieferant, Datum, Betrag, Steuer und Kategorie werden
-                  kontrolliert.
-                </span>
-              </div>
-            </GastarioDataRow>
-
-            <GastarioDataRow>
-              <div className="g-ui-data-row-main">
-                <strong className="g-ui-data-row-title">
-                  3 · Buchhaltung übergeben
-                </strong>
-
-                <span className="g-ui-data-row-description">
-                  Geprüfte Belege werden für Lexware Office oder den
-                  Steuerberater vorbereitet.
-                </span>
-              </div>
-            </GastarioDataRow>
-          </GastarioDataList>
-        </GastarioSection>
-
-        <GastarioSection
-          eyebrow="Belegarchiv"
+          eyebrow="Belegübersicht"
           title="Gespeicherte Belege"
-          description="Alle erfassten Dokumente erscheinen später in dieser Übersicht."
+          description="Belege erfassen, kontrollieren und für die Buchhaltung vorbereiten."
+          action={<GastarioBadge variant="neutral">0 Belege</GastarioBadge>}
         >
+          <GastarioNotice type="info">
+            Der Beleg-Upload und die automatische Erkennung sind noch in Vorbereitung.
+            Aktuell können auf dieser Seite noch keine Dokumente hochgeladen oder exportiert werden.
+          </GastarioNotice>
+
           <GastarioEmptyState title="Noch keine Belege vorhanden">
-            Sobald der Belegscan aktiviert ist, werden hochgeladene
-            Dokumente hier mit Status und Buchungsdaten angezeigt.
+            <p>Sobald der Belegscan verfügbar ist, erscheinen hier deine Belege mit Status und Buchungsdaten.</p>
           </GastarioEmptyState>
         </GastarioSection>
       </GastarioPage>
