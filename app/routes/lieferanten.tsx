@@ -1229,7 +1229,7 @@ export default function SuppliersPage() {
 
   return (
     <AppLayout>
-            <PageShell className="supplyPage">
+            <PageShell className="supplyPage supplyDashboardV1Page">
         <PageHeader
           eyebrow="Einkauf & Lager"
           title="Lieferanten"
