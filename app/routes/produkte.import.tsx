@@ -1,4 +1,4 @@
-import { Form, Link, useActionData } from "react-router";
+import { Form, Link, useActionData, useNavigation } from "react-router";
 
 import AppLayout from "../components/AppLayout";
 
@@ -9,6 +9,8 @@ import {
   GastarioMetricGrid,
   GastarioMetric,
   GastarioSection,
+  GastarioCard,
+  GastarioStack,
   GastarioFormGrid,
   GastarioField,
   GastarioInput,
@@ -304,6 +306,9 @@ export default function ProduktImport() {
   const actionData =
     useActionData<typeof action>() as any;
 
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
+
   const hasPreview =
     Boolean(actionData?.preview);
 
@@ -365,82 +370,59 @@ export default function ProduktImport() {
         ) : null}
 
 
-        <GastarioSection
-          eyebrow="Produkt-Import"
-          title="Produktliste importieren"
-          description="CSV-Datei auswählen, prüfen und anschließend saubere Produktdaten übernehmen."
-          action={
-            <a
-              href="/produkte/import/vorlage"
-              className={
-                gastarioButtonClass(
-                  "secondary"
-                )
-              }
+        <GastarioCard
+          eyebrow="Produktimport · Schritt 1 von 2"
+          title="Produktliste hochladen"
+          description="Wähle eine CSV-Datei aus. Gastario prüft die Inhalte, bevor du Produkte übernehmen kannst."
+          actions={
+            <Link
+              to="/produkte/import/vorlage"
+              className={gastarioButtonClass("secondary")}
+              reloadDocument
             >
               CSV-Vorlage herunterladen
-            </a>
+            </Link>
           }
         >
+          <GastarioStack>
+            <GastarioNotice type="info">
+              <strong>So funktioniert der Import:</strong>{" "}
+              CSV-Datei auswählen, Daten prüfen und anschließend nur gültige Produkte importieren.
+              Bis zur Bestätigung wird nichts gespeichert.
+            </GastarioNotice>
 
-          <Form
-            method="post"
-            encType="multipart/form-data"
-          >
+            <Form method="post" encType="multipart/form-data">
+              <input type="hidden" name="intent" value="preview" />
 
-            <input
-              type="hidden"
-              name="intent"
-              value="preview"
-            />
+              <GastarioStack>
+                <GastarioFormGrid columns={2}>
+                  <GastarioField
+                    label="CSV-Datei auswählen"
+                    hint="CSV mit Komma oder Semikolon. Pflichtspalten: Produktname und Nettopreis."
+                    required
+                    fullWidth
+                  >
+                    <GastarioInput
+                      type="file"
+                      name="file"
+                      accept=".csv,text/csv"
+                      required
+                    />
+                  </GastarioField>
+                </GastarioFormGrid>
 
-
-            <GastarioFormGrid
-              columns={1}
-              className="g-ui-form-narrow"
-            >
-
-              <GastarioField
-                label="CSV-Datei"
-                hint="Pflichtfelder: Produktname und Nettopreis. Optional werden Kategorie, Einheit, MwSt. und Aktiv-Status erkannt."
-                required
-                fullWidth
-              >
-                <GastarioInput
-                  type="file"
-                  name="file"
-                  accept=".csv,text/csv"
-                  required
-                />
-              </GastarioField>
-
-            </GastarioFormGrid>
-
-
-            <GastarioToolbar
-              align="between"
-              className="g-ui-form-narrow"
-            >
-
-              <span className="g-ui-field-hint">
-                Komma und Semikolon werden automatisch
-                erkannt. Die Datei wird zunächst nur
-                geprüft und noch nicht importiert.
-              </span>
-
-
-              <GastarioButton
-                type="submit"
-                variant="primary"
-              >
-                CSV prüfen
-              </GastarioButton>
-
-            </GastarioToolbar>
-
-          </Form>
-
-        </GastarioSection>
+                <GastarioToolbar align="between">
+                  <span className="g-ui-field-hint">
+                    Optional: Kategorie, Einheit, Mehrwertsteuer und Aktiv-Status.
+                  </span>
+                  <GastarioButton type="submit" variant="primary" disabled={isSubmitting}>
+                    {isSubmitting ? "CSV wird geprüft …" : "CSV prüfen"}
+                  </GastarioButton>
+                </GastarioToolbar>
+              </GastarioStack>
+            </Form>
+          </GastarioStack>
+        </GastarioCard>
 
 
         {hasPreview ? (
@@ -488,8 +470,8 @@ export default function ProduktImport() {
             </GastarioMetricGrid>
 
 
-            <GastarioSection
-              eyebrow="Prüfung"
+            <GastarioCard
+              eyebrow="Produktimport · Schritt 2 von 2"
               title="Import prüfen"
               description="Kontrolliere die erkannten Produkte. Fehlerhafte Zeilen werden beim Import automatisch ausgelassen."
               action={
@@ -513,7 +495,7 @@ export default function ProduktImport() {
                     type="submit"
                     variant="primary"
                     disabled={
-                      validCount === 0
+                      validCount === 0 || isSubmitting
                     }
                   >
                     {validCount > 0
@@ -656,7 +638,7 @@ export default function ProduktImport() {
 
               </GastarioToolbar>
 
-            </GastarioSection>
+            </GastarioCard>
 
           </>
 
