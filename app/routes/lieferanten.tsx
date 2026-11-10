@@ -11,7 +11,7 @@ import {
   PageSection,
   PageShell,
 } from "../components/ui/PageShell";
-import { GastarioButton, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioInsight, GastarioDataList, GastarioDataRow, GastarioStack, GastarioBadge, GastarioFormGrid, GastarioField, GastarioInput, GastarioToolbar, GastarioDetailDialog, gastarioButtonClass } from "../components/ui";
+import { GastarioButton, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioNotice, GastarioDataList, GastarioDataRow, GastarioStack, GastarioBadge, GastarioFormGrid, GastarioField, GastarioInput, GastarioToolbar, GastarioDetailDialog, gastarioButtonClass } from "../components/ui";
 
 import "../styles/gastario-page-shell.css";
 import "../styles/gastario-supply-masterdesign.css";
@@ -1225,6 +1225,7 @@ export default function SuppliersPage() {
     useActionData<typeof action>() as any;
 
   const [newSupplierOpen, setNewSupplierOpen] = useState(false);
+  const [portalOpen, setPortalOpen] = useState(false);
 
   useEffect(() => {
     if (actionData?.success) setNewSupplierOpen(false);
@@ -1244,7 +1245,7 @@ export default function SuppliersPage() {
           actions={
             <>
               <GastarioButton variant="secondary" onClick={printPage}>Drucken</GastarioButton>
-              <a href="#portal-new" className={gastarioButtonClass("secondary")}>Portal verbinden</a>
+              <GastarioButton variant="secondary" onClick={() => setPortalOpen(true)}>Portal verbinden</GastarioButton>
               <Link to="/lieferanten/rechnungs-import" className={gastarioButtonClass("secondary")}>Katalog importieren</Link>
               <GastarioButton variant="primary" onClick={() => setNewSupplierOpen(true)}>+ Neuer Lieferant</GastarioButton>
             </>
@@ -1319,15 +1320,19 @@ export default function SuppliersPage() {
           </Form>
         </GastarioDetailDialog>
 
-        <GastarioStack>
-          <div>
-            <GastarioSection
-              className="supplyV1UnifiedPanel"
+        <GastarioSection
               eyebrow="Lieferanten & Einkaufsdaten"
               title="Lieferantenübersicht"
               description="Lieferanten, Portale, Kataloge und Preisstände in einer gemeinsamen Arbeitsansicht."
               action={<GastarioButton variant="secondary" onClick={() => setNewSupplierOpen(true)}>Lieferant hinzufügen</GastarioButton>}
             >
+
+              {data.stats.stalePrices > 0 ? (
+                <GastarioNotice type="warning">
+                  {data.stats.stalePrices} Preisstände müssen geprüft werden.
+                  Die Lieferantenübersicht bleibt nutzbar; aktuelle Preise sind gesondert zu kontrollieren.
+                </GastarioNotice>
+              ) : null}
 
               {data.suppliers.length === 0 ? (
                 <div className="supplyEmpty supplyV1UnifiedEmpty">
@@ -1498,14 +1503,14 @@ export default function SuppliersPage() {
                             </Form>
                           </details>
 
-                          <a
+                          <button type="button"
                             className={gastarioButtonClass("secondary")}
-                            href="#portal-technical"
+                            onClick={() => setPortalOpen(true)}
                           >
                             {connection
                               ? "Portal"
                               : "Verbinden"}
-                          </a>
+                          </button>
                           {connection &&
                           String(
                             connection?.settingsJson?.providerCode ||
@@ -1534,44 +1539,18 @@ export default function SuppliersPage() {
               )}
 
             </GastarioSection>
-          </div>
-
-        <GastarioInsight
-          tone={data.stats.stalePrices > 0 ? "rose" : "sage"}
-          eyebrow="Gastario Intelligence"
-          title={data.stats.stalePrices > 0
-            ? `${data.stats.stalePrices} Preisstände benötigen deine Aufmerksamkeit.`
-            : "Lieferanten und Einkaufsdaten sind übersichtlich vorbereitet."}
-          description={data.stats.connections === 0
-            ? "Lege eine Lieferantenquelle an. Gastario kann mit offiziellen Schnittstellen, Katalogen oder vorhandenen Einkaufsdaten arbeiten."
-            : `${data.stats.usableConnections} von ${data.stats.connections} Lieferantenquellen sind nutzbar. ${data.stats.liveConnections} davon liefern Live-Daten. ${data.stats.currentPrices} Preise sind aktuell.`}
-          actionLabel="Hinweise prüfen"
-          actionTo="#portal-workspace"
-        />
 
 
-          <GastarioSection
-            eyebrow="Verbindungen"
-            title="Technische Portalverwaltung"
-            description="Portalverbindungen einrichten oder technisch verwalten."
-          >
-              <details
-                className="supplyV1TechnicalPanel"
-                id="portal-technical"
-              >
-                <summary>
-                  <span>
-                    <small>Technische Verwaltung</small>
-                    <strong>
-                      Portale und automatische Lieferantenverbindungen
-                    </strong>
-                    <p>
-                      Nur öffnen, wenn ein Portal eingerichtet oder technisch verwaltet werden soll.
-                    </p>
-                  </span>
-                  <b>+</b>
-                </summary>
 
+
+        <GastarioDetailDialog
+          open={portalOpen}
+          title="Technische Portalverwaltung"
+          description="Lieferantenportale und automatische Verbindungen verwalten."
+          size="xl"
+          onClose={() => setPortalOpen(false)}
+          footer={<GastarioButton variant="secondary" onClick={() => setPortalOpen(false)}>Schließen</GastarioButton>}
+        >
                 <div className="supplyV1TechnicalBody">
 <details className="supplyDisclosure supplyDisclosure--compact">
             <summary>
@@ -2177,10 +2156,9 @@ export default function SuppliersPage() {
             )}
           </div>
                 </div>
-              </details>
-          </GastarioSection>
+        </GastarioDetailDialog>
 
-        </GastarioStack>
+
       </PageShell>
     </AppLayout>
   );
