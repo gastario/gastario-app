@@ -2233,68 +2233,6 @@ export default function SuppliersPage() {
             </GastarioSection>
           </div>
 
-          <div>
-            <GastarioSection
-              className="supplyV1Panel supplyV1ActivityPanel"
-              eyebrow="Live"
-              title="Status & Aktivität"
-            >
-
-              <div className="supplyV1ActivityList">
-                <article>
-                  <b data-tone={data.stats.usableConnections > 0 ? "success" : "warning"} />
-                  <div>
-                    <small>Datenquellen</small>
-                    <strong>
-                      {data.stats.usableConnections > 0
-                        ? "Einkaufsdaten sind nutzbar"
-                        : "Noch keine nutzbare Quelle"}
-                    </strong>
-                    <p>
-                      {data.stats.usableConnections} nutzbar, {data.stats.liveConnections} live.
-                    </p>
-                  </div>
-                </article>
-
-                <article>
-                  <b data-tone={data.stats.stalePrices > 0 ? "warning" : "success"} />
-                  <div>
-                    <small>Preisstatus</small>
-                    <strong>
-                      {data.stats.stalePrices > 0
-                        ? "Preisprüfung erforderlich"
-                        : "Preise aktuell"}
-                    </strong>
-                    <p>
-                      {data.stats.currentPrices} aktuelle und {data.stats.stalePrices} zu prüfende Preise.
-                    </p>
-                  </div>
-                </article>
-
-                <article>
-                  <b data-tone={data.stats.catalogItems > 0 ? "success" : "neutral"} />
-                  <div>
-                    <small>Katalog</small>
-                    <strong>
-                      {data.stats.catalogItems > 0
-                        ? "Einkaufsdaten vorhanden"
-                        : "Noch keine Katalogdaten"}
-                    </strong>
-                    <p>
-                      {data.stats.catalogItems} Artikel wurden erfasst.
-                    </p>
-                  </div>
-                </article>
-              </div>
-
-              <a
-                className="supplyV1ActivityAction"
-                href="#portal-technical"
-              >
-                Technische Portalverwaltung
-              </a>
-            </GastarioSection>
-          </div>
         </GastarioStack>
       </PageShell>
     </AppLayout>
