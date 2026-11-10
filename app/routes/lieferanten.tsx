@@ -1,4 +1,5 @@
 ﻿import { Form, Link, useActionData, useLoaderData } from "react-router";
+import { useEffect, useState } from "react";
 
 import AppLayout from "../components/AppLayout";
 
@@ -10,7 +11,7 @@ import {
   PageSection,
   PageShell,
 } from "../components/ui/PageShell";
-import { GastarioButton, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioInsight, GastarioDataList, GastarioDataRow, GastarioStack, GastarioBadge, GastarioFormGrid, GastarioField, GastarioInput, GastarioToolbar, gastarioButtonClass } from "../components/ui";
+import { GastarioButton, GastarioMetricGrid, GastarioMetric, GastarioSection, GastarioInsight, GastarioDataList, GastarioDataRow, GastarioStack, GastarioBadge, GastarioFormGrid, GastarioField, GastarioInput, GastarioToolbar, GastarioDetailDialog, gastarioButtonClass } from "../components/ui";
 
 import "../styles/gastario-page-shell.css";
 import "../styles/gastario-supply-masterdesign.css";
@@ -1223,6 +1224,12 @@ export default function SuppliersPage() {
   const actionData =
     useActionData<typeof action>() as any;
 
+  const [newSupplierOpen, setNewSupplierOpen] = useState(false);
+
+  useEffect(() => {
+    if (actionData?.success) setNewSupplierOpen(false);
+  }, [actionData]);
+
   const printPage = () => {
     window.print();
   };
@@ -1239,7 +1246,7 @@ export default function SuppliersPage() {
               <GastarioButton variant="secondary" onClick={printPage}>Drucken</GastarioButton>
               <a href="#portal-new" className={gastarioButtonClass("secondary")}>Portal verbinden</a>
               <Link to="/lieferanten/rechnungs-import" className={gastarioButtonClass("secondary")}>Katalog importieren</Link>
-              <a href="#supplier-new" className={gastarioButtonClass("primary")}>+ Neuer Lieferant</a>
+              <GastarioButton variant="primary" onClick={() => setNewSupplierOpen(true)}>+ Neuer Lieferant</GastarioButton>
             </>
           }
         />
@@ -1277,17 +1284,55 @@ export default function SuppliersPage() {
             description={data.stats.stalePrices > 0 ? `${data.stats.stalePrices} prüfen` : "Aktuell"} badge="Preise" />
         </GastarioMetricGrid>
 
-        <GastarioSection
-          eyebrow="Stammdaten"
+        <GastarioDetailDialog
+          open={newSupplierOpen}
           title="Neuen Lieferanten anlegen"
           description="Kontaktdaten, Bestelltage und Sortiment erfassen."
+          onClose={() => setNewSupplierOpen(false)}
+          size="lg"
+          footer={
+            <>
+              <GastarioButton variant="secondary" onClick={() => setNewSupplierOpen(false)}>
+                Abbrechen
+              </GastarioButton>
+              <GastarioButton variant="primary" type="submit" form="supplier-create-form">
+                Lieferant anlegen
+              </GastarioButton>
+            </>
+          }
         >
-          <details id="supplier-new" className="supplyDisclosure">
-            <summary className={gastarioButtonClass("secondary")}>Formular öffnen</summary>
-            <div className="supplyDisclosureBody">
-              <Form method="post">
-                <input type="hidden" name="intent" value="createSupplier" />
-                <GastarioStack>
+          <Form method="post" id="supplier-create-form">
+            <input type="hidden" name="intent" value="createSupplier" />
+            <GastarioFormGrid columns={2}>
+              <GastarioField label="Name" required>
+                <GastarioInput name="name" placeholder="z. B. METRO" required />
+              </GastarioField>
+              <GastarioField label="Kategorie">
+                <GastarioInput name="category" placeholder="Lebensmittel" />
+              </GastarioField>
+              <GastarioField label="Ansprechpartner">
+                <GastarioInput name="contactName" placeholder="Herr / Frau …" />
+              </GastarioField>
+              <GastarioField label="Bestelltage">
+                <GastarioInput name="orderDays" placeholder="Mo–Fr" />
+              </GastarioField>
+              <GastarioField label="E-Mail">
+                <GastarioInput name="email" type="email" placeholder="bestellung@…" />
+              </GastarioField>
+              <GastarioField label="Telefon">
+                <GastarioInput name="phone" placeholder="030 …" />
+              </GastarioField>
+              <GastarioField label="Artikel / Sortiment">
+                <GastarioInput name="items" placeholder="Reis, Hähnchen, Gemüse …" />
+              </GastarioField>
+              <GastarioField label="Notiz">
+                <GastarioInput name="notes" placeholder="Optional" />
+              </GastarioField>
+            </GastarioFormGrid>
+          </Form>
+        </GastarioDetailDialog>
+
+        <GastarioStack>
                   <GastarioFormGrid columns={2}>
                     <GastarioField label="Name" required>
                       <GastarioInput name="name" placeholder="z. B. METRO" required />
@@ -1330,7 +1375,7 @@ export default function SuppliersPage() {
               eyebrow="Lieferanten & Einkaufsdaten"
               title="Lieferantenübersicht"
               description="Lieferanten, Portale, Kataloge und Preisstände in einer gemeinsamen Arbeitsansicht."
-              action={<a href="#supplier-new" className={gastarioButtonClass("secondary")}>Lieferant hinzufügen</a>}
+              action={<GastarioButton variant="secondary" onClick={() => setNewSupplierOpen(true)}>Lieferant hinzufügen</GastarioButton>}
             >
 
               {data.suppliers.length === 0 ? (
