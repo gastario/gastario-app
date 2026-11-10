@@ -186,10 +186,14 @@ export default function RecipesPage() {
         >
           {data.products.length === 0 ? (
             <GastarioEmptyState title="Noch keine Rezeptprodukte vorhanden">
-              Ordne unter Produkte ein Küchenprodukt der Beschaffungsart Rezeptur zu.
-              <Link to="/produkte" className={gastarioButtonClass("secondary")}>
-                Produkte verwalten
-              </Link>
+              <GastarioStack compact>
+                <p>Ordne unter Produkte ein Küchenprodukt der Beschaffungsart Rezeptur zu.</p>
+                <div>
+                  <Link to="/produkte" className={gastarioButtonClass("secondary")}>
+                    Produkte verwalten
+                  </Link>
+                </div>
+              </GastarioStack>
             </GastarioEmptyState>
           ) : (
             <GastarioDataList>
