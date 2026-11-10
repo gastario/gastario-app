@@ -1,17 +1,21 @@
-import { Link, useLoaderData } from "react-router";
+import { Link, useLoaderData, useLocation, useNavigate } from "react-router";
 
 import AppLayout from "../components/AppLayout";
 
 import {
-  MetricCard,
-  MetricGrid,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
-
-import "../styles/gastario-page-shell.css";
-import "../styles/gastario-supply-masterdesign.css";
+  GastarioPage,
+  GastarioHeader,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioSection,
+  GastarioBadge,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioEmptyState,
+  GastarioDetailDialog,
+  GastarioStack,
+  gastarioButtonClass,
+} from "../components/ui";
 
 function formatRecipeQuantity(value: unknown) {
   const number = Number(value || 0);
@@ -119,296 +123,176 @@ export async function loader({
 }
 
 export default function RecipesPage() {
-  /*
-   * gastario-recipes-masterdesign-v1-20260802
-   *
-   * Keine Beispiel- oder Fantasiedaten mehr:
-   * Die Ansicht verwendet echte Produkte und
-   * ProductRecipeItem-Datensätze.
-   */
   const data = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const selectedOpen = new URLSearchParams(location.search).has("product");
+  const selected = selectedOpen ? data.selectedProduct : null;
 
   return (
     <AppLayout>
-      <PageShell className="supplyPage recipesMasterPage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Einkauf & Lager"
           title="Rezepte"
           subtitle={
-            <>
-              Küchenprodukte mit echten Zutaten,
-              Mengen, Einheiten und Lieferanten für{" "}
-              {data.tenant.name}.
-            </>
+            <>Küchenprodukte mit Zutaten, Mengen, Einheiten und Lieferanten für {data.tenant.name}.</>
           }
           actions={
             <>
-              <Link
-                className="supplyButton supplyButton--secondary"
-                to="/einkauf"
-              >
-                Einkaufsplanung
-              </Link>
-
-              <Link
-                className="supplyButton supplyButton--primary"
-                to="/produkte"
-              >
-                Produkte verwalten
-              </Link>
+              <Link to="/einkauf" className={gastarioButtonClass("secondary")}>Einkaufsplanung</Link>
+              <Link to="/produkte" className={gastarioButtonClass("primary")}>Produkte verwalten</Link>
             </>
           }
         />
 
-        <MetricGrid>
-          <MetricCard
+        <GastarioMetricGrid>
+          <GastarioMetric
             label="Rezeptprodukte"
             value={data.stats.total}
-            description="aktive Küchenprodukte mit Rezepturtyp"
+            description="Aktive Küchenprodukte mit Rezeptur"
             badge="Produkte"
           />
-
-          <MetricCard
+          <GastarioMetric
             label="Vollständig"
             value={data.stats.complete}
-            description="mit mindestens einer validen Zutat"
+            description="Rezepturen mit gültigen Zutaten"
             badge="Bereit"
           />
-
-          <MetricCard
+          <GastarioMetric
             label="Unvollständig"
             value={data.stats.incomplete}
-            description="fehlende oder ungültige Rezeptur"
-            badge={
-              data.stats.incomplete > 0
-                ? "Prüfen"
-                : "Sauber"
-            }
-            attention={
-              data.stats.incomplete > 0
-            }
+            description="Fehlende oder ungültige Rezepturen"
+            badge={data.stats.incomplete ? "Prüfen" : "Sauber"}
+            attention={data.stats.incomplete > 0}
           />
-
-          <MetricCard
+          <GastarioMetric
             label="Zutatenzeilen"
             value={data.stats.ingredients}
-            description="über alle Rezeptprodukte"
+            description="Über alle Rezeptprodukte"
             badge="Rezeptur"
           />
-        </MetricGrid>
+        </GastarioMetricGrid>
 
-        <div className="recipesWorkspace">
-          <PageSection
-            className="recipesMainSection"
-            eyebrow="Rezepturen"
-            title="Produktübersicht"
-            description="Die Übersicht zeigt nur echte Küchenprodukte mit Beschaffungsart Rezeptur."
-          >
-            <div className="recipesMasterTableWrap">
-              <table className="recipesMasterTable">
-                <thead>
-                  <tr>
-                    <th>Produkt</th>
-                    <th>Kategorie</th>
-                    <th>Einheit</th>
-                    <th>Zutaten</th>
-                    <th>Lieferanten</th>
-                    <th>Status</th>
-                    <th></th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {data.products.length === 0 ? (
-                    <tr>
-                      <td colSpan={7}>
-                        <div className="supplyEmpty">
-                          <strong>
-                            Noch keine Rezeptprodukte
-                            vorhanden
-                          </strong>
-                          <p>
-                            Ordne unter Produkte ein
-                            Küchenprodukt der
-                            Beschaffungsart Rezeptur zu.
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    data.products.map(
-                      (product: any) => {
-                        const complete =
-                          recipeIsComplete(product);
-
-                        const suppliers = Array.from(
-                          new Set(
-                            product.recipeItems
-                              .map(
-                                (item: any) =>
-                                  String(
-                                    item.supplierName ||
-                                      ""
-                                  ).trim()
-                              )
-                              .filter(Boolean)
-                          )
-                        );
-
-                        return (
-                          <tr key={product.id}>
-                            <td>
-                              <strong>
-                                {product.name}
-                              </strong>
-                            </td>
-
-                            <td>
-                              {product.category ||
-                                "–"}
-                            </td>
-
-                            <td>{product.unit}</td>
-
-                            <td>
-                              {
-                                product.recipeItems
-                                  .length
-                              }
-                            </td>
-
-                            <td>
-                              {suppliers.length > 0
-                                ? suppliers.join(", ")
-                                : "Nicht zugeordnet"}
-                            </td>
-
-                            <td>
-                              <span
-                                className={[
-                                  "supplyStatus",
-                                  complete
-                                    ? "supplyStatus--success"
-                                    : "supplyStatus--warning",
-                                ].join(" ")}
-                              >
-                                {complete
-                                  ? "Vollständig"
-                                  : "Prüfen"}
-                              </span>
-                            </td>
-
-                            <td>
-                              <Link
-                                className="supplyButton supplyButton--secondary supplyButton--compact"
-                                to={`/rezepte?product=${product.id}`}
-                              >
-                                Öffnen
-                              </Link>
-                            </td>
-                          </tr>
-                        );
-                      }
-                    )
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </PageSection>
-
-          <aside className="recipesSideStack">
-            <PageSection
-              eyebrow="Rezeptur"
-              title={
-                data.selectedProduct?.name ||
-                "Kein Produkt ausgewählt"
-              }
-              description={
-                data.selectedProduct
-                  ? `${data.selectedProduct.unit} · ${
-                      data.selectedProduct.category ||
-                      "Ohne Kategorie"
-                    }`
-                  : "Wähle ein Produkt aus der Übersicht."
-              }
-              soft
-            >
-              {!data.selectedProduct ? (
-                <div className="supplyEmpty">
-                  Keine Rezeptur ausgewählt.
-                </div>
-              ) : data.selectedProduct.recipeItems
-                  .length === 0 ? (
-                <div className="supplyEmpty">
-                  <strong>
-                    Noch keine Zutaten hinterlegt
-                  </strong>
-                  <p>
-                    Dieses Produkt kann noch keinen
-                    automatischen Einkaufsbedarf
-                    erzeugen.
-                  </p>
-                </div>
-              ) : (
-                <div className="recipeIngredientList">
-                  {data.selectedProduct.recipeItems.map(
-                    (item: any) => (
-                      <article
-                        className="recipeIngredientRow"
-                        key={item.id}
+        <GastarioSection
+          eyebrow="Rezeptübersicht"
+          title="Aktuelle Rezepturen"
+          description="Rezeptprodukte prüfen und ihre Zutaten im Detail öffnen."
+          action={
+            <GastarioBadge variant="neutral">
+              {data.products.length === 1 ? "1 Rezept" : `${data.products.length} Rezepte`}
+            </GastarioBadge>
+          }
+        >
+          {data.products.length === 0 ? (
+            <GastarioEmptyState title="Noch keine Rezeptprodukte vorhanden">
+              Ordne unter Produkte ein Küchenprodukt der Beschaffungsart Rezeptur zu.
+              <Link to="/produkte" className={gastarioButtonClass("secondary")}>
+                Produkte verwalten
+              </Link>
+            </GastarioEmptyState>
+          ) : (
+            <GastarioDataList>
+              {data.products.map((product: any) => {
+                const complete = recipeIsComplete(product);
+                const suppliers = Array.from(new Set(
+                  product.recipeItems
+                    .map((item: any) => String(item.supplierName || "").trim())
+                    .filter(Boolean)
+                ));
+                return (
+                  <GastarioDataRow
+                    key={product.id}
+                    onClick={() => navigate(`/rezepte?product=${encodeURIComponent(product.id)}`)}
+                  >
+                    <div className="g-ui-data-row-main">
+                      <span className="g-ui-data-row-description">{product.category || "Ohne Kategorie"}</span>
+                      <strong className="g-ui-data-row-title">{product.name}</strong>
+                      <span className="g-ui-data-row-description">
+                        {product.unit} · {product.recipeItems.length} Zutaten
+                        {" · "}{suppliers.length ? suppliers.join(", ") : "Kein Lieferant zugeordnet"}
+                      </span>
+                    </div>
+                    <div className="g-ui-data-row-meta">
+                      <GastarioBadge variant={complete ? "success" : "warning"}>
+                        {complete ? "Vollständig" : "Prüfen"}
+                      </GastarioBadge>
+                    </div>
+                    <div className="g-ui-data-row-actions">
+                      <Link
+                        to={`/rezepte?product=${encodeURIComponent(product.id)}`}
+                        onClick={(event) => event.stopPropagation()}
+                        className={gastarioButtonClass("secondary")}
                       >
-                        <div>
-                          <strong>
-                            {item.ingredientName}
-                          </strong>
+                        Öffnen
+                      </Link>
+                    </div>
+                  </GastarioDataRow>
+                );
+              })}
+            </GastarioDataList>
+          )}
+        </GastarioSection>
 
-                          <span>
-                            {item.supplierName ||
-                              "Ohne Lieferant"}
-                          </span>
-                        </div>
-
-                        <small>
-                          {formatRecipeQuantity(
-                            item.quantityPerUnit
-                          )}{" "}
-                          {item.unit}
-                        </small>
-                      </article>
-                    )
-                  )}
-                </div>
-              )}
-            </PageSection>
-
-            <PageSection
-              eyebrow="Automatik"
-              title="Einkauf & Lager"
-              soft
-            >
-              <div className="recipeAutomationInfo">
-                <strong>
-                  Rezeptur als Berechnungsgrundlage
-                </strong>
-
-                <p>
-                  Gastario multipliziert die operative
-                  Auftragsmenge mit jeder Zutatenmenge
-                  und erstellt daraus die
-                  Einkaufsplanung.
-                </p>
-
-                <Link
-                  className="supplyButton supplyButton--secondary"
-                  to="/einkauf"
-                >
+        <GastarioDetailDialog
+          open={Boolean(selected)}
+          title={selected?.name || "Rezeptur"}
+          description={selected
+            ? `${selected.unit} · ${selected.category || "Ohne Kategorie"}`
+            : "Rezepturdetails"}
+          onClose={() => navigate("/rezepte")}
+          footer={
+            <>
+              <Link to="/einkauf" className={gastarioButtonClass("secondary")}>
+                Einkaufsbedarf ansehen
+              </Link>
+              <Link to="/rezepte" className={gastarioButtonClass("secondary")}>
+                Schließen
+              </Link>
+            </>
+          }
+        >
+          {!selected ? null : selected.recipeItems.length === 0 ? (
+            <GastarioEmptyState title="Noch keine Zutaten hinterlegt">
+              Dieses Rezeptprodukt kann noch keinen automatischen Einkaufsbedarf erzeugen.
+              Die Rezeptur wird über die Produktverwaltung gepflegt.
+            </GastarioEmptyState>
+          ) : (
+            <GastarioStack>
+              <GastarioSection
+                eyebrow="Rezeptur"
+                title="Zutaten und Mengen"
+                description="Menge je Produkteinheit, inklusive hinterlegter Lieferanten."
+              >
+                <GastarioDataList>
+                  {selected.recipeItems.map((item: any) => (
+                    <GastarioDataRow key={item.id}>
+                      <div className="g-ui-data-row-main">
+                        <strong className="g-ui-data-row-title">{item.ingredientName}</strong>
+                        <span className="g-ui-data-row-description">
+                          {item.supplierName || "Ohne Lieferant"}
+                        </span>
+                      </div>
+                      <div className="g-ui-data-row-meta">
+                        <strong>{formatRecipeQuantity(item.quantityPerUnit)} {item.unit}</strong>
+                      </div>
+                    </GastarioDataRow>
+                  ))}
+                </GastarioDataList>
+              </GastarioSection>
+              <GastarioSection
+                eyebrow="Einkauf"
+                title="Automatische Bedarfsberechnung"
+                description="Gastario multipliziert die operative Auftragsmenge mit jeder Zutatenmenge für die Einkaufsplanung."
+              >
+                <Link to="/einkauf" className={gastarioButtonClass("secondary")}>
                   Bedarf ansehen
                 </Link>
-              </div>
-            </PageSection>
-          </aside>
-        </div>
-      </PageShell>
+              </GastarioSection>
+            </GastarioStack>
+          )}
+        </GastarioDetailDialog>
+      </GastarioPage>
     </AppLayout>
   );
 }
