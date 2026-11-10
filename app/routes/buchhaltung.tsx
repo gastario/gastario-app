@@ -4,6 +4,7 @@ import {
   useLoaderData,
 } from "react-router";
 import AppLayout from "../components/AppLayout";
+import { useState } from "react";
 
 import {
   GastarioPage,
@@ -16,9 +17,11 @@ import {
   GastarioField,
   GastarioInput,
   GastarioToolbar,
-  GastarioSplitView,
-  GastarioSplitMain,
-  GastarioSplitAside,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioBadge,
+  GastarioDetailDialog,
+  GastarioStack,
 } from "../components/ui";
 
 import "../styles/gastario-module-workspace.css";
@@ -563,6 +566,8 @@ export default function AccountingPage() {
   const connection =
     data.connection;
 
+  const [connectionDialogOpen, setConnectionDialogOpen] = useState(false);
+
   const connectionLabel =
     connection?.active
       ? "Aktiv"
@@ -576,17 +581,11 @@ export default function AccountingPage() {
         <GastarioHeader
           eyebrow="Finanzen"
           title="Buchhaltung"
-          description="Verbinde Gastario sicher mit deinem Buchhaltungsprogramm und verwalte den technischen Status zentral."
+          subtitle={<>{data.tenantName} · Buchhaltungsprogramme und ihre Verbindungen zentral verwalten.</>}
           actions={
-            <span
-              className={
-                connection?.active
-                  ? "moduleBadge moduleBadgeSuccess"
-                  : "moduleBadge"
-              }
-            >
+            <GastarioBadge variant={connection?.active ? "success" : "neutral"}>
               {connectionLabel}
-            </span>
+            </GastarioBadge>
           }
         />
 
@@ -607,6 +606,33 @@ export default function AccountingPage() {
             {actionData.success}
           </GastarioNotice>
         ) : null}
+
+        <GastarioMetricGrid>
+          <GastarioMetric
+            label="Buchhaltungsprogramme"
+            value={ACCOUNTING_PROVIDERS.length}
+            description="Im System aufgeführt"
+            badge="Anbieter"
+          />
+          <GastarioMetric
+            label="Verfügbar"
+            value={ACCOUNTING_PROVIDERS.filter((provider) => provider.availability === "AVAILABLE").length}
+            description="Derzeit nutzbare Anbindungen"
+            badge="Bereit"
+          />
+          <GastarioMetric
+            label="Verbunden"
+            value={connection?.active ? 1 : 0}
+            description={connection?.active ? "Lexware Office aktiv" : "Keine aktive Verbindung"}
+            badge="Aktiv"
+          />
+          <GastarioMetric
+            label="In Vorbereitung"
+            value={ACCOUNTING_PROVIDERS.filter((provider) => provider.availability !== "AVAILABLE").length}
+            description="Weitere Anbindungen geplant"
+            badge="Ausbau"
+          />
+        </GastarioMetricGrid>
 
         <GastarioSection
           eyebrow="Anbieter"
@@ -658,8 +684,9 @@ export default function AccountingPage() {
 
                     <div className="g-ui-data-row-actions">
                       {available ? (
-                        <a
-                          href="#zugang-einrichten"
+                        <button
+                          type="button"
+                          onClick={() => setConnectionDialogOpen(true)}
                           className={gastarioButtonClass(
                             "secondary"
                           )}
@@ -667,7 +694,7 @@ export default function AccountingPage() {
                           {connected
                             ? "Verbindung verwalten"
                             : "Verbindung einrichten"}
-                        </a>
+                        </button>
                       ) : (
                         <button
                           type="button"
@@ -687,9 +714,19 @@ export default function AccountingPage() {
           </GastarioDataList>
         </GastarioSection>
 
-        <GastarioSplitView wide>
-          <GastarioSplitMain>
-          <div id="zugang-einrichten">
+        <GastarioDetailDialog
+          open={connectionDialogOpen}
+          title="Lexware Office"
+          description="Verbindung und technischen Status verwalten."
+          size="xl"
+          onClose={() => setConnectionDialogOpen(false)}
+          footer={
+            <button type="button" className={gastarioButtonClass("secondary")} onClick={() => setConnectionDialogOpen(false)}>
+              Schließen
+            </button>
+          }
+        >
+          <GastarioStack>
             <GastarioSection
               eyebrow="Verbindung"
               title="Lexware Office verbinden"
@@ -754,10 +791,7 @@ export default function AccountingPage() {
                 oder gelöscht.
               </GastarioNotice>
             </GastarioSection>
-          </div>
-          </GastarioSplitMain>
 
-          <GastarioSplitAside>
             <GastarioSection
               eyebrow="Status"
               title="Verbindungsstatus"
@@ -931,8 +965,8 @@ export default function AccountingPage() {
                 </GastarioToolbar>
               ) : null}
             </GastarioSection>
-          </GastarioSplitAside>
-        </GastarioSplitView>
+          </GastarioStack>
+        </GastarioDetailDialog>
       </GastarioPage>
     </AppLayout>
   );
