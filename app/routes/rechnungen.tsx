@@ -1,14 +1,18 @@
 import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
 import {
-  MetricCard,
-  MetricGrid,
-  Notice,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
-import "../styles/gastario-documents.css";
+  GastarioPage,
+  GastarioHeader,
+  GastarioNotice,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioSection,
+  GastarioBadge,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioEmptyState,
+  gastarioButtonClass,
+} from "../components/ui";
 
 function centsToEuro(value: number | null | undefined) {
   return ((value || 0) / 100).toLocaleString("de-DE", {
@@ -215,29 +219,21 @@ export default function RechnungenPage() {
 
   return (
     <AppLayout>
-      <PageShell className="documentsPage invoicesOverviewPage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Finanzen"
           title="Rechnungen"
           subtitle={
             <>
-              {data.tenantName} · Entwürfe erstellen, Rechnungen finalisieren
-              und Zahlungen nachvollziehbar verwalten.
+              {data.tenantName} · Entwürfe erstellen, Rechnungen finalisieren und Zahlungen nachvollziehbar verwalten.
             </>
           }
           actions={
             <>
-              <Link
-                className="g-doc-button g-doc-button--secondary"
-                to="/einstellungen/rechnungen"
-              >
+              <Link to="/einstellungen/rechnungen" className={gastarioButtonClass("secondary")}>
                 Rechnungsdaten
               </Link>
-
-              <Link
-                className="g-doc-button g-doc-button--primary"
-                to="/rechnungen/neu"
-              >
+              <Link to="/rechnungen/neu" className={gastarioButtonClass("primary")}>
                 + Neue Rechnung
               </Link>
             </>
@@ -245,217 +241,130 @@ export default function RechnungenPage() {
         />
 
         {actionData && "error" in actionData ? (
-          <Notice type="danger">{actionData.error}</Notice>
+          <GastarioNotice type="danger">{actionData.error}</GastarioNotice>
         ) : null}
-
         {actionData && "success" in actionData ? (
-          <Notice type="success">{actionData.success}</Notice>
+          <GastarioNotice type="success">{actionData.success}</GastarioNotice>
         ) : null}
-
         {data.dbError ? (
-          <Notice type="danger">
+          <GastarioNotice type="danger">
             <strong>Rechnungsdaten konnten nicht vollständig geladen werden.</strong>
-            <span>{data.dbError}</span>
-          </Notice>
+            {" "}{data.dbError}
+          </GastarioNotice>
         ) : null}
 
-        <MetricGrid>
-          <MetricCard
+        <GastarioMetricGrid>
+          <GastarioMetric
             label="Entwürfe"
             value={data.stats.drafts}
             description="Noch nicht finalisiert"
             badge="Offen"
             attention={data.stats.drafts > 0}
           />
-
-          <MetricCard
+          <GastarioMetric
             label="Erstellt"
             value={data.stats.issued}
             description="Finalisierte Rechnungen"
             badge="Aktiv"
           />
-
-          <MetricCard
+          <GastarioMetric
             label="Bezahlt"
             value={data.stats.paid}
             description="Vollständig erledigt"
             badge="Erledigt"
           />
-
-          <MetricCard
+          <GastarioMetric
             label="Storniert"
             value={data.stats.cancelled}
             description="Storno oder Korrektur"
             badge="Archiv"
           />
-        </MetricGrid>
+        </GastarioMetricGrid>
 
-        <PageSection
-          className="documentsListSection"
+        <GastarioSection
           eyebrow="Rechnungsübersicht"
           title="Alle Rechnungen"
-          description="Öffne einen Beleg für Vorschau, PDF, Finalisierung, Zahlung oder Storno."
-          actions={
-            <span className="g-doc-count">
-              {data.invoices.length}
-              <small>Belege</small>
-            </span>
+          description="Belege öffnen, finalisieren und Zahlungen sowie Stornierungen verwalten."
+          action={
+            <GastarioBadge variant="neutral">
+              {data.invoices.length === 1 ? "1 Rechnung" : `${data.invoices.length} Rechnungen`}
+            </GastarioBadge>
           }
         >
           {data.invoices.length === 0 ? (
-            <div className="g-doc-empty-state">
-              <span aria-hidden="true">€</span>
-              <div>
-                <strong>Noch keine Rechnungen vorhanden</strong>
-                <p>
-                  Erstelle den ersten Rechnungsentwurf direkt im
-                  Gastario-Rechnungseditor.
-                </p>
-              </div>
-              <Link
-                className="g-doc-button g-doc-button--primary"
-                to="/rechnungen/neu"
-              >
+            <GastarioEmptyState title="Noch keine Rechnungen vorhanden">
+              <p>Erstelle den ersten Rechnungsentwurf direkt im Gastario-Rechnungseditor.</p>
+              <Link to="/rechnungen/neu" className={gastarioButtonClass("secondary")}>
                 Rechnung erstellen
               </Link>
-            </div>
+            </GastarioEmptyState>
           ) : (
-            <div className="g-doc-table-wrap">
-              <table className="g-doc-table invoicesTable">
-                <thead>
-                  <tr>
-                    <th>Rechnung</th>
-                    <th>Kunde</th>
-                    <th>Datum</th>
-                    <th>Sprache</th>
-                    <th className="isNumeric">Summe</th>
-                    <th>Status</th>
-                    <th className="isAction">Aktionen</th>
-                  </tr>
-                </thead>
+            <GastarioDataList>
+              {data.invoices.map((invoice) => (
+                <GastarioDataRow key={invoice.id}>
+                  <div className="g-ui-data-row-main">
+                    <span className="g-ui-data-row-description">
+                      {invoice.externalInvoiceNumber || "Entwurf ohne Nummer"}
+                    </span>
+                    <strong className="g-ui-data-row-title">
+                      {invoice.customerName || "Ohne Kunde"}
+                    </strong>
+                    <span className="g-ui-data-row-description">
+                      {formatDate(invoice.invoiceDate)}
+                      {" · "}{invoice.language || "DE"}
+                      {" · "}{invoice.items?.length || 0} Position(en)
+                    </span>
+                  </div>
 
-                <tbody>
-                  {data.invoices.map((invoice) => (
-                    <tr key={invoice.id}>
-                      <td>
-                        <strong>
-                          {invoice.externalInvoiceNumber ||
-                            "Entwurf ohne Nummer"}
-                        </strong>
-                        <small>
-                          {invoice.items?.length || 0} Position(en)
-                        </small>
-                      </td>
+                  <div className="g-ui-data-row-meta">
+                    <GastarioBadge variant={
+                      invoice.status === "PAID" ? "success"
+                        : invoice.status === "CANCELLED" ? "danger"
+                        : invoice.status === "DRAFT" ? "warning" : "neutral"
+                    }>
+                      {statusLabel(invoice.status)}
+                    </GastarioBadge>
+                    <strong>{centsToEuro(invoice.grossTotalCents)}</strong>
+                  </div>
 
-                      <td>
-                        <strong>{invoice.customerName || "Ohne Kunde"}</strong>
-                      </td>
-
-                      <td>{formatDate(invoice.invoiceDate)}</td>
-
-                      <td>{invoice.language || "DE"}</td>
-
-                      <td className="isNumeric">
-                        <strong>
-                          {centsToEuro(invoice.grossTotalCents)}
-                        </strong>
-                      </td>
-
-                      <td>
-                        <span
-                          className={
-                            "g-doc-status is-" +
-                            String(invoice.status || "")
-                              .toLowerCase()
-                              .replace(/_/g, "-")
-                          }
-                        >
-                          {statusLabel(invoice.status)}
-                        </span>
-                      </td>
-
-                      <td className="isAction">
-                        <div className="g-doc-row-actions">
-                          <Link
-                            className="g-doc-button g-doc-button--compact g-doc-button--secondary"
-                            to={`/rechnungen/${invoice.id}`}
-                          >
-                            Öffnen
-                          </Link>
-
-                          {invoice.status === "DRAFT" ? (
-                            <Form method="post">
-                              <input
-                                type="hidden"
-                                name="intent"
-                                value="finalizeInvoice"
-                              />
-                              <input
-                                type="hidden"
-                                name="invoiceId"
-                                value={invoice.id}
-                              />
-                              <button
-                                className="g-doc-button g-doc-button--compact g-doc-button--primary"
-                                type="submit"
-                              >
-                                Finalisieren
-                              </button>
-                            </Form>
-                          ) : null}
-
-                          {invoice.status === "ISSUED" ? (
-                            <Form method="post">
-                              <input
-                                type="hidden"
-                                name="intent"
-                                value="markInvoicePaid"
-                              />
-                              <input
-                                type="hidden"
-                                name="invoiceId"
-                                value={invoice.id}
-                              />
-                              <button
-                                className="g-doc-button g-doc-button--compact g-doc-button--secondary"
-                                type="submit"
-                              >
-                                Bezahlt
-                              </button>
-                            </Form>
-                          ) : null}
-
-                          {invoice.status !== "CANCELLED" &&
-                          invoice.status !== "PAID" ? (
-                            <Form method="post">
-                              <input
-                                type="hidden"
-                                name="intent"
-                                value="cancelInvoice"
-                              />
-                              <input
-                                type="hidden"
-                                name="invoiceId"
-                                value={invoice.id}
-                              />
-                              <button
-                                className="g-doc-button g-doc-button--compact g-doc-button--danger"
-                                type="submit"
-                              >
-                                Stornieren
-                              </button>
-                            </Form>
-                          ) : null}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  <div className="g-ui-data-row-actions">
+                    <Link to={`/rechnungen/${invoice.id}`} className={gastarioButtonClass("secondary")}>
+                      Öffnen
+                    </Link>
+                    {invoice.status === "DRAFT" ? (
+                      <Form method="post">
+                        <input type="hidden" name="intent" value="finalizeInvoice" />
+                        <input type="hidden" name="invoiceId" value={invoice.id} />
+                        <button type="submit" className={gastarioButtonClass("primary")}>
+                          Finalisieren
+                        </button>
+                      </Form>
+                    ) : null}
+                    {invoice.status === "ISSUED" ? (
+                      <Form method="post">
+                        <input type="hidden" name="intent" value="markInvoicePaid" />
+                        <input type="hidden" name="invoiceId" value={invoice.id} />
+                        <button type="submit" className={gastarioButtonClass("secondary")}>
+                          Bezahlt
+                        </button>
+                      </Form>
+                    ) : null}
+                    {invoice.status !== "CANCELLED" && invoice.status !== "PAID" ? (
+                      <Form method="post">
+                        <input type="hidden" name="intent" value="cancelInvoice" />
+                        <input type="hidden" name="invoiceId" value={invoice.id} />
+                        <button type="submit" className={gastarioButtonClass("danger")}>
+                          Stornieren
+                        </button>
+                      </Form>
+                    ) : null}
+                  </div>
+                </GastarioDataRow>
+              ))}
+            </GastarioDataList>
           )}
-        </PageSection>
-      </PageShell>
+        </GastarioSection>
+      </GastarioPage>
     </AppLayout>
   );
 }
@@ -463,20 +372,20 @@ export default function RechnungenPage() {
 export function ErrorBoundary({ error }: { error: any }) {
   return (
     <AppLayout>
-      <PageShell className="documentsPage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Finanzen"
           title="Rechnungen"
           subtitle="Die Rechnungsübersicht konnte nicht geladen werden."
         />
 
-        <Notice type="danger">
+        <GastarioNotice type="danger">
           <strong>Rechnungen konnten nicht geladen werden.</strong>
           <span>
             {error?.message || String(error) || "Unbekannter Fehler"}
           </span>
-        </Notice>
-      </PageShell>
+        </GastarioNotice>
+      </GastarioPage>
     </AppLayout>
   );
 }
