@@ -65,7 +65,7 @@ export async function createInvoiceExportPdf(invoice: any, tenantName: string) {
   };
   const money = (c: number) => (Number(c || 0) / 100).toFixed(2) + " EUR";
   line(invoice.sellerName || tenantName, 13, true);
-  line("RECHNUNG", 22, true);
+  line("RECHNUNGSDATEN - AUSZUG", 16, true);
   line("Rechnungsnummer: " + (invoice.externalInvoiceNumber || invoice.internalNumber || invoice.id), 10);
   line("Datum: " + (invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleDateString("de-DE") : "-"));
   line("Status: " + invoice.status);
