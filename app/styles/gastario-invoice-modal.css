@@ -1,0 +1,19 @@
+.gastarioInvoiceDialog {
+  width: min(1480px, calc(100vw - 32px));
+  max-width: none;
+}
+.gastarioInvoiceDialog .g-ui-dialog-body {
+  padding: 0;
+  overflow: hidden;
+}
+.gastarioInvoiceDialogFrame {
+  display: block;
+  width: 100%;
+  height: min(78vh, 930px);
+  border: 0;
+  background: #fff;
+}
+@media (max-width: 700px) {
+  .gastarioInvoiceDialog { width: calc(100vw - 12px); }
+  .gastarioInvoiceDialogFrame { height: 78vh; }
+}
