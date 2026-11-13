@@ -1,142 +1,88 @@
+import { Form, Link, useLoaderData } from "react-router";
 import AppLayout from "../components/AppLayout";
-
 import {
-  MetricCard,
-  MetricGrid,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
-
-import "../styles/gastario-administration.css";
+  GastarioPage, GastarioHeader, GastarioMetricGrid, GastarioMetric,
+  GastarioSection, GastarioNotice, GastarioField, GastarioInput,
+  GastarioButton, GastarioToolbar, gastarioButtonClass,
+} from "../components/ui";
 
 export function meta() {
-  return [
-    {
-      title:
-        "Steuerberater-Export · Gastario",
-    },
-    {
-      name: "description",
-      content:
-        "Monatsabschluss und Unterlagen für den Steuerberater vorbereiten.",
-    },
-  ];
+  return [{ title: "Steuerberater-Export · Gastario" }];
+}
+
+function monthRange(month: string) {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) throw new Response("Ungültiger Monat.", { status: 400 });
+  const [year, number] = month.split("-").map(Number);
+  return {
+    start: new Date(Date.UTC(year, number - 1, 1)),
+    end: new Date(Date.UTC(year, number, 1)),
+  };
+}
+
+export async function loader({ request }: { request: Request }) {
+  const { getTenantAccess } = await import("../lib/features.server");
+  const { prisma } = await import("../lib/prisma.server");
+  const access = await getTenantAccess(request);
+  if (!access.tenantId) throw new Response("Kein Betrieb ausgewählt.", { status: 403 });
+  const month = new URL(request.url).searchParams.get("month") || new Date().toISOString().slice(0, 7);
+  const range = monthRange(month);
+  const [invoiceCount, receipts, pending] = await Promise.all([
+    prisma.invoice.count({
+      where: { tenantId: access.tenantId, invoiceDate: { gte: range.start, lt: range.end }, status: { not: "DRAFT" } },
+    }),
+    prisma.receipt.count({
+      where: { tenantId: access.tenantId, status: { in: ["READY", "EXPORTED"] }, createdAt: { gte: range.start, lt: range.end } },
+    }),
+    prisma.receipt.count({
+      where: { tenantId: access.tenantId, status: "RECEIVED", createdAt: { gte: range.start, lt: range.end } },
+    }),
+  ]);
+  return { month, invoiceCount, receipts, pending };
 }
 
 export default function SteuerberaterExport() {
+  const data = useLoaderData<typeof loader>();
   return (
     <AppLayout>
-      <PageShell className="adminPage taxExportPage">
-        <PageHeader
-          eyebrow="Finanzen"
-          title="Steuerberater-Export"
-          subtitle="Rechnungen, Belege und offene Punkte für einen nachvollziehbaren Monatsabschluss vorbereiten."
+      <GastarioPage>
+        <GastarioHeader
+          eyebrow="Finanzen" title="Steuerberater-Export"
+          subtitle="Rechnungen und geprüfte Einkaufsbelege für den Monatsabschluss zusammenstellen."
         />
-
-        <MetricGrid className="adminMetricGrid">
-          <MetricCard
-            label="Rechnungen"
-            value="0"
-            description="für den Export vorbereitet"
-            badge="Belege"
-          />
-
-          <MetricCard
-            label="Einkaufsbelege"
-            value="0"
-            description="geprüft und zugeordnet"
-            badge="Eingang"
-          />
-
-          <MetricCard
-            label="Offene Punkte"
-            value="0"
-            description="vor Abschluss zu klären"
-            badge="Prüfung"
-          />
-        </MetricGrid>
-
-        <PageSection
-          eyebrow="Monatsabschluss"
-          title="Export vorbereiten"
-          description="Der künftige Export bündelt alle Unterlagen eines Monats in einem einheitlichen Arbeitsablauf."
-        >
-          <div className="adminExportWorkflow">
-            <article>
-              <span>1</span>
-
-              <div>
-                <strong>
-                  Zeitraum wählen
-                </strong>
-
-                <p>
-                  Monat und Geschäftsjahr für den
-                  Abschluss festlegen.
-                </p>
-              </div>
-            </article>
-
-            <article>
-              <span>2</span>
-
-              <div>
-                <strong>
-                  Vollständigkeit prüfen
-                </strong>
-
-                <p>
-                  Rechnungen, Belege und offene
-                  Zuordnungen kontrollieren.
-                </p>
-              </div>
-            </article>
-
-            <article>
-              <span>3</span>
-
-              <div>
-                <strong>
-                  Unterlagen exportieren
-                </strong>
-
-                <p>
-                  Geprüfte Daten gebündelt für den
-                  Steuerberater bereitstellen.
-                </p>
-              </div>
-            </article>
-          </div>
-        </PageSection>
-
-        <PageSection
-          eyebrow="Exportstatus"
-          title="Noch nicht aktiviert"
-          description="Der technische Export wird schrittweise ergänzt. Bis dahin bleiben bestehende Rechnungs- und Buchhaltungsdaten unverändert."
-          soft
-          flat
-        >
-          <div className="adminEmptyState">
-            <div className="adminEmptyStateIcon">
-              0
-            </div>
-
-            <div>
-              <strong>
-                Noch kein Export verfügbar
-              </strong>
-
-              <p>
-                Sobald der Monatsabschluss
-                aktiviert ist, erscheinen hier
-                Zeitraum, Prüfstatus und
-                Downloadmöglichkeiten.
-              </p>
-            </div>
-          </div>
-        </PageSection>
-      </PageShell>
+        <GastarioMetricGrid>
+          <GastarioMetric label="Rechnungen" value={data.invoiceCount} description="Ohne Entwürfe im gewählten Monat" badge="Rechnungen" />
+          <GastarioMetric label="Einkaufsbelege" value={data.receipts} description="Für den Export freigegeben" badge="Geprüft" />
+          <GastarioMetric label="Offene Punkte" value={data.pending} description="Noch ungeprüfte Belege" badge="Prüfen" />
+        </GastarioMetricGrid>
+        <GastarioSection eyebrow="Monatsabschluss" title="Export vorbereiten"
+          description="Monat auswählen und die vorhandenen Unterlagen als ZIP-Datei herunterladen.">
+          <Form method="get">
+            <GastarioField label="Abrechnungsmonat">
+              <GastarioInput type="month" name="month" defaultValue={data.month} required />
+            </GastarioField>
+            <GastarioToolbar>
+              <GastarioButton type="submit" variant="secondary">Zeitraum anzeigen</GastarioButton>
+              <a className={gastarioButtonClass("primary")} href={`/steuerberater-export/download?month=${encodeURIComponent(data.month)}`}>
+                ZIP für Steuerberater herunterladen
+              </a>
+            </GastarioToolbar>
+          </Form>
+          {data.pending > 0 ? (
+            <GastarioNotice type="warning">
+              {data.pending} ungeprüfte Belege sind noch nicht im ZIP enthalten. Bitte erst unter Belege prüfen und freigeben.
+            </GastarioNotice>
+          ) : null}
+          <GastarioNotice type="info">
+            Enthalten sind eine Rechnungsübersicht als CSV, Positionsdaten, vereinfachte PDF-Rechnungsauszüge und geprüfte Originalbelege.
+            Die Auszüge ersetzen nicht die gesetzlich maßgebliche Originalrechnung.
+            Ein direkter DATEV- oder Lexware-Import wird damit noch nicht zugesichert.
+          </GastarioNotice>
+        </GastarioSection>
+        <GastarioSection eyebrow="Prüfung" title="Belege vervollständigen"
+          description="Ungeprüfte Einkaufsbelege vor der Übergabe kontrollieren.">
+          <Link to="/belege" className={gastarioButtonClass("secondary")}>Belege prüfen</Link>
+        </GastarioSection>
+      </GastarioPage>
     </AppLayout>
   );
 }
