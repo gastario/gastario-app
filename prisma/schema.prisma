@@ -157,6 +157,7 @@ model Tenant {
   invoiceSellerAddress  String?
   invoiceSellerName     String?
   invoices              Invoice[]
+  receipts              Receipt[]
   foodLabels            FoodLabel[]
 
   planCode           PlanCode           @default(STARTER)
@@ -1592,4 +1593,24 @@ model SupplierSearchDiscovery {
   @@unique([tenantId, queryNormalized])
   @@index([tenantId, status, priority])
   @@index([tenantId, lastRequestedAt])
+}
+
+model Receipt {
+  id               String   @id @default(cuid())
+  tenantId         String
+  originalFileName String
+  mimeType         String
+  fileSize         Int
+  fileData         Bytes
+  status           String   @default("RECEIVED")
+  receiptDate      DateTime?
+  supplierName     String?
+  amountCents      Int?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, status])
 }
