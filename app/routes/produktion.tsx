@@ -7,6 +7,8 @@ import {
 } from "react-router";
 
 import AppLayout from "../components/AppLayout";
+import { useState } from "react";
+import NewOrderDialog from "../components/orders/NewOrderDialog";
 
 import {
   GastarioBadge,
@@ -771,6 +773,7 @@ export async function action({
 }
 
 export default function ProductionPage() {
+  const [newOrderOpen, setNewOrderOpen] = useState(false);
   const data =
     useLoaderData<typeof loader>();
 
@@ -809,16 +812,9 @@ export default function ProductionPage() {
                 Drucken
               </GastarioButton>
 
-              <Link
-                className={
-                  gastarioButtonClass(
-                    "primary"
-                  )
-                }
-                to="/auftragseingang"
-              >
+              <GastarioButton variant="primary" type="button" onClick={() => setNewOrderOpen(true)}>
                 Auftrag anlegen
-              </Link>
+              </GastarioButton>
             </>
           }
         />
@@ -1309,7 +1305,7 @@ export default function ProductionPage() {
         </GastarioSection>
 
       </GastarioPage>
-
+      <NewOrderDialog open={newOrderOpen} onClose={() => setNewOrderOpen(false)} formAction="/neuer-auftrag" />
     </AppLayout>
   );
 }
