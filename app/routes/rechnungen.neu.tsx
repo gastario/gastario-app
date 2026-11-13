@@ -1,5 +1,5 @@
 import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import AppLayout from "../components/AppLayout";
 import {
   Notice,
@@ -660,6 +660,8 @@ export async function action({ request }: { request: Request }) {
 export default function NeueRechnungPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const embedded = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("embedded") === "1";
+  const Layout = embedded ? Fragment : AppLayout;
   const today = data.today;
   const tenant = data.tenant as any;
   const sourceOrder = data.sourceOrder as any;
@@ -750,9 +752,9 @@ export default function NeueRechnungPage() {
   }
 
   return (
-    <AppLayout>
+    <Layout>
       <PageShell className="documentsPage invoiceEditorPage">
-        <PageHeader
+        {!embedded ? <PageHeader
           eyebrow="Finanzen"
           title="Neue Rechnung"
           subtitle={
@@ -769,7 +771,7 @@ export default function NeueRechnungPage() {
               Zur Übersicht
             </Link>
           }
-        />
+        /> : null}
 
       {sourceOrder ? (
         <section className="invoiceSourceNotice" style={sourceOrderNoticeStyle}>
@@ -1208,7 +1210,7 @@ export default function NeueRechnungPage() {
       </Form>
       )}
       </PageShell>
-    </AppLayout>
+    </Layout>
   );
 }
 
