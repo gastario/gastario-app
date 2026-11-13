@@ -31,10 +31,10 @@ export async function loader({ request }: { request: Request }) {
       where: { tenantId: access.tenantId, invoiceDate: { gte: range.start, lt: range.end }, status: { not: "DRAFT" } },
     }),
     prisma.receipt.count({
-      where: { tenantId: access.tenantId, status: { in: ["READY", "EXPORTED"] }, createdAt: { gte: range.start, lt: range.end } },
+      where: { tenantId: access.tenantId, status: { in: ["READY", "EXPORTED"] }, OR: [{ receiptDate: { gte: range.start, lt: range.end } }, { receiptDate: null, createdAt: { gte: range.start, lt: range.end } }] },
     }),
     prisma.receipt.count({
-      where: { tenantId: access.tenantId, status: "RECEIVED", createdAt: { gte: range.start, lt: range.end } },
+      where: { tenantId: access.tenantId, status: "RECEIVED", OR: [{ receiptDate: { gte: range.start, lt: range.end } }, { receiptDate: null, createdAt: { gte: range.start, lt: range.end } }] },
     }),
   ]);
   return { month, invoiceCount, receipts, pending };
