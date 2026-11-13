@@ -84,7 +84,9 @@ export default [
   route("gastario-control/codes", "routes/gastario-control.codes.tsx"),
 
   route("belege", "routes/belege.tsx"),
+  route("belege/datei/:receiptId", "routes/belege.datei.$receiptId.tsx"),
   route("steuerberater-export", "routes/steuerberater-export.tsx"),
+  route("steuerberater-export/download", "routes/steuerberater-export.download.tsx"),
 ] satisfies RouteConfig;
 
 
