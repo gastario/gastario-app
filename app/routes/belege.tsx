@@ -23,18 +23,23 @@ async function accessFor(request: Request) {
 export async function loader({ request }: { request: Request }) {
   const tenantId = await accessFor(request);
   const { prisma } = await import("../lib/prisma.server");
-  const receipts = await prisma.receipt.findMany({
+  const [receipts, receivedCount, readyCount, exportedCount] = await Promise.all([
+    prisma.receipt.findMany({
     where: { tenantId },
     select: { id: true, originalFileName: true, mimeType: true, status: true, receiptDate: true, supplierName: true, amountCents: true, fileSize: true, createdAt: true },
     orderBy: { createdAt: "desc" },
     take: 200,
-  });
+    }),
+    prisma.receipt.count({ where: { tenantId, status: "RECEIVED" } }),
+    prisma.receipt.count({ where: { tenantId, status: "READY" } }),
+    prisma.receipt.count({ where: { tenantId, status: "EXPORTED" } }),
+  ]);
   return {
     receipts,
     stats: {
-      received: receipts.filter(r => r.status === "RECEIVED").length,
-      ready: receipts.filter(r => r.status === "READY").length,
-      exported: receipts.filter(r => r.status === "EXPORTED").length,
+      received: receivedCount,
+      ready: readyCount,
+      exported: exportedCount,
     },
   };
 }
@@ -55,11 +60,20 @@ export async function action({ request }: { request: Request }) {
     const png = buffer.length >= 8 && buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
     if (!pdf && !jpeg && !png) return { error: "Nur echte PDF-, JPG- oder PNG-Dateien sind erlaubt." };
     const originalFileName = file.name.replace(/[\\/\x00-\x1f]/g, "_").slice(0, 160) || "Beleg";
+    const dateText = String(form.get("receiptDate") || "").trim();
+    const receiptDate = /^\d{4}-\d{2}-\d{2}$/.test(dateText) ? new Date(dateText + "T12:00:00Z") : null;
+    if (receiptDate && Number.isNaN(receiptDate.getTime())) return { error: "Ungültiges Belegdatum." };
+    const supplierName = String(form.get("supplierName") || "").trim().slice(0, 150) || null;
+    const amountInput = String(form.get("amountEuro") || "").trim();
+    const amount = Number(amountInput.replace(",", "."));
+    if (amountInput && (!Number.isFinite(amount) || amount < 0 || amount > 100000000)) return { error: "Ungültiger Betrag." };
     await prisma.receipt.create({
       data: {
         tenantId, originalFileName, fileSize: buffer.length,
         mimeType: pdf ? "application/pdf" : jpeg ? "image/jpeg" : "image/png",
         fileData: buffer, status: "RECEIVED",
+        receiptDate, supplierName,
+        amountCents: amountInput ? Math.round(amount * 100) : null,
       },
     });
     return { success: "Beleg erfolgreich hochgeladen und sicher gespeichert." };
@@ -99,6 +113,15 @@ export default function BelegePage() {
             <GastarioField label="Belegdatei" required>
               <GastarioInput type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required />
             </GastarioField>
+            <GastarioField label="Belegdatum (optional)">
+              <GastarioInput type="date" name="receiptDate" />
+            </GastarioField>
+            <GastarioField label="Lieferant (optional)">
+              <GastarioInput name="supplierName" placeholder="z. B. METRO" maxLength={150} />
+            </GastarioField>
+            <GastarioField label="Bruttobetrag in EUR (optional)">
+              <GastarioInput name="amountEuro" placeholder="z. B. 125,40" />
+            </GastarioField>
             <GastarioToolbar>
               <GastarioButton type="submit" variant="primary">Beleg hochladen</GastarioButton>
             </GastarioToolbar>
@@ -121,7 +144,9 @@ export default function BelegePage() {
                   <div className="g-ui-data-row-main">
                     <strong className="g-ui-data-row-title">{receipt.originalFileName}</strong>
                     <span className="g-ui-data-row-description">
-                      {new Date(receipt.createdAt).toLocaleDateString("de-DE")}
+                      {new Date(receipt.receiptDate || receipt.createdAt).toLocaleDateString("de-DE")}
+                      {" · "}{receipt.supplierName || "Ohne Lieferant"}
+                      {" · "}{receipt.amountCents !== null ? (receipt.amountCents / 100).toLocaleString("de-DE", { style: "currency", currency: "EUR" }) : "Betrag offen"}
                       {" · "}{Math.ceil(receipt.fileSize / 1024)} KB
                     </span>
                   </div>
