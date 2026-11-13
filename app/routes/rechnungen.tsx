@@ -1,4 +1,6 @@
 import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
+import { useState } from "react";
+import "../styles/gastario-invoice-modal.css";
 import AppLayout from "../components/AppLayout";
 import {
   GastarioPage,
@@ -11,6 +13,7 @@ import {
   GastarioDataList,
   GastarioDataRow,
   GastarioEmptyState,
+  GastarioDetailDialog,
   gastarioButtonClass,
 } from "../components/ui";
 
@@ -216,6 +219,7 @@ export async function action({ request }: { request: Request }) {
 export default function RechnungenPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
 
   return (
     <AppLayout>
@@ -233,9 +237,9 @@ export default function RechnungenPage() {
               <Link to="/einstellungen/rechnungen" className={gastarioButtonClass("secondary")}>
                 Rechnungsdaten
               </Link>
-              <Link to="/rechnungen/neu" className={gastarioButtonClass("primary")}>
+              <button type="button" onClick={() => setInvoiceDialogOpen(true)} className={gastarioButtonClass("primary")}>
                 + Neue Rechnung
-              </Link>
+              </button>
             </>
           }
         />
@@ -294,9 +298,9 @@ export default function RechnungenPage() {
           {data.invoices.length === 0 ? (
             <GastarioEmptyState title="Noch keine Rechnungen vorhanden">
               <p>Erstelle den ersten Rechnungsentwurf direkt im Gastario-Rechnungseditor.</p>
-              <Link to="/rechnungen/neu" className={gastarioButtonClass("secondary")}>
+              <div><button type="button" onClick={() => setInvoiceDialogOpen(true)} className={gastarioButtonClass("secondary")}>
                 Rechnung erstellen
-              </Link>
+              </button></div>
             </GastarioEmptyState>
           ) : (
             <GastarioDataList>
@@ -364,6 +368,20 @@ export default function RechnungenPage() {
             </GastarioDataList>
           )}
         </GastarioSection>
+        <GastarioDetailDialog
+          open={invoiceDialogOpen}
+          onClose={() => setInvoiceDialogOpen(false)}
+          title="Neue Rechnung"
+          description="Rechnungsempfänger, Positionen und Zahlungsbedingungen erfassen."
+          size="xl"
+          className="gastarioInvoiceDialog"
+        >
+          <iframe
+            title="Rechnungseditor"
+            className="gastarioInvoiceDialogFrame"
+            src="/rechnungen/neu?embedded=1"
+          />
+        </GastarioDetailDialog>
       </GastarioPage>
     </AppLayout>
   );
