@@ -1,4 +1,4 @@
-import { Form, Link, redirect, useActionData, useLoaderData } from "react-router";
+import { Form, Link, redirect, useActionData, useLoaderData, useLocation } from "react-router";
 import { Fragment, useMemo, useState } from "react";
 import AppLayout from "../components/AppLayout";
 import {
@@ -660,7 +660,8 @@ export async function action({ request }: { request: Request }) {
 export default function NeueRechnungPage() {
   const data = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const embedded = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("embedded") === "1";
+  const location = useLocation();
+  const embedded = new URLSearchParams(location.search).get("embedded") === "1";
   const Layout = embedded ? Fragment : AppLayout;
   const today = data.today;
   const tenant = data.tenant as any;
