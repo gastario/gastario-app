@@ -20,7 +20,7 @@ export async function loader({ request }: { request: Request }) {
       take: 401,
     }),
     prisma.receipt.findMany({
-      where: { tenantId: access.tenantId, status: { in: ["READY", "EXPORTED"] }, createdAt: { gte: start, lt: end } },
+      where: { tenantId: access.tenantId, status: { in: ["READY", "EXPORTED"] }, OR: [{ receiptDate: { gte: start, lt: end } }, { receiptDate: null, createdAt: { gte: start, lt: end } }] },
       orderBy: { createdAt: "asc" },
       take: 201,
     }),
@@ -58,12 +58,12 @@ export async function loader({ request }: { request: Request }) {
     const bytes = await createInvoiceExportPdf(inv, access.tenant?.name || "Gastario");
     files.push({ name: "Rechnungsauszuge/" + String(i + 1).padStart(3, "0") + "_" + name + ".pdf", bytes });
   }
-  const receiptRows: unknown[][] = [["ID", "Dateiname", "Hochgeladen", "Status", "Dateigroesse"]];
+  const receiptRows: unknown[][] = [["ID", "Dateiname", "Belegdatum", "Hochgeladen", "Lieferant", "Betrag EUR", "Status", "Dateigroesse"]];
   for (let i = 0; i < receipts.length; i++) {
     const r = receipts[i];
     const safe = r.originalFileName.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 110);
     files.push({ name: "Einkaufsbelege/" + String(i + 1).padStart(3, "0") + "_" + safe, bytes: Buffer.from(r.fileData) });
-    receiptRows.push([r.id, r.originalFileName, r.createdAt.toISOString(), r.status, r.fileSize]);
+    receiptRows.push([r.id, r.originalFileName, r.receiptDate?.toISOString().slice(0, 10) || "", r.createdAt.toISOString(), r.supplierName || "", r.amountCents !== null ? (r.amountCents / 100).toFixed(2) : "", r.status, r.fileSize]);
   }
   files.push({ name: "Einkaufsbelege.csv", bytes: csvBytes(receiptRows) });
   files.push({ name: "HINWEISE.txt", bytes: Buffer.from(
