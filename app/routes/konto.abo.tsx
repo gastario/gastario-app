@@ -11,9 +11,6 @@ import {
   GastarioMetricGrid,
   GastarioMetric,
   GastarioSection,
-  GastarioSplitView,
-  GastarioSplitMain,
-  GastarioSplitAside,
   GastarioDataList,
   GastarioDataRow,
   GastarioBadge,
@@ -152,118 +149,46 @@ export default function KontoAboPage() {
           />
         </GastarioMetricGrid>
 
-        <GastarioSplitView>
-          <GastarioSplitMain>
-            <GastarioSection
-              eyebrow="Aktueller Plan"
-              title={data.planCode}
-              description={`Mandant: ${data.tenantName}`}
-              actions={
-                <GastarioBadge variant="neutral">
+        <GastarioSection
+          eyebrow="Abo-Übersicht"
+          title="Aktuelles Abonnement"
+          description={`Tarif- und Vertragsstatus für ${data.tenantName}.`}
+          action={<GastarioBadge variant="neutral">{data.subscriptionStatus}</GastarioBadge>}
+        >
+          <GastarioDataList>
+            <GastarioDataRow>
+              <div className="g-ui-data-row-main">
+                <strong className="g-ui-data-row-title">Tarif</strong>
+                <span className="g-ui-data-row-description">Aktuell zugewiesenes Paket</span>
+              </div>
+              <div className="g-ui-data-row-meta"><strong>{data.planCode}</strong></div>
+            </GastarioDataRow>
+            <GastarioDataRow>
+              <div className="g-ui-data-row-main">
+                <strong className="g-ui-data-row-title">Abonnementstatus</strong>
+                <span className="g-ui-data-row-description">Aktueller Vertragsstatus</span>
+              </div>
+              <div className="g-ui-data-row-meta">
+                <GastarioBadge variant={data.subscriptionStatus === "ACTIVE" ? "success" : "neutral"}>
                   {data.subscriptionStatus}
                 </GastarioBadge>
-              }
-            >
-              <GastarioDataList>
-                <GastarioDataRow>
-                  <div className="g-ui-data-row-main">
-                    <strong className="g-ui-data-row-title">
-                      Status
-                    </strong>
-
-                    <span className="g-ui-data-row-description">
-                      Aktueller Abonnementstatus
-                    </span>
-                  </div>
-
-                  <div className="g-ui-data-row-meta">
-                    <strong>
-                      {data.subscriptionStatus}
-                    </strong>
-                  </div>
-                </GastarioDataRow>
-
-                <GastarioDataRow>
-                  <div className="g-ui-data-row-main">
-                    <strong className="g-ui-data-row-title">
-                      Testphase bis
-                    </strong>
-
-                    <span className="g-ui-data-row-description">
-                      Ende der aktuellen Testphase
-                    </span>
-                  </div>
-
-                  <div className="g-ui-data-row-meta">
-                    <strong>
-                      {formatDate(
-                        data.trialEndsAt
-                      )}
-                    </strong>
-                  </div>
-                </GastarioDataRow>
-              </GastarioDataList>
-            </GastarioSection>
-          </GastarioSplitMain>
-
-          <GastarioSplitAside>
-            <GastarioSection
-              eyebrow="Paketumfang"
-              title="Enthaltene Limits"
-              description="Die Limits stammen direkt aus dem aktuell zugewiesenen Paket."
-            >
-              <GastarioDataList>
-                <GastarioDataRow>
-                  <div className="g-ui-data-row-main">
-                    <strong className="g-ui-data-row-title">
-                      Nutzer
-                    </strong>
-                  </div>
-
-                  <div className="g-ui-data-row-meta">
-                    <strong>
-                      {data.maxUsers}
-                    </strong>
-                  </div>
-                </GastarioDataRow>
-
-                <GastarioDataRow>
-                  <div className="g-ui-data-row-main">
-                    <strong className="g-ui-data-row-title">
-                      Marken
-                    </strong>
-                  </div>
-
-                  <div className="g-ui-data-row-meta">
-                    <strong>
-                      {data.maxBrands}
-                    </strong>
-                  </div>
-                </GastarioDataRow>
-
-                <GastarioDataRow>
-                  <div className="g-ui-data-row-main">
-                    <strong className="g-ui-data-row-title">
-                      E-Mail-Konten
-                    </strong>
-                  </div>
-
-                  <div className="g-ui-data-row-meta">
-                    <strong>
-                      {data.maxEmailAccounts}
-                    </strong>
-                  </div>
-                </GastarioDataRow>
-              </GastarioDataList>
-            </GastarioSection>
-          </GastarioSplitAside>
-        </GastarioSplitView>
+              </div>
+            </GastarioDataRow>
+            <GastarioDataRow>
+              <div className="g-ui-data-row-main">
+                <strong className="g-ui-data-row-title">Testphase bis</strong>
+                <span className="g-ui-data-row-description">Ende der Testphase, sofern hinterlegt</span>
+              </div>
+              <div className="g-ui-data-row-meta"><strong>{formatDate(data.trialEndsAt)}</strong></div>
+            </GastarioDataRow>
+          </GastarioDataList>
+        </GastarioSection>
 
         <GastarioSection
           eyebrow="Abrechnung"
           title="Abo-Rechnungen"
           description="Sobald die Gastario-Abrechnung aktiv ist, stehen Rechnungen hier als PDF bereit."
-          actions={
+          action={
             <GastarioBadge variant="neutral">
               Noch keine Rechnungen
             </GastarioBadge>
