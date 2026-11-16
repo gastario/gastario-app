@@ -1,5 +1,6 @@
 export type IncomingEmailCategory =
   | "orders"
+  | "administrative"
   | "possible"
   | "inquiries"
   | "reminders"
@@ -20,6 +21,7 @@ export function classifyIncomingEmail(
     status?: unknown;
     subject?: unknown;
     sender?: unknown;
+    extractedJson?: unknown;
   }
 ): IncomingEmailCategory {
   const subject = normalizeEmailText(
@@ -38,6 +40,18 @@ export function classifyIncomingEmail(
     "IGNORED"
   ) {
     return "hidden";
+  }
+
+  const extracted = mail?.extractedJson && typeof mail.extractedJson === "object"
+    ? mail.extractedJson as Record<string, unknown> : {};
+  const ai = extracted.aiDecision && typeof extracted.aiDecision === "object"
+    ? extracted.aiDecision as Record<string, unknown> : {};
+  if (["DUNNING", "PAYMENT_REMINDER", "ORDER_CHANGE", "CANCELLATION", "CREDIT_NOTE", "LEXWARE_CONFIRMATION"].includes(String(ai.mailType || ""))) {
+    return "administrative";
+  }
+  if (/\b(mahnung|zahlungserinnerung|zahlungsaufforderung|auftragsstornierung|bestellanderung|auftragsanderung|stornorechnung|rechnungskorrektur|gutschrift)\b/.test(subject) ||
+      (/\b(lexware|lexoffice)\b/.test(sender) && /\b(auftragsbestatigung|auftragsbestaetigung|order confirmation)\b/.test(subject))) {
+    return "administrative";
   }
 
   const cancellationSignals = [
