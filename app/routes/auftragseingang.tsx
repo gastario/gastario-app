@@ -28,6 +28,7 @@ import { Form, Link, redirect, useActionData, useFetcher, useLoaderData,
 
 const EMAIL_BUCKETS = [
   { key: "orders", label: "Bestätigungen", help: "Sichere Auftragsbestätigungen" },
+  { key: "administrative", label: "Geschäftsdokumente", help: "Mahnungen und Auftragsänderungen" },
   { key: "possible", label: "Unklar", help: "E-Mails prüfen" },
   { key: "inquiries", label: "Anfragen", help: "Angebote vorbereiten" },
   { key: "reminders", label: "Lieferscheine", help: "Morgen-/Lieferhinweise" },
@@ -38,6 +39,7 @@ const EMAIL_BUCKETS = [
 
 function emailCategoryLabel(value: string) {
   if (value === "orders") return "Aufträge";
+  if (value === "administrative") return "Geschäftsdokumente";
   if (value === "possible") return "Unklare Mails";
   if (value === "inquiries") return "Anfragen / Angebote";
   if (value === "reminders") return "Erinnerungen / Lieferscheine";
@@ -89,7 +91,7 @@ export async function loader({ request }: { request: Request }) {
       selectedEmailCategory: "orders",
       searchQuery: "",
       dateRange: "last7",
-      emailBuckets: { orders: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
+      emailBuckets: { orders: 0, administrative: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
       activeStatus: "ALL",
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
       setupError: "Nicht angemeldet. Bitte neu einloggen.",
@@ -110,7 +112,7 @@ export async function loader({ request }: { request: Request }) {
       selectedEmailCategory: "orders",
       searchQuery: "",
       dateRange: "last7",
-      emailBuckets: { orders: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
+      emailBuckets: { orders: 0, administrative: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
       activeStatus: "ALL",
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
       setupError: "Kein Mandant gefunden. Bitte diesen Benutzer im Super Admin einem Mandanten zuordnen.",
@@ -310,6 +312,7 @@ export async function loader({ request }: { request: Request }) {
 
     const emailBuckets = {
       orders: emailInbox.filter((mail: any) => classifyIncomingEmail(mail) === "orders").length,
+      administrative: emailInbox.filter((mail: any) => classifyIncomingEmail(mail) === "administrative").length,
       possible: emailInbox.filter((mail: any) => classifyIncomingEmail(mail) === "possible").length,
       inquiries: emailInbox.filter((mail: any) => classifyIncomingEmail(mail) === "inquiries").length,
       reminders: emailInbox.filter((mail: any) => classifyIncomingEmail(mail) === "reminders").length,
@@ -364,7 +367,7 @@ export async function loader({ request }: { request: Request }) {
       selectedEmailCategory: "orders",
       searchQuery: "",
       dateRange: "last7",
-      emailBuckets: { orders: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
+      emailBuckets: { orders: 0, administrative: 0, possible: 0, inquiries: 0, reminders: 0, hidden: 0, other: 0, all: 0 },
       activeStatus: status,
       counts: { all: 0, review: 0, confirmed: 0, rejected: 0 },
       setupError: "Auftragseingang konnte die Auftragsdaten nicht laden.",
@@ -442,6 +445,29 @@ export async function action({ request }: { request: Request }) {
           String(error?.message || error),
       };
     }
+  }
+
+  if (intent === "reanalyzeAdministrativeEmail") {
+    const emailId = String(formData.get("emailId") || "").trim();
+    const email = await prisma.incomingEmail.findFirst({
+      where: { id: emailId, tenantId: tenantUser.tenantId },
+      include: { orders: { select: { id: true } }, attachments: { select: { textContent: true } } },
+    });
+    if (!email) return { error: "E-Mail nicht gefunden." };
+    if (email.orders.length > 0) return { error: "E-Mail ist bereits mit einem Auftrag verbunden. Kein automatisches Überschreiben vorhandener Aufträge." };
+    const { detectAdministrativeMail } = await import("../lib/email-document-priority.server");
+    const content = (email.bodyText || "") + "\n" + email.attachments.map(a => a.textContent || "").join("\n").slice(0, 1500);
+    const decision = detectAdministrativeMail({ subject: email.subject, sender: email.sender || "", text: content });
+    if (!decision) return { error: "Kein eindeutiges Geschäftsdokument erkannt. Die E-Mail bleibt unverändert." };
+    const previous = email.extractedJson && typeof email.extractedJson === "object" && !Array.isArray(email.extractedJson)
+      ? email.extractedJson as Record<string, unknown> : {};
+    await prisma.incomingEmail.update({
+      where: { id: email.id },
+      data: { status: "REVIEW_NEEDED", processedAt: new Date(),
+        extractedJson: { ...previous, aiDecision: decision, administrativeReview: true },
+        errorMessage: "Erneute Klassifizierung: " + decision.reason },
+    });
+    return { success: "E-Mail geprüft: " + decision.reason + ". Bestehende Aufträge unverändert." };
   }
 
   if (intent === "restoreIncomingEmail") {
@@ -1075,11 +1101,14 @@ export default function AuftragseingangPage() {
   const currentBucket = EMAIL_BUCKETS.find((bucket) => bucket.key === data.selectedEmailCategory) || EMAIL_BUCKETS[0];
 
   const isInquiryView = data.selectedEmailCategory === "inquiries";
+  const isAdministrativeView = data.selectedEmailCategory === "administrative";
   const isReviewMailView = data.selectedEmailCategory === "possible" || data.selectedEmailCategory === "review";
   const isIgnoredMailView = data.selectedEmailCategory === "hidden" || data.selectedEmailCategory === "ignored";
-  const isEmailFocusedView = isInquiryView || isReviewMailView || isIgnoredMailView || data.selectedEmailCategory === "all";
+  const isEmailFocusedView = isInquiryView || isAdministrativeView || isReviewMailView || isIgnoredMailView || data.selectedEmailCategory === "all";
 
-  const inboxHeadline = isInquiryView
+  const inboxHeadline = isAdministrativeView
+    ? "Geschäftsdokumente prüfen"
+    : isInquiryView
     ? "Anfragen / Leads"
     : isReviewMailView
       ? "Unklare E-Mails"
@@ -1089,7 +1118,9 @@ export default function AuftragseingangPage() {
           ? "Eingangszentrale"
           : "Aufträge";
 
-  const inboxSubtitle = isInquiryView
+  const inboxSubtitle = isAdministrativeView
+    ? "Mahnungen, Stornierungen, Änderungen und Lexware-Bestätigungen ohne automatische Auftragsanlage prüfen."
+    : isInquiryView
     ? "Neue Catering-Anfragen erkennen, prüfen und später direkt in Angebote umwandeln."
     : isReviewMailView
       ? "E-Mails, bei denen Gastario oder die KI noch keine sichere Entscheidung treffen konnte."
@@ -1824,6 +1855,7 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                   <option value="today">
                     Heute
                   </option>
+                  <option value="all">Alle Zeiträume (max. 80 E-Mails)</option>
                   <option value="yesterday">
                     Gestern
                   </option>
@@ -1842,6 +1874,8 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                   <option value="orders">
                     Aufträge
                   </option>
+                  <option value="administrative">Geschäftsdokumente</option>
+                  <option value="all">Alle E-Mails</option>
 
                   <option value="inquiries">
                     Anfragen / Leads
@@ -1942,7 +1976,9 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                     "Absender unbekannt";
 
                   const categoryLabel =
-                    isInquiryView
+                    isAdministrativeView
+                      ? "Geschäftsdokument"
+                      : isInquiryView
                       ? "Anfrage"
                       : isReviewMailView
                         ? "Unklar"
@@ -2006,6 +2042,11 @@ const activeOrderStatus = activeOrderStatusRaw === "ALL" ? "" : activeOrderStatu
                             Öffnen
                           </Link>
 
+                          <Form method="post">
+                            <input type="hidden" name="intent" value="reanalyzeAdministrativeEmail" />
+                            <input type="hidden" name="emailId" value={mail.id} />
+                            <button type="submit" className={gastarioButtonClass("secondary")}>Erneut analysieren</button>
+                          </Form>
                           {!isIgnoredMailView ? (
 
                             <Form method="post">
