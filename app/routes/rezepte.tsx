@@ -1,4 +1,5 @@
-import { Link, useLoaderData, useLocation, useNavigate } from "react-router";
+import { Form, Link, redirect, useActionData, useLoaderData, useLocation, useNavigate, useNavigation } from "react-router";
+import { useState } from "react";
 
 import AppLayout from "../components/AppLayout";
 
@@ -14,6 +15,13 @@ import {
   GastarioEmptyState,
   GastarioDetailDialog,
   GastarioStack,
+  GastarioButton,
+  GastarioFormGrid,
+  GastarioField,
+  GastarioInput,
+  GastarioSelect,
+  GastarioToolbar,
+  GastarioNotice,
   gastarioButtonClass,
 } from "../components/ui";
 
@@ -122,12 +130,169 @@ export async function loader({
   };
 }
 
+export async function action({ request }: { request: Request }) {
+  const { prisma } = await import("../lib/prisma.server");
+  const { requireTenantFeature } = await import("../lib/features.server");
+  const access = await requireTenantFeature(request, "RECIPES");
+  const data = await request.formData();
+  const intent = String(data.get("intent") || "");
+  if (intent !== "saveRecipe") return { error: "Unbekannte Aktion." };
+
+  const productId = String(data.get("productId") || "").trim();
+  const name = String(data.get("name") || "").trim();
+  const category = String(data.get("category") || "").trim();
+  const unit = String(data.get("unit") || "Portion").trim();
+  const rawPrice = String(data.get("priceEuro") || "0").trim().replace(",", ".");
+  const price = Number(rawPrice);
+  if (!name || name.length > 180) return { error: "Bitte einen gültigen Rezeptnamen eingeben." };
+  if (!unit || unit.length > 40) return { error: "Bitte eine Einheit eingeben." };
+  if (!Number.isFinite(price) || price < 0 || price > 100000) return { error: "Ungültiger Verkaufspreis." };
+
+  const names = data.getAll("ingredientName").map(x => String(x).trim());
+  const amounts = data.getAll("quantityPerUnit").map(x => String(x).replace(",", ".").trim());
+  const units = data.getAll("ingredientUnit").map(x => String(x).trim());
+  const suppliers = data.getAll("supplierName").map(x => String(x).trim());
+  if (names.length > 100 || amounts.length !== names.length || units.length !== names.length || suppliers.length !== names.length) {
+    return { error: "Ungültige Anzahl von Zutaten." };
+  }
+  const ingredients: Array<{ ingredientName: string; quantityPerUnit: number; unit: string; supplierName: string | null }> = [];
+  for (let i = 0; i < names.length; i++) {
+    if (!names[i] && !amounts[i] && !suppliers[i]) continue;
+    const quantity = Number(amounts[i]);
+    if (!names[i] || names[i].length > 180 || !Number.isFinite(quantity) || quantity <= 0 || quantity > 1000000 || !units[i] || units[i].length > 30) {
+      return { error: `Bitte Zutat ${i + 1} mit Name, gültiger Menge und Einheit ausfüllen.` };
+    }
+    ingredients.push({ ingredientName: names[i], quantityPerUnit: quantity, unit: units[i], supplierName: suppliers[i]?.slice(0, 150) || null });
+  }
+  if (ingredients.length === 0) return { error: "Bitte mindestens eine Zutat eintragen." };
+
+  const existing = productId ? await prisma.product.findFirst({
+    where: { id: productId, tenantId: access.tenantId, procurementType: "RECIPE" },
+    select: { id: true },
+  }) : null;
+  if (productId && !existing) return { error: "Rezeptprodukt nicht gefunden." };
+
+  const savedId = await prisma.$transaction(async (tx) => {
+    const product = existing
+      ? await tx.product.update({
+          where: { id: existing.id },
+          data: { name, category: category || null, unit, priceCents: Math.round(price * 100), operationalArea: "KITCHEN", procurementType: "RECIPE" },
+        })
+      : await tx.product.create({
+          data: { tenantId: access.tenantId, name, category: category || null, unit, priceCents: Math.round(price * 100), taxRate: 7, active: true, operationalArea: "KITCHEN", procurementType: "RECIPE" },
+        });
+    if (existing) await tx.productRecipeItem.deleteMany({ where: { tenantId: access.tenantId, productId: product.id } });
+    await tx.productRecipeItem.createMany({
+      data: ingredients.map(x => ({ ...x, tenantId: access.tenantId, productId: product.id })),
+    });
+    return product.id;
+  });
+  return redirect("/rezepte?product=" + encodeURIComponent(savedId) + "&saved=1");
+}
+
+type RecipeRow = { key: number; ingredientName: string; quantityPerUnit: string; unit: string; supplierName: string };
+function RecipeEditor({ product, onClose }: { product: any | null; onClose: () => void }) {
+  const [rows, setRows] = useState<RecipeRow[]>(() => product?.recipeItems?.length
+    ? product.recipeItems.map((item: any, index: number) => ({
+        key: index, ingredientName: item.ingredientName || "", quantityPerUnit: String(item.quantityPerUnit || ""),
+        unit: item.unit || "g", supplierName: item.supplierName || "",
+      }))
+    : [{ key: 0, ingredientName: "", quantityPerUnit: "", unit: "g", supplierName: "" }]);
+  const navigation = useNavigation();
+  const saving = navigation.state === "submitting";
+  const update = (key: number, field: keyof Omit<RecipeRow, "key">, value: string) =>
+    setRows(previous => previous.map(row => row.key === key ? { ...row, [field]: value } : row));
+  return (
+    <GastarioDetailDialog open title={product ? "Rezept bearbeiten" : "Neues Rezept anlegen"}
+      description="Produkt, Portionsgröße und Zutaten für die Einkaufsplanung hinterlegen."
+      onClose={onClose}
+      footer={
+        <>
+          <GastarioButton variant="secondary" onClick={onClose}>Abbrechen</GastarioButton>
+          <GastarioButton type="submit" form="gastario-recipe-form" variant="primary" disabled={saving}>
+            {saving ? "Speichert …" : "Rezept speichern"}
+          </GastarioButton>
+        </>
+      }
+    >
+      <Form method="post" id="gastario-recipe-form">
+        <input type="hidden" name="intent" value="saveRecipe" />
+        <input type="hidden" name="productId" value={product?.id || ""} />
+        <GastarioStack>
+          <GastarioSection eyebrow="Stammdaten" title="Rezeptprodukt"
+            description="Die Zutatenmengen beziehen sich auf genau eine Einheit des Rezeptprodukts.">
+            <GastarioFormGrid columns={2}>
+              <GastarioField label="Rezeptname" required>
+                <GastarioInput name="name" defaultValue={product?.name || ""} placeholder="z. B. Chicken Bowl" required />
+              </GastarioField>
+              <GastarioField label="Kategorie">
+                <GastarioInput name="category" defaultValue={product?.category || ""} placeholder="z. B. Bowls" />
+              </GastarioField>
+              <GastarioField label="Produkteinheit" required>
+                <GastarioSelect name="unit" defaultValue={product?.unit || "Portion"}>
+                  <option value="Portion">Portion</option><option value="Stück">Stück</option>
+                  <option value="kg">kg</option><option value="Liter">Liter</option>
+                </GastarioSelect>
+              </GastarioField>
+              <GastarioField label="Verkaufspreis netto (EUR)">
+                <GastarioInput name="priceEuro" defaultValue={product ? (product.priceCents / 100).toFixed(2).replace(".", ",") : "0,00"} />
+              </GastarioField>
+            </GastarioFormGrid>
+          </GastarioSection>
+          <GastarioSection eyebrow="Rezeptur" title="Zutaten pro Produkteinheit"
+            description="Beispiel: Eine Portion Chicken Bowl enthält 0,15 kg Reis und 0,18 kg Hähnchen.">
+            <GastarioStack>
+              {rows.map((row, index) => (
+                <div key={row.key}>
+                  <GastarioFormGrid columns={4}>
+                    <GastarioField label={`Zutat ${index + 1}`} required>
+                      <GastarioInput name="ingredientName" value={row.ingredientName} onChange={e => update(row.key, "ingredientName", e.currentTarget.value)} placeholder="z. B. Reis" required />
+                    </GastarioField>
+                    <GastarioField label="Menge" required>
+                      <GastarioInput name="quantityPerUnit" value={row.quantityPerUnit} onChange={e => update(row.key, "quantityPerUnit", e.currentTarget.value)} placeholder="0,15" required />
+                    </GastarioField>
+                    <GastarioField label="Einheit" required>
+                      <GastarioSelect name="ingredientUnit" value={row.unit} onChange={e => update(row.key, "unit", e.currentTarget.value)}>
+                        <option value="g">g</option><option value="kg">kg</option>
+                        <option value="ml">ml</option><option value="l">l</option>
+                        <option value="Stück">Stück</option><option value="Packung">Packung</option>
+                      </GastarioSelect>
+                    </GastarioField>
+                    <GastarioField label="Lieferant">
+                      <GastarioInput name="supplierName" value={row.supplierName} onChange={e => update(row.key, "supplierName", e.currentTarget.value)} placeholder="Optional" />
+                    </GastarioField>
+                  </GastarioFormGrid>
+                  {rows.length > 1 ? (
+                    <GastarioToolbar>
+                      <GastarioButton variant="secondary" onClick={() => setRows(previous => previous.filter(x => x.key !== row.key))}>Zutat entfernen</GastarioButton>
+                    </GastarioToolbar>
+                  ) : null}
+                </div>
+              ))}
+              <GastarioToolbar align="start">
+                <GastarioButton variant="secondary" disabled={rows.length >= 100}
+                  onClick={() => setRows(previous => [...previous, { key: Math.max(...previous.map(x => x.key), 0) + 1, ingredientName: "", quantityPerUnit: "", unit: "g", supplierName: "" }])}>
+                  + Zutat hinzufügen
+                </GastarioButton>
+              </GastarioToolbar>
+            </GastarioStack>
+          </GastarioSection>
+        </GastarioStack>
+      </Form>
+    </GastarioDetailDialog>
+  );
+}
+
 export default function RecipesPage() {
   const data = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const location = useLocation();
-  const selectedOpen = new URLSearchParams(location.search).has("product");
+  const params = new URLSearchParams(location.search);
+  const selectedOpen = params.has("product") && !params.has("edit");
   const selected = selectedOpen ? data.selectedProduct : null;
+  const editing = params.get("edit") ? data.products.find((p: any) => p.id === params.get("edit")) : null;
+  const creating = params.has("new");
+  const actionData = useActionData<typeof action>();
 
   return (
     <AppLayout>
@@ -141,10 +306,13 @@ export default function RecipesPage() {
           actions={
             <>
               <Link to="/einkauf" className={gastarioButtonClass("secondary")}>Einkaufsplanung</Link>
-              <Link to="/produkte" className={gastarioButtonClass("primary")}>Produkte verwalten</Link>
+              <Link to="/rezepte?new=1" className={gastarioButtonClass("primary")}>+ Neues Rezept</Link>
             </>
           }
         />
+
+        {params.has("saved") ? <GastarioNotice type="success">Rezept erfolgreich gespeichert.</GastarioNotice> : null}
+        {actionData && "error" in actionData ? <GastarioNotice type="danger">{actionData.error}</GastarioNotice> : null}
 
         <GastarioMetricGrid>
           <GastarioMetric
@@ -187,10 +355,10 @@ export default function RecipesPage() {
           {data.products.length === 0 ? (
             <GastarioEmptyState title="Noch keine Rezeptprodukte vorhanden">
               <GastarioStack compact>
-                <p>Ordne unter Produkte ein Küchenprodukt der Beschaffungsart Rezeptur zu.</p>
+                <p>Erstelle deine erste Rezeptur mit Produkten, Mengen und Lieferanten direkt hier.</p>
                 <div>
-                  <Link to="/produkte" className={gastarioButtonClass("secondary")}>
-                    Produkte verwalten
+                  <Link to="/rezepte?new=1" className={gastarioButtonClass("primary")}>
+                    + Neues Rezept
                   </Link>
                 </div>
               </GastarioStack>
@@ -247,6 +415,7 @@ export default function RecipesPage() {
           onClose={() => navigate("/rezepte")}
           footer={
             <>
+              {selected ? <Link to={`/rezepte?edit=${encodeURIComponent(selected.id)}`} className={gastarioButtonClass("primary")}>Rezept bearbeiten</Link> : null}
               <Link to="/einkauf" className={gastarioButtonClass("secondary")}>
                 Einkaufsbedarf ansehen
               </Link>
@@ -259,7 +428,7 @@ export default function RecipesPage() {
           {!selected ? null : selected.recipeItems.length === 0 ? (
             <GastarioEmptyState title="Noch keine Zutaten hinterlegt">
               Dieses Rezeptprodukt kann noch keinen automatischen Einkaufsbedarf erzeugen.
-              Die Rezeptur wird über die Produktverwaltung gepflegt.
+              Über „Rezept bearbeiten“ kannst du die Zutaten ergänzen.
             </GastarioEmptyState>
           ) : (
             <GastarioStack>
@@ -296,6 +465,7 @@ export default function RecipesPage() {
             </GastarioStack>
           )}
         </GastarioDetailDialog>
+        {creating || editing ? <RecipeEditor key={editing?.id || "new"} product={editing || null} onClose={() => navigate("/rezepte")} /> : null}
       </GastarioPage>
     </AppLayout>
   );
