@@ -73,7 +73,6 @@ export async function loader({
   const products = await prisma.product.findMany({
     where: {
       tenantId: access.tenantId,
-      active: true,
       operationalArea: "KITCHEN",
       procurementType: "RECIPE",
     },
@@ -88,6 +87,13 @@ export async function loader({
       { category: "asc" },
       { name: "asc" },
     ],
+  });
+
+  const availableProducts = await prisma.product.findMany({
+    where: { tenantId: access.tenantId, active: true, NOT: { operationalArea: "KITCHEN", procurementType: "RECIPE" } },
+    select: { id: true, name: true, category: true, unit: true, priceCents: true, active: true },
+    orderBy: { name: "asc" },
+    take: 500,
   });
 
   const url = new URL(request.url);
@@ -105,9 +111,8 @@ export async function loader({
     products[0] ||
     null;
 
-  const completeProducts = products.filter(
-    recipeIsComplete
-  );
+  const activeProducts = products.filter(product => product.active);
+  const completeProducts = activeProducts.filter(recipeIsComplete);
 
   const ingredientCount = products.reduce(
     (sum, product) =>
@@ -118,12 +123,14 @@ export async function loader({
   return {
     tenant: access.tenant,
     products,
+    availableProducts,
     selectedProduct,
     stats: {
-      total: products.length,
+      total: activeProducts.length,
+      archived: products.length - activeProducts.length,
       complete: completeProducts.length,
       incomplete:
-        products.length -
+        activeProducts.length -
         completeProducts.length,
       ingredients: ingredientCount,
     },
@@ -136,9 +143,20 @@ export async function action({ request }: { request: Request }) {
   const access = await requireTenantFeature(request, "RECIPES");
   const data = await request.formData();
   const intent = String(data.get("intent") || "");
+  if (intent === "archiveRecipe" || intent === "restoreRecipe") {
+    const productId = String(data.get("productId") || "");
+    const changed = await prisma.product.updateMany({
+      where: { id: productId, tenantId: access.tenantId, operationalArea: "KITCHEN", procurementType: "RECIPE" },
+      data: { active: intent === "restoreRecipe" },
+    });
+    if (!changed.count) return { error: "Rezept nicht gefunden." };
+    return redirect("/rezepte?" + (intent === "restoreRecipe" ? "restored=1" : "archived=1"));
+  }
   if (intent !== "saveRecipe") return { error: "Unbekannte Aktion." };
 
   const productId = String(data.get("productId") || "").trim();
+  const existingProductId = String(data.get("existingProductId") || "").trim();
+  if (productId && existingProductId) return { error: "Bitte entweder ein Rezept bearbeiten oder ein bestehendes Produkt auswählen." };
   const name = String(data.get("name") || "").trim();
   const category = String(data.get("category") || "").trim();
   const unit = String(data.get("unit") || "Portion").trim();
@@ -167,21 +185,29 @@ export async function action({ request }: { request: Request }) {
   if (ingredients.length === 0) return { error: "Bitte mindestens eine Zutat eintragen." };
 
   const existing = productId ? await prisma.product.findFirst({
-    where: { id: productId, tenantId: access.tenantId, procurementType: "RECIPE" },
+    where: { id: productId, tenantId: access.tenantId, operationalArea: "KITCHEN", procurementType: "RECIPE" },
     select: { id: true },
   }) : null;
   if (productId && !existing) return { error: "Rezeptprodukt nicht gefunden." };
+  const baseProduct = existingProductId ? await prisma.product.findFirst({
+    where: { id: existingProductId, tenantId: access.tenantId, active: true },
+    select: { id: true, operationalArea: true, procurementType: true },
+  }) : null;
+  if (existingProductId && !baseProduct) return { error: "Ausgewähltes Produkt nicht gefunden." };
+  if (baseProduct?.operationalArea === "KITCHEN" && baseProduct.procurementType === "RECIPE") {
+    return { error: "Für dieses Produkt existiert bereits eine Rezeptur. Bitte die vorhandene Rezeptur bearbeiten." };
+  }
 
   const savedId = await prisma.$transaction(async (tx) => {
-    const product = existing
+    const product = existing || baseProduct
       ? await tx.product.update({
-          where: { id: existing.id },
+          where: { id: (existing || baseProduct)!.id },
           data: { name, category: category || null, unit, priceCents: Math.round(price * 100), operationalArea: "KITCHEN", procurementType: "RECIPE" },
         })
       : await tx.product.create({
           data: { tenantId: access.tenantId, name, category: category || null, unit, priceCents: Math.round(price * 100), taxRate: 7, active: true, operationalArea: "KITCHEN", procurementType: "RECIPE" },
         });
-    if (existing) await tx.productRecipeItem.deleteMany({ where: { tenantId: access.tenantId, productId: product.id } });
+    if (existing || baseProduct) await tx.productRecipeItem.deleteMany({ where: { tenantId: access.tenantId, productId: product.id } });
     await tx.productRecipeItem.createMany({
       data: ingredients.map(x => ({ ...x, tenantId: access.tenantId, productId: product.id })),
     });
