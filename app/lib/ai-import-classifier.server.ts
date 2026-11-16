@@ -1,8 +1,16 @@
+import { detectAdministrativeMail } from "./email-document-priority.server";
+
 export type ImportAiMailType =
   | "ORDER_CONFIRMATION"
   | "INQUIRY"
   | "DELIVERY_NOTE"
   | "INVOICE"
+  | "DUNNING"
+  | "PAYMENT_REMINDER"
+  | "ORDER_CHANGE"
+  | "CANCELLATION"
+  | "CREDIT_NOTE"
+  | "LEXWARE_CONFIRMATION"
   | "TRASH"
   | "UNKNOWN";
 
@@ -75,6 +83,12 @@ function normalizeDecision(raw: any, fallback: ImportAiDecision): ImportAiDecisi
     "INQUIRY",
     "DELIVERY_NOTE",
     "INVOICE",
+    "DUNNING",
+    "PAYMENT_REMINDER",
+    "ORDER_CHANGE",
+    "CANCELLATION",
+    "CREDIT_NOTE",
+    "LEXWARE_CONFIRMATION",
     "TRASH",
     "UNKNOWN",
   ];
@@ -87,13 +101,11 @@ function normalizeDecision(raw: any, fallback: ImportAiDecision): ImportAiDecisi
     mailType,
     confidence,
     shouldCreateOrder:
-      typeof raw.shouldCreateOrder === "boolean"
-        ? raw.shouldCreateOrder
-        : mailType === "ORDER_CONFIRMATION" && confidence >= 0.85,
+      mailType === "ORDER_CONFIRMATION" &&
+      (typeof raw.shouldCreateOrder === "boolean" ? raw.shouldCreateOrder : confidence >= 0.85),
     shouldCreateInquiry:
-      typeof raw.shouldCreateInquiry === "boolean"
-        ? raw.shouldCreateInquiry
-        : mailType === "INQUIRY" && confidence >= 0.75,
+      mailType === "INQUIRY" &&
+      (typeof raw.shouldCreateInquiry === "boolean" ? raw.shouldCreateInquiry : confidence >= 0.75),
     reason: normalize(raw.reason) || fallback.reason,
     source: normalize(raw.source) || fallback.source || null,
     customerName: normalize(raw.customerName) || fallback.customerName || null,
@@ -130,6 +142,8 @@ export function classifyIncomingMailWithRules(params: {
   const subject = normalize(params.subject);
   const sender = normalize(params.sender);
   const text = normalize(params.text);
+  const administrative = detectAdministrativeMail({ subject, sender, text });
+  if (administrative) return administrative;
   const combined = `${subject} ${sender} ${text}`;
   const lower = combined.toLowerCase();
 
@@ -357,6 +371,7 @@ export async function classifyIncomingMailWithAi(params: {
   }
 
   const canSkipAi =
+    (["DUNNING", "PAYMENT_REMINDER", "ORDER_CHANGE", "CANCELLATION", "CREDIT_NOTE", "LEXWARE_CONFIRMATION"].includes(fallback.mailType)) ||
     (fallback.mailType === "TRASH" && fallback.confidence >= 0.8) ||
     (fallback.mailType === "DELIVERY_NOTE" && fallback.confidence >= 0.85) ||
     (fallback.mailType === "ORDER_CONFIRMATION" && fallback.confidence >= 0.95) ||
@@ -385,11 +400,18 @@ ORDER_CONFIRMATION = verbindlich gebuchter Catering-Auftrag
 INQUIRY = Anfrage, Angebot, RÃ¼ckfrage oder Angebotsfreigabe
 DELIVERY_NOTE = Erinnerung, Lieferschein oder Information zu bestehendem Auftrag
 INVOICE = Rechnung oder Zahlungsbeleg
+DUNNING = Mahnung zu einer offenen Rechnung
+PAYMENT_REMINDER = Zahlungserinnerung zu bestehender Rechnung
+ORDER_CHANGE = Aenderung eines bestehenden Auftrags
+CANCELLATION = Stornierung eines bestehenden Auftrags
+CREDIT_NOTE = Gutschrift oder Rechnungskorrektur
+LEXWARE_CONFIRMATION = von Lexware versendete Auftragsbestaetigung, kein neuer Auftrag
 TRASH = Werbung, Newsletter, Lieferanteninfo oder nicht cateringrelevant
 UNKNOWN = nicht sicher einzuordnen
 
 Regeln:
 - shouldCreateOrder nur bei eindeutig verbindlicher Buchung.
+- Mahnungen, Zahlungserinnerungen, Aenderungen, Stornos, Gutschriften und aus Lexware verschickte Auftragsbestaetigungen NIE als neue Auftraege anlegen.
 - Erinnerungen wie "morgiges Catering" erzeugen keinen Auftrag.
 - "Bitte Angebot freigeben" ist eine Anfrage, keine Buchung.
 - Keine Daten ergÃ¤nzen oder erfinden.
@@ -398,7 +420,7 @@ Regeln:
 
 JSON:
 {
-  "mailType": "ORDER_CONFIRMATION | INQUIRY | DELIVERY_NOTE | INVOICE | TRASH | UNKNOWN",
+  "mailType": "ORDER_CONFIRMATION | INQUIRY | DELIVERY_NOTE | INVOICE | DUNNING | PAYMENT_REMINDER | ORDER_CHANGE | CANCELLATION | CREDIT_NOTE | LEXWARE_CONFIRMATION | TRASH | UNKNOWN",
   "confidence": 0.0,
   "shouldCreateOrder": false,
   "shouldCreateInquiry": false,
