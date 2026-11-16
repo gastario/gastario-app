@@ -1,18 +1,21 @@
-import {
-  Link,
-} from "react-router";
-
+import { useState } from "react";
+import { Link } from "react-router";
 import AppLayout from "../components/AppLayout";
-
 import {
-  MetricCard,
-  MetricGrid,
-  PageHeader,
-  PageSection,
-  PageShell,
-} from "../components/ui/PageShell";
-
-import "../styles/gastario-administration.css";
+  GastarioPage,
+  GastarioHeader,
+  GastarioMetricGrid,
+  GastarioMetric,
+  GastarioSection,
+  GastarioBadge,
+  GastarioDataList,
+  GastarioDataRow,
+  GastarioDetailDialog,
+  GastarioStack,
+  GastarioNotice,
+  GastarioButton,
+  gastarioButtonClass,
+} from "../components/ui";
 
 const companySettings = [
   {
@@ -124,209 +127,169 @@ const integrations = [
   },
 ];
 
+
+type SettingsArea = "company" | "documents" | "users" | "integrations";
+const areas: Array<{ id: SettingsArea; title: string; detail: string; badge: string }> = [
+  { id: "company", title: "Unternehmensdaten", detail: "Firmendaten und Kontaktdaten des Betriebs einsehen", badge: "Stammdaten" },
+  { id: "documents", title: "Dokumentvorlagen", detail: "Angebote, Auftragsbestätigungen, Lieferscheine und Rechnungen", badge: "Vorlagen" },
+  { id: "users", title: "Benutzer und Rollen", detail: "Geplante Teamrollen und Zuständigkeiten", badge: "Team" },
+  { id: "integrations", title: "Integrationen", detail: "Geplante und vorbereitete Anbindungen", badge: "System" },
+];
+
 export function meta() {
-  return [
-    {
-      title:
-        "Einstellungen · Gastario",
-    },
-  ];
+  return [{ title: "Einstellungen · Gastario" }];
 }
 
 export default function SettingsPage() {
+  const [selectedArea, setSelectedArea] = useState<SettingsArea | null>(null);
+  const activeArea = areas.find(area => area.id === selectedArea);
   return (
     <AppLayout>
-      <PageShell className="adminPage settingsPage">
-        <PageHeader
+      <GastarioPage>
+        <GastarioHeader
           eyebrow="Verwaltung"
           title="Einstellungen"
           subtitle="Firma, Dokumente, Benutzer, Nummernkreise und Integrationen zentral konfigurieren."
           actions={
             <>
-              <Link
-                to="/einstellungen/rechnungen"
-                className="adminButton adminButtonSecondary"
-              >
+              <Link to="/einstellungen/rechnungen" className={gastarioButtonClass("secondary")}>
                 Rechnungsdaten
               </Link>
-
-              <Link
-                to="/konto/abo"
-                className="adminButton adminButtonPrimary"
-              >
+              <Link to="/konto/abo" className={gastarioButtonClass("primary")}>
                 Plan und Abo
               </Link>
             </>
           }
         />
-
-        <MetricGrid className="adminMetricGrid">
-          <MetricCard
-            label="Mandant"
-            value="Demo"
-            description="aktuell ausgewählter Betrieb"
-            badge="Aktiv"
+        <GastarioMetricGrid>
+          <GastarioMetric
+            label="Mandant" value="Demo"
+            description="Angezeigte Beispielkonfiguration" badge="Vorschau"
           />
-
-          <MetricCard
-            label="Benutzer"
-            value={users.length}
-            description="mit unterschiedlichen Rollen"
-            badge="Team"
+          <GastarioMetric
+            label="Benutzer" value={users.length}
+            description="Beispielrollen in dieser Ansicht" badge="Team"
           />
-
-          <MetricCard
-            label="Integrationen"
-            value={integrations.length}
-            description="geplant oder vorbereitet"
-            badge="System"
+          <GastarioMetric
+            label="Integrationen" value={integrations.length}
+            description="Geplante oder vorbereitete Anbieter" badge="System"
           />
-        </MetricGrid>
+        </GastarioMetricGrid>
 
-        <div className="adminDashboardGrid">
-          <PageSection
-            eyebrow="Firma"
-            title="Unternehmensdaten"
-            description="Zentrale Stammdaten des Mandanten."
-            actions={
-              <span className="adminSoftBadge">
-                Stammdaten
-              </span>
-            }
-          >
-            <div className="adminDefinitionList">
-              {companySettings.map(
-                (item) => (
-                  <div key={item.label}>
-                    <span>
-                      {item.label}
-                    </span>
-
-                    <strong>
-                      {item.value}
-                    </strong>
-                  </div>
-                )
-              )}
-            </div>
-          </PageSection>
-
-          <PageSection
-            eyebrow="Dokumente"
-            title="Vorlagen"
-            description="Dokumentarten und ihre zentralen Einstellungen."
-            actions={
-              <Link
-                to="/einstellungen/rechnungen"
-                className="adminTextLink"
-              >
-                Rechnungen öffnen
-              </Link>
-            }
-          >
-            <div className="adminListCards">
-              {documentSettings.map(
-                (item) => (
-                  <article key={item.title}>
-                    <strong>
-                      {item.title}
-                    </strong>
-
-                    <span>
-                      {item.text}
-                    </span>
-                  </article>
-                )
-              )}
-            </div>
-          </PageSection>
-
-          <PageSection
-            eyebrow="Team"
-            title="Benutzer und Rollen"
-            description="Geplante Arbeitsbereiche und Zugriffsrechte."
-            actions={
-              <span className="adminSoftBadge">
-                {users.length} Benutzer
-              </span>
-            }
-          >
-            <div className="adminListCards">
-              {users.map((user) => (
-                <article key={user.name}>
-                  <div className="adminCardRow">
-                    <strong>
-                      {user.name}
-                    </strong>
-
-                    <em>
-                      {user.role}
-                    </em>
-                  </div>
-
-                  <span>
-                    {user.access}
-                  </span>
-                </article>
-              ))}
-            </div>
-          </PageSection>
-
-          <PageSection
-            eyebrow="Anbindungen"
-            title="Integrationen"
-            description="Vorbereitete und geplante Verbindungen."
-            actions={
-              <span className="adminSoftBadge">
-                Übersicht
-              </span>
-            }
-          >
-            <div className="adminListCards">
-              {integrations.map(
-                (item) => (
-                  <article key={item.name}>
-                    <div className="adminCardRow">
-                      <strong>
-                        {item.name}
-                      </strong>
-
-                      <em>
-                        {item.status}
-                      </em>
-                    </div>
-
-                    <span>
-                      {item.description}
-                    </span>
-                  </article>
-                )
-              )}
-            </div>
-          </PageSection>
-        </div>
-
-        <PageSection
-          eyebrow="Mandantenfähigkeit"
-          title="Grundlage für Gastario SaaS"
-          description="Jeder Betrieb benötigt getrennte Daten, Benutzer, Dokumente und Einstellungen."
-          soft
-          flat
+        <GastarioSection
+          eyebrow="Verwaltungsübersicht"
+          title="Einstellungen verwalten"
+          description="Bereich auswählen und Details im zentralen Gastario-Dialog öffnen."
+          action={<GastarioBadge variant="neutral">4 Bereiche</GastarioBadge>}
         >
-          <div className="adminArchitectureNote">
-            <strong>
-              Saubere Trennung je Caterer
-            </strong>
+          <GastarioNotice type="info">
+            Diese Übersicht zeigt teilweise Beispielwerte. Sie ändert keine realen Firmen- oder Benutzerstammdaten.
+            Die Rechnungsdaten und dein Abo erreichst du über die vorhandenen Einstellungen.
+          </GastarioNotice>
+          <GastarioDataList>
+            {areas.map(area => (
+              <GastarioDataRow key={area.id} onClick={() => setSelectedArea(area.id)}>
+                <div className="g-ui-data-row-main">
+                  <strong className="g-ui-data-row-title">{area.title}</strong>
+                  <span className="g-ui-data-row-description">{area.detail}</span>
+                </div>
+                <div className="g-ui-data-row-meta">
+                  <GastarioBadge variant="neutral">{area.badge}</GastarioBadge>
+                </div>
+                <div className="g-ui-data-row-actions">
+                  <GastarioButton variant="secondary" onClick={() => setSelectedArea(area.id)}>
+                    Öffnen
+                  </GastarioButton>
+                </div>
+              </GastarioDataRow>
+            ))}
+          </GastarioDataList>
+        </GastarioSection>
 
-            <p>
-              Kunden, Produkte, Aufträge, Benutzer,
-              Nummernkreise, Dokumentvorlagen und
-              Konfigurationen bleiben je Mandant
-              voneinander getrennt.
-            </p>
-          </div>
-        </PageSection>
-      </PageShell>
+        <GastarioDetailDialog
+          open={selectedArea !== null}
+          title={activeArea?.title || "Einstellungen"}
+          description={activeArea?.detail}
+          size="lg"
+          onClose={() => setSelectedArea(null)}
+          footer={
+            <>
+              {selectedArea === "documents" ? (
+                <Link to="/einstellungen/rechnungen" className={gastarioButtonClass("primary")}>
+                  Rechnungsdaten öffnen
+                </Link>
+              ) : null}
+              <GastarioButton variant="secondary" onClick={() => setSelectedArea(null)}>
+                Schließen
+              </GastarioButton>
+            </>
+          }
+        >
+          {selectedArea === "company" ? (
+            <GastarioStack>
+              <GastarioNotice type="info">Die folgenden Werte sind Beispieldaten und hier nicht bearbeitbar.</GastarioNotice>
+              <GastarioDataList>
+                {companySettings.map(item => (
+                  <GastarioDataRow key={item.label}>
+                    <div className="g-ui-data-row-main">
+                      <span className="g-ui-data-row-description">{item.label}</span>
+                      <strong className="g-ui-data-row-title">{item.value}</strong>
+                    </div>
+                  </GastarioDataRow>
+                ))}
+              </GastarioDataList>
+            </GastarioStack>
+          ) : null}
+          {selectedArea === "documents" ? (
+            <GastarioDataList>
+              {documentSettings.map(item => (
+                <GastarioDataRow key={item.title}>
+                  <div className="g-ui-data-row-main">
+                    <strong className="g-ui-data-row-title">{item.title}</strong>
+                    <span className="g-ui-data-row-description">{item.text}</span>
+                  </div>
+                </GastarioDataRow>
+              ))}
+            </GastarioDataList>
+          ) : null}
+          {selectedArea === "users" ? (
+            <GastarioStack>
+              <GastarioNotice type="info">Diese Teamrollen sind bislang Beispielangaben, keine Live-Benutzerverwaltung.</GastarioNotice>
+              <GastarioDataList>
+                {users.map(user => (
+                  <GastarioDataRow key={user.name}>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">{user.name}</strong>
+                      <span className="g-ui-data-row-description">{user.access}</span>
+                    </div>
+                    <div className="g-ui-data-row-meta">
+                      <GastarioBadge variant="neutral">{user.role}</GastarioBadge>
+                    </div>
+                  </GastarioDataRow>
+                ))}
+              </GastarioDataList>
+            </GastarioStack>
+          ) : null}
+          {selectedArea === "integrations" ? (
+            <GastarioStack>
+              <GastarioNotice type="info">Die hier angezeigten Integrationsstatus sind Platzhalter und kein Live-Verbindungsstatus.</GastarioNotice>
+              <GastarioDataList>
+                {integrations.map(item => (
+                  <GastarioDataRow key={item.name}>
+                    <div className="g-ui-data-row-main">
+                      <strong className="g-ui-data-row-title">{item.name}</strong>
+                      <span className="g-ui-data-row-description">{item.description}</span>
+                    </div>
+                    <div className="g-ui-data-row-meta">
+                      <GastarioBadge variant="neutral">{item.status}</GastarioBadge>
+                    </div>
+                  </GastarioDataRow>
+                ))}
+              </GastarioDataList>
+            </GastarioStack>
+          ) : null}
+        </GastarioDetailDialog>
+      </GastarioPage>
     </AppLayout>
   );
 }
