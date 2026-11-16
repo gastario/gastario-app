@@ -217,7 +217,15 @@ export async function action({ request }: { request: Request }) {
 }
 
 type RecipeRow = { key: number; ingredientName: string; quantityPerUnit: string; unit: string; supplierName: string };
-function RecipeEditor({ product, onClose }: { product: any | null; onClose: () => void }) {
+function RecipeEditor({ product, availableProducts, error, onClose }: {
+  product: any | null;
+  availableProducts: Array<{ id: string; name: string; category: string | null; unit: string; priceCents: number }>;
+  error?: string;
+  onClose: () => void;
+}) {
+  const [existingProductId, setExistingProductId] = useState("");
+  const baseProduct = availableProducts.find(item => item.id === existingProductId);
+  const current = product || baseProduct;
   const [rows, setRows] = useState<RecipeRow[]>(() => product?.recipeItems?.length
     ? product.recipeItems.map((item: any, index: number) => ({
         key: index, ingredientName: item.ingredientName || "", quantityPerUnit: String(item.quantityPerUnit || ""),
@@ -244,24 +252,35 @@ function RecipeEditor({ product, onClose }: { product: any | null; onClose: () =
       <Form method="post" id="gastario-recipe-form">
         <input type="hidden" name="intent" value="saveRecipe" />
         <input type="hidden" name="productId" value={product?.id || ""} />
+        <input type="hidden" name="existingProductId" value={existingProductId} />
         <GastarioStack>
+          {error ? <GastarioNotice type="danger">{error}</GastarioNotice> : null}
+          {!product ? <GastarioSection eyebrow="Produktzuordnung" title="Vorhandenes Produkt verwenden"
+            description="Optional ein Produkt aus dem Sortiment auswählen, statt ein Duplikat anzulegen.">
+            <GastarioField label="Produkt auswählen">
+              <GastarioSelect value={existingProductId} onChange={e => setExistingProductId(e.currentTarget.value)}>
+                <option value="">Neues Produkt für dieses Rezept erstellen</option>
+                {availableProducts.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+              </GastarioSelect>
+            </GastarioField>
+          </GastarioSection> : null}
           <GastarioSection eyebrow="Stammdaten" title="Rezeptprodukt"
             description="Die Zutatenmengen beziehen sich auf genau eine Einheit des Rezeptprodukts.">
-            <GastarioFormGrid columns={2}>
+            <GastarioFormGrid columns={2} key={current?.id || "new"}>
               <GastarioField label="Rezeptname" required>
-                <GastarioInput name="name" defaultValue={product?.name || ""} placeholder="z. B. Chicken Bowl" required />
+                <GastarioInput name="name" defaultValue={current?.name || ""} placeholder="z. B. Chicken Bowl" required />
               </GastarioField>
               <GastarioField label="Kategorie">
-                <GastarioInput name="category" defaultValue={product?.category || ""} placeholder="z. B. Bowls" />
+                <GastarioInput name="category" defaultValue={current?.category || ""} placeholder="z. B. Bowls" />
               </GastarioField>
               <GastarioField label="Produkteinheit" required>
-                <GastarioSelect name="unit" defaultValue={product?.unit || "Portion"}>
+                <GastarioSelect name="unit" defaultValue={current?.unit || "Portion"}>
                   <option value="Portion">Portion</option><option value="Stück">Stück</option>
                   <option value="kg">kg</option><option value="Liter">Liter</option>
                 </GastarioSelect>
               </GastarioField>
               <GastarioField label="Verkaufspreis netto (EUR)">
-                <GastarioInput name="priceEuro" defaultValue={product ? (product.priceCents / 100).toFixed(2).replace(".", ",") : "0,00"} />
+                <GastarioInput name="priceEuro" defaultValue={current ? (current.priceCents / 100).toFixed(2).replace(".", ",") : "0,00"} />
               </GastarioField>
             </GastarioFormGrid>
           </GastarioSection>
@@ -338,6 +357,8 @@ export default function RecipesPage() {
         />
 
         {params.has("saved") ? <GastarioNotice type="success">Rezept erfolgreich gespeichert.</GastarioNotice> : null}
+        {params.has("archived") ? <GastarioNotice type="success">Rezept archiviert. Es kann jederzeit wiederhergestellt werden.</GastarioNotice> : null}
+        {params.has("restored") ? <GastarioNotice type="success">Rezept wiederhergestellt.</GastarioNotice> : null}
         {actionData && "error" in actionData ? <GastarioNotice type="danger">{actionData.error}</GastarioNotice> : null}
 
         <GastarioMetricGrid>
@@ -412,8 +433,8 @@ export default function RecipesPage() {
                       </span>
                     </div>
                     <div className="g-ui-data-row-meta">
-                      <GastarioBadge variant={complete ? "success" : "warning"}>
-                        {complete ? "Vollständig" : "Prüfen"}
+                      <GastarioBadge variant={!product.active ? "neutral" : complete ? "success" : "warning"}>
+                        {!product.active ? "Archiviert" : complete ? "Vollständig" : "Prüfen"}
                       </GastarioBadge>
                     </div>
                     <div className="g-ui-data-row-actions">
@@ -424,6 +445,21 @@ export default function RecipesPage() {
                       >
                         Öffnen
                       </Link>
+                      <Link to={`/rezepte?edit=${encodeURIComponent(product.id)}`}
+                        onClick={event => event.stopPropagation()} className={gastarioButtonClass("secondary")}>
+                        Bearbeiten
+                      </Link>
+                      <Form method="post" onClick={event => event.stopPropagation()}>
+                        <input type="hidden" name="productId" value={product.id} />
+                        <button className={gastarioButtonClass("secondary")} name="intent" type="submit"
+                          value={product.active ? "archiveRecipe" : "restoreRecipe"}
+                          onClick={event => {
+                            event.stopPropagation();
+                            if (product.active && !window.confirm(`Rezept „${product.name}“ archivieren? Produkt und Zutaten bleiben gespeichert.`)) event.preventDefault();
+                          }}>
+                          {product.active ? "Archivieren" : "Wiederherstellen"}
+                        </button>
+                      </Form>
                     </div>
                   </GastarioDataRow>
                 );
@@ -491,7 +527,10 @@ export default function RecipesPage() {
             </GastarioStack>
           )}
         </GastarioDetailDialog>
-        {creating || editing ? <RecipeEditor key={editing?.id || "new"} product={editing || null} onClose={() => navigate("/rezepte")} /> : null}
+        {creating || editing ? <RecipeEditor key={editing?.id || "new"} product={editing || null}
+          availableProducts={data.availableProducts}
+          error={actionData && "error" in actionData ? actionData.error : undefined}
+          onClose={() => navigate("/rezepte")} /> : null}
       </GastarioPage>
     </AppLayout>
   );
