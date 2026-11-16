@@ -8,6 +8,7 @@ import {
 } from "react-router";
 
 import AppLayout from "../components/AppLayout";
+import "../styles/gastario-planning-dialog.css";
 
 import {
   GastarioPage,
@@ -30,6 +31,7 @@ import {
   GastarioMetric,
   GastarioTabs,
   GastarioDetailDialog,
+  GastarioButton,
   GastarioDetailTabs,
   GastarioDetailPane,
 } from "../components/ui";
@@ -996,6 +998,11 @@ export async function action({
 
 export default function ProcurementOrdersPage() {
   const data = useLoaderData<typeof loader>();
+  const [planningOpen, setPlanningOpen] = useState(false);
+  const [planningDate, setPlanningDate] = useState(() => {
+    const d = new Date();
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  });
 
 
   const [
@@ -1107,16 +1114,9 @@ export default function ProcurementOrdersPage() {
             </>
           }
           actions={
-            <Link
-              className={
-                gastarioButtonClass(
-                  "primary"
-                )
-              }
-              to="/einkauf"
-            >
+            <GastarioButton variant="primary" onClick={() => setPlanningOpen(true)}>
               Neue Planung
-            </Link>
+            </GastarioButton>
           }
         />
 
@@ -1620,6 +1620,41 @@ export default function ProcurementOrdersPage() {
 
         )}
 
+
+        <GastarioDetailDialog
+          open={planningOpen}
+          title="Neue Einkaufsplanung"
+          description="Planungstag auswählen und die vorhandene Einkaufsplanung direkt im Dialog bearbeiten."
+          size="xl"
+          className="gastarioPlanningDialog"
+          onClose={() => setPlanningOpen(false)}
+          footer={<GastarioButton variant="secondary" onClick={() => setPlanningOpen(false)}>Schließen</GastarioButton>}
+        >
+          <GastarioField label="Planungstag">
+            <GastarioInput type="date" value={planningDate} onChange={e => setPlanningDate(e.currentTarget.value)} />
+          </GastarioField>
+          {planningDate ? (
+            <iframe
+              key={planningDate}
+              className="gastarioPlanningFrame"
+              title="Einkaufsplanung"
+              src={`/einkauf?date=${encodeURIComponent(planningDate)}&embedded=1`}
+              onLoad={event => {
+                try {
+                  const frame = event.currentTarget.contentWindow;
+                  if (!frame) return;
+                  const url = new URL(frame.location.href);
+                  if (url.pathname === "/einkauf" && url.searchParams.get("embedded") !== "1") {
+                    url.searchParams.set("embedded", "1");
+                    frame.location.replace(url.toString());
+                  }
+                } catch {
+                  // The original planning view remains accessible if a redirect cannot be inspected.
+                }
+              }}
+            />
+          ) : null}
+        </GastarioDetailDialog>
 
         <GastarioDetailDialog
           open={Boolean(
