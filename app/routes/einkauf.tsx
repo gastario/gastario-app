@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Form, Link, redirect, useLoaderData, useLocation } from "react-router";
 
 import AppLayout from "../components/AppLayout";
@@ -1910,6 +1910,8 @@ export async function loader({
 export default function PurchasingPage() {
   const data = useLoaderData<typeof loader>();
   const location = useLocation();
+  const embedded = new URLSearchParams(location.search).get("embedded") === "1";
+  const Layout = embedded ? Fragment : AppLayout;
 
   const [selectedDraftId, setSelectedDraftId] =
     useState<string | null>(null);
@@ -2152,9 +2154,9 @@ export default function PurchasingPage() {
 
 
   return (
-    <AppLayout>
+    <Layout>
       <GastarioPage>
-        <GastarioHeader
+        {!embedded ? <GastarioHeader
           eyebrow="Einkauf & Lager"
           title="Einkaufsplanung"
           description={
@@ -2188,7 +2190,7 @@ export default function PurchasingPage() {
               </button>
             </>
           }
-        />
+        /> : null}
 
 
         <GastarioSection
@@ -4933,6 +4935,6 @@ export default function PurchasingPage() {
           </GastarioSection>
         ) : null}
       </GastarioPage>
-    </AppLayout>
+    </Layout>
   );
 }
