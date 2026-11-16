@@ -1,4 +1,5 @@
 import { Form, useActionData, useLoaderData } from "react-router";
+import { useEffect, useState } from "react";
 
 import AppLayout from "../components/AppLayout";
 
@@ -11,6 +12,7 @@ import {
   PageShell,
 } from "../components/ui/PageShell";
 
+import { GastarioDetailDialog, GastarioButton, GastarioFormGrid, GastarioField, GastarioInput, GastarioStack } from "../components/ui";
 import "../styles/gastario-page-shell.css";
 import "../styles/gastario-supply-masterdesign.css";
 
@@ -214,6 +216,8 @@ export default function InventoryPage() {
   const data = useLoaderData<typeof loader>();
   const actionData =
     useActionData<typeof action>() as any;
+  const [createOpen, setCreateOpen] = useState(false);
+  useEffect(() => { if (actionData?.success) setCreateOpen(false); }, [actionData]);
 
   return (
     <AppLayout>
@@ -228,13 +232,13 @@ export default function InventoryPage() {
             </>
           }
           actions={
-            <button
+            <><GastarioButton variant="primary" onClick={() => setCreateOpen(true)}>+ Lagerartikel anlegen</GastarioButton><button
               className="supplyButton supplyButton--secondary supplyPrintButton"
               type="button"
               onClick={() => window.print()}
             >
               Drucken
-            </button>
+            </button></>
           }
         />
 
@@ -290,99 +294,51 @@ export default function InventoryPage() {
           />
         </MetricGrid>
 
-        <PageSection
-          eyebrow="Neuer Artikel"
+        <GastarioDetailDialog
+          open={createOpen}
           title="Lagerartikel anlegen"
-          description="Artikel, Einheit, Bestand, Mindestbestand und Lagerort in einem Schritt erfassen."
+          description="Artikel, Einheit, Bestand, Mindestbestand und Lagerort erfassen."
+          onClose={() => setCreateOpen(false)}
+          size="lg"
+          footer={
+            <>
+              <GastarioButton variant="secondary" onClick={() => setCreateOpen(false)}>Abbrechen</GastarioButton>
+              <GastarioButton type="submit" form="inventory-create-form" variant="primary">Lagerartikel anlegen</GastarioButton>
+            </>
+          }
         >
-          <Form
-            method="post"
-            className="inventoryCreateForm"
-          >
-            <input
-              type="hidden"
-              name="intent"
-              value="createItem"
-            />
-
-            <label className="supplyField inventoryField--name">
-              <span>Artikel</span>
-              <input
-                name="name"
-                placeholder="z. B. Reis"
-                required
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>Kategorie</span>
-              <input
-                name="category"
-                placeholder="Zutaten"
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>Einheit</span>
-              <input
-                name="unit"
-                placeholder="kg"
-                defaultValue="Stueck"
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>Bestand</span>
-              <input
-                name="currentStock"
-                type="number"
-                step="0.01"
-                defaultValue="0"
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>Mindestbestand</span>
-              <input
-                name="minStock"
-                type="number"
-                step="0.01"
-                defaultValue="0"
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>Lieferant</span>
-              <input
-                name="supplierName"
-                placeholder="z. B. METRO"
-              />
-            </label>
-
-            <label className="supplyField">
-              <span>Lagerort</span>
-              <input
-                name="location"
-                placeholder="Trockenlager"
-              />
-            </label>
-
-            <label className="supplyField inventoryField--note">
-              <span>Notiz</span>
-              <input
-                name="notes"
-                placeholder="optional"
-              />
-            </label>
-
-            <button
-              className="supplyButton supplyButton--primary"
-              type="submit"
-            >
-              Lagerartikel anlegen
-            </button>
+          <Form method="post" id="inventory-create-form">
+            <input type="hidden" name="intent" value="createItem" />
+            <GastarioStack>
+              <GastarioFormGrid columns={2}>
+                <GastarioField label="Artikel" required>
+                  <GastarioInput name="name" placeholder="z. B. Reis" required />
+                </GastarioField>
+                <GastarioField label="Kategorie">
+                  <GastarioInput name="category" placeholder="Zutaten" />
+                </GastarioField>
+                <GastarioField label="Einheit">
+                  <GastarioInput name="unit" defaultValue="Stueck" placeholder="kg" />
+                </GastarioField>
+                <GastarioField label="Bestand">
+                  <GastarioInput name="currentStock" type="number" step="0.01" defaultValue="0" />
+                </GastarioField>
+                <GastarioField label="Mindestbestand">
+                  <GastarioInput name="minStock" type="number" step="0.01" defaultValue="0" />
+                </GastarioField>
+                <GastarioField label="Lieferant">
+                  <GastarioInput name="supplierName" placeholder="z. B. METRO" />
+                </GastarioField>
+                <GastarioField label="Lagerort">
+                  <GastarioInput name="location" placeholder="Trockenlager" />
+                </GastarioField>
+                <GastarioField label="Notiz">
+                  <GastarioInput name="notes" placeholder="Optional" />
+                </GastarioField>
+              </GastarioFormGrid>
+            </GastarioStack>
           </Form>
-        </PageSection>
+        </GastarioDetailDialog>
 
         <PageSection
           eyebrow="Bestände"
