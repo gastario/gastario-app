@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import { simpleParser } from "mailparser";
 import { prisma } from "../lib/prisma.server";
 import { learnSupplierPricesFromInvoice } from "../lib/supplier-invoice-prices.server";
+import { detectAdministrativeMail } from "../lib/email-document-priority.server";
 
 import {
   analyzeImportedOrder,
@@ -16,6 +17,36 @@ import {
   isReliableCustomerCandidate,
   resolveReliableCustomerName,
 } from "../lib/customer-name-validation.server";
+
+/**
+ * Safety-first intake for administrative e-mails. The original message and
+ * attachments already exist in IncomingEmail; never create a second order
+ * or dismiss a payment reminder as spam.
+ */
+async function preserveAdministrativeMail(params: {
+  tenantId: string;
+  incomingEmailId: string;
+  subject: string;
+  sender: string;
+  text: string;
+}): Promise<boolean> {
+  const decision = detectAdministrativeMail({
+    subject: params.subject,
+    sender: params.sender,
+    text: params.text,
+  });
+  if (!decision) return false;
+  await prisma.incomingEmail.updateMany({
+    where: { id: params.incomingEmailId, tenantId: params.tenantId },
+    data: {
+      status: "REVIEW_NEEDED" as any,
+      processedAt: new Date(),
+      extractedJson: { aiDecision: decision, administrativeReview: true },
+      errorMessage: "Geschaeftsdokument zur Zuordnung und Pruefung: " + decision.reason,
+    },
+  });
+  return true;
+}
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -1921,6 +1952,17 @@ export async function loader({ request }: { request: Request }) {
               }
             }
 
+            if (await preserveAdministrativeMail({
+              tenantId: account.tenantId,
+              incomingEmailId: existing.id,
+              subject: String(parsed.subject || ""),
+              sender: String(parsed.from?.text || ""),
+              text: bestText,
+            })) {
+              (result as any).administrativeReviews = ((result as any).administrativeReviews || 0) + 1;
+              continue;
+            }
+
                       const classificationRuleMatch =
                         await findClassificationImportRuleMatch({
                           tenantId: account.tenantId,
@@ -2270,6 +2312,17 @@ export async function loader({ request }: { request: Request }) {
                 },
               },
             });
+          }
+
+          if (await preserveAdministrativeMail({
+            tenantId: account.tenantId,
+            incomingEmailId: incomingEmail.id,
+            subject: String(parsed.subject || ""),
+            sender: String(parsed.from?.text || ""),
+            text: bestText,
+          })) {
+            (result as any).administrativeReviews = ((result as any).administrativeReviews || 0) + 1;
+            continue;
           }
 
           const classificationRuleMatch =
