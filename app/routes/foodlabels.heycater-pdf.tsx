@@ -1,194 +1,54 @@
-﻿import type { ActionFunctionArgs } from "react-router";
+import type { ActionFunctionArgs } from "react-router";
+import { convertHeycaterA4ToZebra } from "../lib/heycater-a4-zebra.server";
 
-function getExpectedLabelCountFromFilename(filename: string) {
-  const text = String(filename || "");
-
-  const patterns = [
-    /(\d{1,4})\s*labels/i,
-    /(\d{1,4})\s*label/i,
-    /(\d{1,4})\s*etiketten/i,
-    /_(\d{1,4})labels_/i,
-    /_(\d{1,4})label_/i,
-  ];
-
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-    if (match) {
-      const value = Number(match[1]);
-      if (Number.isFinite(value) && value > 0) return value;
-    }
-  }
-
-  return null;
-}
-
-async function extractPdfText(inputBuffer: Buffer) {
-  const imported: any = await import("pdf-parse");
-
-  const candidates = [
-    imported,
-    imported.default,
-    imported.default?.default,
-    imported.pdfParse,
-    imported.default?.pdfParse,
-  ];
-
-  for (const candidate of candidates) {
-    if (typeof candidate === "function") {
-      const parsed = await candidate(inputBuffer);
-      return String(parsed?.text || "");
-    }
-  }
-
-  const PDFParseClass = imported.PDFParse || imported.default?.PDFParse;
-
-  if (typeof PDFParseClass === "function") {
-    const parser = new PDFParseClass({ data: inputBuffer });
-
-    try {
-      const result = await parser.getText();
-      return String(result?.text || result || "");
-    } finally {
-      if (typeof parser.destroy === "function") {
-        await parser.destroy();
-      }
-    }
-  }
-
-  throw new Error("pdf-parse Export nicht erkannt: " + Object.keys(imported || {}).join(", "));
+function expectedCountFromFileName(filename: string): number | null {
+  const found = String(filename).match(/(?:^|[_\s-])(\d{1,4})\s*(?:labels?|etiketten)(?=$|[_\s.\-])/i);
+  if (!found) return null;
+  const count = Number(found[1]);
+  return Number.isSafeInteger(count) && count > 0 ? count : null;
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
     const { getUserId } = await import("../lib/session.server");
     const { prisma } = await import("../lib/prisma.server");
-
     const userId = await getUserId(request);
+    if (!userId) return new Response("Bitte anmelden.", { status: 401 });
+    const access = await prisma.tenantUser.findFirst({ where: { userId }, include: { tenant: true } });
+    if (!access?.tenant) return new Response("Kein Betrieb gefunden.", { status: 403 });
 
-    if (!userId) {
-      return new Response("Nicht angemeldet.", { status: 401 });
+    const form = await request.formData();
+    const file = form.get("pdf");
+    if (!(file instanceof File) || file.size === 0 || file.size > 20 * 1024 * 1024) {
+      return new Response("Bitte eine Heycater-A4-PDF (max. 20 MB) hochladen.", { status: 400 });
     }
-
-    const access = await prisma.tenantUser.findFirst({
-      where: { userId },
-      include: { tenant: true },
-    });
-
-    if (!access?.tenant) {
-      return new Response("Kein Betrieb gefunden.", { status: 403 });
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (new TextDecoder("ascii").decode(bytes.slice(0, 5)) !== "%PDF-") {
+      return new Response("Die hochgeladene Datei ist keine PDF.", { status: 400 });
     }
-
-    const formData = await request.formData();
-    const file = formData.get("pdf");
-    const customerName = String(formData.get("customerName") || "").trim();
-
-    if (!(file instanceof File) || file.size === 0) {
-      return new Response("Keine PDF-Datei hochgeladen.", { status: 400 });
+    const expectedFromFileName = expectedCountFromFileName(file.name);
+    const manualCount = Number(String(form.get("expectedCount") || "").trim());
+    const expected = Number.isInteger(manualCount) && manualCount >= 1
+      ? manualCount : expectedFromFileName;
+    if (expected === null) {
+      return new Response("SICHERHEITSSTOPP: Anzahl fehlt. Bitte Heycater-Datei mit Angabe wie '144labels' im Dateinamen hochladen oder die erwartete Anzahl eingeben.", { status: 422 });
     }
-
-    const inputBuffer = Buffer.from(await file.arrayBuffer());
-    const text = await extractPdfText(inputBuffer);
-
-    const { parseHeycaterLabelsFromText } = await import("../lib/heycater-label-parser.server");
-    const { renderHeycaterZebraPdf } = await import("../lib/heycater-zebra-pdf.server");
-    const { getDeliveryDishDetailsMap } = await import("../lib/foodlabel-dish-allergens.server");
-
-    const deliveryDishDetails = await getDeliveryDishDetailsMap(prisma, access.tenantId);
-    const labels = parseHeycaterLabelsFromText(text, deliveryDishDetails, file.name, customerName);
-
-    // Labels nach Gerichtsreihenfolge gruppieren.
-    // Unsichtbare Zeichen und unterschiedliche Leerzeichen
-    // dürfen dasselbe Gericht nicht auseinanderziehen.
-    const normalizeMealKey = (value: unknown) =>
-      String(value || "")
-        .normalize("NFKC")
-        .replace(/[\u200B-\u200D\uFEFF]/g, "")
-        .replace(/\s+/g, " ")
-        .trim()
-        .toLocaleLowerCase("de-DE");
-
-    const mealOrder = new Map<string, number>();
-
-    for (const label of labels) {
-      const mealKey = normalizeMealKey(label.meal);
-
-      if (!mealOrder.has(mealKey)) {
-        mealOrder.set(mealKey, mealOrder.size);
-      }
-    }
-
-    labels.sort((a, b) => {
-      const mealA = normalizeMealKey(a.meal);
-      const mealB = normalizeMealKey(b.meal);
-
-      return (
-        (mealOrder.get(mealA) ?? 999999) -
-        (mealOrder.get(mealB) ?? 999999)
-      );
-    });
-
-    const expectedCount = getExpectedLabelCountFromFilename(file.name);
-
-    if (labels.length === 0) {
-      return new Response(
-        "Keine Labels erkannt. PDF-Textlaenge: " + text.length + "\n\nErster Text:\n" + text.slice(0, 2000),
-        {
-          status: 400,
-          headers: { "Content-Type": "text/plain; charset=utf-8" },
-        }
-      );
-    }
-
-    if (expectedCount !== null && labels.length !== expectedCount) {
-      return new Response(
-        [
-          "SICHERHEITSSTOPP: Etikettenanzahl stimmt nicht.",
-          "",
-          "Erwartet laut Dateiname: " + expectedCount,
-          "Erkannt durch Gastario: " + labels.length,
-          "",
-          "Es wurde KEINE Druckdatei erstellt, damit niemand ein falsches oder fehlendes Essen bekommt.",
-          "",
-          "Erkannte Labels:",
-          ...labels.map((label, index) => {
-            return String(index + 1).padStart(3, "0") + " | " + label.name + " | " + label.meal + " | " + label.date;
-          }),
-          "",
-          "PDF-Textlaenge: " + text.length,
-          "",
-          "Erster PDF-Textauszug:",
-          text.slice(0, 3000),
-        ].join("\n"),
-        {
-          status: 409,
-          headers: { "Content-Type": "text/plain; charset=utf-8" },
-        }
-      );
-    }
-
-    const pdfBytes = await renderHeycaterZebraPdf(labels);
-
-    return new Response(pdfBytes, {
+    const output = await convertHeycaterA4ToZebra(bytes, expected);
+    return new Response(output.bytes as BodyInit, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": 'attachment; filename="heycater-foodlabels-zebra-' + labels.length + '-labels.pdf"',
-        "Cache-Control": "no-store",
+        "Content-Disposition": `attachment; filename="gastario-zebra-${output.count}-etiketten.pdf"`,
+        "X-Label-Count": String(output.count),
+        "Cache-Control": "private, no-store",
       },
     });
-  } catch (error: any) {
-    console.error("HEYCATER_LABEL_RENDER_ERROR", error);
-
-    return new Response("Heycater Label Fehler: " + (error?.message || String(error)), {
-      status: 500,
-      headers: { "Content-Type": "text/plain; charset=utf-8" },
-    });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unbekannter Importfehler";
+    console.error("HEYCATER_A4_ZEBRA_IMPORT_FAILED", message);
+    return new Response(`Etikettendruck gesperrt: ${message}`, { status: 422, headers: { "Content-Type": "text/plain; charset=utf-8" } });
   }
 }
 
 export async function loader() {
-  return new Response("Nur Upload per Formular erlaubt.", { status: 405 });
+  return new Response("Nur PDF-Upload per Formular erlaubt.", { status: 405 });
 }
-
-
-
-
